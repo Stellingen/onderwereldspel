@@ -30,7 +30,7 @@ V.profiel=()=>{
      return open&&!got?`<button class="rcode open" onclick="act.redeem('${k}')"><span>${r[0]}</span><b>Claim ${fmt(RANK_CODES[k])}</b></button>`
        :`<div class="rcode ${got?'got':''}"><span>${r[0]}</span><b>${got?'✓ '+fmt(RANK_CODES[k])+' geclaimd':'🔒 '+fmt(RANK_CODES[k])}</b></div>`}).join('')}</div>
    <div class="label" style="margin-top:16px">Gebruikte codes</div>
-   <div class="pf-used">${used.length?used.map(c=>`<span class="chipline" style="--c:var(--green)">${esc(c.toUpperCase())} ✓</span>`).join(''):'<span style="color:var(--faint);font-size:13px">Nog geen codes gebruikt.</span>'}</div>
+   <div class="pf-used">${used.length?used.map(c=>`<span class="chipline" style="--c:var(--green)">${esc(codeShow(c))} ✓</span>`).join(''):'<span style="color:var(--faint);font-size:13px">Nog geen codes gebruikt.</span>'}</div>
   </section>
   <section class="card pf-stats"><h3>Carrière</h3>
    <div class="pf-tiles">

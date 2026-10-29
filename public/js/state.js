@@ -1,6 +1,6 @@
 // Spelerstatus, opslaan/laden, spelregels, arrestaties, skills, meldingen
 let S;
-function fresh(){return{name:'Jij',cash:250,bank:0,xp:0,hp:100,heat:0,jailUntil:0,cred:0,energy:100,family:null,skills:{steal:0,cars:0,charisma:0,speed:0,conditie:0},train:{},buffs:{},redeemed:[],home:'brug',furn:{},carDex:{},trainV:2,news:[],wanted:false,lastSentence:30,cd:{},cars:[],biz:{},gear:{},stats:{crimes:0,fails:0,cars:0,won:0,lost:0},log:[],last:now(),
+function fresh(){return{name:'Jij',cash:250,bank:0,xp:0,hp:100,heat:0,jailUntil:0,cred:0,energy:100,family:null,skills:{steal:0,cars:0,charisma:0,speed:0,conditie:0},train:{},buffs:{},redeemed:[],home:'brug',furn:{},carDex:{},biz2:{},trainV:2,news:[],wanted:false,lastSentence:30,cd:{},cars:[],biz:{},gear:{},stats:{crimes:0,fails:0,cars:0,won:0,lost:0},log:[],last:now(),
   npcs:NPC_NAMES.map((n,i)=>({n,xp:Math.floor(200*Math.pow(1.55,i))+rnd(0,300),cash:rnd(1000,50000)*(i+1)}))}}
 // Opslag: met account in de database (via /api/state), anders alleen in de browser.
 const SAVE_KEY='onderwereld_v1'+(window.__USER__?'_'+window.__USER__.toLowerCase():'');
@@ -9,9 +9,11 @@ function load(){
   // de nieuwste opslag wint: als de server een update kreeg terwijl jij speelde, staat je laatste voortgang nog in de browser
   let d=sv;if(lc&&lc.npcs&&(!sv||(lc.savedAt||0)>(sv.savedAt||0))){d=lc;if(sv)window.__PUSH_LOCAL__=true}
   if(!d){try{d=JSON.parse(localStorage.getItem('onderwereld_v1'))}catch(e){}}
-  if(d&&d.npcs){const f=fresh();d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);d.skills=Object.assign(fresh().skills,d.skills);d.train=d.train||{};d.buffs=d.buffs||{};d.redeemed=d.redeemed||[];d.home=d.home||'brug';if(d.pendingArrest===undefined)d.pendingArrest=null;
+  if(d&&d.npcs){const f=fresh(),oldBiz=!d.biz2;d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);d.skills=Object.assign(fresh().skills,d.skills);d.train=d.train||{};d.buffs=d.buffs||{};d.redeemed=d.redeemed||[];d.home=d.home||'brug';if(d.pendingArrest===undefined)d.pendingArrest=null;
     if(d.family==='rossi')d.family='colombra';if(d.family==='syndicaat')d.family='lucchetti';if(d.energy==null)d.energy=100;
     migrateTrain(d);d.furn=d.furn||{};d.carDex=d.carDex||{};
+    // oude saves: aantal bedrijven per soort → vestigingen op level 1
+    if(oldBiz){d.biz2={};Object.entries(d.biz||{}).forEach(([k,n])=>{if(n>0)d.biz2[k]=Array(n).fill(1)})}
     if(window.__USER__)d.name=window.__USER__;return d}
   const f=fresh();f.trainV=2;if(window.__USER__)f.name=window.__USER__;return f}
 let _pushTimer=null,_lastPush=0,_retry=0;
@@ -116,7 +118,10 @@ const RL_ORDER=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1
 const REDS=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 const numCol=n=>n===0?'green':REDS.has(n)?'red':'black';
 window.rl={bets:{},angle:0,spinning:false,hist:[],chip:100,res:null,net:0};
-const income=()=>BIZ.reduce((a,b)=>a+(S.biz[b.id]||0)*b.inc,0);
+// Inkomen per minuut: per vestiging het inkomen van zijn level
+const bizUnits=id=>(S.biz2&&S.biz2[id])||[];
+const bizIncome=id=>{const b=BIZ.find(x=>x.id===id);return bizUnits(id).reduce((a,l)=>a+bizInc(b,l),0)};
+const income=()=>BIZ.reduce((a,b)=>a+bizIncome(b.id),0);
 
 function toast(msg,cls='ok'){const t=document.createElement('div');t.className='toast '+cls;t.textContent=msg;$('#toasts').prepend(t);setTimeout(()=>t.remove(),3200)}
 function log(msg,cls='info'){S.log.unshift({m:msg,c:cls,t:now()});S.log=S.log.slice(0,40)}

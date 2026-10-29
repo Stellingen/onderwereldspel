@@ -28,7 +28,7 @@ const act={
     catch(e){redeemMsg={ok:false,t:'De server is niet bereikbaar. Probeer het later opnieuw.'};render();return}
   }else{const LOCAL=Object.assign({},LIVE_CODES,RANK_CODES);amount=LOCAL[code];if(!amount){redeemMsg={ok:false,t:'Deze code bestaat niet.'};render();return}}
   S.cash+=amount;S.redeemed.push(code);redeemMsg={ok:true,t:'Gelukt! '+fmt(amount)+' is bijgeschreven op je contant geld.'};
-  toast('Code '+code.toUpperCase()+': +'+fmt(amount),'lvl');log('Code '+code.toUpperCase()+' ingewisseld: +'+fmt(amount),'ok');
+  toast('Code '+codeShow(code)+': +'+fmt(amount),'lvl');log('Code '+codeShow(code)+' ingewisseld: +'+fmt(amount),'ok');
   save();if(typeof pushState==='function')pushState();render()},
  relax(id){const r=RELAX.find(x=>x.id===id);if(!r||inJail()||cdLeft('rx_'+id))return;const cost=r.cost(rankIdx(S.xp));if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
   S.cash-=cost;S.cd['rx_'+id]=now()+r.cd*60000;const m=[];
@@ -45,7 +45,6 @@ const act={
  win(b,m,label){casinoRound(b,m>0?b*m:0,'coin');if(m>0){S.cash+=b*m-b;S.stats.won+=b*m-b;toast(label+' Gewonnen: +'+fmt(b*m-b));log('Casino: +'+fmt(b*m-b),'ok')}else{S.cash-=b;S.stats.lost+=b;toast(label+' Verloren: -'+fmt(b),'bad');log('Casino: -'+fmt(b),'bad')}save()},
  coin(k){const b=act.getBet();if(!b)return;const r=Math.random()<.5?'kop':'munt';act.win(b,r===k?2:0,'Het werd '+r+'.');render()},
  /* oude roulettesnelknop */ roul(k){const b=act.getBet();if(!b)return;const n=rnd(0,36);const col=n===0?'groen':n%2?'rood':'zwart';window._roul=n+' '+col.toUpperCase();act.win(b,col===k?(k==='groen'?14:2):0,n+' '+col+'.');render()},
- buyBiz(id){const b=BIZ.find(x=>x.id===id);const own=S.biz[id]||0;const p=Math.floor(b.p*Math.pow(1.25,own));if(S.cash<p)return;S.cash-=p;S.biz[id]=own+1;addXp(Math.floor(p/200));toast(b.n+' gekocht');log(b.n+' gekocht voor '+fmt(p),'info');save();render()},
  buyGear(id){const g=GEAR.find(x=>x.id===id);if(S.cash<g.p)return;S.cash-=g.p;S.gear[id]=1;toast(g.n+' gekocht');log(g.n+' gekocht','info');save();render()},
  dep(){const a=Math.min(Math.floor(+$('#amt').value),Math.floor(S.cash));if(a>0){S.cash-=a;S.bank+=a;toast(fmt(a)+' gestort');save();render()}},
  wd(){const a=Math.min(Math.floor(+$('#amt').value),Math.floor(S.bank));if(a>0){S.bank-=a;S.cash+=a;toast(fmt(a)+' opgenomen');save();render()}},

@@ -100,12 +100,28 @@ const CAR_RARITY=[null,['Gewoon','#9aa1ab'],['Ongewoon','#3fe395'],['Zeldzaam','
 const CAR_MYTH=['Mythisch','#ff3d52'];
 const CAR_SPOTS=['Op de stoep in De Pijp','Parkeergarage aan de Zuidas','Voor een villa in Amsterdam-Zuid','Bedrijventerrein Westpoort','Tankstation aan de A10',
  'Donker steegje bij de Wallen','Parkeerplaats van een sportschool','Oprit in Amstelveen','Achter een nachtclub op het Rembrandtplein','Laadpaal in Oost','Hotel aan de Amstel','Showroom op het Gooiplein'];
+// Bedrijven: p = prijs eerste vestiging (elke volgende ×1,25), inc = euro per minuut op level 1, r = minimale rang.
+// Elke vestiging kan 4 keer upgraden (level 1-5); up = de namen van die upgrades.
 const BIZ=[
- {id:'wash',n:'Wasserette',d:'Wast meer dan alleen kleding.',p:5000,inc:40,r:1},
- {id:'shop',n:'Belwinkel',d:'Goede dekmantel, constante cashflow.',p:20000,inc:180,r:3},
- {id:'club',n:'Nachtclub',d:'VIP-ruimte, portiers en dure flessen.',p:90000,inc:900,r:5},
- {id:'garage',n:'Chop shop',d:'Gestolen auto\'s omkatten en doorverkopen.',p:250000,inc:2800,r:7},
- {id:'port',n:'Havenloods',d:'Controle over de smokkel in Rotterdam.',p:900000,inc:11000,r:9}];
+ {id:'wash',n:'Wasserette',d:'Wast meer dan alleen kleding.',p:5000,inc:40,r:1,col:'#a9dcff',up:['Extra machines','Droogtrommels','Bezorgservice','Witwasafdeling']},
+ {id:'snack',n:'Snackbar',d:'Frikandellen voor de buurt, enveloppen voor de baas.',p:12000,inc:95,r:2,col:'#ffad6b',up:['Nieuwe frituur','Bezorgscooters','Nachtloket','Tweede keuken']},
+ {id:'shop',n:'Belwinkel',d:'Goede dekmantel, constante cashflow.',p:20000,inc:180,r:3,col:'#3fe395',up:['Simkaarten in bulk','Reparatiebalie','Geld overmaken','Eigen prepaid-netwerk']},
+ {id:'barber',n:'Barbershop',d:'Fades, baardolie en de roddels uit de hele wijk.',p:35000,inc:300,r:3,col:'#ff7fb3',up:['Extra stoelen','Tattoohoek','VIP-kamer','Eigen productlijn']},
+ {id:'autogarage',n:'Autogarage',d:'APK, banden en zo nu en dan een ander kenteken.',p:60000,inc:520,r:4,col:'#ff7a1a',up:['Hefbrug','Spuitcabine','Tuningafdeling','Showroom']},
+ {id:'shisha',n:'Shishalounge',d:'Rook, muziek en een achterkamer zonder camera\'s.',p:75000,inc:650,r:4,col:'#b8a1ff',up:['Loungebanken','Dakterras','Eigen DJ','Privékamers']},
+ {id:'club',n:'Nachtclub',d:'VIP-ruimte, portiers en dure flessen.',p:90000,inc:900,r:5,col:'#ff3d52',up:['Lichtshow','Extra bar','Bekende DJ\'s','Skybox']},
+ {id:'dealer',n:'Autodealer',d:'Dure wagens, contant betaald, geen vragen.',p:150000,inc:1500,r:6,col:'#4d9dff',up:['Grotere showroom','Leasedesk','Exportlijn','Exclusieve merken']},
+ {id:'garage',n:'Chop shop',d:'Gestolen auto\'s omkatten en doorverkopen.',p:250000,inc:2800,r:7,col:'#c9a227',up:['Snijbranders','Onderdelenmagazijn','Containerexport','Valse papieren']},
+ {id:'hotel',n:'Boetiekhotel',d:'Kamers op uurbasis en een kluis achter de receptie.',p:450000,inc:5000,r:8,col:'#e6e1d6',up:['Rooftop bar','Spa','Suites','Privé-ingang']},
+ {id:'speelhal',n:'Speelhal',d:'Gokkasten, pokertafels en een kassa die nooit leeg is.',p:650000,inc:7500,r:9,col:'#f2c230',up:['Meer kasten','Pokerzaal','High-roller-kamer','Eigen wisselkantoor']},
+ {id:'port',n:'Havenloods',d:'Controle over de smokkel in Rotterdam.',p:900000,inc:11000,r:9,col:'#38bdf8',up:['Eigen kraan','Koelcontainers','Contact bij de douane','Tweede kade']},
+ {id:'vastgoed',n:'Vastgoedportefeuille',d:'Panden in de hele stad, de huur gaat contant.',p:2000000,inc:26000,r:10,col:'#9aa1ab',up:['Studentenpanden','Kantoortoren','Projectontwikkeling','Grond in de haven']},
+ {id:'jet',n:'Privéjet-charter',d:'Vluchten zonder passagierslijst.',p:4000000,inc:55000,r:11,col:'#ffffff',up:['Tweede toestel','Eigen hangar','Internationale route','Luchthavenlounge']}];
+const BIZ_MAX=10,BIZ_LVL=['Basis','Opgeknapt','Uitgebreid','Topzaak','Imperium'],BIZ_MULT=[1,1.5,2.2,3.1,4.3],BIZ_UPK=[.6,1.1,1.9,3.2];
+const BIZ_PLACES=['De Pijp','Oost','Noord','West','Zuidoost','Jordaan','Zaandam','Rotterdam','Den Haag','Utrecht'];
+const bizPrice=(b,n)=>Math.floor(b.p*Math.pow(1.25,n));
+const bizUpCost=(b,l)=>Math.floor(b.p*BIZ_UPK[l-1]);
+const bizInc=(b,l)=>b.inc*BIZ_MULT[l-1];
 const GEAR=[
  {id:'mes',n:'Vlindermes',p:800,bonus:3},{id:'pistool',n:'Glock 17',p:6000,bonus:6},
  {id:'vest',n:'Kogelvrij vest',p:20000,bonus:5},{id:'ak',n:'AK-47',p:75000,bonus:10}];
@@ -162,9 +178,11 @@ const RELAX=[
 
 // Rangcodes: typ de naam van een rang bij Profiel > Code inwisselen (één keer, zodra je die rang hebt)
 const RANK_CODES={straatschoffie:150,loopjongen:400,dief:1000,boef:2500,gangster:6000,soldaat:12000,huurmoordenaar:25000,capo:50000,onderbaas:100000,consigliere:200000,peetvader:500000};
-const CODE_ALIAS={kapo:'capo'};
+const CODE_ALIAS={kapo:'capo',m1:'m1v2',m2:'m2v2',m3:'m3v2',m4:'m4v2',m5:'m5v2',m6:'m6v2',m7:'m7v2',m8:'m8v2',m9:'m9v2'};
+// zo toon je een code in 'gebruikte codes' (m1v2 → M1)
+const codeShow=c=>c.replace(/v\d+$/,'').toUpperCase();
 // Codes die nu bestaan (zelfde als CODES in server.js). Oude codes verdwijnen uit 'gebruikte codes'.
-const LIVE_CODES={lotto:1500,welkom:500,casino:5000,vip:20000,spinnetje:25000,jackpot:1000000,trainwreck:3000000,m1:3000000,m2:3000000,m3:3000000,m4:3000000,m5:3000000,m6:3000000,m7:3000000,m8:3000000,m9:3000000};
+const LIVE_CODES={lotto:1500,welkom:500,casino:5000,vip:20000,spinnetje:25000,jackpot:1000000,trainwreck:3000000,m1v2:5000000,m2v2:5000000,m3v2:5000000,m4v2:5000000,m5v2:5000000,m6v2:5000000,m7v2:5000000,m8v2:5000000,m9v2:5000000};
 
 // Verblijf: je begint onder de brug. Rusten vult je energie in `rest` seconden, maar alleen zolang je blijft.
 const HOMES=[
