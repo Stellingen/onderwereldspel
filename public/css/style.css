@@ -1021,3 +1021,28 @@ button.rcode:hover{background:rgba(255,122,26,.15)}
 @container (max-width:760px){.cas-bar{flex-wrap:wrap;gap:8px 12px;align-items:center}.cas-bar .tabs{order:3;flex-basis:100%}#view .cas-bar h1.cas-h1{margin:0}.cas-bar .cbmini{margin:0 0 0 auto}}
 .cas-sub{display:none}
 @container (max-width:760px){.cas-bar .cbmini>span{display:none}.cas-bar .cbmini{gap:6px}}
+/* Kluiskraker: inzet kiezen */
+.kk-betv{flex:1;text-align:center;font-family:var(--f-mono);font-size:20px;color:var(--acc);padding:6px 4px;border-bottom:1px dashed rgba(255,122,26,.5);cursor:pointer}
+.kk-betv:hover:not(:disabled){background:rgba(255,122,26,.08)}
+.kk-pick{margin-top:10px;padding:12px;border:1px solid var(--acc);background:rgba(255,122,26,.06)}
+.kk-pick-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.kk-pick-h b{font-family:var(--f-head);font-weight:800;font-size:16px;text-transform:uppercase;letter-spacing:.06em}
+.kk-pick-h .btn{width:auto}
+.kk-pick-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
+.kk-pick-g button{padding:9px 4px;font-family:var(--f-mono);font-size:13px;border:1px solid var(--line2);background:var(--bg2)}
+.kk-pick-g button:hover{border-color:var(--acc)}.kk-pick-g button.on{border-color:var(--acc);background:rgba(255,122,26,.18);color:var(--acc)}.kk-pick-g button.no{opacity:.4}
+.kk-pick-q{display:flex;gap:8px;margin-top:10px}.kk-pick-q .btn{flex:1}
+/* Telefoon: knoppen direct onder het bord, compacte cijfers, korte kop */
+@container (max-width:700px){
+  .kk3 .kk-head{flex-wrap:nowrap;margin-bottom:8px}.kk3 .kk-title{font-size:24px}.kk3 .kk-subtxt{display:none}
+  .kk-bar{display:flex;flex-direction:column;gap:8px;margin-top:10px}.kk-bar .kk-ctl{order:-1}
+  .kk-hud{grid-template-columns:repeat(3,minmax(0,1fr))}.kk-hud .kk-bal{grid-column:1/-1;padding:8px 12px}
+  .kk-hud>div{padding:7px 10px}.kk-hud b{font-size:15px}.kk-hud b.sm{font-size:12px}.kk-hud .kk-bal b{font-size:24px}
+  .kk-ctl{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:6px}.kk-ctl .kk-go{grid-column:auto;order:0;min-height:58px;font-size:19px}
+  .kk-betbox{grid-column:auto;padding:4px 8px}.kk-betbox .kk-bet button{width:32px;height:32px}.kk-betv{font-size:16px}
+  .kk-small{grid-column:1/-1;flex-direction:row}
+  .kk-pick-g{grid-template-columns:repeat(4,minmax(0,1fr))}.kk-pick-g button{font-size:11.5px;padding:8px 2px}
+}
+@media (max-width:900px){
+  .kk-pick{position:fixed;left:8px;right:8px;bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:70;margin:0;max-height:62vh;overflow:auto;background:#14100c;box-shadow:0 -10px 40px rgba(0,0,0,.7);animation:sheetIn .18s ease-out}
+  @keyframes sheetIn{from{transform:translateY(20px);opacity:0}}
+}

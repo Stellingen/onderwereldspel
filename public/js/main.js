@@ -1,5 +1,6 @@
 // Renderen, nieuwsticker, tijd/inkomen en de spel-loop
-function render(){applySection();renderNav();renderTop();renderRail();$('#view').innerHTML=crumbHtml()+V[page]();if(page==='casino'&&casinoTab==='roulette')drawWheel(rl.angle)}
+// Bij hertekenen op dezelfde pagina blijft je scrollpositie staan (telefoon sprong anders naar boven)
+function render(){const y=window.scrollY,same=render._p===page;render._p=page;applySection();renderNav();renderTop();renderRail();$('#view').innerHTML=crumbHtml()+V[page]();if(same&&y)window.scrollTo(0,y);if(page==='casino'&&casinoTab==='roulette')drawWheel(rl.angle)}
 // Nieuwsticker met gebeurtenissen uit de onderwereld
 function news(){const n=S.npcs[rnd(0,S.npcs.length-1)].n;const T=[
   ()=>n+' heeft een juwelier in Utrecht overvallen',()=>n+' is gepromoveerd tot '+RANKS[rankIdx(S.npcs.find(p=>p.n===n).xp)][0],

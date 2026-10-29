@@ -164,7 +164,7 @@ const RELAX=[
 const RANK_CODES={straatschoffie:150,loopjongen:400,dief:1000,boef:2500,gangster:6000,soldaat:12000,huurmoordenaar:25000,capo:50000,onderbaas:100000,consigliere:200000,peetvader:500000};
 const CODE_ALIAS={kapo:'capo'};
 // Codes die nu bestaan (zelfde als CODES in server.js). Oude codes verdwijnen uit 'gebruikte codes'.
-const LIVE_CODES={lotto:1500,welkom:500,casino:5000,vip:20000,spinnetje:25000,rich:500000};
+const LIVE_CODES={lotto:1500,welkom:500,casino:5000,vip:20000,spinnetje:25000,rich2:500000};
 
 // Verblijf: je begint onder de brug. Rusten vult je energie in `rest` seconden, maar alleen zolang je blijft.
 const HOMES=[
