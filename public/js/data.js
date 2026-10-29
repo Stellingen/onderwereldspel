@@ -43,9 +43,15 @@ const FAMILIES=[
  {id:'gambrino',n:'Famiglia Gambrino',m:'FG',d:'De grootste van de Vijf Families. Wie hier binnenkomt, gaat er niet meer uit.',r:8,cred:450,chance:10,loot:34,jail:34,col:'var(--red)'},
  {id:'cupola',n:'La Cupola',m:'LC',d:'De raad van peetvaders. Alleen de allergrootsten krijgen een stoel aan tafel.',r:9,cred:650,chance:12,loot:40,jail:40,col:'var(--acc)'}];
 const PLACES={dash:'op straat',crimes:'tijdens een klus',cars:'bij een parkeergarage',casino:'in het casino',biz:'bij je bedrijf',shop:'bij de wapenhandelaar',bank:'bij de bank',fam:'bij het familiehuis',rank:'in een café'};
+// Auto's: d = moeilijkheid van de minigame (1-5), w = hoe vaak hij op straat staat
 const CARS=[
- {n:'Fiat Panda',v:400,c:80,r:0},{n:'VW Golf',v:1500,c:65,r:1},{n:'BMW M3',v:6000,c:50,r:3},
- {n:'Porsche 911',v:18000,c:38,r:5},{n:'Lamborghini Huracán',v:60000,c:25,r:8}];
+ {id:'panda',n:'Fiat Panda',v:400,d:1,w:30},{id:'corsa',n:'Opel Corsa',v:650,d:1,w:28},{id:'yaris',n:'Toyota Yaris',v:800,d:1,w:26},{id:'clio',n:'Renault Clio',v:900,d:1,w:24},
+ {id:'golf',n:'VW Golf GTI',v:1800,d:2,w:18},{id:'focus',n:'Ford Focus ST',v:2000,d:2,w:16},{id:'leon',n:'Seat Leon Cupra',v:3000,d:2,w:14},{id:'a3',n:'Audi S3',v:3800,d:2,w:12},
+ {id:'m3',n:'BMW M3',v:6000,d:3,w:9},{id:'c63',n:'Mercedes C63 AMG',v:8000,d:3,w:8},{id:'tesla',n:'Tesla Model S Plaid',v:9500,d:3,w:7},{id:'rs6',n:'Audi RS6',v:11000,d:3,w:6},{id:'rr',n:'Range Rover Sport',v:13000,d:3,w:6},
+ {id:'911',n:'Porsche 911',v:18000,d:4,w:4},{id:'mase',n:'Maserati GranTurismo',v:24000,d:4,w:3},{id:'bent',n:'Bentley Continental',v:32000,d:4,w:2.5},
+ {id:'hura',n:'Lamborghini Huracán',v:60000,d:5,w:1.4},{id:'f8',n:'Ferrari F8',v:70000,d:5,w:1.2},{id:'cull',n:'Rolls-Royce Cullinan',v:85000,d:5,w:.9},{id:'chiron',n:'Bugatti Chiron',v:250000,d:5,w:.25}];
+const CAR_LEVEL=['','makkelijk','redelijk','lastig','moeilijk','extreem'];
+const CAR_SPOTS=['Op de stoep in De Pijp','In een parkeergarage aan de Zuidas','Voor een villa in Amsterdam-Zuid','Op een bedrijventerrein','Naast een tankstation aan de A10','In een donker steegje'];
 const BIZ=[
  {id:'wash',n:'Wasserette',d:'Wast meer dan alleen kleding.',p:5000,inc:40,r:1},
  {id:'shop',n:'Belwinkel',d:'Goede dekmantel, constante cashflow.',p:20000,inc:180,r:3},
@@ -59,11 +65,12 @@ const NPC_NAMES=['Vito "De Haai"','Ricardo B.','Mo Taxi','Sjaak de Kraker','Lola
 
 // Vluchtspel: hoe besloten de plek, hoe moeilijker het is om weg te komen
 const FLEE_LEVELS={
- 1:{label:'makkelijk',where:'Je staat op straat, er zijn genoeg steegjes.',zone:.26,speed:.95,hits:3,miss:2,time:10},
- 2:{label:'redelijk',where:'Het is druk, maar er is ruimte om te rennen.',zone:.21,speed:1.15,hits:3,miss:2,time:9},
- 3:{label:'lastig',where:'Je bent binnen en er is maar één uitgang.',zone:.17,speed:1.35,hits:4,miss:1,time:9},
- 4:{label:'moeilijk',where:'Je zit in een gebouw en de agent blokkeert de deur.',zone:.13,speed:1.6,hits:4,miss:1,time:8},
- 5:{label:'bijna onmogelijk',where:'Alles zit op slot en de beveiliging heeft je ingesloten.',zone:.10,speed:1.85,hits:5,miss:0,time:8}};
+ // zone = breedte groen gat (deel van de balk), speed = keer per seconde heen of terug, shrink/accel per rake klik
+ 1:{label:'makkelijk',where:'Je staat op straat, er zijn genoeg steegjes.',zone:.25,speed:.9,hits:3,miss:2,time:10,shrink:.95,accel:1.03},
+ 2:{label:'redelijk',where:'Het is druk, maar er is ruimte om te rennen.',zone:.18,speed:1.15,hits:3,miss:2,time:9,shrink:.92,accel:1.05},
+ 3:{label:'lastig',where:'Je bent binnen en er is maar één uitgang.',zone:.13,speed:1.45,hits:4,miss:1,time:9,shrink:.9,accel:1.06},
+ 4:{label:'moeilijk',where:'Je zit in een gebouw en de agent blokkeert de deur.',zone:.10,speed:1.8,hits:4,miss:1,time:8,shrink:.88,accel:1.07},
+ 5:{label:'bijna onmogelijk',where:'Alles zit op slot en de beveiliging heeft je ingesloten.',zone:.09,speed:2.0,hits:4,miss:0,time:8,shrink:.88,accel:1.07,drift:true}};
 
 // Training: blijvende skills via sessies met een wachttijd (tijdslot) per plek
 // need(l): aantal sessies om van level l naar l+1 te gaan; kosten per sessie stijgen per level

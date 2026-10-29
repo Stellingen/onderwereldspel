@@ -14,6 +14,10 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   Perfect Pairs en 21+3 (€10–€50). **Three Card Poker** met Ante/Play, Pair Plus en 6-Card Bonus (€10–€50). Code: `public/js/pages/tafels.js`.
 - **Verblijf**: begin onder de brug en verhuis via kraakpand, huurkamer, grachtenappartement en penthouse naar een villa.
   Rusten vult je energie in 10 seconden (sneller in een beter huis), maar alleen zolang je op de pagina blijft.
+- **Auto's**: 20 modellen, elke 90 s nieuwe auto's op straat (soms niets veiligs). Stelen met de minigame 'Contact maken'
+  (pijlen intoetsen; duurder model = langere reeks, minder tijd, bij de duurste moet je de reeks onthouden).
+- **Onderduiken** (Verblijf): hitte zakt in 5 minuten naar 0, gedeeltelijk als je eerder weggaat.
+- **Arrestaties zijn verversbestendig**: openstaande keuze komt terug, afgebroken vlucht of autodiefstal telt als mislukt.
 - **8 families**, van De Nieuwe Garde tot La Cupola
 - **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500) en `welkom` (€500), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
 - **Kluiskraker**: cluster-slot op 7×7 (5+ aangrenzende gelijke symbolen), Loper als wild, vakjes die bij elke

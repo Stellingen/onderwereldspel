@@ -25,9 +25,10 @@ V.profiel=()=>{
     <button class="btn" type="submit" id="codeBtn">Inwisselen</button>
    </form>
    ${redeemMsg?`<div class="pf-msg ${redeemMsg.ok?'ok':'bad'}">${esc(redeemMsg.t)}</div>`:''}
-   <div class="label" style="margin-top:16px">Rangcodes · typ de naam van je rang</div>
+   <div class="label" style="margin-top:16px">Rangbeloningen · klik om te claimen</div>
    <div class="rcodes">${RANKS.slice(1).map((r,i)=>{const k=r[0].toLowerCase(),got=used.includes(k),open=rankIdx(S.xp)>=i+1;
-     return `<div class="rcode ${got?'got':open?'open':''}"><span>${r[0]}</span><b>${got?'✓ geclaimd':open?fmt(RANK_CODES[k]):'🔒 '+fmt(RANK_CODES[k])}</b></div>`}).join('')}</div>
+     return open&&!got?`<button class="rcode open" onclick="act.redeem('${k}')"><span>${r[0]}</span><b>Claim ${fmt(RANK_CODES[k])}</b></button>`
+       :`<div class="rcode ${got?'got':''}"><span>${r[0]}</span><b>${got?'✓ '+fmt(RANK_CODES[k])+' geclaimd':'🔒 '+fmt(RANK_CODES[k])}</b></div>`}).join('')}</div>
    <div class="label" style="margin-top:16px">Gebruikte codes</div>
    <div class="pf-used">${used.length?used.map(c=>`<span class="chipline" style="--c:var(--green)">${esc(c.toUpperCase())} ✓</span>`).join(''):'<span style="color:var(--faint);font-size:13px">Nog geen codes gebruikt.</span>'}</div>
   </section>

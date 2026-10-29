@@ -7,7 +7,7 @@ const SAVE_KEY='onderwereld_v1'+(window.__USER__?'_'+window.__USER__.toLowerCase
 function load(){
   let d=window.__SERVER_STATE__||null;
   if(!d){try{d=JSON.parse(localStorage.getItem(SAVE_KEY))||JSON.parse(localStorage.getItem('onderwereld_v1'))}catch(e){}}
-  if(d&&d.npcs){const f=fresh();d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);d.skills=Object.assign(fresh().skills,d.skills);d.train=d.train||{};d.buffs=d.buffs||{};d.redeemed=d.redeemed||[];d.home=d.home||'brug';
+  if(d&&d.npcs){const f=fresh();d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);d.skills=Object.assign(fresh().skills,d.skills);d.train=d.train||{};d.buffs=d.buffs||{};d.redeemed=d.redeemed||[];d.home=d.home||'brug';if(d.pendingArrest===undefined)d.pendingArrest=null;
     if(d.family==='rossi')d.family='colombra';if(d.family==='syndicaat')d.family='lucchetti';if(d.energy==null)d.energy=100;
     if(window.__USER__)d.name=window.__USER__;return d}
   const f=fresh();if(window.__USER__)f.name=window.__USER__;return f}
@@ -42,24 +42,38 @@ const talkChance=()=>Math.min(45,S.skills.charisma*4.5);
 // Arrestatie met de keuze om je eruit te praten (charisma)
 // Arrestatie: vluchten (vluchtspel), je eruit praten (charisma) of je overgeven.
 // opts: {mult: factor op praatkans, raid: politiecontrole bij gezochte speler, flee: moeilijkheid 1-5}
+// Arrestatie: vluchten (vluchtspel), je eruit praten (charisma) of je overgeven.
+// opts: {mult: factor op praatkans, raid: politiecontrole bij gezochte speler, flee: moeilijkheid 1-5}
+// De arrestatie wordt direct opgeslagen (S.pendingArrest), zodat verversen je er niet uit haalt.
+function jailFor(pa,extra,why){const s=sendToJail(pa.sec*(extra||1));if(pa.opts&&pa.opts.raid){S.wanted=false;S.stats.raids=(S.stats.raids||0)+1}
+  S.pendingArrest=null;log((why||pa.title)+'. '+fmtTime(s)+' de bajes in','bad');save();pushState();closeModal();
+  page='jail';try{history.replaceState(null,'','#jail')}catch(e){}render();toast('Opgepakt: '+fmtTime(s),'bad')}
 function arrest(sec,title,msg,opts){
   opts=opts||{};const mult=opts.mult==null?1:opts.mult,raid=!!opts.raid;
+  const pa={sec,title,msg,opts,fleeing:false};S.pendingArrest=pa;save();pushState();
   const ch=Math.round(talkChance()*mult);
   const plain=Math.max(30,Math.min(600,Math.round(sec*(1-fam().jail/100))));
-  const goJail=(extra=1,why='')=>{const s=sendToJail(sec*extra);if(raid){S.wanted=false;S.stats.raids=(S.stats.raids||0)+1}
-    log((why||title)+'. '+fmtTime(s)+' de bajes in','bad');save();closeModal();page='jail';try{history.replaceState(null,'','#jail')}catch(e){}render();toast('Opgepakt: '+fmtTime(s),'bad')};
+  const goJail=(extra,why)=>jailFor(pa,extra,why);
   const btns=[];
   if(opts.flee){const L=FLEE_LEVELS[opts.flee];
-    btns.push({l:'Vluchten · '+L.label,c:'',f:()=>{closeModal();fleeGame(opts.flee).then(ok=>{
-      if(ok){S.stats.fled=(S.stats.fled||0)+1;S.cred+=1;S.heat=Math.min(100,S.heat+5);addXp(3);
-        log(raid?'Politiecontrole ontvlucht. Je staat nog op de gezochtlijst':'Gevlucht en de politie kwijtgeraakt','ok');save();render();
+    btns.push({l:'Vluchten · '+L.label,c:'',f:()=>{pa.fleeing=true;S.pendingArrest=pa;save();pushState();closeModal();fleeGame(opts.flee).then(ok=>{
+      if(ok){S.pendingArrest=null;S.stats.fled=(S.stats.fled||0)+1;S.cred+=1;S.heat=Math.min(100,S.heat+5);addXp(3);
+        log(raid?'Politiecontrole ontvlucht. Je staat nog op de gezochtlijst':'Gevlucht en de politie kwijtgeraakt','ok');save();pushState();render();
         toast(raid?'Ontglipt! Maar je wordt nog steeds gezocht.':'Ontkomen! De politie is je kwijt.')}
       else goJail(1.2,'Vluchtpoging mislukt (+20% straf)')})}});
   }
-  if(ch>0)btns.push({l:'Praat je eruit · '+ch+'%',c:'ghost',f:()=>{if(rnd(1,100)<=ch){S.cred+=1;addXp(5);log('Uit een arrestatie gepraat','ok');save();closeModal();render();toast('Je praat je eruit. De agent laat je gaan.')}else goJail(1.25,'Praatje mislukt, de agent wordt boos (+25% straf)')}});
+  if(ch>0)btns.push({l:'Praat je eruit · '+ch+'%',c:'ghost',f:()=>{if(rnd(1,100)<=ch){S.pendingArrest=null;S.cred+=1;addXp(5);log('Uit een arrestatie gepraat','ok');save();pushState();closeModal();render();toast('Je praat je eruit. De agent laat je gaan.')}else goJail(1.25,'Praatje mislukt, de agent wordt boos (+25% straf)')}});
   btns.push({l:'Geef je over · '+fmtTime(plain),c:'red',f:()=>goJail()});
   const hint=opts.flee?' Vlucht je en lukt het, dan ben je vrij. Mislukt het, dan krijg je 20% extra straf.':'';
   showModal(title,msg+hint,btns);
+}
+// Na verversen: een open arrestatie komt terug; een afgebroken vlucht of autodiefstal telt als mislukt.
+function resumePending(){
+  if(S.pendingHeist){const c=CARS.find(k=>k.id===S.pendingHeist.id)||CARS[0];S.pendingHeist=null;S.heat=Math.min(100,S.heat+4+c.d*2);log('Autodiefstal afgebroken: '+c.n,'bad');
+    arrest(30+c.d*20,'Alarm!','Je liet de '+c.n+' halverwege staan en het alarm ging af.',{flee:Math.min(5,Math.max(1,c.d))});return}
+  const pa=S.pendingArrest;if(!pa)return;
+  if(pa.fleeing){jailFor(pa,1.2,'Vluchtpoging afgebroken (+20% straf)');return}
+  arrest(pa.sec,pa.title,pa.msg,pa.opts);
 }
 function policeRaid(){
   if(!S.wanted||inJail()||!$('#modal').hidden||window.__chase)return false;
@@ -88,7 +102,7 @@ const income=()=>BIZ.reduce((a,b)=>a+(S.biz[b.id]||0)*b.inc,0);
 
 function toast(msg,cls='ok'){const t=document.createElement('div');t.className='toast '+cls;t.textContent=msg;$('#toasts').prepend(t);setTimeout(()=>t.remove(),3200)}
 function log(msg,cls='info'){S.log.unshift({m:msg,c:cls,t:now()});S.log=S.log.slice(0,40)}
-function addXp(x){const before=rankIdx(S.xp);S.xp+=x;const after=rankIdx(S.xp);if(after>before){toast('Promotie: je bent nu '+RANKS[after][0]+'!','lvl');log('Gepromoveerd tot '+RANKS[after][0],'ok')}}
+function addXp(x){const before=rankIdx(S.xp);S.xp+=x;const after=rankIdx(S.xp);if(after>before){toast('Promotie: je bent nu '+RANKS[after][0]+'! Claim je beloning op je profiel.','lvl');log('Gepromoveerd tot '+RANKS[after][0],'ok')}}
 
 const EN_BASE=100,EN_REGEN_S=18; // 1 energie per 18 seconden
 // Maximale energie groeit met Conditie (sportschool): +5 per level

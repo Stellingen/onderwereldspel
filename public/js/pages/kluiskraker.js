@@ -1,7 +1,7 @@
 // Casino: Kluiskraker v3 — cluster-slot met vermenigvuldigvakjes, geluid en vloeiende tumbles.
 // Engine: js/slot.js · iconen: js/icons.js · geluid: js/sfx.js
-const KK_BETS=[10,20,50,100,200,500,1000,2000,5000,10000];
-window.kk={bi:2,busy:false,turbo:false,confirm:false,grid:null,spots:null,msg:'Kies je inzet en draai',stepWin:0,fs:null,lastWin:0,shown:0};
+const KK_BETS=[10,20,30,40,50,100,150,200,250,300,400,500,750,1000,1500,2000,3000,5000,7500,10000];
+window.kk={bi:4,busy:false,turbo:false,confirm:false,grid:null,spots:null,msg:'Kies je inzet en draai',stepWin:0,fs:null,lastWin:0,shown:0};
 const kkBet=()=>KK_BETS[kk.bi];
 const kkFast=()=>kk.turbo||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const KK_T=()=>kkFast()?{base:140,per:16,col:22,hold:380,pop:180}:{base:230,per:34,col:42,hold:640,pop:250};

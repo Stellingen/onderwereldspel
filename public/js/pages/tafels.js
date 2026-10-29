@@ -19,6 +19,12 @@ function chipTray(game){return `<div class="tray">${TB.CHIPS.map(c=>`<button cla
   <span class="tray-l">Kies een fiche en tik op een vak</span></div>`}
 function spot(game,key,label,val,opts){opts=opts||{};return `<button class="spot ${opts.side?'side':''} ${val?'has':''} ${opts.res?'r-'+opts.res:''}" ${opts.dis?'disabled':''} onclick="act.tbBet('${game}','${key}')">
   <span class="spot-l">${label}</span>${chipStack(val)}${opts.sub?`<span class="spot-s">${opts.sub}</span>`:''}${opts.out?`<span class="spot-o">${opts.out}</span>`:''}</button>`}
+// Bonnetje na een ronde: per vak inzet, winst en wat je terugkrijgt
+function receiptHtml(lines,net){if(!lines||!lines.length)return '';const st=lines.reduce((a,l)=>a+l.stake,0),bk=lines.reduce((a,l)=>a+l.back,0);
+ return `<div class="receipt ${net>0?'win':net<0?'lose':''}"><div class="rc-head"><span>Uitbetaling</span><b>${net>0?'+'+fmt(net):net<0?'−'+fmt(-net):'Quitte'}</b></div>
+  <div class="rc-row rc-lab"><span></span><span>Inzet</span><span>Winst</span><span>Terug</span></div>
+  ${lines.map(l=>`<div class="rc-row ${l.back>l.stake?'w':l.back===l.stake&&l.stake?'p':'l'}"><span>${l.label}${l.note?`<small>${l.note}</small>`:''}</span><span>${l.stake?fmt(l.stake):'—'}</span><span>${l.back>l.stake?'+'+fmt(l.back-l.stake):l.back===l.stake&&l.stake?'±0':l.stake?'−'+fmt(l.stake):'—'}</span><b>${fmt(l.back)}</b></div>`).join('')}
+  <div class="rc-row rc-tot"><span>Totaal</span><span>${fmt(st)}</span><span>${bk-st>=0?'+':'−'}${fmt(Math.abs(bk-st))}</span><b>${fmt(bk)}</b></div></div>`}
 function tbPayRow(rows){return rows.map(([a,b])=>`<div><span>${a}</span><b>${b}</b></div>`).join('')}
 
 /* ======================= BLACKJACK ======================= */
@@ -31,7 +37,7 @@ function t3Result(cs){const rs=cs.map(c=>c.r).sort((x,y)=>x-y),fl=cs.every(c=>c.
   const st=(rs[2]-rs[0]===2&&rs[1]-rs[0]===1)||(rs[0]===2&&rs[1]===3&&rs[2]===14);
   if(tr&&fl)return ['Suited trips',100];if(st&&fl)return ['Straight flush',40];if(tr)return ['Drie gelijke',30];if(st)return ['Straat',10];if(fl)return ['Flush',5];return null}
 function bjTable(){
- const b=bt,bet=b.phase==='bet',h=b.hands,dUp=b.dealer.length?bjTotal((b.phase==='play'||b.phase==='dealing')?[b.dealer[0]]:b.dealer).t:null;
+ const b=bt,bet=b.phase==='bet',h=b.hands,dUp0=b.dealer.length?bjTotal((b.phase==='play'||b.phase==='dealing')?[b.dealer[0]]:b.dealer).t:null,dUp=dUp0>21?'dood ('+dUp0+')':dUp0;
  const sideOut=k=>{const r=b.side[k];return r?(r.win?`${r.name} · +${fmt(r.win)}`:'Geen'):''};
  return `<div class="table bj">
   <div class="felt">
@@ -50,6 +56,7 @@ function bjTable(){
     </div>
    </div>
    ${b.msg?`<div class="felt-msg ${b.net>0?'win':b.net<0?'lose':''}">${b.msg}</div>`:''}
+   ${b.phase==='done'?receiptHtml(b.lines,b.net):''}
   </div>
   <div class="table-bar">
    ${bet?`${chipTray('bj')}<div class="tb-act"><button class="btn ghost" onclick="act.tbClear('bj')" ${b.bets.main+b.bets.pp+b.bets.t21?'':'disabled'}>Wissen</button>
@@ -71,7 +78,7 @@ function btSettleSide(){const p=bt.hands[0].cards,up=bt.dealer[0];bt.side={};
  if(bt.bets.pp){const r=ppResult(p[0],p[1]);bt.side.pp=r?{name:r[0],win:bt.bets.pp*r[1]}:{win:0}}
  if(bt.bets.t21){const r=t3Result([p[0],p[1],up]);bt.side.t21=r?{name:r[0],win:bt.bets.t21*r[1]}:{win:0}}}
 function btFinish(){
- const b=bt;b.phase='done';const d=bjTotal(b.dealer).t,dBJ=b.dealer.length===2&&d===21;let back=0;const parts=[];
+ const b=bt;b.phase='done';const d=bjTotal(b.dealer).t,dBJ=b.dealer.length===2&&d===21;let back=0;const lines=[];
  b.hands.forEach(hd=>{const t=bjTotal(hd.cards).t,bj=hd.cards.length===2&&t===21&&b.hands.length===1;let pay=0;
   if(t>21){hd.res='lose';hd.out='Dood'}
   else if(bj&&!dBJ){pay=hd.bet*2.5;hd.res='win';hd.out='Blackjack!'}
@@ -79,12 +86,14 @@ function btFinish(){
   else if(d>21||t>d){pay=hd.bet*2;hd.res='win';hd.out=d>21?'Dealer dood':'Gewonnen'}
   else if(t===d){pay=hd.bet;hd.res='push';hd.out='Gelijk'}
   else{hd.res='lose';hd.out='Dealer wint'}
-  back+=pay});
- Object.values(b.side).forEach(r=>{if(r.win)back+=r.win+(r===b.side.pp?b.bets.pp:b.bets.t21)});
+  back+=pay;lines.push({label:b.hands.length>1?'Hand '+(lines.length+1):'Inzet',note:hd.out+(hd.dbl?' · verdubbeld':''),stake:hd.bet,back:pay})});
+ if(b.side.pp){const r=b.side.pp,bk=r.win?r.win+b.bets.pp:0;back+=bk;lines.push({label:'Perfect Pairs',note:r.name||'geen paar',stake:b.bets.pp,back:bk})}
+ if(b.side.t21){const r=b.side.t21,bk=r.win?r.win+b.bets.t21:0;back+=bk;lines.push({label:'21 + 3',note:r.name||'geen combinatie',stake:b.bets.t21,back:bk})}
+ b.lines=lines;
  const staked=b.hands.reduce((a,h)=>a+h.bet,0)+b.bets.pp+b.bets.t21;
  S.cash+=back;b.net=back-staked;
  if(b.net>0)S.stats.won+=b.net;else S.stats.lost+=-b.net;
- b.msg=b.net>0?'Je wint '+fmt(b.net):b.net<0?'Je verliest '+fmt(-b.net):'Quitte';
+ b.msg=b.net>0?'Je krijgt '+fmt(back)+' terug':b.net<0?(back?'Je krijgt '+fmt(back)+' terug':'Je verliest '+fmt(-b.net)):'Quitte · '+fmt(back)+' terug';
  b.net>0?(b.net>=staked*3?SFX.big():SFX.win(2)):b.net<0?SFX.lose():SFX.chip();
  log('Blackjack: '+b.msg,b.net>0?'ok':b.net<0?'bad':'info');save();render();
 }
@@ -134,6 +143,7 @@ function tpTable(){
     </div>
    </div>
    ${t.msg?`<div class="felt-msg ${t.net>0?'win':t.net<0?'lose':''}">${t.msg}</div>`:''}
+   ${done?receiptHtml(t.lines,t.net):''}
   </div>
   <div class="table-bar">
    ${bet?`${chipTray('tp')}<div class="tb-act"><button class="btn ghost" onclick="act.tbClear('tp')" ${t.bets.ante+t.bets.pp+t.bets.six?'':'disabled'}>Wissen</button>
@@ -164,9 +174,19 @@ function tpSettle(folded){
     else if(c===0){back+=t.bets.ante+t.play;o.main='push';o.mainOut='Gelijk';o.anteOut=bonus?'+'+fmt(bonus):'Gelijk'}
     else{o.main='lose';o.mainOut='Dealer wint';o.anteOut=bonus?'Bonus +'+fmt(bonus):'Kwijt'}}}
  }
+ // bonnetje
+ const L=[];const pm=PP_PAY[pv.cat]||0,c6=t.bets.six?best5of6([...t.p,...t.d]):null,ab=(ANTE_BONUS[pv.cat]||0)*t.bets.ante;
+ if(t.bets.ante){let aBack=0,pBack=0;
+  if(folded){}else if(!qual){aBack=t.bets.ante*2;pBack=t.play}else{const c=tpCmp(pv,dv);if(c>0){aBack=t.bets.ante*2;pBack=t.play*2}else if(c===0){aBack=t.bets.ante;pBack=t.play}}
+  L.push({label:'Ante',note:o.mainOut,stake:t.bets.ante,back:aBack});
+  if(!folded)L.push({label:'Play',note:!qual?'terug, dealer speelt niet':o.mainOut,stake:t.play,back:pBack});
+  if(ab&&!folded)L.push({label:'Ante-bonus',note:pv.name,stake:0,back:ab})}
+ if(t.bets.pp)L.push({label:'Pair Plus',note:pm?pv.name:'geen',stake:t.bets.pp,back:pm?t.bets.pp*(pm+1):0});
+ if(t.bets.six)L.push({label:'6-Card Bonus',note:c6[2]?c6[0]:'geen',stake:t.bets.six,back:c6[2]?t.bets.six*(c6[2]+1):0});
+ t.lines=L;
  t.res=o;S.cash+=back;t.net=back-staked;
  if(t.net>0)S.stats.won+=t.net;else S.stats.lost+=-t.net;
- t.msg=t.net>0?'Je wint '+fmt(t.net):t.net<0?'Je verliest '+fmt(-t.net):'Quitte';
+ t.msg=t.net>0?'Je krijgt '+fmt(back)+' terug':t.net<0?(back?'Je krijgt '+fmt(back)+' terug':'Je verliest '+fmt(-t.net)):'Quitte · '+fmt(back)+' terug';
  t.net>0?(t.net>=staked*3?SFX.big():SFX.win(2)):t.net<0?SFX.lose():SFX.chip();
  log('Three Card Poker: '+t.msg,t.net>0?'ok':t.net<0?'bad':'info');save();render()}
 
@@ -181,7 +201,7 @@ Object.assign(act,{
   T.bets[key]=cur+add;SFX.chip();render()},
  tbClear(game){const T=game==='bj'?bt:tp;if(T.phase!=='bet')return;Object.keys(T.bets).forEach(k=>T.bets[k]=0);render()},
  tbRebet(game){const T=game==='bj'?bt:tp;if(!T.last)return;if(T.phase==='done')game==='bj'?act.btNew():act.tpNew();T.bets=Object.assign({},T.last);render()},
- btNew(){Object.assign(bt,{bets:{main:0,pp:0,t21:0},phase:'bet',hands:[],dealer:[],active:0,side:{},msg:'',net:0});render()},
+ btNew(){Object.assign(bt,{bets:{main:0,pp:0,t21:0},lines:null,phase:'bet',hands:[],dealer:[],active:0,side:{},msg:'',net:0});render()},
  async btDeal(){const b=bt;if(b.phase!=='bet'||inJail())return;const tot=b.bets.main+b.bets.pp+b.bets.t21;
   if(b.bets.main<TB.MAIN_MIN){toast('Minimale inzet is €'+TB.MAIN_MIN,'bad');return}if(tot>S.cash){toast('Niet genoeg contant geld','bad');return}
   S.cash-=tot;b.last=Object.assign({},b.bets);b.msg='';b.net=0;b.side={};
@@ -198,7 +218,7 @@ Object.assign(act,{
   S.cash-=hd.bet;hd.bet*=2;hd.dbl=1;hd.cards.push(bjDraw());SFX.chip();SFX.card();hd.done=true;b.active++;btNext()},
  btSplit(){const b=bt;if(b.phase!=='play'||b.hands.length>1)return;const hd=b.hands[0];if(hd.cards.length!==2||bjv(hd.cards[0])!==bjv(hd.cards[1])||S.cash<hd.bet)return;
   S.cash-=hd.bet;const ace=hd.cards[0].r===14;const h2={cards:[hd.cards.pop(),bjDraw()],bet:hd.bet,splitAce:ace};hd.cards.push(bjDraw());hd.splitAce=ace;b.hands.push(h2);SFX.chip();SFX.card();btNext()},
- tpNew(){Object.assign(tp,{bets:{ante:0,pp:0,six:0},phase:'bet',p:[],d:[],res:null,msg:'',net:0,play:0});render()},
+ tpNew(){Object.assign(tp,{bets:{ante:0,pp:0,six:0},lines:null,phase:'bet',p:[],d:[],res:null,msg:'',net:0,play:0});render()},
  async tpDeal(){const t=tp;if(t.phase!=='bet'||inJail())return;const tot=t.bets.ante+t.bets.pp+t.bets.six;
   if(t.bets.ante&&t.bets.ante<TB.MAIN_MIN){toast('Minimale ante is €'+TB.MAIN_MIN,'bad');return}
   if(!tot){toast('Zet eerst een inzet','bad');return}if(tot>S.cash){toast('Niet genoeg contant geld','bad');return}

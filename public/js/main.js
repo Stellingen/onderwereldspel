@@ -25,6 +25,7 @@ setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderR
   if(S.wanted&&!inJail()&&$('#modal').hidden&&Math.random()<0.004){policeRaid();return}
   if(wasJail&&!inJail()){toast('Je bent vrijgelaten');wasJail=false;render()}else if(inJail())wasJail=true;
   const focusIn=document.activeElement&&document.activeElement.tagName==='INPUT';
-  if(!focusIn&&!spinning&&['crimes','cars','jail','dash','skills'].includes(page))$('#view').innerHTML=crumbHtml()+V[page]();
+  if(!focusIn&&!spinning&&['crimes','cars','jail','dash','skills'].includes(page)&&!window.__chase)$('#view').innerHTML=crumbHtml()+V[page]();
 },1000);
 render();renderTicker();
+if(!inJail())setTimeout(resumePending,300);else{S.pendingArrest=null;S.pendingHeist=null}
