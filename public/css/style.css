@@ -981,7 +981,7 @@ button.rcode:hover{background:rgba(255,122,26,.15)}
 .kk.kk3{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 .kk3 .kk-stage{padding:16px 18px 18px}
 .kk3 .kk-head{margin-bottom:10px}
-.kk3 .kk-board{--bh:clamp(320px,calc(100svh - 548px),820px);width:min(100%,calc(var(--bh) * 1.7));min-width:0;aspect-ratio:1.7;margin:0 auto}
+.kk3 .kk-board{--bh:clamp(300px,calc(100svh - 422px),880px);width:min(100%,calc(var(--bh) * 1.7));min-width:0;aspect-ratio:1.7;margin:0 auto}
 .kk3 .kk-layer{gap:5px}
 .kk3 .kk-cell svg{width:auto;height:78%;max-width:78%}
 .kk3 .kk-spot.mx b{font-size:clamp(12px,1.2vw,19px)}
@@ -1007,6 +1007,17 @@ button.rcode:hover{background:rgba(255,122,26,.15)}
 .kk3 .kk-ptab{gap:6px 10px;font-size:12px;min-width:max-content}
 .kk3 .kk-ptab>span{padding:3px 0}.kk3 .kk-ptab svg{width:28px;height:28px}
 .kk3 .kk-rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;flex-direction:initial}
-@container (max-width:900px){.kk-bar{grid-template-columns:1fr}.kk3 .kk-board{--bh:clamp(300px,calc(100svh - 560px),700px)}}
+@container (max-width:900px){.kk-bar{grid-template-columns:1fr}.kk3 .kk-board{--bh:clamp(300px,calc(100svh - 500px),760px)}}
 @container (max-width:700px){.kk3 .kk-stage{padding:10px}.kk3 .kk-board{aspect-ratio:1;width:100%}.kk-hud{grid-template-columns:1fr 1fr}.kk-hud .kk-bal{grid-column:1/-1}
   .kk-ctl{grid-template-columns:1fr 1fr}.kk-ctl .kk-go{grid-column:1/-1;order:-1}.kk-betbox{grid-column:1/-1}.kk-small{flex-direction:row;grid-column:1/-1}.kk3 .kk-layer{gap:3px}}
+/* Casino-kop: titel klein, spellen en cashback op één regel */
+.cas-bar{display:flex;align-items:flex-end;gap:20px;border-bottom:1px solid var(--line2);margin:0 0 12px}
+#view .cas-bar h1.cas-h1{font-size:26px;margin:0 0 9px;flex:none;line-height:1}
+.cas-bar .tabs{border-bottom:0;margin:0;flex:1 1 auto;min-width:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.cas-bar .tabs::-webkit-scrollbar{display:none}.cas-bar .tabs button{flex:0 0 auto}
+.cas-bar .cbmini{margin:0 0 6px auto;flex:none;padding:4px 6px 4px 8px}
+.cas-bar .cbmini .btn{padding:5px 10px}
+@media (min-width:901px){body.wide-page .cas-sub{display:none}}
+@container (max-width:760px){.cas-bar{flex-wrap:wrap;gap:8px 12px;align-items:center}.cas-bar .tabs{order:3;flex-basis:100%}#view .cas-bar h1.cas-h1{margin:0}.cas-bar .cbmini{margin:0 0 0 auto}}
+.cas-sub{display:none}
+@container (max-width:760px){.cas-bar .cbmini>span{display:none}.cas-bar .cbmini{gap:6px}}

@@ -1,7 +1,7 @@
 // Tab: Casino (blackjack, gokkast, dubbel of niks, roulette)
-V.casino=()=>`<div class="cas-head"><h1>Casino</h1>${isVip()?vipCbHtml():''}</div><p class="sub">Echte regels en eerlijke kansen. Het huis heeft een klein voordeel, net als in elk casino.</p>
+V.casino=()=>`<p class="sub cas-sub">Echte regels en eerlijke kansen. Het huis heeft een klein voordeel, net als in elk casino.</p>
  ${S.wanted?'<div class="card" style="border-color:var(--acc);margin-bottom:14px;color:var(--acc)">▲ Casino\'s hangen vol camera\'s. Als gezochte crimineel loop je hier extra risico op een controle.</div>':''}
- <div class="tabs">${[['kluis','Kluiskraker'],['bj','Blackjack'],['tcp','Three Card Poker'],['roulette','Roulette'],['coin','Dubbel of niks']].map(([k,n])=>`<button class="${casinoTab===k?'on':''}" onclick="casinoGo('${k}')">${n}</button>`).join('')}</div>
+ <div class="cas-bar"><h1 class="cas-h1">Casino</h1><div class="tabs">${[['kluis','Kluiskraker'],['bj','Blackjack'],['tcp','Three Card Poker'],['roulette','Roulette'],['coin','Dubbel of niks']].map(([k,n])=>`<button class="${casinoTab===k?'on':''}" onclick="casinoGo('${k}')">${n}</button>`).join('')}</div>${isVip()?vipCbHtml():''}</div>
  ${casinoTab==='kluis'?kkView():casinoTab==='bj'?bjTable():casinoTab==='tcp'?tpTable():casinoTab==='roulette'?rouletteView():coinView()}`;
 
 // VIP-cashback: klein rechtsboven, direct te claimen. De percentages per spel staan in de tooltip.
