@@ -1,6 +1,6 @@
 // Renderen, nieuwsticker, tijd/inkomen en de spel-loop
 // Bij hertekenen op dezelfde pagina blijft je scrollpositie staan (telefoon sprong anders naar boven)
-function render(){const y=window.scrollY,same=render._p===page;render._p=page;applySection();renderNav();renderTop();renderRail();$('#view').innerHTML=crumbHtml()+V[page]();if(same&&y)window.scrollTo(0,y);if(page==='casino'&&casinoTab==='roulette')drawWheel(rl.angle)}
+function render(){const y=window.scrollY,same=render._p===page;render._p=page;applySection();renderNav();renderTop();renderRail();const vw=$('#view');vw.innerHTML=crumbHtml()+V[page]();vw._h=null;if(same&&y)window.scrollTo(0,y);if(page==='casino'&&casinoTab==='roulette')drawWheel(rl.angle)}
 // Nieuwsticker met gebeurtenissen uit de onderwereld
 function news(){const n=S.npcs[rnd(0,S.npcs.length-1)].n;const T=[
   ()=>n+' heeft een juwelier in Utrecht overvallen',()=>n+' is gepromoveerd tot '+RANKS[rankIdx(S.npcs.find(p=>p.n===n).xp)][0],
@@ -27,7 +27,8 @@ setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderR
   if(S.wanted&&!S.hide&&!inJail()&&$('#modal').hidden&&Math.random()<0.004){policeRaid();return}
   if(wasJail&&!inJail()){toast('Je bent vrijgelaten');wasJail=false;render()}else if(inJail())wasJail=true;
   const focusIn=document.activeElement&&document.activeElement.tagName==='INPUT';
-  if(!focusIn&&!spinning&&['crimes','jail','dash','skills'].includes(page)&&!window.__chase)$('#view').innerHTML=crumbHtml()+V[page]();
+  // pagina's met aftellers: alleen bijwerken als er iets veranderd is, en niet midden in het scrollen (telefoon)
+  if(!focusIn&&!spinning&&['crimes','jail','dash','skills'].includes(page)&&!window.__chase&&!userBusy()){const y=window.scrollY;if(setHTML($('#view'),crumbHtml()+V[page]())&&y&&Math.abs(window.scrollY-y)>2)window.scrollTo(0,y)}
 },1000);
 render();renderTicker();
 if(!inJail())setTimeout(resumePending,300);else{S.pendingArrest=null;S.pendingHeist=null}
