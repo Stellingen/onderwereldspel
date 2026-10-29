@@ -5,6 +5,10 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Landingspagina** (`/`) met uitleg, een speelbare demo en inloggen of account aanmaken
 - **Spel** (`/game.html`) alleen voor ingelogde spelers; voortgang wordt opgeslagen in MySQL
 - **Ranglijst** met echte spelers en rivalen uit de stad
+- **24 misdaden** over 11 rangen, met energie (1 punt per 18 s) zodat je niet alles kunt speedrunnen
+- **8 families**, van De Nieuwe Garde tot La Cupola
+- **Kluiskraker**: tumble-slot (6×5, 8+ gelijke symbolen), free spins met oplopende totaalmultiplier, bonus kopen voor 100× inzet.
+  Gesimuleerd: RTP 94,6% basis, 96,3% bij bonus kopen, max. winst 5000×. Engine in `public/js/slot.js` (ook in Node te draaien).
 
 ## Railway instellen
 
@@ -37,7 +41,9 @@ db.js                MySQL-verbinding en tabellen
 public/index.html    landingspagina
 public/game.html     spel (controleert login, laadt voortgang uit de database)
 public/css/          style.css (spel) en landing.css
-public/js/landing.js inloggen/registreren en interactieve landing
+public/js/landing.js inloggen/registreren, misdaadkaart en interactieve landing
+public/js/slot.js    wiskunde van de Kluiskraker (pure functies)
+public/js/icons.js   symbolen van de Kluiskraker
 public/js/*.js       spelmodules; public/js/pages/ bevat één bestand per tabblad
 ```
 

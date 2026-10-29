@@ -1,6 +1,6 @@
 // Spelerstatus, opslaan/laden, spelregels, arrestaties, skills, meldingen
 let S;
-function fresh(){return{name:'Jij',cash:250,bank:0,xp:0,hp:100,heat:0,jailUntil:0,cred:0,family:null,skills:{steal:0,cars:0,charisma:0,speed:0},news:[],wanted:false,lastSentence:30,cd:{},cars:[],biz:{},gear:{},stats:{crimes:0,fails:0,cars:0,won:0,lost:0},log:[],last:now(),
+function fresh(){return{name:'Jij',cash:250,bank:0,xp:0,hp:100,heat:0,jailUntil:0,cred:0,energy:100,family:null,skills:{steal:0,cars:0,charisma:0,speed:0},news:[],wanted:false,lastSentence:30,cd:{},cars:[],biz:{},gear:{},stats:{crimes:0,fails:0,cars:0,won:0,lost:0},log:[],last:now(),
   npcs:NPC_NAMES.map((n,i)=>({n,xp:Math.floor(200*Math.pow(1.55,i))+rnd(0,300),cash:rnd(1000,50000)*(i+1)}))}}
 // Opslag: met account in de database (via /api/state), anders alleen in de browser.
 const SAVE_KEY='onderwereld_v1'+(window.__USER__?'_'+window.__USER__.toLowerCase():'');
@@ -8,6 +8,7 @@ function load(){
   let d=window.__SERVER_STATE__||null;
   if(!d){try{d=JSON.parse(localStorage.getItem(SAVE_KEY))||JSON.parse(localStorage.getItem('onderwereld_v1'))}catch(e){}}
   if(d&&d.npcs){const f=fresh();d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);d.skills=Object.assign(fresh().skills,d.skills);
+    if(d.family==='rossi')d.family='colombra';if(d.family==='syndicaat')d.family='lucchetti';if(d.energy==null)d.energy=100;
     if(window.__USER__)d.name=window.__USER__;return d}
   const f=fresh();if(window.__USER__)f.name=window.__USER__;return f}
 let _pushTimer=null,_lastPush=0;
@@ -71,3 +72,5 @@ const income=()=>BIZ.reduce((a,b)=>a+(S.biz[b.id]||0)*b.inc,0);
 function toast(msg,cls='ok'){const t=document.createElement('div');t.className='toast '+cls;t.textContent=msg;$('#toasts').prepend(t);setTimeout(()=>t.remove(),3200)}
 function log(msg,cls='info'){S.log.unshift({m:msg,c:cls,t:now()});S.log=S.log.slice(0,40)}
 function addXp(x){const before=rankIdx(S.xp);S.xp+=x;const after=rankIdx(S.xp);if(after>before){toast('Promotie: je bent nu '+RANKS[after][0]+'!','lvl');log('Gepromoveerd tot '+RANKS[after][0],'ok')}}
+
+const EN_MAX=100,EN_REGEN_S=18; // 1 energie per 18 seconden, vol in een half uur

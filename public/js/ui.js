@@ -16,7 +16,7 @@ const ICONS={
 const PAGES=[['dash','Dashboard'],['crimes','Misdaden'],['cars','Auto\'s'],['casino','Casino'],['biz','Bezit'],['shop','Wapens'],['skills','Skills'],['bank','Bank'],['fam','Families'],['jail','Bajes'],['rank','Ranglijst']];
 const svg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 let page=(location.hash||'#dash').slice(1);if(!PAGES.find(p=>p[0]===page))page='dash';
-let casinoTab='bj',rankTab='xp',slotState=['7','7','7'],spinning=false;
+let casinoTab='kluis',rankTab='xp',slotState=['7','7','7'],spinning=false;
 
 function renderNav(){
   $('#nav').innerHTML=`<a class="brand" href="/" style="text-decoration:none;color:inherit"><span class="mark">O</span><span><b>Onderwereld</b><small>${window.__USER__?esc(window.__USER__):'Offline modus'}</small></span></a>`
@@ -24,16 +24,19 @@ function renderNav(){
    +(window.__TOKEN__?`<div class="navspace"></div><button class="navlink logout" onclick="logout()">${svg('logout')}Uitloggen</button>`:'');
 }
 function renderTop(){
-  const ri=rankIdx(S.xp);const jt=Math.ceil((S.jailUntil-now())/1000);
+  const ri=rankIdx(S.xp);const jt=Math.ceil((S.jailUntil-now())/1000);const pend=window.slotPending||0;
+  const nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
   $('#topbar').innerHTML=`
-   <div class="chip rank"><small>Rang</small><b>${RANKS[ri][0]}</b></div>
-   <div class="chip cash"><small>Contant</small><b>${fmt(S.cash)}</b></div>
+   <div class="chip rank"><small>Rang</small><b>${RANKS[ri][0]}</b><div class="mini"><i style="width:${pct}%;background:var(--acc)"></i></div></div>
+   <div class="chip cash"><small>Contant</small><b>${fmt(S.cash-pend)}</b></div>
    <div class="chip"><small>Bank</small><b>${fmt(S.bank)}</b></div>
-   <div class="chip"><small>Straatcredit</small><b style="color:var(--violet)">${S.cred}</b></div>
+   <div class="chip"><small>Energie</small><b style="color:var(--ice)">${Math.floor(S.energy)}/${EN_MAX}</b><div class="mini"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div></div>
+   <div class="chip"><small>Cred</small><b style="color:var(--violet)">${S.cred}</b></div>
    <div class="chip"><small>Gezondheid</small><b style="color:${S.hp>50?'var(--green)':'var(--red)'}">${S.hp}%</b></div>
-   <div class="chip"><small>Politie-hitte</small><b style="color:${S.heat>60?'var(--red)':S.heat>30?'var(--gold)':'var(--fg)'}">${S.heat}%</b></div>
-   <div class="status ${inJail()?'jail':S.wanted?'wanted':'free'}">${inJail()?'IN DE BAJES · '+fmtTime(jt):S.wanted?'⚠ GEZOCHT DOOR POLITIE':'● VRIJ OP STRAAT'}</div>`;
+   <div class="chip"><small>Hitte</small><b style="color:${S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--fg)'}">${S.heat}%</b></div>
+   <div class="status ${inJail()?'jail':S.wanted?'wanted':'free'}">${inJail()?'■ CEL · '+fmtTime(jt):S.wanted?'▲ GEZOCHT':'● VRIJ'}</div>`;
 }
+
 
 function cdLeft(id){return Math.max(0,(S.cd[id]||0)-now())}
 const V={};

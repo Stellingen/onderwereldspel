@@ -1,15 +1,12 @@
 // Tab: Casino (blackjack, gokkast, dubbel of niks, roulette)
-V.casino=()=>`<h1>Casino</h1><p class="sub">Het huis wint altijd... meestal.</p>
- ${S.wanted?'<div class="card" style="border-color:#ff8a3d;margin-bottom:14px;color:#ff8a3d">⚠ Casino\'s hebben camera\'s en beveiliging. Als gezochte crimineel loop je hier extra risico op een controle.</div>':''}
- <div class="tabs">${[['bj','Blackjack'],['slots','Gokkast'],['coin','Dubbel of niks'],['roulette','Roulette']].map(([k,n])=>`<button class="${casinoTab===k?'on':''}" onclick="casinoTab='${k}';render()">${n}</button>`).join('')}</div>
- ${casinoTab==='roulette'?rouletteView():`<div class="card" style="max-width:560px">
-  <div class="label">Inzet</div><input id="bet" class="input" type="number" min="10" value="${window._bet||100}" oninput="window._bet=+this.value">
-  <div class="flex" style="margin:8px 0 14px">${[100,1000,10000].map(v=>`<button class="btn sm" onclick="window._bet=${v};render()">${fmt(v)}</button>`).join('')}<button class="btn sm" onclick="window._bet=Math.floor(S.cash);render()">Alles</button></div>
+V.casino=()=>`<h1>Casino</h1><p class="sub">Vier spellen, eerlijke kansen. Roulette heeft 37 vakken die allemaal even vaak vallen, en de Kluiskraker betaalt op lange termijn 94,6% van je inzet terug.</p>
+ ${S.wanted?'<div class="card" style="border-color:var(--acc);margin-bottom:14px;color:var(--acc)">▲ Casino\'s hangen vol camera\'s. Als gezochte crimineel loop je hier extra risico op een controle.</div>':''}
+ <div class="tabs">${[['kluis','Kluiskraker'],['bj','Blackjack'],['roulette','Roulette'],['coin','Dubbel of niks']].map(([k,n])=>`<button class="${casinoTab===k?'on':''}" onclick="${'if(kk.busy){toast(\'Wacht tot de spin klaar is\',\'bad\')}else{casinoTab=\''+k+'\';render()}'}">${n}</button>`).join('')}</div>
+ ${casinoTab==='kluis'?kkView():casinoTab==='roulette'?rouletteView():`<div class="card" style="max-width:560px">
+  <div class="label">Inzet</div><input id="bet" class="input" type="number" min="10" value="${window._bet||100}" oninput="window._bet=+this.value" style="margin-top:6px">
+  <div class="flex" style="margin:8px 0 16px">${[100,1000,10000].map(v=>`<button class="btn ghost sm" onclick="window._bet=${v};render()">${fmt(v)}</button>`).join('')}<button class="btn ghost sm" onclick="window._bet=Math.floor(S.cash);render()">Alles</button></div>
   ${casinoTab==='bj'?bjView():''}
-  ${casinoTab==='slots'?`<div class="slots">${slotState.map(s=>`<div class="reel ${spinning?'spin':''}">${s}</div>`).join('')}</div>
-    <div class="label" style="text-align:center;margin-bottom:12px">3 gelijk = x10 · 7-7-7 = x50 · 2 gelijk = x2</div>
-    <button class="btn gold" onclick="act.slots()" ${spinning?'disabled':''}>Draaien</button>`:''}
-  ${casinoTab==='coin'?`<p style="color:var(--mute)">50/50. Win en je verdubbelt je inzet.</p><div class="flex"><button class="btn gold" onclick="act.coin('kop')">Kop</button><button class="btn gold" onclick="act.coin('munt')">Munt</button></div>`:''}
+  ${casinoTab==='coin'?`<p style="color:var(--mute)">50/50. Win en je verdubbelt je inzet. Geen huisvoordeel.</p><div class="flex"><button class="btn" onclick="act.coin('kop')">Kop</button><button class="btn" onclick="act.coin('munt')">Munt</button></div>`:''}
  </div>`}`;
 
 function rouletteView(){const r=rl;const tot=Object.values(r.bets).reduce((a,b)=>a+b,0);

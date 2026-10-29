@@ -7,15 +7,16 @@ V.dash=()=>{
   return `<h1>Welkom terug, baas</h1><p class="sub">Je imperium in één oogopslag. Elke actie hieronder brengt je dichter bij de top.</p>
   ${S.wanted?`<div class="card" style="border-color:#ff8a3d;margin-bottom:14px"><h3 style="color:#ff8a3d">⚠ Je staat op de gezochtlijst</h3><div style="color:var(--mute)">Je bent ontsnapt. Bij elke actie, waar je ook bent, kan de politie een controle doen en je herkennen. Je straf wordt dan langer.</div></div>`:''}
   <div class="grid">
-   <div class="card"><div class="label">Rang ${ri+1} / ${RANKS.length}</div><div class="big" style="color:var(--cyan);font-family:var(--f-display)">${RANKS[ri][0]}</div>
-     <div class="bar"><i style="width:${pct}%;background:linear-gradient(90deg,var(--violet),var(--cyan))"></i></div>
+   <div class="card hud"><div class="label">Rang ${ri+1} / ${RANKS.length}</div><div class="big" style="color:var(--cyan);font-family:var(--f-display)">${RANKS[ri][0]}</div>
+     <div class="bar"><i style="width:${pct}%;background:var(--acc)"></i></div>
      <div class="label" style="margin-top:8px">${nxt?S.xp.toLocaleString('nl-NL')+' / '+nxt[1].toLocaleString('nl-NL')+' XP naar '+nxt[0]:'Hoogste rang bereikt'}</div></div>
    <div class="card"><div class="label">Totaal vermogen</div><div class="big" style="color:var(--gold)">${fmt(net)}</div><div class="label" style="margin-top:8px">Contant + bank + auto's</div></div>
    <div class="card"><div class="label">Passief inkomen</div><div class="big" style="color:var(--green)">${fmt(income())}<span style="font-size:14px;color:var(--mute)"> /min</span></div><div class="label" style="margin-top:8px">${Object.values(S.biz).reduce((a,b)=>a+b,0)} bedrijven in bezit</div></div>
    <a class="card" href="#rank" style="text-decoration:none;color:inherit"><div class="label">Positie ranglijst</div><div class="big">#${pos}<span style="font-size:14px;color:var(--mute)"> van ${all.length}</span></div><div class="label" style="margin-top:8px">Bekijk ranglijst →</div></a>
   </div>
   <div class="grid2" style="margin-top:14px">
-   <div class="card"><h3>Gezondheid & hitte</h3>
+   <div class="card"><h3>Conditie</h3>
+     <div class="label">Energie · ${Math.floor(S.energy)}/${EN_MAX}</div><div class="bar" style="margin-bottom:12px"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div>
      <div class="label">Gezondheid</div><div class="bar"><i style="width:${S.hp}%;background:var(--green)"></i></div>
      <div class="label" style="margin-top:12px">Politie-hitte (verlaagt slaagkans)</div><div class="bar"><i style="width:${S.heat}%;background:var(--red)"></i></div>
      <div class="flex" style="margin-top:14px"><button class="btn sm" onclick="act.heal()" ${S.hp>=100?'disabled':''}>Dokter · ${fmt(healCost())}</button><button class="btn sm gold" onclick="act.bribe()" ${S.heat<=0?'disabled':''}>Agent omkopen · ${fmt(bribeCost())}</button></div></div>
