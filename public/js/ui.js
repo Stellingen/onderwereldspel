@@ -103,6 +103,24 @@ window.addEventListener('hashchange',()=>mSheet(false));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('ms-lock'))mSheet(false)});
 // Rechter zijbalk op brede schermen: dossier, snelle klus, logboek, top 5
 function bestCrime(){const ri=rankIdx(S.xp);return CRIMES.filter(c=>c.r<=ri).map(c=>({c,ev:chance(c)/100*(c.min+c.max)/2/c.en})).sort((a,b)=>b.ev-a.ev)[0].c}
+// Wat staat er klaar? Voor het dashboard en de zijbalk. h = pagina of snelkoppeling (#trainen, #ontspannen)
+function todoItems(){const o=[],ri=rankIdx(S.xp);
+ if(inJail())o.push({ic:'jail',t:'Je zit vast',s:'Borg betalen of ontsnappen',h:'jail',c:'var(--red)'});
+ if(S.pendingArrest)o.push({ic:'jail',t:'Je wordt aangehouden',s:'Kies wat je doet',h:'dash',c:'var(--red)'});
+ if(!inJail()&&S.energy>=EN_MAX)o.push({ic:'crimes',t:'Energie vol',s:'Doe een klus',h:'crimes',c:'var(--acc)'});
+ const tr=TRAININGS.filter(t=>ri>=(t.r||0)&&(S.skills[t.id]||0)<TRAIN_MAX&&!cdLeft('tr_'+t.id)&&S.cash>=trainCost(t,S.skills[t.id]||0)).length;
+ if(tr&&!inJail())o.push({ic:'skills',t:tr+' training'+(tr>1?'en':'')+' klaar',s:'Blijvend beter worden',h:'trainen',c:'#b8a1ff'});
+ if(!inJail()&&(S.energy<EN_MAX*.4||S.hp<60)){const lv=rankLevel(S.xp),rx=RELAX.filter(r=>ri>=(r.r||0)&&!cdLeft('rx_'+r.id)&&S.cash>=relaxCost(r,ri,lv)&&(r.energy||r.hp));
+  if(rx.length)o.push({ic:'spa',t:S.hp<60?'Gezondheid laag':'Energie bijvullen',s:'Ontspannen · '+rx.length+' klaar',h:'ontspannen',c:'#5ce1c4'})}
+ if(S.family&&S.fm&&S.fm.fam===S.family){const d=S.fm.list.filter(m=>m.done).length;if(d<5)o.push({ic:'fam',t:'Familiemissies '+d+'/5',s:d<3?'Minimaal 3 vandaag':'Nog '+(5-d)+' voor de bonus',h:'fam',c:'var(--violet)'})}
+ else if(!S.family){const can=FAMILIES.filter(f=>ri>=f.r&&S.cred>=f.cred).length;if(can)o.push({ic:'fam',t:'Sluit je aan bij een familie',s:can+' famil'+(can>1?'ies laten':'ie laat')+' je toe',h:'fam',c:'var(--violet)'})}
+ if(typeof bzPlan==='function'){const ids=BIZ.filter(b=>bizUnits(b.id).length).map(b=>b.id);if(ids.length){const p=bzPlan(ids,S.cash);if(p.k)o.push({ic:'biz',t:p.k+' upgrade'+(p.k>1?'s':'')+' betaalbaar',s:fmt(p.cost)+' · +'+fmt(p.gain)+'/min',h:'biz',c:'var(--green)'})}}
+ if(!inJail()&&!cdLeft('car')&&typeof GARAGE_MAX!=='undefined'&&S.cars.length<GARAGE_MAX&&S.energy>=2)o.push({ic:'cars',t:'Auto zoeken',s:'Je kunt weer de straat op',h:'cars',c:'var(--acc2)'});
+ if(RANKS.slice(1,ri+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase())))o.push({ic:'profiel',t:'Rangbeloning klaar',s:'Claim op je profiel',h:'profiel',c:'var(--acc)'});
+ if(typeof cbAvail==='function'&&cbAvail()>=1)o.push({ic:'casino',t:'VIP-cashback '+fmt(cbAvail()),s:'Claim in het casino',h:'casino',c:'var(--acc)'});
+ if(S.cash>=25000&&S.cash>S.bank*.25)o.push({ic:'bank',t:fmt(S.cash)+' contant',s:'Zet het veilig op de bank',h:'bank',c:'var(--ice)'});
+ return o}
+const todoHtml=(o,max)=>o.slice(0,max||99).map(x=>`<a class="todo" href="#${x.h}" style="--c:${x.c}"><i>${svg(x.ic)}</i><div><b>${x.t}</b><span>${x.s}</span></div><em>›</em></a>`).join('');
 function renderRail(){
   const el=$('#rail');if(!el||getComputedStyle(el).display==='none')return;
   const ri=rankIdx(S.xp),nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
@@ -110,7 +128,8 @@ function renderRail(){
   const full=Math.max(0,Math.ceil((EN_MAX-S.energy)*EN_REGEN_S/60));
   const all=[...S.npcs.map(n=>({n:n.n,xp:n.xp})),...(window.__LB__||[]).filter(p=>!window.__USER__||p.name.toLowerCase()!==window.__USER__.toLowerCase()).map(p=>({n:esc(p.name)+(+p.vip?'<i class="vipt">VIP</i>':''),xp:+p.xp})),{n:'★ '+esc(S.name)+vipTag(),xp:S.xp,me:1}].sort((a,b)=>b.xp-a.xp);
   const pos=all.findIndex(x=>x.me)+1;
-  el.innerHTML=`
+  const td=todoItems();
+  setHTML(el,`
    <section class="rcard hud"><div class="label">Dossier · <a href="#profiel" style="color:var(--acc)">profiel</a></div>
     <a class="rname" href="#profiel" style="display:block;color:inherit;text-decoration:none">${esc(S.name)}${vipTag()}</a>
     <div class="rrank"><b>${RANKS[ri][0]}</b><span>${nxt?Math.floor(S.xp).toLocaleString('nl-NL')+' / '+nxt[1].toLocaleString('nl-NL')+' XP':'Top bereikt'}</span></div>
@@ -120,12 +139,13 @@ function renderRail(){
      <div><span class="label">Familie</span><b style="color:${S.family?fam().col:'var(--faint)'}">${S.family?fam().m:'—'}</b><small>${S.family?fam().n:'geen'}</small></div>
      <div><span class="label">Positie</span><b>#${pos}</b><small>van ${all.length}</small></div>
     </div></section>
+   ${td.length?`<section class="rcard"><div class="label">Klaar voor je · ${td.length}</div><div class="todos">${todoHtml(td,4)}</div>${td.length>4?`<a class="todo-more" href="#dash">Nog ${td.length-4} op het dashboard ›</a>`:''}</section>`:''}
    <section class="rcard"><div class="label">Snelle klus</div>
-    <div class="rq"><div><b>${bc.n}</b><small>${chance(bc)}% kans · ${bc.en} energie · ${fmt(bc.min)}–${fmt(bc.max)}</small></div></div>
+    <div class="rq"><div><b>${bc.n}</b><small>${chance(bc)}% kans · ${bc.en} energie · ${fmt(bc.min*lootMult())}–${fmt(bc.max*lootMult())}</small></div></div>
     <button class="btn" onclick="act.crime('${bc.id}')" ${ok?'':'disabled'}>${inJail()?'Je zit vast':left?'Wacht '+Math.ceil(left/1000)+'s':S.energy<bc.en?'Te moe':'Uitvoeren'}</button></section>
    <section class="rcard grow"><div class="label">Logboek</div><div class="log">${S.log.length?S.log.slice(0,14).map(l=>`<div class="${l.c}">${l.m}</div>`).join(''):'<div class="info">Nog niks gebeurd.</div>'}</div></section>
    <section class="rcard"><div class="label">Top 5 · <a href="#rank" style="color:var(--acc)">ranglijst</a></div>
-    <ol class="rtop">${all.slice(0,5).map((p,i)=>`<li class="${p.me?'me':''}"><span>${i+1}</span><b>${p.n}</b><em>${RANKS[rankIdx(p.xp)][0]}</em></li>`).join('')}</ol></section>`;
+    <ol class="rtop">${all.slice(0,5).map((p,i)=>`<li class="${p.me?'me':''}"><span>${i+1}</span><b>${p.n}</b><em>${RANKS[rankIdx(p.xp)][0]}</em></li>`).join('')}</ol></section>`);
 }
 
 function renderTop(){

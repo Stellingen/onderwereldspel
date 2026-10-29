@@ -1689,3 +1689,82 @@ button,.btn,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-to
 @media (max-width:620px){.tr-modes{gap:6px}.tr-mode{flex-direction:column;align-items:flex-start;gap:8px;padding:12px}.tr-mode>i{width:36px;height:36px}.tr-mode b{font-size:24px}.tr-mode span{font-size:11.5px}
  .tr-band{flex-direction:column;gap:4px}.rx-now>div{grid-template-columns:80px 60px 1fr}}
 .gr-item h4{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:anywhere}
+/* ===== Misdaden ===== */
+.cr-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding:0;margin-bottom:16px}
+.cr-h-k{padding:14px 16px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:4px;min-width:0}.cr-h-k:first-child{border-left:0}
+.cr-h-k>b{font-family:var(--f-mono);font-size:22px;font-weight:600}.cr-h-k>b.g{color:var(--acc)}
+.cr-h-k em{font-style:normal;font-size:11.5px;color:var(--mute);line-height:1.4}.cr-h-k em a{color:var(--ice)}.cr-h-k .bar{height:4px}
+.cr-list{display:grid;gap:6px;margin-bottom:14px}
+.cr{position:relative;display:grid;grid-template-columns:minmax(180px,1fr) minmax(0,1.7fr) 150px;gap:10px 18px;align-items:center;padding:12px 16px;background:var(--panel);border:1px solid var(--line);overflow:hidden}
+.cr:hover{border-color:var(--line2)}
+.cr.best{border-color:rgba(255,122,26,.35);background:linear-gradient(90deg,rgba(255,122,26,.07),transparent 50%),var(--panel)}
+.cr.locked{opacity:.45}
+.cr-t h3{margin:0;font-family:var(--f-head);font-weight:800;font-size:17px;text-transform:uppercase;letter-spacing:.03em;line-height:1.15}
+.cr-t p{margin:2px 0 0;font-size:12.5px;color:var(--mute)}
+.cr-s{display:grid;grid-template-columns:1.25fr .8fr .55fr 1.2fr 1fr;gap:4px 14px}
+.cr-s>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cr-s span{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.cr-s b{font-family:var(--f-mono);font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cr-s b.g{color:var(--acc)}
+.cr-s em{font-style:normal}.cr-s em.lvl1{color:var(--green)}.cr-s em.lvl2{color:var(--ice)}.cr-s em.lvl3{color:var(--acc)}.cr-s em.lvl4{color:#ff8a5c}.cr-s em.lvl5{color:var(--red)}
+.cr-ch{display:block;height:3px;background:var(--line2);margin-top:2px}.cr-ch i{display:block;height:100%;background:currentColor;opacity:.8}
+.cr-s .up .cr-ch,.cr-s b.up+.cr-ch{color:var(--green)}.cr-s b.dn+.cr-ch{color:var(--red)}.cr-s b+.cr-ch{color:var(--acc)}
+.cr .btn{padding:11px 10px;font-size:13px}
+.cr-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 10px;font-size:13px;color:var(--mute)}
+.cr-bar .filters{margin:0}
+.cr-tier{width:100%;display:flex;align-items:baseline;gap:12px;padding:12px 2px 10px;margin:4px 0 8px;border-bottom:1px solid rgba(var(--sec-rgb),.35);text-align:left}
+.cr-tier h2{margin:0;font-family:var(--f-head);font-size:22px;text-transform:uppercase;letter-spacing:.04em}
+.cr-tier span{font-family:var(--f-mono);font-size:11px;color:var(--faint);flex:1}.cr-tier i{font-style:normal;font-family:var(--f-mono);font-size:18px;color:var(--mute);width:24px;text-align:center}
+.cr-tier:hover h2{color:var(--sec)}.cr-tier.locked{opacity:.55}
+@media (max-width:1180px){.cr{grid-template-columns:1fr 140px}.cr-s{grid-column:1/-1;grid-row:2}.cr .btn{grid-column:2;grid-row:1}}
+@media (max-width:620px){.cr-hero{grid-template-columns:1fr 1fr}.cr-h-k:nth-child(3){border-left:0}.cr-h-k:nth-child(n+3){border-top:1px solid var(--line)}
+ .cr{grid-template-columns:1fr;padding:12px}.cr .btn{grid-column:1;grid-row:3}.cr-s{grid-row:2;grid-template-columns:1fr 1fr 1fr}.cr-x{display:none!important}}
+.cr-s small{font-size:11px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cr-s small.lvl1{color:var(--green)}.cr-s small.lvl2{color:var(--ice)}.cr-s small.lvl3{color:var(--acc)}.cr-s small.lvl4{color:#ff8a5c}.cr-s small.lvl5{color:var(--red)}
+.cr-s{grid-template-columns:1.1fr .8fr .55fr 1.15fr .8fr}
+/* Klaar voor je (dashboard + zijbalk) */
+.d-todo{grid-column:span 12}
+.todos{display:grid;gap:6px}
+.d-todo .todos{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));margin-top:8px}
+.todo{--c:var(--acc);display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--c);color:inherit;text-decoration:none;min-width:0;transition:border-color .12s,background .12s}
+.todo:hover{border-color:color-mix(in srgb,var(--c) 55%,transparent);background:color-mix(in srgb,var(--c) 7%,var(--bg2))}
+.todo>i{width:28px;height:28px;flex:none;display:grid;place-items:center;color:var(--c)}.todo>i svg{width:18px;height:18px}
+.todo>div{flex:1;min-width:0}.todo b{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.todo span{display:block;font-size:11.5px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.todo em{font-style:normal;color:var(--faint);font-size:18px}
+.todo-more{display:block;margin-top:8px;font-family:var(--f-mono);font-size:11px;color:var(--faint);text-decoration:none}.todo-more:hover{color:var(--acc)}
+.kpi-sub a.btn{width:100%}
+@media (max-width:620px){.d-todo{grid-column:1/-1}.d-todo .todos{grid-template-columns:1fr}}
+/* Slots: inzet kiezen in een pop-up + bonus kopen als schakelaar */
+.kk-betv i{display:block;font-style:normal;font-family:var(--f-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-top:1px}
+#slotPop{position:fixed;inset:0;z-index:300;display:grid;place-items:center;padding:16px;opacity:0;transition:opacity .15s}
+#slotPop.on{opacity:1}
+.sp-back{position:absolute;inset:0;background:rgba(4,5,7,.72);backdrop-filter:blur(3px)}
+.sp-card{position:relative;width:min(560px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:var(--panel);border:1px solid var(--line2);box-shadow:0 30px 80px -20px rgba(0,0,0,.8),0 0 0 1px rgba(255,122,26,.15);padding:18px;transform:translateY(8px) scale(.98);transition:transform .18s}
+#slotPop.on .sp-card{transform:none}
+.sp-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}.sp-h b{display:block;font-family:var(--f-display);font-size:30px;line-height:1;text-transform:uppercase;margin-top:3px}
+.sp-x{width:36px;height:36px;border:1px solid var(--line2);background:var(--bg2);color:var(--mute);font-size:16px}.sp-x:hover{color:var(--fg);border-color:var(--faint)}
+.sp-now{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 14px;padding:9px 11px;background:var(--bg2);border:1px solid var(--line);font-size:12.5px;color:var(--mute);margin-bottom:12px}.sp-now b{color:var(--fg);font-family:var(--f-mono);font-weight:500}
+.sp-g{margin-bottom:12px}.sp-g>.label{display:block;margin-bottom:6px}
+.sp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}
+.sp-grid button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px;border:1px solid var(--line2);background:var(--bg2);transition:all .1s}
+.sp-grid button b{font-family:var(--f-mono);font-size:14px;font-weight:600;color:var(--fg)}.sp-grid button small{font-family:var(--f-mono);font-size:9.5px;color:var(--faint)}
+.sp-grid button:hover{border-color:var(--acc);background:rgba(255,122,26,.08);transform:translateY(-1px)}
+.sp-grid button.on{border-color:var(--acc);background:rgba(255,122,26,.16);box-shadow:inset 0 0 0 1px var(--acc)}.sp-grid button.on b{color:var(--acc)}
+.sp-grid button.no{opacity:.4}
+.sp-q{display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px}.sp-q .btn{flex:1;min-width:120px}
+.kk-go.buy{background:linear-gradient(180deg,#ffd35a,#f2a31a);color:#1a1006;box-shadow:0 0 30px -8px #ffc23a}
+.kk-go.buy small{color:#3a2508;opacity:.8}
+.kk-buyt{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border:1px solid var(--line2);background:var(--bg2);color:var(--mute);font-family:var(--f-head);font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.05em}
+.kk-buyt i{position:relative;width:30px;height:16px;border-radius:9px;background:var(--line2);transition:background .15s;flex:none}
+.kk-buyt i::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--mute);transition:transform .15s,background .15s}
+.kk-buyt small{font-family:var(--f-mono);font-size:10px;font-weight:500;color:var(--faint)}
+.kk-buyt.on{border-color:#f2b21a;color:#ffd35a;background:rgba(242,178,26,.1)}.kk-buyt.on i{background:#a8780c}.kk-buyt.on i::after{transform:translateX(14px);background:#ffd35a}.kk-buyt.on small{color:#ffd35a}
+.kk-buyt:disabled{opacity:.5}
+.kk-buyinfo{padding:10px 12px;border:1px solid rgba(242,178,26,.4);background:rgba(242,178,26,.07);font-size:12.5px;color:var(--mute);margin-top:10px}.kk-buyinfo b{display:block;color:#ffd35a;margin-bottom:2px}
+@media (max-width:620px){.sp-card{padding:14px}.sp-grid{grid-template-columns:repeat(3,1fr)}.sp-h b{font-size:26px}}
+.kk-small .kk-buyt{width:100%;justify-content:center}.kk-betv:hover{color:#ffad6b;border-bottom-style:solid}
+/* Gouden baren blijven de hele bonus op hun vakje staan, net als de vakjes */
+.kk-spot.gb{border-color:#f2c230!important;box-shadow:inset 0 0 0 2px rgba(242,194,48,.55),0 0 18px -4px #f2c230;background:rgba(242,194,48,.14)}
+.kk-gb{position:absolute;left:3px;top:3px;width:52%;height:52%;filter:drop-shadow(0 0 6px rgba(242,194,48,.8));animation:gbPulse 1.6s ease-in-out infinite}
+.kk-gb svg{width:100%;height:100%;display:block}
+@keyframes gbPulse{50%{transform:scale(1.08);filter:drop-shadow(0 0 10px rgba(242,194,48,1))}}
+@media (prefers-reduced-motion:reduce){.kk-gb{animation:none}}

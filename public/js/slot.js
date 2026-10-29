@@ -6,17 +6,20 @@
 //   Alle vakjes in een cluster worden opgeteld en vermenigvuldigen de clusterwinst.
 // - Basisspel: vakjes worden na elke spin gewist. Free spins: vakjes blijven de hele bonus staan.
 // - 3 kluizen = 10 free spins, 4 = 12, 5 = 14. Tijdens de bonus geven 2+ kluizen extra spins (2:+2, 3:+4, 4:+6, 5+:+8).
-// - Kluisdeur kraakt: bij 3 tot 5 kluizen kan elk ander vakje een kluis worden. Komt er een kluis bij,
-//   dan kraakt de deur opnieuw, tot er geen nieuwe meer komt of er 6 liggen.
+// - Doortumbelen: zolang er winst valt, vallen er nieuwe symbolen in en kan er een kluis bij komen. Liggen er al 3 of meer,
+//   dan valt een extra kluis makkelijker in (TUMBLE_SC, per aantal kluizen; VIP hoger). Geen winst = geen tumble = geen extra kluis.
 // - Vakjes verdubbelen tot x4096. De max win is 5000x de inzet voor de hele ronde (spin + bonus samen), nooit meer.
 // - Gewone bonus: Gouden baren blijven de hele bonus staan; bij 3 baren = max win. Meer kluizen = meer spins en meer kans.
 // - 6+ kluizen = SUPERBONUS: 8 spins met meer lopers, één Gouden baar is daar direct de max win.
-// - Bonus kopen = 60x inzet: altijd 3 kluizen, daarna kraakt de deur met dezelfde kansen als spinnen (VIP iets hoger).
+// - Bonus kopen = 60x inzet: een gewone spin met altijd 3 kluizen; valt er winst, dan tumbelt hij door en kunnen er een 4e, 5e of
+//   6e kluis in vallen, met dezelfde kansen als bij spinnen (VIP hoger). Winst in die spin telt mee.
 // - Uitbetaling: basisspel BASE_K x de tabel, (super)bonus FS_K x de tabel (de vakjes blijven daar staan).
-// - VIP: bonus ±1 op 145 i.p.v. ±1 op 200, superbonus ±1 op 2.500 i.p.v. ±1 op 4.900, iets meer kans op Gouden baren.
-//   Om onder 100% RTP te blijven betalen clusters in het VIP-basisspel VIP_K (16% minder). De bonus zelf is verder gelijk.
-// - Doorgerekend met sim7.js (2 mln. spins): normaal RTP ±92%, VIP ±97,5% (+0,5% cashback), bonus kopen ±94% (VIP ±97%).
-//   3 Gouden baren: ±1 op 540 bonussen van 10 spins, ±1 op 350 bij 12, ±1 op 185 bij 14; superbonus ±1 op 20.
+// - VIP: bonus ±1 op 135 i.p.v. ±1 op 200, 4+ kluizen ±1 op 570 i.p.v. 930, superbonus ±1 op 7.000 i.p.v. ±1 op 14.500,
+//   bij een gekochte bonus vaker een extra kluis (4+ ±21% i.p.v. ±19%, 6 ±1,8% i.p.v. ±1,3%) en iets meer kans op Gouden baren.
+//   Om onder 100% RTP te blijven betalen clusters in het VIP-basisspel VIP_K (18% minder).
+// - Doorgerekend met sim8.js (1 mln. spins, 200.000 gekochte bonussen): normaal RTP ±92,5%, VIP ±96% (+0,5% cashback),
+//   bonus kopen ±92% (VIP ±97%). 3 Gouden baren: ±1 op 650 bonussen van 10 spins, ±1 op 345 bij 12, ±1 op 180 bij 14; superbonus ±1 op 20.
+// - Max win: 5000× de inzet voor de hele ronde (ook bij een gekochte bonus telt de inzet, niet de prijs van de bonus).
 // Pure functies, zodat de RTP in Node te simuleren is (zie README).
 (function(root){
 const COLS=7, ROWS=7, MIN_CLUSTER=5, MAX_SPOT=4096, MAX_WIN=5000;
@@ -42,7 +45,10 @@ const BAR={id:'baar',n:'Gouden baar',w:.10,fsW:.40,t3:.40,t4:.42,t5:.44,vipK:1.0
 // Kans per vakje op een extra kluis bij elke kraak (normaal / VIP), en de uitbetaling in het basisspel
 // Kluisdeur kraakt. p/vip = per vakje vanaf 3-4 kluizen, p5/vip5 vanaf 5 kluizen. b... = hetzelfde voor een gekochte bonus.
 // Bonus kopen kraakt met dezelfde kansen als spinnen (VIP iets hoger).
-const RESPIN={p:.0057,vip:.0064,p5:.0125,vip5:.013,bp:.0057,bvip:.0058,bp5:.0125,bvip5:.0127};let BASE_K=.915,FS_K=.335,VIP_K=.84;
+const RESPIN={p:.0057,vip:.0064,p5:.0125,vip5:.013,bp:.0057,bvip:.0058,bp5:.0125,bvip5:.0127};let BASE_K=.958,FS_K=.385,VIP_K=.82;
+// Doortumbelen: vermenigvuldiger op de kluiskans bij het bijvullen, per aantal kluizen dat al ligt (0..5). n = normaal, v = VIP.
+// Bij 0-2 kluizen is VIP iets hoger (makkelijker de bonus in), vanaf 3 valt een volgende kluis makkelijker in, elke volgende lastiger.
+let TUMBLE_SC={n:[1,1,1,14,13,12],v:[1.15,1.15,1.25,14.5,13.5,12.5]};
 const FS_BY_SC={3:10,4:12,5:14};
 const SUPER_SC=6,SUPER_SPINS=8;
 const FS_START=10, FS_RETRIGGER=2;let BUY_COST=60;
@@ -56,8 +62,8 @@ const payFor=(s,n,base,vip)=>SYMS[s].pay[Math.min(n,15)-MIN_CLUSTER]*(base?BASE_
 const SYM_TOT=()=>SYMS.reduce((a,x)=>a+x.w,0);
 // Kluizen vallen in het basisspel vaker links dan rechts (gemiddeld gelijk): zo is er spanning of rechts de laatste nog valt
 const SC_COL=[1.45,1.3,1.15,1,.85,.7,.55];
-function pick(rng,mode,vip,col){
-  const ww=mode==='super'?WILD.superW:mode==='fs'?WILD.fsW:WILD.w,sw=mode==='base'?SCATTER.w*(vip?SCATTER.vip:1)*(col!=null?SC_COL[col]:1):mode==='super'?SCATTER.superW:SCATTER.fsW,bw=mode==='super'?BAR.w:mode==='fs'?(BAR_NOW!=null?BAR_NOW:BAR.fsW):0;
+function pick(rng,mode,vip,col,scK){
+  const ww=mode==='super'?WILD.superW:mode==='fs'?WILD.fsW:WILD.w,sw=mode==='base'?SCATTER.w*(vip?SCATTER.vip:1)*(col!=null?SC_COL[col]:1)*(scK||1):mode==='super'?SCATTER.superW:SCATTER.fsW,bw=mode==='super'?BAR.w:mode==='fs'?(BAR_NOW!=null?BAR_NOW:BAR.fsW):0;
   let r=rng()*(SYM_TOT()+ww+sw+bw);
   for(let i=0;i<SYMS.length;i++){r-=SYMS[i].w;if(r<=0)return {s:i}}
   r-=ww;if(r<=0)return {w:1};
@@ -95,11 +101,11 @@ function clusters(g,spots,base,vip){
   }
   return out;
 }
-function tumble(g,hit,rng,mode,vip){
+function tumble(g,hit,rng,mode,vip,scK){
   return g.map((col,c)=>{
     const keep=[];col.forEach((x,r)=>{if(!hit.has(c*ROWS+r))keep.push({x,r})});
     const add=ROWS-keep.length;const res=[];
-    for(let i=0;i<add;i++)res.push(Object.assign(pick(rng,mode,vip,c),{fall:add}));
+    for(let i=0;i<add;i++)res.push(Object.assign(pick(rng,mode,vip,c,scK),{fall:add}));
     keep.forEach((k,j)=>{const y=Object.assign({},k.x);y.fall=(add+j)-k.r;res.push(y)});
     return res;
   });
@@ -110,23 +116,19 @@ function spin(rng,opts){
   let g=fill(rng,mode,opts.forceSc||0,vip);
   const steps=[];let win=0;
   for(let guard=0;guard<80;guard++){
-    const wins=opts.buy?[]:clusters(g,spots,!fs,vip);
+    const wins=clusters(g,spots,!fs,vip);
     const step={grid:cloneG(g),wins,spots:cloneS(spots)};steps.push(step);
     if(!wins.length)break;
     win+=wins.reduce((a,w)=>a+w.pay,0);
     const hit=new Set();wins.forEach(w=>w.cells.forEach(([x,y])=>hit.add(x*ROWS+y)));
     hit.forEach(k=>{const x=Math.floor(k/ROWS),y=k%ROWS;spots[x][y]=spots[x][y]===0?1:Math.min(MAX_SPOT,spots[x][y]===1?2:spots[x][y]*2)});
     step.spotsAfter=cloneS(spots);
-    g=tumble(g,hit,rng,mode,vip);
+    let scK=1;if(!fs){let n=0;g.forEach((col,c)=>col.forEach((x,r)=>{if(x.sc&&!hit.has(c*ROWS+r))n++}));scK=(vip?TUMBLE_SC.v:TUMBLE_SC.n)[Math.min(5,n)]}
+    g=tumble(g,hit,rng,mode,vip,scK);
   }
   const last=steps[steps.length-1].grid;let sc=0,bar=false,barN=0;last.forEach(col=>col.forEach(x=>{if(x.sc)sc++;if(x.bar){bar=true;barN++}}));
-  // Kluisdeur kraakt: bij 3 tot 5 kluizen kan elk ander vakje een kluis worden; komt er een bij, dan kraakt hij opnieuw
-  let respin=null;
-  if(!fs&&!opts.noRespin&&sc>=3&&sc<SUPER_SC){const rounds=[];let grid=cloneG(last);
-    for(let k=0;k<12&&sc<SUPER_SC;k++){const P=opts.buy?(sc>=5?(vip?RESPIN.bvip5:RESPIN.bp5):(vip?RESPIN.bvip:RESPIN.bp)):sc>=5?(vip?RESPIN.vip5:RESPIN.p5):(vip?RESPIN.vip:RESPIN.p);grid=grid.map(col=>col.map(x=>{const y=Object.assign({},x);delete y.fresh;return y}));const cells=[];
-      for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)if(!grid[c][r].sc&&rng()<P){grid[c][r]={sc:1,fall:0,fresh:1};cells.push([c,r])}
-      sc+=cells.length;rounds.push({cells,grid,sc});if(!cells.length)break}
-    respin={rounds,cells:rounds.flatMap(r=>r.cells),grid}}
+  // extra kluizen komen alleen nog door het doortumbelen (zie TUMBLE_SC); de oude 'kluisdeur kraakt' bestaat niet meer
+  const respin=null;
   const extra=fs&&sc>=2?FS_RETRIG[Math.min(5,sc)]:0;
   const trig=!fs&&sc>=3?(sc>=SUPER_SC?'super':'fs'):null;
   return {steps,base:win,win,scatters:sc,scPay:0,trigger:!!trig,kind:trig,retrigger:extra>0,extra,bar,barN,respin,spots:cloneS(spots)};
@@ -137,7 +139,9 @@ function freeSpins(rng,start,kind,tier,vip){
   const mode=kind==='super'?'super':'fs';BAR_NOW=mode==='fs'?BAR['t'+Math.max(3,Math.min(5,tier||3))]*(vip?BAR.vipK:1):null;
   let left=start||FS_START,total=0,maxHit=false,bars=0;const spins=[];const spots=newSpots();
   while(left>0&&spins.length<200){left--;const s=spin(rng,{mode,spots});total+=s.win;if(s.extra)left+=s.extra;
-    if(mode==='fs'){s.barNew=Math.min(BAR.need-bars,s.barN);bars+=s.barNew;s.bars=bars;if(bars>=BAR.need){total=MAX_WIN;maxHit=true;s.barMax=true}}
+    // waar de nieuwe baren liggen (ze blijven de hele bonus op dat vakje staan)
+    if(s.barN){const g=s.steps[s.steps.length-1].grid,pos=[];g.forEach((col,c)=>col.forEach((x,r)=>{if(x.bar)pos.push([c,r])}));s.barPos=pos}
+    if(mode==='fs'){s.barNew=Math.min(BAR.need-bars,s.barN);if(s.barPos)s.barPos=s.barPos.slice(0,s.barNew);bars+=s.barNew;s.bars=bars;if(bars>=BAR.need){total=MAX_WIN;maxHit=true;s.barMax=true}}
     else if(s.bar){total=MAX_WIN;maxHit=true;s.barMax=true}
     if(total>=MAX_WIN){total=MAX_WIN;maxHit=true}
     s.left=maxHit?0:left;s.total=total;spins.push(s);if(maxHit)break}
@@ -146,9 +150,9 @@ function freeSpins(rng,start,kind,tier,vip){
 }
 function playRound(rng,opts){
   opts=opts||{};
-  // Gekochte bonus: altijd 3 kluizen, daarna kan de kluisdeur kraken naar 4, 5 of 6 (superbonus). VIP kraakt iets vaker.
+  // Gekochte bonus: een spin met altijd 3 kluizen. Valt er winst, dan tumbelt hij door en kunnen er kluizen bij vallen (4, 5 of 6 = superbonus).
   if(opts.buy){const s=spin(rng,{forceSc:3,buy:true,vip:opts.vip});const sup=s.kind==='super',n=sup?SUPER_SPINS:FS_BY_SC[Math.min(5,s.scatters)];const fsr=freeSpins(rng,n,sup?'super':'fs',s.scatters,opts.vip);
-    return {base:s,fs:fsr,fsStart:n,kind:s.kind,total:Math.min(MAX_WIN,fsr.total),cost:BUY_COST}}
+    return {base:s,fs:fsr,fsStart:n,kind:s.kind,total:Math.min(MAX_WIN,s.win+fsr.total),cost:BUY_COST}}
   const s=spin(rng,{vip:opts.vip});let tot=s.win,fsr=null,n=0;
   if(s.kind==='super'){n=SUPER_SPINS;fsr=freeSpins(rng,n,'super');tot+=fsr.total}
   else if(s.kind==='fs'){n=FS_BY_SC[Math.min(5,Math.max(3,s.scatters))];fsr=freeSpins(rng,n,'fs',s.scatters,opts.vip);tot+=fsr.total}
@@ -162,7 +166,7 @@ function seedHash(str){let h1=1779033703,h2=3144134277,h3=1013904242,h4=27734807
   h1^=(h2^h3^h4);h2^=h1;h3^=h1;h4^=h1;return [h1>>>0,h2>>>0,h3>>>0,h4>>>0]}
 function seedRng(str){let [a,b,c,d]=seedHash(str);const r=()=>{a|=0;b|=0;c|=0;d|=0;const t=(a+b|0)+d|0;d=d+1|0;a=b^b>>>9;b=c+(c<<3)|0;c=c<<21|c>>>11;c=c+t|0;return (t>>>0)/4294967296};
   for(let i=0;i<15;i++)r();return r}
-const tune=o=>{if(o.payk!=null)setPay(o.payk);if(o.wild!=null)WILD.w=o.wild;if(o.wildFs!=null)WILD.fsW=o.wildFs;if(o.wildSuper!=null)WILD.superW=o.wildSuper;if(o.sc!=null)SCATTER.w=o.sc;if(o.scFs!=null)SCATTER.fsW=o.scFs;if(o.scSuper!=null)SCATTER.superW=o.scSuper;if(o.barFs!=null)BAR.fsW=o.barFs;if(o.vip!=null)SCATTER.vip=o.vip;if(o.bar!=null)BAR.w=o.bar;if(o.baseK!=null)BASE_K=o.baseK;if(o.rp!=null)RESPIN.p=o.rp;if(o.rpVip!=null)RESPIN.vip=o.rpVip;if(o.rp5!=null)RESPIN.p5=o.rp5;if(o.rpVip5!=null)RESPIN.vip5=o.rpVip5;['bp','bvip','bp5','bvip5'].forEach(k=>{if(o[k]!=null)RESPIN[k]=o[k]});if(o.buyCost!=null)BUY_COST=o.buyCost;if(o.fsK!=null)FS_K=o.fsK;if(o.vipK!=null)VIP_K=o.vipK;['t3','t4','t5'].forEach(k=>{if(o[k]!=null)BAR[k]=o[k]});if(o.barVip!=null)BAR.vipK=o.barVip};
-const API={tune,RESPIN,SC_COL,get BASE_K(){return BASE_K},get FS_K(){return FS_K},get VIP_K(){return VIP_K},FS_RETRIG,COLS,ROWS,MIN_CLUSTER,MAX_SPOT,SYMS,WILD,SCATTER,BAR,SUPER_SC,SUPER_SPINS,SCATTER_PAY,FS_BY_SC,FS_START,FS_RETRIGGER,get BUY_COST(){return BUY_COST},MAX_WIN,CURVE,spin,freeSpins,playRound,clusters,newSpots,seedHash,seedRng};
+const tune=o=>{if(o.payk!=null)setPay(o.payk);if(o.wild!=null)WILD.w=o.wild;if(o.wildFs!=null)WILD.fsW=o.wildFs;if(o.wildSuper!=null)WILD.superW=o.wildSuper;if(o.sc!=null)SCATTER.w=o.sc;if(o.scFs!=null)SCATTER.fsW=o.scFs;if(o.scSuper!=null)SCATTER.superW=o.scSuper;if(o.barFs!=null)BAR.fsW=o.barFs;if(o.vip!=null)SCATTER.vip=o.vip;if(o.bar!=null)BAR.w=o.bar;if(o.baseK!=null)BASE_K=o.baseK;if(o.rp!=null)RESPIN.p=o.rp;if(o.rpVip!=null)RESPIN.vip=o.rpVip;if(o.rp5!=null)RESPIN.p5=o.rp5;if(o.rpVip5!=null)RESPIN.vip5=o.rpVip5;['bp','bvip','bp5','bvip5'].forEach(k=>{if(o[k]!=null)RESPIN[k]=o[k]});if(o.buyCost!=null)BUY_COST=o.buyCost;if(o.fsK!=null)FS_K=o.fsK;if(o.vipK!=null)VIP_K=o.vipK;['t3','t4','t5'].forEach(k=>{if(o[k]!=null)BAR[k]=o[k]});if(o.barVip!=null)BAR.vipK=o.barVip;if(o.ts)TUMBLE_SC.n=o.ts;if(o.tsv)TUMBLE_SC.v=o.tsv};
+const API={tune,RESPIN,get TUMBLE_SC(){return TUMBLE_SC},SC_COL,get BASE_K(){return BASE_K},get FS_K(){return FS_K},get VIP_K(){return VIP_K},FS_RETRIG,COLS,ROWS,MIN_CLUSTER,MAX_SPOT,SYMS,WILD,SCATTER,BAR,SUPER_SC,SUPER_SPINS,SCATTER_PAY,FS_BY_SC,FS_START,FS_RETRIGGER,get BUY_COST(){return BUY_COST},MAX_WIN,CURVE,spin,freeSpins,playRound,clusters,newSpots,seedHash,seedRng};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.SLOT=API;
 })(typeof window!=='undefined'?window:globalThis);

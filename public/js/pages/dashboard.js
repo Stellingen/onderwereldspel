@@ -31,13 +31,14 @@ V.dash=()=>{
     <div class="row"><span>Auto's (${S.cars.length})</span><b>${fmt(carsV)}</b></div>
     <div class="row"><span>Passief inkomen</span><b style="color:var(--green)">${fmt(income())}/min</b></div>
    </section>
-   ${meter('Energie',Math.floor(S.energy)+'/'+EN_MAX,S.energy/EN_MAX*100,'var(--ice)',full?'Vol over '+full+' min':'Helemaal vol')}
+   ${meter('Energie',Math.floor(S.energy)+'/'+EN_MAX,S.energy/EN_MAX*100,'var(--ice)',full?`<a class="btn ghost sm" href="#ontspannen">Vol over ${full} min · ontspannen</a>`:'Helemaal vol')}
    ${meter('Gezondheid',S.hp+'%',S.hp,S.hp>50?'var(--green)':'var(--red)',`<button class="btn ghost sm" onclick="act.heal()" ${S.hp>=100?'disabled':''}>Kliniek · ${fmt(healCost())}</button>`)}
    ${meter('Politie-hitte',S.heat+'%',S.heat,S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--mute)',`<button class="btn ghost sm" onclick="act.bribe()" ${S.heat<=0?'disabled':''}>Omkopen · ${fmt(bribeCost())}</button>`)}
    <a class="card kpi" href="#rank" style="text-decoration:none;color:inherit"><div class="label">Ranglijst</div><div class="big">#${pos}<span style="font-size:15px;color:var(--faint)"> / ${all.length}</span></div>
     <div class="bar"><i style="width:${(1-(pos-1)/all.length)*100}%;background:var(--violet)"></i></div><div class="kpi-sub">Bekijk de ranglijst →</div></a>
+   <section class="card d-todo"><h3>Klaar voor je</h3>${(()=>{const td=todoItems();return td.length?`<div class="todos">${todoHtml(td)}</div>`:'<p class="sub" style="margin:4px 0 0">Alles is gedaan. Wacht tot je energie weer vol is of kijk in het casino.</p>'})()}</section>
    <section class="card d-recs"><h3>Aanbevolen klussen</h3><p class="sub" style="margin:0 0 6px">Beste opbrengst per energiepunt voor jouw rang.</p>
-    ${recs.map(({c})=>{const left=cdLeft(c.id),ok=!inJail()&&!left&&S.energy>=c.en;return `<div class="d-rec"><div><b>${c.n}</b><span>${fmt(c.min)}–${fmt(c.max)} · ${chance(c)}% kans · ${c.en} energie</span></div>
+    ${recs.map(({c})=>{const left=cdLeft(c.id),ok=!inJail()&&!left&&S.energy>=c.en;return `<div class="d-rec"><div><b>${c.n}</b><span>${fmt(c.min*lootMult())}–${fmt(c.max*lootMult())} · ${chance(c)}% kans · ${c.en} energie</span></div>
      <button class="btn sm" onclick="act.crime('${c.id}')" ${ok?'':'disabled'}>${inJail()?'Vast':left?Math.ceil(left/1000)+'s':S.energy<c.en?'Te moe':'Doen'}</button></div>`}).join('')}
    </section>
    <section class="card d-stats"><h3>Statistieken</h3>

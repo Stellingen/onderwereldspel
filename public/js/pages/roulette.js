@@ -1,7 +1,11 @@
 // Casino: Europese roulette (één nul, huisvoordeel 2,7%). Groot wiel met bal bovenaan, echte inzettafel eronder.
 // Elke inzet is een set getallen: valt de bal op een van die getallen, dan krijg je inzet × 36 / (aantal getallen) terug.
 // Zo betalen nummer 35:1, split 17:1, rij 11:1, hoek 8:1, zes 5:1, kolom en dozijn 2:1 en de kansen 1:1.
-const RL_CHIPS=[10,25,100,500,1000,5000,10000,25000],RL_SPOT_MAX=50000;
+const RL_CHIPS=[10,25,100,500,1000,5000,10000,25000];
+// Maximum per vak groeit met je rang: getallen (binnen-inzetten) / de rest (buiten-inzetten)
+const RL_LIMITS=[[0,50000,50000],[6,75000,100000],[9,150000,200000]]; // vanaf rang: Rookie, Soldaat, Onderbaas
+const rlLim=()=>{const ri=rankIdx(S.xp);let L=RL_LIMITS[0];RL_LIMITS.forEach(x=>{if(ri>=x[0])L=x});return L};
+const rlMax=k=>k.startsWith('i:')?rlLim()[1]:rlLim()[2];
 window.rl=Object.assign({bets:{},angle:0,ball:0,ballR:1,spinning:false,hist:[],chip:100,res:null,net:0,last:null,undo:[],erase:false,lines:null},window.rl||{});
 if(!rl.undo)rl.undo=[];
 const rlN=(j,r)=>3*j+(3-r); // horizontaal: kolom j (0-11), rij r (0 = boven: 3,6,9 … ; 2 = onder: 1,4,7 …)
@@ -85,7 +89,7 @@ function rouletteView(){const tot=rlTotal(),r=rl,done=!r.spinning&&r.res!=null,c
   ${rlTable()}
   <div class="rl-groups" id="rlGroups">${rlGroupsHtml()}</div>
   <div class="rl-ctl" id="rlCtl">${rlCtlHtml()}</div>
-  <p class="rl-help">Klik op een vak om een fiche te zetten. Op de lijnen tussen getallen zet je een split, op een kruispunt een hoek, onderaan een rij (3) of zes getallen. Rechtsklik of "Fiches weghalen" haalt een inzet weg. Max ${fmt(RL_SPOT_MAX)} per vak.</p>
+  <p class="rl-help">Klik op een vak om een fiche te zetten. Op de lijnen tussen getallen zet je een split, op een kruispunt een hoek, onderaan een rij (3) of zes getallen. Rechtsklik of "Fiches weghalen" haalt een inzet weg. Max ${fmt(rlLim()[1])} per getal en ${fmt(rlLim()[2])} op de rest.${rankIdx(S.xp)<9?` Vanaf ${RANKS[rankIdx(S.xp)<6?6:9][0]}: ${fmt((rankIdx(S.xp)<6?RL_LIMITS[1]:RL_LIMITS[2])[1])} / ${fmt((rankIdx(S.xp)<6?RL_LIMITS[1]:RL_LIMITS[2])[2])}.`:''}</p>
   ${done&&r.lines&&r.lines.length?`<div class="rl-receipt">${receiptHtml(r.lines.filter(l=>l.back>0).concat(r.lines.some(l=>!l.back)?[{label:'Overige inzetten',note:r.lines.filter(l=>!l.back).length+' vakken verloren',stake:r.lines.filter(l=>!l.back).reduce((a,l)=>a+l.stake,0),back:0}]:[]),r.net)}</div>`:''}
  </section></div>`}
 // Wiel + bal
@@ -114,19 +118,19 @@ let rlResizeT=null,rlWasVert=null;
 window.addEventListener('resize',()=>{clearTimeout(rlResizeT);rlResizeT=setTimeout(()=>{const v=rlVert();if(page==='casino'&&casinoTab==='roulette'&&v!==rlWasVert&&!rl.spinning)render();rlWasVert=v},150)});
 Object.assign(act,{
  rlBet(k){const r=rl;if(r.spinning)return;if(r.erase){act.rlRemove(k);return}
-  const cur=r.bets[k]||0,add=Math.min(r.chip,RL_SPOT_MAX-cur);if(add<=0){toast('Maximaal '+fmt(RL_SPOT_MAX)+' per vak','bad');return}
+  const cur=r.bets[k]||0,add=Math.min(r.chip,rlMax(k)-cur);if(add<=0){toast('Maximaal '+fmt(rlMax(k))+' op '+rlLabel(k).toLowerCase(),'bad');return}
   if(rlTotal()+add>S.cash){toast('Niet genoeg contant geld voor deze fiche','bad');return}
   r.bets[k]=cur+add;r.undo.push([[k,add]]);SFX.chip();rlPaint([k])},
  rlRemove(k){const r=rl;if(r.spinning||!r.bets[k])return;const v=r.bets[k];delete r.bets[k];r.undo.push([[k,-v]]);SFX.click();rlPaint([k])},
  rlGroup(id){const r=rl,g=RL_GROUPS.find(x=>x.id===id);if(r.spinning||!g)return;
   const cost=g.bets.length*r.chip;if(rlTotal()+cost>S.cash){toast('Niet genoeg contant geld voor '+g.n.toLowerCase(),'bad');return}
-  const step=[];g.bets.forEach(ns=>{const k=rlKey(ns),cur=r.bets[k]||0,add=Math.min(r.chip,RL_SPOT_MAX-cur);if(add>0){r.bets[k]=cur+add;step.push([k,add])}});
+  const step=[];g.bets.forEach(ns=>{const k=rlKey(ns),cur=r.bets[k]||0,add=Math.min(r.chip,rlMax(k)-cur);if(add>0){r.bets[k]=cur+add;step.push([k,add])}});
   if(step.length)r.undo.push(step);SFX.chip();rlPaint(step.map(x=>x[0]))},
  rlUndo(){const r=rl;if(r.spinning||!r.undo.length)return;const step=r.undo.pop();step.forEach(([k,v])=>{r.bets[k]=(r.bets[k]||0)-v;if(r.bets[k]<=0)delete r.bets[k]});SFX.click();rlPaint(step.map(x=>x[0]))},
  rlClear(){const r=rl;if(r.spinning)return;const keys=Object.keys(r.bets),step=Object.entries(r.bets).map(([k,v])=>[k,-v]);if(step.length)r.undo.push(step);r.bets={};r.erase=false;rlPaint(keys)},
  rlDouble(){const r=rl;if(r.spinning)return;const src=rlTotal()?r.bets:r.last;if(!src)return;const tot=Object.values(src).reduce((a,b)=>a+b,0)*2;
   if(tot>S.cash){toast('Niet genoeg contant geld om te verdubbelen','bad');return}
-  const keys=[...Object.keys(r.bets),...Object.keys(src)],step=[],nb={};Object.entries(src).forEach(([k,v])=>{const nv=Math.min(RL_SPOT_MAX,v*2);nb[k]=nv;step.push([k,nv-(r.bets[k]||0)])});
+  const keys=[...Object.keys(r.bets),...Object.keys(src)],step=[],nb={};Object.entries(src).forEach(([k,v])=>{const nv=Math.min(rlMax(k),v*2);nb[k]=nv;step.push([k,nv-(r.bets[k]||0)])});
   r.bets=nb;r.undo.push(step);SFX.chip();rlPaint(keys)},
  rlRepeat(){const r=rl;if(r.spinning||!r.last||rlTotal())return;const tot=Object.values(r.last).reduce((a,b)=>a+b,0);if(tot>S.cash){toast('Niet genoeg contant geld','bad');return}
   r.bets=Object.assign({},r.last);r.undo.push(Object.entries(r.bets).map(([k,v])=>[k,v]));SFX.chip();rlPaint(Object.keys(r.bets))},

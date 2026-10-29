@@ -82,32 +82,26 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   - Max per deposito en per fonds: €250.000 × 2 per rang (Capo €64 mln., Peetvader €512 mln.).
 - **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000), `spinnetje` (€25.000), `jackpot` (€1.000.000) `trainwreck` (€3.000.000; daarna kun je in Kluiskraker inzetten tot €500.000 per spin) en `m1` tot en met `m9` (elk €5.000.000; opnieuw uitgegeven, intern `m1v4` enz., dus ook wie een eerdere versie had gebruikt kan ze weer inwisselen), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
 - **Kluiskraker**: cluster-slot op 7×7 (5+ aangrenzende gelijke symbolen), Loper als wild, vakjes die bij elke
-  winst x2, x4 … tot **x4096** worden (de max win blijft 5.000× je inzet per ronde, spin + bonus samen). **3 kluizen = 10 free spins,
-  4 = 12, 5 = 14.** Bij 3 tot 5 kluizen **kraakt de kluisdeur**: elk ander vakje kan een kluis worden; komt er een bij, dan kraakt hij
-  opnieuw. Tijdens de bonus geven 2+ kluizen extra spins. **Gouden baren** blijven in de gewone bonus staan: heb je er 3, dan win je
-  de max win (±1 op 540 bonussen van 10 spins, ±1 op 350 bij 12, ±1 op 185 bij 14; 1 baar zie je in ±1 op 5 bonussen).
-  **6+ kluizen = superbonus**: 8 spins met veel meer lopers; daar is één Gouden baar al de max win (±1 op 20 superbonussen).
-  Kluizen vallen vaker links dan rechts; liggen er 2, dan vallen de volgende kolommen trager en lichten ze goud op (spanning).
-  **Bonus kopen** kost 60× de inzet: altijd 3 kluizen, daarna kraakt de deur met dezelfde kansen als bij spinnen (VIP iets hoger).
-  Spatiebalk = draaien. **Seed**: elke spin komt uit jouw seed + spinnummer; "Nieuwe seed" geeft een nieuwe reeks uitkomsten
-  (de kans per spin blijft gelijk). Gesimuleerd (`sim7.js`, 2 mln. spins): normaal bonus ±1 op 200 (4+ ±1 op 700, 5+ ±1 op 2.350,
-  superbonus ±1 op 4.900), RTP ±92%; VIP bonus ±1 op 145, superbonus ±1 op 2.500, RTP ±97% + 0,5% cashback; bonus kopen ±94% (VIP ±97%).
-  In de bonus betalen clusters 33,5% van de tabel, in het basisspel 91,5% (VIP 77%, zodat VIP onder 100% blijft).
-- **Visdief** (tweede slot, eigen naam en tekeningen, in de stijl van een vis-collect-slot): nachtvissen in de Rotterdamse haven,
-  **hoge volatiliteit**. 5 rollen × 4 rijen, 20 lijnen; een winlijn wordt alleen getekend als hij valt.
-  3 boeien = 10 free spins, 4 = 15, 5 = 20: normaal ±1 op 200 spins, **VIP ±1 op 140**. In de bonus hebben vissen een prijskaartje
-  van 0,5× tot 1.000× je inzet (veel kleine, af en toe een grote, heel zelden een reus) en pakt de **Visdief** (wild) alles wat er ligt;
-  twee Visdieven pakken alles twee keer (bij €10 inzet: vissen van €5, €5 en €2 = €12, met twee Visdieven €24).
-  **Rondes**: een ronde speelt altijd helemaal uit. Heb je dan 4 Visdieven, dan volgt ronde 2 (10 spins, alles ×2); bij 8 ronde 3
-  (×3), bij 12 ronde 4 (×10). Extra Visdieven tellen door. Elke volgende 4 zijn lastiger, maar in hogere rondes zwemmen grote vissen
-  vaker; in ronde 4 is de 1.000×-vis de **max win van 10.000×** (€20 → €200.000). Bonus van 10 spins: ronde 2 ±1 op 10, ronde 3
-  ±1 op 65, ronde 4 ±1 op 430, max win ±1 op 11.000 (bij 20 spins ±1 op 1.100). VIP: ook ±4% vaker een Visdief; lijnwinst in het
-  VIP-basisspel is 17% lager zodat VIP onder 100% blijft. Bonus kopen 63× (10 spins). Seed per slot, spatiebalk = draaien.
-  Doorgerekend (`public/js/vis.js`, 1,5 mln. spins): normaal RTP ±92%, VIP ±97,5% + 0,5% cashback, bonus kopen ±96%.
+  winst x2, x4 … tot **x4096** worden. **3 kluizen = 10 free spins, 4 = 12, 5 = 14, 6+ = superbonus.** Extra kluizen
+  **tumbelen erin**: zolang er winst valt vallen er nieuwe symbolen in, en liggen er al 3 kluizen, dan valt een 4e, 5e of 6e
+  makkelijker in. Geen winst = geen tumble = geen extra kluis. Tijdens de bonus geven 2+ kluizen extra spins.
+  **Gouden baren** blijven in de gewone bonus de hele bonus op hun vakje staan (net als de vakjes, met een gouden rand): heb je er 3,
+  dan win je de max win (±1 op 650 bonussen van 10 spins, ±1 op 345 bij 12, ±1 op 180 bij 14). **Superbonus**: 8 spins met veel meer
+  lopers; daar is één Gouden baar al de max win (±1 op 20). **Max win**: 5.000× je inzet per ronde, ook bij een gekochte bonus
+  (de inzet telt, niet de prijs van de bonus): via de vakjes of met de Gouden baren.
+  **Bonus kopen** (60× de inzet) zet je aan met een schakelaar naast de draaiknop; de grote knop koopt dan elke keer een bonus.
+  Het is een gewone spin met altijd 3 kluizen: valt er winst, dan tumbelt hij door en kunnen er kluizen bij vallen
+  (normaal 4: ±13%, 5: ±4,3%, 6: ±1,3%; VIP 4+: ±21%, 6: ±1,8%). **Inzet kiezen** gaat via een pop-up (ook bij Visdief).
+  Spatiebalk = draaien. **Seed**: elke spin komt uit jouw seed + spinnummer. Gesimuleerd (`sim8.js`, 1 mln. spins, 200.000
+  gekochte bonussen): normaal bonus ±1 op 200 (4+ ±1 op 930, 5+ ±1 op 3.300, superbonus ±1 op 14.500), RTP ±92,5%; VIP bonus
+  ±1 op 135 (4+ ±1 op 570, superbonus ±1 op 7.000), RTP ±96% + 0,5% cashback; bonus kopen ±92% (VIP ±97%).
+  Basisspel betaalt 95,8% van de tabel (VIP 18% minder), de bonus 38,5%.
 - **Roulette** (Europees, één nul, 2,7% huisvoordeel): groot wiel met rollende bal bovenaan, echte inzettafel eronder.
   Nummer, split, rij, hoek, zes, drie met nul, eerste vier, kolom, dozijn en de kansen, plus groepen op het wiel
   (Buren van nul, Overkant, Weesjes, Nulspel). Ongedaan maken, fiches weghalen (ook met rechtsklik), alles wissen,
-  verdubbelen en herhalen; een fiche zetten werkt alleen dat vak bij (de pagina ververst niet). Op de telefoon staat de tafel rechtop. Code: `public/js/pages/roulette.js`.
+  verdubbelen en herhalen; een fiche zetten werkt alleen dat vak bij (de pagina ververst niet). Op de telefoon staat de tafel rechtop.
+  Maximum per vak: €50.000; vanaf Soldaat €75.000 op getallen en €100.000 op de rest, vanaf Onderbaas €150.000 en €200.000.
+  Code: `public/js/pages/roulette.js`.
 - **VIP** (code `vip`): VIP-tag bij je naam (ook in de ranglijst). **Alle wachttijden 60%** (klussen, auto stelen, training,
   ontspanning, rusten en de dokter; celstraffen niet). Misdaden: +15% buit, 10% groter groen gat bij vluchten en
   45% in plaats van 35% kans om uit de bajes te ontsnappen. Casino: cashback op elke inzet, direct te claimen
@@ -117,12 +111,13 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Mines**: 5×5 vakjes, kies 1 tot 24 bommen of een stand (Makkelijk 3, Normaal 5, Moeilijk 10, Expert 15, Extreem 20,
   Gekkenhuis 24: eerste vakje al 24,5×). Elk veilig vakje verhoogt de multiplier (98% van de echte kans, RTP 98%, max 10.000×). Cash out wanneer je wilt; de bommen
   liggen vast zodra je start en het spel blijft staan als je ververst. Code: `public/js/pages/mines.js`.
-- **Hoogvlieger**: een vliegtuigje vliegt over zee en pakt multipliers (+1, +2, +5, +10, ×2 tot ×5): dan stuitert hij omhoog
-  (grote multipliers flink). Een bom halveert de multiplier en duwt hem omlaag. De vluchtduur is echt willekeurig: meestal 10 tot
-  35 seconden, soms een minuut of langer (tot ±1,5 minuut); "Sneller vliegen" speelt hem 3× zo snel af. Schepen liggen ver en
-  onregelmatig uit elkaar; na het aanraken rolt hij nog door. Blijft hij op het dek staan, dan win je inzet × multiplier (max 250×).
-  Doorgerekend (echte `avPlan`, 600.000 vluchten): normaal RTP ±87% en ±19% landt; VIP heeft 12% langere dekken en haalt ±97,5%.
-  De vlucht ligt vast zodra je opstijgt. Code: `public/js/pages/vlucht.js`.
+- **Hoogvlieger**: een vliegtuigje vliegt op eigen kracht over zee, zonder vaste baan. Overal in de lucht hangen willekeurig
+  items; wat hij raakt bepaalt zijn koers: een plusje (+1 tot +10) duwt hem omhoog, ×2 tot ×5 houdt hem even op dezelfde hoogte en
+  een bom (÷2) ontploft en laat hem zakken. Zonder items glijdt hij naar de zee. Op zee liggen vliegdekschepen met water ertussen;
+  na het aanraken rolt hij nog door. Blijft hij op het dek staan, dan win je inzet × multiplier (max 250×). De vlucht wordt bij het
+  opstijgen in één keer doorgerekend (natuurkunde + willekeurige items) en ligt dan vast. Meestal 12 tot 55 seconden (mediaan ±24 s),
+  soms anderhalve minuut of langer; "Sneller vliegen" speelt hem 3× zo snel af. Doorgerekend (`avsim2.js`, 80.000 vluchten):
+  normaal landt ±17%, RTP ±87%; VIP heeft 12% langere dekken, landt ±19%, RTP ±98%. Code: `public/js/pages/vlucht.js`.
 - **Dubbel of niks**: een munt die echt in 3D wordt opgegooid, precies 50% kans (crypto-random), geen huisvoordeel.
   Win je, dan kies je: je pot pakken of nog een keer gooien voor het dubbele, tot 10 keer (×1024). De pot blijft bewaard bij verversen.
   Code: `public/js/pages/munt.js`.
