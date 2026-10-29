@@ -30,7 +30,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   het spel het opnieuw en gaat er geen voortgang verloren.
 - **Arrestaties zijn verversbestendig**: openstaande keuze komt terug, afgebroken vlucht of autodiefstal telt als mislukt.
 - **8 families**, van De Nieuwe Garde tot La Cupola
-- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000), `spinnetje` (€25.000), `jackpot` (€1.000.000) en `trainwreck` (€3.000.000; daarna kun je in Kluiskraker inzetten tot €500.000 per spin), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
+- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000), `spinnetje` (€25.000), `jackpot` (€1.000.000) `trainwreck` (€3.000.000; daarna kun je in Kluiskraker inzetten tot €500.000 per spin) en `m1` tot en met `m9` (elk €3.000.000), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
 - **Kluiskraker**: cluster-slot op 7×7 (5+ aangrenzende gelijke symbolen), Loper als wild, vakjes die bij elke
   winst x2, x4 … tot x1024 worden. **3 kluizen = 10 free spins, 4 = 12, 5 = 14.** Bij 3 tot 5 kluizen **kraakt de kluisdeur**:
   elk ander vakje kan een kluis worden; komt er een bij, dan kraakt hij opnieuw. Tijdens de bonus geven 2+ kluizen extra spins.
@@ -46,8 +46,15 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   verdubbelen en herhalen; een fiche zetten werkt alleen dat vak bij (de pagina ververst niet). Op de telefoon staat de tafel rechtop. Code: `public/js/pages/roulette.js`.
 - **VIP** (code `vip`): VIP-tag bij je naam (ook in de ranglijst). Misdaden: +15% buit, 10% groter groen gat bij vluchten en
   45% in plaats van 35% kans om uit de bajes te ontsnappen. Casino: cashback op elke inzet, direct te claimen
-  (Kluiskraker 0% omdat VIP daar al vaker in de bonussen komt, roulette 1%, Three Card Poker 0,75%, blackjack 0,25%, Dubbel of niks 0% omdat daar geen huisvoordeel is),
+  (Kluiskraker 0% omdat VIP daar al vaker in de bonussen komt, Mines en Hoogvlieger 0,5%, roulette 1%, Three Card Poker 0,75%, blackjack 0,25%, Dubbel of niks 0% omdat daar geen huisvoordeel is),
   en in Kluiskraker ±5% vaker de bonus en een kluisdeur die vaker kraakt: de superbonus is ±40% makkelijker. In de bonus zelf is alles gelijk.
+- **Mines**: 5×5 vakjes, kies de moeilijkheid (Makkelijk 3, Normaal 5, Moeilijk 10, Expert 15 of Gekkenhuis 20 bommen).
+  Elk veilig vakje verhoogt de multiplier (97% van de echte kans, RTP 97%, max 10.000×). Cash out wanneer je wilt; de bommen
+  liggen vast zodra je start en het spel blijft staan als je ververst. Code: `public/js/pages/mines.js`.
+- **Hoogvlieger**: een vliegtuigje vliegt over zee en pakt multipliers (+1, +2, +5, +10, ×2 tot ×5) of bommen (÷2, en hij zakt).
+  Aan het eind moet hij landen op een vliegdekschip; tussen de dekken zit water en na het aanraken rolt hij nog door. Blijft hij
+  op het dek staan, dan win je inzet × multiplier (max 250×). Doorgerekend: RTP ±97%, ±29% van de vluchten landt.
+  De vlucht ligt vast zodra je opstijgt. Code: `public/js/pages/vlucht.js`.
 - **Dubbel of niks**: een munt die echt in 3D wordt opgegooid, precies 50% kans (crypto-random), geen huisvoordeel.
   Win je, dan kies je: je pot pakken of nog een keer gooien voor het dubbele, tot 10 keer (×1024). De pot blijft bewaard bij verversen.
   Code: `public/js/pages/munt.js`.
