@@ -39,6 +39,10 @@ function pushState(beacon){
 // Ander apparaat heeft het spel geopend: hier stoppen met opslaan en dat duidelijk laten zien
 // Of een beheerder heeft je account aangepast: dan opnieuw laden met de nieuwe stand. Geblokkeerd: terug naar de voorpagina.
 function deviceLock(code){if(window.__LOCKED__)return;window.__LOCKED__=true;clearTimeout(_pushTimer);
+ // loopt er nog een slotronde (bonus)? Die is al verrekend en opgeslagen: eerst rustig laten uitspelen, daarna de melding
+ const busy=()=>(window.kk&&kk.busy)||(window.vd&&vd.busy);if(code!=='banned'&&busy()){const w=()=>{if(busy())setTimeout(w,700);else deviceLockShow(code)};setTimeout(w,700);return}
+ deviceLockShow(code)}
+function deviceLockShow(code){
  const T={admin_update:['Je account is bijgewerkt','Een beheerder heeft je account aangepast. Laad het spel opnieuw om de nieuwe stand te zien. Wat je hier in de laatste seconden deed, telt niet mee.','Opnieuw laden'],
   banned:['Account geblokkeerd','Dit account is geblokkeerd door een beheerder. Je kunt niet verder spelen.','Naar de voorpagina'],
   other_device:['Je speelt op een ander apparaat','Je account is ergens anders geopend. Om te voorkomen dat je voortgang dubbel of verkeerd wordt opgeslagen, kun je maar op één apparaat tegelijk spelen. Wat je hier sinds de vorige opslag deed, telt niet mee.','Hier verder spelen']}[code==='admin'?'admin_update':code]||null;

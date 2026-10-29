@@ -20,6 +20,8 @@ function tick(){
 }
 // aanpassingen door een beheerder: meldingen tonen, energie bijvullen
 if(S._admin){const A=S._admin;if(A.refill){S.energy=Math.max(S.energy,EN_MAX);S.hp=100}(A.notes||[]).forEach((t,i)=>{setTimeout(()=>toast(t,'lvl'),600+i*400);log(t,'ok')});delete S._admin;save()}
+// een bonus die nog liep (verversen of ander apparaat): het geld staat al op je saldo, het spel biedt aan om hem verder af te spelen
+if(S.slotRun){const n=S.slotRun.g==='vis'?'Visdief':'Kluiskraker';setTimeout(()=>toast('Je bonus in '+n+' loopt nog. Het geld staat al op je saldo; open '+n+' om hem verder af te spelen.','lvl'),900)}
 if(S._gearBack){toast('Uitrusting vernieuwd: per soort telt nu je beste item. Je krijgt '+fmt(S._gearBack)+' terug voor overbodige spullen.','lvl');log('Uitrusting: '+fmt(S._gearBack)+' terug voor overbodige spullen','ok');delete S._gearBack}
 // offline-inkomen bij openen
 // bij openen: wat je bedrijven offline verdienden (tot 12 uur) gaat in de kas; is er intussen een speldag voorbij, dan volgt de uitbetaling

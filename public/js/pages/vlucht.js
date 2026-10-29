@@ -67,14 +67,38 @@ function aviaView(){const h=S.avHist||[],bet=avBet(),f=av.flying,res=av.res;setT
  </section></div>`}
 /* ---------- Tekenen ---------- */
 function avSize(cv){const dpr=Math.min(2,devicePixelRatio||1),W=cv.clientWidth,H=cv.clientHeight;if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return [x,W,H]}
-function avPlane(x,px,py,ang,sc){x.save();x.translate(px,py);x.rotate(ang);x.scale(sc,sc);
- x.fillStyle='rgba(0,0,0,.25)';x.beginPath();x.ellipse(2,10,24,4,0,0,7);x.fill();
- x.fillStyle='#e9e4d8';x.beginPath();x.moveTo(-28,-2);x.quadraticCurveTo(-10,-10,18,-6);x.quadraticCurveTo(30,-4,30,0);x.quadraticCurveTo(30,4,18,6);x.quadraticCurveTo(-10,8,-28,3);x.closePath();x.fill();
- x.fillStyle='#ff7a1a';x.fillRect(-20,-2,38,3);
- x.fillStyle='#c94f08';x.beginPath();x.moveTo(-24,-2);x.lineTo(-34,-16);x.lineTo(-27,-16);x.lineTo(-14,-3);x.closePath();x.fill();
- x.fillStyle='#ff7a1a';x.beginPath();x.moveTo(-4,0);x.lineTo(-14,14);x.lineTo(-4,14);x.lineTo(10,1);x.closePath();x.fill();
- x.fillStyle='#4d9dff';x.beginPath();x.ellipse(12,-4,6,3.2,0,0,7);x.fill();
- x.fillStyle='rgba(255,255,255,.35)';x.beginPath();x.ellipse(32,0,2.5,13*(.6+.4*Math.abs(Math.sin(performance.now()/30))),0,0,7);x.fill();
+// Vliegtuig: klein propellervliegtuig met romp, ramen, cockpit, staart en draaiende propeller (neus naar rechts)
+function avPlane(x,px,py,ang,sc){const t=performance.now();x.save();x.translate(px,py);x.rotate(ang);x.scale(sc,sc);
+ // vleugel en hoogteroer aan de verre kant
+ x.fillStyle='#9c9588';x.beginPath();x.moveTo(-2,-3);x.lineTo(-9,-12);x.quadraticCurveTo(-6,-13.5,-3,-12.5);x.lineTo(8,-4);x.closePath();x.fill();
+ x.beginPath();x.moveTo(-22,-2);x.lineTo(-29,-7);x.lineTo(-25,-7.4);x.lineTo(-16,-2.4);x.closePath();x.fill();
+ // romp
+ const g=x.createLinearGradient(0,-9,0,8);g.addColorStop(0,'#ffffff');g.addColorStop(.5,'#e9e4d9');g.addColorStop(1,'#a59f93');
+ x.fillStyle=g;x.beginPath();x.moveTo(-33,-2.5);x.quadraticCurveTo(-27,-8,-8,-8);x.lineTo(15,-7.4);x.quadraticCurveTo(28,-6.4,33,-.6);x.quadraticCurveTo(29,6,15,6.6);x.lineTo(-8,6.6);x.quadraticCurveTo(-27,6,-33,1.2);x.closePath();x.fill();
+ x.strokeStyle='rgba(60,55,48,.35)';x.lineWidth=.8;x.stroke();
+ // oranje streep over de romp
+ x.fillStyle='#ff7a1a';x.beginPath();x.moveTo(-31,.4);x.lineTo(31,.4);x.quadraticCurveTo(31.4,1.4,30.6,2.6);x.lineTo(-30.5,2.6);x.closePath();x.fill();
+ // staart
+ const tg=x.createLinearGradient(-36,-21,-22,-3);tg.addColorStop(0,'#ffad5c');tg.addColorStop(1,'#c94f08');x.fillStyle=tg;
+ x.beginPath();x.moveTo(-31.5,-3);x.lineTo(-37.5,-19.5);x.quadraticCurveTo(-34.5,-22,-30.5,-19.5);x.lineTo(-19,-6.8);x.closePath();x.fill();
+ x.fillStyle='rgba(255,255,255,.75)';x.beginPath();x.moveTo(-33.5,-15);x.lineTo(-31.6,-15);x.lineTo(-27,-8.6);x.lineTo(-28.9,-8.6);x.closePath();x.fill();
+ // ramen
+ x.fillStyle='#1d3d5c';for(let i=0;i<5;i++){x.beginPath();x.ellipse(-15+i*5.6,-3.4,1.45,1.75,0,0,7);x.fill()}
+ x.fillStyle='rgba(255,255,255,.5)';for(let i=0;i<5;i++){x.beginPath();x.ellipse(-15.4+i*5.6,-4,.5,.6,0,0,7);x.fill()}
+ // cockpit
+ const cg=x.createLinearGradient(17,-7,29,-1);cg.addColorStop(0,'#bfe4ff');cg.addColorStop(1,'#2d6ea8');x.fillStyle=cg;
+ x.beginPath();x.moveTo(16.5,-6.6);x.quadraticCurveTo(25,-6.2,29.6,-1.8);x.lineTo(18.4,-1.8);x.closePath();x.fill();
+ // vleugel aan de dichte kant
+ const wg=x.createLinearGradient(0,1,0,16);wg.addColorStop(0,'#f6f2ea');wg.addColorStop(1,'#b8b1a3');x.fillStyle=wg;
+ x.beginPath();x.moveTo(-5,2.2);x.lineTo(-15,15.5);x.quadraticCurveTo(-12,17.6,-8,16.6);x.lineTo(11,3.2);x.closePath();x.fill();
+ x.fillStyle='#ff7a1a';x.beginPath();x.moveTo(-15,15.5);x.quadraticCurveTo(-12,17.6,-8,16.6);x.lineTo(-9.2,15);x.lineTo(-13.6,14.6);x.closePath();x.fill();
+ x.fillStyle=Math.floor(t/450)%2?'#ff3d52':'#5b1a22';x.beginPath();x.arc(-13.4,15.6,1.1,0,7);x.fill();
+ // hoogteroer dichtbij
+ x.fillStyle='#d9d3c6';x.beginPath();x.moveTo(-23,1.2);x.lineTo(-31,7.6);x.lineTo(-26,8);x.lineTo(-17.5,1.8);x.closePath();x.fill();
+ // neus en draaiende propeller
+ x.fillStyle='#3a3f47';x.beginPath();x.ellipse(33.2,-.6,2.4,2.8,0,0,7);x.fill();
+ x.fillStyle='rgba(235,240,245,.22)';x.beginPath();x.ellipse(35.2,-.6,2.4,14.5,0,0,7);x.fill();
+ const sp=Math.sin(t/22);x.strokeStyle='rgba(30,34,40,.8)';x.lineWidth=1.8;x.lineCap='round';x.beginPath();x.moveTo(35.2,-.6-13.5*sp);x.lineTo(35.2,-.6+13.5*sp);x.stroke();
  x.restore()}
 function avDraw(P,planeX,planeAlt,ang,extra){const cv=document.getElementById('avCanvas');if(!cv)return;const [x,W,H]=avSize(cv),t=performance.now()/1000;
  const s=Math.max(.6,Math.min(1.4,W/760)),view=W/s,cam=planeX-view*.3,sea=H*.8,deck=sea-12,top=H*.12,yA=a=>deck-a/100*(deck-top),X=wx=>(wx-cam)*s;
@@ -107,7 +131,11 @@ function avDraw(P,planeX,planeAlt,ang,extra){const cv=document.getElementById('a
   else{const c=f.it[0]==='x'?'242,194,48':'63,227,149';x.strokeStyle=`rgba(${c},${1-k})`;x.lineWidth=3;x.beginPath();x.arc(fx,fy,12+k*36,0,7);x.stroke();
    x.fillStyle=`rgba(${c},${1-k})`;x.font='900 18px "Big Shoulders Display",sans-serif';x.textAlign='center';x.fillText(f.it[0]==='x'?'×'+f.it.slice(1):f.it==='bom'?'÷2':f.it,fx,fy-18-k*26)}});
  // vliegtuig
- const py=planeAlt==null?deck-8:yA(Math.max(0,planeAlt))+(planeAlt<0?-planeAlt*2.2:0)-8;avPlane(x,X(planeX),py,ang||0,s*1.35);
+ const py=planeAlt==null?deck-8:yA(Math.max(0,planeAlt))+(planeAlt<0?-planeAlt*2.2:0)-8;
+ // rookspoor: de laatste hoogtes van het vliegtuig, vervagend naar achteren
+ if(av.flying&&planeAlt!=null){av.trail=av.trail||[];av.trail.unshift(py);if(av.trail.length>34)av.trail.length=34}else if(!av.flying)av.trail=[];
+ if(av.trail&&av.trail.length>2){const px=X(planeX)-30*s*1.6;for(let i=1;i<av.trail.length;i++){const k=i/av.trail.length;x.fillStyle=`rgba(255,255,255,${.28*(1-k)})`;x.beginPath();x.arc(px-i*5.2*s,av.trail[i]+Math.sin(i*.9+performance.now()/300)*1.2,(2.2+i*.22)*s,0,7);x.fill()}}
+ avPlane(x,X(planeX),py,ang||0,s*1.6);
  if(extra&&extra.splash){const sx=X(extra.splash.x),k=extra.splash.k;for(let i=0;i<14;i++){const a=-Math.PI*(i/13),d=10+k*40;x.fillStyle=`rgba(220,240,255,${1-k})`;x.beginPath();x.arc(sx+Math.cos(a)*d,sea-Math.abs(Math.sin(a))*d*1.4+k*30,3,0,7);x.fill()}}
  x.restore()}
 function avMount(){if(av.flying)return;const P=av.plan&&av.res?av.plan:null;

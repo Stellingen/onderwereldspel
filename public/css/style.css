@@ -1921,3 +1921,74 @@ body.hg-open{overflow:hidden}
  .rlx{padding-bottom:70px}
 }
 @media (min-width:901px){.rl-dock{display:none!important}}
+/* Kluiskraker 10x10: iets smaller en lager, zodat het hele bord zonder scrollen past */
+.kk-layer{grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr)}
+.kk3 .kk-layer{gap:3px}
+.kk3 .kk-board{aspect-ratio:1.32;width:min(100%,calc(var(--bh) * 1.32))}
+.kk3 .kk-spot.mx b{font-size:clamp(10px,.9vw,15px)}
+@container (min-width:1100px){.kk3:not(.vd) .kk-board{--bh:clamp(340px,calc(100svh - 372px),900px);width:min(100%,calc(var(--bh) * 1.32))}}
+@container (max-width:700px){.kk3 .kk-board{aspect-ratio:1;width:min(100%,calc(100svh - 362px))}.kk3 .kk-layer{gap:2px}}
+
+/* Kluiskraker zijkolom compacter, zodat het bord + knoppen op een laptopscherm zonder scrollen passen */
+@container (min-width:1100px){
+ .kk3:not(.vd) .kk-hud>div{padding:8px 12px}
+ .kk3:not(.vd) .kk-hud .kk-bal b{font-size:clamp(22px,1.8vw,30px)}
+ .kk3:not(.vd) .kk-ctl .kk-go{min-height:62px}
+ .kk3:not(.vd) .kk-seed{margin-top:0;padding:6px 10px;gap:4px 14px}
+ .kk3:not(.vd) .kk-seed-i.prev{display:none}
+ .kk3:not(.vd) .kk-seed .btn{margin-left:auto;padding:4px 10px;min-height:0}
+}
+/* ================= Visdief v3: breed bord, bediening eronder, eigen havenkleuren ================= */
+.vd.kk3 .vd-stage{--vdw:min(100%,max(480px,calc((100svh - 531px) * 2 + 56px)),1120px);padding:16px 18px 18px;
+ background:radial-gradient(900px 300px at 50% -60px,rgba(47,209,197,.10),transparent 70%),linear-gradient(180deg,#0a1922,#060e14)}
+.vd.kk3.is-fs .vd-stage{--vdw:min(100%,max(480px,calc((100svh - 535px) * 2 + 56px)),1120px)}
+.vd.kk3 .vd-board,.vd.kk3.is-fs .vd-board{width:var(--vdw);border-radius:12px;box-shadow:0 0 0 1px #24404f,0 30px 70px -34px #000,0 0 120px -50px rgba(47,209,197,.35)}
+.vd.kk3 .vd-reel{aspect-ratio:1.6/4}
+.vd.kk3 .vd-sign{font-size:31px;filter:drop-shadow(0 0 7px rgba(255,154,60,.75))}
+.vd.kk3 .vd-cell{padding:7% 14%}
+/* kade: houten rand om het water */
+.vd.kk3 .vd-reelwrap{padding:9px;border-radius:10px;
+ background:repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 2px,transparent 2px 46px),linear-gradient(180deg,#4a3422,#36261a 55%,#2a1d14);
+ box-shadow:inset 0 1px 0 rgba(255,220,170,.18),inset 0 -2px 0 rgba(0,0,0,.4),0 0 0 2px #1a120c,0 10px 30px -12px #000}
+.vd.kk3 .vd-reels{gap:6px}
+.vd.kk3 .vd-reel{border-radius:7px;background:radial-gradient(120% 60% at 50% 0%,rgba(90,209,255,.10),transparent 60%),linear-gradient(180deg,#0d2533,#0a1b26 55%,#071219);
+ box-shadow:inset 0 0 0 1px rgba(90,209,255,.12),inset 0 12px 24px -16px rgba(0,0,0,.8)}
+.vd.kk3 .vd-tick{margin:0 12px 12px;border-radius:8px;background:rgba(5,14,20,.85);box-shadow:inset 0 0 0 1px #24404f}
+/* bediening onder het bord, even breed als het bord */
+.vd.kk3 .kk-bar{width:max(var(--vdw),min(100%,780px));margin:12px auto 0}
+.vd.kk3 #vdConfirmBox,.vd.kk3 #vdPickBox,.vd.kk3 .kk-seed{width:var(--vdw);margin-left:auto;margin-right:auto}
+.vd.kk3 .kk-hud{border-color:#24404f;background:#24404f}
+.vd.kk3 .kk-hud>div{background:#0b161e}
+.vd.kk3 .kk-hud .kk-bal{background:linear-gradient(180deg,rgba(47,209,197,.13),transparent),#0b161e}
+.vd.kk3 .kk-hud .kk-bal b{color:#e9fbff}
+.vd.kk3 .kk-hud b.acc{color:var(--vd-goud)}.vd.kk3 .kk-hud b.grn{color:#5fe08f}
+.vd.kk3 .kk-betbox{background:#0b161e;border-color:#24404f}
+.vd.kk3 .kk-go:not(.buy){background:linear-gradient(180deg,#3ee6d8,#16a89c);color:#04161a;box-shadow:0 10px 30px -12px rgba(47,209,197,.7)}
+.vd.kk3 .kk-go:not(.buy):hover:not(:disabled){filter:brightness(1.08)}
+.vd.kk3 .kk-go small{color:#063a35}
+.vd.kk3 .kk-stat.fsb{background:rgba(245,197,66,.12)!important}.vd.kk3 .kk-stat.fsb b{color:var(--vd-goud)}
+@container (min-width:1100px){
+ .vd.kk3 .kk-stage{display:block}
+ .vd.kk3 .kk-bar{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1.45fr);gap:12px;align-items:stretch}
+ .vd.kk3 .kk-hud{grid-template-columns:1.75fr 1fr 1fr}.vd.kk3.is-fs .kk-hud{grid-template-columns:1.7fr .8fr .95fr .95fr}.vd.kk3.is-fs .kk-hud .kk-bal b{font-size:clamp(17px,1.35vw,24px)}.vd.kk3.is-fs .kk-hud>div{padding-left:10px;padding-right:10px}
+ .vd.kk3 .kk-hud .kk-bal b{font-size:clamp(20px,1.7vw,28px)}
+ .vd.kk3 .kk-hud .kk-bal,.vd.kk3 .kk-hud>div:last-child{grid-column:auto}
+ .vd.kk3 .kk-ctl{grid-template-columns:minmax(128px,.95fr) minmax(140px,1.2fr) minmax(108px,.8fr)}
+ .vd.kk3 .kk-ctl .kk-betbox,.vd.kk3 .kk-ctl .kk-go,.vd.kk3 .kk-ctl .kk-small{grid-column:auto}
+ .vd.kk3 .kk-ctl .kk-go{min-height:0}
+ .vd.kk3 .kk-ctl .kk-small{flex-direction:column}
+ .vd.kk3 #vdSeedBox{margin-top:0}
+}
+@container (max-width:700px){
+ .vd.kk3 .vd-stage{--vdw:100%;padding:10px}
+ .vd.kk3.is-fs .vd-stage{--vdw:100%}
+ .vd.kk3 .vd-reel{aspect-ratio:1.15/4}
+ .vd.kk3 .vd-cell{padding:8%}
+ .vd.kk3 .vd-reelwrap{padding:5px}.vd.kk3 .vd-reels{gap:4px}
+}
+@container (max-width:700px){.vd.kk3 .kk-hud{grid-template-columns:1fr 1fr}.vd.kk3 .kk-hud .kk-bal{grid-column:1/-1}}
+/* Gouden baar in de bonus: blijft liggen, telt als loper */
+.kk-cell.barwin{z-index:2}
+.kk-cell.barwin::after{content:"";position:absolute;inset:5%;box-shadow:0 0 0 2px #f2c230 inset,0 0 20px rgba(242,194,48,.75);pointer-events:none}
+.kk-cell .wl.wb{background:#f2c230;color:#1a1206}
+.kk-cell.gbar .wl{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);font-family:var(--f-head);font-weight:800;font-size:clamp(8px,.7vw,11px);letter-spacing:.08em;text-transform:uppercase;padding:0 5px;line-height:1.5;z-index:2}
