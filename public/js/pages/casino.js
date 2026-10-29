@@ -1,14 +1,13 @@
 // Tab: Casino (blackjack, gokkast, dubbel of niks, roulette)
-V.casino=()=>`<h1>Casino</h1><p class="sub">Echte regels en eerlijke kansen. Het huis heeft een klein voordeel, net als in elk casino.</p>
+V.casino=()=>`<div class="cas-head"><h1>Casino</h1>${isVip()?vipCbHtml():''}</div><p class="sub">Echte regels en eerlijke kansen. Het huis heeft een klein voordeel, net als in elk casino.</p>
  ${S.wanted?'<div class="card" style="border-color:var(--acc);margin-bottom:14px;color:var(--acc)">▲ Casino\'s hangen vol camera\'s. Als gezochte crimineel loop je hier extra risico op een controle.</div>':''}
- ${isVip()?vipCbHtml():''}
  <div class="tabs">${[['kluis','Kluiskraker'],['bj','Blackjack'],['tcp','Three Card Poker'],['roulette','Roulette'],['coin','Dubbel of niks']].map(([k,n])=>`<button class="${casinoTab===k?'on':''}" onclick="casinoGo('${k}')">${n}</button>`).join('')}</div>
  ${casinoTab==='kluis'?kkView():casinoTab==='bj'?bjTable():casinoTab==='tcp'?tpTable():casinoTab==='roulette'?rouletteView():coinView()}`;
 
-function vipCbHtml(){const a=cbAvail(),tot=S.cb&&S.cb.tot?S.cb.tot:0;
- return `<div class="vipcb"><i class="vipt" style="margin:0">VIP</i><div class="vc-t"><b>Cashback op elke inzet, direct te claimen</b>
-  <span>${Object.keys(CB_RATE).filter(k=>CB_RATE[k]).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*100).toLocaleString('nl-NL')+'%').join(' · ')} · Dubbel of niks 0% (geen huisvoordeel)${tot?' · totaal ontvangen en gespaard '+fmt(tot):''}. In Kluiskraker kom je ook iets vaker in de bonus.</span></div>
-  <div class="vc-a" id="cbAmt">${fmt(a)}</div><button class="btn gold" id="cbBtn" onclick="act.claimCb()" ${a<1?'disabled':''}>${a>=1?'Claimen':'Nog niks te claimen'}</button></div>`}
+// VIP-cashback: klein rechtsboven, direct te claimen. De percentages per spel staan in de tooltip.
+function vipCbHtml(){const a=cbAvail(),tip=Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*100).toLocaleString('nl-NL')+'%').join(' · ');
+ return `<div class="cbmini" title="Cashback op elke inzet: ${tip}"><i class="vipt" style="margin:0">VIP</i><span>Cashback</span><b id="cbAmt">${fmt(a)}</b>
+  <button class="btn gold sm" id="cbBtn" onclick="act.claimCb()" ${a<1?'disabled':''}>${a>=1?'Claimen':'Nog niks te claimen'}</button></div>`}
 function cardHtml(c){if(c.hidden)return '<div class="pc back"></div>';const red=c.s==='♥'||c.s==='♦';return `<div class="pc ${red?'red':''}"><span>${c.v}</span><span>${c.s}</span></div>`}
 function handVal(h){let t=0,a=0;h.forEach(c=>{if(c.hidden)return;if(c.v==='A'){a++;t+=11}else t+=['K','Q','J'].includes(c.v)?10:+c.v});while(t>21&&a){t-=10;a--}return t}
 function bjView(){const b=window.bj;

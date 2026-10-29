@@ -1,6 +1,7 @@
 // Casino-tafels: Blackjack (met Perfect Pairs en 21+3) en Three Card Poker (met Pair Plus en 6-Card Bonus).
 // Echte regels en standaard uitbetalingstabellen, dus het huis wint op termijn. Side bets: €10 tot €50.
-const TB={MAIN_MIN:50,MAIN_MAX:50000,SIDE_MIN:10,SIDE_MAX:50,CHIPS:[10,25,50,100,500,1000,5000,10000]};
+// Side bets: maximaal €50 per rang (Rookie €50, Straatschoffie €100 … Peetvader €600)
+const TB={MAIN_MIN:50,MAIN_MAX:50000,SIDE_MIN:10,get SIDE_MAX(){return 50*(rankIdx(S.xp)+1)},CHIPS:[10,25,50,100,500,1000,5000,10000]};
 const RNK=['','','2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const SUITS=['♠','♥','♦','♣'];const isRed=s=>s==='♥'||s==='♦';
 function newShoe(decks){const a=[];for(let d=0;d<decks;d++)for(const s of SUITS)for(let r=2;r<=14;r++)a.push({r,s});
@@ -44,7 +45,7 @@ function bjTable(){
    <div class="felt-rules"><b>Blackjack betaalt 3 tegen 2</b><span>Dealer staat op alle 17 · 6 kaartspellen · splitsen en verdubbelen toegestaan</span></div>
    <div class="zone dealer"><div class="zl">Dealer${dUp!=null?` · <b>${dUp}${b.phase==='play'?'':''}</b>`:''}</div>
     ${b.dealer.length?`<div class="cards">${b.dealer.map((c,i)=>cardEl(c,i,(b.phase==='play'||b.phase==='dealing')&&i===1)).join('')}</div>`:ghosts(2)}</div>
-   <div class="felt-arc">Verzekering niet beschikbaar · Side bets €${TB.SIDE_MIN}–€${TB.SIDE_MAX}</div>
+   <div class="felt-arc">Verzekering niet beschikbaar · Side bets €${TB.SIDE_MIN}–€${TB.SIDE_MAX} (hoger met je rang)</div>
    <div class="zone player">
     <div class="hands">${h.length?h.map((hd,i)=>{const t=bjTotal(hd.cards);return `<div class="hand ${b.phase==='play'&&i===b.active?'act':''} ${hd.res?'r-'+hd.res:''}">
       <div class="cards">${hd.cards.map((c,j)=>cardEl(c,j)).join('')}</div>
@@ -131,7 +132,7 @@ function tpTable(){
    <div class="felt-rules"><b>Three Card Poker</b><span>Dealer speelt met vrouw-hoog of beter · ante-bonus wordt altijd uitbetaald</span></div>
    <div class="zone dealer"><div class="zl">Dealer${dv?` · <b>${dv.name}</b>${o.qual===false?' · speelt niet':''}`:''}</div>
     ${t.d.length?`<div class="cards">${t.d.map((c,i)=>cardEl(c,i,!done)).join('')}</div>`:ghosts(3)}</div>
-   <div class="felt-arc">Pair Plus en 6-Card Bonus €${TB.SIDE_MIN}–€${TB.SIDE_MAX} · winnen ook als je past</div>
+   <div class="felt-arc">Pair Plus en 6-Card Bonus €${TB.SIDE_MIN}–€${TB.SIDE_MAX} (hoger met je rang) · winnen ook als je past</div>
    <div class="zone player">
     <div class="hands"><div class="hand ${o.main?'r-'+o.main:''}">${t.p.length?`<div class="cards">${t.p.map((c,i)=>cardEl(c,i)).join('')}</div>`:ghosts(3)}
      ${pv?`<div class="hl"><b>${pv.name}</b>${o.mainOut?`<em>${o.mainOut}</em>`:''}</div>`:''}</div></div>
@@ -195,7 +196,7 @@ Object.assign(act,{
  tbBet(game,key){const T=game==='bj'?bt:tp;if(T.phase!=='bet'&&T.phase!=='done')return;if(T.phase==='done'){game==='bj'?act.btNew():act.tpNew()}
   const side=key!=='main'&&key!=='ante',cap=side?TB.SIDE_MAX:TB.MAIN_MAX;
   const cur=T.bets[key],tot=Object.values(T.bets).reduce((a,b)=>a+b,0);
-  let add=Math.min(tbChip,cap-cur);if(add<=0){toast(side?'Side bets gaan tot €'+TB.SIDE_MAX:'Maximale inzet bereikt','bad');return}
+  let add=Math.min(tbChip,cap-cur);if(add<=0){toast(side?'Side bets gaan bij jouw rang tot €'+TB.SIDE_MAX+' (+€50 per rang)':'Maximale inzet bereikt','bad');return}
   if(side&&cur+add<TB.SIDE_MIN)add=TB.SIDE_MIN-cur;
   if(tot+add>S.cash){toast('Niet genoeg contant geld','bad');return}
   T.bets[key]=cur+add;SFX.chip();render()},

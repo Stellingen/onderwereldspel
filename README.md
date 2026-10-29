@@ -12,7 +12,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Training** met tijdsloten: elke sessie is één level, tot level 50. Elk level is duurder (conditie: €60 voor level 1,
   ongeveer €690.000 voor level 50). Oude saves worden omgerekend: elke gedane sessie telt als één level.
 - **Blackjack** aan een volle tafel (6 kaartspellen, dealer staat op 17, splitsen/verdubbelen, 3:2) met side bets
-  Perfect Pairs en 21+3 (€10–€50), hoofdinzet tot €50.000. **Three Card Poker** met Ante/Play, Pair Plus en 6-Card Bonus (€10–€50). Code: `public/js/pages/tafels.js`.
+  Perfect Pairs en 21+3 (€10 tot €50 per rang: Rookie €50, Peetvader €600), hoofdinzet tot €50.000. **Three Card Poker** met Ante/Play, Pair Plus en 6-Card Bonus (zelfde maximum per rang). Code: `public/js/pages/tafels.js`.
 - **Verblijf**: een getekend tafereel per woning (brug, kraakpand, huurkamer, grachtenpand, penthouse, villa).
   Rusten vult je energie en geeft +20% gezondheid of meer (beter huis = meer), daarna 5 minuten wachten (beter huis = korter).
   Dokter: +20% gezondheid in 10 seconden, daarna 10 minuten wachten. Ga je eerder weg, dan houd je wat je had en wacht je naar verhouding.
@@ -29,14 +29,14 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   het spel het opnieuw en gaat er geen voortgang verloren.
 - **Arrestaties zijn verversbestendig**: openstaande keuze komt terug, afgebroken vlucht of autodiefstal telt als mislukt.
 - **8 families**, van De Nieuwe Garde tot La Cupola
-- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000), `spinnetje` (€25.000) en `broke2` (€500.000), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
+- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000), `spinnetje` (€25.000) en `rich` (€500.000), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
 - **Kluiskraker**: cluster-slot op 7×7 (5+ aangrenzende gelijke symbolen), Loper als wild, vakjes die bij elke
   winst x2, x4 … tot x1024 worden. 4 kluizen = 10 free spins, 5 kluizen = 12, en dan **kraakt de kluisdeur**: elk ander vakje
   kan alsnog de zesde kluis worden (±30% kans). Tijdens de bonus geven 2+ kluizen extra spins (2:+2 … 5+:+8).
   **6+ kluizen = superbonus**: 8 spins met meer lopers en de **Gouden baar**; landt die, dan win je direct de max win
   (geen garantie, wel ±1 op 20 superbonussen). Niet te koop. **Max win 5.000× de inzet**, inzet €10 tot €50.000.
   Bonus kopen kost 100× de inzet (gewone bonus). Spatiebalk = draaien, snelheid ook tijdens een spin om te zetten.
-  In het basisspel betalen clusters 1,2% minder dan in de bonus. Gesimuleerd (2,4 mln. spins, zie `slot.js`):
+  In het basisspel betalen clusters 1,8% minder dan in de bonus. Gesimuleerd (2,4 mln. spins, zie `slot.js`):
   RTP ±96% (bonus ±1 op 355, superbonus ±1 op 9.000, gemiddeld ±390×), bonus kopen ±95%, VIP ±98%.
 - **Roulette** (Europees, één nul, 2,7% huisvoordeel): groot wiel met rollende bal bovenaan, echte inzettafel eronder.
   Nummer, split, rij, hoek, zes, drie met nul, eerste vier, kolom, dozijn en de kansen, plus groepen op het wiel

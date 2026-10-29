@@ -32,7 +32,7 @@ const SCATTER={id:'kluis',n:'Kluis',w:11.8,fsW:6,vip:1.016};
 // Gouden baar: alleen in de superbonus
 const BAR={id:'baar',n:'Gouden baar',w:.12};
 // Kans per vakje op een extra kluis als er precies 5 liggen (normaal / VIP), en de uitbetaling in het basisspel
-const RESPIN={p:.0081,vip:.0087};let BASE_K=.988;
+const RESPIN={p:.0081,vip:.0087};let BASE_K=.982;
 const FS_BY_SC={4:10,5:12};
 const SUPER_SC=6,SUPER_SPINS=8;
 const FS_START=10, FS_RETRIGGER=2, BUY_COST=100;
