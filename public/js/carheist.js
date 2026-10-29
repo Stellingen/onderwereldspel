@@ -50,7 +50,7 @@ const HEIST_TIERS={1:{locks:1,len:4,per:1500,miss:2,rev:0},2:{locks:1,len:5,per:
  4:{locks:2,len:6,per:620,miss:0,rev:1},5:{locks:3,len:6,per:480,miss:0,rev:2},6:{locks:3,len:7,per:400,miss:0,rev:3}};
 const carTier=m=>m.leg?6:m.d;
 const secTxt=ms=>(ms/1000).toLocaleString('nl-NL',{maximumFractionDigits:1})+' s';
-function heistParams(m){const sk=(S.skills&&S.skills.cars)||0,T=HEIST_TIERS[carTier(m)];return {...T,per:Math.round(T.per*(1+sk*SK.cars.time)),d:m.d}}
+function heistParams(m){const sk=(S.skills&&S.skills.cars)||0,T=HEIST_TIERS[carTier(m)];return {...T,per:Math.round(T.per*(1+sk*SK.cars.time+gearFx('car'))),d:m.d}}
 function heistTxt(P){return [P.locks>1?P.locks+' sloten':'1 slot',P.len+' pijlen in '+secTxt(P.len*P.per),P.rev?P.rev+' rode per slot':null,P.miss?P.miss+'× fout mag':'geen fouten'].filter(Boolean).join(' · ')}
 function carHeist(sp){const m=CARS.find(k=>k.id===sp.id)||CARS[0];
  return new Promise(resolve=>{

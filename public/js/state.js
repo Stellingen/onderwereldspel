@@ -1,6 +1,6 @@
 // Spelerstatus, opslaan/laden, spelregels, arrestaties, skills, meldingen
 let S;
-function fresh(){return{name:'Jij',cash:250,bank:0,xp:0,hp:100,heat:0,jailUntil:0,cred:0,energy:100,family:null,skills:{steal:0,cars:0,charisma:0,speed:0,conditie:0,schiet:0,hack:0,handel:0,rechten:0},train:{},buffs:{},redeemed:[],home:'brug',furn:{},carDex:{},biz2:{},dep:[],inv:{},trainV:2,news:[],wanted:false,lastSentence:30,cd:{},cars:[],biz:{},gear:{},stats:{crimes:0,fails:0,cars:0,won:0,lost:0},log:[],last:now(),
+function fresh(){return{name:'Jij',cash:250,bank:0,xp:0,hp:100,heat:0,jailUntil:0,cred:0,energy:100,family:null,skills:{steal:0,cars:0,charisma:0,speed:0,conditie:0,schiet:0,hack:0,handel:0,rechten:0},train:{},buffs:{},redeemed:[],home:'brug',furn:{},carDex:{},biz2:{},dep:[],inv:{},trainV:2,gearV:2,news:[],wanted:false,lastSentence:30,cd:{},cars:[],biz:{},gear:{},stats:{crimes:0,fails:0,cars:0,won:0,lost:0},log:[],last:now(),
   npcs:NPC_NAMES.map((n,i)=>({n,xp:Math.floor(200*Math.pow(1.55,i))+rnd(0,300),cash:rnd(1000,50000)*(i+1)}))}}
 // Opslag: met account in de database (via /api/state), anders alleen in de browser.
 const SAVE_KEY='onderwereld_v1'+(window.__USER__?'_'+window.__USER__.toLowerCase():'');
@@ -9,9 +9,11 @@ function load(){
   // de nieuwste opslag wint: als de server een update kreeg terwijl jij speelde, staat je laatste voortgang nog in de browser
   let d=sv;if(lc&&lc.npcs&&(!sv||(lc.savedAt||0)>(sv.savedAt||0))){d=lc;if(sv)window.__PUSH_LOCAL__=true}
   if(!d){try{d=JSON.parse(localStorage.getItem('onderwereld_v1'))}catch(e){}}
-  if(d&&d.npcs){const f=fresh(),oldBiz=!d.biz2,tv=d.trainV,oldTrain=tv!==2||Object.values(d.train||{}).some(n=>n>0);d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);d.skills=Object.assign(fresh().skills,d.skills);d.train=d.train||{};d.buffs=d.buffs||{};d.redeemed=d.redeemed||[];d.home=d.home||'brug';if(d.pendingArrest===undefined)d.pendingArrest=null;
+  if(d&&d.npcs){const f=fresh(),oldBiz=!d.biz2,tv=d.trainV,oldTrain=tv!==2||Object.values(d.train||{}).some(n=>n>0),oldGear=d.gearV!==2;d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);d.skills=Object.assign(fresh().skills,d.skills);d.train=d.train||{};d.buffs=d.buffs||{};d.redeemed=d.redeemed||[];d.home=d.home||'brug';if(d.pendingArrest===undefined)d.pendingArrest=null;
     if(d.family==='rossi')d.family='colombra';if(d.family==='syndicaat')d.family='lucchetti';if(d.energy==null)d.energy=100;
-    if(oldTrain){d.trainV=1;migrateTrain(d)}d.dep=Array.isArray(d.dep)?d.dep:[];d.inv=d.inv||{};d.furn=d.furn||{};d.carDex=d.carDex||{};
+    if(oldTrain){d.trainV=1;migrateTrain(d)}d.dep=Array.isArray(d.dep)?d.dep:[];
+    // uitrusting: vroeger telde alles bij elkaar op, nu per soort je beste item. Overbodige oude items krijg je terug.
+    if(oldGear){d.gear=d.gear||{};let back=0;GEAR_CATS.forEach(c=>{const own=GEAR.filter(g=>g.cat===c.id&&d.gear[g.id]);own.slice(0,-1).forEach(g=>{back+=g.p;delete d.gear[g.id]})});if(back){d.cash+=back;d._gearBack=back}d.gearV=2}d.inv=d.inv||{};d.furn=d.furn||{};d.carDex=d.carDex||{};
     // oude saves: aantal bedrijven per soort → vestigingen op level 1
     if(oldBiz){d.biz2={};Object.entries(d.biz||{}).forEach(([k,n])=>{if(n>0)d.biz2[k]=Array(n).fill(1)})}
     if(window.__USER__)d.name=window.__USER__;return d}
@@ -53,17 +55,24 @@ const rankStars=xp=>{const l=rankLevel(xp);return `<span class="rk-stars" title=
 // VIP: alle wachttijden 60% van normaal (klussen, auto's, training, ontspanning, rusten, dokter)
 const VIP_WAIT=.6;const waitK=()=>isVip()?VIP_WAIT:1;
 const inJail=()=>S.jailUntil>now();
-const gearBonus=()=>GEAR.reduce((a,g)=>a+(S.gear[g.id]?g.bonus:0),0);
+// per soort telt je beste item (het duurste dat je hebt)
+const gearBest=cat=>{let b=null;GEAR.forEach(g=>{if(g.cat===cat&&S.gear&&S.gear[g.id])b=g});return b};
+const gearSum=k=>GEAR_CATS.reduce((a,c)=>{const g=gearBest(c.id);return a+((g&&g[k])||0)},0);
+const gearBonus=()=>gearSum('kans');
+const gearFx=k=>gearSum(k)/100;
+const gearVk=()=>gearSum('vk');
+// hitte erbij, minder met communicatiemiddelen (kansrekening voor de rest, zodat kleine getallen ook tellen)
+function addHeat(h){h*=1-gearFx('heat');S.heat=Math.min(100,S.heat+Math.floor(h)+(Math.random()<h%1?1:0))}
 const fam=()=>FAMILIES.find(f=>f.id===S.family)||{chance:0,loot:0,jail:0};
 const furnFx=k=>FURN.reduce((a,f)=>a+((S&&S.furn&&S.furn[f.id])?(f.fx[k]||0):0),0);
 const buffFocus=()=>(S.buffs&&S.buffs.focus&&S.buffs.focus.until>now())?S.buffs.focus.pct:0;
 const buffLoot=()=>(S.buffs&&S.buffs.loot&&S.buffs.loot.until>now())?S.buffs.loot.pct:0;
 const sk=id=>(S.skills&&S.skills[id])||0;
 // buit-vermenigvuldiger bij klussen: familie × (rang + rang-level + hacken + buit-buff) × VIP
-const lootMult=()=>(1+fam().loot/100)*(1+rankIdx(S.xp)*RANK_LOOT+rankLvlBonus()+sk('hack')*SK.hack.loot/100+buffLoot()/100)*(isVip()?1+VIP_LOOT:1);
+const lootMult=()=>(1+fam().loot/100)*(1+rankIdx(S.xp)*RANK_LOOT+rankLvlBonus()+sk('hack')*SK.hack.loot/100+buffLoot()/100+gearFx('buit'))*(isVip()?1+VIP_LOOT:1);
 const focusPct=()=>buffFocus()+furnFx('focus');
 const chance=c=>Math.max(5,Math.min(95,c.base+rankIdx(S.xp)*2+gearBonus()+fam().chance+S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)+(c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0)+focusPct()-Math.floor(S.heat/4)));
-function sendToJail(sec){sec=Math.max(30,Math.min(600,Math.round(sec*(1-fam().jail/100)*(1-sk('rechten')*SK.rechten.jail/100))));S.lastSentence=sec;S.jailUntil=now()+sec*1000;return sec}
+function sendToJail(sec){sec=Math.max(30,Math.min(600,Math.round(sec*(1-fam().jail/100)*(1-sk('rechten')*SK.rechten.jail/100)*(1-gearFx('jail')))));S.lastSentence=sec;S.jailUntil=now()+sec*1000;return sec}
 // Borg groeit met je rang: als Dief kost 2 minuten zo'n €900, als Peetvader 10 minuten zo'n €150.000. Charisma geeft korting.
 const bailRate=()=>2*Math.pow(1.55,rankIdx(S.xp));
 function bailCost(){const left=Math.max(0,Math.ceil((S.jailUntil-now())/1000));if(!left)return 0;return Math.max(50,Math.round(left*bailRate()*(1-S.skills.charisma*SK.charisma.bail)*(1-sk('rechten')*SK.rechten.bail/100)/10)*10)}

@@ -53,6 +53,10 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   Zo levert elk bedrijf meer op naarmate je imperium groeit en je hoger in rang komt (Bezit toont de verdeling).
   "Upgrade alles wat kan" upgradet steeds de laagste vestiging eerst. Oude saves worden omgezet (aantal → vestigingen op level 1).
 - **8 families**, van De Nieuwe Garde tot La Cupola
+- **Wapens & uitrusting** (`public/js/pages/wapens.js`): 19 items in 4 soorten, elk met tiers en een rang-eis. Per soort telt je
+  beste item. Wapens: slaagkans en vuurkracht (Vlindermes tot Machinegeweer, +3% tot +18%). Bescherming: slaagkans en kortere
+  celstraf. Gereedschap: buit en meer tijd bij auto stelen. Communicatie: minder hitte na elke klus (−10% tot −55%).
+  Oude saves: vroeger telde alles bij elkaar op; overbodige oude items worden terugbetaald.
 - **Bank** (`public/js/pages/bank.js`, koersen in `public/js/market.js`). Alles bij de bank ben je niet kwijt als je gepakt wordt.
   - *Spaarrekening*: 0,10% rente per uur (VIP 0,12%), vrij opneembaar, ook offline tot 12 uur. (Was 1% per 10 minuten:
     dat is ruim 300% per dag en maakte beleggen zinloos.)

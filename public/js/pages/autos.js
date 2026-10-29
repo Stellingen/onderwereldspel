@@ -86,7 +86,7 @@ Object.assign(act,{
   S.energy-=en;S.cd.car=now()+carCd();S.pendingHeist={id:m.id};S.carFind={...x,res:'busy'};save();pushState();
   const ok=await carHeist(x);S.pendingHeist=null;S.carFind={...x,res:ok?'ok':'fail'};
   if(ok){const v=carSell(x.v);S.cars.push({id:m.id,n:m.n,v,b:m.b,c:x.c,year:x.year,km:x.km,staat:x.staat});S.stats.cars++;S.cred+=carTier(m)>=3?2:1;
-    S.heat=Math.min(100,S.heat+m.d*2);addXp(6+m.d*m.d*4+(m.leg?200:0));const d=S.carDex[m.id]||[1,0];d[1]++;S.carDex[m.id]=d;
+    addHeat(m.d*2);addXp(6+m.d*m.d*4+(m.leg?200:0));const d=S.carDex[m.id]||[1,0];d[1]++;S.carDex[m.id]=d;
     toast(m.n+' gestolen! Waarde '+fmt(v),m.d>=5?'lvl':'ok');log(m.n+' gestolen ('+fmt(v)+')','ok');save();render()}
-  else{S.heat=Math.min(100,S.heat+4+m.d*2);log('Mislukte poging: '+m.n,'bad');save();render();
+  else{addHeat(4+m.d*2);log('Mislukte poging: '+m.n,'bad');save();render();
     arrest(30+m.d*20,'Alarm!','Het alarm van de '+m.n+' gaat af. '+FLEE_LEVELS[Math.min(5,m.d)].where,{flee:Math.min(5,Math.max(1,m.d))})}}});

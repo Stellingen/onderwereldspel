@@ -126,9 +126,34 @@ const bizUpCost=(b,l)=>Math.floor(b.p*BIZ_UPK[l-1]);
 const BIZ_BOOST=1.25,BIZ_IMP_UNIT=.01,BIZ_IMP_UP=.005,BIZ_IMP_MAX=2,BIZ_RANK=.05;
 const bizIncRaw=(b,l)=>b.inc*BIZ_MULT[l-1];
 const bizInc=(b,l)=>bizIncRaw(b,l)*(typeof bizMult==='function'?bizMult().total:1);
+// Uitrusting in 4 soorten. Per soort telt alleen je beste item; wat je koopt houd je.
+// kans = slaagkans (+%), buit = buit (+%), car = meer tijd bij auto stelen (+%), heat = minder hitte (−%),
+// jail = kortere celstraf (−%), vk = vuurkracht (zware familiemissies vragen om een minimum). r = vanaf rang.
+const GEAR_CATS=[
+ {id:'wapen',n:'Wapens',d:'Meer kans dat een klus lukt. Zware familiemissies vragen om vuurkracht.',ic:'gun',col:'#ff6b6b'},
+ {id:'pantser',n:'Bescherming',d:'Je durft meer en zit korter vast als het toch misgaat.',ic:'vest',col:'#a9dcff'},
+ {id:'tools',n:'Gereedschap',d:'Je weet beter waar het geld ligt en krijgt auto\'s sneller open.',ic:'tool',col:'#ffd166'},
+ {id:'comm',n:'Communicatie',d:'Je hoort de politie eerder aankomen: minder hitte na elke klus.',ic:'radio',col:'#b8a1ff'}];
 const GEAR=[
- {id:'mes',n:'Vlindermes',p:800,bonus:3},{id:'pistool',n:'Glock 17',p:6000,bonus:6},
- {id:'vest',n:'Kogelvrij vest',p:20000,bonus:5},{id:'ak',n:'AK-47',p:75000,bonus:10}];
+ {id:'mes',cat:'wapen',n:'Vlindermes',d:'Klein, snel en makkelijk weg te gooien.',p:800,r:0,kans:3,vk:1,ic:'knife'},
+ {id:'pistool',cat:'wapen',n:'Glock 17',d:'Het standaardwerk. Betrouwbaar en niet te zwaar.',p:6000,r:2,kans:6,vk:3,ic:'gun'},
+ {id:'uzi',cat:'wapen',n:'Uzi',d:'Compact en veel kogels in weinig tijd.',p:28000,r:4,kans:9,vk:5,ic:'gun'},
+ {id:'ak',cat:'wapen',n:'AK-47',d:'Iedereen weet wat het is. Iedereen doet wat je zegt.',p:75000,r:5,kans:12,vk:7,ic:'rifle'},
+ {id:'sniper',cat:'wapen',n:'Scherpschuttersgeweer',d:'Voor werk van een afstand.',p:320000,r:7,kans:15,vk:9,ic:'rifle'},
+ {id:'mg',cat:'wapen',n:'Machinegeweer',d:'Voor als het echt niet anders kan.',p:1250000,r:9,kans:18,vk:12,ic:'rifle'},
+ {id:'jack',cat:'pantser',n:'Leren jack',d:'Beter dan niks, en het staat goed.',p:1500,r:0,kans:1,jail:3,ic:'vest'},
+ {id:'vest',cat:'pantser',n:'Kogelvrij vest',d:'Onder je jas zie je het niet.',p:20000,r:3,kans:5,jail:8,ic:'vest'},
+ {id:'helm',cat:'pantser',n:'Zwaar vest met helm',d:'Je loopt er niet mee over straat, maar bij een overval wel.',p:140000,r:6,kans:7,jail:12,ic:'helmet'},
+ {id:'mil',cat:'pantser',n:'Militaire uitrusting',d:'Van een legerbasis die er niet over praat.',p:650000,r:8,kans:9,jail:16,ic:'helmet'},
+ {id:'koevoet',cat:'tools',n:'Koevoet',d:'Elke deur gaat open als je maar hard genoeg duwt.',p:500,r:0,buit:2,car:3,ic:'tool'},
+ {id:'lockpick',cat:'tools',n:'Lockpickset',d:'Zonder krassen naar binnen.',p:4500,r:1,buit:4,car:6,ic:'tool'},
+ {id:'jammer',cat:'tools',n:'Signaalverstoorder',d:'Alarmen en sleutelkastjes zwijgen.',p:32000,r:4,buit:7,car:10,ic:'chip'},
+ {id:'laptop',cat:'tools',n:'Hackerslaptop',d:'Camera\'s uit, startonderbreker uit.',p:160000,r:6,buit:10,car:14,ic:'laptop'},
+ {id:'lans',cat:'tools',n:'Thermische lans',d:'Door een kluisdeur in een paar minuten.',p:750000,r:8,buit:14,car:18,ic:'torch'},
+ {id:'prepaid',cat:'comm',n:'Prepaid telefoon',d:'Op naam van niemand.',p:300,r:0,heat:10,ic:'phone'},
+ {id:'scanner',cat:'comm',n:'Politiescanner',d:'Je hoort de meldkamer mee.',p:12000,r:2,heat:25,ic:'radio'},
+ {id:'crypto',cat:'comm',n:'Versleutelde telefoon',d:'Berichten die niemand kan lezen.',p:85000,r:5,heat:40,ic:'phone'},
+ {id:'mol',cat:'comm',n:'Mol bij de politie',d:'Een agent die je op tijd belt.',p:600000,r:8,heat:55,ic:'ear'}];
 const NPC_NAMES=['Vito "De Haai"','Ricardo B.','Mo Taxi','Sjaak de Kraker','Lola V.','Don Petrov','Kleine Johnny','Yasmina R.','Big Dre','De Belg','Nico Stilletto','Frenkie Fluit'];
 
 // Vluchtspel: hoe besloten de plek, hoe moeilijker het is om weg te komen

@@ -1,9 +1,9 @@
 // Alle acties (klikken) en de politiecontroles
 const act={
  crime(id){const c=CRIMES.find(x=>x.id===id);if(inJail()||cdLeft(id)||rankIdx(S.xp)<c.r)return;if(S.energy<c.en){toast('Te moe. Je hebt '+c.en+' energie nodig','bad');return}S.energy-=c.en;S.cd[id]=now()+crimeCd(c);
-  if(rnd(1,100)<=chance(c)){const g=Math.floor(rnd(c.min,c.max)*lootMult());S.cash+=g;S.stats.crimes++;S.cred+=c.cr;S.heat=Math.min(100,S.heat+rnd(1,4));addXp(c.xp);toast(c.n+' gelukt: +'+fmt(g));log(c.n+' gelukt, buit '+fmt(g),'ok')}
+  if(rnd(1,100)<=chance(c)){const g=Math.floor(rnd(c.min,c.max)*lootMult());S.cash+=g;S.stats.crimes++;S.cred+=c.cr;addHeat(rnd(1,4));addXp(c.xp);toast(c.n+' gelukt: +'+fmt(g));log(c.n+' gelukt, buit '+fmt(g),'ok')}
   else{const lost=Math.floor(Math.min(Math.floor(S.cash*0.1),c.max*2)*(1-furnFx('safe'))); // verlies past bij de grootte van de klus
-  S.cash-=lost;S.stats.fails++;S.hp=Math.max(10,S.hp-rnd(5,15));S.heat=Math.min(100,S.heat+rnd(5,10));
+  S.cash-=lost;S.stats.fails++;S.hp=Math.max(10,S.hp-rnd(5,15));addHeat(rnd(5,10));
    addXp(Math.ceil(c.xp/4));log(c.n+' mislukt, '+fmt(lost)+' kwijt','bad');save();
    arrest(c.jail,'Betrapt!',c.n+' ging mis. '+FLEE_LEVELS[c.flee||2].where,{flee:c.flee||2})}
   save();render()},
@@ -47,7 +47,8 @@ const act={
  win(b,m,label){casinoRound(b,m>0?b*m:0,'coin');if(m>0){S.cash+=b*m-b;S.stats.won+=b*m-b;toast(label+' Gewonnen: +'+fmt(b*m-b));log('Casino: +'+fmt(b*m-b),'ok')}else{S.cash-=b;S.stats.lost+=b;toast(label+' Verloren: -'+fmt(b),'bad');log('Casino: -'+fmt(b),'bad')}save()},
  coin(k){const b=act.getBet();if(!b)return;const r=Math.random()<.5?'kop':'munt';act.win(b,r===k?2:0,'Het werd '+r+'.');render()},
  /* oude roulettesnelknop */ roul(k){const b=act.getBet();if(!b)return;const n=rnd(0,36);const col=n===0?'groen':n%2?'rood':'zwart';window._roul=n+' '+col.toUpperCase();act.win(b,col===k?(k==='groen'?14:2):0,n+' '+col+'.');render()},
- buyGear(id){const g=GEAR.find(x=>x.id===id);if(S.cash<g.p)return;S.cash-=g.p;S.gear[id]=1;toast(g.n+' gekocht');log(g.n+' gekocht','info');save();render()},
+ buyGear(id){const g=GEAR.find(x=>x.id===id);if(!g||S.gear[id]||S.cash<g.p||rankIdx(S.xp)<g.r)return;const best=gearBest(g.cat);if(best&&GEAR.indexOf(best)>GEAR.indexOf(g))return;
+  S.cash-=g.p;S.gear[id]=1;toast(g.n+' gekocht en uitgerust','ok');log(g.n+' gekocht ('+fmt(g.p)+')','info');save();pushState();render()},
  heal(){const c=healCost();if(S.cash<c){toast('Niet genoeg geld voor de dokter','bad');return}S.cash-=c;S.hp=100;toast('Volledig opgelapt');save();render()},
  bribe(){const c=bribeCost();if(S.cash<c){toast('Niet genoeg geld om om te kopen','bad');return}S.cash-=c;S.heat=0;toast('De politie kijkt even de andere kant op');save();render()},
  bail(){const c=bailCost();if(S.cash+S.bank<c)return;const fromCash=Math.min(S.cash,c);S.cash-=fromCash;S.bank-=c-fromCash;S.jailUntil=0;S.wanted=false;toast('Borg betaald. Je bent netjes vrij');log('Borg betaald: '+fmt(c),'info');save();render()},

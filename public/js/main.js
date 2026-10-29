@@ -17,6 +17,7 @@ function tick(){
     S.npcs.forEach((n,i)=>{n.xp+=mins*(4+i*3)*(0.5+Math.random());n.cash+=mins*(30+i*60)*(Math.random()*2-0.3)})}
   save();
 }
+if(S._gearBack){toast('Uitrusting vernieuwd: per soort telt nu je beste item. Je krijgt '+fmt(S._gearBack)+' terug voor overbodige spullen.','lvl');log('Uitrusting: '+fmt(S._gearBack)+' terug voor overbodige spullen','ok');delete S._gearBack}
 // offline-inkomen bij openen
 (()=>{const away=(now()-S.last)/60000;if(away>1&&income()>0){const g=income()*Math.min(away,720);toast('Terwijl je weg was: +'+fmt(g)+' passief inkomen');log('Offline inkomen: '+fmt(g),'ok')}tick()})();
 
