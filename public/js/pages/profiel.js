@@ -15,7 +15,15 @@ V.profiel=()=>{
     <div class="pf-rank"><b>${RANKS[ri][0]} ${rankStars(S.xp)}</b><span>${nxt?Math.floor(S.xp).toLocaleString('nl-NL')+' / '+nxt[1].toLocaleString('nl-NL')+' XP':'Hoogste rang'}</span></div>
     <div class="bar"><i style="width:${pct}%;background:var(--sec)"></i></div>
     <div class="pf-lvl">${rankLvlInfo()}</div>
-    <div class="pf-fam">${S.family?`<span class="crest" style="color:${fam().col};width:34px;height:38px;font-size:14px">${fam().m}</span>${fam().n}`:'Nog geen familie'}</div>
+    <div class="pf-fam">${S.family?`<span class="crest" style="color:${fam().col};width:34px;height:38px;font-size:14px">${fam().m}</span>${fam().n}<em>${FAM_RANKS[famRankIdx()][0]}</em>`:'Nog geen familie'}</div>
+    <div class="pf-dos">
+     <a href="#skills"><span class="label">Skills</span><b>${TRAININGS.reduce((a,t)=>a+(S.skills[t.id]||0),0)}</b><small>levels training</small></a>
+     <a href="#shop"><span class="label">Uitrusting</span><b>+${gearBonus()}%</b><small>slaagkans · vuurkracht ${gearVk()}</small></a>
+     <a href="#biz"><span class="label">Bezit</span><b>${fmt(income())}</b><small>per minuut</small></a>
+     <a href="#bank"><span class="label">Bank</span><b>${fmt(bankNet())}</b><small>sparen, deposito's, beleggen</small></a>
+     <a href="#verblijf"><span class="label">Woning</span><b>${home().n}</b><small>${home().place}</small></a>
+     <a href="#crimes"><span class="label">Buit</span><b>×${lootMult().toLocaleString('nl-NL',{maximumFractionDigits:2})}</b><small>op elke klus</small></a>
+    </div>
    </div>
   </section>
   <section class="card pf-redeem">

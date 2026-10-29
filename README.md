@@ -94,7 +94,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   (normaal 4: ±13%, 5: ±4,3%, 6: ±1,3%; VIP 4+: ±21%, 6: ±1,8%). **Inzet kiezen** gaat via een pop-up (ook bij Visdief).
   Spatiebalk = draaien. **Seed**: elke spin komt uit jouw seed + spinnummer. Gesimuleerd (`sim8.js`, 1 mln. spins, 200.000
   gekochte bonussen): normaal bonus ±1 op 200 (4+ ±1 op 930, 5+ ±1 op 3.300, superbonus ±1 op 14.500), RTP ±92,5%; VIP bonus
-  ±1 op 135 (4+ ±1 op 570, superbonus ±1 op 7.000), RTP ±96% + 0,5% cashback; bonus kopen ±92% (VIP ±97%).
+  ±1 op 135 (4+ ±1 op 570, superbonus ±1 op 7.000), RTP ±96% + 0,5% cashback; bonus kopen ±93% (VIP ±97,5%).
   Basisspel betaalt 95,8% van de tabel (VIP 18% minder), de bonus 38,5%.
 - **Roulette** (Europees, één nul, 2,7% huisvoordeel): groot wiel met rollende bal bovenaan, echte inzettafel eronder.
   Nummer, split, rij, hoek, zes, drie met nul, eerste vier, kolom, dozijn en de kansen, plus groepen op het wiel

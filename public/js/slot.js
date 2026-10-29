@@ -18,7 +18,7 @@
 //   bij een gekochte bonus vaker een extra kluis (4+ ±21% i.p.v. ±19%, 6 ±1,8% i.p.v. ±1,3%) en iets meer kans op Gouden baren.
 //   Om onder 100% RTP te blijven betalen clusters in het VIP-basisspel VIP_K (18% minder).
 // - Doorgerekend met sim8.js (1 mln. spins, 200.000 gekochte bonussen): normaal RTP ±92,5%, VIP ±96% (+0,5% cashback),
-//   bonus kopen ±92% (VIP ±97%). 3 Gouden baren: ±1 op 650 bonussen van 10 spins, ±1 op 345 bij 12, ±1 op 180 bij 14; superbonus ±1 op 20.
+//   bonus kopen ±93% (VIP ±97,5%). 3 Gouden baren: ±1 op 650 bonussen van 10 spins, ±1 op 345 bij 12, ±1 op 180 bij 14; superbonus ±1 op 20.
 // - Max win: 5000× de inzet voor de hele ronde (ook bij een gekochte bonus telt de inzet, niet de prijs van de bonus).
 // Pure functies, zodat de RTP in Node te simuleren is (zie README).
 (function(root){

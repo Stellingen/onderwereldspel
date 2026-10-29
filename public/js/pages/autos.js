@@ -20,7 +20,7 @@ function spawnCar(m,spot){const [y0,y1]=m.y,year=y0+Math.floor(Math.random()*(y1
  const v=Math.max(Math.round(m.lo*.7/50)*50,Math.min(Math.round(m.hi*1.08/50)*50,Math.round(base*st[1]/50)*50));
  const pal=CAR_COLORS[m.d];return {id:m.id,spot,year,km,staat:st[0],v,c:pal[Math.floor(Math.random()*pal.length)],plate:randPlate()}}
 const carSell=v=>Math.round(v*(1+((S.skills&&S.skills.cars)||0)*SK.cars.price)*(1+famPerk('car'))/10)*10;
-let carSearch=null,oddsOpen=window.matchMedia?matchMedia('(min-width:900px)').matches:true;
+let carSearch=null,oddsOpen=false;
 const findM=x=>CARS.find(k=>k.id===x.id)||CARS[0];
 function carExpire(quiet){const x=S.carFind;if(x&&x.until&&!x.res&&x.until<now()){S.carFind={...x,res:'gone'};if(!quiet)toast('De eigenaar komt terug. De '+findM(x).n+' rijdt weg.','bad');save();return true}return false}
 function huntScene(){const x=S.carFind;
@@ -57,12 +57,13 @@ function oddsList(){const dex=S.carDex||{},got=CARS.filter(m=>(dex[m.id]||[0,0])
    ${ms.map(m=>{const d=dex[m.id]||[0,0];return `<div class="od-row ${d[1]?'got':''} ${cur===m.id?'now':''}"><span class="od-n">${m.n}</span><span class="od-v">${kTxt(m.lo)}–${kTxt(m.hi)}</span><b>${oddTxt(CAR_ODDS[m.id])}</b><i title="${d[1]?d[1]+'× gestolen':'Nog niet gestolen'}">${d[1]?'✓':''}</i></div>`}).join('')}</div>`}).join('')}</div></details>`}
 V.cars=()=>{if(S.street)delete S.street;S.carDex=S.carDex||{};carExpire(true);const gv=S.cars.reduce((a,c)=>a+c.v,0);
  return `<h1>Auto's</h1><p class="sub">Zoek de straat af en kijk wat je tegenkomt. Een gewone Polo vind je zo, een Lamborghini bijna nooit. En als je er een vindt, moet je wel snel zijn.</p>
- <div class="hunt-grid"><section class="hunt">${huntScene()}<div class="hunt-body">${huntInfo()}${huntBtns()}</div></section>${oddsList()}</div>
+ <div class="hunt-grid"><section class="hunt">${huntScene()}<div class="hunt-body">${huntInfo()}${huntBtns()}</div></section></div>
  <div class="tierhead"><h2>Garage</h2><span>${S.cars.length} / ${GARAGE_MAX} · waarde ${fmt(gv)}</span></div>
  ${S.cars.length?`<div class="garage">${S.cars.map((c,i)=>{const m=CARS.find(k=>k.id===c.id)||CARS.find(k=>k.n===c.n)||{b:'hatch',d:1};
    return `<div class="gcar" style="--rc:${(carRarity(m)||CAR_RARITY[1])[1]}">${carSvg(c.b||m.b,c.c||'#8a929c')}<div class="g-n"><b>${c.n}</b><span>${c.year?c.year+' · '+kmTxt(c.km)+(c.staat?' · '+c.staat:''):'&nbsp;'}</span></div>
     <div class="g-s"><span class="gv">${fmt(c.v)}</span><button class="btn sm" onclick="act.sell(${i})">Verkoop</button>${S.family?`<button class="btn sm ghost g-fam" onclick="act.famCar(${i})" title="Afleveren bij ${famBase().n}: ${fmt(Math.round(c.v*.3))} en +${Math.round(2+Math.sqrt(c.v)/20)} eer">Familie</button>`:''}</div></div>`}).join('')}</div>
-  <button class="btn" style="margin-top:10px;width:auto" onclick="act.sellAll()">Alles verkopen · ${fmt(gv)}</button>`:'<div class="card empty">Je garage is leeg. Zoek hierboven je eerste auto.</div>'}`};
+  <button class="btn" style="margin-top:10px;width:auto" onclick="act.sellAll()">Alles verkopen · ${fmt(gv)}</button>`:'<div class="card empty">Je garage is leeg. Zoek hierboven je eerste auto.</div>'}
+ <div class="cars-odds">${oddsList()}</div>`};
 // Eigen klok: aftellen zonder alles opnieuw te tekenen
 let _carSig='';
 setInterval(()=>{if(page!=='cars'||window.__chase||carSearch)return;if(carExpire()){render();return}const x=S.carFind;

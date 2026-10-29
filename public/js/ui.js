@@ -139,7 +139,7 @@ function renderRail(){
      <div><span class="label">Familie</span><b style="color:${S.family?fam().col:'var(--faint)'}">${S.family?fam().m:'—'}</b><small>${S.family?fam().n:'geen'}</small></div>
      <div><span class="label">Positie</span><b>#${pos}</b><small>van ${all.length}</small></div>
     </div></section>
-   ${td.length?`<section class="rcard"><div class="label">Klaar voor je · ${td.length}</div><div class="todos">${todoHtml(td,4)}</div>${td.length>4?`<a class="todo-more" href="#dash">Nog ${td.length-4} op het dashboard ›</a>`:''}</section>`:''}
+   ${td.length?`<section class="rcard"><div class="label">Klaar voor je · ${td.length}</div><div class="todos">${todoHtml(td,3)}</div>${td.length>3?`<a class="todo-more" href="#dash">Nog ${td.length-3} op het dashboard ›</a>`:''}</section>`:''}
    <section class="rcard"><div class="label">Snelle klus</div>
     <div class="rq"><div><b>${bc.n}</b><small>${chance(bc)}% kans · ${bc.en} energie · ${fmt(bc.min*lootMult())}–${fmt(bc.max*lootMult())}</small></div></div>
     <button class="btn" onclick="act.crime('${bc.id}')" ${ok?'':'disabled'}>${inJail()?'Je zit vast':left?'Wacht '+Math.ceil(left/1000)+'s':S.energy<bc.en?'Te moe':'Uitvoeren'}</button></section>
