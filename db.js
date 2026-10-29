@@ -23,6 +23,8 @@ function config() {
 
 async function init() {
   const c = config();
+  const seen = Object.keys(process.env).filter(k => /MYSQL|DATABASE/.test(k));
+  console.log('Database-variabelen aanwezig:', seen.length ? seen.join(', ') : 'geen');
   if (!c) {
     console.warn('⚠  Geen MySQL-config gevonden. Zet in Railway bij de app-service de variabele MYSQL_URL = ${{ MySQL.MYSQL_URL }}. De site draait wel, maar inloggen werkt pas met database.');
     return;
@@ -31,6 +33,10 @@ async function init() {
     ? c
     : Object.assign({}, c, { waitForConnections: true, connectionLimit: 5, namedPlaceholders: false });
   pool = mysql.createPool(opts);
+  for (let i = 1; i <= 10; i++) {
+    try { await pool.query('SELECT 1'); break; }
+    catch (e) { console.warn(`MySQL nog niet bereikbaar (poging ${i}/10): ${e.code || e.message}`); if (i === 10) throw e; await new Promise(r => setTimeout(r, 3000)); }
+  }
 
   await pool.query(`CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
