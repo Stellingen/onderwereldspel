@@ -31,7 +31,7 @@ let casinoTab='kluis',rankTab='xp',slotState=['7','7','7'],spinning=false;
 // Elke sectie heeft een eigen kleur, zodat je ziet waar je bent
 const NAV_GROUPS=[['Straat',['dash','crimes','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank'],'#3fe395','63,227,149'],['Macht',['shop','skills','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','rank','profiel'],'#a9dcff','169,220,255']];
 const groupOf=k=>NAV_GROUPS.find(g=>g[1].includes(k))||NAV_GROUPS[0];
-function applySection(){const g=groupOf(page),r=document.documentElement.style;r.setProperty('--sec',g[2]);r.setProperty('--sec-rgb',g[3])}
+function applySection(){document.body.classList.toggle('wide-page',page==='casino');const g=groupOf(page),r=document.documentElement.style;r.setProperty('--sec',g[2]);r.setProperty('--sec-rgb',g[3])}
 function crumbHtml(){const g=groupOf(page);return `<div class="crumb"><i></i><span>${g[0]}</span>/ ${PAGES.find(p=>p[0]===page)[1]}</div>`}
 function renderNav(){
   const name=k=>PAGES.find(p=>p[0]===k)[1];

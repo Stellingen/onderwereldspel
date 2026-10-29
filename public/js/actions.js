@@ -29,7 +29,7 @@ const act={
       if(!r.ok){if(r.status===409&&!S.redeemed.includes(code))S.redeemed.push(code);redeemMsg={ok:false,t:j.error||'Kon de code niet inwisselen.'};save();render();return}
       amount=j.amount}
     catch(e){redeemMsg={ok:false,t:'De server is niet bereikbaar. Probeer het later opnieuw.'};render();return}
-  }else{const LOCAL={lotto:1500};amount=LOCAL[code];if(!amount){redeemMsg={ok:false,t:'Deze code bestaat niet.'};render();return}}
+  }else{const LOCAL={lotto:1500,welkom:500};amount=LOCAL[code];if(!amount){redeemMsg={ok:false,t:'Deze code bestaat niet.'};render();return}}
   S.cash+=amount;S.redeemed.push(code);redeemMsg={ok:true,t:'Gelukt! '+fmt(amount)+' is bijgeschreven op je contant geld.'};
   toast('Code '+code.toUpperCase()+': +'+fmt(amount),'lvl');log('Code '+code.toUpperCase()+' ingewisseld: +'+fmt(amount),'ok');
   save();if(typeof pushState==='function')pushState();render()},

@@ -81,7 +81,7 @@ app.get('/api/me', auth, async (req, res) => {
 });
 
 // Inwisselcodes: elke code één keer per account. Bedrag in euro (spelgeld).
-const CODES = { lotto: 1500 };
+const CODES = { lotto: 1500, welkom: 500 };
 app.post('/api/redeem', auth, limit, async (req, res) => {
   if (!db.state.ready) return need(res);
   const code = String((req.body && req.body.code) || '').trim().toLowerCase();

@@ -8,7 +8,7 @@
 // - 4+ kluizen = free spins; tijdens de bonus geven 2+ kluizen extra spins (2:+2, 3:+4, 4:+6, 5+:+8). Bonus kopen = 100x inzet.
 // Pure functies, zodat de RTP in Node te simuleren is (zie README).
 (function(root){
-const COLS=7, ROWS=7, MIN_CLUSTER=5, MAX_SPOT=128, MAX_WIN=5000;
+const COLS=7, ROWS=7, MIN_CLUSTER=5, MAX_SPOT=1024, MAX_WIN=10000;
 // Uitbetaling (x inzet) per clustergrootte 5,6,7,8,9,10,11,12,13,14,15+
 const CURVE=[1,1.4,1.9,2.6,3.5,5,6.5,9,12,16,25];
 const SYMS=[
@@ -20,9 +20,9 @@ const SYMS=[
  {id:'diamant',n:'Diamant',    w:104, b:0.55},
  {id:'goud',   n:'Goudstaaf',  w:82,  b:1.00}];
 let PAYK=1;
-const setPay=k=>{PAYK=k;SYMS.forEach(s=>{s.pay=CURVE.map(c=>+(s.b*c*PAYK).toFixed(2))})};setPay(4.2);
-const WILD={id:'sleutel',n:'Loper',w:14,fsW:52};
-const SCATTER={id:'kluis',n:'Kluis',w:12,fsW:4};
+const setPay=k=>{PAYK=k;SYMS.forEach(s=>{s.pay=CURVE.map(c=>+(s.b*c*PAYK).toFixed(2))})};setPay(3.5);
+const WILD={id:'sleutel',n:'Loper',w:22,fsW:51.5};
+const SCATTER={id:'kluis',n:'Kluis',w:12,fsW:6};
 const FS_BY_SC={4:10,5:11,6:12,7:15};
 const FS_START=10, FS_RETRIGGER=2, BUY_COST=100;
 // Extra spins tijdens de bonus: hoe meer kluizen, hoe meer spins
