@@ -28,7 +28,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   het spel het opnieuw en gaat er geen voortgang verloren.
 - **Arrestaties zijn verversbestendig**: openstaande keuze komt terug, afgebroken vlucht of autodiefstal telt als mislukt.
 - **8 families**, van De Nieuwe Garde tot La Cupola
-- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000) en `spinnetje` (€25.000), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
+- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000), `spinnetje` (€25.000) en `broke` (€250.000), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
 - **Kluiskraker**: cluster-slot op 7×7 (5+ aangrenzende gelijke symbolen), Loper als wild, vakjes die bij elke
   winst x2, x4 … tot x1024 worden. 4 kluizen = 10 free spins, 5 kluizen = 12. Tijdens de bonus geven 2+ kluizen extra spins
   (2:+2 … 5+:+8). **6+ kluizen = superbonus**: 8 spins met bijna twee keer zoveel lopers en de **Gouden baar**; landt die,
