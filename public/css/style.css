@@ -1805,3 +1805,21 @@ button,.btn,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-to
 .rl-receipt.side .rc-row{grid-template-columns:minmax(0,1.35fr) repeat(3,minmax(0,1fr));gap:5px}
 .rl-receipt.side .rc-head b{font-size:clamp(16px,1.6vw,24px)}
 .rl-receipt.side .rc-row{grid-template-columns:minmax(0,1.5fr) repeat(2,minmax(0,1fr))}.rl-receipt.side .rc-row>:nth-child(3){display:none}
+/* ander apparaat actief */
+#devLock{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:16px;background:rgba(4,5,7,.86);backdrop-filter:blur(4px)}
+.dl-card{width:min(460px,100%);background:var(--panel);border:1px solid var(--acc);padding:24px;box-shadow:0 30px 80px -20px #000}
+.dl-card b{display:block;font-family:var(--f-display);font-size:32px;line-height:1;text-transform:uppercase;margin:6px 0 10px}
+.dl-card p{margin:0 0 16px;color:var(--mute);font-size:14px;line-height:1.5}
+/* Kluiskraker groter: op brede schermen staan saldo en knoppen rechts naast het veld, zodat het veld bijna de hele hoogte krijgt */
+@container (min-width:1100px){
+ .kk3 .kk-stage{display:grid;grid-template-columns:minmax(0,1fr) 300px;grid-template-rows:auto auto auto 1fr;column-gap:16px;align-items:start}
+ .kk3 .kk-head{grid-column:1/-1}
+ .kk3 .kk-board{grid-column:1;grid-row:2/span 3;--bh:clamp(340px,calc(100svh - 290px),980px);width:min(100%,calc(var(--bh) * 1.7))}
+ .kk3 .kk-bar{grid-column:2;grid-row:2;grid-template-columns:1fr;margin-top:0;gap:10px}
+ .kk3 #kkConfirmBox{grid-column:2;grid-row:3}.kk3 #kkSeedBox{grid-column:2;grid-row:4;align-self:end}.kk3 #kkPickBox{display:none}
+ .kk3 .kk-hud{grid-template-columns:1fr 1fr}.kk3 .kk-hud .kk-bal{grid-column:1/-1}
+ .kk3 .kk-ctl{grid-template-columns:1fr 1fr}.kk3 .kk-ctl .kk-betbox{grid-column:1/-1}.kk3 .kk-ctl .kk-go{grid-column:1/-1;min-height:76px}.kk3 .kk-ctl .kk-small{grid-column:1/-1;flex-direction:row}
+ .kk3 .kk-ctl .kk-small>*{flex:1}
+ .kk3 .kk-seed{flex-wrap:wrap}
+}
+@container (min-width:1100px){.kk3 .kk-hud>div:last-child{grid-column:1/-1}}

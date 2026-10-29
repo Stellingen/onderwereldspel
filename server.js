@@ -117,30 +117,47 @@ app.post('/api/redeem', auth, limit, async (req, res) => {
   }
 });
 
+// Eén apparaat tegelijk: wie het spel opent, claimt de sessie (sid). Opslaan vanaf een ander (ouder) apparaat wordt geweigerd,
+// zodat twee apparaten elkaars voortgang niet kunnen overschrijven of geld dubbel kunnen uitgeven.
+const okSid = s => typeof s === 'string' && /^[a-f0-9]{16,40}$/.test(s);
 app.get('/api/state', auth, async (req, res) => {
   if (!db.state.ready) return need(res);
   try {
-    const [rows] = await db.q('SELECT state FROM game_state WHERE user_id=?', [req.user.id]);
-    res.json({ state: rows.length ? JSON.parse(rows[0].state) : null });
+    const sid = okSid(req.query.sid) ? req.query.sid : null;
+    if (sid) await db.q('UPDATE game_state SET sid=? WHERE user_id=?', [sid, req.user.id]);
+    const [rows] = await db.q('SELECT state, rev FROM game_state WHERE user_id=?', [req.user.id]);
+    res.json({ state: rows.length ? JSON.parse(rows[0].state) : null, rev: rows.length ? rows[0].rev : 0 });
   } catch (e) { console.error(e); res.status(500).json({ error: 'Kon voortgang niet laden' }); }
+});
+// Is dit apparaat nog het actieve? (bij terugkomen naar een tabblad)
+app.get('/api/session', auth, async (req, res) => {
+  if (!db.state.ready) return res.json({ active: true });
+  try {
+    const [rows] = await db.q('SELECT sid FROM game_state WHERE user_id=?', [req.user.id]);
+    res.json({ active: !rows.length || !rows[0].sid || rows[0].sid === req.query.sid });
+  } catch (e) { res.json({ active: true }); }
 });
 
 app.post('/api/state', auth, async (req, res) => {
   if (!db.state.ready) return need(res);
-  const s = req.body && req.body.state;
+  const s = req.body && req.body.state, sid = okSid(req.body && req.body.sid) ? req.body.sid : null;
   if (!s || typeof s !== 'object') return res.status(400).json({ error: 'Geen status meegegeven' });
   try {
+    const [cur] = await db.q('SELECT sid, rev FROM game_state WHERE user_id=?', [req.user.id]);
+    if (cur.length && cur[0].sid && cur[0].sid !== sid)
+      return res.status(409).json({ error: 'Je speelt op een ander apparaat verder.', code: 'other_device' });
+    const rev = (cur.length ? cur[0].rev : 0) + 1;
     const json = JSON.stringify(s);
     const xp = +s.xp || 0;
     const networth = Math.floor((+s.cash || 0) + (+s.bank || 0) + Math.max(0, +s.bankExtra || 0)); // bankExtra = deposito's + beleggingen
     const rankname = String(s.rankname || 'Rookie').slice(0, 40);
     const day = +s.day || 1;
     await db.q(
-      `INSERT INTO game_state(user_id,state,xp,networth,rankname,day) VALUES(?,?,?,?,?,?)
-       ON DUPLICATE KEY UPDATE state=VALUES(state),xp=VALUES(xp),networth=VALUES(networth),rankname=VALUES(rankname),day=VALUES(day)`,
-      [req.user.id, json, xp, networth, rankname, day]
+      `INSERT INTO game_state(user_id,state,xp,networth,rankname,day,rev,sid) VALUES(?,?,?,?,?,?,?,?)
+       ON DUPLICATE KEY UPDATE state=VALUES(state),xp=VALUES(xp),networth=VALUES(networth),rankname=VALUES(rankname),day=VALUES(day),rev=VALUES(rev),sid=COALESCE(sid,VALUES(sid))`,
+      [req.user.id, json, xp, networth, rankname, day, rev, sid]
     );
-    res.json({ ok: true });
+    res.json({ ok: true, rev });
   } catch (e) { console.error(e); res.status(500).json({ error: 'Kon voortgang niet opslaan' }); }
 });
 

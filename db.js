@@ -69,6 +69,11 @@ async function init() {
     CONSTRAINT fk_red_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
+  // één actief apparaat per account: sid = sessie van het apparaat dat als laatste het spel opende, rev = versie van de opslag
+  for (const sql of ['ALTER TABLE game_state ADD COLUMN rev INT NOT NULL DEFAULT 0', 'ALTER TABLE game_state ADD COLUMN sid VARCHAR(40) NULL']) {
+    try { await pool.query(sql); } catch (e) { if (e.code !== 'ER_DUP_FIELDNAME' && e.errno !== 1060) console.warn('Kolom toevoegen mislukt:', e.message); }
+  }
+
   state.ready = true;
   console.log('✓ MySQL verbonden en tabellen klaar.');
 }

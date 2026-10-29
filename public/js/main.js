@@ -29,6 +29,8 @@ setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderR
   // casino: saldo van de slots live bijwerken (passief inkomen loopt door), knoppen opnieuw als je ineens wel/niet genoeg hebt
   if(page==='casino'&&!userBusy()){[['kk','kkBal',()=>SLOT.BUY_COST,()=>kkBet(),()=>kkRefreshUI()],['vd','vdBal',()=>VISD.BUY_COST,()=>vdBet(),()=>vdRefresh()]].forEach(([g,id,bc,bt,ref])=>{const st=window[g],el=document.getElementById(id);if(!st||!el||st.busy)return;
     el.textContent=fmt(S.cash);const ok=(S.cash>=bt())+'/'+(S.cash>=bt()*bc());if(st._ok!==ok){st._ok=ok;ref()}})}
+  // verblijf: alleen opnieuw tekenen als je ineens wel/niet genoeg geld hebt voor inrichting of een woning (tafereel blijft rustig)
+  if(page==='verblijf'&&!userBusy()&&typeof FURN!=='undefined'){const sig=FURN.map(f=>S.cash>=f.p?1:0).join('')+HOMES.map(h=>S.cash>=h.p?1:0).join('');if(window._vbSig!==sig){if(window._vbSig!=null&&!stay.kind)render();window._vbSig=sig}}
   if(Math.random()<0.05)news();
   if(S.wanted&&!S.hide&&!inJail()&&$('#modal').hidden&&Math.random()<0.004){policeRaid();return}
   if(wasJail&&!inJail()){toast('Je bent vrijgelaten');wasJail=false;render()}else if(inJail())wasJail=true;

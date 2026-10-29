@@ -46,8 +46,10 @@
       if(me.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/?login=1');return}
       if(me.ok){
         window.__TOKEN__=token;const mj=await me.json();window.__USER__=mj.username;window.__SINCE__=mj.since||null;window.__REDEEMED__=mj.redeemed||[];
-        const st=await fetch('/api/state',{headers:h});
-        if(st.ok){const j=await st.json();if(j&&j.state)window.__SERVER_STATE__=j.state}
+        // dit apparaat wordt het actieve: andere apparaten mogen daarna niet meer opslaan
+        const sid=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');window.__SID__=sid;
+        const st=await fetch('/api/state?sid='+sid,{headers:h});
+        if(st.ok){const j=await st.json();window.__SERVER_REV__=j.rev||0;if(j&&j.state)window.__SERVER_STATE__=j.state}
       }
     }catch(e){/* server onbereikbaar: offline verder */}
   }

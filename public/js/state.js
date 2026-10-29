@@ -7,7 +7,10 @@ const SAVE_KEY='onderwereld_v1'+(window.__USER__?'_'+window.__USER__.toLowerCase
 function load(){
   const sv=window.__SERVER_STATE__||null;let lc=null;try{lc=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){}
   // de nieuwste opslag wint: als de server een update kreeg terwijl jij speelde, staat je laatste voortgang nog in de browser
-  let d=sv;if(lc&&lc.npcs&&(!sv||(lc.savedAt||0)>(sv.savedAt||0))){d=lc;if(sv)window.__PUSH_LOCAL__=true}
+  // met een account wint de server, tenzij deze browser nog niet-opgeslagen voortgang heeft op precies dezelfde versie (bv. server even weg)
+  const svRev=window.__SERVER_REV__||0;
+  let d=sv;if(lc&&lc.npcs&&(!sv||((lc.savedAt||0)>(sv.savedAt||0)&&(!window.__TOKEN__||(lc._rev||0)===svRev)))){d=lc;if(sv)window.__PUSH_LOCAL__=true}
+  if(d&&window.__TOKEN__)d._rev=d===lc?(lc._rev||0):svRev;
   if(!d){try{d=JSON.parse(localStorage.getItem('onderwereld_v1'))}catch(e){}}
   if(d&&d.npcs){const f=fresh(),oldBiz=!d.biz2,tv=d.trainV,oldTrain=tv!==2||Object.values(d.train||{}).some(n=>n>0),oldGear=d.gearV!==2;d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);d.skills=Object.assign(fresh().skills,d.skills);d.train=d.train||{};d.buffs=d.buffs||{};d.redeemed=d.redeemed||[];d.home=d.home||'brug';if(d.pendingArrest===undefined)d.pendingArrest=null;
     if(d.family==='rossi')d.family='colombra';if(d.family==='syndicaat')d.family='lucchetti';if(d.energy==null)d.energy=100;
@@ -23,12 +26,22 @@ function load(){
 let _pushTimer=null,_lastPush=0,_retry=0;
 function pushState(beacon){
   if(!window.__TOKEN__)return Promise.resolve();
-  const body=JSON.stringify({state:Object.assign({},S,{rankname:RANKS[rankIdx(S.xp)][0],bankExtra:typeof bankNet==='function'?Math.floor(bankNet()-S.bank):0})});
+  if(window.__LOCKED__)return Promise.resolve();
+  const body=JSON.stringify({sid:window.__SID__||null,state:Object.assign({},S,{rankname:RANKS[rankIdx(S.xp)][0],bankExtra:typeof bankNet==='function'?Math.floor(bankNet()-S.bank):0})});
   const again=()=>{if(beacon)return;clearTimeout(_pushTimer);_retry=Math.min(_retry+1,6);_pushTimer=setTimeout(()=>pushState(),Math.min(60000,2000*Math.pow(2,_retry)))};
   let pr=Promise.resolve();
   try{pr=fetch('/api/state',{method:'POST',keepalive:!!beacon&&body.length<60000,headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.__TOKEN__},body})
-    .then(r=>{if(r.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/');return}if(!r.ok)again();else _retry=0}).catch(again)}catch(e){again()}
+    .then(r=>{if(r.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/');return}if(r.status===409){deviceLock();return}if(!r.ok){again();return}_retry=0;
+      return r.json().then(j=>{if(j&&j.rev){S._rev=j.rev;try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}}).catch(()=>{})}).catch(again)}catch(e){again()}
   _lastPush=Date.now();return pr}
+// Ander apparaat heeft het spel geopend: hier stoppen met opslaan en dat duidelijk laten zien
+function deviceLock(){if(window.__LOCKED__)return;window.__LOCKED__=true;clearTimeout(_pushTimer);
+ const d=document.createElement('div');d.id='devLock';d.innerHTML=`<div class="dl-card"><span class="label">Account</span><b>Je speelt op een ander apparaat</b><p>Je account is ergens anders geopend. Om te voorkomen dat je voortgang dubbel of verkeerd wordt opgeslagen, kun je maar op één apparaat tegelijk spelen. Wat je hier sinds de vorige opslag deed, telt niet mee.</p><button class="btn" onclick="location.reload()">Hier verder spelen</button></div>`;document.body.appendChild(d)}
+// terug naar dit tabblad: meteen kijken of we nog het actieve apparaat zijn
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'||!window.__TOKEN__||!window.__SID__||window.__LOCKED__)return;
+ fetch('/api/session?sid='+window.__SID__,{headers:{Authorization:'Bearer '+window.__TOKEN__}}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.active===false)deviceLock()}).catch(()=>{})});
+// belangrijke momenten (casino, aankopen) meteen naar de server
+function pushSoon(){if(!window.__TOKEN__||window.__LOCKED__)return;clearTimeout(_pushTimer);_pushTimer=setTimeout(()=>pushState(),150)}
 function save(){
   S.savedAt=Date.now();
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}
@@ -148,7 +161,7 @@ const VIP_LOOT=.15,VIP_FLEE=.10,VIP_ESCAPE=.10;
 const escChance=()=>.35+(isVip()?VIP_ESCAPE:0)+famPerk('esc');
 const vipTag=()=>isVip()?'<i class="vipt" title="VIP-lid">VIP</i>':'';
 // Elke afgeronde casinoronde: inzet, wat je terugkreeg en welk spel. VIP spaart een vast percentage van de inzet op.
-function casinoRound(stake,pay,game){if(!isVip())return;const r=CB_RATE[game]||0;if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
+function casinoRound(stake,pay,game){if(typeof pushSoon==='function')setTimeout(pushSoon,0);if(!isVip())return;const r=CB_RATE[game]||0;if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
   const el=document.getElementById('cbAmt');if(el)el.textContent=fmt(cbAvail());const bt=document.getElementById('cbBtn');if(bt){bt.disabled=cbAvail()<1;bt.textContent=cbAvail()>=1?'Claimen':'Nog niks te claimen'}}
 const cbAvail=()=>isVip()&&S.cb?Math.floor(S.cb.acc||0):0;
 const crimeCd=c=>c.cd*1000*(1-S.skills.speed*SK.speed.cd)*(1-famPerk('cd'))*waitK();
