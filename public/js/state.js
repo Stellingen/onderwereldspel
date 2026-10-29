@@ -2,8 +2,29 @@
 let S;
 function fresh(){return{name:'Jij',cash:250,bank:0,xp:0,hp:100,heat:0,jailUntil:0,cred:0,family:null,skills:{steal:0,cars:0,charisma:0,speed:0},news:[],wanted:false,lastSentence:30,cd:{},cars:[],biz:{},gear:{},stats:{crimes:0,fails:0,cars:0,won:0,lost:0},log:[],last:now(),
   npcs:NPC_NAMES.map((n,i)=>({n,xp:Math.floor(200*Math.pow(1.55,i))+rnd(0,300),cash:rnd(1000,50000)*(i+1)}))}}
-function load(){try{const d=JSON.parse(localStorage.getItem('onderwereld_v1'));if(d&&d.npcs){const f=fresh();d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);return d}}catch(e){}return fresh()}
-function save(){try{localStorage.setItem('onderwereld_v1',JSON.stringify(S))}catch(e){}}
+// Opslag: met account in de database (via /api/state), anders alleen in de browser.
+const SAVE_KEY='onderwereld_v1'+(window.__USER__?'_'+window.__USER__.toLowerCase():'');
+function load(){
+  let d=window.__SERVER_STATE__||null;
+  if(!d){try{d=JSON.parse(localStorage.getItem(SAVE_KEY))||JSON.parse(localStorage.getItem('onderwereld_v1'))}catch(e){}}
+  if(d&&d.npcs){const f=fresh();d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);d.skills=Object.assign(fresh().skills,d.skills);
+    if(window.__USER__)d.name=window.__USER__;return d}
+  const f=fresh();if(window.__USER__)f.name=window.__USER__;return f}
+let _pushTimer=null,_lastPush=0;
+function pushState(beacon){
+  if(!window.__TOKEN__)return;
+  const body=JSON.stringify({state:Object.assign({},S,{rankname:RANKS[rankIdx(S.xp)][0]})});
+  try{fetch('/api/state',{method:'POST',keepalive:!!beacon,headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.__TOKEN__},body})
+    .then(r=>{if(r.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/')}}).catch(()=>{})}catch(e){}
+  _lastPush=Date.now()}
+function save(){
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}
+  if(!window.__TOKEN__)return;
+  clearTimeout(_pushTimer);
+  _pushTimer=setTimeout(()=>pushState(),Date.now()-_lastPush>15000?400:3000)}
+window.addEventListener('pagehide',()=>pushState(true));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')pushState(true)});
+function logout(){pushState(true);try{localStorage.removeItem('ow_token')}catch(e){}setTimeout(()=>location.replace('/'),150)}
 S=load();
 
 const rankIdx=xp=>{let i=0;RANKS.forEach((r,j)=>{if(xp>=r[1])i=j});return i};

@@ -1,35 +1,53 @@
 # Onderwereld
 
-Een futuristisch maffia-klikspel in de browser. Begin als Rookie en werk je op tot Peetvader.
+Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op tot Peetvader.
 
-## Spelen
+- **Landingspagina** (`/`) met uitleg, een speelbare demo en inloggen of account aanmaken
+- **Spel** (`/game.html`) alleen voor ingelogde spelers; voortgang wordt opgeslagen in MySQL
+- **Ranglijst** met echte spelers en rivalen uit de stad
 
-Open `index.html` in je browser. Je voortgang wordt automatisch opgeslagen in je browser (localStorage).
+## Railway instellen
 
-## Onderdelen
+De app-service **Gangster Spel** draait `node server.js` (staat in `railway.json`). Zet bij die service onder **Variables**:
 
-- **Misdaden** – zes klussen met slaagkans, wachttijd en straatcredit
-- **Auto's** – stelen, verzamelen in je garage en verkopen
-- **Casino** – blackjack, gokkast, dubbel of niks en roulette met een draaiend wiel
-- **Skills** – vingervlugheid, autodiefstal, charisma en snelheid (tot level 10)
-- **Bezit** – bedrijven met passief inkomen, ook als je offline bent
-- **Wapens** – permanente bonus op je slaagkans
-- **Bank** – veilig geld met rente
-- **Families** – sluit je aan met genoeg rang en straatcredit
-- **Bajes** – straf van 30 sec tot 10 min, borg betalen of ontsnappen (dan sta je op de gezochtlijst)
-- **Ranglijst** – vergelijk jezelf met je rivalen
+| Variabele | Waarde |
+|---|---|
+| `MYSQL_URL` | `${{ MySQL.MYSQL_URL }}` (kies de MySQL-service via de referentie-knop) |
+| `JWT_SECRET` | een lange willekeurige tekst, bijvoorbeeld 40+ tekens |
+
+De tabellen `users` en `game_state` worden bij de eerste start automatisch aangemaakt.
+Controleer de verbinding op `/api/health`: daar moet `"db": true` staan.
+
+Een eigen domein koppel je bij de service onder **Settings → Networking → Custom Domain**.
+
+## Lokaal draaien
+
+```
+npm install
+MYSQL_URL=mysql://user:pass@localhost:3306/railway JWT_SECRET=iets node server.js
+```
+
+Zonder database start de site ook, maar dan werkt inloggen niet. Open je `public/game.html` direct als bestand, dan speel je offline met opslag in je browser.
 
 ## Structuur
 
 ```
-index.html          pagina-opbouw en laadvolgorde van de scripts
-css/style.css       alle styling
-js/data.js          spelgegevens (rangen, misdaden, auto's, bedrijven, wapens, families)
-js/state.js         spelerstatus, opslaan, spelregels, arrestaties, skills
-js/ui.js            navigatie en statusbalk
-js/pages/*.js       één bestand per tabblad
-js/actions.js       alle klikacties en politiecontroles
-js/main.js          renderen, nieuwsticker en de spel-loop
+server.js            Express: API (registreren, inloggen, opslaan, ranglijst) + statische bestanden
+db.js                MySQL-verbinding en tabellen
+public/index.html    landingspagina
+public/game.html     spel (controleert login, laadt voortgang uit de database)
+public/css/          style.css (spel) en landing.css
+public/js/landing.js inloggen/registreren en interactieve landing
+public/js/*.js       spelmodules; public/js/pages/ bevat één bestand per tabblad
 ```
 
-De scripts zijn gewone (geen module) scripts en delen dus dezelfde globale scope; de volgorde in `index.html` is belangrijk.
+## API
+
+| Methode | Pad | Wat |
+|---|---|---|
+| POST | `/api/register` | `{username, password}` → token |
+| POST | `/api/login` | `{username, password}` → token |
+| GET | `/api/me` | ingelogde gebruiker (header `Authorization: Bearer <token>`) |
+| GET/POST | `/api/state` | voortgang laden / opslaan |
+| GET | `/api/leaderboard` | top 25 spelers |
+| GET | `/api/health` | status van server en database |

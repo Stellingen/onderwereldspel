@@ -1,5 +1,7 @@
 // Navigatie, iconen en de statusbalk bovenaan
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ICONS={
+ logout:'<path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3M10 17l5-5-5-5M15 12H3"/>',
  dash:'<path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/>',
  crimes:'<path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/>',
  cars:'<path d="M5 17h14M3 13l2-6h14l2 6v4H3zM7 17v2M17 17v2"/>',
@@ -17,7 +19,9 @@ let page=(location.hash||'#dash').slice(1);if(!PAGES.find(p=>p[0]===page))page='
 let casinoTab='bj',rankTab='xp',slotState=['7','7','7'],spinning=false;
 
 function renderNav(){
-  $('#nav').innerHTML='<div class="logo">Onder<span>wereld</span></div>'+PAGES.map(([k,n])=>`<a class="navlink ${k===page?'on':''}" href="#${k}">${svg(k)}${n}${k==='jail'&&inJail()?'<span class="badge">!</span>':''}</a>`).join('');
+  $('#nav').innerHTML=`<a class="brand" href="/" style="text-decoration:none;color:inherit"><span class="mark">O</span><span><b>Onderwereld</b><small>${window.__USER__?esc(window.__USER__):'Offline modus'}</small></span></a>`
+   +PAGES.map(([k,n])=>`<a class="navlink ${k===page?'on':''}" href="#${k}">${svg(k)}${n}${k==='jail'&&inJail()?'<span class="badge">!</span>':''}</a>`).join('')
+   +(window.__TOKEN__?`<div class="navspace"></div><button class="navlink logout" onclick="logout()">${svg('logout')}Uitloggen</button>`:'');
 }
 function renderTop(){
   const ri=rankIdx(S.xp);const jt=Math.ceil((S.jailUntil-now())/1000);
