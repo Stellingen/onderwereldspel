@@ -22,7 +22,8 @@ if(S._gearBack){toast('Uitrusting vernieuwd: per soort telt nu je beste item. Je
 // offline-inkomen bij openen
 (()=>{const away=(now()-S.last)/60000;if(away>1&&income()>0){const g=income()*Math.min(away,720);toast('Terwijl je weg was: +'+fmt(g)+' passief inkomen');log('Offline inkomen: '+fmt(g),'ok')}tick()})();
 
-window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(PAGES.find(x=>x[0]===p)){page=p;render();window.scrollTo(0,0)}});
+// snelkoppelingen: #ontspannen en #trainen openen de trainingspagina op het juiste deel
+window.addEventListener('hashchange',()=>{let p=location.hash.slice(1);if(p==='ontspannen'||p==='trainen'){if(window.trs)trs.tab=p==='ontspannen'?'relax':'train';p='skills';try{history.replaceState(null,'','#skills')}catch(e){}}if(PAGES.find(x=>x[0]===p)){page=p;render();window.scrollTo(0,0)}});
 let wasJail=inJail();
 setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderRail();
   if(Math.random()<0.05)news();

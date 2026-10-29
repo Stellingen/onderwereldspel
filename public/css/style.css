@@ -1665,3 +1665,27 @@ button,.btn,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-to
 @media (max-width:620px){.fm-h-fx{grid-template-columns:repeat(3,1fr)}.fm-h-perk{grid-column:1/-1;border-left:0!important;border-top:1px solid var(--line)}
  .fm-ladder{grid-template-columns:repeat(3,1fr)}.fm-how{grid-template-columns:1fr}.fm-hk{grid-template-columns:1fr 1fr}.fm-hk>div:first-child{grid-column:1/-1;border-bottom:1px solid var(--line)}.fm-hk>div:nth-child(2){border-left:0}}
 @media (max-width:620px){.fm-foot{flex-direction:column;align-items:stretch}.fm-foot .tierhead span{display:none}}
+/* Training: duidelijke keuze tussen trainen en ontspannen */
+.tr-page{--mc:#b8a1ff}.tr-page.m-relax{--mc:#5ce1c4}
+.tr-modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}
+.tr-mode{--k:#b8a1ff;display:flex;align-items:center;gap:14px;padding:16px 18px;text-align:left;background:var(--panel);border:1px solid var(--line2);border-left:4px solid color-mix(in srgb,var(--k) 45%,transparent);transition:all .15s;min-width:0}
+.tr-mode.m-relax{--k:#5ce1c4}
+.tr-mode>i{width:46px;height:46px;flex:none;display:grid;place-items:center;color:var(--k);background:color-mix(in srgb,var(--k) 12%,var(--bg2));clip-path:var(--cut-s)}.tr-mode>i svg{width:24px;height:24px}
+.tr-mode>div{flex:1;min-width:0}.tr-mode b{display:block;font-family:var(--f-display);font-size:30px;line-height:1;text-transform:uppercase;color:var(--fg)}
+.tr-mode span{display:block;font-size:12.5px;color:var(--mute);margin-top:4px}
+.tr-mode em{font-style:normal;font-family:var(--f-mono);font-size:11.5px;padding:4px 8px;border:1px solid var(--line2);color:var(--faint);white-space:nowrap}.tr-mode em.go{color:#06140c;background:var(--green);border-color:var(--green)}
+.tr-mode:hover{border-color:color-mix(in srgb,var(--k) 50%,transparent)}
+.tr-mode.on{border-color:var(--k);border-left-color:var(--k);background:linear-gradient(90deg,color-mix(in srgb,var(--k) 16%,transparent),transparent 70%),var(--panel);box-shadow:0 0 0 1px var(--k) inset,0 10px 30px -18px var(--k)}
+.tr-mode.on b{color:var(--k)}
+.tr-mode:not(.on){opacity:.78}.tr-mode:not(.on):hover{opacity:1}
+.tr-page .tr-hero{border-color:color-mix(in srgb,var(--mc) 35%,var(--line))}
+.tr-page .tr-h-big b{color:var(--mc)}
+.tr-band{display:flex;gap:14px;align-items:baseline;padding:10px 14px;margin:0 0 14px;border-left:3px solid var(--mc);background:color-mix(in srgb,var(--mc) 7%,transparent)}
+.tr-band b{font-family:var(--f-head);font-size:16px;text-transform:uppercase;letter-spacing:.08em;color:var(--mc);white-space:nowrap}.tr-band span{font-size:13px;color:var(--mute)}
+.tr-page.m-relax .tierhead{border-bottom-color:color-mix(in srgb,var(--mc) 35%,transparent)}
+.rx-ic{display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 12%,var(--bg2));clip-path:var(--cut-s)}.rx-ic svg{width:22px;height:22px}
+.rx-now{display:grid;gap:8px;margin-top:8px}.rx-now>div{display:grid;grid-template-columns:90px 70px 1fr;gap:10px;align-items:center;font-size:13px}
+.rx-now span{color:var(--mute)}.rx-now b{font-family:var(--f-mono);font-weight:500}.rx-now .bar{height:5px}
+@media (max-width:620px){.tr-modes{gap:6px}.tr-mode{flex-direction:column;align-items:flex-start;gap:8px;padding:12px}.tr-mode>i{width:36px;height:36px}.tr-mode b{font-size:24px}.tr-mode span{font-size:11.5px}
+ .tr-band{flex-direction:column;gap:4px}.rx-now>div{grid-template-columns:80px 60px 1fr}}
+.gr-item h4{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:anywhere}

@@ -7,8 +7,8 @@ V.shop=()=>{const ri=rankIdx(S.xp);
  const cat=c=>{const items=GEAR.filter(g=>g.cat===c.id),best=gearBest(c.id),bi=best?items.indexOf(best):-1;
   const card=(g,i)=>{const own=!!S.gear[g.id],isBest=best===g,lower=i<bi,lock=ri<g.r,poor=S.cash<g.p;
    const cur=best||{};
-   const st=isBest?'best':own?'own':lower?'old':lock?'lock':'buy';
-   const btn=isBest?'<div class="gr-eq">Uitgerust</div>':lower?'<div class="gr-old">Je hebt al beter</div>'
+   const st=isBest?'best':lower?'old':lock?'lock':'buy';
+   const btn=isBest?'<div class="gr-eq">Uitgerust</div>':lower?`<div class="gr-old">${own?'In bezit · telt niet mee':'Je hebt al beter'}</div>`
     :lock?`<button class="btn ghost" disabled>Vanaf ${RANKS[g.r][0]}</button>`
     :`<button class="btn ${poor?'ghost':'act-btn'}" onclick="act.buyGear('${g.id}')" ${poor?'disabled':''}>${poor?'Te duur · ':'Koop · '}${fmt(g.p)}</button>`;
    const up=!isBest&&!lower&&!lock&&best?['kans','buit','car','heat','jail','vk'].filter(k=>g[k]).map(k=>{const d=(g[k]||0)-(cur[k]||0);return d>0?(k==='vk'?'+'+d+' vuurkracht':(['heat','jail'].includes(k)?'−':'+')+d+'% '+({kans:'kans',buit:'buit',car:'auto',heat:'hitte',jail:'cel'})[k]):null}).filter(Boolean).join(' · '):'';

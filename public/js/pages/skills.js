@@ -24,7 +24,7 @@ V.skills=()=>{
     <div class="tr-meta">${lock?'Nog op slot':max?'Klaar':`Elke ${trMins(t.cd)} · daarna ${fmt(trainCost(t,l+1))}${next&&next!==l+1?' · mijlpaal '+next:''}`}</div></div>
    ${left?`<div class="act-cd"><i style="width:${left/(t.cd*60000*waitK())*100}%"></i></div>`:''}</article>`};
  const relaxCard=r=>{const lock=ri<(r.r||0),cost=relaxCost(r,ri,lv),left=cdLeft('rx_'+r.id),ready=!lock&&!left&&!inJail()&&S.cash>=cost;
-  return `<article class="tr-card rx ${lock?'lock':''} ${ready?'ready':''}" style="--c:${r.col}">
+  return `<article class="tr-card rx ${lock?'lock':''} ${ready?'ready':''}" id="rx-${r.id}" style="--c:${r.col}">
    <header><div class="act-ic">${svg(r.ic)}</div><div class="tr-t"><span class="label">${r.place}</span><h3>${r.n}</h3></div><div class="rx-cd"><span class="label">Wachttijd</span><b>${trMins(r.cd)}</b></div></header>
    <p class="tr-d">${r.d}</p>
    <div class="rx-fx">${rxFx(r).map(([k,t])=>`<span class="${k}">${t}</span>`).join('')}</div>
@@ -40,17 +40,30 @@ V.skills=()=>{
  if(buffFocus())buffs.push(`<span style="--c:#ff3d52">Slaagkans +${buffFocus()}% · ${fmtClock(S.buffs.focus.until-now())}</span>`);
  if(buffLoot())buffs.push(`<span style="--c:var(--green)">Buit +${buffLoot()}% · ${fmtClock(S.buffs.loot.until-now())}</span>`);
  if(furnFx('focus'))buffs.push(`<span style="--c:var(--violet)">Inrichting: slaagkans +${furnFx('focus')}%</span>`);
- return `<h1>Training</h1>
- <section class="card hud tr-hero">
-  <div class="tr-h-l"><span class="label">Jouw skills</span><div class="tr-h-big"><b>${tot}</b><span>/ ${TRAININGS.length*TRAIN_MAX} levels</span></div>
-   <div class="bar"><i style="width:${tot/(TRAININGS.length*TRAIN_MAX)*100}%;background:var(--sec)"></i></div>
-   <p>${readyT?`<b class="up">${readyT} plek${readyT>1?'ken':''}</b> klaar om te trainen`:'Geen training klaar'} · ${readyR?`<b class="up">${readyR}</b> ontspanning klaar`:'geen ontspanning klaar'}${isVip()?' · VIP: wachttijden 60%':''}</p>
-   ${buffs.length?`<div class="tr-buffs">${buffs.join('')}</div>`:''}</div>
-  <div class="tr-tiles">${tiles}</div>
- </section>
- <div class="tabs tr-tabs"><button class="${trs.tab==='train'?'on':''}" onclick="trs.tab='train';render()">Trainen${readyT?` <i>${readyT}</i>`:''}</button><button class="${trs.tab==='relax'?'on':''}" onclick="trs.tab='relax';render()">Ontspannen${readyR?` <i>${readyR}</i>`:''}</button></div>
- ${trs.tab==='train'?`<p class="sub tr-sub">Elke sessie is één level erbij, tot level ${TRAIN_MAX}. Elke plek heeft een eigen wachttijd en elk level is duurder dan het vorige. Nieuwe plekken gaan open als je hoger in rang komt.</p>
+ const relax=trs.tab==='relax';
+ const modes=`<div class="tr-modes">
+  <button class="tr-mode m-train ${relax?'':'on'}" onclick="trs.tab='train';render()"><i>${svg('skills')}</i><div><b>Trainen</b><span>Blijvend beter worden · elke sessie een level, tot ${TRAIN_MAX}</span></div><em class="${readyT?'go':''}">${readyT?readyT+' klaar':'niets klaar'}</em></button>
+  <button class="tr-mode m-relax ${relax?'on':''}" onclick="trs.tab='relax';render()"><i>${svg('spa')}</i><div><b>Ontspannen</b><span>Tijdelijk voordeel · energie, gezondheid, focus, minder hitte</span></div><em class="${readyR?'go':''}">${readyR?readyR+' klaar':'niets klaar'}</em></button></div>`;
+ const rxTiles=RELAX.map(r=>{const lock=ri<(r.r||0),left=cdLeft('rx_'+r.id),cost=relaxCost(r,ri,lv),ready=!lock&&!left&&!inJail()&&S.cash>=cost;
+  const s=lock?'Vanaf '+RANKS[r.r][0]:left?fmtClock(left):ready?'Klaar':fmt(cost);
+  return `<button class="tr-tile ${lock?'lock':''} ${ready?'ready':''}" style="--c:${r.col}" onclick="document.getElementById('rx-${r.id}').scrollIntoView({behavior:'smooth',block:'center'})" title="${r.n}">
+   <div class="tr-tile-r rx-ic">${svg(r.ic)}</div><span>${r.n}</span><em>${s}</em></button>`}).join('');
+ const now_=[['Energie',Math.floor(S.energy)+'/'+EN_MAX,S.energy/EN_MAX,'var(--ice)'],['Gezondheid',S.hp+'%',S.hp/100,'var(--green)'],['Hitte',S.heat+'%',S.heat/100,S.heat>60?'var(--red)':'var(--acc)']];
+ const hero=relax?`<section class="card hud tr-hero">
+   <div class="tr-h-l"><span class="label">Hoe sta je ervoor</span>
+    <div class="rx-now">${now_.map(([l,v,p,c])=>`<div><span>${l}</span><b style="color:${c}">${v}</b><div class="bar"><i style="width:${Math.min(100,p*100)}%;background:${c}"></i></div></div>`).join('')}</div>
+    <p>${buffs.length?'Actief:':'Geen tijdelijk voordeel actief.'}${S.wanted?' <b style="color:var(--red)">Je staat op de gezochtlijst.</b>':''}</p>${buffs.length?`<div class="tr-buffs">${buffs.join('')}</div>`:''}</div>
+   <div class="tr-tiles">${rxTiles}</div></section>`
+  :`<section class="card hud tr-hero">
+   <div class="tr-h-l"><span class="label">Jouw skills</span><div class="tr-h-big"><b>${tot}</b><span>/ ${TRAININGS.length*TRAIN_MAX} levels</span></div>
+    <div class="bar"><i style="width:${tot/(TRAININGS.length*TRAIN_MAX)*100}%;background:var(--mc)"></i></div>
+    <p>${readyT?`<b class="up">${readyT} plek${readyT>1?'ken':''}</b> klaar om te trainen`:'Geen training klaar'}${isVip()?' · VIP: wachttijden 60%':''}</p></div>
+   <div class="tr-tiles">${tiles}</div></section>`;
+ return `<div class="tr-page ${relax?'m-relax':'m-train'}"><h1>Training & ontspanning</h1>
+ ${modes}
+ ${hero}
+ ${!relax?`<div class="tr-band"><b>Trainen</b><span>Elke sessie is één level erbij, tot level ${TRAIN_MAX}. Elke plek heeft een eigen wachttijd en elk level is duurder dan het vorige. Nieuwe plekken gaan open als je hoger in rang komt.</span></div>
   <div class="tr-grid">${TRAININGS.map(trainCard).join('')}</div>`
- :`<p class="sub tr-sub">Tijdelijke voordelen. Hoe beter de ontspanning, hoe duurder en hoe langer je daarna moet wachten. De prijs stijgt met je rang en je level in die rang.</p>
-  ${RELAX_TIERS.map((n,i)=>`<div class="tierhead"><h2>${n}</h2><span>${['Kort en goedkoop','Sterker, langer wachten','Vanaf een hoge rang · alles tegelijk'][i]}</span></div><div class="tr-grid">${RELAX.filter(r=>r.tier===i).map(relaxCard).join('')}</div>`).join('')}`}`;
+ :`<div class="tr-band"><b>Ontspannen</b><span>Tijdelijke voordelen. Hoe beter de ontspanning, hoe duurder en hoe langer je daarna moet wachten. De prijs stijgt met je rang en je level in die rang.</span></div>
+  ${RELAX_TIERS.map((n,i)=>`<div class="tierhead"><h2>${n}</h2><span>${['Kort en goedkoop','Sterker, langer wachten','Vanaf een hoge rang · alles tegelijk'][i]}</span></div><div class="tr-grid">${RELAX.filter(r=>r.tier===i).map(relaxCard).join('')}</div>`).join('')}`}</div>`;
 };
