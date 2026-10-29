@@ -13,7 +13,7 @@ const vdShort=n=>n>=1e6?'€'+(Math.round(n/1e5)/10).toLocaleString('nl-NL')+'M'
 // lijnkleuren (bolders en winlijnen)
 const VD_LC=['#f5c542','#2fd1c5','#7aa7ff','#ff9a3c','#ff7fb3','#b8a1ff','#9be15d','#ffd08a','#5ad1ff','#e6e1d6'];
 // Vissen krijgen een kleur naar hun waarde
-const vdTier=v=>v>=250?['#f5c542','#a67c00','#fff1b8']:v>=50?['#b48cff','#6b46c1','#e4d6ff']:v>=10?['#5fe08f','#1f9a57','#c9f7da']:['#5ad1ff','#1f8fc7','#c8efff'];
+const vdTier=v=>v>=100?['#f5c542','#a67c00','#fff1b8']:v>=25?['#b48cff','#6b46c1','#e4d6ff']:v>=5?['#5fe08f','#1f9a57','#c9f7da']:['#5ad1ff','#1f8fc7','#c8efff'];
 function vdFishSvg(v){const [a,b,c]=vdTier(v||0);return `<path d="M46 32l14-12v24z" fill="${b}"/><path d="M4 32c10-16 32-18 45 0-13 18-35 16-45 0z" fill="${a}"/><path d="M5 33c11 8 27 10 39 4" fill="${c}" opacity=".55"/>
  <path d="M24 15c7-4 14-2 17 4" fill="${b}"/><path d="M27 47c5 3 10 3 13 0" fill="${b}"/><circle cx="15" cy="29" r="3.6" fill="#08131b"/><circle cx="14" cy="28" r="1.2" fill="#fff"/>
  <path d="M23 22c4 6 4 14 0 20" stroke="${b}" stroke-width="2.2" fill="none"/><path d="M30 26l3 3M34 24l3 3M33 32l3 3M38 29l3 3" stroke="${c}" stroke-width="1.4" opacity=".6"/>`}
@@ -48,7 +48,7 @@ const VD_IC={
 const vdSvg=(id,v)=>`<svg viewBox="0 0 64 64" aria-hidden="true">${id==='vis'?vdFishSvg(v):VD_IC[id]||''}</svg>`;
 const VD_PLATE={koffer:'hi',boot:'hi',hengel:'hi'};
 function vdCellHtml(x,fs,bet){const fish=x.s===VISD.VIS,id=x.sc?'boei':x.w?'visdief':VISD.SYMS[x.s].id;
- const cls='vd-cell'+(x.sc?' sc':'')+(x.w?' wild':'')+(fish?' fish':'')+(VD_PLATE[id]?' hi':'')+(fish&&fs&&x.v>=50?' rich':'');
+ const cls='vd-cell'+(x.sc?' sc':'')+(x.w?' wild':'')+(fish?' fish':'')+(VD_PLATE[id]?' hi':'')+(fish&&fs&&x.v>=100?' rich':'');
  return `<div class="${cls}">${vdSvg(id,fs?x.v:0)}${x.w?'<span class="vd-lb">Visdief</span>':x.sc?'<span class="vd-lb sc">Bonus</span>':''}${fs&&fish&&x.v?`<b class="vd-tag">${vdShort(x.v*(bet||vd.bet||vdBet()))}</b>`:''}</div>`}
 function vdDemo(){const ids=[[0,5,8,3],[1,6,3,7],[8,7,2,0],[4,0,5,6],[2,8,1,4]];return ids.map(col=>col.map(s=>({s,v:s===VISD.VIS?10:0})))}
 function vdRand(fs,lvl,rd){const x=VISD.fill(Math.random,!!fs,false,0,lvl||0,rd||0)[0][0];return x.sc?{s:0}:x}
@@ -76,7 +76,7 @@ function vdFsBar(){const f=vd.fs;if(!f)return '';const P=VISD.PER_LEVEL,top=f.lv
   <div class="vd-hooks">${Array.from({length:P},(_,i)=>`<i class="${top||i<have?'on':''}">${top||i<have?vdSvg('visdief'):hook}</i>`).join('')}</div>
   <p class="vd-next">${top?'Laatste ronde: alles telt ×10':sec?`<b>Ronde ${f.lvl+2} is binnen</b> (×${VISD.MULTS[f.lvl+1]})${extra?`, ${extra} extra voor ronde ${f.lvl+3}`:''}. Deze ronde speelt eerst uit.`:`Nog ${next-f.caught} Visdie${next-f.caught===1?'f':'ven'} voor <b>ronde ${f.lvl+2}</b>: ${VISD.RETRIG} spins met ×${VISD.MULTS[f.lvl+1]}${f.lvl?'. Deze zijn lastiger.':''}`}</p>
   <div class="vd-mult${f.lvl?' up':''}"><span>Multiplier</span><b>×${VISD.MULTS[f.lvl]}</b></div></div>`}
-function vdSubHtml(){return vd.fs?'':`${isVip()?'<i class="vipt">VIP</i>':''}${isVip()?'Bonus ±1 op 140, vaker een Visdief':'Bonus ±1 op 150'}, 20 lijnen`}
+function vdSubHtml(){return vd.fs?'':`${isVip()?'<i class="vipt">VIP</i>':''}${isVip()?'Bonus ±1 op 140':'Bonus ±1 op 200'}, max ${VISD.MAX_WIN.toLocaleString('nl-NL')}×`}
 function vdControls(){const b=vdBet();return `<div class="kk-betbox"><span class="label">Inzet</span>
    <div class="kk-bet"><button onclick="vdStepBet(-1)" ${vd.busy?'disabled':''} aria-label="Lagere inzet">−</button><button class="kk-betv" onclick="vd.pick=!vd.pick;vd.confirm=false;vdRefresh()" ${vd.busy?'disabled':''} aria-label="Inzet kiezen">${fmt(b)}</button><button onclick="vdStepBet(1)" ${vd.busy?'disabled':''} aria-label="Hogere inzet">+</button></div></div>
    <button class="btn kk-go" onclick="act.vdSpin(false)" ${vd.busy||inJail()?'disabled':''}>${vd.busy?'Bezig…':'Draaien'}<small>spatie</small></button>
@@ -86,7 +86,7 @@ function vdPickHtml(){return `<div class="kk-pick"><div class="kk-pick-h"><b>Kie
   <div class="kk-pick-g">${kkBets().map((v,i)=>`<button class="${i===vd.bi?'on':''} ${S.cash<v?'no':''}" onclick="vdSetBet(${i})">${fmt(v)}</button>`).join('')}</div>
   <div class="kk-pick-q"><button class="btn ghost sm" onclick="vdSetBet(0)">Min · ${fmt(kkBets()[0])}</button><button class="btn sm" onclick="vdSetBet(kkBets().length-1)">Max · ${fmt(kkBets()[kkBets().length-1])}</button></div></div>`}
 function vdConfirm(){const b=vdBet(),buy=b*VISD.BUY_COST;return `<div class="kk-confirm"><div><b>Bonus kopen voor ${fmt(buy)}?</b>
-  <span>Dat is ${VISD.BUY_COST}× je inzet van ${fmt(b)}. Je krijgt direct ${VISD.FS_BY_SC[3]} free spins. Gemiddeld levert hij iets minder op dan hij kost (±96%). De meeste bonussen zijn klein; ronde 2 haal je ongeveer 1 op 10 keer, ronde 4 (×10) ongeveer 1 op 430.</span></div>
+  <span>Dat is ${VISD.BUY_COST}× je inzet van ${fmt(b)}. Je krijgt direct ${VISD.FS_BY_SC[3]} free spins. Gemiddeld levert hij iets minder op dan hij kost (±96%), maar de uitschieters zijn enorm. Hoge volatiliteit: de meeste bonussen zijn klein; ronde 2 haal je ongeveer 1 op 10 keer, ronde 4 (×10) ongeveer 1 op 430.</span></div>
   <div class="flex"><button class="btn sm" onclick="act.vdSpin(true)" ${S.cash<buy?'disabled':''}>${S.cash<buy?'Te weinig geld':'Kopen'}</button><button class="btn ghost sm" onclick="vd.confirm=false;vdRefresh()">Annuleren</button></div></div>`}
 function vdSeed(){if(!S.vdSeed||!S.vdSeed.s)S.vdSeed=kkNewSd(S.vdSeed&&S.vdSeed.prev);return S.vdSeed}
 function vdSeedHtml(){const sd=vdSeed(),p=sd.prev;
@@ -95,11 +95,11 @@ function vdSeedHtml(){const sd=vdSeed(),p=sd.prev;
   ${p?`<div class="kk-seed-i prev"><span class="label">Vorige seed</span><b>${p.id}: ${p.spins} spins, ${p.bon} bonus${p.bon===1?'':'sen'}</b></div>`:''}
   <button class="btn ghost sm" onclick="act.vdNewSeed()" ${vd.busy?'disabled':''}>Nieuwe seed</button></div>`}
 // Uitbetaling + de 10 lijnen als kleine kaartjes
-function vdPayTab(){const b=vdBet(),k=VISD.PAYK/VISD.LINES.length;
+function vdPayTab(){const b=vdBet(),k=VISD.PAYK/VISD.LINES.length*(isVip()?VISD.VIP_K:1);
  const rows=VISD.SYMS.slice().reverse().map(s=>`<div class="vd-pt"><span>${vdSvg(s.id,s.id==='vis'?10:0)}</span><div>${[2,1,0].map(i=>`<p><i>${i+3}</i>${fmt(s.pay[i]*k*b)}</p>`).join('')}</div></div>`).join('');
  const lines=VISD.LINES.map((L,i)=>`<div class="vd-ln" style="--lc:${VD_LC[i%VD_LC.length]}"><svg viewBox="0 0 50 40" aria-hidden="true"><g fill="#1b2a33">${[0,1,2,3,4].map(c=>[0,1,2,3].map(r=>`<rect x="${c*10+1}" y="${r*10+1}" width="8" height="8" rx="1.5"/>`).join('')).join('')}</g><polyline points="${L.map((r,c)=>(c*10+5)+','+(r*10+5)).join(' ')}"/></svg></div>`).join('');
  const fish=VISD.FISH.map(([v])=>`<i style="--fc:${vdTier(v)[0]}">${vdShort(v*b)}</i>`).join('');
- return `<div class="vd-pay-g"><div><h3 class="vd-h">Uitbetaling per lijn bij ${fmt(b)} inzet</h3><p class="vd-p">3, 4 of 5 dezelfde van links naar rechts. In de bonus telt de multiplier ook voor lijnwinst.</p><div class="vd-ptab">${rows}</div></div>
+ return `<div class="vd-pay-g"><div><h3 class="vd-h">Uitbetaling per lijn bij ${fmt(b)} inzet${isVip()?' (VIP)':''}</h3><p class="vd-p">3, 4 of 5 dezelfde van links naar rechts. In de bonus telt de multiplier ook voor lijnwinst.</p><div class="vd-ptab">${rows}</div></div>
   <div><h3 class="vd-h">De 20 lijnen</h3><div class="vd-lns">${lines}</div>
   <h3 class="vd-h" style="margin-top:18px">Waarde van een vis in de bonus</h3><div class="vd-fishv">${fish}</div></div></div>`}
 function visView(){const g=vd.grid||vdDemo(),fs=vd.fs;
@@ -118,9 +118,9 @@ function visView(){const g=vd.grid||vdDemo(),fs=vd.fs;
  <section class="card kk-pay vd-pay"><div id="vdPayTab">${vdPayTab()}</div>
   <div class="kk-rules">
    <div><span>${vdSvg('boei')}</span><p><b>3 boeien</b> geven ${VISD.FS_BY_SC[3]} free spins, 4 geven ${VISD.FS_BY_SC[4]} en 5 geven ${VISD.FS_BY_SC[5]}. Meer boeien betekent een langere bonus en meer kans op de max win.</p></div>
-   <div><span>${vdSvg('vis',50)}</span><p><b>Vissen</b> hebben in de bonus een geldwaarde. Ze leveren alleen iets op als er een Visdief op het scherm staat.</p></div>
+   <div><span>${vdSvg('vis',50)}</span><p><b>Vissen</b> hebben in de bonus een geldwaarde, van een halve inzet tot 1.000× je inzet. Ze leveren alleen iets op als er een Visdief op het scherm staat. Voorbeeld bij €10 inzet: vissen van €5, €5 en €2 met één Visdief is €12, met twee Visdieven €24.</p></div>
    <div><span>${vdSvg('visdief')}</span><p><b>De Visdief</b> valt alleen in de bonus. Hij vervangt elk symbool en pakt het geld van alle vissen; twee pakken alles twee keer. Een ronde speelt altijd helemaal uit. Heb je er dan ${VISD.PER_LEVEL}, dan volgt ronde 2: ${VISD.RETRIG} spins waarin alles ×2 telt. Bij ${VISD.PER_LEVEL*2} volgt ronde 3 (×3), bij ${VISD.PER_LEVEL*3} ronde 4 (×10). Extra Visdieven tellen door voor de volgende ronde. Elke volgende ${VISD.PER_LEVEL} zijn lastiger te vangen, maar in hogere rondes zwemmen er vaker grote vissen.</p></div>
-   <div><span class="kk-mini key">␣</span><p><b>Spatiebalk</b> draait. De max win is ${VISD.MAX_WIN.toLocaleString('nl-NL')}× je inzet: daarvoor moet je ×10 halen en grote vissen vangen.${isVip()?' Als <b>VIP</b> kom je vaker in de bonus en valt de Visdief er iets vaker.':''}</p></div>
+   <div><span class="kk-mini key">␣</span><p><b>Spatiebalk</b> draait. Visdief is een slot met hoge volatiliteit: lastig in de bonus, maar de max win is ${VISD.MAX_WIN.toLocaleString('nl-NL')}× je inzet (€20 kan €200.000 worden). Daarvoor moet je ronde 4 (×10) halen en een reus vangen.${isVip()?' Als <b>VIP</b> kom je veel vaker in de bonus (±1 op 140 in plaats van ±1 op 200) en valt de Visdief iets vaker; lijnwinst in het basisspel is daarvoor 17% lager.':' <b>VIP</b>-spelers komen veel vaker in de bonus.'}</p></div>
   </div></section></div>`}
 function vdRefresh(){const root=document.querySelector('.vd');if(!root)return;root.classList.toggle('is-fs',!!vd.fs);
  const set=(id,h)=>{const e=vdEl(id);if(e)e.innerHTML=h};

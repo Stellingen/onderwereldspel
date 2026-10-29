@@ -53,18 +53,17 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   (de kans per spin blijft gelijk). Je ziet per seed hoeveel spins en bonussen je had. Gesimuleerd met 1,6 mln. spins:
   normaal RTP ±92% (bonus ±1 op 390, superbonus ±1 op 7.400), VIP ±97,5% + 0,5% cashback (bonus ±1 op 280, superbonus ±1 op 4.200),
   bonus kopen ±96%. In de bonus betalen clusters 40% van de tabel, in het basisspel ±109% (VIP ±104%); de vakjes blijven in de bonus staan.
-- **Visdief** (tweede slot, eigen naam en tekeningen, in de stijl van een vis-collect-slot): nachtvissen in de Rotterdamse haven.
-  5 rollen × 4 rijen, 20 lijnen; een winlijn wordt alleen getekend als hij valt (als gloeiende vislijn, daarna een voor een).
-  Rollen draaien met aanloop, bewegingsonscherpte en een stuiter; na 2 boeien draaien de volgende rollen langer.
-  3 boeien = 10 free spins, 4 = 15, 5 = 20 (±1 op 150 spins, VIP ±1 op 140). In de bonus hebben vissen een prijskaartje
-  (2× tot 500×) en pakt de **Visdief** (wild) alles wat er ligt; twee Visdieven pakken alles twee keer.
+- **Visdief** (tweede slot, eigen naam en tekeningen, in de stijl van een vis-collect-slot): nachtvissen in de Rotterdamse haven,
+  **hoge volatiliteit**. 5 rollen × 4 rijen, 20 lijnen; een winlijn wordt alleen getekend als hij valt.
+  3 boeien = 10 free spins, 4 = 15, 5 = 20: normaal ±1 op 200 spins, **VIP ±1 op 140**. In de bonus hebben vissen een prijskaartje
+  van 0,5× tot 1.000× je inzet (veel kleine, af en toe een grote, heel zelden een reus) en pakt de **Visdief** (wild) alles wat er ligt;
+  twee Visdieven pakken alles twee keer (bij €10 inzet: vissen van €5, €5 en €2 = €12, met twee Visdieven €24).
   **Rondes**: een ronde speelt altijd helemaal uit. Heb je dan 4 Visdieven, dan volgt ronde 2 (10 spins, alles ×2); bij 8 ronde 3
-  (×3), bij 12 ronde 4 (×10). Extra Visdieven tellen door voor de volgende ronde. Elke volgende 4 zijn lastiger, maar in hogere
-  rondes zwemmen grote vissen vaker; in ronde 4 is de 500×-vis de max win (5.000×). In een bonus van 10 spins: ronde 2 ±1 op 10,
-  ronde 3 ±1 op 65, ronde 4 ±1 op 430, max win ±1 op 5.000 (bij 20 spins ±1 op 360). VIP: ±5% vaker een Visdief.
-  In de bonus vervangt de vangstmeter de haven bovenaan, zodat het bord even groot blijft. Bonus kopen 46× (10 spins).
-  Seed per slot, spatiebalk = draaien. Doorgerekend (`public/js/vis.js`, 1,5 mln. spins): normaal RTP ±92%, VIP ±97% + 0,5% cashback,
-  bonus kopen ±96%.
+  (×3), bij 12 ronde 4 (×10). Extra Visdieven tellen door. Elke volgende 4 zijn lastiger, maar in hogere rondes zwemmen grote vissen
+  vaker; in ronde 4 is de 1.000×-vis de **max win van 10.000×** (€20 → €200.000). Bonus van 10 spins: ronde 2 ±1 op 10, ronde 3
+  ±1 op 65, ronde 4 ±1 op 430, max win ±1 op 11.000 (bij 20 spins ±1 op 1.100). VIP: ook ±4% vaker een Visdief; lijnwinst in het
+  VIP-basisspel is 17% lager zodat VIP onder 100% blijft. Bonus kopen 63× (10 spins). Seed per slot, spatiebalk = draaien.
+  Doorgerekend (`public/js/vis.js`, 1,5 mln. spins): normaal RTP ±92%, VIP ±97,5% + 0,5% cashback, bonus kopen ±96%.
 - **Roulette** (Europees, één nul, 2,7% huisvoordeel): groot wiel met rollende bal bovenaan, echte inzettafel eronder.
   Nummer, split, rij, hoek, zes, drie met nul, eerste vier, kolom, dozijn en de kansen, plus groepen op het wiel
   (Buren van nul, Overkant, Weesjes, Nulspel). Ongedaan maken, fiches weghalen (ook met rechtsklik), alles wissen,
