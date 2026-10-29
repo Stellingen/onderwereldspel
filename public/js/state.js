@@ -101,8 +101,8 @@ function showModal(t,m,btns){$('#modal').hidden=false;$('#modalT').textContent=t
 function closeModal(){$('#modal').hidden=true}
 // VIP (code "vip"): tag bij je naam, iets vaker de bonus in Kluiskraker (alleen het basisspel) en cashback op elke inzet.
 // Cashback per spel, afgestemd op het huisvoordeel, zodat je er nooit structureel winst mee maakt. Direct te claimen.
-const CB_RATE={kluis:.005,mines:.005,avia:.005,roulette:.01,tcp:.0075,bj:.0025,coin:0};
-const CB_NAME={kluis:'Kluiskraker',mines:'Mines',avia:'Hoogvlieger',roulette:'Roulette',tcp:'Three Card Poker',bj:'Blackjack',coin:'Dubbel of niks'};
+const CB_RATE={kluis:.005,vis:.005,mines:.005,avia:.005,roulette:.01,tcp:.0075,bj:.0025,coin:0};
+const CB_NAME={kluis:'Kluiskraker',vis:'Visdief',mines:'Mines',avia:'Hoogvlieger',roulette:'Roulette',tcp:'Three Card Poker',bj:'Blackjack',coin:'Dubbel of niks'};
 const isVip=()=>!!(S&&S.redeemed&&S.redeemed.includes('vip'));
 // VIP bij misdaden: 15% meer buit, 10% groter groen gat bij vluchten en 10% meer kans om uit de bajes te ontsnappen
 const VIP_LOOT=.15,VIP_FLEE=.10,VIP_ESCAPE=.10;

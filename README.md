@@ -47,6 +47,12 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   (de kans per spin blijft gelijk). Je ziet per seed hoeveel spins en bonussen je had. Gesimuleerd met 1,6 mln. spins:
   normaal RTP ±92% (bonus ±1 op 390, superbonus ±1 op 7.400), VIP ±97,5% + 0,5% cashback (bonus ±1 op 280, superbonus ±1 op 4.200),
   bonus kopen ±96%. In de bonus betalen clusters 40% van de tabel, in het basisspel ±109% (VIP ±104%); de vakjes blijven in de bonus staan.
+- **Visdief** (tweede slot, eigen naam en tekeningen, in de stijl van een vis-collect-slot): 5 rollen × 3 rijen, 10 lijnen.
+  3 boeien = 10 free spins, 4 = 15, 5 = 20 (±1 op 145 spins, VIP ±1 op 130). In de bonus hebben vissen een geldwaarde (2× tot 500×)
+  en pakt de **Visdief** (wild) alles wat er ligt; twee Visdieven pakken alles twee keer. Elke 4 Visdieven: +10 spins en
+  multiplier ×2, ×3, ×10. Bonus halen is makkelijk, groot winnen niet: ±14% van de bonussen geeft minder dan 5×, ±9% meer dan 100×,
+  ×10 halen ±0,4%, de max win (5.000×) is heel zeldzaam. VIP: vaker de bonus en iets vaker een Visdief. Bonus kopen 46× (10 spins).
+  Seed per slot, spatiebalk = draaien. Doorgerekend (`visim.js`-model in `public/js/vis.js`): normaal RTP ±92%, VIP ±97% + 0,5% cashback.
 - **Roulette** (Europees, één nul, 2,7% huisvoordeel): groot wiel met rollende bal bovenaan, echte inzettafel eronder.
   Nummer, split, rij, hoek, zes, drie met nul, eerste vier, kolom, dozijn en de kansen, plus groepen op het wiel
   (Buren van nul, Overkant, Weesjes, Nulspel). Ongedaan maken, fiches weghalen (ook met rechtsklik), alles wissen,

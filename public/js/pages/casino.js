@@ -1,8 +1,8 @@
 // Tab: Casino (blackjack, gokkast, dubbel of niks, roulette)
 V.casino=()=>`<p class="sub cas-sub">Echte regels en eerlijke kansen. Het huis heeft een klein voordeel, net als in elk casino.</p>
  ${S.wanted?'<div class="card" style="border-color:var(--acc);margin-bottom:14px;color:var(--acc)">▲ Casino\'s hangen vol camera\'s. Als gezochte crimineel loop je hier extra risico op een controle.</div>':''}
- <div class="cas-bar"><h1 class="cas-h1">Casino</h1><div class="tabs">${[['kluis','Kluiskraker'],['mines','Mines'],['avia','Hoogvlieger'],['bj','Blackjack'],['tcp','Three Card Poker'],['roulette','Roulette'],['coin','Dubbel of niks']].map(([k,n])=>`<button class="${casinoTab===k?'on':''}" onclick="casinoGo('${k}')">${n}</button>`).join('')}</div>${isVip()?vipCbHtml():''}</div>
- ${casinoTab==='kluis'?kkView():casinoTab==='bj'?bjTable():casinoTab==='tcp'?tpTable():casinoTab==='roulette'?rouletteView():casinoTab==='mines'?minesView():casinoTab==='avia'?aviaView():coinView()}`;
+ <div class="cas-bar"><h1 class="cas-h1">Casino</h1><div class="tabs">${[['kluis','Kluiskraker'],['vis','Visdief'],['mines','Mines'],['avia','Hoogvlieger'],['bj','Blackjack'],['tcp','Three Card Poker'],['roulette','Roulette'],['coin','Dubbel of niks']].map(([k,n])=>`<button class="${casinoTab===k?'on':''}" onclick="casinoGo('${k}')">${n}</button>`).join('')}</div>${isVip()?vipCbHtml():''}</div>
+ ${casinoTab==='kluis'?kkView():casinoTab==='vis'?visView():casinoTab==='bj'?bjTable():casinoTab==='tcp'?tpTable():casinoTab==='roulette'?rouletteView():casinoTab==='mines'?minesView():casinoTab==='avia'?aviaView():coinView()}`;
 
 // VIP-cashback: klein rechtsboven, direct te claimen. De percentages per spel staan in de tooltip.
 function vipCbHtml(){const a=cbAvail(),tip=Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*100).toLocaleString('nl-NL')+'%').join(' · ');
@@ -17,4 +17,4 @@ function bjView(){const b=window.bj;
   ${b.done?`<div class="big" style="font-size:20px;text-align:center;margin:8px 0 12px;color:${b.res>0?'var(--green)':b.res<0?'var(--red)':'var(--fg)'}">${b.msg}</div><button class="btn gold" onclick="act.bjDeal()">Nieuwe hand</button>`
   :`<div class="flex"><button class="btn" onclick="act.bjHit()">Kaart</button><button class="btn gold" onclick="act.bjStand()">Passen</button><button class="btn" onclick="act.bjDouble()" ${b.p.length>2||S.cash<b.bet?'disabled':''}>Verdubbelen</button></div>`}`}
 
-function casinoGo(k){if((kk.busy&&!kk.inBonus)||(window.cf&&cf.flipping)||(window.av&&av.flying)||(window.rl&&rl.spinning)||['dealing','dealer'].includes(bt.phase)||tp.phase==='dealing'){toast('Wacht tot het spel klaar is','bad');return}casinoTab=k;render()}
+function casinoGo(k){if((kk.busy&&!kk.inBonus)||(window.vd&&vd.busy)||(window.cf&&cf.flipping)||(window.av&&av.flying)||(window.rl&&rl.spinning)||['dealing','dealer'].includes(bt.phase)||tp.phase==='dealing'){toast('Wacht tot het spel klaar is','bad');return}casinoTab=k;render()}
