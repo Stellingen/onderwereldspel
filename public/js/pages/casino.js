@@ -1,5 +1,5 @@
 // Tab: Casino (blackjack, gokkast, dubbel of niks, roulette)
-V.casino=()=>`<h1>Casino</h1><p class="sub">Vier spellen, eerlijke kansen. Roulette heeft 37 vakken die allemaal even vaak vallen, en de Kluiskraker betaalt op lange termijn 94,6% van je inzet terug.</p>
+V.casino=()=>`<h1>Casino</h1><p class="sub">Eerlijke kansen: roulette heeft 37 even grote vakken en de Kluiskraker betaalt op lange termijn 96% terug.</p>
  ${S.wanted?'<div class="card" style="border-color:var(--acc);margin-bottom:14px;color:var(--acc)">▲ Casino\'s hangen vol camera\'s. Als gezochte crimineel loop je hier extra risico op een controle.</div>':''}
  <div class="tabs">${[['kluis','Kluiskraker'],['bj','Blackjack'],['roulette','Roulette'],['coin','Dubbel of niks']].map(([k,n])=>`<button class="${casinoTab===k?'on':''}" onclick="${'if(kk.busy){toast(\'Wacht tot de spin klaar is\',\'bad\')}else{casinoTab=\''+k+'\';render()}'}">${n}</button>`).join('')}</div>
  ${casinoTab==='kluis'?kkView():casinoTab==='roulette'?rouletteView():`<div class="card" style="max-width:560px">

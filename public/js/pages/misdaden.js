@@ -10,7 +10,7 @@ V.crimes=()=>{
   return `<div class="crime ${lock?'locked':''}" style="${lock?'opacity:.45':''}">
    <div><h3>${c.n}</h3><p>${c.d}</p></div>
    <button class="btn" onclick="act.crime('${c.id}')" ${lock||left||inJail()||tired?'disabled':''}>${label}</button>
-   <div class="meta"><span class="tag g">${fmt(c.min)} – ${fmt(c.max)}</span><span class="tag">+${c.xp} XP</span>${c.cr?`<span class="tag c">+${c.cr} cred</span>`:''}<span class="tag b">${c.en} energie</span><span class="tag r">${fmtTime(c.jail)} cel</span>
+   <div class="meta"><span class="tag g">${fmt(c.min)} – ${fmt(c.max)}</span><span class="tag">+${c.xp} XP</span>${c.cr?`<span class="tag c">+${c.cr} cred</span>`:''}<span class="tag b">${c.en} energie</span><span class="tag r">${fmtTime(c.jail)} cel</span><span class="tag lvl${c.flee}">vluchten: ${FLEE_LEVELS[c.flee].label}</span>
     <span class="tag ${ch>60?'gr':ch>35?'g':'r'}">${ch}% kans</span></div>
    ${left?`<div class="cd" style="transform:scaleX(${Math.min(1,left/crimeCd(c))})"></div>`:''}</div>`};
  return `<h1>Misdaden</h1><p class="sub">${avail} van de ${CRIMES.length} klussen staan voor je open. Elke klus kost energie; die laadt vanzelf weer op (1 punt per ${EN_REGEN_S} seconden). Mislukt een klus, dan ga je de cel in.</p>

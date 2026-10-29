@@ -1,95 +1,116 @@
-// Kluiskraker: tumble-slot met 6x5 raster, uitbetaling bij 8+ gelijke symbolen waar dan ook,
-// free spins met multipliers en een bonusaankoop. Pure functies, zodat de RTP te simuleren is.
+// Kluiskraker v2: cluster-slot op een 7x7 raster.
+// - Winst: 5+ gelijke symbolen die horizontaal/verticaal aan elkaar grenzen (een cluster).
+// - Loper (wild): telt mee voor elk symbool en kan zo twee groepjes verbinden.
+// - Vakjes: waar een winnend symbool verdwijnt, wordt het vakje gemarkeerd. Valt er op een
+//   gemarkeerd vakje opnieuw een winst, dan wordt het x2, daarna x4, x8 ... tot x128.
+//   Alle vakjes in een cluster worden opgeteld en vermenigvuldigen de clusterwinst.
+// - Basisspel: vakjes worden na elke spin gewist. Free spins: vakjes blijven de hele bonus staan.
+// - 4+ kluizen = free spins; tijdens de bonus geven 2+ kluizen extra spins (2:+2, 3:+4, 4:+6, 5+:+8). Bonus kopen = 100x inzet.
+// Pure functies, zodat de RTP in Node te simuleren is (zie README).
 (function(root){
-const COLS=6, ROWS=5, MAX_WIN=5000;
-// Symbolen: id, naam, gewicht in basis / in free spins, uitbetaling (x inzet) bij 8-9 / 10-11 / 12+
+const COLS=7, ROWS=7, MIN_CLUSTER=5, MAX_SPOT=128, MAX_WIN=5000;
+// Uitbetaling (x inzet) per clustergrootte 5,6,7,8,9,10,11,12,13,14,15+
+const CURVE=[1,1.4,1.9,2.6,3.5,5,6.5,9,12,16,25];
 const SYMS=[
- {id:'munt',   n:'Munt',      w:200, pay:[0.25,0.75,2]},
- {id:'dobbel', n:'Dobbelsteen',w:178,pay:[0.4,0.9,4]},
- {id:'fiche',  n:'Fiche',     w:160, pay:[0.5,1,5]},
- {id:'sleutel',n:'Sleutel',   w:146, pay:[0.8,1.2,8]},
- {id:'horloge',n:'Horloge',   w:114, pay:[1,1.5,10]},
- {id:'ring',   n:'Ring',      w:96,  pay:[1.5,2.5,12]},
- {id:'diamant',n:'Diamant',   w:76,  pay:[2,5,15]},
- {id:'goud',   n:'Goudstaaf', w:58,  pay:[5,10,25]}];
-const SCATTER={id:'kluis',n:'Kluis',w:17,fsW:12};
-const PAYK=1.22;SYMS.forEach(x=>x.pay=x.pay.map(v=>+(v*PAYK).toFixed(2)));
-const SCATTER_PAY={4:3,5:5,6:100};
-const FS_START=10, FS_RETRIGGER=5, BUY_COST=100;
-const MULTS=[[2,260],[3,210],[4,170],[5,140],[6,95],[8,70],[10,52],[12,34],[15,22],[20,14],[25,9],[50,3.2],[100,1]];
-const MULT_W=28; // kans (per 1000 cellen) op een multiplier in free spins
+ {id:'munt',   n:'Munt',       w:205, b:0.10},
+ {id:'dobbel', n:'Dobbelsteen',w:190, b:0.13},
+ {id:'fiche',  n:'Fiche',      w:172, b:0.17},
+ {id:'horloge',n:'Horloge',    w:150, b:0.24},
+ {id:'ring',   n:'Ring',       w:128, b:0.34},
+ {id:'diamant',n:'Diamant',    w:104, b:0.55},
+ {id:'goud',   n:'Goudstaaf',  w:82,  b:1.00}];
+let PAYK=1;
+const setPay=k=>{PAYK=k;SYMS.forEach(s=>{s.pay=CURVE.map(c=>+(s.b*c*PAYK).toFixed(2))})};setPay(4.2);
+const WILD={id:'sleutel',n:'Loper',w:14,fsW:52};
+const SCATTER={id:'kluis',n:'Kluis',w:12,fsW:4};
+const FS_BY_SC={4:10,5:11,6:12,7:15};
+const FS_START=10, FS_RETRIGGER=2, BUY_COST=100;
+// Extra spins tijdens de bonus: hoe meer kluizen, hoe meer spins
+const FS_RETRIG={2:2,3:4,4:6,5:8};
+const SCATTER_PAY={};
+const payFor=(s,n)=>SYMS[s].pay[Math.min(n,15)-MIN_CLUSTER];
 
-const totalW=fs=>SYMS.reduce((a,s)=>a+s.w,0)+(fs?SCATTER.fsW:SCATTER.w)+(fs?MULT_W:0);
-function pickMult(rng){const t=MULTS.reduce((a,m)=>a+m[1],0);let r=rng()*t;for(const m of MULTS){r-=m[1];if(r<=0)return m[0]}return 2}
-function cell(rng,fs){
-  let r=rng()*totalW(fs);
+function pick(rng,fs){
+  const ww=fs?WILD.fsW:WILD.w;const tot=SYMS.reduce((a,s)=>a+s.w,0)+ww+(fs?SCATTER.fsW:SCATTER.w);
+  let r=rng()*tot;
   for(let i=0;i<SYMS.length;i++){r-=SYMS[i].w;if(r<=0)return {s:i}}
-  r-=fs?SCATTER.fsW:SCATTER.w;if(r<=0)return {sc:1};
-  return {m:pickMult(rng)};
+  r-=ww;if(r<=0)return {w:1};
+  return {sc:1};
 }
-function fillGrid(rng,fs,forceSc){
-  const g=[];for(let c=0;c<COLS;c++){g.push([]);for(let r=0;r<ROWS;r++)g[c].push(cell(rng,fs))}
-  if(forceSc){ // bonusaankoop: precies forceSc kluizen op willekeurige kolommen
-    g.forEach(col=>col.forEach((x,i)=>{if(x.sc)col[i]={s:Math.floor(rng()*SYMS.length)}}));
+const newSpots=()=>Array.from({length:COLS},()=>new Array(ROWS).fill(0));
+const cloneG=g=>g.map(c=>c.map(x=>Object.assign({},x)));
+const cloneS=s=>s.map(c=>c.slice());
+function fill(rng,fs,forceSc){
+  const g=[];for(let c=0;c<COLS;c++){g.push([]);for(let r=0;r<ROWS;r++)g[c].push(Object.assign(pick(rng,fs),{fall:ROWS}))}
+  if(forceSc){
+    g.forEach(col=>col.forEach((x,i)=>{if(x.sc)col[i]={s:Math.floor(rng()*SYMS.length),fall:ROWS}}));
     const cols=[...Array(COLS).keys()].sort(()=>rng()-.5).slice(0,forceSc);
-    cols.forEach(c=>{g[c][Math.floor(rng()*ROWS)]={sc:1}});
+    cols.forEach(c=>{g[c][Math.floor(rng()*ROWS)]={sc:1,fall:ROWS}});
   }
   return g;
 }
-const clone=g=>g.map(c=>c.map(x=>Object.assign({},x)));
-function evaluate(g){
-  const cnt=new Array(SYMS.length).fill(0);
-  g.forEach(col=>col.forEach(x=>{if(x.s!=null)cnt[x.s]++}));
-  const wins=[];
-  cnt.forEach((n,i)=>{if(n>=8){const t=n>=12?2:n>=10?1:0;wins.push({sym:i,count:n,pay:SYMS[i].pay[t]})}});
-  return wins;
+// Zoekt alle clusters. Een loper kan in clusters van verschillende symbolen meetellen.
+function clusters(g,spots){
+  const out=[];
+  for(let s=0;s<SYMS.length;s++){
+    const seen=new Set();
+    for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++){
+      if(g[c][r].s!==s||seen.has(c*ROWS+r))continue;
+      const cells=[],stack=[[c,r]],local=new Set([c*ROWS+r]);let real=0;
+      while(stack.length){const [x,y]=stack.pop();cells.push([x,y]);if(g[x][y].s===s){real++;seen.add(x*ROWS+y)}
+        for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=COLS||ny>=ROWS)continue;const k=nx*ROWS+ny;if(local.has(k))continue;
+          const v=g[nx][ny];if(v.s===s||v.w){local.add(k);stack.push([nx,ny])}}}
+      if(cells.length>=MIN_CLUSTER&&real>0){
+        let mult=0;cells.forEach(([x,y])=>{if(spots[x][y]>=2)mult+=spots[x][y]});
+        const base=payFor(s,cells.length);out.push({sym:s,size:cells.length,cells,base,mult,pay:base*(mult||1)});
+      }
+    }
+  }
+  return out;
 }
-function tumble(g,wins,rng,fs){
-  const hit=new Set(wins.map(w=>w.sym));
-  return g.map(col=>{
-    const keep=col.filter(x=>!(x.s!=null&&hit.has(x.s)));
-    const add=ROWS-keep.length;const fresh=[];for(let i=0;i<add;i++)fresh.push(Object.assign(cell(rng,fs),{nw:1}));
-    return fresh.concat(keep.map(x=>{const y=Object.assign({},x);delete y.nw;return y}));
+function tumble(g,hit,rng,fs){
+  return g.map((col,c)=>{
+    const keep=[];col.forEach((x,r)=>{if(!hit.has(c*ROWS+r))keep.push({x,r})});
+    const add=ROWS-keep.length;const res=[];
+    for(let i=0;i<add;i++)res.push(Object.assign(pick(rng,fs),{fall:add}));
+    keep.forEach((k,j)=>{const y=Object.assign({},k.x);y.fall=(add+j)-k.r;res.push(y)});
+    return res;
   });
 }
-// Eén spin (basis of free spin). Geeft alle tussenstappen terug voor de animatie.
+// Eén spin. spots wordt in-place bijgewerkt (geef in free spins steeds dezelfde mee).
 function spin(rng,opts){
-  opts=opts||{};const fs=!!opts.fs;
-  let g=fillGrid(rng,fs,opts.forceSc||0);
+  opts=opts||{};const fs=!!opts.fs;const spots=opts.spots||newSpots();
+  let g=fill(rng,fs,opts.forceSc||0);
   const steps=[];let win=0;
-  for(let guard=0;guard<60;guard++){
-    const wins=evaluate(g);
-    steps.push({grid:clone(g),wins});
+  for(let guard=0;guard<80;guard++){
+    const wins=clusters(g,spots);
+    const step={grid:cloneG(g),wins,spots:cloneS(spots)};steps.push(step);
     if(!wins.length)break;
     win+=wins.reduce((a,w)=>a+w.pay,0);
-    g=tumble(g,wins,rng,fs);
+    const hit=new Set();wins.forEach(w=>w.cells.forEach(([x,y])=>hit.add(x*ROWS+y)));
+    hit.forEach(k=>{const x=Math.floor(k/ROWS),y=k%ROWS;spots[x][y]=spots[x][y]===0?1:Math.min(MAX_SPOT,spots[x][y]===1?2:spots[x][y]*2)});
+    step.spotsAfter=cloneS(spots);
+    g=tumble(g,hit,rng,fs);
   }
-  const last=steps[steps.length-1].grid;
-  let sc=0,multSum=0;last.forEach(col=>col.forEach(x=>{if(x.sc)sc++;if(x.m)multSum+=x.m}));
-  const base=win;
-  if(fs&&win>0&&multSum>0)win*=multSum;
-  const scPay=fs?0:(SCATTER_PAY[Math.min(6,sc)]||0);
-  return {steps,base,multSum:fs?multSum:0,win,scatters:sc,scPay,trigger:!fs&&sc>=4,retrigger:fs&&sc>=3};
+  const last=steps[steps.length-1].grid;let sc=0;last.forEach(col=>col.forEach(x=>{if(x.sc)sc++}));
+  const extra=fs&&sc>=2?FS_RETRIG[Math.min(5,sc)]:0;
+  return {steps,base:win,win,scatters:sc,scPay:0,trigger:!fs&&sc>=4,retrigger:extra>0,extra,spots:cloneS(spots)};
 }
-// Volledige free-spinsronde. Geeft elke spin terug; totaal in x inzet, met maximale winst.
 function freeSpins(rng,start){
-  // Totaalmultiplier: elke multiplier op een winnende spin telt op en geldt voor alle volgende winsten.
-  let left=start||FS_START,total=0,run=0;const spins=[];
-  while(left>0&&spins.length<200){left--;const s=spin(rng,{fs:true});
-    if(s.base>0){if(s.multSum>0)run+=s.multSum;s.win=s.base*Math.max(1,run)}
-    s.run=run;total+=s.win;if(s.retrigger)left+=FS_RETRIGGER;s.left=left;s.total=total;spins.push(s);
+  let left=start||FS_START,total=0;const spins=[];const spots=newSpots();
+  while(left>0&&spins.length<200){left--;const s=spin(rng,{fs:true,spots});total+=s.win;if(s.extra)left+=s.extra;s.left=left;s.total=total;spins.push(s);
     if(total>=MAX_WIN){total=MAX_WIN;break}}
   return {spins,total:Math.min(total,MAX_WIN)};
 }
-// Hele ronde in x inzet: basisspin, eventueel free spins.
 function playRound(rng,opts){
   opts=opts||{};
-  if(opts.buy){const s=spin(rng,{forceSc:4});const fsr=freeSpins(rng,FS_START);
-    const tot=Math.min(MAX_WIN,SCATTER_PAY[4]+fsr.total);return {base:s,fs:fsr,total:tot,cost:BUY_COST}}
-  const s=spin(rng,{});let tot=s.win+s.scPay;let fsr=null;
-  if(s.trigger){fsr=freeSpins(rng,FS_START);tot+=fsr.total}
-  return {base:s,fs:fsr,total:Math.min(MAX_WIN,tot),cost:1};
+  if(opts.buy){const s=spin(rng,{forceSc:4});const n=FS_BY_SC[4];const fsr=freeSpins(rng,n);
+    return {base:s,fs:fsr,fsStart:n,total:Math.min(MAX_WIN,fsr.total),cost:BUY_COST}}
+  const s=spin(rng,{});let tot=s.win,fsr=null,n=0;
+  if(s.trigger){n=FS_BY_SC[Math.min(7,s.scatters)];fsr=freeSpins(rng,n);tot+=fsr.total}
+  return {base:s,fs:fsr,fsStart:n,total:Math.min(MAX_WIN,tot),cost:1};
 }
-const API={COLS,ROWS,SYMS,SCATTER,SCATTER_PAY,MULTS,FS_START,FS_RETRIGGER,BUY_COST,MAX_WIN,spin,freeSpins,playRound,evaluate};
+const tune=o=>{if(o.payk!=null)setPay(o.payk);if(o.wild!=null)WILD.w=o.wild;if(o.wildFs!=null)WILD.fsW=o.wildFs;if(o.sc!=null)SCATTER.w=o.sc;if(o.scFs!=null)SCATTER.fsW=o.scFs};
+const API={tune,FS_RETRIG,COLS,ROWS,MIN_CLUSTER,MAX_SPOT,SYMS,WILD,SCATTER,SCATTER_PAY,FS_BY_SC,FS_START,FS_RETRIGGER,BUY_COST,MAX_WIN,CURVE,spin,freeSpins,playRound,clusters,newSpots};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.SLOT=API;
 })(typeof window!=='undefined'?window:globalThis);

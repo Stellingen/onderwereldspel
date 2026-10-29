@@ -17,6 +17,7 @@
     <div class="topbar" id="topbar"></div>
     <section id="view"></section>
   </main>
+  <aside class="rail" id="rail" aria-label="Overzicht"></aside>
 </div>
 <div id="toasts" aria-live="polite"></div>
 <div id="modal" hidden><div class="modalbox" role="alertdialog" aria-labelledby="modalT"><div class="siren"></div><h2 id="modalT"></h2><p id="modalM"></p><div id="modalB"></div></div></div>
@@ -34,15 +35,15 @@
       const me=await fetch('/api/me',{headers:h});
       if(me.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/?login=1');return}
       if(me.ok){
-        window.__TOKEN__=token;window.__USER__=(await me.json()).username;
+        window.__TOKEN__=token;const mj=await me.json();window.__USER__=mj.username;window.__SINCE__=mj.since||null;window.__REDEEMED__=mj.redeemed||[];
         const st=await fetch('/api/state',{headers:h});
         if(st.ok){const j=await st.json();if(j&&j.state)window.__SERVER_STATE__=j.state}
       }
     }catch(e){/* server onbereikbaar: offline verder */}
   }
-  const files=['js/slot.js','js/data.js','js/state.js','js/ui.js',
+  const files=['js/slot.js','js/data.js','js/state.js','js/ui.js','js/flee.js',
     'js/pages/dashboard.js','js/pages/misdaden.js','js/pages/autos.js','js/pages/casino.js','js/pages/skills.js',
-    'js/pages/bezit.js','js/pages/wapens.js','js/pages/bank.js','js/pages/bajes.js','js/pages/families.js','js/pages/ranglijst.js',
+    'js/pages/bezit.js','js/pages/wapens.js','js/pages/bank.js','js/pages/bajes.js','js/pages/families.js','js/pages/ranglijst.js','js/pages/profiel.js',
     'js/actions.js','js/icons.js','js/pages/kluiskraker.js','js/main.js'];
   for(const f of files){await new Promise(res=>{const s=document.createElement('script');s.src=f;s.onload=res;s.onerror=res;document.body.appendChild(s)})}
   // Eerste keer inloggen met bestaande browser-voortgang: meteen naar de database sturen.

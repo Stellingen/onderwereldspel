@@ -2,15 +2,45 @@
 const act={
  crime(id){const c=CRIMES.find(x=>x.id===id);if(inJail()||cdLeft(id)||rankIdx(S.xp)<c.r)return;if(S.energy<c.en){toast('Te moe. Je hebt '+c.en+' energie nodig','bad');return}S.energy-=c.en;S.cd[id]=now()+crimeCd(c);
   if(rnd(1,100)<=chance(c)){const g=Math.floor(rnd(c.min,c.max)*(1+fam().loot/100));S.cash+=g;S.stats.crimes++;S.cred+=c.cr;S.heat=Math.min(100,S.heat+rnd(1,4));addXp(c.xp);toast(c.n+' gelukt: +'+fmt(g));log(c.n+' gelukt, buit '+fmt(g),'ok')}
-  else{const lost=Math.floor(S.cash*0.1);S.cash-=lost;S.stats.fails++;S.hp=Math.max(10,S.hp-rnd(5,15));S.heat=Math.min(100,S.heat+rnd(5,10));
+  else{const lost=Math.min(Math.floor(S.cash*0.1),c.max*2); // verlies past bij de grootte van de klus
+  S.cash-=lost;S.stats.fails++;S.hp=Math.max(10,S.hp-rnd(5,15));S.heat=Math.min(100,S.heat+rnd(5,10));
    addXp(Math.ceil(c.xp/4));log(c.n+' mislukt, '+fmt(lost)+' kwijt','bad');save();
-   arrest(c.jail,'Betrapt!',c.n+' ging mis en een agent heeft je in de kraag gevat.')}
+   arrest(c.jail,'Betrapt!',c.n+' ging mis. '+FLEE_LEVELS[c.flee||2].where,{flee:c.flee||2})}
   save();render()},
  car(){if(inJail()||cdLeft('car'))return;S.cd.car=now()+carCd();const pool=CARS.filter(c=>rankIdx(S.xp)>=c.r);const car=pool[rnd(0,pool.length-1)];
   if(rnd(1,100)<=car.c+gearBonus()+S.skills.cars*3){if(S.cars.length>=10){toast('Garage vol, verkoop eerst iets','bad')}else{const v=Math.floor(car.v*(rnd(70,110)/100)*(1+S.skills.cars*0.04));S.cars.push({n:car.n,v});S.stats.cars++;S.cred+=1;addXp(10+Math.floor(car.v/500));toast(car.n+' gestolen!');log(car.n+' gestolen ('+fmt(v)+')','ok')}}
-  else{S.heat=Math.min(100,S.heat+6);log('Mislukte poging: '+car.n,'bad');save();arrest(45,'Alarm!','Het alarm van de '+car.n+' gaat af en een agent staat naast je.');return}save();render()},
- train(id){const s=SKILLS.find(x=>x.id===id);if(S.skills[id]>=10)return;const c=skillCost(s);if(S.cash<c){toast('Niet genoeg contant geld','bad');return}
-  S.cash-=c;S.skills[id]++;addXp(10*S.skills[id]);toast(s.n+' is nu level '+S.skills[id]);log(s.n+' getraind naar level '+S.skills[id],'info');save();render()},
+  else{S.heat=Math.min(100,S.heat+6);log('Mislukte poging: '+car.n,'bad');save();arrest(45,'Alarm!','Het alarm van de '+car.n+' gaat af en een agent komt aanrennen.',{flee:2});return}save();render()},
+ trainSession(id){const t=TRAININGS.find(x=>x.id===id);const l=S.skills[id]||0;if(!t||l>=TRAIN_MAX||inJail()||cdLeft('tr_'+id))return;
+  const cost=t.base*(1+l);if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
+  S.cash-=cost;S.cd['tr_'+id]=now()+t.cd*60000;S.train[id]=(S.train[id]||0)+1;addXp(3+l);
+  if(S.train[id]>=trainNeed(l)){S.train[id]=0;S.skills[id]=l+1;const a=t.eff(l),b=t.eff(l+1);
+    toast(t.n+' level '+(l+1)+': '+a[0][0].toLowerCase()+' '+a[0][1]+' → '+b[0][1],'lvl');log(t.n+' naar level '+(l+1)+' ('+t.place+')','ok')}
+  else toast(t.place+': sessie '+S.train[id]+' van '+trainNeed(l)+' gedaan');
+  save();render()},
+ async redeem(raw){const code=String(raw||'').trim().toLowerCase();const btn=document.getElementById('codeBtn');
+  if(!code){redeemMsg={ok:false,t:'Vul eerst een code in.'};render();return}
+  S.redeemed=S.redeemed||[];
+  if(S.redeemed.includes(code)){redeemMsg={ok:false,t:'Je hebt deze code al gebruikt.'};render();return}
+  if(btn){btn.disabled=true;btn.textContent='Controleren…'}
+  let amount=0;
+  if(window.__TOKEN__){
+    try{const r=await fetch('/api/redeem',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.__TOKEN__},body:JSON.stringify({code})});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok){if(r.status===409&&!S.redeemed.includes(code))S.redeemed.push(code);redeemMsg={ok:false,t:j.error||'Kon de code niet inwisselen.'};save();render();return}
+      amount=j.amount}
+    catch(e){redeemMsg={ok:false,t:'De server is niet bereikbaar. Probeer het later opnieuw.'};render();return}
+  }else{const LOCAL={lotto:1500};amount=LOCAL[code];if(!amount){redeemMsg={ok:false,t:'Deze code bestaat niet.'};render();return}}
+  S.cash+=amount;S.redeemed.push(code);redeemMsg={ok:true,t:'Gelukt! '+fmt(amount)+' is bijgeschreven op je contant geld.'};
+  toast('Code '+code.toUpperCase()+': +'+fmt(amount),'lvl');log('Code '+code.toUpperCase()+' ingewisseld: +'+fmt(amount),'ok');
+  save();if(typeof pushState==='function')pushState();render()},
+ relax(id){const r=RELAX.find(x=>x.id===id);if(!r||inJail()||cdLeft('rx_'+id))return;const cost=r.cost(rankIdx(S.xp));if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
+  S.cash-=cost;S.cd['rx_'+id]=now()+r.cd*60000;const m=[];
+  if(r.focus){S.buffs.focus={until:now()+r.mins*60000,pct:r.focus};m.push('focus +'+r.focus+'% voor '+r.mins+' min')}
+  if(r.hp){S.hp=Math.min(100,S.hp+r.hp);m.push('gezondheid +'+r.hp)}
+  if(r.energy){S.energy=Math.min(EN_MAX,S.energy+r.energy);m.push('energie +'+r.energy)}
+  if(r.heat){S.heat=Math.max(0,S.heat-r.heat);m.push('hitte -'+r.heat)}
+  if(r.clearWanted&&S.wanted){S.wanted=false;m.push('niet meer gezocht')}
+  toast(r.n+': '+m.join(', '));log(r.place+': '+m.join(', '),'info');save();render()},
  rlBet(k){const r=rl;if(r.spinning)return;const tot=Object.values(r.bets).reduce((a,b)=>a+b,0);if(tot+r.chip>S.cash){toast('Niet genoeg contant geld voor deze fiche','bad');return}r.bets[k]=(r.bets[k]||0)+r.chip;render()},
  rlClear(){if(rl.spinning)return;rl.bets={};render()},
  rlSpin(){const r=rl;if(r.spinning||inJail())return;const tot=Object.values(r.bets).reduce((a,b)=>a+b,0);if(!tot)return;if(tot>S.cash){toast('Niet genoeg contant geld','bad');return}
@@ -56,7 +86,7 @@ const act={
 };
 
 // Politiecontroles: elke actie kan een controle opleveren als je gezocht bent
-(()=>{const skip=['bail','escape','getBet','win','bjEnd','leave','bjHit','bjStand','bjDouble','rlBet','rlClear'];let depth=0;
+(()=>{const skip=['redeem','bail','escape','getBet','win','bjEnd','leave','bjHit','bjStand','bjDouble','rlBet','rlClear'];let depth=0;
  Object.keys(act).forEach(k=>{if(skip.includes(k))return;const fn=act[k];act[k]=function(...a){
   if(depth===0&&S.wanted&&!inJail()&&Math.random()<(page==='casino'?0.2:0.12)){policeRaid();return}
   depth++;try{return fn.apply(this,a)}finally{depth--}}})})();

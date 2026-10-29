@@ -6,9 +6,17 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Spel** (`/game.html`) alleen voor ingelogde spelers; voortgang wordt opgeslagen in MySQL
 - **Ranglijst** met echte spelers en rivalen uit de stad
 - **24 misdaden** over 11 rangen, met energie (1 punt per 18 s) zodat je niet alles kunt speedrunnen
+- **Vluchtspel**: gaat een klus mis, dan kun je vluchten (tik op het juiste moment). Op straat is dat makkelijk,
+  in een afgesloten gebouw bijna onmogelijk. Lukt het: vrij en niet gezocht. Mislukt het: cel met 20% extra straf.
+- **Training** met tijdsloten: sportschool (conditie: +5 max. energie per level), markt, atletiekbaan, circuit,
+  toneelschool. **Ontspanning**: privéclub (focus +8%), sauna, espresso, onderduikadres. Elke knop toont nu → daarna.
 - **8 families**, van De Nieuwe Garde tot La Cupola
-- **Kluiskraker**: tumble-slot (6×5, 8+ gelijke symbolen), free spins met oplopende totaalmultiplier, bonus kopen voor 100× inzet.
-  Gesimuleerd: RTP 94,6% basis, 96,3% bij bonus kopen, max. winst 5000×. Engine in `public/js/slot.js` (ook in Node te draaien).
+- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`).
+- **Kluiskraker**: cluster-slot op 7×7 (5+ aangrenzende gelijke symbolen), Loper als wild, vakjes die bij elke
+  nieuwe winst verdubbelen (x2 tot x128), 4+ kluizen = free spins waarin de vakjes blijven staan, extra spins vanaf
+  2 kluizen in de bonus, bonus kopen voor 100× inzet. Gesimuleerd: RTP 96,0% basis, 96,4% bij bonus kopen,
+  max. winst 5000×. Engine in `public/js/slot.js` (ook in Node te draaien).
+- Kleur per sectie (Straat oranje, Geld groen, Macht paars, Overig blauw) en een zijbalk op brede schermen
 
 ## Railway instellen
 
@@ -43,6 +51,7 @@ public/game.html     spel (controleert login, laadt voortgang uit de database)
 public/css/          style.css (spel) en landing.css
 public/js/landing.js inloggen/registreren, misdaadkaart en interactieve landing
 public/js/slot.js    wiskunde van de Kluiskraker (pure functies)
+public/js/flee.js    vluchtspel bij een mislukte klus
 public/js/icons.js   symbolen van de Kluiskraker
 public/js/*.js       spelmodules; public/js/pages/ bevat één bestand per tabblad
 ```
@@ -56,4 +65,5 @@ public/js/*.js       spelmodules; public/js/pages/ bevat één bestand per tabbl
 | GET | `/api/me` | ingelogde gebruiker (header `Authorization: Bearer <token>`) |
 | GET/POST | `/api/state` | voortgang laden / opslaan |
 | GET | `/api/leaderboard` | top 25 spelers |
+| POST | `/api/redeem` | `{code}` → eenmalig spelgeld per account |
 | GET | `/api/health` | status van server en database |

@@ -1,5 +1,5 @@
 // Renderen, nieuwsticker, tijd/inkomen en de spel-loop
-function render(){renderNav();renderTop();$('#view').innerHTML=V[page]();if(page==='casino'&&casinoTab==='roulette')drawWheel(rl.angle)}
+function render(){applySection();renderNav();renderTop();renderRail();$('#view').innerHTML=crumbHtml()+V[page]();if(page==='casino'&&casinoTab==='roulette')drawWheel(rl.angle)}
 // Nieuwsticker met gebeurtenissen uit de onderwereld
 function news(){const n=S.npcs[rnd(0,S.npcs.length-1)].n;const T=[
   ()=>n+' heeft een juwelier in Utrecht overvallen',()=>n+' is gepromoveerd tot '+RANKS[rankIdx(S.npcs.find(p=>p.n===n).xp)][0],
@@ -20,11 +20,11 @@ function tick(){
 
 window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(PAGES.find(x=>x[0]===p)){page=p;render();window.scrollTo(0,0)}});
 let wasJail=inJail();
-setInterval(()=>{tick();renderTop();renderNav();
+setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderRail();
   if(Math.random()<0.05)news();
   if(S.wanted&&!inJail()&&$('#modal').hidden&&Math.random()<0.004){policeRaid();return}
   if(wasJail&&!inJail()){toast('Je bent vrijgelaten');wasJail=false;render()}else if(inJail())wasJail=true;
   const focusIn=document.activeElement&&document.activeElement.tagName==='INPUT';
-  if(!focusIn&&!spinning&&['crimes','cars','jail','dash'].includes(page))$('#view').innerHTML=V[page]();
+  if(!focusIn&&!spinning&&['crimes','cars','jail','dash','skills'].includes(page))$('#view').innerHTML=crumbHtml()+V[page]();
 },1000);
 render();renderTicker();

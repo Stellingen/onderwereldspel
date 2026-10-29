@@ -89,23 +89,23 @@ q('#index').addEventListener('click',e=>{const b=e.target.closest('.ix');if(!b)r
 /* ---------- Mini-slot ---------- */
 const ms=q('#minislot'),SY=['munt','dobbel','fiche','sleutel','horloge','ring','diamant','goud'];
 let cells=[];
-function msFill(all){for(let i=0;i<30;i++){if(all||!cells[i]){cells[i]={s:Math.random()<.04?'kluis':pick(SY),nw:1}}}}
+function msFill(all){for(let i=0;i<49;i++){if(all||!cells[i]){cells[i]={s:Math.random()<.04?'kluis':pick(SY),nw:1}}}}
 function msDraw(){ms.innerHTML=cells.map((c,i)=>`<div class="c${c.nw?' nw':''}${c.st?' '+c.st:''}" data-i="${i}">${kkSvg(c.s)}</div>`).join('');cells.forEach(c=>{c.nw=0})}
 async function msLoop(){
   const wait=ms2=>new Promise(r=>setTimeout(r,ms2));
   msFill(true);msDraw();
   while(true){
     await wait(1500);
-    const sym=pick(SY.slice(2));const idx=[...Array(30).keys()].sort(()=>Math.random()-.5).slice(0,R(8,11));
+    const sym=pick(SY.slice(2));const idx=[...Array(49).keys()].sort(()=>Math.random()-.5).slice(0,R(6,9));
     idx.forEach(i=>{cells[i]={s:sym}});msDraw();await wait(500);
     idx.forEach(i=>{cells[i].st='win'});msDraw();
-    const tag=document.createElement('div');tag.className='tag-win';tag.textContent=pick(['x2','x5','x8','x12','x25']);ms.appendChild(tag);
+    const tag=document.createElement('div');tag.className='tag-win';tag.textContent=pick(['x2','x4','x8','x16','x32']);ms.appendChild(tag);
     await wait(900);idx.forEach(i=>{cells[i].st='gone'});msDraw();await wait(260);
     idx.forEach(i=>{cells[i]=null});
     // vallen: per kolom
-    const grid=[];for(let c=0;c<6;c++){const col=[];for(let r=0;r<5;r++)col.push(cells[r*6+c]);const keep=col.filter(Boolean);
-      const fresh=Array.from({length:5-keep.length},()=>({s:pick(SY),nw:1}));grid.push(fresh.concat(keep))}
-    for(let c=0;c<6;c++)for(let r=0;r<5;r++)cells[r*6+c]=grid[c][r];
+    const grid=[];for(let c=0;c<7;c++){const col=[];for(let r=0;r<7;r++)col.push(cells[r*7+c]);const keep=col.filter(Boolean);
+      const fresh=Array.from({length:7-keep.length},()=>({s:pick(SY),nw:1}));grid.push(fresh.concat(keep))}
+    for(let c=0;c<7;c++)for(let r=0;r<7;r++)cells[r*7+c]=grid[c][r];
     msDraw();await wait(1200);
     if(Math.random()<.5){msFill(true);msDraw()}
   }

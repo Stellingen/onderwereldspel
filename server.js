@@ -67,7 +67,35 @@ app.post('/api/login', limit, async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: 'Serverfout bij inloggen' }); }
 });
 
-app.get('/api/me', auth, (req, res) => res.json({ username: req.user.u }));
+app.get('/api/me', auth, async (req, res) => {
+  const out = { username: req.user.u };
+  if (db.state.ready) {
+    try {
+      const [rows] = await db.q('SELECT created_at FROM users WHERE id=?', [req.user.id]);
+      if (rows.length) out.since = rows[0].created_at;
+      const [red] = await db.q('SELECT code FROM redemptions WHERE user_id=?', [req.user.id]);
+      out.redeemed = red.map(r => r.code);
+    } catch (e) { console.error(e); }
+  }
+  res.json(out);
+});
+
+// Inwisselcodes: elke code één keer per account. Bedrag in euro (spelgeld).
+const CODES = { lotto: 1500 };
+app.post('/api/redeem', auth, limit, async (req, res) => {
+  if (!db.state.ready) return need(res);
+  const code = String((req.body && req.body.code) || '').trim().toLowerCase();
+  if (!code || code.length > 40) return res.status(400).json({ error: 'Vul een code in' });
+  const amount = CODES[code];
+  if (!amount) return res.status(404).json({ error: 'Deze code bestaat niet' });
+  try {
+    await db.q('INSERT INTO redemptions(user_id,code,amount) VALUES(?,?,?)', [req.user.id, code, amount]);
+    res.json({ ok: true, code, amount });
+  } catch (e) {
+    if (e && e.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'Je hebt deze code al gebruikt' });
+    console.error(e); res.status(500).json({ error: 'Kon de code niet inwisselen' });
+  }
+});
 
 app.get('/api/state', auth, async (req, res) => {
   if (!db.state.ready) return need(res);

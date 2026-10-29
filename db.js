@@ -60,6 +60,15 @@ async function init() {
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
+  await pool.query(`CREATE TABLE IF NOT EXISTS redemptions (
+    user_id INT NOT NULL,
+    code VARCHAR(40) NOT NULL,
+    amount INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, code),
+    CONSTRAINT fk_red_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+
   state.ready = true;
   console.log('✓ MySQL verbonden en tabellen klaar.');
 }
