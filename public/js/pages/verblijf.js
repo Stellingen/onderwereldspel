@@ -1,7 +1,7 @@
 // Tab: Verblijf — tafereel van je woning, rusten en dokter (alleen zolang je blijft), onderduiken (loopt door) en de woningmarkt.
 const STAY={
- rest:{dur:()=>home().rest*1000,cd:()=>home().cd*1000*(1-furnFx('restCd')),key:'vb_rest'},
- doc:{dur:()=>DOC.dur*1000,cd:()=>DOC.cd*1000,key:'vb_doc'}};
+ rest:{dur:()=>home().rest*1000,cd:()=>home().cd*1000*(1-furnFx('restCd'))*waitK(),key:'vb_rest'},
+ doc:{dur:()=>DOC.dur*1000,cd:()=>DOC.cd*1000*waitK(),key:'vb_doc'}};
 window.stay=window.stay||{kind:null,t0:0,dur:0,from:null,timer:null};
 const stayP=()=>stay.kind?Math.min(1,(performance.now()-stay.t0)/stay.dur):0;
 const stayCd=k=>STAY[k].key?cdLeft(STAY[k].key):0;

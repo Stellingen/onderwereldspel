@@ -40,6 +40,18 @@ if(window.__REDEEMED__)window.__REDEEMED__.forEach(c=>{if(!S.redeemed.includes(c
 S.redeemed=S.redeemed.filter(c=>LIVE_CODES[c]||RANK_CODES[c]);
 
 const rankIdx=xp=>{let i=0;RANKS.forEach((r,j)=>{if(xp>=r[1])i=j});return i};
+// Levels binnen een rang (1-5): hoe meer ervaring in je rang, hoe meer je verdient (+3% buit per level).
+// Peetvader heeft eigen drempels, zodat ook de top nog iets te halen heeft.
+const RANK_SUB=5,RANK_SUB_LOOT=.03,TOP_STEPS=[100000,150000,225000,340000,500000];
+function rankLevel(xp){const i=rankIdx(xp);if(i>=RANKS.length-1){let l=0;TOP_STEPS.forEach(t=>{if(xp>=t)l++});return Math.max(1,l)}
+ const a=RANKS[i][1],b=RANKS[i+1][1];return Math.min(RANK_SUB,1+Math.floor((xp-a)/(b-a)*RANK_SUB))}
+function rankLevelNext(xp){const i=rankIdx(xp),l=rankLevel(xp);if(i>=RANKS.length-1)return l<RANK_SUB?TOP_STEPS[l]:null;const a=RANKS[i][1],b=RANKS[i+1][1];return l<RANK_SUB?a+(b-a)*l/RANK_SUB:b}
+const rankLvlBonus=()=>(rankLevel(S.xp)-1)*RANK_SUB_LOOT;
+const rankLvlInfo=()=>{const l=rankLevel(S.xp),n=rankLevelNext(S.xp),b=Math.round(((rankIdx(S.xp)*RANK_LOOT)+rankLvlBonus())*100);
+ return `Level ${l}/${RANK_SUB} · +${b}% buit${n?` · level ${l+1} op ${Math.ceil(n).toLocaleString('nl-NL')} XP`:l>=RANK_SUB?' · hoogste level':''}`};
+const rankStars=xp=>{const l=rankLevel(xp);return `<span class="rk-stars" title="Level ${l} van ${RANK_SUB} in deze rang">${'★'.repeat(l)}<i>${'★'.repeat(RANK_SUB-l)}</i></span>`};
+// VIP: alle wachttijden 60% van normaal (klussen, auto's, training, ontspanning, rusten, dokter)
+const VIP_WAIT=.6;const waitK=()=>isVip()?VIP_WAIT:1;
 const inJail=()=>S.jailUntil>now();
 const gearBonus=()=>GEAR.reduce((a,g)=>a+(S.gear[g.id]?g.bonus:0),0);
 const fam=()=>FAMILIES.find(f=>f.id===S.family)||{chance:0,loot:0,jail:0};
@@ -112,22 +124,23 @@ const vipTag=()=>isVip()?'<i class="vipt" title="VIP-lid">VIP</i>':'';
 function casinoRound(stake,pay,game){if(!isVip())return;const r=CB_RATE[game]||0;if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
   const el=document.getElementById('cbAmt');if(el)el.textContent=fmt(cbAvail());const bt=document.getElementById('cbBtn');if(bt){bt.disabled=cbAvail()<1;bt.textContent=cbAvail()>=1?'Claimen':'Nog niks te claimen'}}
 const cbAvail=()=>isVip()&&S.cb?Math.floor(S.cb.acc||0):0;
-const crimeCd=c=>c.cd*1000*(1-S.skills.speed*SK.speed.cd);
-const carCd=()=>30000*(1-S.skills.speed*SK.speed.cd);
+const crimeCd=c=>c.cd*1000*(1-S.skills.speed*SK.speed.cd)*waitK();
+const carCd=()=>30000*(1-S.skills.speed*SK.speed.cd)*waitK();
 const RL_ORDER=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
 const REDS=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 const numCol=n=>n===0?'green':REDS.has(n)?'red':'black';
 window.rl={bets:{},angle:0,spinning:false,hist:[],chip:100,res:null,net:0};
 // Inkomen per minuut: per vestiging het inkomen van zijn level
 const bizUnits=id=>(S.biz2&&S.biz2[id])||[];
-function bizMult(){let u=0,up=0;BIZ.forEach(b=>bizUnits(b.id).forEach(l=>{u++;up+=l-1}));const imp=Math.min(BIZ_IMP_MAX,u*BIZ_IMP_UNIT+up*BIZ_IMP_UP),rk=rankIdx(S.xp)*BIZ_RANK;
+function bizMult(){let u=0,up=0;BIZ.forEach(b=>bizUnits(b.id).forEach(l=>{u++;up+=l-1}));const imp=Math.min(BIZ_IMP_MAX,u*BIZ_IMP_UNIT+up*BIZ_IMP_UP),rk=rankIdx(S.xp)*BIZ_RANK+(rankLevel(S.xp)-1)*.01;
  return {units:u,ups:up,imp,rk,total:BIZ_BOOST*(1+imp)*(1+rk)}}
 const bizIncome=id=>{const b=BIZ.find(x=>x.id===id);return bizUnits(id).reduce((a,l)=>a+bizInc(b,l),0)};
 const income=()=>BIZ.reduce((a,b)=>a+bizIncome(b.id),0);
 
 function toast(msg,cls='ok'){const t=document.createElement('div');t.className='toast '+cls;t.textContent=msg;$('#toasts').prepend(t);setTimeout(()=>t.remove(),3200)}
 function log(msg,cls='info'){S.log.unshift({m:msg,c:cls,t:now()});S.log=S.log.slice(0,40)}
-function addXp(x){const before=rankIdx(S.xp);S.xp+=x;const after=rankIdx(S.xp);if(after>before){toast('Promotie: je bent nu '+RANKS[after][0]+'! Claim je beloning op je profiel.','lvl');log('Gepromoveerd tot '+RANKS[after][0],'ok')}}
+function addXp(x){const before=rankIdx(S.xp),bl=rankLevel(S.xp);S.xp+=x;const after=rankIdx(S.xp),al=rankLevel(S.xp);if(after>before){toast('Promotie: je bent nu '+RANKS[after][0]+'! Claim je beloning op je profiel.','lvl');log('Gepromoveerd tot '+RANKS[after][0],'ok')}
+  else if(al>bl){toast(RANKS[after][0]+' level '+al+': +'+Math.round(RANK_SUB_LOOT*100)+'% extra buit','lvl');log(RANKS[after][0]+' level '+al+' bereikt','ok')}}
 
 const EN_BASE=100,EN_REGEN_S=18; // 1 energie per 18 seconden
 // Maximale energie groeit met Conditie (sportschool): +5 per level

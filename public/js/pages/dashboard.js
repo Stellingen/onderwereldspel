@@ -15,7 +15,8 @@ V.dash=()=>{
   <div class="dash">
    <section class="card hud d-hero">
     <div class="label">${greet}, ${esc(S.name)}</div>
-    <h1 class="d-rank">${RANKS[ri][0]}</h1>
+    <h1 class="d-rank">${RANKS[ri][0]} ${rankStars(S.xp)}</h1>
+    <div class="d-lvl">${rankLvlInfo()}</div>
     <div class="d-prog"><div class="bar"><i style="width:${pct}%;background:var(--acc)"></i></div>
      <span>${nxt?`${Math.floor(S.xp).toLocaleString('nl-NL')} / ${nxt[1].toLocaleString('nl-NL')} XP · nog ${Math.ceil(nxt[1]-S.xp).toLocaleString('nl-NL')} tot <b>${nxt[0]}</b>`:'Je bent de Peetvader. Hoger kan niet.'}</span></div>
     <div class="d-actions">

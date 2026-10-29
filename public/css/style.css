@@ -1437,3 +1437,20 @@ button,.btn,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-to
 .bz-bonus-p{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--mute)}.bz-bonus-p b{color:var(--fg);font-family:var(--f-mono);font-weight:600}
 .bz-bonus p{grid-column:1/-1;margin:0;font-size:12.5px;color:var(--faint)}
 @container (max-width:760px){.bz-bonus{grid-template-columns:1fr}}
+/* Bezit: upgrade-alles met prijs, upgrade-chips per vestiging */
+.bz-upall{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:10px 18px;align-items:center;padding:12px 14px;margin:0 0 12px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--bc,var(--green))}
+.bz-upall>div{display:flex;flex-direction:column;min-width:0}.bz-upall b{font-family:var(--f-mono);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bz-upall em{font-style:normal;font-size:12.5px;color:var(--mute)}
+.bz-upall .btn{white-space:nowrap}
+.bz-chips{display:flex!important;flex-wrap:wrap;gap:4px;margin-top:5px}.bz-chips i{font-style:normal;font-size:11px;padding:2px 7px;border-radius:999px;color:var(--faint);box-shadow:inset 0 0 0 1px var(--line2)}
+.bz-chips i.on{color:var(--fg);background:color-mix(in srgb,var(--bc) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bc) 55%,transparent)}
+.bz-unit{transition:background .15s}.bz-unit:hover{background:var(--panel2)}
+.bz-u-btn:not(:disabled):hover{transform:translateY(-1px)}
+@container (max-width:760px){.bz-upall{grid-template-columns:1fr}.bz-upall .btn{width:100%}}
+/* rang-levels */
+.rk-stars{font-size:.42em;letter-spacing:2px;color:var(--gold,#e9b949);vertical-align:middle;white-space:nowrap}
+.rk-stars i{font-style:normal;color:rgba(255,255,255,.14)}
+.d-lvl,.pf-lvl{font-size:12.5px;color:var(--mut);margin:-2px 0 10px}
+.pf-rank .rk-stars{font-size:.8em}
+.d-rank .rk-stars{font-size:.3em;letter-spacing:3px}
+.d-prog .bar,.pf-id .bar{position:relative}
+.d-prog .bar::after,.pf-id .bar::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0 calc(20% - 2px),rgba(0,0,0,.55) calc(20% - 2px) 20%)}

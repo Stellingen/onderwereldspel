@@ -1,7 +1,7 @@
 // Alle acties (klikken) en de politiecontroles
 const act={
  crime(id){const c=CRIMES.find(x=>x.id===id);if(inJail()||cdLeft(id)||rankIdx(S.xp)<c.r)return;if(S.energy<c.en){toast('Te moe. Je hebt '+c.en+' energie nodig','bad');return}S.energy-=c.en;S.cd[id]=now()+crimeCd(c);
-  if(rnd(1,100)<=chance(c)){const g=Math.floor(rnd(c.min,c.max)*(1+fam().loot/100)*(1+rankIdx(S.xp)*RANK_LOOT)*(isVip()?1+VIP_LOOT:1));S.cash+=g;S.stats.crimes++;S.cred+=c.cr;S.heat=Math.min(100,S.heat+rnd(1,4));addXp(c.xp);toast(c.n+' gelukt: +'+fmt(g));log(c.n+' gelukt, buit '+fmt(g),'ok')}
+  if(rnd(1,100)<=chance(c)){const g=Math.floor(rnd(c.min,c.max)*(1+fam().loot/100)*(1+rankIdx(S.xp)*RANK_LOOT+rankLvlBonus())*(isVip()?1+VIP_LOOT:1));S.cash+=g;S.stats.crimes++;S.cred+=c.cr;S.heat=Math.min(100,S.heat+rnd(1,4));addXp(c.xp);toast(c.n+' gelukt: +'+fmt(g));log(c.n+' gelukt, buit '+fmt(g),'ok')}
   else{const lost=Math.floor(Math.min(Math.floor(S.cash*0.1),c.max*2)*(1-furnFx('safe'))); // verlies past bij de grootte van de klus
   S.cash-=lost;S.stats.fails++;S.hp=Math.max(10,S.hp-rnd(5,15));S.heat=Math.min(100,S.heat+rnd(5,10));
    addXp(Math.ceil(c.xp/4));log(c.n+' mislukt, '+fmt(lost)+' kwijt','bad');save();
@@ -9,7 +9,7 @@ const act={
   save();render()},
  trainSession(id){const t=TRAININGS.find(x=>x.id===id);const l=S.skills[id]||0;if(!t||l>=TRAIN_MAX||inJail()||cdLeft('tr_'+id))return;
   const cost=trainCost(t,l);if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
-  S.cash-=cost;S.cd['tr_'+id]=now()+t.cd*60000;S.skills[id]=l+1;addXp(3+Math.floor(l*1.5));const a=t.eff(l),b=t.eff(l+1);
+  S.cash-=cost;S.cd['tr_'+id]=now()+t.cd*60000*waitK();S.skills[id]=l+1;addXp(3+Math.floor(l*1.5));const a=t.eff(l),b=t.eff(l+1);
   toast(t.n+' level '+(l+1)+': '+a[0][0].toLowerCase()+' '+a[0][1]+' → '+b[0][1],TRAIN_MILES.includes(l+1)?'lvl':'ok');log(t.n+' naar level '+(l+1)+' ('+t.place+', '+fmt(cost)+')','ok');
   save();pushState();render()},
  async redeem(raw){let code=String(raw||'').trim().toLowerCase();code=CODE_ALIAS[code]||code;const btn=document.getElementById('codeBtn');
@@ -31,7 +31,7 @@ const act={
   toast('Code '+codeShow(code)+': +'+fmt(amount),'lvl');log('Code '+codeShow(code)+' ingewisseld: +'+fmt(amount),'ok');
   save();if(typeof pushState==='function')pushState();render()},
  relax(id){const r=RELAX.find(x=>x.id===id);if(!r||inJail()||cdLeft('rx_'+id))return;const cost=r.cost(rankIdx(S.xp));if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
-  S.cash-=cost;S.cd['rx_'+id]=now()+r.cd*60000;const m=[];
+  S.cash-=cost;S.cd['rx_'+id]=now()+r.cd*60000*waitK();const m=[];
   if(r.focus){S.buffs.focus={until:now()+r.mins*60000,pct:r.focus};m.push('focus +'+r.focus+'% voor '+r.mins+' min')}
   if(r.hp){S.hp=Math.min(100,S.hp+r.hp);m.push('gezondheid +'+r.hp)}
   if(r.energy){S.energy=Math.min(EN_MAX,S.energy+r.energy);m.push('energie +'+r.energy)}

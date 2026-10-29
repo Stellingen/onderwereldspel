@@ -15,7 +15,7 @@ V.skills=()=>{
    <div class="act-eff"><div class="eh"><span>Effect</span><span>Nu</span><span>${max?'':'Level '+(l+1)}</span></div>
     ${a.map((e,i)=>`<div class="er"><span>${e[0]}</span><b>${e[1]}</b><b class="up">${max?'—':'→ '+b[i][1]}</b></div>`).join('')}</div>
    <button class="btn act-btn" onclick="act.trainSession('${t.id}')" ${max||inJail()||left||S.cash<cost?'disabled':''}>${max?'Maximaal':btnLabel(left,cost,'Trainen')}</button>
-   ${left?`<div class="act-cd"><i style="width:${left/(t.cd*60000)*100}%"></i></div>`:''}
+   ${left?`<div class="act-cd"><i style="width:${left/(t.cd*60000*waitK())*100}%"></i></div>`:''}
    <div class="act-foot">1 sessie = 1 level · elke ${t.cd} min · ${max?'klaar':'daarna '+fmt(trainCost(t,l+1))}</div></article>`};
  const relaxCard=r=>{
   const cost=r.cost(ri),left=cdLeft('rx_'+r.id),rows=[];
@@ -30,7 +30,7 @@ V.skills=()=>{
    <div class="act-eff"><div class="eh"><span>Effect</span><span>Nu</span><span>Daarna</span></div>
     ${rows.map(e=>`<div class="er"><span>${e[0]}</span><b>${e[1]}</b><b class="up">→ ${e[2]}</b></div>`).join('')}</div>
    <button class="btn act-btn" onclick="act.relax('${r.id}')" ${inJail()||left||S.cash<cost?'disabled':''}>${btnLabel(left,cost,'Doen')}</button>
-   ${left?`<div class="act-cd"><i style="width:${left/(r.cd*60000)*100}%"></i></div>`:''}
+   ${left?`<div class="act-cd"><i style="width:${left/(r.cd*60000*waitK())*100}%"></i></div>`:''}
    <div class="act-foot">1× per ${r.cd} min</div></article>`};
  const active=[];
  if(buffFocus())active.push(`<span class="chipline" style="--c:#ff3d52">Focus +${buffFocus()}% · nog ${fmtClock(S.buffs.focus.until-now())}</span>`);

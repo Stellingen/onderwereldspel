@@ -7,6 +7,9 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Ranglijst** met echte spelers en rivalen uit de stad
 - **51 misdaden** over 12 rangen (vier of meer per rang), met energie (1 punt per 18 s) zodat je niet alles kunt speedrunnen.
   Hoe hoger je rang, hoe meer elke klus oplevert: +6% buit per rang (Peetvader +66%), bovenop je familiebonus.
+  **Levels binnen je rang**: elke rang heeft 5 levels (★ tot ★★★★★) op basis van je XP in die rang. Elk level geeft +3% buit
+  en +1% op je passieve inkomen. Peetvader heeft eigen levels (100k, 150k, 225k, 340k en 500k XP). Je ziet je level in de
+  topbalk, op het dashboard en op je profiel.
 - **Vluchtspel**: gaat een klus mis, dan kun je vluchten (tik op het juiste moment). Op straat is dat makkelijk,
   in een afgesloten gebouw bijna onmogelijk. Lukt het: vrij en niet gezocht. Mislukt het: cel met 20% extra straf.
 - **Training** met tijdsloten: elke sessie is één level, tot level 50. Elk level is duurder (conditie: €60 voor level 1,
@@ -70,11 +73,12 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   Nummer, split, rij, hoek, zes, drie met nul, eerste vier, kolom, dozijn en de kansen, plus groepen op het wiel
   (Buren van nul, Overkant, Weesjes, Nulspel). Ongedaan maken, fiches weghalen (ook met rechtsklik), alles wissen,
   verdubbelen en herhalen; een fiche zetten werkt alleen dat vak bij (de pagina ververst niet). Op de telefoon staat de tafel rechtop. Code: `public/js/pages/roulette.js`.
-- **VIP** (code `vip`): VIP-tag bij je naam (ook in de ranglijst). Misdaden: +15% buit, 10% groter groen gat bij vluchten en
+- **VIP** (code `vip`): VIP-tag bij je naam (ook in de ranglijst). **Alle wachttijden 60%** (klussen, auto stelen, training,
+  ontspanning, rusten en de dokter; celstraffen niet). Misdaden: +15% buit, 10% groter groen gat bij vluchten en
   45% in plaats van 35% kans om uit de bajes te ontsnappen. Casino: cashback op elke inzet, direct te claimen
   (Kluiskraker, Mines en Hoogvlieger 0,5%, roulette 1%, Three Card Poker 0,75%, blackjack 0,25%, Dubbel of niks 0% omdat daar geen huisvoordeel is).
-  Kluiskraker: bonus ±1 op 280 in plaats van 400 en superbonus ±1 op 4.200 in plaats van 7.400 (basisspel-clusters ±4% lager
-  om onder 100% te blijven; de bonus zelf is gelijk). Hoogvlieger: ±13% meer kans om te landen.
+  Kluiskraker: bonus ±1 op 145 in plaats van 200 en superbonus ±1 op 2.500 in plaats van 4.400 (basisspel-clusters lager
+  om onder 100% te blijven). Visdief: bonus ±1 op 140 in plaats van 200. Hoogvlieger: langere dekken, vaker landen.
 - **Mines**: 5×5 vakjes, kies 1 tot 24 bommen of een stand (Makkelijk 3, Normaal 5, Moeilijk 10, Expert 15, Extreem 20,
   Gekkenhuis 24: eerste vakje al 24,5×). Elk veilig vakje verhoogt de multiplier (98% van de echte kans, RTP 98%, max 10.000×). Cash out wanneer je wilt; de bommen
   liggen vast zodra je start en het spel blijft staan als je ververst. Code: `public/js/pages/mines.js`.

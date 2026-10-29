@@ -110,7 +110,7 @@ function renderTop(){
   const ri=rankIdx(S.xp);const jt=Math.ceil((S.jailUntil-now())/1000);const pend=window.slotPending||0;
   const nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
   setHTML($('#topbar'),`
-   <div class="chip rank"><small>Rang</small><b>${RANKS[ri][0]}${vipTag()}</b><div class="mini"><i style="width:${pct}%;background:var(--acc)"></i></div></div>
+   <div class="chip rank"><small>Rang · lv ${rankLevel(S.xp)}</small><b>${RANKS[ri][0]}${vipTag()}</b><div class="mini"><i style="width:${pct}%;background:var(--acc)"></i></div></div>
    <div class="chip cash"><small>Contant</small><b>${fmt(S.cash-pend)}</b></div>
    <div class="chip"><small>Bank</small><b>${fmt(S.bank)}</b></div>
    <div class="chip"><small>Energie</small><b style="color:var(--ice)">${Math.floor(S.energy)}/${EN_MAX}</b><div class="mini"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div></div>
