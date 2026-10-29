@@ -25,7 +25,13 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Onderduiken** (Verblijf): loopt door als je weggaat. Op Verblijf zakt je hitte 20% per minuut en word je bijna nooit herkend;
   elders loop je vermomd rond: 5% per minuut en een agent kan je herkennen (dan word je opgepakt). Bij 0% ben je niet meer gezocht.
 - **Borg** groeit met je rang: als Dief kost 2 minuten zo'n €900, als Peetvader 10 minuten zo'n €150.000. Charisma geeft korting.
-- **Telefoon**: hertekenen houdt je scrollpositie vast; in de slot worden alleen de onderdelen bijgewerkt die veranderen.
+- **Telefoon**: onderbalk met Start, Misdaden, Auto's, Casino en **Meer**. Meer opent een menu met alle pagina's per groep
+  (Straat, Geld, Macht, Overig), met per pagina wat er speelt (energie, cel-tijd, inkomen per minuut, codes om te claimen).
+  Staat je pagina niet in de balk, dan toont de vijfde knop die pagina. De statusbalk blijft bovenaan staan, de nieuwsband en
+  het kruimelpad vallen weg, en de casinospellen staan als 2 rijen knoppen. Hertekenen houdt je scrollpositie vast; in de slots
+  worden alleen de onderdelen bijgewerkt die veranderen. Op de computer is niets veranderd.
+- **App-icoon**: hoed voor een straatlantaarn (`public/icons/`), met `manifest.webmanifest`, apple-touch-icon en favicon.
+  Op de telefoon: delen → "Zet op beginscherm" (iPhone) of menu → "App installeren" (Android); hij opent dan zonder browserbalk.
 - **Opslaan**: de nieuwste versie wint (browser of server). Valt de server even weg, bijvoorbeeld tijdens een update, dan probeert
   het spel het opnieuw en gaat er geen voortgang verloren.
 - **Arrestaties zijn verversbestendig**: openstaande keuze komt terug, afgebroken vlucht of autodiefstal telt als mislukt.

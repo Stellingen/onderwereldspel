@@ -40,7 +40,33 @@ function renderNav(){
   $('#nav').innerHTML=`<a class="brand" href="/" style="text-decoration:none;color:inherit"><span class="mark">O</span><span><b>Onderwereld</b><small>${window.__USER__?esc(window.__USER__):'Offline modus'} ${vipTag()}</small></span></a>`
    +NAV_GROUPS.map(([g,ks,col,rgb])=>`<div class="navgroup" style="--g:${col};--g-rgb:${rgb}"><div class="navlabel">${g}</div>${ks.map(link).join('')}</div>`).join('')
    +(window.__TOKEN__?`<div class="navspace"></div><button class="navlink logout" onclick="logout()">${svg('logout')}<span>Uitloggen</span></button>`:'');
+  renderMbar();
 }
+// Telefoon: onderbalk met de vier meest gebruikte pagina's + "Meer" (alle pagina's per groep, met wat er speelt)
+const MBAR=['dash','crimes','cars','casino'];
+const MSHORT={dash:'Start',crimes:'Misdaden',cars:"Auto's",casino:'Casino'};
+function navBadges(){const b={};if(inJail())b.jail='!';if(!inJail()&&S.energy>=EN_MAX)b.crimes='●';
+ if(typeof RANK_CODES!=='undefined'&&RANKS.slice(1,rankIdx(S.xp)+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase())))b.profiel='€';
+ if(typeof isVip==='function'&&isVip()&&typeof cbAvail==='function'&&cbAvail()>=1)b.casino='€';return b}
+function navHint(k){const jt=Math.ceil((S.jailUntil-now())/1000);
+ return {dash:'Overzicht',verblijf:S.hide?'Ondergedoken':'Gezondheid '+S.hp+'%',crimes:Math.floor(S.energy)+' energie',cars:S.cars.length+(S.cars.length===1?' auto':" auto's"),
+  casino:'8 spellen',biz:typeof income==='function'?fmt(income())+'/min':'Bedrijven',bank:fmt(S.bank),shop:'Wapens',skills:'Training',
+  fam:S.family?fam().n:'Geen familie',jail:inJail()?'Vast, '+fmtTime(jt):'Vrij',rank:'Spelers',profiel:'Codes en account'}[k]||''}
+function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('nav');bar.id='mbar';bar.className='mbar';bar.setAttribute('aria-label','Menu');document.body.appendChild(bar)}
+ let sh=$('#msheet');if(!sh){sh=document.createElement('div');sh.id='msheet';sh.className='msheet';sh.setAttribute('aria-hidden','true');document.body.appendChild(sh);
+  sh.addEventListener('click',e=>{if(e.target===sh||e.target.closest('[data-close]'))mSheet(false)})}
+ const bd=navBadges(),name=k=>PAGES.find(p=>p[0]===k)[1],inMain=MBAR.includes(page),more=Object.keys(bd).some(k=>!MBAR.includes(k));
+ bar.innerHTML=MBAR.map(k=>`<a class="mb ${k===page?'on':''}" href="#${k}" style="--g:${groupOf(k)[2]}">${svg(k)}<span>${MSHORT[k]}</span>${bd[k]?`<em class="${bd[k]==='●'?'ok':''}">${bd[k]}</em>`:''}</a>`).join('')
+  +`<button class="mb more ${inMain?'':'on'}" onclick="mSheet(true)" aria-haspopup="dialog" style="--g:${inMain?'#8a8f98':groupOf(page)[2]}">${inMain?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>':svg(page)}<span>${inMain?'Meer':name(page)}</span>${more?'<em>•</em>':''}</button>`;
+ const ri=rankIdx(S.xp);
+ sh.innerHTML=`<div class="ms-panel" role="dialog" aria-label="Alle pagina's"><div class="ms-grab"></div>
+  <div class="ms-head"><div><b>${esc(S.name)}${vipTag()}</b><span>${RANKS[ri][0]}, ${fmt(S.cash)} contant</span></div><button class="ms-x" data-close aria-label="Sluiten">✕</button></div>
+  ${NAV_GROUPS.map(([g,ks,col])=>`<div class="ms-group" style="--g:${col}"><h3>${g}</h3><div class="ms-grid">${ks.map(k=>`<a class="ms-tile ${k===page?'on':''}" href="#${k}" data-close>${svg(k)}<b>${name(k)}</b><small>${navHint(k)}</small>${bd[k]?`<em class="${bd[k]==='●'?'ok':''}">${bd[k]==='●'?'vol':bd[k]}</em>`:''}</a>`).join('')}</div></div>`).join('')}
+  ${window.__TOKEN__?`<button class="btn ghost ms-out" onclick="logout()">Uitloggen</button>`:''}</div>`}
+function mSheet(open){const sh=$('#msheet');if(!sh)return;sh.classList.toggle('open',open);sh.setAttribute('aria-hidden',open?'false':'true');document.body.classList.toggle('ms-lock',open);
+ if(open){if(typeof SFX!=='undefined')SFX.click();setTimeout(()=>{const t=sh.querySelector('.ms-tile.on')||sh.querySelector('.ms-x');t&&t.focus({preventScroll:true})},60)}}
+window.addEventListener('hashchange',()=>mSheet(false));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('ms-lock'))mSheet(false)});
 // Rechter zijbalk op brede schermen: dossier, snelle klus, logboek, top 5
 function bestCrime(){const ri=rankIdx(S.xp);return CRIMES.filter(c=>c.r<=ri).map(c=>({c,ev:chance(c)/100*(c.min+c.max)/2/c.en})).sort((a,b)=>b.ev-a.ev)[0].c}
 function renderRail(){
