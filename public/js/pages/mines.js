@@ -10,7 +10,8 @@ const MN_LEVELS=[['Makkelijk',3],['Normaal',5],['Moeilijk',10],['Expert',15],['E
 const MN_BETS=[10,25,50,100,250,500,1000,2500,5000,10000,25000,50000];
 const mnBets=()=>isHighRoller()?MN_BETS.concat([100000,250000,500000]):MN_BETS;
 window.mn=window.mn||{bi:3,m:5,fx:null};if(!mn.m)mn.m=5;
-const mnSetM=m=>{mn.m=Math.max(1,Math.min(24,m));SFX.chip();render()};
+const mnSetM=m=>{if(S.mines&&S.mines.st==='play')return;mn.m=Math.max(1,Math.min(24,m));SFX.chip();render()};
+const mnStepBet=d=>{if(S.mines&&S.mines.st==='play')return;mn.bi=Math.max(0,Math.min(mnBets().length-1,mn.bi+d));SFX.chip();render()};
 const mnBet=()=>{const B=mnBets();if(mn.bi>=B.length)mn.bi=B.length-1;return B[mn.bi]};
 function mnMult(m,k){if(!k)return 1;let x=mnRtp(m,k);for(let i=0;i<k;i++)x*=(MN_N-i)/(MN_N-m-i);return Math.min(MN_MAX,Math.floor(x*100)/100)}
 const mnX=v=>'×'+v.toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -23,10 +24,18 @@ function minesView(){const g=S.mines,play=!!(g&&g.st==='play'),m=g?g.m:mn.m,k=g?
   if(over&&mine)return `<div class="mn-t mine ${g.hit===i?'hit':''}">${MN_BOMB}</div>`;
   if(over)return `<div class="mn-t shut">${MN_GEM}</div>`;
   return `<button class="mn-t" onclick="act.mnPick(${i})" ${play?'':'disabled'} aria-label="Vakje ${i+1}"></button>`}).join('');
- const res=g&&g.st!=='play'?(g.st==='cash'?`<div class="mn-res w"><b>${mnX(g.mult)}</b><span>Je pakt ${fmt(g.pay)}</span></div>`:`<div class="mn-res l"><b>Boem!</b><span>${fmt(g.bet)} kwijt${k?' na '+k+' veilige vakjes':''}</span></div>`):'';
+ const again=`<button class="btn gold mn-again" onclick="act.mnStart()" ${inJail()||S.cash<bet?'disabled':''}>${S.cash<bet?'Te weinig geld':'Nog een keer · '+fmt(bet)}</button>`;
+ const res=g&&g.st!=='play'?(g.st==='cash'?`<div class="mn-res w"><b>${mnX(g.mult)}</b><span>Je pakt ${fmt(g.pay)}</span>${again}</div>`:`<div class="mn-res l"><b>Boem!</b><span>${fmt(g.bet)} kwijt${k?' na '+k+' veilige vakjes':''}</span>${again}</div>`):'';
+ // Telefoon: alles wat je nodig hebt direct onder het veld (inzet, bommen, start / cash out), zonder te scrollen
+ const quick=play?`<div class="mn-quick play"><div class="mq-m"><b>${mnX(cur)}</b><small>volgende ${mnX(next)}, ${Math.round(safe*100)}% veilig</small></div>
+   <button class="btn mn-cash mq-go" onclick="act.mnCash()" ${k?'':'disabled'}>${k?'Cash out<small>'+fmt(Math.floor(g.bet*cur))+'</small>':'Kies een vakje'}</button></div>`
+  :`<div class="mn-quick"><div class="mq-step"><span>Inzet</span><div><button onclick="mnStepBet(-1)" aria-label="Lagere inzet">−</button><b>${fmt(bet)}</b><button onclick="mnStepBet(1)" aria-label="Hogere inzet">+</button></div></div>
+   <div class="mq-step"><span>Bommen</span><div><button onclick="mnSetM(mn.m-1)" aria-label="Minder bommen">−</button><b>${mn.m}</b><button onclick="mnSetM(mn.m+1)" aria-label="Meer bommen">+</button></div></div>
+   <button class="btn gold mq-go" onclick="act.mnStart()" ${inJail()||S.cash<bet?'disabled':''}>${S.cash<bet?'Te weinig geld':(g?'Nog een keer':'Start')+'<small>'+fmt(bet)+' · '+mnX(mnMult(mn.m,1))+' per 1e vakje</small>'}</button></div>`;
  const ladder=Array.from({length:Math.min(6,MN_N-m-(play?k:0))},(_,j)=>{const n=(play?k:0)+j+1;return `<div class="${j===0?'next':''}"><span>${n}</span><b>${mnX(mnMult(m,n))}</b></div>`}).join('');
  return `<div class="mnx">
  <section class="mn-stage card ${g&&g.st==='boom'?'boom':''} ${g&&g.st==='cash'?'won':''}"><div class="mn-grid">${tiles}</div>${res}</section>
+ ${quick}
  <section class="mn-panel card">
   ${play?`<div class="mn-cur"><span class="label">Multiplier</span><b>${mnX(cur)}</b><small>${k} veilig · ${m} bommen · inzet ${fmt(g.bet)}</small></div>
    <button class="btn mn-cash" onclick="act.mnCash()" ${k?'':'disabled'}>${k?'Cash out · '+fmt(Math.floor(g.bet*cur)):'Kies eerst een vakje'}</button>

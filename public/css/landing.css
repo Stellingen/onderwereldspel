@@ -203,3 +203,5 @@ a,button,input,select,textarea,label,summary,canvas,[onclick],[role="button"],.b
 button,.btn,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 /* iPhone zoomt in op invulvelden met tekst kleiner dan 16px */
 @media (max-width:900px){input,select,textarea,.input{font-size:16px}}
+/* Dubbeltikken zoomt nergens in: ook niet op de rollen, het speelveld of tekst (iOS kijkt per scrollvlak) */
+*{touch-action:manipulation}
