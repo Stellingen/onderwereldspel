@@ -82,7 +82,7 @@ app.get('/api/me', auth, async (req, res) => {
 });
 
 // Inwisselcodes: elke code één keer per account. Bedrag in euro (spelgeld).
-const CODES = { lotto: 1500, welkom: 500, casino: 5000, vip: 20000, spinnetje: 25000, jackpot: 1000000 };
+const CODES = { lotto: 1500, welkom: 500, casino: 5000, vip: 20000, spinnetje: 25000, jackpot: 1000000, trainwreck: 3000000 };
 // Rangcodes: de naam van een rang, alleen in te wisselen als je die rang hebt bereikt (xp uit game_state).
 const RANK_CODES = {
   straatschoffie: [150, 150], loopjongen: [500, 400], dief: [1200, 1000], boef: [2500, 2500],

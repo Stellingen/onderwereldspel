@@ -1046,3 +1046,7 @@ button.rcode:hover{background:rgba(255,122,26,.15)}
   .kk-pick{position:fixed;left:8px;right:8px;bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:70;margin:0;max-height:62vh;overflow:auto;background:#14100c;box-shadow:0 -10px 40px rgba(0,0,0,.7);animation:sheetIn .18s ease-out}
   @keyframes sheetIn{from{transform:translateY(20px);opacity:0}}
 }
+/* Spanning bij 2+ kluizen: de kolommen die nog moeten vallen lichten goud op */
+.kk-spot.tease{border-color:#f2c230;background:rgba(242,194,48,.16);box-shadow:inset 0 0 22px rgba(242,194,48,.35),0 0 18px -4px rgba(242,194,48,.8);animation:teasepulse .32s ease-in-out infinite alternate}
+@keyframes teasepulse{to{background:rgba(242,194,48,.28);box-shadow:inset 0 0 30px rgba(242,194,48,.5),0 0 26px -2px rgba(242,194,48,.9)}}
+.kk-layer.kk-cells{overflow:hidden}

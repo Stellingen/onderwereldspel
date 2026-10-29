@@ -99,7 +99,7 @@ function showModal(t,m,btns){$('#modal').hidden=false;$('#modalT').textContent=t
 function closeModal(){$('#modal').hidden=true}
 // VIP (code "vip"): tag bij je naam, iets vaker de bonus in Kluiskraker (alleen het basisspel) en cashback op elke inzet.
 // Cashback per spel, afgestemd op het huisvoordeel, zodat je er nooit structureel winst mee maakt. Direct te claimen.
-const CB_RATE={kluis:.005,roulette:.01,tcp:.0075,bj:.0025,coin:0};
+const CB_RATE={kluis:0,roulette:.01,tcp:.0075,bj:.0025,coin:0};
 const CB_NAME={kluis:'Kluiskraker',roulette:'Roulette',tcp:'Three Card Poker',bj:'Blackjack',coin:'Dubbel of niks'};
 const isVip=()=>!!(S&&S.redeemed&&S.redeemed.includes('vip'));
 // VIP bij misdaden: 15% meer buit, 10% groter groen gat bij vluchten en 10% meer kans om uit de bajes te ontsnappen

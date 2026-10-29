@@ -17,8 +17,10 @@ const SFX=(()=>{
     win(step){const b=Math.min(step,6);[0,2,4].forEach((k,i)=>tone(scale[b+k]||1760,i*.06,.35,'triangle',.18))},
     pop(){noise(0,.12,.14,2500);tone(1400,0,.08,'sine',.08,600)},
     mult(v){const n=Math.min(9,Math.log2(v||2));tone(400+n*120,0,.18,'square',.07,800+n*160);tone(1200+n*100,.06,.2,'sine',.1)},
-    scatter(i){tone(110,0,.6,'sine',.35,95);tone(220+i*60,0,.5,'triangle',.12)},
+    scatter(i){tone(110,0,.6,'sine',.35,95);tone(220+i*60,0,.5,'triangle',.12);if(i>=2)tone(scale[Math.min(9,i+2)],.05,.4,'triangle',.14)},
     tick(){tone(1800,0,.03,'square',.03)},
+    // spanning: een stijgende toon terwijl een kolom traag valt (hoger bij meer kluizen)
+    tease(n,d){const b=160+n*40;tone(b,0,d||.6,'sawtooth',.05,b*2.2);tone(b*2,0,d||.6,'sine',.06,b*4)},
     bonus(){[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,i*.11,.32,'triangle',.2));noise(.7,.5,.08,4000)},
     big(){[392,523,659,784,1047,1319,1568].forEach((f,i)=>{tone(f,i*.08,.5,'triangle',.18);tone(f/2,i*.08,.5,'sine',.1)})},
     lose(){tone(220,0,.25,'sine',.08,180)},

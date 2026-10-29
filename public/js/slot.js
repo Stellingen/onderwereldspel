@@ -29,12 +29,12 @@ const SYMS=[
  {id:'goud',   n:'Goudstaaf',  w:82,  b:1.00}];
 let PAYK=1;
 const setPay=k=>{PAYK=k;SYMS.forEach(s=>{s.pay=CURVE.map(c=>+(s.b*c*PAYK).toFixed(2))})};setPay(3.5);
-const WILD={id:'sleutel',n:'Loper',w:22,fsW:51.2,superW:65};
-const SCATTER={id:'kluis',n:'Kluis',w:5,fsW:6,superW:7.5,vip:1};
+const WILD={id:'sleutel',n:'Loper',w:22,fsW:50.8,superW:82};
+const SCATTER={id:'kluis',n:'Kluis',w:5.07,fsW:6,superW:7.5,vip:1.0164};
 // Gouden baar: in de superbonus vaker, in de gewone bonus heel zeldzaam
 const BAR={id:'baar',n:'Gouden baar',w:.14,fsW:.0015};
 // Kans per vakje op een extra kluis bij elke kraak (normaal / VIP), en de uitbetaling in het basisspel
-const RESPIN={p:.0064,vip:.0071,p5:.013,vip5:.0195};let BASE_K=.993;
+const RESPIN={p:.0064,vip:.0071,p5:.013,vip5:.0195};let BASE_K=.962;
 const FS_BY_SC={3:10,4:12,5:14};
 const SUPER_SC=6,SUPER_SPINS=8;
 const FS_START=10, FS_RETRIGGER=2, BUY_COST=100;
@@ -45,8 +45,10 @@ const payFor=(s,n,base)=>SYMS[s].pay[Math.min(n,15)-MIN_CLUSTER]*(base?BASE_K:1)
 
 // mode: 'base' (basisspel), 'fs' (bonus), 'super' (superbonus). vip telt alleen in het basisspel.
 const SYM_TOT=()=>SYMS.reduce((a,x)=>a+x.w,0);
-function pick(rng,mode,vip){
-  const ww=mode==='super'?WILD.superW:mode==='fs'?WILD.fsW:WILD.w,sw=mode==='base'?SCATTER.w*(vip?SCATTER.vip:1):mode==='super'?SCATTER.superW:SCATTER.fsW,bw=mode==='super'?BAR.w:mode==='fs'?BAR.fsW:0;
+// Kluizen vallen in het basisspel vaker links dan rechts (gemiddeld gelijk): zo is er spanning of rechts de laatste nog valt
+const SC_COL=[1.45,1.3,1.15,1,.85,.7,.55];
+function pick(rng,mode,vip,col){
+  const ww=mode==='super'?WILD.superW:mode==='fs'?WILD.fsW:WILD.w,sw=mode==='base'?SCATTER.w*(vip?SCATTER.vip:1)*(col!=null?SC_COL[col]:1):mode==='super'?SCATTER.superW:SCATTER.fsW,bw=mode==='super'?BAR.w:mode==='fs'?BAR.fsW:0;
   let r=rng()*(SYM_TOT()+ww+sw+bw);
   for(let i=0;i<SYMS.length;i++){r-=SYMS[i].w;if(r<=0)return {s:i}}
   r-=ww;if(r<=0)return {w:1};
@@ -57,7 +59,7 @@ const newSpots=()=>Array.from({length:COLS},()=>new Array(ROWS).fill(0));
 const cloneG=g=>g.map(c=>c.map(x=>Object.assign({},x)));
 const cloneS=s=>s.map(c=>c.slice());
 function fill(rng,mode,forceSc,vip){
-  const g=[];for(let c=0;c<COLS;c++){g.push([]);for(let r=0;r<ROWS;r++)g[c].push(Object.assign(pick(rng,mode,vip),{fall:ROWS}))}
+  const g=[];for(let c=0;c<COLS;c++){g.push([]);for(let r=0;r<ROWS;r++)g[c].push(Object.assign(pick(rng,mode,vip,c),{fall:ROWS}))}
   if(forceSc){
     g.forEach(col=>col.forEach((x,i)=>{if(x.sc)col[i]={s:Math.floor(rng()*SYMS.length),fall:ROWS}}));
     const cols=[...Array(COLS).keys()].sort(()=>rng()-.5).slice(0,forceSc);
@@ -88,7 +90,7 @@ function tumble(g,hit,rng,mode,vip){
   return g.map((col,c)=>{
     const keep=[];col.forEach((x,r)=>{if(!hit.has(c*ROWS+r))keep.push({x,r})});
     const add=ROWS-keep.length;const res=[];
-    for(let i=0;i<add;i++)res.push(Object.assign(pick(rng,mode,vip),{fall:add}));
+    for(let i=0;i<add;i++)res.push(Object.assign(pick(rng,mode,vip,c),{fall:add}));
     keep.forEach((k,j)=>{const y=Object.assign({},k.x);y.fall=(add+j)-k.r;res.push(y)});
     return res;
   });
@@ -140,6 +142,6 @@ function playRound(rng,opts){
   return {base:s,fs:fsr,fsStart:n,kind:s.kind,total:Math.min(MAX_WIN,tot),cost:1};
 }
 const tune=o=>{if(o.payk!=null)setPay(o.payk);if(o.wild!=null)WILD.w=o.wild;if(o.wildFs!=null)WILD.fsW=o.wildFs;if(o.wildSuper!=null)WILD.superW=o.wildSuper;if(o.sc!=null)SCATTER.w=o.sc;if(o.scFs!=null)SCATTER.fsW=o.scFs;if(o.scSuper!=null)SCATTER.superW=o.scSuper;if(o.barFs!=null)BAR.fsW=o.barFs;if(o.vip!=null)SCATTER.vip=o.vip;if(o.bar!=null)BAR.w=o.bar;if(o.baseK!=null)BASE_K=o.baseK;if(o.rp!=null)RESPIN.p=o.rp;if(o.rpVip!=null)RESPIN.vip=o.rpVip;if(o.rp5!=null)RESPIN.p5=o.rp5;if(o.rpVip5!=null)RESPIN.vip5=o.rpVip5};
-const API={tune,RESPIN,get BASE_K(){return BASE_K},FS_RETRIG,COLS,ROWS,MIN_CLUSTER,MAX_SPOT,SYMS,WILD,SCATTER,BAR,SUPER_SC,SUPER_SPINS,SCATTER_PAY,FS_BY_SC,FS_START,FS_RETRIGGER,BUY_COST,MAX_WIN,CURVE,spin,freeSpins,playRound,clusters,newSpots};
+const API={tune,RESPIN,SC_COL,get BASE_K(){return BASE_K},FS_RETRIG,COLS,ROWS,MIN_CLUSTER,MAX_SPOT,SYMS,WILD,SCATTER,BAR,SUPER_SC,SUPER_SPINS,SCATTER_PAY,FS_BY_SC,FS_START,FS_RETRIGGER,BUY_COST,MAX_WIN,CURVE,spin,freeSpins,playRound,clusters,newSpots};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.SLOT=API;
 })(typeof window!=='undefined'?window:globalThis);

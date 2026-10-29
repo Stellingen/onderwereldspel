@@ -11,7 +11,7 @@ V.profiel=()=>{
   <section class="card hud pf-id">
    <div class="pf-mug">${esc(S.name).slice(0,1).toUpperCase()}</div>
    <div class="pf-main"><div class="label">${window.__TOKEN__?'Account':'Offline speler'}${since?' · lid sinds '+since:''}</div>
-    <div class="pf-name">${esc(S.name)}${vipTag()}</div>${isVip()?'<div class="pf-vip">VIP-lid · +15% buit bij misdaden · makkelijker vluchten en ontsnappen · cashback op elke casino-inzet · iets vaker de bonus in Kluiskraker</div>':''}
+    <div class="pf-name">${esc(S.name)}${vipTag()}</div>${isVip()?'<div class="pf-vip">VIP-lid · +15% buit bij misdaden · makkelijker vluchten en ontsnappen · cashback op elke casino-inzet · in Kluiskraker vaker de bonus en de superbonus</div>':''}
     <div class="pf-rank"><b>${RANKS[ri][0]}</b><span>${nxt?Math.floor(S.xp).toLocaleString('nl-NL')+' / '+nxt[1].toLocaleString('nl-NL')+' XP':'Hoogste rang'}</span></div>
     <div class="bar"><i style="width:${pct}%;background:var(--sec)"></i></div>
     <div class="pf-fam">${S.family?`<span class="crest" style="color:${fam().col};width:34px;height:38px;font-size:14px">${fam().m}</span>${fam().n}`:'Nog geen familie'}</div>
