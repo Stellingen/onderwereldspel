@@ -1796,3 +1796,12 @@ button,.btn,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-to
  .sp-q{gap:10px;padding-top:16px}.sp-q .btn{padding:14px 16px;font-size:15px}
 }
 @media (min-width:900px){.sp-card{width:min(960px,94vw);padding:24px 28px}.sp-grid{grid-template-columns:repeat(auto-fill,minmax(118px,1fr))}.sp-grid button{padding:13px 8px}.sp-g{margin-bottom:14px}}
+.kk-go.buy .kk-buy-l{font-size:15px;letter-spacing:.08em}.kk-go.buy .kk-buy-p{display:block;font-family:var(--f-display);font-size:30px;line-height:1;color:#1a1006}
+/* roulette: de bon staat links naast het wiel, je hoeft niet te scrollen */
+.rl-receipt.side{margin-top:2px;justify-content:stretch}.rl-receipt.side>*{width:100%;max-width:none;margin:0}
+.rl-stats .rl-fine{margin-top:auto}
+.rl-top{grid-template-columns:minmax(280px,1fr) auto minmax(220px,1fr)}
+.rl-receipt.side .receipt{font-size:11.5px;padding:10px 12px 8px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.rl-receipt.side .rc-row{grid-template-columns:minmax(0,1.35fr) repeat(3,minmax(0,1fr));gap:5px}
+.rl-receipt.side .rc-head b{font-size:clamp(16px,1.6vw,24px)}
+.rl-receipt.side .rc-row{grid-template-columns:minmax(0,1.5fr) repeat(2,minmax(0,1fr))}.rl-receipt.side .rc-row>:nth-child(3){display:none}

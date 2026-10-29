@@ -27,7 +27,7 @@ const act={
       amount=j.amount}
     catch(e){redeemMsg={ok:false,t:'De server is niet bereikbaar. Probeer het later opnieuw.'};render();return}
   }else{const LOCAL=Object.assign({},LIVE_CODES,RANK_CODES);amount=LOCAL[code];if(!amount){redeemMsg={ok:false,t:'Deze code bestaat niet.'};render();return}}
-  S.cash+=amount;S.redeemed.push(code);redeemMsg={ok:true,t:'Gelukt! '+fmt(amount)+' is bijgeschreven op je contant geld.'};
+  S.cash+=amount;S.redeemed.push(code);window._codeIn='';redeemMsg={ok:true,t:'Gelukt! '+fmt(amount)+' is bijgeschreven op je contant geld.'};
   toast('Code '+codeShow(code)+': +'+fmt(amount),'lvl');log('Code '+codeShow(code)+' ingewisseld: +'+fmt(amount),'ok');
   save();if(typeof pushState==='function')pushState();render()},
  relax(id){const r=RELAX.find(x=>x.id===id);if(!r||inJail()||cdLeft('rx_'+id)||rankIdx(S.xp)<(r.r||0))return;const cost=relaxCost(r,rankIdx(S.xp),rankLevel(S.xp));if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}

@@ -30,7 +30,7 @@ V.profiel=()=>{
    <h3>Code inwisselen</h3>
    <p class="sub" style="margin:0 0 12px">Heb je een code gekregen? Vul hem hier in. Elke code werkt één keer per account.</p>
    <form class="pf-form" onsubmit="event.preventDefault();act.redeem(document.getElementById('codeIn').value)">
-    <input id="codeIn" class="input" placeholder="Bijvoorbeeld: WELKOM" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" aria-label="Code">
+    <input id="codeIn" class="input" value="${esc(window._codeIn||'')}" oninput="window._codeIn=this.value" placeholder="Bijvoorbeeld: WELKOM" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" aria-label="Code">
     <button class="btn" type="submit" id="codeBtn">Inwisselen</button>
    </form>
    ${redeemMsg?`<div class="pf-msg ${redeemMsg.ok?'ok':'bad'}">${esc(redeemMsg.t)}</div>`:''}

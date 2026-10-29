@@ -89,28 +89,35 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   dan win je de max win (±1 op 650 bonussen van 10 spins, ±1 op 345 bij 12, ±1 op 180 bij 14). **Superbonus**: 8 spins met veel meer
   lopers; daar is één Gouden baar al de max win (±1 op 20). **Max win**: 5.000× je inzet per ronde, ook bij een gekochte bonus
   (de inzet telt, niet de prijs van de bonus): via de vakjes of met de Gouden baren.
-  **Bonus kopen** (60× de inzet) zet je aan met een schakelaar naast de draaiknop; de grote knop koopt dan elke keer een bonus.
-  Het is een gewone spin met altijd 3 kluizen: valt er winst, dan tumbelt hij door en kunnen er kluizen bij vallen
-  (normaal 4: ±13%, 5: ±4,3%, 6: ±1,3%; VIP 4+: ±21%, 6: ±1,8%). **Inzet kiezen** gaat via een pop-up (ook bij Visdief).
+  **Bonus kopen** (100× de inzet) zet je aan met een schakelaar naast de draaiknop; de grote knop toont de prijs en koopt dan
+  elke keer een bonus. Je krijgt altijd 3 kluizen bovenop wat er vanzelf valt (valt er al 1, dan heb je er 4); valt er winst, dan
+  tumbelt hij door en valt een extra kluis 30% makkelijker in dan bij spinnen. Een gekochte bonus geeft 1 extra free spin
+  (3 kluizen = 11, 4 = 13, 5 = 15, superbonus 9). Verdeling: 3 kluizen ±57%, 4 ±29%, 5 ±10%, superbonus ±4% (VIP iets vaker).
+  RTP bonus kopen ±94% (VIP ±97%). **Inzet kiezen** gaat via een pop-up (ook bij Visdief).
   Spatiebalk = draaien. **Seed**: elke spin komt uit jouw seed + spinnummer. Gesimuleerd (`sim8.js`, 1 mln. spins, 200.000
   gekochte bonussen): normaal bonus ±1 op 200 (4+ ±1 op 930, 5+ ±1 op 3.300, superbonus ±1 op 14.500), RTP ±92,5%; VIP bonus
-  ±1 op 135 (4+ ±1 op 570, superbonus ±1 op 7.000), RTP ±96% + 0,5% cashback; bonus kopen ±93% (VIP ±97,5%).
+  ±1 op 135 (4+ ±1 op 570, superbonus ±1 op 7.000), RTP ±96% + 0,5% cashback (bonus kopen: zie hierboven).
   Basisspel betaalt 95,8% van de tabel (VIP 18% minder), de bonus 38,5%.
 - **Roulette** (Europees, één nul, 2,7% huisvoordeel): groot wiel met rollende bal bovenaan, echte inzettafel eronder.
   Nummer, split, rij, hoek, zes, drie met nul, eerste vier, kolom, dozijn en de kansen, plus groepen op het wiel
   (Buren van nul, Overkant, Weesjes, Nulspel). Ongedaan maken, fiches weghalen (ook met rechtsklik), alles wissen,
   verdubbelen en herhalen; een fiche zetten werkt alleen dat vak bij (de pagina ververst niet). Op de telefoon staat de tafel rechtop.
   Maximum per vak: €50.000; vanaf Soldaat €75.000 op getallen en €100.000 op de rest, vanaf Onderbaas €150.000 en €200.000.
-  Code: `public/js/pages/roulette.js`.
+  De bon met de uitbetaling staat links naast het wiel. Code: `public/js/pages/roulette.js`.
 - **VIP** (code `vip`): VIP-tag bij je naam (ook in de ranglijst). **Alle wachttijden 60%** (klussen, auto stelen, training,
   ontspanning, rusten en de dokter; celstraffen niet). Misdaden: +15% buit, 10% groter groen gat bij vluchten en
   45% in plaats van 35% kans om uit de bajes te ontsnappen. Casino: cashback op elke inzet, direct te claimen
   (Kluiskraker, Mines en Hoogvlieger 0,5%, roulette 1%, Three Card Poker 0,75%, blackjack 0,25%, Dubbel of niks 0% omdat daar geen huisvoordeel is).
   Kluiskraker: bonus ±1 op 145 in plaats van 200 en superbonus ±1 op 2.500 in plaats van 4.400 (basisspel-clusters lager
-  om onder 100% te blijven). Visdief: bonus ±1 op 140 in plaats van 200. Hoogvlieger: langere dekken, vaker landen.
+  om onder 100% te blijven). Visdief: bonus ±1 op 140 in plaats van 200, bij bonus kopen vaker een 4e of 5e boei. Hoogvlieger: langere dekken, vaker landen.
 - **Mines**: 5×5 vakjes, kies 1 tot 24 bommen of een stand (Makkelijk 3, Normaal 5, Moeilijk 10, Expert 15, Extreem 20,
   Gekkenhuis 24: eerste vakje al 24,5×). Elk veilig vakje verhoogt de multiplier (98% van de echte kans, RTP 98%, max 10.000×). Cash out wanneer je wilt; de bommen
   liggen vast zodra je start en het spel blijft staan als je ververst. Code: `public/js/pages/mines.js`.
+- **Visdief**: 3 boeien = 10 free spins, elke extra boei +2 (4 = 12), een volle rij van 5 = 15; per rol kan er één boei vallen.
+  **Bonus kopen** (66×, met de schakelaar): altijd 3 boeien, op de andere rollen kan er vanzelf nog een vallen (zelfde kans als
+  spinnen, VIP hoger): 4 boeien ±15% (VIP ±17%). Doorgerekend: RTP ±92% (VIP ±97%), bonus kopen ±96,5% (VIP ±97,5%).
+- **Live bijwerken**: Bezit, Wapens, Families, Profiel, Bank, Training en het dashboard verversen elke seconde als er iets
+  verandert (zoals je geld door passief inkomen), zodat knoppen meteen kloppen. In de slots loopt het saldo ook live mee.
 - **Hoogvlieger**: een vliegtuigje vliegt op eigen kracht over zee, zonder vaste baan. Overal in de lucht hangen willekeurig
   items; wat hij raakt bepaalt zijn koers: een plusje (+1 tot +10) duwt hem omhoog, ×2 tot ×5 houdt hem even op dezelfde hoogte en
   een bom (÷2) ontploft en laat hem zakken. Zonder items glijdt hij naar de zee. Op zee liggen vliegdekschepen met water ertussen;

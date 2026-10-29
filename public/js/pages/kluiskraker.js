@@ -81,7 +81,7 @@ function kkSeedHtml(){const sd=kkSeed(),p=sd.prev;
   <div class="kk-seed-i"><span class="label">Op deze seed</span><b>${sd.spins} spin${sd.spins===1?'':'s'} · ${sd.bon} bonus${sd.bon===1?'':'sen'}${sd.sup?' · '+sd.sup+' super':''}</b></div>
   ${p?`<div class="kk-seed-i prev"><span class="label">Vorige seed</span><b>${p.id} · ${p.spins} spins · ${p.bon} bonus${p.bon===1?'':'sen'}</b></div>`:''}
   <button class="btn ghost sm" onclick="act.kkNewSeed()" ${kk.busy?'disabled':''}>Nieuwe seed</button></div>`}
-function kkConfirm(){const b=kkBet(),buy=b*SLOT.BUY_COST;return `<div class="kk-buyinfo"><b>Bonus kopen staat aan</b><span>Elke klik op de grote knop koopt een bonus voor ${fmt(buy)} (${SLOT.BUY_COST}× je inzet). Je spint met altijd 3 kluizen; valt er winst, dan tumbelt hij door en kunnen er een 4e, 5e of 6e kluis bij vallen${isVip()?' (als VIP vaker)':''}. Winst in die spin krijg je ook. Zet hem uit om weer gewoon te draaien.</span></div>`}
+function kkConfirm(){const b=kkBet(),buy=b*SLOT.BUY_COST;return `<div class="kk-buyinfo"><b>Bonus kopen staat aan · ${fmt(buy)} per bonus</b><span>Elke klik op de grote knop koopt een bonus voor ${fmt(buy)} (${SLOT.BUY_COST}× je inzet van ${fmt(b)}). Je krijgt altijd 3 kluizen; valt er vanzelf al een kluis, dan heb je er meteen 4. Valt er winst, dan tumbelt hij door en kunnen er nog meer bij vallen (vaker dan bij gewoon spinnen${isVip()?', en als VIP valt er vaker vanzelf een':''}). Een gekochte bonus geeft ${SLOT.BUY_EXTRA} extra free spin: 3 kluizen = ${SLOT.FS_BY_SC[3]+SLOT.BUY_EXTRA}, 4 = ${SLOT.FS_BY_SC[4]+SLOT.BUY_EXTRA}, 5 = ${SLOT.FS_BY_SC[5]+SLOT.BUY_EXTRA}, superbonus ${SLOT.SUPER_SPINS+SLOT.BUY_EXTRA_SUP}. Winst in die spin krijg je ook. Zet hem uit om weer gewoon te draaien.</span></div>`}
 // Inzet kiezen in een pop-up (Kluiskraker en Visdief): klik op een bedrag en de pop-up gaat meteen dicht.
 // game = 'kk' of 'vd'. Toont per bedrag ook wat een gekochte bonus kost.
 function slotBetPop(game){const B=kkBets(),cur=game==='kk'?kk.bi:vd.bi,cost=game==='kk'?SLOT.BUY_COST:VISD.BUY_COST,buy=game==='kk'?kk.buyMode:vd.buyMode;
@@ -104,7 +104,7 @@ function kkPickHtml(){return `<div class="kk-pick"><div class="kk-pick-h"><b>Kie
 function kkSetBet(i){if(kk.busy)return;kk.bi=Math.max(0,Math.min(kkBets().length-1,i));kk.pick=false;kk.confirm=false;SFX.chip();kkRefreshUI()}
 function kkControls(){const b=kkBet();return `<div class="kk-betbox"><span class="label">Inzet · klik om te kiezen</span>
    <div class="kk-bet"><button onclick="kkStepBet(-1)" ${kk.busy?'disabled':''} aria-label="Lagere inzet">−</button><button class="kk-betv" onclick="slotBetPop('kk')" ${kk.busy?'disabled':''} aria-label="Inzet kiezen" title="Klik om je inzet te kiezen">${fmt(b)}</button><button onclick="kkStepBet(1)" ${kk.busy?'disabled':''} aria-label="Hogere inzet">+</button></div></div>
-   ${kk.buyMode?`<button class="btn kk-go buy" onclick="act.kkSpin(true)" ${kk.busy||inJail()||S.cash<b*SLOT.BUY_COST?'disabled':''}>${kk.busy?'Bezig…':S.cash<b*SLOT.BUY_COST?'Te weinig geld':'Bonus kopen'}<small>${fmt(b*SLOT.BUY_COST)} · ${SLOT.BUY_COST}× inzet</small></button>`
+   ${kk.buyMode?`<button class="btn kk-go buy" onclick="act.kkSpin(true)" ${kk.busy||inJail()||S.cash<b*SLOT.BUY_COST?'disabled':''}><span class="kk-buy-l">${kk.busy?'Bezig…':S.cash<b*SLOT.BUY_COST?'Te weinig geld':'Bonus kopen'}</span><b class="kk-buy-p">${fmt(b*SLOT.BUY_COST)}</b><small>${SLOT.BUY_COST}× je inzet van ${fmt(b)}</small></button>`
     :`<button class="btn kk-go" onclick="act.kkSpin(false)" ${kk.busy||inJail()?'disabled':''}>${kk.busy?'Bezig…':'Draaien'}<small>spatie</small></button>`}
    <div class="kk-small">
     <button class="btn ghost sm kk-turbo ${kk.turbo?'on':''}" onclick="kkTurbo()" aria-pressed="${kk.turbo}">${kk.turbo?'Snel: aan':'Snel: uit'}</button>
@@ -205,7 +205,7 @@ async function kkAnimateSpin(sp,bet,inFs,runTotal){
 async function kkPlay(round,bet,isBuy){
  kk.stepWin=0;kkText('kkStep',fmt(0));kkScSeen=0;
  if(!isBuy){kkText('kkMsg','Draait…');kkShowSpots(SLOT.newSpots());await kkAnimateSpin(round.base,bet,false,null);if(round.base.respin)await kkCrack(round.base.respin)}
- else{kkText('kkMsg','Bonus gekocht · 3 kluizen');kkShowSpots(SLOT.newSpots());await kkAnimateSpin(round.base,bet,false,null)}
+ else{kkText('kkMsg','Bonus gekocht');kkShowSpots(SLOT.newSpots());await kkAnimateSpin(round.base,bet,false,null)}
  const baseWin=round.base.win*bet;
  if(baseWin>0){kk.lastWin=baseWin;kkText('kkLast',fmt(baseWin))}
  if(round.fs){

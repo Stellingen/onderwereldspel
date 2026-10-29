@@ -26,12 +26,15 @@ if(S._gearBack){toast('Uitrusting vernieuwd: per soort telt nu je beste item. Je
 window.addEventListener('hashchange',()=>{let p=location.hash.slice(1);if(p==='ontspannen'||p==='trainen'){if(window.trs)trs.tab=p==='ontspannen'?'relax':'train';p='skills';try{history.replaceState(null,'','#skills')}catch(e){}}if(PAGES.find(x=>x[0]===p)){page=p;render();window.scrollTo(0,0)}});
 let wasJail=inJail();
 setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderRail();
+  // casino: saldo van de slots live bijwerken (passief inkomen loopt door), knoppen opnieuw als je ineens wel/niet genoeg hebt
+  if(page==='casino'&&!userBusy()){[['kk','kkBal',()=>SLOT.BUY_COST,()=>kkBet(),()=>kkRefreshUI()],['vd','vdBal',()=>VISD.BUY_COST,()=>vdBet(),()=>vdRefresh()]].forEach(([g,id,bc,bt,ref])=>{const st=window[g],el=document.getElementById(id);if(!st||!el||st.busy)return;
+    el.textContent=fmt(S.cash);const ok=(S.cash>=bt())+'/'+(S.cash>=bt()*bc());if(st._ok!==ok){st._ok=ok;ref()}})}
   if(Math.random()<0.05)news();
   if(S.wanted&&!S.hide&&!inJail()&&$('#modal').hidden&&Math.random()<0.004){policeRaid();return}
   if(wasJail&&!inJail()){toast('Je bent vrijgelaten');wasJail=false;render()}else if(inJail())wasJail=true;
   const focusIn=document.activeElement&&document.activeElement.tagName==='INPUT';
   // pagina's met aftellers: alleen bijwerken als er iets veranderd is, en niet midden in het scrollen (telefoon)
-  if(!focusIn&&!spinning&&['crimes','jail','dash','skills','bank'].includes(page)&&!window.__chase&&!userBusy()){const y=window.scrollY;if(setHTML($('#view'),crumbHtml()+V[page]())&&y&&Math.abs(window.scrollY-y)>2)window.scrollTo(0,y)}
+  if(!focusIn&&!spinning&&['crimes','jail','dash','skills','bank','biz','shop','fam','profiel'].includes(page)&&!window.__chase&&!userBusy()){const y=window.scrollY;if(setHTML($('#view'),crumbHtml()+V[page]())&&y&&Math.abs(window.scrollY-y)>2)window.scrollTo(0,y)}
 },1000);
 render();renderTicker();
 if(!inJail())setTimeout(resumePending,300);else{S.pendingArrest=null;S.pendingHeist=null}

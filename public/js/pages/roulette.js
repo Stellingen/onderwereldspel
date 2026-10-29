@@ -72,6 +72,7 @@ function rouletteView(){const tot=rlTotal(),r=rl,done=!r.spinning&&r.res!=null,c
  <section class="rl-top">
   <div class="rl-stats card"><div class="label">Laatste worpen</div><div class="hist">${r.hist.map((n,i)=>`<span class="hn ${numCol(n)} ${i===0&&done?'new':''}">${n}</span>`).join('')||'<span class="label">Nog geen worpen</span>'}</div>
    <div class="rl-bars"><div><span>Rood</span><i style="width:${cnt.red/hn*100}%;background:#c8243f"></i><b>${cnt.red}</b></div><div><span>Zwart</span><i style="width:${cnt.black/hn*100}%;background:#cfd3da"></i><b>${cnt.black}</b></div><div><span>Nul</span><i style="width:${cnt.green/hn*100}%;background:#13a86b"></i><b>${cnt.green}</b></div></div>
+   ${done&&r.lines&&r.lines.length?`<div class="rl-receipt side">${receiptHtml(r.lines.filter(l=>l.back>0).concat(r.lines.some(l=>!l.back)?[{label:'Overige inzetten',note:r.lines.filter(l=>!l.back).length+' vakken verloren',stake:r.lines.filter(l=>!l.back).reduce((a,l)=>a+l.stake,0),back:0}]:[]),r.net)}</div>`:''}
    <p class="rl-fine">Europese roulette met één nul. Elke worp staat los van de vorige: een reeks rood maakt zwart niet waarschijnlijker. Huisvoordeel 2,7%.</p></div>
   <div class="rl-wheel"><div class="wheelbox"><canvas id="wheel" width="1100" height="1100" aria-label="Roulettewiel"></canvas></div></div>
   <div class="rl-res card ${done?numCol(r.res):''}">
@@ -90,7 +91,6 @@ function rouletteView(){const tot=rlTotal(),r=rl,done=!r.spinning&&r.res!=null,c
   <div class="rl-groups" id="rlGroups">${rlGroupsHtml()}</div>
   <div class="rl-ctl" id="rlCtl">${rlCtlHtml()}</div>
   <p class="rl-help">Klik op een vak om een fiche te zetten. Op de lijnen tussen getallen zet je een split, op een kruispunt een hoek, onderaan een rij (3) of zes getallen. Rechtsklik of "Fiches weghalen" haalt een inzet weg. Max ${fmt(rlLim()[1])} per getal en ${fmt(rlLim()[2])} op de rest.${rankIdx(S.xp)<9?` Vanaf ${RANKS[rankIdx(S.xp)<6?6:9][0]}: ${fmt((rankIdx(S.xp)<6?RL_LIMITS[1]:RL_LIMITS[2])[1])} / ${fmt((rankIdx(S.xp)<6?RL_LIMITS[1]:RL_LIMITS[2])[2])}.`:''}</p>
-  ${done&&r.lines&&r.lines.length?`<div class="rl-receipt">${receiptHtml(r.lines.filter(l=>l.back>0).concat(r.lines.some(l=>!l.back)?[{label:'Overige inzetten',note:r.lines.filter(l=>!l.back).length+' vakken verloren',stake:r.lines.filter(l=>!l.back).reduce((a,l)=>a+l.stake,0),back:0}]:[]),r.net)}</div>`:''}
  </section></div>`}
 // Wiel + bal
 function drawWheel(a){const cv=document.getElementById('wheel');if(!cv)return;const x=cv.getContext('2d'),W=cv.width,c=W/2,R=c*.78,seg=Math.PI*2/37,k=W/680;
