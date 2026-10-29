@@ -38,21 +38,23 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Bezit**: 14 soorten bedrijven, van Wasserette (€5.000, €40/min) tot Privéjet-charter (€4 mln., €55.000/min), elk vanaf een
   bepaalde rang. Klik op een bedrijf voor de details: tot 10 vestigingen per soort (elke volgende 25% duurder) en elke
   vestiging los upgraden van level 1 naar 5 (×1 / ×1,5 / ×2,2 / ×3,1 / ×4,3 inkomen) met eigen upgradenamen.
+  **Bonus op al je inkomen**: +25% basis, +1% per vestiging en +0,5% per upgrade (samen tot +200%), +5% per rang.
+  Zo levert elk bedrijf meer op naarmate je imperium groeit en je hoger in rang komt (Bezit toont de verdeling).
   "Upgrade alles wat kan" upgradet steeds de laagste vestiging eerst. Oude saves worden omgezet (aantal → vestigingen op level 1).
 - **8 families**, van De Nieuwe Garde tot La Cupola
-- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000), `spinnetje` (€25.000), `jackpot` (€1.000.000) `trainwreck` (€3.000.000; daarna kun je in Kluiskraker inzetten tot €500.000 per spin) en `m1` tot en met `m9` (elk €5.000.000; opnieuw uitgegeven, intern `m1v3` enz., dus ook wie een eerdere versie had gebruikt kan ze weer inwisselen), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
+- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000), `spinnetje` (€25.000), `jackpot` (€1.000.000) `trainwreck` (€3.000.000; daarna kun je in Kluiskraker inzetten tot €500.000 per spin) en `m1` tot en met `m9` (elk €5.000.000; opnieuw uitgegeven, intern `m1v4` enz., dus ook wie een eerdere versie had gebruikt kan ze weer inwisselen), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
 - **Kluiskraker**: cluster-slot op 7×7 (5+ aangrenzende gelijke symbolen), Loper als wild, vakjes die bij elke
-  winst x2, x4 … tot x1024 worden. **3 kluizen = 10 free spins, 4 = 12, 5 = 14.** Bij 3 tot 5 kluizen **kraakt de kluisdeur**:
-  elk ander vakje kan een kluis worden; komt er een bij, dan kraakt hij opnieuw. Tijdens de bonus geven 2+ kluizen extra spins.
-  **6+ kluizen = superbonus**: 8 spins met veel meer lopers (veel grotere winsten), 25% meer kans op extra kluizen en veel vaker de **Gouden baar**
-  (direct de max win; ±1 op 20 superbonussen). In de gewone bonus kan de Gouden baar ook landen: hoe meer kluizen bij de start,
-  hoe groter de kans (3 kluizen ±1 op 800, 4 ±1 op 280, 5 ±1 op 100). **Max win 5.000× de inzet**, inzet €10 tot €50.000.
+  winst x2, x4 … tot **x4096** worden (de max win blijft 5.000× je inzet per ronde, spin + bonus samen). **3 kluizen = 10 free spins,
+  4 = 12, 5 = 14.** Bij 3 tot 5 kluizen **kraakt de kluisdeur**: elk ander vakje kan een kluis worden; komt er een bij, dan kraakt hij
+  opnieuw. Tijdens de bonus geven 2+ kluizen extra spins. **Gouden baren** blijven in de gewone bonus staan: heb je er 3, dan win je
+  de max win (±1 op 540 bonussen van 10 spins, ±1 op 350 bij 12, ±1 op 185 bij 14; 1 baar zie je in ±1 op 5 bonussen).
+  **6+ kluizen = superbonus**: 8 spins met veel meer lopers; daar is één Gouden baar al de max win (±1 op 20 superbonussen).
   Kluizen vallen vaker links dan rechts; liggen er 2, dan vallen de volgende kolommen trager en lichten ze goud op (spanning).
-  **Bonus kopen** kost 60× de inzet: altijd 3 kluizen, daarna kan de deur doorkraken naar 4, 5 of de superbonus (±2%).
+  **Bonus kopen** kost 60× de inzet: altijd 3 kluizen, daarna kraakt de deur met dezelfde kansen als bij spinnen (VIP iets hoger).
   Spatiebalk = draaien. **Seed**: elke spin komt uit jouw seed + spinnummer; "Nieuwe seed" geeft een nieuwe reeks uitkomsten
-  (de kans per spin blijft gelijk). Je ziet per seed hoeveel spins en bonussen je had. Gesimuleerd met 1,6 mln. spins:
-  normaal RTP ±92% (bonus ±1 op 390, superbonus ±1 op 7.400), VIP ±97,5% + 0,5% cashback (bonus ±1 op 280, superbonus ±1 op 4.200),
-  bonus kopen ±96%. In de bonus betalen clusters 40% van de tabel, in het basisspel ±109% (VIP ±104%); de vakjes blijven in de bonus staan.
+  (de kans per spin blijft gelijk). Gesimuleerd (`sim7.js`, 2 mln. spins): normaal bonus ±1 op 200 (4+ ±1 op 700, 5+ ±1 op 2.350,
+  superbonus ±1 op 4.900), RTP ±92%; VIP bonus ±1 op 145, superbonus ±1 op 2.500, RTP ±97% + 0,5% cashback; bonus kopen ±94% (VIP ±97%).
+  In de bonus betalen clusters 33,5% van de tabel, in het basisspel 91,5% (VIP 77%, zodat VIP onder 100% blijft).
 - **Visdief** (tweede slot, eigen naam en tekeningen, in de stijl van een vis-collect-slot): nachtvissen in de Rotterdamse haven,
   **hoge volatiliteit**. 5 rollen × 4 rijen, 20 lijnen; een winlijn wordt alleen getekend als hij valt.
   3 boeien = 10 free spins, 4 = 15, 5 = 20: normaal ±1 op 200 spins, **VIP ±1 op 140**. In de bonus hebben vissen een prijskaartje
@@ -76,10 +78,11 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Mines**: 5×5 vakjes, kies 1 tot 24 bommen of een stand (Makkelijk 3, Normaal 5, Moeilijk 10, Expert 15, Extreem 20,
   Gekkenhuis 24: eerste vakje al 24,5×). Elk veilig vakje verhoogt de multiplier (98% van de echte kans, RTP 98%, max 10.000×). Cash out wanneer je wilt; de bommen
   liggen vast zodra je start en het spel blijft staan als je ververst. Code: `public/js/pages/mines.js`.
-- **Hoogvlieger**: een vliegtuigje vliegt over zee en pakt multipliers (+1, +2, +5, +10, ×2 tot ×5): dan stuitert hij omhoog.
-  Een bom halveert de multiplier en duwt hem omlaag. Aan het eind moet hij landen op een vliegdekschip; er liggen weinig schepen
-  en na het aanraken rolt hij nog door. Blijft hij op het dek staan, dan win je inzet × multiplier (max 250×).
-  Doorgerekend (echte `avPlan`): normaal RTP ±87% en ±22% landt; VIP heeft 9% langere dekken, landt ±13% vaker (±25%) en haalt ±98%.
+- **Hoogvlieger**: een vliegtuigje vliegt over zee en pakt multipliers (+1, +2, +5, +10, ×2 tot ×5): dan stuitert hij omhoog
+  (grote multipliers flink). Een bom halveert de multiplier en duwt hem omlaag. De vluchtduur is echt willekeurig: meestal 10 tot
+  35 seconden, soms een minuut of langer (tot ±1,5 minuut); "Sneller vliegen" speelt hem 3× zo snel af. Schepen liggen ver en
+  onregelmatig uit elkaar; na het aanraken rolt hij nog door. Blijft hij op het dek staan, dan win je inzet × multiplier (max 250×).
+  Doorgerekend (echte `avPlan`, 600.000 vluchten): normaal RTP ±87% en ±19% landt; VIP heeft 12% langere dekken en haalt ±97,5%.
   De vlucht ligt vast zodra je opstijgt. Code: `public/js/pages/vlucht.js`.
 - **Dubbel of niks**: een munt die echt in 3D wordt opgegooid, precies 50% kans (crypto-random), geen huisvoordeel.
   Win je, dan kies je: je pot pakken of nog een keer gooien voor het dubbele, tot 10 keer (×1024). De pot blijft bewaard bij verversen.

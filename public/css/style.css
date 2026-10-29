@@ -1425,3 +1425,15 @@ button,.btn,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-to
 .vd.is-fs .vd-fs{margin-right:52px}
 .vd-board,.vd.is-fs .vd-board{width:min(100%,max(470px,calc((100svh - 492px) * 1.3)),780px)}
 @container (max-width:700px){.vd.is-fs .vd-fs{margin-right:44px}.vd-board{width:min(100%,calc((100svh - 430px) * 1.3))}.vd.is-fs .vd-board{width:min(100%,calc((100svh - 482px) * 1.3))}}
+.av-fast{width:100%;margin-top:-4px}.av-fast.on{color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc-dim)}
+/* Kluiskraker: gouden baren die in de bonus blijven staan */
+.kk-bars{display:inline-flex;gap:4px;margin:0 6px;vertical-align:middle}.kk-bars i{width:24px;height:24px;display:grid;place-items:center;border-radius:5px;background:#16181d;box-shadow:inset 0 0 0 1px #3a3f47;opacity:.45}
+.kk-bars i svg{width:80%;height:80%}.kk-bars i.on{opacity:1;background:rgba(242,194,48,.18);box-shadow:inset 0 0 0 1.5px #f2c230,0 0 12px rgba(242,194,48,.5)}
+.kk-banner.gold{background:radial-gradient(circle,rgba(242,194,48,.32),rgba(5,6,8,.85) 70%)}
+.kk-spot.lv10 b{font-size:clamp(8px,1.05cqi,13px);letter-spacing:-.03em}
+/* Bezit: bonus op al je inkomen */
+.bz-bonus{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 18px;align-items:center;padding:12px 14px;background:rgba(63,227,149,.06);border:1px solid rgba(63,227,149,.3)}
+.bz-bonus-t b{display:block;font-family:var(--f-display);font-weight:900;font-size:30px;line-height:1;color:var(--green)}
+.bz-bonus-p{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--mute)}.bz-bonus-p b{color:var(--fg);font-family:var(--f-mono);font-weight:600}
+.bz-bonus p{grid-column:1/-1;margin:0;font-size:12.5px;color:var(--faint)}
+@container (max-width:760px){.bz-bonus{grid-template-columns:1fr}}

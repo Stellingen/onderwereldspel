@@ -121,7 +121,11 @@ const BIZ_MAX=10,BIZ_LVL=['Basis','Opgeknapt','Uitgebreid','Topzaak','Imperium']
 const BIZ_PLACES=['De Pijp','Oost','Noord','West','Zuidoost','Jordaan','Zaandam','Rotterdam','Den Haag','Utrecht'];
 const bizPrice=(b,n)=>Math.floor(b.p*Math.pow(1.25,n));
 const bizUpCost=(b,l)=>Math.floor(b.p*BIZ_UPK[l-1]);
-const bizInc=(b,l)=>b.inc*BIZ_MULT[l-1];
+// Passief inkomen groeit mee met je imperium: +25% basis, +1% per vestiging en +0,5% per upgrade (samen max +200%),
+// en +5% per rang (ervaring in de business). bizMult() staat in state.js.
+const BIZ_BOOST=1.25,BIZ_IMP_UNIT=.01,BIZ_IMP_UP=.005,BIZ_IMP_MAX=2,BIZ_RANK=.05;
+const bizIncRaw=(b,l)=>b.inc*BIZ_MULT[l-1];
+const bizInc=(b,l)=>bizIncRaw(b,l)*(typeof bizMult==='function'?bizMult().total:1);
 const GEAR=[
  {id:'mes',n:'Vlindermes',p:800,bonus:3},{id:'pistool',n:'Glock 17',p:6000,bonus:6},
  {id:'vest',n:'Kogelvrij vest',p:20000,bonus:5},{id:'ak',n:'AK-47',p:75000,bonus:10}];
@@ -178,11 +182,11 @@ const RELAX=[
 
 // Rangcodes: typ de naam van een rang bij Profiel > Code inwisselen (één keer, zodra je die rang hebt)
 const RANK_CODES={straatschoffie:150,loopjongen:400,dief:1000,boef:2500,gangster:6000,soldaat:12000,huurmoordenaar:25000,capo:50000,onderbaas:100000,consigliere:200000,peetvader:500000};
-const CODE_ALIAS={kapo:'capo',m1:'m1v3',m2:'m2v3',m3:'m3v3',m4:'m4v3',m5:'m5v3',m6:'m6v3',m7:'m7v3',m8:'m8v3',m9:'m9v3'};
+const CODE_ALIAS={kapo:'capo',m1:'m1v4',m2:'m2v4',m3:'m3v4',m4:'m4v4',m5:'m5v4',m6:'m6v4',m7:'m7v4',m8:'m8v4',m9:'m9v4'};
 // zo toon je een code in 'gebruikte codes' (m1v2 → M1)
 const codeShow=c=>c.replace(/v\d+$/,'').toUpperCase();
 // Codes die nu bestaan (zelfde als CODES in server.js). Oude codes verdwijnen uit 'gebruikte codes'.
-const LIVE_CODES={lotto:1500,welkom:500,casino:5000,vip:20000,spinnetje:25000,jackpot:1000000,trainwreck:3000000,m1v3:5000000,m2v3:5000000,m3v3:5000000,m4v3:5000000,m5v3:5000000,m6v3:5000000,m7v3:5000000,m8v3:5000000,m9v3:5000000};
+const LIVE_CODES={lotto:1500,welkom:500,casino:5000,vip:20000,spinnetje:25000,jackpot:1000000,trainwreck:3000000,m1v4:5000000,m2v4:5000000,m3v4:5000000,m4v4:5000000,m5v4:5000000,m6v4:5000000,m7v4:5000000,m8v4:5000000,m9v4:5000000};
 
 // Verblijf: je begint onder de brug. Rusten vult je energie in `rest` seconden, maar alleen zolang je blijft.
 const HOMES=[

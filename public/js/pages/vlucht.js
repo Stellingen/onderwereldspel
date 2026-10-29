@@ -1,30 +1,41 @@
 // Casino: Hoogvlieger — een vliegtuigje vliegt over zee en pakt multipliers (+1, +2, +5, +10, ×2 … ×5) of bommen (÷2, en hij zakt).
 // Aan het eind moet hij landen op een plateau (een vliegdekschip). Tussen de plateaus zit water. Raakt hij het dek, dan rolt hij nog door:
 // blijft hij op het dek staan, dan win je inzet × multiplier; rolt hij eraf of valt hij in het water, dan ben je je inzet kwijt.
-// Pakt hij een multiplier, dan stuitert hij omhoog; een bom halveert je multiplier en duwt hem omlaag. Er liggen weinig schepen.
-// VIP: dekken zijn 9% langer, dus ±13% meer kans om te landen. De vlucht ligt vast zodra je opstijgt (verversen verandert niets).
-// Doorgerekend (avsim): normaal RTP ±87% en landt ±22%; VIP RTP ±98% en landt ±25%.
-const AV_ITEMS=[['bom',.485],['+1',.30],['+2',.14],['+5',.05],['+10',.012],['x2',.07],['x3',.02],['x4',.006],['x5',.003]];
-const AVC={gap:[70,110],glide:[12,16],drop:12,bounce:[8,14],top:100,cap:250,L:[100,140],G:[140,200],R:[25,75],margin:6,vipL:1.09,speed:165,slope:14/90};
+// Pakt hij een multiplier, dan stuitert hij omhoog (grote multipliers flink); een bom halveert je multiplier en duwt hem omlaag.
+// De vluchtduur is echt willekeurig: meestal 10 tot 35 seconden, soms een minuut of langer (tot ±1,5 minuut).
+// Schepen liggen ver en onregelmatig uit elkaar. VIP: dekken 12% langer, ±12% vaker landen.
+// De vlucht ligt vast zodra je opstijgt (verversen verandert niets).
+// Doorgerekend (avsim, 600.000 vluchten): normaal RTP ±87% en landt ±19%; VIP RTP ±97,5% en landt ±21%.
+const AV_ITEMS=[['bom',.68],['+1',.30],['+2',.14],['+5',.05],['+10',.012],['x2',.07],['x3',.02],['x4',.006],['x5',.003]];
+// gap = afstand tussen items, medN/sigN = vluchtlengte (mediaan aantal items, spreiding), bounce/drop = stoot omhoog bij een
+// multiplier / omlaag bij een bom, max = hoogstens zoveel items (±1,5 minuut). L = lengte van een schip, G = water tussen twee schepen (onregelmatig en ver).
+const AVC={gap:[70,110],medN:32,sigN:.55,drop:[6,11],bounce:[4,8],top:100,max:170,cap:250,L:[170,260],G:[260,1150],R:[25,75],margin:6,vipL:1.12,speed:165,slope:14/90};
+// hoe sterk hij omhoog stuitert per soort multiplier (grote multipliers = flinke opwaartse stoot, dus soms een hele lange vlucht)
+const AV_LIFT={'+1':1,'+2':1.2,'+5':1.7,'+10':2.4,x2:1.6,x3:2,x4:2.5,x5:3};
 const AV_BETS=[10,25,50,100,250,500,1000,2500,5000,10000,25000,50000];
 const avBets=()=>isHighRoller()?AV_BETS.concat([100000,250000,500000]):AV_BETS;
 window.av=window.av||{bi:3,flying:false,plan:null,t0:0,raf:null,res:null,shake:0};
 const avBet=()=>{const B=avBets();if(av.bi>=B.length)av.bi=B.length-1;return B[av.bi]};
 const avR=()=>crypto.getRandomValues(new Uint32Array(1))[0]/4294967296;
 const avX=v=>'×'+v.toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2});
-function avPlan(vip,rng){rng=rng||avR;const tot=AV_ITEMS.reduce((a,b)=>a+b[1],0),U=(a)=>a[0]+rng()*(a[1]-a[0]);let alt=100,m=1,x=0;const path=[[0,100]],ev=[];
- for(let n=0;n<60;n++){const nx=x+U(AVC.gap),na=alt-U(AVC.glide);if(na<=0)break;x=nx;alt=na;path.push([x,alt]);
+function avPlan(vip,rng){rng=rng||avR;const tot=AV_ITEMS.reduce((a,b)=>a+b[1],0),U=(a)=>a[0]+rng()*(a[1]-a[0]);let m=1,x=0,bump=0;const path=[[0,100]],ev=[];
+ // Vluchtduur: echt willekeurig (lognormaal): meestal 10-35 s, soms een minuut of langer. N = aantal items onderweg.
+ const z=Math.sqrt(-2*Math.log(1-rng()))*Math.cos(2*Math.PI*rng());const N=Math.max(6,Math.min(AVC.max,Math.round(Math.exp(Math.log(AVC.medN)+AVC.sigN*z))));
+ for(let n=1;n<=N;n++){x+=U(AVC.gap);
   let q=rng()*tot,it='bom';for(const [k,p] of AV_ITEMS){q-=p;if(q<=0){it=k;break}}
-  // bom: winst gehalveerd en hij wordt omlaag geduwd · multiplier: hij stuitert omhoog
-  if(it==='bom'){m=m/2;ev.push({x,alt,it,m});alt-=AVC.drop;path.push([x+30,Math.max(0,alt)]);if(alt<=0)break}
-  else{if(it[0]==='+')m+=+it.slice(1);else m*=+it.slice(1);m=Math.min(AVC.cap,m);ev.push({x,alt,it,m});alt=Math.min(AVC.top,alt+U(AVC.bounce));path.push([x+30,alt])}}
+  // hoogte: zakt geleidelijk naar de zee; multiplier = stoot omhoog, bom = duw omlaag (ebt weer weg)
+  const base=100*Math.pow(1-n/(N+1),.85);const alt=Math.max(5,Math.min(AVC.top,base+bump));path.push([x,alt]);
+  if(it==='bom'){m=m/2;ev.push({x,alt,it,m});bump=bump*.7-U(AVC.drop)}
+  else{if(it[0]==='+')m+=+it.slice(1);else m*=+it.slice(1);m=Math.min(AVC.cap,m);ev.push({x,alt,it,m});bump=bump*.7+U(AVC.bounce)*(AV_LIFT[it]||1)}
+  const nb=100*Math.pow(1-(n+.35)/(N+1),.85);path.push([x+30,Math.max(4,Math.min(AVC.top,nb+bump*.85))])}
  const last=path[path.length-1],touch=last[0]+Math.max(0,last[1])/AVC.slope;path.push([touch,0]);
  // landen: dek (lengte L, VIP iets langer) en water (G) liggen willekeurig onder het landingspunt; R = hoe ver hij nog doorrolt
  const L=U(AVC.L)*(vip?AVC.vipL:1),G=U(AVC.G),pos=rng()*(L+G),R=U(AVC.R),on=pos<L,ok=on&&pos+R<=L-AVC.margin;
  let plats=[];
  if(on)plats.push([touch-pos,touch-pos+L,1]);
  else{const e0=touch-(pos-L);plats.push([e0-U(AVC.L),e0,0]);plats.push([e0+G,e0+G+U(AVC.L),0])}
- while(plats[0][0]>Math.max(touch-1100,60)){const g=U(AVC.G),l=U(AVC.L),e=plats[0][0]-g;if(e-l<20)break;plats.unshift([e-l,e,0])}
+ // schepen over de hele route, ver en onregelmatig uit elkaar
+ while(plats[0][0]>60){const g=U(AVC.G),l=U(AVC.L),e=plats[0][0]-g;if(e-l<20)break;plats.unshift([e-l,e,0])}
  for(let k=0;k<5;k++){const last=plats[plats.length-1],g=U(AVC.G),l=U(AVC.L);plats.push([last[1]+g,last[1]+g+l,0])}
  const pl=on?plats.find(p=>touch>=p[0]&&touch<=p[1]):null;
  return {path,ev,touch,R,on,ok,m:Math.round(m*100)/100,plat:pl,plats,start:-170}}
@@ -41,12 +52,13 @@ function aviaView(){const h=S.avHist||[],bet=avBet(),f=av.flying,res=av.res;setT
   <div class="kk-bet"><button onclick="av.bi=Math.max(0,av.bi-1);SFX.chip();render()" ${f?'disabled':''} aria-label="Lagere inzet">−</button><b>${fmt(bet)}</b><button onclick="av.bi=Math.min(avBets().length-1,av.bi+1);SFX.chip();render()" ${f?'disabled':''} aria-label="Hogere inzet">+</button></div>
   <div class="cf-quick">${avBets().map((v,i)=>`<button class="${av.bi===i?'on':''}" onclick="av.bi=${i};SFX.chip();render()" ${f?'disabled':''}>${v>=1000?v/1000+'K':v}</button>`).join('')}</div>
   <button class="btn gold xl av-go" onclick="act.avFly()" ${f||inJail()||S.cash<bet?'disabled':''}>${f?'Vliegt…':S.cash<bet?'Te weinig geld':'Opstijgen · '+fmt(bet)}</button>
+  <button class="btn ghost sm av-fast ${av.fast?'on':''}" onclick="av.fast=!av.fast;SFX.click();this.classList.toggle('on',av.fast);this.textContent=av.fast?'Sneller vliegen: aan':'Sneller vliegen: uit'" aria-pressed="${!!av.fast}">${av.fast?'Sneller vliegen: aan':'Sneller vliegen: uit'}</button>
   <div class="av-legend">
    <div><i class="add">+1</i><span>+1 tot +10 · hij stuitert omhoog</span></div><div><i class="mul">×2</i><span>×2 tot ×5 · hij stuitert omhoog</span></div>
    <div><i class="bom">÷2</i><span>Bom: halveert en duwt hem omlaag</span></div><div><i class="deck"></i><span>Land op een dek en blijf staan</span></div></div>
   <div class="label" style="margin-top:4px">Laatste vluchten</div>
   <div class="av-hist">${h.length?h.map(x=>`<i class="${x.ok?'w':'l'}" title="${x.ok?'Geland':'Niet geland'}">${x.ok?avX(x.m):'✕'}</i>`).join(''):'<span class="label">Nog niet gevlogen</span>'}</div>
-  <p class="cf-fine">Doorgerekend: ${isVip()?'als VIP landt ±1 op 4 vluchten (dekken iets langer), RTP ±98%':'ongeveer 1 op de 5 vluchten landt, RTP ±87% (VIP: langere dekken, ±13% vaker landen, RTP ±98%)'}. Max ${AVC.cap}× je inzet. De vlucht ligt vast zodra je opstijgt.</p>
+  <p class="cf-fine">Een vlucht duurt meestal 10 tot 35 seconden, soms een minuut of langer. Doorgerekend: ${isVip()?'als VIP landt ±1 op 5 vluchten (dekken iets langer), RTP ±97,5%':'ongeveer 1 op de 5 vluchten landt, RTP ±87% (VIP: langere dekken, ±12% vaker landen, RTP ±97,5%)'}. Max ${AVC.cap}× je inzet. De vlucht ligt vast zodra je opstijgt.</p>
  </section></div>`}
 /* ---------- Tekenen ---------- */
 function avSize(cv){const dpr=Math.min(2,devicePixelRatio||1),W=cv.clientWidth,H=cv.clientHeight;if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return [x,W,H]}
@@ -97,10 +109,10 @@ Object.assign(act,{
   S.avHist=[{m:P.m,ok:P.ok}].concat(S.avHist||[]).slice(0,14);save();
   log('Hoogvlieger: '+(P.ok?'geland op '+avX(P.m)+', '+fmt(pay):'niet geland ('+fmt(bet)+' kwijt)'),P.ok?'ok':'bad');
   av.plan=P;av.res=null;av.flying=true;av.cur=1;av.shake=0;render();SFX.spin();
-  const T0=performance.now(),flyT=P.touch/AVC.speed*1000,rollT=1300,fallT=1100,reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;let seen=0,splash=null,endX=P.touch,endAlt=0,endAng=0;
+  let T0=performance.now(),tt=0,lastNow=T0;const flyT=P.touch/AVC.speed*1000,rollT=1300,fallT=1100,reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;let seen=0,splash=null,endX=P.touch,endAlt=0,endAng=0;
   const hud=()=>{const m=document.getElementById('avMult'),p=document.getElementById('avPay');if(m)m.textContent=avX(av.cur);if(p)p.textContent=fmt(bet*av.cur)};
   const step=now=>{if(!document.getElementById('avCanvas')&&page!=='casino'){finish();return}
-   let t=now-T0;if(reduce)t=Math.max(t,flyT);let px,pa,ang=0,ex=null;
+   tt+=(now-lastNow)*(av.fast&&tt<flyT?3:1);lastNow=now;let t=tt;if(reduce)t=Math.max(t,flyT);let px,pa,ang=0,ex=null;
    if(t<flyT){px=t/1000*AVC.speed;pa=avAltAt(P,px);const pa2=avAltAt(P,px+6);ang=Math.atan2(pa-pa2,6*1.2)*.6;
     while(seen<P.ev.length&&px>=P.ev[seen].x){const e=P.ev[seen++];av.cur=e.m;hud();if(e.it==='bom'){SFX.lose();av.shake=10}else SFX.win(e.it[0]==='x'?4:2)}}
    else{const rt=t-flyT;

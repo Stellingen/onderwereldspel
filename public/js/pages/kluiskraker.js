@@ -33,8 +33,10 @@ function kkInfo(){const fs=kk.fs;const pend=window.slotPending||0;
    <div class="kk-stat"><span class="label">Deze spin</span><b id="kkStep" class="acc">${fmt(kk.stepWin)}</b></div>
    <div class="kk-stat"><span class="label">${fs?'Bonuswinst':'Laatste winst'}</span><b id="kkLast" class="grn">${fmt(fs?fs.total:kk.lastWin)}</b></div>
    ${fs?`<div class="kk-stat fsb"><span class="label">${fs.kind==='super'?'Superbonus':'Free spins'}</span><b id="kkMsg">${fs.at} / ${fs.of}</b></div>`:`<div class="kk-stat"><span class="label">Status</span><b id="kkMsg" class="sm">${kk.msg}</b></div>`}`}
-function kkSubHtml(){const fs=kk.fs;return fs?(fs.kind==='super'?`<span class="vip gold">Superbonus</span><span class="kk-subtxt"> Meer lopers · meer kluizen · Gouden baar = max win</span>`:`<span class="vip">Bonus</span><span class="kk-subtxt"> Vakjes blijven staan</span>`)
-  :`${isVip()?'<span class="vip gold">VIP</span>':''}<span class="kk-subtxt">${isVip()?' bonus ±1 op 280 · superbonus ±1 op 4.000 · RTP ±98%':' bonus ±1 op 400 · RTP ±92%'} · bonus kopen ±96% · max ${SLOT.MAX_WIN.toLocaleString('nl-NL')}×</span>`}
+// Gouden baren in de gewone bonus: ze blijven staan, bij 3 is het de max win
+const kkBarsHtml=n=>`<span class="kk-bars" aria-label="${n} van ${SLOT.BAR.need} Gouden baren">${Array.from({length:SLOT.BAR.need},(_,i)=>`<i class="${i<n?'on':''}">${kkSvg('baar')}</i>`).join('')}</span>`;
+function kkSubHtml(){const fs=kk.fs;return fs?(fs.kind==='super'?`<span class="vip gold">Superbonus</span><span class="kk-subtxt"> Meer lopers. Eén Gouden baar = max win</span>`:`<span class="vip">Bonus</span>${kkBarsHtml(fs.bars||0)}<span class="kk-subtxt"> 3 Gouden baren = max win</span>`)
+  :`${isVip()?'<span class="vip gold">VIP</span>':''}<span class="kk-subtxt">${isVip()?' bonus ±1 op 145 · superbonus ±1 op 2.500 · RTP ±97,5%':' bonus ±1 op 200 · RTP ±92%'} · bonus kopen ±95% · max ${SLOT.MAX_WIN.toLocaleString('nl-NL')}×</span>`}
 function kkPayTab(){const b=kkBet(),sizes=[5,6,7,8,9,10,11,12,13,14,15],k=SLOT.BASE_K*(isVip()?SLOT.VIP_K:1),fsPct=Math.round(SLOT.FS_K/k*100);
  return `<div class="kk-pay-h"><div class="label">Uitbetaling per cluster bij ${fmt(b)} inzet (basisspel${isVip()?' als VIP':''} · in de bonus ${fsPct}% daarvan, maar de vakjes blijven staan)</div><span class="label">Aantal aaneengesloten symbolen</span></div>
   <div class="kk-ptab-w"><div class="kk-ptab" style="grid-template-columns:44px repeat(${sizes.length},minmax(72px,1fr))"><span></span>${sizes.map(n=>`<span class="label">${n}${n===15?'+':''}</span>`).join('')}
@@ -62,8 +64,8 @@ function kkView(){
   <div class="kk-rules">
    <div><span>${kkSvg('sleutel')}</span><p><b>Loper</b> telt mee voor elk symbool en verbindt groepjes. In de bonus valt hij vaker.</p></div>
    <div><span class="kk-mini mk"></span><p><b>Vakje</b> raakt gemarkeerd waar een winst verdwijnt. Opnieuw raak: x2, dan x4, x8 … tot x${SLOT.MAX_SPOT}. In de bonus blijven vakjes staan.</p></div>
-   <div><span>${kkSvg('kluis')}</span><p><b>3 kluizen</b> = ${SLOT.FS_BY_SC[3]} free spins, <b>4</b> = ${SLOT.FS_BY_SC[4]}, <b>5</b> = ${SLOT.FS_BY_SC[5]}. Bij 3 tot 5 kluizen <b>kraakt de kluisdeur</b>: elk ander vakje kan een kluis worden, en komt er een bij, dan kraakt hij opnieuw. Hoe meer kluizen bij de start, hoe groter de kans op de Gouden baar. In de bonus: 2 kluizen = +${SLOT.FS_RETRIG[2]}, 3 = +${SLOT.FS_RETRIG[3]}, 4 = +${SLOT.FS_RETRIG[4]}, 5+ = +${SLOT.FS_RETRIG[5]} spins.</p></div>
-   <div><span>${kkSvg('baar')}</span><p><b>6+ kluizen = superbonus</b>: ${SLOT.SUPER_SPINS} spins met veel meer lopers (dus veel grotere winsten), 25% meer kans op extra kluizen en veel vaker de <b>Gouden baar</b> (direct ${SLOT.MAX_WIN.toLocaleString('nl-NL')}× je inzet). In de gewone bonus kan de Gouden baar ook landen, maar dat is heel zeldzaam. Ook met een gekochte bonus kun je doorkraken tot de superbonus.</p></div>
+   <div><span>${kkSvg('kluis')}</span><p><b>3 kluizen</b> = ${SLOT.FS_BY_SC[3]} free spins, <b>4</b> = ${SLOT.FS_BY_SC[4]}, <b>5</b> = ${SLOT.FS_BY_SC[5]}. Bij 3 tot 5 kluizen <b>kraakt de kluisdeur</b>: elk ander vakje kan een kluis worden, en komt er een bij, dan kraakt hij opnieuw. In de bonus blijft elke <b>Gouden baar</b> staan; heb je er 3, dan win je de max win. Hoe meer kluizen bij de start, hoe meer spins en hoe groter die kans. Vakjes kunnen oplopen tot x${SLOT.MAX_SPOT.toLocaleString('nl-NL')}, maar je wint nooit meer dan ${SLOT.MAX_WIN.toLocaleString('nl-NL')}× je inzet per ronde. In de bonus: 2 kluizen = +${SLOT.FS_RETRIG[2]}, 3 = +${SLOT.FS_RETRIG[3]}, 4 = +${SLOT.FS_RETRIG[4]}, 5+ = +${SLOT.FS_RETRIG[5]} spins.</p></div>
+   <div><span>${kkSvg('baar')}</span><p><b>6+ kluizen = superbonus</b>: ${SLOT.SUPER_SPINS} spins met veel meer lopers (dus veel grotere winsten), 25% meer kans op extra kluizen en hier is één <b>Gouden baar</b> al genoeg voor ${SLOT.MAX_WIN.toLocaleString('nl-NL')}× je inzet. Ook met een gekochte bonus kun je doorkraken tot de superbonus.</p></div>
    <div><span class="kk-mini key">␣</span><p><b>Spatiebalk</b> = draaien, ingedrukt houden blijft draaien. Klik op je inzet om meteen een bedrag te kiezen.${isVip()?' Als <b>VIP</b> kom je veel vaker in de bonus (±1 op 280 in plaats van 400) en de superbonus (±1 op 4.000 in plaats van 7.600). Daarvoor betalen clusters in het basisspel ±4% minder; de bonus zelf is voor iedereen gelijk.':' <b>VIP</b>-spelers komen veel vaker in de bonus (±1 op 280) en de superbonus (±1 op 4.000).'}</p></div>
   </div>
  </section></div>`;
@@ -79,7 +81,7 @@ function kkSeedHtml(){const sd=kkSeed(),p=sd.prev;
   ${p?`<div class="kk-seed-i prev"><span class="label">Vorige seed</span><b>${p.id} · ${p.spins} spins · ${p.bon} bonus${p.bon===1?'':'sen'}</b></div>`:''}
   <button class="btn ghost sm" onclick="act.kkNewSeed()" ${kk.busy?'disabled':''}>Nieuwe seed</button></div>`}
 function kkConfirm(){const b=kkBet(),buy=b*SLOT.BUY_COST;return `<div class="kk-confirm"><div><b>Bonus kopen voor ${fmt(buy)}?</b>
-   <span>Dat is ${SLOT.BUY_COST}× je inzet van ${fmt(b)}. Je krijgt altijd 3 kluizen (${SLOT.FS_BY_SC[3]} free spins). Daarna kan de kluisdeur kraken: met een 4e kluis krijg je ${SLOT.FS_BY_SC[4]} spins, met een 5e ${SLOT.FS_BY_SC[5]} en met 6 de superbonus.${isVip()?' Als VIP kraakt de deur vaker.':''} Gemiddeld levert een bonus iets minder op dan hij kost, maar de uitschieters zijn groot.</span></div>
+   <span>Dat is ${SLOT.BUY_COST}× je inzet van ${fmt(b)}. Je krijgt altijd 3 kluizen (${SLOT.FS_BY_SC[3]} free spins). Daarna kan de kluisdeur kraken, met dezelfde kansen als bij spinnen: met een 4e kluis krijg je ${SLOT.FS_BY_SC[4]} spins, met een 5e ${SLOT.FS_BY_SC[5]} en met 6 de superbonus.${isVip()?' Als VIP kraakt de deur iets vaker.':''} Gemiddeld levert een bonus iets minder op dan hij kost, maar de uitschieters zijn groot.</span></div>
    <div class="flex"><button class="btn sm" onclick="act.kkSpin(true)" ${S.cash<buy?'disabled':''}>${S.cash<buy?'Te weinig geld':'Kopen'}</button><button class="btn ghost sm" onclick="kk.confirm=false;kkRefreshUI()">Annuleren</button></div></div>`}
 // Inzet kiezen: klik op het bedrag en kies direct, van €10 tot max €50.000
 function kkPickHtml(){return `<div class="kk-pick"><div class="kk-pick-h"><b>Kies je inzet${isHighRoller()?' <i class="vipt" style="margin-left:6px">HIGH ROLLER</i>':''}</b><button class="btn ghost sm" onclick="kk.pick=false;kkRefreshUI()">Sluiten</button></div>
@@ -196,14 +198,16 @@ async function kkPlay(round,bet,isBuy){
   const stage=kkEl('kkStage');if(stage)stage.classList.add('vault-open');
   SFX.bonus();if(sup){SFX.big();await kkBanner('Superbonus',sc+' kluizen! '+round.fsStart+' spins met extra lopers · zoek de Gouden baar',3000,'fsin super')}
   else await kkBanner(round.fsStart+' free spins',sc+' kluizen gekraakt · vakjes blijven de hele bonus staan',2200,'fsin');
-  let of=round.fsStart;kk.fs={at:0,of,total:0,kind:round.fs.kind};kkShowSpots(SLOT.newSpots());kkRefreshUI();
+  let of=round.fsStart;kk.fs={at:0,of,total:0,kind:round.fs.kind,bars:0};kkShowSpots(SLOT.newSpots());kkRefreshUI();
   for(let i=0;i<round.fs.spins.length;i++){const s=round.fs.spins[i];
    kk.fs.at=i+1;kk.fs.of=Math.max(of,i+1+s.left);kkText('kkMsg',kk.fs.at+' / '+kk.fs.of);
    kk.stepWin=0;kkText('kkStep',fmt(0));kkScSeen=0;SFX.spin();
    const before=kk.fs.total;
    await kkAnimateSpin(s,bet,true,before);
    kk.fs.total=Math.min(SLOT.MAX_WIN,s.total)*bet;kkText('kkLast',fmt(kk.fs.total));
-   if(s.bar){const cells=kkEl('kkCells');if(cells)cells.querySelectorAll('.kk-cell.gbar').forEach(el=>el.classList.add('win'));SFX.big();await kkBanner('Gouden baar','Max win · '+SLOT.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3200,'big gold');break}
+   if(s.barNew){const cells=kkEl('kkCells');if(cells)cells.querySelectorAll('.kk-cell.gbar').forEach(el=>el.classList.add('win'));kk.fs.bars=s.bars;const sb=kkEl('kkSub');if(sb)sb.innerHTML=kkSubHtml();
+    if(!s.barMax){SFX.bonus();await kkBanner('Gouden baar '+s.bars+'/'+SLOT.BAR.need,s.bars===SLOT.BAR.need-1?'Nog één en je hebt de max win':'Hij blijft de hele bonus staan',1800,'gold')}}
+   if(s.barMax){const cells=kkEl('kkCells');if(cells)cells.querySelectorAll('.kk-cell.gbar').forEach(el=>el.classList.add('win'));SFX.big();await kkBanner(kk.fs.kind==='super'?'Gouden baar':'3 Gouden baren','Max win · '+SLOT.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3200,'big gold');break}
    if(round.fs.maxHit&&s.total>=SLOT.MAX_WIN){SFX.big();await kkBanner('Max win',SLOT.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3000,'big gold');break}
    if(s.extra){SFX.bonus();await kkBanner('+'+s.extra+' spins',s.scatters+' kluizen tijdens de bonus',1400,'fsin');of+=s.extra}
    await kkWait(kkFast()?120:280);

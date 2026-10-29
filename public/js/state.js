@@ -120,6 +120,8 @@ const numCol=n=>n===0?'green':REDS.has(n)?'red':'black';
 window.rl={bets:{},angle:0,spinning:false,hist:[],chip:100,res:null,net:0};
 // Inkomen per minuut: per vestiging het inkomen van zijn level
 const bizUnits=id=>(S.biz2&&S.biz2[id])||[];
+function bizMult(){let u=0,up=0;BIZ.forEach(b=>bizUnits(b.id).forEach(l=>{u++;up+=l-1}));const imp=Math.min(BIZ_IMP_MAX,u*BIZ_IMP_UNIT+up*BIZ_IMP_UP),rk=rankIdx(S.xp)*BIZ_RANK;
+ return {units:u,ups:up,imp,rk,total:BIZ_BOOST*(1+imp)*(1+rk)}}
 const bizIncome=id=>{const b=BIZ.find(x=>x.id===id);return bizUnits(id).reduce((a,l)=>a+bizInc(b,l),0)};
 const income=()=>BIZ.reduce((a,b)=>a+bizIncome(b.id),0);
 

@@ -82,16 +82,16 @@ app.get('/api/me', auth, async (req, res) => {
 });
 
 // Inwisselcodes: elke code één keer per account. Bedrag in euro (spelgeld).
-const CODES = { lotto: 1500, welkom: 500, casino: 5000, vip: 20000, spinnetje: 25000, jackpot: 1000000, trainwreck: 3000000, m1v3: 5000000, m2v3: 5000000, m3v3: 5000000, m4v3: 5000000, m5v3: 5000000, m6v3: 5000000, m7v3: 5000000, m8v3: 5000000, m9v3: 5000000 };
+const CODES = { lotto: 1500, welkom: 500, casino: 5000, vip: 20000, spinnetje: 25000, jackpot: 1000000, trainwreck: 3000000, m1v4: 5000000, m2v4: 5000000, m3v4: 5000000, m4v4: 5000000, m5v4: 5000000, m6v4: 5000000, m7v4: 5000000, m8v4: 5000000, m9v4: 5000000 };
 // Rangcodes: de naam van een rang, alleen in te wisselen als je die rang hebt bereikt (xp uit game_state).
 const RANK_CODES = {
   straatschoffie: [150, 150], loopjongen: [500, 400], dief: [1200, 1000], boef: [2500, 2500],
   gangster: [5000, 6000], soldaat: [9000, 12000], huurmoordenaar: [15000, 25000], capo: [25000, 50000],
   onderbaas: [40000, 100000], consigliere: [65000, 200000], peetvader: [100000, 500000]
 };
-// m1 t/m m9 zijn opnieuw uitgegeven (€5 mln.): de speler typt m1, intern heet hij m1v3. Oudere versies (m1, m1v2) bestaan niet meer
+// m1 t/m m9 zijn opnieuw uitgegeven (€5 mln.): de speler typt m1, intern heet hij m1v4. Oudere versies (m1, m1v2, m1v3) bestaan niet meer
 // en verdwijnt daardoor ook uit 'gebruikte codes', zodat iedereen de nieuwe versie kan inwisselen.
-const ALIASES = { kapo: 'capo', m1: 'm1v3', m2: 'm2v3', m3: 'm3v3', m4: 'm4v3', m5: 'm5v3', m6: 'm6v3', m7: 'm7v3', m8: 'm8v3', m9: 'm9v3' };
+const ALIASES = { kapo: 'capo', m1: 'm1v4', m2: 'm2v4', m3: 'm3v4', m4: 'm4v4', m5: 'm5v4', m6: 'm6v4', m7: 'm7v4', m8: 'm8v4', m9: 'm9v4' };
 app.post('/api/redeem', auth, limit, async (req, res) => {
   if (!db.state.ready) return need(res);
   let code = String((req.body && req.body.code) || '').trim().toLowerCase();
