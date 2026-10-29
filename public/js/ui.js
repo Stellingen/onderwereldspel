@@ -80,7 +80,7 @@ function renderTop(){
    <div class="chip"><small>Gezondheid</small><b style="color:${S.hp>50?'var(--green)':'var(--red)'}">${S.hp}%</b></div>
    ${focusPct()?`<div class="chip"><small>Focus</small><b style="color:#ff6b7c">+${focusPct()}%${buffFocus()?' · '+fmtClock(S.buffs.focus.until-now()):''}</b></div>`:''}
    <div class="chip"><small>Hitte</small><b style="color:${S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--fg)'}">${S.heat}%</b></div>
-   <div class="status ${inJail()?'jail':S.wanted?'wanted':'free'}">${inJail()?'■ CEL · '+fmtTime(jt):S.wanted?'▲ GEZOCHT':'● VRIJ'}</div>`;
+   <div class="status ${inJail()?'jail':S.hide?'hide':S.wanted?'wanted':'free'}">${inJail()?'■ CEL · '+fmtTime(jt):S.hide?(page==='verblijf'?'◐ ONDERGEDOKEN':'◐ VERMOMD'):S.wanted?'▲ GEZOCHT':'● VRIJ'}</div>`;
 }
 
 

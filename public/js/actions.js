@@ -26,7 +26,7 @@ const act={
       if(!r.ok){if(r.status===409&&!S.redeemed.includes(code))S.redeemed.push(code);redeemMsg={ok:false,t:j.error||'Kon de code niet inwisselen.'};save();render();return}
       amount=j.amount}
     catch(e){redeemMsg={ok:false,t:'De server is niet bereikbaar. Probeer het later opnieuw.'};render();return}
-  }else{const LOCAL=Object.assign({lotto:1500,welkom:500,casino:5000,vip:20000,spinnetje:25000,broke:250000},RANK_CODES);amount=LOCAL[code];if(!amount){redeemMsg={ok:false,t:'Deze code bestaat niet.'};render();return}}
+  }else{const LOCAL=Object.assign({},LIVE_CODES,RANK_CODES);amount=LOCAL[code];if(!amount){redeemMsg={ok:false,t:'Deze code bestaat niet.'};render();return}}
   S.cash+=amount;S.redeemed.push(code);redeemMsg={ok:true,t:'Gelukt! '+fmt(amount)+' is bijgeschreven op je contant geld.'};
   toast('Code '+code.toUpperCase()+': +'+fmt(amount),'lvl');log('Code '+code.toUpperCase()+' ingewisseld: +'+fmt(amount),'ok');
   save();if(typeof pushState==='function')pushState();render()},
@@ -73,5 +73,5 @@ const act={
 // Politiecontroles: elke actie kan een controle opleveren als je gezocht bent
 (()=>{const skip=['redeem','claimCb','bail','escape','getBet','win','bjEnd','leave','bjHit','bjStand','bjDouble','rlBet','rlClear'];let depth=0;
  Object.keys(act).forEach(k=>{if(skip.includes(k))return;const fn=act[k];act[k]=function(...a){
-  if(depth===0&&S.wanted&&!inJail()&&Math.random()<(page==='casino'?0.2:0.12)){policeRaid();return}
+  if(depth===0&&S.wanted&&!inJail()&&Math.random()<(page==='casino'?0.2:0.12)*(S.hide?.4:1)){policeRaid();return}
   depth++;try{return fn.apply(this,a)}finally{depth--}}})})();

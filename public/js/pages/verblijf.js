@@ -1,43 +1,66 @@
-// Tab: Verblijf — tafereel van je woning, rusten / dokter / onderduiken (alleen zolang je blijft) en de woningmarkt.
-const HIDE_MS=5*60*1000;
+// Tab: Verblijf — tafereel van je woning, rusten en dokter (alleen zolang je blijft), onderduiken (loopt door) en de woningmarkt.
 const STAY={
  rest:{dur:()=>home().rest*1000,cd:()=>home().cd*1000*(1-furnFx('restCd')),key:'vb_rest'},
- doc:{dur:()=>DOC.dur*1000,cd:()=>DOC.cd*1000,key:'vb_doc'},
- hide:{dur:()=>HIDE_MS,cd:()=>0,key:null}};
+ doc:{dur:()=>DOC.dur*1000,cd:()=>DOC.cd*1000,key:'vb_doc'}};
 window.stay=window.stay||{kind:null,t0:0,dur:0,from:null,timer:null};
 const stayP=()=>stay.kind?Math.min(1,(performance.now()-stay.t0)/stay.dur):0;
 const stayCd=k=>STAY[k].key?cdLeft(STAY[k].key):0;
 function stayTarget(k){const f=stay.kind===k&&stay.from?stay.from:{e:S.energy,h:S.hp,heat:S.heat},h=home();
  if(k==='rest')return {e:EN_MAX,h:Math.min(100,f.h+h.hp+furnFx('restHp')),heat:Math.max(0,f.heat-h.heat)};
- if(k==='doc')return {h:Math.min(100,f.h+DOC.hp)};return {heat:0}}
-function stayUseful(k){if(k==='rest')return S.energy<EN_MAX-.5||S.hp<100;if(k==='doc')return S.hp<100;return S.heat>0}
+ return {h:Math.min(100,f.h+DOC.hp)}}
+function stayUseful(k){if(k==='rest')return S.energy<EN_MAX-.5||S.hp<100;return S.hp<100}
 function stayApply(p){const f=stay.from,T=stayTarget(stay.kind);
- if(stay.kind==='rest'){S.energy=f.e+(T.e-f.e)*p;S.hp=Math.round(f.h+(T.h-f.h)*p);S.heat=Math.round(f.heat+(T.heat-f.heat)*p)}
- else if(stay.kind==='doc')S.hp=Math.round(f.h+(T.h-f.h)*p);
- else S.heat=Math.max(0,Math.round(f.heat*(1-p)))}
+ if(stay.kind==='rest'){S.energy=f.e+(T.e-f.e)*p;S.hp=Math.round(f.h+(T.h-f.h)*p);if(!S.hide&&T.heat<f.heat)S.heat=Math.min(S.heat,Math.round(f.heat+(T.heat-f.heat)*p))}
+ else S.hp=Math.round(f.h+(T.h-f.h)*p)}
 function stayStop(reason){const k=stay.kind;if(!k)return;const p=stayP();stayApply(p);clearInterval(stay.timer);stay.kind=null;
  // wachttijd naar verhouding: half gerust = halve wachttijd
  if(STAY[k].key&&p>0)S.cd[STAY[k].key]=now()+Math.round(STAY[k].cd()*p);
  if(p>=1){if(k==='rest'){toast('Uitgerust. Energie vol, gezondheid '+S.hp+'%.');log('Uitgerust in '+home().n,'ok')}
-  else if(k==='doc'){toast('De dokter heeft je opgelapt. Gezondheid '+S.hp+'%.');log('Dokterbezoek: gezondheid '+S.hp+'%','ok')}
-  else{if(S.wanted){S.wanted=false;toast('Ondergedoken. Je staat niet meer op de gezochtlijst.','lvl')}else toast('Ondergedoken. Je hitte is weg.');log('Ondergedoken: hitte 0','ok')}
+  else{toast('De dokter heeft je opgelapt. Gezondheid '+S.hp+'%.');log('Dokterbezoek: gezondheid '+S.hp+'%','ok')}
   SFX.win(3)}
- else if(reason)toast((k==='rest'?'Rust':k==='doc'?'Dokterbezoek':'Onderduiken')+' onderbroken bij '+Math.round(p*100)+'%.','bad');
+ else if(reason)toast((k==='rest'?'Rust':'Dokterbezoek')+' onderbroken bij '+Math.round(p*100)+'%.','bad');
  save();if(page==='verblijf')render();else{renderTop();renderNav()}}
 function stayStart(k){if(stay.kind||inJail()||stayCd(k)||!stayUseful(k))return;
  Object.assign(stay,{kind:k,t0:performance.now(),dur:STAY[k].dur(),from:{e:S.energy,h:S.hp,heat:S.heat},fx0:performance.now()});SFX.click();render();
  stay.timer=setInterval(()=>{if(page!=='verblijf'||document.hidden){stayStop(true);return}const p=stayP();stayApply(p);vbLive();renderTop();if(p>=1)stayStop(false)},100)}
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&stay.kind)stayStop(true)});
 window.addEventListener('hashchange',()=>{if(stay.kind&&location.hash.slice(1)!=='verblijf')stayStop(true)});
+// Onderduiken loopt door als je weggaat. Op Verblijf zakt je hitte snel en word je bijna nooit herkend;
+// elders loop je vermomd rond: je hitte zakt 4x zo traag en een agent kan je herkennen (dan word je opgepakt).
+const HIDE={home:20,away:5,riskHome:.005,riskAway:.04}; // hitte per minuut, kans per minuut bij 100% hitte
+const hideHome=()=>page==='verblijf'&&!document.hidden;
+function hideStart(){if(S.hide||inJail()||S.heat<=0)return;S.hide={t0:now(),from:S.heat};S._hideAcc=0;SFX.click();
+ toast('Ondergedoken. Hier zakt je hitte snel; ga je weg, dan loop je vermomd rond.');log('Ondergedoken met '+S.heat+'% hitte','info');save();render()}
+function hideStop(msg){if(!S.hide)return;S.hide=null;S._hideAcc=0;if(msg)toast(msg);save();if(page==='verblijf')render();else renderTop()}
+// mins = minuten sinds de vorige tik, live = het spel staat open (offline geen herkenning)
+function hideTick(mins,live){if(!S.hide||mins<=0)return;if(inJail()){S.hide=null;return}
+ const atHome=live&&hideHome();S._hideAcc=(S._hideAcc||0)+(atHome?HIDE.home:HIDE.away)*mins;const d=Math.floor(S._hideAcc);if(d>0){S.heat=Math.max(0,S.heat-d);S._hideAcc-=d}
+ if(S.heat<=0){S.hide=null;S._hideAcc=0;if(S.wanted){S.wanted=false;toast('Ondergedoken. Je staat niet meer op de gezochtlijst.','lvl')}else toast('Ondergedoken. Je hitte is weg.');
+  log('Onderduiken klaar: hitte 0','ok');SFX.win(3);if(page==='verblijf')render();return}
+ if(live&&$('#modal').hidden&&!window.__chase&&Math.random()<(atHome?HIDE.riskHome:HIDE.riskAway)*S.heat/100*mins){
+  const sec=45+Math.round(S.heat*1.5);S.hide=null;S._hideAcc=0;log(atHome?'Verraden tijdens het onderduiken':'Herkend ondanks je vermomming','bad');save();
+  arrest(sec,'Herkend!',atHome?'Een buurman heeft je verraden. De politie staat aan de deur.':'Een agent herkent je ondanks je vermomming.',{flee:atHome?4:2})}}
+function vbHideCard(){const on=!!S.hide,heat=S.heat;
+ return `<article class="va ${on?'on':''} ${heat>=100?'hot':''}" style="--c:#b8a1ff">
+  <div class="va-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="bg"/><circle id="ring_hide" cx="60" cy="60" r="52" class="fg" style="stroke-dasharray:${RING};stroke-dashoffset:${RING*(1-heat/100)}"/></svg>
+   <div class="va-c"><b id="ringT_hide">${heat}%</b><span>hitte</span></div></div>
+  <div class="va-b"><h3>Onderduiken</h3><p>${on?'Je bent ondergedoken. Gordijnen dicht, telefoon uit.':'Gordijnen dicht, telefoon uit. Of ga vermomd de straat op.'}</p>
+   <div class="va-eff"><div><span>Hier op Verblijf</span><b>−${HIDE.home}%/min</b><i></i><em>bijna nooit herkend</em></div>
+    <div><span>Vermomd elders</span><b>−${HIDE.away}%/min</b><i></i><em>kans op herkenning</em></div>${S.wanted?'<div><span>Op de gezochtlijst</span><b>ja</b><i>→</i><em>nee bij 0%</em></div>':''}</div>
+   <button class="btn ${on?'ghost':''}" onclick="${on?"hideStop('Je duikt weer op.')":'hideStart()'}" ${!on&&(inJail()||heat<=0)?'disabled':''}>${on?'Stoppen met onderduiken':inJail()?'Je zit vast':heat<=0?'Geen hitte':'Onderduiken'}</button>
+   <div class="va-note">${on?`Hier ben je over <b id="hideEta">${fmtClock(heat/HIDE.home*60000)}</b> klaar. Ga je weg, dan loopt het door, maar 4× zo traag en de politie kan je herkennen.`:'Je kunt gewoon verder spelen. Op deze pagina zakt je hitte 4× zo snel en word je bijna nooit herkend.'}</div></div></article>`}
 // Live bijwerken zonder hertekenen
 const RING=2*Math.PI*52;
-function vbLive(){const k=stay.kind;['rest','doc','hide'].forEach(x=>{const fg=document.getElementById('ring_'+x),tx=document.getElementById('ringT_'+x);if(!fg)return;
-  if(x===k){const p=stayP();fg.style.strokeDashoffset=RING*(1-p);tx.textContent=x==='hide'?fmtClock(stay.dur*(1-p)):Math.round(p*100)+'%'}
+function vbLive(){const k=stay.kind;
+ const hf=document.getElementById('ring_hide'),ht=document.getElementById('ringT_hide');if(hf){hf.style.strokeDashoffset=RING*(1-S.heat/100);ht.textContent=S.heat+'%'}
+ const he=document.getElementById('hideEta');if(he&&S.hide)he.textContent=fmtClock(S.heat/HIDE.home*60000);
+ ['rest','doc'].forEach(x=>{const fg=document.getElementById('ring_'+x),tx=document.getElementById('ringT_'+x);if(!fg)return;
+  if(x===k){const p=stayP();fg.style.strokeDashoffset=RING*(1-p);tx.textContent=Math.round(p*100)+'%'}
   else{const c=stayCd(x);if(c){fg.style.strokeDashoffset=RING*(c/STAY[x].cd());tx.textContent=fmtClock(c)}}});
  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
  set('vbE',Math.floor(S.energy));set('vbH',S.hp+'%');set('vbHeat',S.heat+'%');set('vbHd',S.hp+'%');set('vbHeat2',S.heat+'%');set('vbE2',Math.floor(S.energy)+'/'+EN_MAX);set('vbHs',S.hp+'%')}
 let _vbSig='';
-setInterval(()=>{if(page!=='verblijf'||stay.kind)return;const sig=['rest','doc'].map(k=>stayCd(k)>0).join()+inJail();
+setInterval(()=>{if(page!=='verblijf'||stay.kind)return;const sig=['rest','doc'].map(k=>stayCd(k)>0).join()+inJail()+!!S.hide+(S.heat>0);
  if(sig!==_vbSig&&_vbSig){_vbSig=sig;render();return}_vbSig=sig;vbLive()},1000);
 
 /* ---------- Tafereel (canvas) ---------- */
@@ -137,7 +160,7 @@ function vbFurn(x,W,H,id,t){const F=S.furn||{};
 function vbFx(x,W,H,id,t){const k=stay.kind,ramp=k?Math.min(1,(performance.now()-(stay.fx0||0))/1200):0;
  if(k==='rest'){x.fillStyle=`rgba(4,6,18,${.45*ramp})`;x.fillRect(0,0,W,H);const [bx,by]=VB_BED[id];
   x.font='900 20px "Big Shoulders Display",sans-serif';for(let i=0;i<3;i++){const ph=((t*.45)+i/3)%1;x.globalAlpha=Math.sin(ph*Math.PI)*ramp;x.fillStyle='#a9dcff';x.font=`900 ${14+ph*20}px "Big Shoulders Display",sans-serif`;x.fillText('z',W*bx+ph*46,H*by-20-ph*H*.3)}x.globalAlpha=1}
- if(k==='hide'){const c=1-Math.pow(1-ramp,3),cw=W*.5*c;[[0,1],[W-cw,-1]].forEach(([cx])=>{const g=x.createLinearGradient(cx,0,cx+cw,0);for(let f=0;f<=8;f++)g.addColorStop(f/8,f%2?'#1d1418':'#120c0f');x.fillStyle=g;x.fillRect(cx,0,cw,H)});
+ if(S.hide){const hr=Math.min(1,(now()-(S.hide.t0||0))/1200),c=1-Math.pow(1-hr,3),cw=W*.5*c;[[0,1],[W-cw,-1]].forEach(([cx])=>{const g=x.createLinearGradient(cx,0,cx+cw,0);for(let f=0;f<=8;f++)g.addColorStop(f/8,f%2?'#1d1418':'#120c0f');x.fillStyle=g;x.fillRect(cx,0,cw,H)});
   if(c>.97){vbGlow(x,W/2,H*.5,H*.5,'255,190,120',.12);x.fillStyle='rgba(255,200,130,.5)';x.fillRect(W/2-1,0,2,H)}}
  const v=x.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,W*.75);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.55)');x.fillStyle=v;x.fillRect(0,0,W,H)}
 function vbSize(cv){const dpr=Math.min(2,devicePixelRatio||1),W=cv.clientWidth,H=cv.clientHeight;if(cv.width!==Math.round(W*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return [x,W,H]}
@@ -150,15 +173,15 @@ function vbMount(){document.querySelectorAll('canvas[data-home]').forEach(cv=>{c
 
 /* ---------- Pagina ---------- */
 function vbAct(k){const h=home(),active=stay.kind===k,other=stay.kind&&!active,cd=stayCd(k),useful=stayUseful(k),T=stayTarget(k),p=active?stayP():0;
- const C={rest:['#a9dcff','Rusten','Slaap even bij.',h.rest+' s'],doc:['#3fe395','Dokter','De huisartsenpost om de hoek lapt je op.',DOC.dur+' s'],hide:['#b8a1ff','Onderduiken','Gordijnen dicht, telefoon uit.','5:00']}[k];
+ const C={rest:['#a9dcff','Rusten','Slaap even bij.',h.rest+' s'],doc:['#3fe395','Dokter','De huisartsenpost om de hoek lapt je op.',DOC.dur+' s']}[k];
  const off=active?RING*(1-p):cd?RING*(cd/STAY[k].cd()):RING;
- const center=active?(k==='hide'?fmtClock(stay.dur*(1-p)):Math.round(p*100)+'%'):cd?fmtClock(cd):C[3];
- const sub=active?(k==='hide'?'nog':'bezig'):cd?'wachten':k==='hide'?'duur':'duur';
+ const center=active?Math.round(p*100)+'%':cd?fmtClock(cd):C[3];
+ const sub=active?'bezig':cd?'wachten':'duur';
  const rows=k==='rest'?[['Energie',`<b id="vbE">${Math.floor(S.energy)}</b>`,Math.floor(T.e)],['Gezondheid',`<b id="vbH">${S.hp}%</b>`,T.h+'%'],...(h.heat?[['Hitte',S.heat+'%',T.heat+'%']]:[])]
   :k==='doc'?[['Gezondheid',`<b id="vbHd">${S.hp}%</b>`,T.h+'%']]:[['Hitte',`<b id="vbHeat2">${S.heat}%</b>`,'0%'],...(S.wanted?[['Op de gezochtlijst','ja','nee']]:[])];
  const label=active?'Stoppen':other?'Even geduld':inJail()?'Je zit vast':cd?'Weer over '+fmtClock(cd):!useful?(k==='rest'?'Al uitgerust':k==='doc'?'Kerngezond':'Geen hitte'):({rest:'Rusten',doc:'Naar de dokter',hide:'Onderduiken'})[k];
  const note=k==='rest'?`Elke ${fmtClock(STAY.rest.cd())} min. Ga je eerder weg, dan houd je wat je had en wacht je naar verhouding.`:k==='doc'?`+${DOC.hp}% gezondheid in ${DOC.dur} s, daarna ${DOC.cd/60} min wachten.`:`In 5 minuten naar 0% hitte.${S.wanted?' Volledig uitzitten haalt je van de gezochtlijst.':''}`;
- return `<article class="va ${active?'on':''} ${k==='hide'&&S.heat>=100?'hot':''}" style="--c:${C[0]}">
+ return `<article class="va ${active?'on':''}" style="--c:${C[0]}">
   <div class="va-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="bg"/><circle id="ring_${k}" cx="60" cy="60" r="52" class="fg" style="stroke-dasharray:${RING};stroke-dashoffset:${off}"/></svg>
    <div class="va-c"><b id="ringT_${k}">${center}</b><span>${sub}</span></div>${k==='doc'?'<svg class="ecg" viewBox="0 0 120 30"><path d="M0,15 L34,15 L40,15 L44,4 L50,26 L55,10 L59,15 L120,15"/></svg>':''}</div>
   <div class="va-b"><h3>${C[1]}</h3><p>${C[2]}</p>
@@ -166,7 +189,7 @@ function vbAct(k){const h=home(),active=stay.kind===k,other=stay.kind&&!active,c
    <button class="btn ${active?'ghost':''}" onclick="${active?'stayStop(true)':`stayStart('${k}')`}" ${(!active&&(other||inJail()||cd||!useful))?'disabled':''}>${label}</button>
    <div class="va-note">${note}</div></div></article>`}
 V.verblijf=()=>{const h=home(),hi=HOMES.indexOf(h),ri=rankIdx(S.xp);setTimeout(vbMount,0);
- const st=stay.kind?({rest:'Aan het rusten',doc:'Bij de dokter',hide:'Ondergedoken'})[stay.kind]:'';
+ const st=stay.kind?({rest:'Aan het rusten',doc:'Bij de dokter'})[stay.kind]+(S.hide?' · ondergedoken':''):S.hide?'Ondergedoken':'';
  const perks=x=>[`Rust ${x.rest} s, elke ${fmtClock(x.cd*1000)} min`,`+${x.hp}% gezondheid per rust`,x.en?`+${x.en} max. energie`:'Geen extra energie',x.heat?`-${x.heat}% hitte per rust`:null].filter(Boolean);
  return `<h1>Verblijf</h1><p class="sub">Je begint als straatrat onder de brug. Blijf op deze pagina zolang je rust, naar de dokter gaat of onderduikt: ga je weg, dan houd je alleen wat je tot dan toe had.</p>
  <section class="vb-hero ${stay.kind?'act-'+stay.kind:''}"><canvas id="vbScene" aria-label="Tafereel: ${h.n}"></canvas>
@@ -175,7 +198,7 @@ V.verblijf=()=>{const h=home(),hi=HOMES.indexOf(h),ri=rankIdx(S.xp);setTimeout(v
   ${st?`<div class="vb-live"><i></i>${st}</div>`:''}
   <div class="vb-stats"><div><span>Energie</span><b id="vbE2">${Math.floor(S.energy)}/${EN_MAX}</b></div><div><span>Gezondheid</span><b id="vbHs">${S.hp}%</b></div><div><span>Hitte</span><b id="vbHeat">${S.heat}%</b></div></div>
  </section>
- <div class="vb-acts">${['rest','doc','hide'].map(vbAct).join('')}</div>
+ <div class="vb-acts">${['rest','doc'].map(vbAct).join('')}${vbHideCard()}</div>
  <div class="tierhead"><h2>Inrichting</h2><span>${hi<2?'Vanaf de huurkamer kun je je woning inrichten':'Spullen verhuizen mee · elk geeft een blijvend voordeel'}</span></div>
  <div class="vb-furn">${FURN.map(f=>{const own=S.furn&&S.furn[f.id],lock=hi<f.h,afford=S.cash>=f.p;
   return `<article class="vf ${own?'own':''} ${lock?'locked':''}" style="--c:${f.col}"><div class="vf-ic">${furnIcon(f.id)}</div>

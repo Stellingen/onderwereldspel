@@ -6,9 +6,11 @@
 //   Alle vakjes in een cluster worden opgeteld en vermenigvuldigen de clusterwinst.
 // - Basisspel: vakjes worden na elke spin gewist. Free spins: vakjes blijven de hele bonus staan.
 // - 4 kluizen = 10 free spins, 5 kluizen = 12 free spins. Tijdens de bonus geven 2+ kluizen extra spins (2:+2, 3:+4, 4:+6, 5+:+8).
-// - 6+ kluizen = SUPERBONUS: 8 spins met veel meer lopers, en de Gouden baar: landt die, dan win je direct de max win.
-//   De superbonus kun je niet kopen, alleen inspinnen. Bonus kopen = 100x inzet en geeft de gewone bonus.
-// - VIP: in het basisspel landen kluizen iets vaker (ongeveer 10% vaker bonus). In de bonus zelf is alles gelijk.
+// - Precies 5 kluizen: de kluisdeur kraakt. Elk ander vakje heeft een kleine kans om alsnog een kluis te worden (zesde kluis).
+// - 6+ kluizen = SUPERBONUS: 8 spins met meer lopers en de Gouden baar: landt die, dan win je direct de max win.
+//   Geen gegarandeerde max win, wel veel meer kans erop. Niet te koop, alleen in te spinnen. Bonus kopen = 100x inzet (gewone bonus).
+// - Clusters in het basisspel betalen BASE_K x de tabel; in de (super)bonus de volle tabel.
+// - VIP: in het basisspel iets vaker kluizen en een iets grotere kans op de zesde kluis. In de bonus zelf is alles gelijk.
 // - Max win: 5000x de inzet, bij elke inzet.
 // Pure functies, zodat de RTP in Node te simuleren is (zie README).
 (function(root){
@@ -25,17 +27,19 @@ const SYMS=[
  {id:'goud',   n:'Goudstaaf',  w:82,  b:1.00}];
 let PAYK=1;
 const setPay=k=>{PAYK=k;SYMS.forEach(s=>{s.pay=CURVE.map(c=>+(s.b*c*PAYK).toFixed(2))})};setPay(3.5);
-const WILD={id:'sleutel',n:'Loper',w:22,fsW:51.5,superW:95};
-const SCATTER={id:'kluis',n:'Kluis',w:11.8,fsW:6,vip:1.015};
+const WILD={id:'sleutel',n:'Loper',w:22,fsW:51.5,superW:75};
+const SCATTER={id:'kluis',n:'Kluis',w:11.8,fsW:6,vip:1.016};
 // Gouden baar: alleen in de superbonus
-const BAR={id:'baar',n:'Gouden baar',w:.1};
+const BAR={id:'baar',n:'Gouden baar',w:.12};
+// Kans per vakje op een extra kluis als er precies 5 liggen (normaal / VIP), en de uitbetaling in het basisspel
+const RESPIN={p:.0081,vip:.0087};let BASE_K=.988;
 const FS_BY_SC={4:10,5:12};
 const SUPER_SC=6,SUPER_SPINS=8;
 const FS_START=10, FS_RETRIGGER=2, BUY_COST=100;
 // Extra spins tijdens de bonus: hoe meer kluizen, hoe meer spins
 const FS_RETRIG={2:2,3:4,4:6,5:8};
 const SCATTER_PAY={};
-const payFor=(s,n)=>SYMS[s].pay[Math.min(n,15)-MIN_CLUSTER];
+const payFor=(s,n,base)=>SYMS[s].pay[Math.min(n,15)-MIN_CLUSTER]*(base?BASE_K:1);
 
 // mode: 'base' (basisspel), 'fs' (bonus), 'super' (superbonus). vip telt alleen in het basisspel.
 const SYM_TOT=()=>SYMS.reduce((a,x)=>a+x.w,0);
@@ -60,7 +64,7 @@ function fill(rng,mode,forceSc,vip){
   return g;
 }
 // Zoekt alle clusters. Een loper kan in clusters van verschillende symbolen meetellen.
-function clusters(g,spots){
+function clusters(g,spots,base){
   const out=[];
   for(let s=0;s<SYMS.length;s++){
     const seen=new Set();
@@ -72,7 +76,7 @@ function clusters(g,spots){
           const v=g[nx][ny];if(v.s===s||v.w){local.add(k);stack.push([nx,ny])}}}
       if(cells.length>=MIN_CLUSTER&&real>0){
         let mult=0;cells.forEach(([x,y])=>{if(spots[x][y]>=2)mult+=spots[x][y]});
-        const base=payFor(s,cells.length);out.push({sym:s,size:cells.length,cells,base,mult,pay:base*(mult||1)});
+        const bp=payFor(s,cells.length,base);out.push({sym:s,size:cells.length,cells,base:bp,mult,pay:bp*(mult||1)});
       }
     }
   }
@@ -93,7 +97,7 @@ function spin(rng,opts){
   let g=fill(rng,mode,opts.forceSc||0,vip);
   const steps=[];let win=0;
   for(let guard=0;guard<80;guard++){
-    const wins=clusters(g,spots);
+    const wins=clusters(g,spots,!fs);
     const step={grid:cloneG(g),wins,spots:cloneS(spots)};steps.push(step);
     if(!wins.length)break;
     win+=wins.reduce((a,w)=>a+w.pay,0);
@@ -103,9 +107,14 @@ function spin(rng,opts){
     g=tumble(g,hit,rng,mode,vip);
   }
   const last=steps[steps.length-1].grid;let sc=0,bar=false;last.forEach(col=>col.forEach(x=>{if(x.sc)sc++;if(x.bar)bar=true}));
+  // Kluisdeur kraakt: bij precies 5 kluizen in het basisspel kan elk ander vakje nog een kluis worden
+  let respin=null;
+  if(!fs&&sc===5){const P=vip?RESPIN.vip:RESPIN.p,cells=[],grid=cloneG(last);
+    for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)if(!grid[c][r].sc&&rng()<P){grid[c][r]={sc:1,fall:0,fresh:1};cells.push([c,r])}
+    respin={cells,grid};sc+=cells.length}
   const extra=fs&&sc>=2?FS_RETRIG[Math.min(5,sc)]:0;
   const trig=!fs&&sc>=4?(sc>=SUPER_SC?'super':'fs'):null;
-  return {steps,base:win,win,scatters:sc,scPay:0,trigger:!!trig,kind:trig,retrigger:extra>0,extra,bar,spots:cloneS(spots)};
+  return {steps,base:win,win,scatters:sc,scPay:0,trigger:!!trig,kind:trig,retrigger:extra>0,extra,bar,respin,spots:cloneS(spots)};
 }
 // Bonusronde. kind 'super' = superbonus met meer lopers en de Gouden baar (= direct max win).
 function freeSpins(rng,start,kind){
@@ -126,7 +135,7 @@ function playRound(rng,opts){
   else if(s.kind==='fs'){n=FS_BY_SC[Math.min(5,s.scatters)];fsr=freeSpins(rng,n,'fs');tot+=fsr.total}
   return {base:s,fs:fsr,fsStart:n,kind:s.kind,total:Math.min(MAX_WIN,tot),cost:1};
 }
-const tune=o=>{if(o.payk!=null)setPay(o.payk);if(o.wild!=null)WILD.w=o.wild;if(o.wildFs!=null)WILD.fsW=o.wildFs;if(o.wildSuper!=null)WILD.superW=o.wildSuper;if(o.sc!=null)SCATTER.w=o.sc;if(o.scFs!=null)SCATTER.fsW=o.scFs;if(o.vip!=null)SCATTER.vip=o.vip;if(o.bar!=null)BAR.w=o.bar};
-const API={tune,FS_RETRIG,COLS,ROWS,MIN_CLUSTER,MAX_SPOT,SYMS,WILD,SCATTER,BAR,SUPER_SC,SUPER_SPINS,SCATTER_PAY,FS_BY_SC,FS_START,FS_RETRIGGER,BUY_COST,MAX_WIN,CURVE,spin,freeSpins,playRound,clusters,newSpots};
+const tune=o=>{if(o.payk!=null)setPay(o.payk);if(o.wild!=null)WILD.w=o.wild;if(o.wildFs!=null)WILD.fsW=o.wildFs;if(o.wildSuper!=null)WILD.superW=o.wildSuper;if(o.sc!=null)SCATTER.w=o.sc;if(o.scFs!=null)SCATTER.fsW=o.scFs;if(o.vip!=null)SCATTER.vip=o.vip;if(o.bar!=null)BAR.w=o.bar;if(o.baseK!=null)BASE_K=o.baseK;if(o.rp!=null)RESPIN.p=o.rp;if(o.rpVip!=null)RESPIN.vip=o.rpVip};
+const API={tune,RESPIN,get BASE_K(){return BASE_K},FS_RETRIG,COLS,ROWS,MIN_CLUSTER,MAX_SPOT,SYMS,WILD,SCATTER,BAR,SUPER_SC,SUPER_SPINS,SCATTER_PAY,FS_BY_SC,FS_START,FS_RETRIGGER,BUY_COST,MAX_WIN,CURVE,spin,freeSpins,playRound,clusters,newSpots};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.SLOT=API;
 })(typeof window!=='undefined'?window:globalThis);

@@ -1,7 +1,7 @@
 // Casino: Dubbel of niks — een echte munt die opgegooid wordt. Precies 50% kans (crypto-random), geen huisvoordeel.
 // Win je, dan kies je: je pot pakken of nog een keer gooien voor het dubbele. Maximaal 10 keer achter elkaar.
 // De lopende pot (S.coin) staat in je opslag: verversen of weggaan verandert niets aan de uitkomst.
-const CF_BETS=[10,25,50,100,250,500,1000,2500,5000,10000],CF_MAX=10;
+const CF_BETS=[10,25,50,100,250,500,1000,2500,5000,10000,25000,50000],CF_MAX=10;
 window.cf=window.cf||{bi:3,side:'kop',flipping:false,rot:0,hist:[],msg:null};
 const cfBet=()=>CF_BETS[cf.bi];
 function cfFaceSvg(id){if(id==='kop')return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="40" fill="none" stroke="#7a5506" stroke-width="1.5" stroke-dasharray="2 3"/>

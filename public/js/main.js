@@ -10,6 +10,7 @@ function renderTicker(){if(!S.news.length)news();const t=S.news.map(s=>`<span>â—
 function tick(){
   const t=now(),dt=(t-S.last)/60000;S.last=t;const mins=Math.min(dt,720);
   if(mins>0){S.cash+=income()*mins;S._enAcc=(S._enAcc||0)+mins*60/EN_REGEN_S*(1+furnFx('enRegen'));if(S._enAcc>=1){S.energy=Math.min(EN_MAX,S.energy+Math.floor(S._enAcc));S._enAcc%=1}const hd=mins*2*(1+furnFx('heat'));S.heat=Math.max(0,S.heat-Math.floor(hd>=1?hd:Math.random()<hd?1:0));
+    if(typeof hideTick==='function')hideTick(mins,mins<.2);
     if(Math.random()<mins*6*(1+furnFx('hpRegen')))S.hp=Math.min(100,S.hp+1);
     S.bank*=Math.pow(1.01,mins/10);
     S.npcs.forEach((n,i)=>{n.xp+=mins*(4+i*3)*(0.5+Math.random());n.cash+=mins*(30+i*60)*(Math.random()*2-0.3)})}
@@ -22,7 +23,7 @@ window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(PAGE
 let wasJail=inJail();
 setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderRail();
   if(Math.random()<0.05)news();
-  if(S.wanted&&!inJail()&&$('#modal').hidden&&Math.random()<0.004){policeRaid();return}
+  if(S.wanted&&!S.hide&&!inJail()&&$('#modal').hidden&&Math.random()<0.004){policeRaid();return}
   if(wasJail&&!inJail()){toast('Je bent vrijgelaten');wasJail=false;render()}else if(inJail())wasJail=true;
   const focusIn=document.activeElement&&document.activeElement.tagName==='INPUT';
   if(!focusIn&&!spinning&&['crimes','jail','dash','skills'].includes(page)&&!window.__chase)$('#view').innerHTML=crumbHtml()+V[page]();

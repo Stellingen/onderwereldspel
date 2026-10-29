@@ -1,6 +1,6 @@
 // Casino: Kluiskraker v3 — cluster-slot met vermenigvuldigvakjes, geluid en vloeiende tumbles.
 // Engine: js/slot.js · iconen: js/icons.js · geluid: js/sfx.js
-const KK_BETS=[10,20,30,40,50,100,150,200,250,300,400,500,750,1000,1500,2000,3000,5000,7500,10000];
+const KK_BETS=[10,20,30,40,50,100,150,200,250,300,400,500,750,1000,1500,2000,3000,5000,7500,10000,15000,20000,25000,30000,40000,50000];
 window.kk={bi:4,busy:false,turbo:false,confirm:false,grid:null,spots:null,msg:'Kies je inzet en draai',stepWin:0,fs:null,lastWin:0,shown:0};
 const kkBet=()=>KK_BETS[kk.bi];
 const kkFast=()=>kk.turbo||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -12,7 +12,7 @@ function kkCell(x,c,r,anim){
   if(anim==='all'){f=SLOT.ROWS;delay=c*T.col+(SLOT.ROWS-1-r)*8}
   else if(anim==='tumble'&&x.fall){f=x.fall;delay=c*Math.round(T.col/2)}
   const st=f?`style="--f:${f};--d:${delay}ms;--t:${T.base+f*T.per}ms"`:'';
-  const cls='kk-cell'+(f?' fall':'')+(x.sc?' sc':'')+(x.w?' wild':'')+(x.bar?' gbar':'');
+  const cls='kk-cell'+(f?' fall':'')+(x.sc?' sc':'')+(x.w?' wild':'')+(x.bar?' gbar':'')+(x.fresh?' fresh':'');
   const icon=x.bar?kkSvg('baar'):x.sc?kkSvg('kluis'):x.w?kkSvg('sleutel'):kkSvg(SLOT.SYMS[x.s].id);
   return `<div class="${cls}" data-k="${c*SLOT.ROWS+r}" ${st}>${icon}${x.w?'<span class="wl">Loper</span>':''}</div>`;
 }
@@ -33,7 +33,7 @@ function kkView(){
  <aside class="kk-info" id="kkInfo">${kkInfo()}</aside>
  <div class="kk-stage" id="kkStage">
   <div class="kk-head"><div class="kk-title">Kluis<span>kraker</span></div>
-   <div class="kk-sub">${fs?(fs.kind==='super'?`<span class="vip gold">Superbonus</span> Veel meer lopers · Gouden baar = max win`:`<span class="vip">Bonus</span> Vakjes blijven staan`):`${isVip()?'<span class="vip gold">VIP</span> bonus iets vaker · ':''}RTP ±96% · bonus kopen 95% · max ${SLOT.MAX_WIN.toLocaleString('nl-NL')}×`}
+   <div class="kk-sub">${fs?(fs.kind==='super'?`<span class="vip gold">Superbonus</span> Veel meer lopers · Gouden baar = max win`:`<span class="vip">Bonus</span> Vakjes blijven staan`):`${isVip()?'<span class="vip gold">VIP</span> bonus en zesde kluis iets vaker · ':''}RTP ±96% · bonus kopen ±95% · max ${SLOT.MAX_WIN.toLocaleString('nl-NL')}×`}
     <button class="kk-snd" onclick="SFX.toggle();render()" aria-label="Geluid aan of uit">${SFX.on?'🔊':'🔇'}</button></div></div>
   <div class="kk-board" id="kkBoard">
    <div class="kk-layer kk-spots" id="kkSpots">${kkSpotsHtml(kk.spots)}</div>
@@ -48,12 +48,13 @@ function kkView(){
   <div class="card kk-ctl-side">${kkControls()}</div>
   <div class="card kk-pay"><div class="label" style="margin-bottom:6px">Cluster bij ${fmt(b)} inzet</div>
    <div class="kk-ptab"><span></span>${sizes.map(n=>`<span class="label">${n}${n===15?'+':''}</span>`).join('')}
-   ${SLOT.SYMS.slice().reverse().map(s=>`<span>${kkSvg(s.id)}</span>${sizes.map(n=>`<span>${fmt(s.pay[Math.min(n,15)-SLOT.MIN_CLUSTER]*b)}</span>`).join('')}`).join('')}</div>
+   ${SLOT.SYMS.slice().reverse().map(s=>`<span>${kkSvg(s.id)}</span>${sizes.map(n=>`<span>${fmt(s.pay[Math.min(n,15)-SLOT.MIN_CLUSTER]*SLOT.BASE_K*b)}</span>`).join('')}`).join('')}</div>
    <div class="kk-rules">
     <div><span>${kkSvg('sleutel')}</span><p><b>Loper</b> telt mee voor elk symbool en verbindt groepjes. In de bonus valt hij vaker.</p></div>
     <div><span class="kk-mini mk"></span><p><b>Vakje</b> raakt gemarkeerd waar een winst verdwijnt. Opnieuw raak: x2, dan x4, x8 … tot x${SLOT.MAX_SPOT}.</p></div>
-    <div><span>${kkSvg('kluis')}</span><p><b>4 kluizen</b> = ${SLOT.FS_BY_SC[4]} free spins, <b>5 kluizen</b> = ${SLOT.FS_BY_SC[5]}. In de bonus blijven vakjes staan; 2 kluizen = +${SLOT.FS_RETRIG[2]}, 3 = +${SLOT.FS_RETRIG[3]}, 4 = +${SLOT.FS_RETRIG[4]}, 5+ = +${SLOT.FS_RETRIG[5]} spins.</p></div>
-    <div><span>${kkSvg('baar')}</span><p><b>6+ kluizen = superbonus</b>: ${SLOT.SUPER_SPINS} spins met bijna twee keer zoveel lopers. Landt de <b>Gouden baar</b>, dan win je direct de max win van ${SLOT.MAX_WIN.toLocaleString('nl-NL')}× je inzet. Niet te koop, alleen in te spinnen.</p></div>
+    <div><span>${kkSvg('kluis')}</span><p><b>4 kluizen</b> = ${SLOT.FS_BY_SC[4]} free spins, <b>5 kluizen</b> = ${SLOT.FS_BY_SC[5]}, en dan kraakt de kluisdeur: elk ander vakje kan alsnog de zesde kluis worden. In de bonus blijven vakjes staan; 2 kluizen = +${SLOT.FS_RETRIG[2]}, 3 = +${SLOT.FS_RETRIG[3]}, 4 = +${SLOT.FS_RETRIG[4]}, 5+ = +${SLOT.FS_RETRIG[5]} spins.</p></div>
+    <div><span>${kkSvg('baar')}</span><p><b>6+ kluizen = superbonus</b>: ${SLOT.SUPER_SPINS} spins met meer lopers en de <b>Gouden baar</b>. Landt die, dan win je direct de max win van ${SLOT.MAX_WIN.toLocaleString('nl-NL')}× je inzet. Geen garantie, wel veel meer kans op de max win (ongeveer 1 op 20 superbonussen). Niet te koop, alleen in te spinnen.</p></div>
+    <div><span class="kk-mini key">␣</span><p><b>Spatiebalk</b> = draaien. Ingedrukt houden blijft draaien. De bedragen hierboven gelden voor het basisspel; in de bonus betalen clusters ${(Math.round((1/SLOT.BASE_K-1)*1000)/10).toLocaleString('nl-NL')}% meer.</p></div>
    </div>
   </div>
  </div></div>`;
@@ -70,6 +71,20 @@ function kkControls(){const b=kkBet(),buy=b*SLOT.BUY_COST;return `<div class="la
     <div class="flex"><button class="btn sm" onclick="act.kkSpin(true)" ${S.cash<buy?'disabled':''}>${S.cash<buy?'Te weinig geld':'Kopen'}</button><button class="btn ghost sm" onclick="kk.confirm=false;render()">Annuleren</button></div></div>`:''}`}
 // Snelheid mag ook tijdens een spin of bonus om: de volgende val/tumble gebruikt meteen het nieuwe tempo.
 function kkTurbo(){kk.turbo=!kk.turbo;SFX.click();document.querySelectorAll('.kk-turbo').forEach(b=>{b.textContent=kk.turbo?'Snel: aan':'Snel: uit';b.classList.toggle('on',kk.turbo);b.setAttribute('aria-pressed',kk.turbo)})}
+// Precies 5 kluizen: kluisdeur kraakt, elk ander vakje kan nog de zesde kluis worden
+async function kkCrack(rs){const board=kkEl('kkBoard');kk.inBonus=true;
+ SFX.bonus();await kkBanner('5 kluizen','De kluisdeur kraakt… komt er een zesde kluis bij?',1500,'fsin');
+ if(board)board.classList.add('crack');await kkWait(kkFast()?400:1000);
+ kkShow(rs.grid,'none');const cells=kkEl('kkCells');
+ if(cells)cells.querySelectorAll('.kk-cell').forEach(el=>{if(!el.classList.contains('sc'))el.classList.add('dim')});
+ rs.cells.forEach((cr,i)=>setTimeout(()=>SFX.scatter(5+i),i*200));
+ await kkWait(kkFast()?500:1100);if(board)board.classList.remove('crack');
+ if(!rs.cells.length)await kkBanner('Geen zesde kluis','Je krijgt '+SLOT.FS_BY_SC[5]+' free spins',1300,'');}
+// Spatiebalk = draaien (ingedrukt houden = doordraaien); tijdens een pauze speelt spatie de bonus verder af
+document.addEventListener('keydown',e=>{if(e.code!=='Space'||page!=='casino'||casinoTab!=='kluis'||window.__chase)return;
+ const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;if(!$('#modal').hidden)return;
+ e.preventDefault();if(document.activeElement&&document.activeElement.tagName==='BUTTON')document.activeElement.blur();
+ if(kk.paused){kkResume();return}if(kk.busy||kk.confirm)return;act.kkSpin(false)});
 function kkStepBet(d){if(kk.busy)return;kk.bi=Math.max(0,Math.min(KK_BETS.length-1,kk.bi+d));kk.confirm=false;SFX.chip();render()}
 const kkOn=()=>page==='casino'&&casinoTab==='kluis'&&!document.hidden&&!!document.getElementById('kkCells');
 // Tijdens een bonus pauzeert de animatie als je wegklikt; terug op de slot klik je 'Bonus verder afspelen'.
@@ -127,7 +142,7 @@ async function kkAnimateSpin(sp,bet,inFs,runTotal){
 }
 async function kkPlay(round,bet,isBuy){
  kk.stepWin=0;kkText('kkStep',fmt(0));kkScSeen=0;
- if(!isBuy){kkText('kkMsg','Draait…');kkShowSpots(SLOT.newSpots());await kkAnimateSpin(round.base,bet,false,null)}
+ if(!isBuy){kkText('kkMsg','Draait…');kkShowSpots(SLOT.newSpots());await kkAnimateSpin(round.base,bet,false,null);if(round.base.respin)await kkCrack(round.base.respin)}
  else{kkText('kkMsg','Bonus gekocht');kkShowSpots(SLOT.newSpots());kkShow(round.base.steps[0].grid,'all');kkLandSounds(round.base.steps[0].grid,'all');
    await kkWait(kkFallTime(round.base.steps[0].grid,'all')+300);for(let k=0;k<4;k++)setTimeout(()=>SFX.scatter(k),k*160);await kkWait(700)}
  const baseWin=round.base.win*bet;

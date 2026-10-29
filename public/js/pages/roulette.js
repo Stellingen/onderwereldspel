@@ -1,7 +1,7 @@
 // Casino: Europese roulette (één nul, huisvoordeel 2,7%). Groot wiel met bal bovenaan, echte inzettafel eronder.
 // Elke inzet is een set getallen: valt de bal op een van die getallen, dan krijg je inzet × 36 / (aantal getallen) terug.
 // Zo betalen nummer 35:1, split 17:1, rij 11:1, hoek 8:1, zes 5:1, kolom en dozijn 2:1 en de kansen 1:1.
-const RL_CHIPS=[10,25,50,100,500,1000,5000,10000],RL_SPOT_MAX=25000;
+const RL_CHIPS=[10,25,100,500,1000,5000,10000,25000],RL_SPOT_MAX=50000;
 window.rl=Object.assign({bets:{},angle:0,ball:0,ballR:1,spinning:false,hist:[],chip:100,res:null,net:0,last:null,undo:[],erase:false,lines:null},window.rl||{});
 if(!rl.undo)rl.undo=[];
 const rlN=(j,r)=>3*j+(3-r); // horizontaal: kolom j (0-11), rij r (0 = boven: 3,6,9 … ; 2 = onder: 1,4,7 …)

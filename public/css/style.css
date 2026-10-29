@@ -964,3 +964,12 @@ button.rcode:hover{background:rgba(255,122,26,.15)}
 .rl-top>*{min-width:0}.rl-wheel{min-width:0}
 @container (max-width:720px){.rl-wheel .wheelbox{width:100%}}
 .kk-turbo.on{border-color:var(--acc);color:var(--acc)}
+/* Kluiskraker: kluisdeur kraakt (5 kluizen) */
+.kk-board.crack{animation:crack .12s linear infinite}
+@keyframes crack{25%{transform:translate(-2px,1px)}50%{transform:translate(2px,-1px)}75%{transform:translate(-1px,-2px)}}
+.kk-cell.fresh{animation:vaultpop .7s cubic-bezier(.2,1.6,.4,1) both}.kk-cell.fresh svg{filter:drop-shadow(0 0 18px #f2c230)}
+@keyframes vaultpop{0%{transform:scale(0) rotate(-40deg);opacity:0}100%{transform:none;opacity:1}}
+.kk-mini.key{display:grid;place-items:center;font-family:var(--f-mono);font-size:14px;color:var(--mute);border:1px solid var(--line2);width:34px;height:22px}
+.c25000{--cc:#e6e1d6}.rl-chips .pchip.c25000,.rchip.c25000{color:#1a1206}
+.cf-quick{grid-template-columns:repeat(6,1fr)}
+.status.hide{color:var(--violet);background:rgba(184,161,255,.08)}

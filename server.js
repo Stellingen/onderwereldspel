@@ -74,14 +74,15 @@ app.get('/api/me', auth, async (req, res) => {
       const [rows] = await db.q('SELECT created_at FROM users WHERE id=?', [req.user.id]);
       if (rows.length) out.since = rows[0].created_at;
       const [red] = await db.q('SELECT code FROM redemptions WHERE user_id=?', [req.user.id]);
-      out.redeemed = red.map(r => r.code);
+      // alleen codes die nog bestaan (verwijderde codes zoals broke en tester verdwijnen uit 'gebruikte codes')
+      out.redeemed = red.map(r => r.code).filter(c => CODES[c] || RANK_CODES[c]);
     } catch (e) { console.error(e); }
   }
   res.json(out);
 });
 
 // Inwisselcodes: elke code één keer per account. Bedrag in euro (spelgeld).
-const CODES = { lotto: 1500, welkom: 500, casino: 5000, vip: 20000, spinnetje: 25000, broke: 250000 };
+const CODES = { lotto: 1500, welkom: 500, casino: 5000, vip: 20000, spinnetje: 25000, broke2: 500000 };
 // Rangcodes: de naam van een rang, alleen in te wisselen als je die rang hebt bereikt (xp uit game_state).
 const RANK_CODES = {
   straatschoffie: [150, 150], loopjongen: [500, 400], dief: [1200, 1000], boef: [2500, 2500],

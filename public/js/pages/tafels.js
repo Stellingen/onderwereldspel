@@ -1,6 +1,6 @@
 // Casino-tafels: Blackjack (met Perfect Pairs en 21+3) en Three Card Poker (met Pair Plus en 6-Card Bonus).
 // Echte regels en standaard uitbetalingstabellen, dus het huis wint op termijn. Side bets: €10 tot €50.
-const TB={MAIN_MIN:50,MAIN_MAX:10000,SIDE_MIN:10,SIDE_MAX:50,CHIPS:[10,25,50,100,500,1000,5000]};
+const TB={MAIN_MIN:50,MAIN_MAX:50000,SIDE_MIN:10,SIDE_MAX:50,CHIPS:[10,25,50,100,500,1000,5000,10000]};
 const RNK=['','','2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const SUITS=['♠','♥','♦','♣'];const isRed=s=>s==='♥'||s==='♦';
 function newShoe(decks){const a=[];for(let d=0;d<decks;d++)for(const s of SUITS)for(let r=2;r<=14;r++)a.push({r,s});
@@ -137,7 +137,7 @@ function tpTable(){
      ${pv?`<div class="hl"><b>${pv.name}</b>${o.mainOut?`<em>${o.mainOut}</em>`:''}</div>`:''}</div></div>
     <div class="spots">
      ${spot('tp','pp','Pair Plus',t.bets.pp,{side:1,dis:!bet,sub:'tot 40 : 1',out:o.ppOut||'',res:o.pp})}
-     ${spot('tp','ante','Ante',t.bets.ante,{dis:!bet,sub:`€${TB.MAIN_MIN}–€5.000`,out:o.anteOut||'',res:o.main})}
+     ${spot('tp','ante','Ante',t.bets.ante,{dis:!bet,sub:`€${TB.MAIN_MIN}–€${TB.MAIN_MAX.toLocaleString('nl-NL')}`,out:o.anteOut||'',res:o.main})}
      <div class="spot play ${t.play?'has':''}"><span class="spot-l">Play</span>${chipStack(t.play||0)}<span class="spot-s">= ante</span></div>
      ${spot('tp','six','6-Card Bonus',t.bets.six,{side:1,dis:!bet,sub:'tot 1000 : 1',out:o.sixOut||'',res:o.six})}
     </div>
@@ -193,7 +193,7 @@ function tpSettle(folded){
 /* ======================= Acties ======================= */
 Object.assign(act,{
  tbBet(game,key){const T=game==='bj'?bt:tp;if(T.phase!=='bet'&&T.phase!=='done')return;if(T.phase==='done'){game==='bj'?act.btNew():act.tpNew()}
-  const side=key!=='main'&&key!=='ante',cap=side?TB.SIDE_MAX:(game==='tp'?5000:TB.MAIN_MAX);
+  const side=key!=='main'&&key!=='ante',cap=side?TB.SIDE_MAX:TB.MAIN_MAX;
   const cur=T.bets[key],tot=Object.values(T.bets).reduce((a,b)=>a+b,0);
   let add=Math.min(tbChip,cap-cur);if(add<=0){toast(side?'Side bets gaan tot €'+TB.SIDE_MAX:'Maximale inzet bereikt','bad');return}
   if(side&&cur+add<TB.SIDE_MIN)add=TB.SIDE_MIN-cur;
