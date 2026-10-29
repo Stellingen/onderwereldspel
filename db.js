@@ -6,7 +6,7 @@ const state = { ready: false };
 
 // Bouwt de verbindingsconfig uit Railway's variabelen (of losse DB_*-variabelen).
 function config() {
-  const url = process.env.MYSQL_URL || process.env.DATABASE_URL || process.env.MYSQL_PUBLIC_URL;
+  const url = process.env.MYSQL_URL || process.env.DATABASE_URL || process.env.MYSQL_PRIVATE_URL || process.env.MYSQL_PUBLIC_URL;
   if (url) return url;
   const host = process.env.MYSQLHOST || process.env.DB_HOST;
   if (host) {
@@ -23,8 +23,11 @@ function config() {
 
 async function init() {
   const c = config();
+  // Veilige diagnose: alleen namen, lengtes en de host, nooit wachtwoorden.
   const seen = Object.keys(process.env).filter(k => /MYSQL|DATABASE/.test(k));
-  console.log('Database-variabelen aanwezig:', seen.length ? seen.join(', ') : 'geen');
+  console.log('Database-variabelen:', seen.length ? seen.map(k => `${k}(${(process.env[k] || '').length} tekens)`).join(', ') : 'geen');
+  if (process.env.MYSQLHOST) console.log('MySQL-host:', process.env.MYSQLHOST);
+  if (seen.length && seen.every(k => !process.env[k])) console.warn('⚠  Alle database-variabelen zijn leeg. Controleer in Railway of de verwijzing ${{ MySQL.… }} naar de juiste servicenaam wijst.');
   if (!c) {
     console.warn('⚠  Geen MySQL-config gevonden. Zet in Railway bij de app-service de variabele MYSQL_URL = ${{ MySQL.MYSQL_URL }}. De site draait wel, maar inloggen werkt pas met database.');
     return;
