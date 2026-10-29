@@ -9,8 +9,8 @@ function news(){const n=S.npcs[rnd(0,S.npcs.length-1)].n;const T=[
 function renderTicker(){if(!S.news.length)news();const t=S.news.map(s=>`<span>◆ ${s}</span>`).join('');$('#ticker').innerHTML=`<b>LIVE</b><div class="tk"><div class="tkin">${t}${t}</div></div>`}
 function tick(){
   const t=now(),dt=(t-S.last)/60000;S.last=t;const mins=Math.min(dt,720);
-  if(mins>0){S.cash+=income()*mins;S._enAcc=(S._enAcc||0)+mins*60/EN_REGEN_S;if(S._enAcc>=1){S.energy=Math.min(EN_MAX,S.energy+Math.floor(S._enAcc));S._enAcc%=1}S.heat=Math.max(0,S.heat-Math.floor(mins*2>=1?mins*2:Math.random()<mins*2?1:0));
-    if(Math.random()<mins*6)S.hp=Math.min(100,S.hp+1);
+  if(mins>0){S.cash+=income()*mins;S._enAcc=(S._enAcc||0)+mins*60/EN_REGEN_S*(1+furnFx('enRegen'));if(S._enAcc>=1){S.energy=Math.min(EN_MAX,S.energy+Math.floor(S._enAcc));S._enAcc%=1}const hd=mins*2*(1+furnFx('heat'));S.heat=Math.max(0,S.heat-Math.floor(hd>=1?hd:Math.random()<hd?1:0));
+    if(Math.random()<mins*6*(1+furnFx('hpRegen')))S.hp=Math.min(100,S.hp+1);
     S.bank*=Math.pow(1.01,mins/10);
     S.npcs.forEach((n,i)=>{n.xp+=mins*(4+i*3)*(0.5+Math.random());n.cash+=mins*(30+i*60)*(Math.random()*2-0.3)})}
   save();
@@ -25,7 +25,7 @@ setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderR
   if(S.wanted&&!inJail()&&$('#modal').hidden&&Math.random()<0.004){policeRaid();return}
   if(wasJail&&!inJail()){toast('Je bent vrijgelaten');wasJail=false;render()}else if(inJail())wasJail=true;
   const focusIn=document.activeElement&&document.activeElement.tagName==='INPUT';
-  if(!focusIn&&!spinning&&['crimes','cars','jail','dash','skills'].includes(page)&&!window.__chase)$('#view').innerHTML=crumbHtml()+V[page]();
+  if(!focusIn&&!spinning&&['crimes','jail','dash','skills'].includes(page)&&!window.__chase)$('#view').innerHTML=crumbHtml()+V[page]();
 },1000);
 render();renderTicker();
 if(!inJail())setTimeout(resumePending,300);else{S.pendingArrest=null;S.pendingHeist=null}

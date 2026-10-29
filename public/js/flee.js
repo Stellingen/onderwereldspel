@@ -4,7 +4,7 @@
 function fleeParams(level){
   const L=FLEE_LEVELS[level]||FLEE_LEVELS[2],k=(S.skills&&S.skills.conditie)||0,sp=(S.skills&&S.skills.speed)||0;
   return {level,label:L.label,hits:L.hits,miss:L.miss,time:L.time,shrink:L.shrink||1,accel:L.accel||1,drift:!!L.drift,
-    zone:Math.min(.42,L.zone*(1+k*.04)),speed:L.speed*(1-sp*.03)};
+    zone:Math.min(.42,L.zone*(1+k*SK.conditie.zone+furnFx('zone'))),speed:L.speed*(1-sp*SK.speed.mark)};
 }
 function fleeGame(level){
   return new Promise(resolve=>{

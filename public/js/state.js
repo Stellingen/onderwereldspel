@@ -1,25 +1,30 @@
 // Spelerstatus, opslaan/laden, spelregels, arrestaties, skills, meldingen
 let S;
-function fresh(){return{name:'Jij',cash:250,bank:0,xp:0,hp:100,heat:0,jailUntil:0,cred:0,energy:100,family:null,skills:{steal:0,cars:0,charisma:0,speed:0,conditie:0},train:{},buffs:{},redeemed:[],home:'brug',news:[],wanted:false,lastSentence:30,cd:{},cars:[],biz:{},gear:{},stats:{crimes:0,fails:0,cars:0,won:0,lost:0},log:[],last:now(),
+function fresh(){return{name:'Jij',cash:250,bank:0,xp:0,hp:100,heat:0,jailUntil:0,cred:0,energy:100,family:null,skills:{steal:0,cars:0,charisma:0,speed:0,conditie:0},train:{},buffs:{},redeemed:[],home:'brug',furn:{},carDex:{},trainV:2,news:[],wanted:false,lastSentence:30,cd:{},cars:[],biz:{},gear:{},stats:{crimes:0,fails:0,cars:0,won:0,lost:0},log:[],last:now(),
   npcs:NPC_NAMES.map((n,i)=>({n,xp:Math.floor(200*Math.pow(1.55,i))+rnd(0,300),cash:rnd(1000,50000)*(i+1)}))}}
 // Opslag: met account in de database (via /api/state), anders alleen in de browser.
 const SAVE_KEY='onderwereld_v1'+(window.__USER__?'_'+window.__USER__.toLowerCase():'');
 function load(){
-  let d=window.__SERVER_STATE__||null;
-  if(!d){try{d=JSON.parse(localStorage.getItem(SAVE_KEY))||JSON.parse(localStorage.getItem('onderwereld_v1'))}catch(e){}}
+  const sv=window.__SERVER_STATE__||null;let lc=null;try{lc=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){}
+  // de nieuwste opslag wint: als de server een update kreeg terwijl jij speelde, staat je laatste voortgang nog in de browser
+  let d=sv;if(lc&&lc.npcs&&(!sv||(lc.savedAt||0)>(sv.savedAt||0))){d=lc;if(sv)window.__PUSH_LOCAL__=true}
+  if(!d){try{d=JSON.parse(localStorage.getItem('onderwereld_v1'))}catch(e){}}
   if(d&&d.npcs){const f=fresh();d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);d.skills=Object.assign(fresh().skills,d.skills);d.train=d.train||{};d.buffs=d.buffs||{};d.redeemed=d.redeemed||[];d.home=d.home||'brug';if(d.pendingArrest===undefined)d.pendingArrest=null;
     if(d.family==='rossi')d.family='colombra';if(d.family==='syndicaat')d.family='lucchetti';if(d.energy==null)d.energy=100;
+    migrateTrain(d);d.furn=d.furn||{};d.carDex=d.carDex||{};
     if(window.__USER__)d.name=window.__USER__;return d}
-  const f=fresh();if(window.__USER__)f.name=window.__USER__;return f}
-let _pushTimer=null,_lastPush=0;
+  const f=fresh();f.trainV=2;if(window.__USER__)f.name=window.__USER__;return f}
+let _pushTimer=null,_lastPush=0,_retry=0;
 function pushState(beacon){
   if(!window.__TOKEN__)return Promise.resolve();
   const body=JSON.stringify({state:Object.assign({},S,{rankname:RANKS[rankIdx(S.xp)][0]})});
+  const again=()=>{if(beacon)return;clearTimeout(_pushTimer);_retry=Math.min(_retry+1,6);_pushTimer=setTimeout(()=>pushState(),Math.min(60000,2000*Math.pow(2,_retry)))};
   let pr=Promise.resolve();
-  try{pr=fetch('/api/state',{method:'POST',keepalive:!!beacon,headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.__TOKEN__},body})
-    .then(r=>{if(r.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/')}}).catch(()=>{})}catch(e){}
+  try{pr=fetch('/api/state',{method:'POST',keepalive:!!beacon&&body.length<60000,headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.__TOKEN__},body})
+    .then(r=>{if(r.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/');return}if(!r.ok)again();else _retry=0}).catch(again)}catch(e){again()}
   _lastPush=Date.now();return pr}
 function save(){
+  S.savedAt=Date.now();
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}
   if(!window.__TOKEN__)return;
   clearTimeout(_pushTimer);
@@ -28,17 +33,22 @@ window.addEventListener('pagehide',()=>pushState(true));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')pushState(true)});
 function logout(){pushState(true);try{localStorage.removeItem('ow_token')}catch(e){}setTimeout(()=>location.replace('/'),150)}
 S=load();
+if(window.__PUSH_LOCAL__)setTimeout(()=>pushState(),1200);
 if(window.__REDEEMED__)window.__REDEEMED__.forEach(c=>{if(!S.redeemed.includes(c))S.redeemed.push(c)});
 
 const rankIdx=xp=>{let i=0;RANKS.forEach((r,j)=>{if(xp>=r[1])i=j});return i};
 const inJail=()=>S.jailUntil>now();
 const gearBonus=()=>GEAR.reduce((a,g)=>a+(S.gear[g.id]?g.bonus:0),0);
 const fam=()=>FAMILIES.find(f=>f.id===S.family)||{chance:0,loot:0,jail:0};
-const focusPct=()=>(S.buffs&&S.buffs.focus&&S.buffs.focus.until>now())?S.buffs.focus.pct:0;
-const chance=c=>Math.max(5,Math.min(95,c.base+rankIdx(S.xp)*2+gearBonus()+fam().chance+S.skills.steal*(c.id==='zakken'?4:2)+focusPct()-Math.floor(S.heat/4)));
+const furnFx=k=>FURN.reduce((a,f)=>a+((S&&S.furn&&S.furn[f.id])?(f.fx[k]||0):0),0);
+const buffFocus=()=>(S.buffs&&S.buffs.focus&&S.buffs.focus.until>now())?S.buffs.focus.pct:0;
+const focusPct=()=>buffFocus()+furnFx('focus');
+const chance=c=>Math.max(5,Math.min(95,c.base+rankIdx(S.xp)*2+gearBonus()+fam().chance+S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)+focusPct()-Math.floor(S.heat/4)));
 function sendToJail(sec){sec=Math.max(30,Math.min(600,Math.round(sec*(1-fam().jail/100))));S.lastSentence=sec;S.jailUntil=now()+sec*1000;return sec}
-function bailCost(){const left=Math.max(0,Math.ceil((S.jailUntil-now())/1000));return Math.floor(left*(20+rankIdx(S.xp)*15)*(1-S.skills.charisma*0.04))}
-const talkChance=()=>Math.min(45,S.skills.charisma*4.5);
+// Borg groeit met je rang: als Dief kost 2 minuten zo'n €900, als Peetvader 10 minuten zo'n €150.000. Charisma geeft korting.
+const bailRate=()=>2*Math.pow(1.55,rankIdx(S.xp));
+function bailCost(){const left=Math.max(0,Math.ceil((S.jailUntil-now())/1000));if(!left)return 0;return Math.max(50,Math.round(left*bailRate()*(1-S.skills.charisma*SK.charisma.bail)/10)*10)}
+const talkChance=()=>Math.min(45,Math.round(S.skills.charisma*SK.charisma.talk));
 // Arrestatie met de keuze om je eruit te praten (charisma)
 // Arrestatie: vluchten (vluchtspel), je eruit praten (charisma) of je overgeven.
 // opts: {mult: factor op praatkans, raid: politiecontrole bij gezochte speler, flee: moeilijkheid 1-5}
@@ -86,14 +96,8 @@ function showModal(t,m,btns){$('#modal').hidden=false;$('#modalT').textContent=t
   btns=btns||[{l:'Begrepen',c:'red',f:closeModal}];const box=$('#modalB');box.innerHTML='';
   btns.forEach(b=>{const e=document.createElement('button');e.className='btn '+(b.c||'');e.textContent=b.l;e.onclick=b.f;box.appendChild(e)})}
 function closeModal(){$('#modal').hidden=true}
-const SKILLS=[
- {id:'steal',n:'Vingervlugheid',d:'Zakkenrollen +4% en alle andere misdaden +2% slaagkans per level.',base:500,col:'var(--cyan)'},
- {id:'cars',n:'Autodiefstal',d:'+3% kans om een auto te stelen en +4% hogere autowaarde per level.',base:800,col:'var(--gold)'},
- {id:'charisma',n:'Charisma',d:'+4,5% kans om je uit een arrestatie te praten en 4% korting op borg per level.',base:1200,col:'var(--violet)'},
- {id:'speed',n:'Snelheid',d:'5% kortere wachttijd tussen misdaden en autodiefstal per level.',base:1000,col:'var(--green)'}];
-const skillCost=s=>Math.floor(s.base*Math.pow(1.7,S.skills[s.id]));
-const crimeCd=c=>c.cd*1000*(1-S.skills.speed*0.05);
-const carCd=()=>30000*(1-S.skills.speed*0.05);
+const crimeCd=c=>c.cd*1000*(1-S.skills.speed*SK.speed.cd);
+const carCd=()=>30000*(1-S.skills.speed*SK.speed.cd);
 const RL_ORDER=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
 const REDS=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 const numCol=n=>n===0?'green':REDS.has(n)?'red':'black';
@@ -107,4 +111,4 @@ function addXp(x){const before=rankIdx(S.xp);S.xp+=x;const after=rankIdx(S.xp);i
 const EN_BASE=100,EN_REGEN_S=18; // 1 energie per 18 seconden
 // Maximale energie groeit met Conditie (sportschool): +5 per level
 const home=()=>HOMES.find(h=>h.id===((S&&S.home)||'brug'))||HOMES[0];
-Object.defineProperty(window,'EN_MAX',{get:()=>EN_BASE+5*((S&&S.skills&&S.skills.conditie)||0)+((S&&S.home)?home().en:0),configurable:true});
+Object.defineProperty(window,'EN_MAX',{get:()=>EN_BASE+Math.round(SK.conditie.en*((S&&S.skills&&S.skills.conditie)||0))+((S&&S.home)?home().en:0)+((S&&S.furn)?furnFx('en'):0),configurable:true});

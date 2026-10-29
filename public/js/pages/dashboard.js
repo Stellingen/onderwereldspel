@@ -31,7 +31,7 @@ V.dash=()=>{
     <div class="row"><span>Passief inkomen</span><b style="color:var(--green)">${fmt(income())}/min</b></div>
    </section>
    ${meter('Energie',Math.floor(S.energy)+'/'+EN_MAX,S.energy/EN_MAX*100,'var(--ice)',full?'Vol over '+full+' min':'Helemaal vol')}
-   ${meter('Gezondheid',S.hp+'%',S.hp,S.hp>50?'var(--green)':'var(--red)',`<button class="btn ghost sm" onclick="act.heal()" ${S.hp>=100?'disabled':''}>Dokter · ${fmt(healCost())}</button>`)}
+   ${meter('Gezondheid',S.hp+'%',S.hp,S.hp>50?'var(--green)':'var(--red)',`<button class="btn ghost sm" onclick="act.heal()" ${S.hp>=100?'disabled':''}>Kliniek · ${fmt(healCost())}</button>`)}
    ${meter('Politie-hitte',S.heat+'%',S.heat,S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--mute)',`<button class="btn ghost sm" onclick="act.bribe()" ${S.heat<=0?'disabled':''}>Omkopen · ${fmt(bribeCost())}</button>`)}
    <a class="card kpi" href="#rank" style="text-decoration:none;color:inherit"><div class="label">Ranglijst</div><div class="big">#${pos}<span style="font-size:15px;color:var(--faint)"> / ${all.length}</span></div>
     <div class="bar"><i style="width:${(1-(pos-1)/all.length)*100}%;background:var(--violet)"></i></div><div class="kpi-sub">Bekijk de ranglijst →</div></a>

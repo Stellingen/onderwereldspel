@@ -78,7 +78,7 @@ function renderTop(){
    <div class="chip"><small>Energie</small><b style="color:var(--ice)">${Math.floor(S.energy)}/${EN_MAX}</b><div class="mini"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div></div>
    <div class="chip"><small>Cred</small><b style="color:var(--violet)">${S.cred}</b></div>
    <div class="chip"><small>Gezondheid</small><b style="color:${S.hp>50?'var(--green)':'var(--red)'}">${S.hp}%</b></div>
-   ${focusPct()?`<div class="chip"><small>Focus</small><b style="color:#ff6b7c">+${focusPct()}% · ${fmtClock(S.buffs.focus.until-now())}</b></div>`:''}
+   ${focusPct()?`<div class="chip"><small>Focus</small><b style="color:#ff6b7c">+${focusPct()}%${buffFocus()?' · '+fmtClock(S.buffs.focus.until-now()):''}</b></div>`:''}
    <div class="chip"><small>Hitte</small><b style="color:${S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--fg)'}">${S.heat}%</b></div>
    <div class="status ${inJail()?'jail':S.wanted?'wanted':'free'}">${inJail()?'■ CEL · '+fmtTime(jt):S.wanted?'▲ GEZOCHT':'● VRIJ'}</div>`;
 }

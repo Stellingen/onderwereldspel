@@ -1,22 +1,17 @@
 // Alle acties (klikken) en de politiecontroles
 const act={
  crime(id){const c=CRIMES.find(x=>x.id===id);if(inJail()||cdLeft(id)||rankIdx(S.xp)<c.r)return;if(S.energy<c.en){toast('Te moe. Je hebt '+c.en+' energie nodig','bad');return}S.energy-=c.en;S.cd[id]=now()+crimeCd(c);
-  if(rnd(1,100)<=chance(c)){const g=Math.floor(rnd(c.min,c.max)*(1+fam().loot/100));S.cash+=g;S.stats.crimes++;S.cred+=c.cr;S.heat=Math.min(100,S.heat+rnd(1,4));addXp(c.xp);toast(c.n+' gelukt: +'+fmt(g));log(c.n+' gelukt, buit '+fmt(g),'ok')}
-  else{const lost=Math.min(Math.floor(S.cash*0.1),c.max*2); // verlies past bij de grootte van de klus
+  if(rnd(1,100)<=chance(c)){const g=Math.floor(rnd(c.min,c.max)*(1+fam().loot/100)*(1+rankIdx(S.xp)*RANK_LOOT));S.cash+=g;S.stats.crimes++;S.cred+=c.cr;S.heat=Math.min(100,S.heat+rnd(1,4));addXp(c.xp);toast(c.n+' gelukt: +'+fmt(g));log(c.n+' gelukt, buit '+fmt(g),'ok')}
+  else{const lost=Math.floor(Math.min(Math.floor(S.cash*0.1),c.max*2)*(1-furnFx('safe'))); // verlies past bij de grootte van de klus
   S.cash-=lost;S.stats.fails++;S.hp=Math.max(10,S.hp-rnd(5,15));S.heat=Math.min(100,S.heat+rnd(5,10));
    addXp(Math.ceil(c.xp/4));log(c.n+' mislukt, '+fmt(lost)+' kwijt','bad');save();
    arrest(c.jail,'Betrapt!',c.n+' ging mis. '+FLEE_LEVELS[c.flee||2].where,{flee:c.flee||2})}
   save();render()},
- car(){if(inJail()||cdLeft('car'))return;S.cd.car=now()+carCd();const pool=CARS.filter(c=>rankIdx(S.xp)>=c.r);const car=pool[rnd(0,pool.length-1)];
-  if(rnd(1,100)<=car.c+gearBonus()+S.skills.cars*3){if(S.cars.length>=10){toast('Garage vol, verkoop eerst iets','bad')}else{const v=Math.floor(car.v*(rnd(70,110)/100)*(1+S.skills.cars*0.04));S.cars.push({n:car.n,v});S.stats.cars++;S.cred+=1;addXp(10+Math.floor(car.v/500));toast(car.n+' gestolen!');log(car.n+' gestolen ('+fmt(v)+')','ok')}}
-  else{S.heat=Math.min(100,S.heat+6);log('Mislukte poging: '+car.n,'bad');save();arrest(45,'Alarm!','Het alarm van de '+car.n+' gaat af en een agent komt aanrennen.',{flee:2});return}save();render()},
  trainSession(id){const t=TRAININGS.find(x=>x.id===id);const l=S.skills[id]||0;if(!t||l>=TRAIN_MAX||inJail()||cdLeft('tr_'+id))return;
-  const cost=t.base*(1+l);if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
-  S.cash-=cost;S.cd['tr_'+id]=now()+t.cd*60000;S.train[id]=(S.train[id]||0)+1;addXp(3+l);
-  if(S.train[id]>=trainNeed(l)){S.train[id]=0;S.skills[id]=l+1;const a=t.eff(l),b=t.eff(l+1);
-    toast(t.n+' level '+(l+1)+': '+a[0][0].toLowerCase()+' '+a[0][1]+' → '+b[0][1],'lvl');log(t.n+' naar level '+(l+1)+' ('+t.place+')','ok')}
-  else toast(t.place+': sessie '+S.train[id]+' van '+trainNeed(l)+' gedaan');
-  save();render()},
+  const cost=trainCost(t,l);if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
+  S.cash-=cost;S.cd['tr_'+id]=now()+t.cd*60000;S.skills[id]=l+1;addXp(3+Math.floor(l*1.5));const a=t.eff(l),b=t.eff(l+1);
+  toast(t.n+' level '+(l+1)+': '+a[0][0].toLowerCase()+' '+a[0][1]+' → '+b[0][1],TRAIN_MILES.includes(l+1)?'lvl':'ok');log(t.n+' naar level '+(l+1)+' ('+t.place+', '+fmt(cost)+')','ok');
+  save();pushState();render()},
  async redeem(raw){let code=String(raw||'').trim().toLowerCase();code=CODE_ALIAS[code]||code;const btn=document.getElementById('codeBtn');
   if(!code){redeemMsg={ok:false,t:'Vul eerst een code in.'};render();return}
   S.redeemed=S.redeemed||[];
@@ -31,7 +26,7 @@ const act={
       if(!r.ok){if(r.status===409&&!S.redeemed.includes(code))S.redeemed.push(code);redeemMsg={ok:false,t:j.error||'Kon de code niet inwisselen.'};save();render();return}
       amount=j.amount}
     catch(e){redeemMsg={ok:false,t:'De server is niet bereikbaar. Probeer het later opnieuw.'};render();return}
-  }else{const LOCAL=Object.assign({lotto:1500,welkom:500,tester:5000,casino:5000},RANK_CODES);amount=LOCAL[code];if(!amount){redeemMsg={ok:false,t:'Deze code bestaat niet.'};render();return}}
+  }else{const LOCAL=Object.assign({lotto:1500,welkom:500,casino:5000,vip:20000},RANK_CODES);amount=LOCAL[code];if(!amount){redeemMsg={ok:false,t:'Deze code bestaat niet.'};render();return}}
   S.cash+=amount;S.redeemed.push(code);redeemMsg={ok:true,t:'Gelukt! '+fmt(amount)+' is bijgeschreven op je contant geld.'};
   toast('Code '+code.toUpperCase()+': +'+fmt(amount),'lvl');log('Code '+code.toUpperCase()+' ingewisseld: +'+fmt(amount),'ok');
   save();if(typeof pushState==='function')pushState();render()},

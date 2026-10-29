@@ -1,31 +1,92 @@
-// Tab: Auto's — wat er nu op straat staat, stelen met een minigame, en je garage
-const STREET_MS=90000,GARAGE_MAX=10;
-const carEn=c=>4+c.d*2;
-function pickCar(){const t=CARS.reduce((a,c)=>a+c.w,0);let r=Math.random()*t;for(const c of CARS){r-=c.w;if(r<=0)return c}return CARS[0]}
-function streetCars(force){
-  if(force||!S.street||S.street.until<now()){
-    const spots=[...CAR_SPOTS].sort(()=>Math.random()-.5).slice(0,3);
-    S.street={until:now()+STREET_MS,cars:spots.map(sp=>Math.random()<.22?null:{id:pickCar().id,spot:sp,taken:false})};save()}
-  return S.street.cars;
-}
-V.cars=()=>{const list=streetCars(),left=cdLeft('car'),avail=list.filter(x=>x&&!x.taken);
- const t=Math.max(0,S.street.until-now());
- return `<h1>Auto's</h1><p class="sub">Elke anderhalve minuut staan er nieuwe auto's op straat. Je kunt alles proberen te stelen, maar hoe duurder de wagen, hoe lastiger het contact maken. Rijvaardigheid (training) geeft je meer tijd.</p>
- <div class="tierhead"><h2>Op straat</h2><span>Nieuwe auto's over ${fmtClock(t)}</span></div>
- ${avail.length?'':`<div class="card empty-street"><b>Geen auto's veilig om te stelen</b><span>Overal lopen mensen of hangen camera's. Kom over ${fmtClock(t)} terug.</span></div>`}
- <div class="street">${list.map((x,i)=>{if(!x)return `<div class="scar none"><div class="label">Leeg</div><p>Hier staat niks dat de moeite waard is.</p></div>`;
-   const c=CARS.find(k=>k.id===x.id),en=carEn(c),ok=!x.taken&&!left&&!inJail()&&S.energy>=en&&S.cars.length<GARAGE_MAX;
-   return `<article class="scar d${c.d} ${x.taken?'taken':''}"><div class="label">${x.spot}</div>
-    <div class="scar-car" aria-hidden="true"><i></i></div>
-    <h3>${c.n}</h3><div class="meta"><span class="tag g">± ${fmt(c.v)}</span><span class="tag lvl${c.d}">${CAR_LEVEL[c.d]}</span><span class="tag b">${en} energie</span></div>
-    <button class="btn" onclick="act.stealCar(${i})" ${ok?'':'disabled'}>${x.taken?'Weg':inJail()?'Je zit vast':left?'Wacht '+Math.ceil(left/1000)+'s':S.cars.length>=GARAGE_MAX?'Garage vol':S.energy<en?'Te moe':'Stelen'}</button></article>`}).join('')}</div>
- <div class="tierhead"><h2>Garage</h2><span>${S.cars.length} / ${GARAGE_MAX}</span></div>
- <div class="card">${S.cars.length?S.cars.map((c,i)=>`<div class="row car"><span><b>${c.n}</b> <span class="tag g">${fmt(c.v)}</span></span><button class="btn sm" onclick="act.sell(${i})">Verkoop</button></div>`).join('')+`<button class="btn" style="margin-top:10px" onclick="act.sellAll()">Alles verkopen · ${fmt(S.cars.reduce((a,c)=>a+c.v,0))}</button>`:'<div class="empty">Je garage is leeg.</div>'}</div>`};
-Object.assign(act,{async stealCar(i){const x=S.street&&S.street.cars[i];if(!x||x.taken||inJail()||cdLeft('car')||window.__chase)return;
-  const c=CARS.find(k=>k.id===x.id),en=carEn(c);if(S.energy<en){toast('Te moe','bad');return}if(S.cars.length>=GARAGE_MAX){toast('Garage vol, verkoop eerst iets','bad');return}
-  S.energy-=en;S.cd.car=now()+carCd();S.pendingHeist={id:c.id};save();pushState();
-  const ok=await carHeist(c);x.taken=true;S.pendingHeist=null;
-  if(ok){const v=Math.floor(c.v*(rnd(75,110)/100)*(1+S.skills.cars*0.04));S.cars.push({n:c.n,v});S.stats.cars++;S.cred+=c.d>=3?2:1;S.heat=Math.min(100,S.heat+c.d*2);addXp(6+c.d*c.d*4);
-    toast(c.n+' gestolen! Waarde '+fmt(v));log(c.n+' gestolen ('+fmt(v)+')','ok');save();render()}
-  else{S.heat=Math.min(100,S.heat+4+c.d*2);log('Mislukte poging: '+c.n,'bad');save();render();
-    arrest(30+c.d*20,'Alarm!','Het alarm van de '+c.n+' gaat af. '+FLEE_LEVELS[Math.min(5,c.d)].where,{flee:Math.min(5,Math.max(1,c.d))})}}});
+// Tab: Auto's — zoek de straat af, kom willekeurig een auto tegen en probeer hem te stelen. Daaronder je garage.
+const GARAGE_MAX=10,SEARCH_EN=2,SEARCH_MS=1700,FIND_MS=60000;
+const carEn=m=>4+m.d*2+(m.leg?4:0);
+// Kans per zoektocht per zeldzaamheid (0 = niks gevonden, 6 = mythisch). Binnen een groep telt het gewicht (w) van het model.
+const FIND_TIER={0:.15,1:.4425,2:.24,3:.10,4:.045,5:.02,6:.0025};
+const tierName=t=>t===6?CAR_MYTH:CAR_RARITY[t];
+const CAR_ODDS=(()=>{const sum={},o={};CARS.forEach(m=>{const t=carTier(m);sum[t]=(sum[t]||0)+m.w});CARS.forEach(m=>{const t=carTier(m);o[m.id]=FIND_TIER[t]*m.w/sum[t]});return o})();
+const oddTxt=p=>{const v=p*100;return (v>=10?v.toFixed(0):v>=1?v.toFixed(1):v.toFixed(2)).replace('.',',')+'%'};
+const kTxt=n=>n>=1000?'€'+(n/1000).toLocaleString('nl-NL',{maximumFractionDigits:1})+'k':'€'+n;
+const kmTxt=k=>k.toLocaleString('nl-NL')+' km';
+const NOTHING=['Alleen een bakfiets en een scootmobiel.','Overal camera\'s. Je loopt maar door.','Een buurtwacht kijkt je na. Niks te halen.',
+ 'Een roestige caravan zonder wielen.','Alles staat met een stuurslot vast.','Een taxi met de chauffeur er nog in.','Een lege parkeerplaats en een boze kat.'];
+function rollCar(){let r=Math.random();for(const t of [0,1,2,3,4,5,6]){r-=FIND_TIER[t];if(r>0)continue;if(!t)return null;
+  const pool=CARS.filter(m=>carTier(m)===t);let w=Math.random()*pool.reduce((a,m)=>a+m.w,0);for(const m of pool){w-=m.w;if(w<=0)return m}return pool[0]}return CARS[0]}
+// Eén gevonden auto: eigen bouwjaar, kilometerstand, staat, kleur, kenteken en straatwaarde binnen de prijsklasse van het model
+function spawnCar(m,spot){const [y0,y1]=m.y,year=y0+Math.floor(Math.random()*(y1-y0+1)),age=y1>y0?(y1-year)/(y1-y0):0;
+ const km=Math.round((age*160000+4000+Math.random()*36000)/100)*100;
+ const ST=[['Slecht',.72,.16],['Redelijk',.88,.36],['Goed',1,.34],['Nieuwstaat',1.08,.14]];let r=Math.random(),st=ST[2];for(const x of ST){r-=x[2];if(r<=0){st=x;break}}
+ const base=m.lo+(m.hi-m.lo)*(.55*(1-age)+.45*(1-Math.min(1,km/220000)));
+ const v=Math.max(Math.round(m.lo*.7/50)*50,Math.min(Math.round(m.hi*1.08/50)*50,Math.round(base*st[1]/50)*50));
+ const pal=CAR_COLORS[m.d];return {id:m.id,spot,year,km,staat:st[0],v,c:pal[Math.floor(Math.random()*pal.length)],plate:randPlate()}}
+const carSell=v=>Math.round(v*(1+((S.skills&&S.skills.cars)||0)*SK.cars.price)/10)*10;
+let carSearch=null,oddsOpen=window.matchMedia?matchMedia('(min-width:900px)').matches:true;
+const findM=x=>CARS.find(k=>k.id===x.id)||CARS[0];
+function carExpire(quiet){const x=S.carFind;if(x&&x.until&&!x.res&&x.until<now()){S.carFind={...x,res:'gone'};if(!quiet)toast('De eigenaar komt terug. De '+findM(x).n+' rijdt weg.','bad');save();return true}return false}
+function huntScene(){const x=S.carFind;
+ if(carSearch)return `<div class="hunt-scene searching"><div class="beam"></div><div class="hs-msg"><span class="label">Aan het zoeken</span><b>${carSearch.spot}</b><div class="hs-prog"><i style="animation-duration:${SEARCH_MS}ms"></i></div></div></div>`;
+ if(!x)return `<div class="hunt-scene idle"><div class="hs-ghost">${carSvg('sedan','#1c2029')}</div><div class="hs-msg"><span class="label">Nog niks gezien</span><b>Loop de straat af</b><p>Elke zoektocht kost ${SEARCH_EN} energie. Je weet nooit wat er om de hoek staat.</p></div></div>`;
+ if(x.none)return `<div class="hunt-scene none"><div class="hs-loc"><i></i>${x.spot}</div><div class="hs-ghost">${carSvg('hatch','#1c2029')}</div><div class="hs-msg"><span class="label">Niks gevonden</span><b>${x.msg}</b></div></div>`;
+ const m=findM(x),R=carRarity(m),t=carTier(m);
+ return `<div class="hunt-scene car t${t} ${x.res||''}" style="--rc:${R[1]}"><div class="hs-loc"><i></i>${x.spot}</div>
+  <div class="hs-car">${carSvg(m.b,x.c,{reflect:1,hl:1})}</div><span class="plate">${x.plate}</span>
+  ${x.res==='ok'?'<span class="hs-stamp ok">Gestolen</span>':x.res==='fail'?'<span class="hs-stamp bad">Alarm</span>':x.res==='gone'?'<span class="hs-stamp">Weggereden</span>':''}
+  ${x.res?'':`<div class="hs-left"><span class="label">Staat er nog</span><b id="hsLeft">${fmtClock(x.until-now())}</b></div>`}</div>`}
+function huntInfo(){const x=S.carFind;if(carSearch||!x||x.none)return `<div class="hunt-tip"><h3>Hoe werkt het?</h3><ul>
+  <li>Je loopt de straat af en komt willekeurig een auto tegen. Rechts zie je de kans per model.</li>
+  <li>Hoe zeldzamer de auto, hoe zwaarder het contact maken: meer sloten achter elkaar, minder tijd en <b class="rv">rode pijlen</b> die je andersom moet indrukken.</li>
+  <li>Een vondst staat er een minuut. Laat je hem staan, dan zoek je verder.</li>
+  <li>Rijvaardigheid (training) geeft je meer tijd per reeks en een betere prijs bij verkoop.</li></ul></div>`;
+ const m=findM(x),R=carRarity(m),P=heistParams(m),t=carTier(m),sk=(S.skills&&S.skills.cars)||0;
+ return `<div class="hunt-info"><div class="sc-head"><span class="rar" style="--rc:${R[1]}">${R[0]}</span><span class="hi-odd">Kans per zoektocht ${oddTxt(CAR_ODDS[m.id])}</span></div>
+  <h3>${m.n}</h3>
+  <div class="hi-val">${fmt(carSell(x.v))}<small>${sk?'incl. +'+Math.round(sk*SK.cars.price*100)+'% rijvaardigheid · ':''}model ${fmt(m.lo)} tot ${fmt(m.hi)}</small></div>
+  <dl class="sc-spec"><div><dt>Bouwjaar</dt><dd>${x.year}</dd></div><div><dt>Kilometers</dt><dd>${kmTxt(x.km)}</dd></div><div><dt>Staat</dt><dd>${x.staat}</dd></div></dl>
+  <div class="sc-diff" style="--rc:${R[1]}"><span class="label">Contact maken</span><div class="sc-bars">${[1,2,3,4,5,6].map(k=>`<i class="${k<=t?'on':''}"></i>`).join('')}</div><span class="sc-dtx">${heistTxt(P)}</span></div></div>`}
+function huntBtns(){const x=S.carFind,left=cdLeft('car'),full=S.cars.length>=GARAGE_MAX,jail=inJail(),live=x&&!x.none&&!x.res;let steal='';
+ if(live){const m=findM(x),en=carEn(m),ok=!left&&!jail&&!full&&S.energy>=en;
+  steal=`<button class="btn xl" onclick="act.stealCar()" ${ok?'':'disabled'}>${jail?'Je zit vast':full?'Garage vol, verkoop eerst':S.energy<en?'Te moe · '+en+' energie':'Stelen · '+en+' energie'}</button>`}
+ const sOk=!carSearch&&!left&&!jail&&!full&&S.energy>=SEARCH_EN;
+ const sl=carSearch?'Zoeken…':jail?'Je zit vast':left?'Even afkoelen · <span id="huntCd">'+fmtClock(left)+'</span>':full?'Garage vol, verkoop eerst':S.energy<SEARCH_EN?'Te moe om te zoeken':(live?'Laat staan, verder zoeken':'Zoek een auto')+' · '+SEARCH_EN+' energie';
+ return `<div class="hunt-btns">${steal}<button class="btn ${live?'ghost':'xl'}" onclick="act.searchCar()" ${sOk?'':'disabled'}>${sl}</button></div>`}
+function oddsList(){const dex=S.carDex||{},got=CARS.filter(m=>(dex[m.id]||[0,0])[1]>0).length,cur=S.carFind&&!S.carFind.res&&S.carFind.id;
+ return `<details class="odds" ${oddsOpen?'open':''} ontoggle="oddsOpen=this.open"><summary><h2>Kans per zoektocht</h2><span>${got}/${CARS.length} verzameld</span></summary>
+  <div class="od-list"><div class="od-none"><span>Niks gevonden</span><b>${oddTxt(FIND_TIER[0])}</b></div>
+  ${[1,2,3,4,5,6].map(t=>{const R=tierName(t),ms=CARS.filter(m=>carTier(m)===t).sort((a,b)=>CAR_ODDS[b.id]-CAR_ODDS[a.id]);
+   return `<div class="od-tier" style="--rc:${R[1]}"><div class="od-th"><b>${R[0]}</b><span>${oddTxt(FIND_TIER[t])}</span></div>
+   ${ms.map(m=>{const d=dex[m.id]||[0,0];return `<div class="od-row ${d[1]?'got':''} ${cur===m.id?'now':''}"><span class="od-n">${m.n}</span><span class="od-v">${kTxt(m.lo)}–${kTxt(m.hi)}</span><b>${oddTxt(CAR_ODDS[m.id])}</b><i title="${d[1]?d[1]+'× gestolen':'Nog niet gestolen'}">${d[1]?'✓':''}</i></div>`}).join('')}</div>`}).join('')}</div></details>`}
+V.cars=()=>{if(S.street)delete S.street;S.carDex=S.carDex||{};carExpire(true);const gv=S.cars.reduce((a,c)=>a+c.v,0);
+ return `<h1>Auto's</h1><p class="sub">Zoek de straat af en kijk wat je tegenkomt. Een gewone Polo vind je zo, een Lamborghini bijna nooit. En als je er een vindt, moet je wel snel zijn.</p>
+ <div class="hunt-grid"><section class="hunt">${huntScene()}<div class="hunt-body">${huntInfo()}${huntBtns()}</div></section>${oddsList()}</div>
+ <div class="tierhead"><h2>Garage</h2><span>${S.cars.length} / ${GARAGE_MAX} · waarde ${fmt(gv)}</span></div>
+ ${S.cars.length?`<div class="garage">${S.cars.map((c,i)=>{const m=CARS.find(k=>k.id===c.id)||CARS.find(k=>k.n===c.n)||{b:'hatch',d:1};
+   return `<div class="gcar" style="--rc:${(carRarity(m)||CAR_RARITY[1])[1]}">${carSvg(c.b||m.b,c.c||'#8a929c')}<div class="g-n"><b>${c.n}</b><span>${c.year?c.year+' · '+kmTxt(c.km)+(c.staat?' · '+c.staat:''):'&nbsp;'}</span></div>
+    <div class="g-s"><span class="gv">${fmt(c.v)}</span><button class="btn sm" onclick="act.sell(${i})">Verkoop</button></div></div>`}).join('')}</div>
+  <button class="btn" style="margin-top:10px;width:auto" onclick="act.sellAll()">Alles verkopen · ${fmt(gv)}</button>`:'<div class="card empty">Je garage is leeg. Zoek hierboven je eerste auto.</div>'}`};
+// Eigen klok: aftellen zonder alles opnieuw te tekenen
+let _carSig='';
+setInterval(()=>{if(page!=='cars'||window.__chase||carSearch)return;if(carExpire()){render();return}const x=S.carFind;
+ const sig=[cdLeft('car')>0,inJail(),S.cars.length>=GARAGE_MAX,S.energy>=SEARCH_EN,x&&x.id&&!x.res?S.energy>=carEn(findM(x)):0].join();
+ if(_carSig&&sig!==_carSig){_carSig=sig;render();return}_carSig=sig;
+ const a=document.getElementById('hsLeft');if(a&&x&&x.until)a.textContent=fmtClock(x.until-now());
+ const c=document.getElementById('huntCd');if(c)c.textContent=fmtClock(cdLeft('car'))},1000);
+Object.assign(act,{
+ async searchCar(){if(carSearch||window.__chase||inJail()||cdLeft('car'))return;if(S.cars.length>=GARAGE_MAX){toast('Garage vol, verkoop eerst iets','bad');return}
+  if(S.energy<SEARCH_EN){toast('Te moe om te zoeken','bad');return}
+  S.energy-=SEARCH_EN;S.carFind=null;const spot=CAR_SPOTS[Math.floor(Math.random()*CAR_SPOTS.length)];carSearch={spot};S.stats.searches=(S.stats.searches||0)+1;
+  save();SFX.click();if(page==='cars')render();
+  await new Promise(r=>setTimeout(r,SEARCH_MS));
+  const m=rollCar();carSearch=null;S.carDex=S.carDex||{};
+  if(!m)S.carFind={none:1,spot,msg:NOTHING[Math.floor(Math.random()*NOTHING.length)]};
+  else{S.carFind={...spawnCar(m,spot),until:now()+FIND_MS};const d=S.carDex[m.id]||[0,0];d[0]++;S.carDex[m.id]=d;const t=carTier(m);
+   if(t>=5){SFX.big();toast((m.leg?'Mythische':'Legendarische')+' vondst: '+m.n+'!','lvl');log('Gespot: '+m.n,'ok')}else if(t>=3)SFX.pop()}
+  save();if(page==='cars')render();else renderTop()},
+ async stealCar(){const x=S.carFind;if(!x||x.none||x.res||inJail()||cdLeft('car')||window.__chase)return;if(carExpire()){render();return}
+  const m=findM(x),en=carEn(m);if(S.energy<en){toast('Te moe','bad');return}if(S.cars.length>=GARAGE_MAX){toast('Garage vol, verkoop eerst iets','bad');return}
+  S.energy-=en;S.cd.car=now()+carCd();S.pendingHeist={id:m.id};S.carFind={...x,res:'busy'};save();pushState();
+  const ok=await carHeist(x);S.pendingHeist=null;S.carFind={...x,res:ok?'ok':'fail'};
+  if(ok){const v=carSell(x.v);S.cars.push({id:m.id,n:m.n,v,b:m.b,c:x.c,year:x.year,km:x.km,staat:x.staat});S.stats.cars++;S.cred+=carTier(m)>=3?2:1;
+    S.heat=Math.min(100,S.heat+m.d*2);addXp(6+m.d*m.d*4+(m.leg?200:0));const d=S.carDex[m.id]||[1,0];d[1]++;S.carDex[m.id]=d;
+    toast(m.n+' gestolen! Waarde '+fmt(v),m.d>=5?'lvl':'ok');log(m.n+' gestolen ('+fmt(v)+')','ok');save();render()}
+  else{S.heat=Math.min(100,S.heat+4+m.d*2);log('Mislukte poging: '+m.n,'bad');save();render();
+    arrest(30+m.d*20,'Alarm!','Het alarm van de '+m.n+' gaat af. '+FLEE_LEVELS[Math.min(5,m.d)].where,{flee:Math.min(5,Math.max(1,m.d))})}}});
