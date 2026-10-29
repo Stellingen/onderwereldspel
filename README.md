@@ -30,9 +30,18 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **8 families**, van De Nieuwe Garde tot La Cupola
 - **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000) en `vip` (€20.000), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
 - **Kluiskraker**: cluster-slot op 7×7 (5+ aangrenzende gelijke symbolen), Loper als wild, vakjes die bij elke
-  nieuwe winst verdubbelen (x2 tot x128), 4+ kluizen = free spins waarin de vakjes blijven staan, extra spins vanaf
-  2 kluizen in de bonus (2:+2 … 5+:+8), vakjes tot x1024, bonus kopen voor 100× inzet. Gesimuleerd: RTP ±96–97% basis,
-  95,1% bij bonus kopen, max. winst 10.000×. Geluid via Web Audio (`public/js/sfx.js`). Engine in `public/js/slot.js` (ook in Node te draaien).
+  winst x2, x4 … tot x1024 worden. 4 kluizen = 10 free spins, 5 kluizen = 12. Tijdens de bonus geven 2+ kluizen extra spins
+  (2:+2 … 5+:+8). **6+ kluizen = superbonus**: 8 spins met bijna twee keer zoveel lopers en de **Gouden baar**; landt die,
+  dan win je direct de max win. De superbonus is niet te koop. **Max win 5.000× de inzet**, bij elke inzet.
+  Bonus kopen kost 100× de inzet (gewone bonus). Gesimuleerd (2,4 mln. spins, zie `slot.js`): RTP ±96% (bonus ±1 op 345,
+  superbonus ±1 op 38.000, gemiddeld ±510×, 1 op 20 superbonussen haalt de max win), bonus kopen ±95%.
+- **Roulette** (Europees, één nul, 2,7% huisvoordeel): groot wiel met rollende bal bovenaan, echte inzettafel eronder.
+  Nummer, split, rij, hoek, zes, drie met nul, eerste vier, kolom, dozijn en de kansen, plus groepen op het wiel
+  (Buren van nul, Overkant, Weesjes, Nulspel). Ongedaan maken, fiches weghalen (ook met rechtsklik), alles wissen,
+  verdubbelen en herhalen. Op de telefoon staat de tafel rechtop. Code: `public/js/pages/roulette.js`.
+- **VIP** (code `vip`): VIP-tag bij je naam (ook in de ranglijst), 10% cashback op je netto casinoverlies (elke 6 uur,
+  max €50.000 per keer) en in Kluiskraker ongeveer 10% vaker de bonus in het basisspel. In de bonus zelf is alles gelijk.
+  Zo blijft het terugbetaalpercentage ook voor VIP onder de 100%.
 - Kleur per sectie (Straat oranje, Geld groen, Macht paars, Overig blauw) en een zijbalk op brede schermen
 
 ## Railway instellen

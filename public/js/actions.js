@@ -38,23 +38,11 @@ const act={
   if(r.heat){S.heat=Math.max(0,S.heat-r.heat);m.push('hitte -'+r.heat)}
   if(r.clearWanted&&S.wanted){S.wanted=false;m.push('niet meer gezocht')}
   toast(r.n+': '+m.join(', '));log(r.place+': '+m.join(', '),'info');save();render()},
- rlBet(k){const r=rl;if(r.spinning)return;const tot=Object.values(r.bets).reduce((a,b)=>a+b,0);if(tot+r.chip>S.cash){toast('Niet genoeg contant geld voor deze fiche','bad');return}r.bets[k]=(r.bets[k]||0)+r.chip;render()},
- rlClear(){if(rl.spinning)return;rl.bets={};render()},
- rlSpin(){const r=rl;if(r.spinning||inJail())return;const tot=Object.values(r.bets).reduce((a,b)=>a+b,0);if(!tot)return;if(tot>S.cash){toast('Niet genoeg contant geld','bad');return}
-  S.cash-=tot;save();const n=rnd(0,36);const i=RL_ORDER.indexOf(n);const seg=Math.PI*2/37;
-  const cur=((r.angle%(Math.PI*2))+Math.PI*2)%(Math.PI*2);let target=-i*seg;target=((target%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
-  const delta=(target-cur+Math.PI*2)%(Math.PI*2)+Math.PI*2*6+(Math.random()-.5)*seg*.6;const from=r.angle,t0=performance.now(),dur=(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)?300:5000;
-  r.spinning=true;r.res=null;render();
-  const step=t=>{const p=Math.min(1,(t-t0)/dur);const e=1-Math.pow(1-p,4);r.angle=from+delta*e;drawWheel(r.angle);if(p<1)requestAnimationFrame(step);else finish()};requestAnimationFrame(step);
-  const finish=()=>{r.spinning=false;const m=k=>{if(k[0]==='n')return +k.slice(1)===n?36:0;if(n===0)return 0;
-    return {red:REDS.has(n)?2:0,black:!REDS.has(n)?2:0,even:n%2===0?2:0,odd:n%2?2:0,low:n<=18?2:0,high:n>=19?2:0,d1:n<=12?3:0,d2:n>12&&n<=24?3:0,d3:n>24?3:0}[k]||0};
-    const pay=Object.entries(r.bets).reduce((a,[k,v])=>a+v*m(k),0);const net=pay-tot;S.cash+=pay;r.res=n;r.net=net;r.hist.unshift(n);r.hist=r.hist.slice(0,14);
-    if(net>0){S.stats.won+=net;toast(n+' '+({red:'rood',black:'zwart',green:'groen'})[numCol(n)]+'. Gewonnen: +'+fmt(net))}else if(net<0){S.stats.lost+=-net;toast(n+' '+({red:'rood',black:'zwart',green:'groen'})[numCol(n)]+'. Verloren: -'+fmt(-net),'bad')}else toast(n+'. Quitte');
-    log('Roulette: '+n+' ('+(net>=0?'+':'-')+fmt(Math.abs(net))+')',net>0?'ok':net<0?'bad':'info');save();render()}},
  sell(i){const c=S.cars.splice(i,1)[0];S.cash+=c.v;toast(c.n+' verkocht: +'+fmt(c.v));save();render()},
  sellAll(){const t=S.cars.reduce((a,c)=>a+c.v,0);S.cash+=t;S.cars=[];toast('Alles verkocht: +'+fmt(t));save();render()},
  getBet(){if(inJail()){toast('Je zit vast, geen gokken','bad');return 0}const b=Math.floor(+($('#bet').value||0));if(b<10){toast('Minimale inzet is €10','bad');return 0}if(b>S.cash){toast('Niet genoeg contant geld','bad');return 0}return b},
- win(b,m,label){if(m>0){S.cash+=b*m-b;S.stats.won+=b*m-b;toast(label+' Gewonnen: +'+fmt(b*m-b));log('Casino: +'+fmt(b*m-b),'ok')}else{S.cash-=b;S.stats.lost+=b;toast(label+' Verloren: -'+fmt(b),'bad');log('Casino: -'+fmt(b),'bad')}save()},
+ claimCb(){const a=cbAvail();if(!a||cbLeft())return;S.cash+=a;S.cb={net:0,last:now()};SFX.big();toast('VIP-cashback: +'+fmt(a),'lvl');log('VIP-cashback ontvangen: '+fmt(a),'ok');save();pushState();render()},
+ win(b,m,label){casinoRound(b,m>0?b*m:0);if(m>0){S.cash+=b*m-b;S.stats.won+=b*m-b;toast(label+' Gewonnen: +'+fmt(b*m-b));log('Casino: +'+fmt(b*m-b),'ok')}else{S.cash-=b;S.stats.lost+=b;toast(label+' Verloren: -'+fmt(b),'bad');log('Casino: -'+fmt(b),'bad')}save()},
  coin(k){const b=act.getBet();if(!b)return;const r=Math.random()<.5?'kop':'munt';act.win(b,r===k?2:0,'Het werd '+r+'.');render()},
  /* oude roulettesnelknop */ roul(k){const b=act.getBet();if(!b)return;const n=rnd(0,36);const col=n===0?'groen':n%2?'rood':'zwart';window._roul=n+' '+col.toUpperCase();act.win(b,col===k?(k==='groen'?14:2):0,n+' '+col+'.');render()},
  buyBiz(id){const b=BIZ.find(x=>x.id===id);const own=S.biz[id]||0;const p=Math.floor(b.p*Math.pow(1.25,own));if(S.cash<p)return;S.cash-=p;S.biz[id]=own+1;addXp(Math.floor(p/200));toast(b.n+' gekocht');log(b.n+' gekocht voor '+fmt(p),'info');save();render()},
@@ -83,7 +71,7 @@ const act={
 };
 
 // Politiecontroles: elke actie kan een controle opleveren als je gezocht bent
-(()=>{const skip=['redeem','bail','escape','getBet','win','bjEnd','leave','bjHit','bjStand','bjDouble','rlBet','rlClear'];let depth=0;
+(()=>{const skip=['redeem','claimCb','bail','escape','getBet','win','bjEnd','leave','bjHit','bjStand','bjDouble','rlBet','rlClear'];let depth=0;
  Object.keys(act).forEach(k=>{if(skip.includes(k))return;const fn=act[k];act[k]=function(...a){
   if(depth===0&&S.wanted&&!inJail()&&Math.random()<(page==='casino'?0.2:0.12)){policeRaid();return}
   depth++;try{return fn.apply(this,a)}finally{depth--}}})})();

@@ -96,6 +96,14 @@ function showModal(t,m,btns){$('#modal').hidden=false;$('#modalT').textContent=t
   btns=btns||[{l:'Begrepen',c:'red',f:closeModal}];const box=$('#modalB');box.innerHTML='';
   btns.forEach(b=>{const e=document.createElement('button');e.className='btn '+(b.c||'');e.textContent=b.l;e.onclick=b.f;box.appendChild(e)})}
 function closeModal(){$('#modal').hidden=true}
+// VIP (code "vip"): tag bij je naam, iets vaker de bonus in Kluiskraker (alleen het basisspel) en cashback op het casino.
+const CB_PCT=.10,CB_EVERY=6*3600*1000,CB_MAX=50000;
+const isVip=()=>!!(S&&S.redeemed&&S.redeemed.includes('vip'));
+const vipTag=()=>isVip()?'<i class="vipt" title="VIP-lid">VIP</i>':'';
+// Elke afgeronde casinoronde: inzet en wat je terugkreeg. Alleen VIP spaart cashback op (10% van het netto verlies).
+function casinoRound(stake,pay){if(!isVip())return;S.cb=S.cb||{net:0,last:0};S.cb.net+=stake-pay}
+const cbAvail=()=>isVip()&&S.cb?Math.min(CB_MAX,Math.floor(Math.max(0,S.cb.net)*CB_PCT)):0;
+const cbLeft=()=>isVip()&&S.cb&&S.cb.last?Math.max(0,S.cb.last+CB_EVERY-now()):0;
 const crimeCd=c=>c.cd*1000*(1-S.skills.speed*SK.speed.cd);
 const carCd=()=>30000*(1-S.skills.speed*SK.speed.cd);
 const RL_ORDER=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];

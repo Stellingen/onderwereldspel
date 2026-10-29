@@ -145,7 +145,8 @@ app.get('/api/leaderboard', async (req, res) => {
   if (!db.state.ready) return res.json({ players: [] });
   try {
     const [rows] = await db.q(
-      `SELECT u.display AS name, g.xp, g.networth, g.rankname, g.day
+      `SELECT u.display AS name, g.xp, g.networth, g.rankname, g.day,
+         EXISTS(SELECT 1 FROM redemptions r WHERE r.user_id=u.id AND r.code='vip') AS vip
        FROM game_state g JOIN users u ON u.id=g.user_id
        ORDER BY g.xp DESC LIMIT 25`
     );

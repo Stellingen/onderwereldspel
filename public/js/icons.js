@@ -8,6 +8,7 @@ const KK_ICON={
  ring:'<circle cx="24" cy="29" r="12" fill="none" stroke="#ff7fb3" stroke-width="5"/><path d="M17 14l7-8 7 8-7 6z" fill="#ffd1e4"/><path d="M17 14h14l-7 6z" fill="#ff7fb3"/>',
  diamant:'<path d="M8 18l8-10h16l8 10-16 22z" fill="#7fe7ff"/><path d="M8 18h32M16 8l8 10 8-10M24 18v22" stroke="#1b6f86" stroke-width="1.6" fill="none"/>',
  goud:'<path d="M6 36l5-11h26l5 11z" fill="#ffb02e"/><path d="M13 24l5-11h12l5 11z" fill="#ffcc66"/><path d="M6 36h36" stroke="#a86a0e" stroke-width="2"/>',
+ baar:'<defs><linearGradient id="kkbar" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4c2"/><stop offset=".45" stop-color="#ffc53a"/><stop offset="1" stop-color="#b86e06"/></linearGradient></defs><path d="M4 36l7-16h26l7 16z" fill="url(#kkbar)" stroke="#7a4504" stroke-width="1.5"/><path d="M11 20h26l-4 5H15z" fill="#fff6d0" opacity=".7"/><text x="24" y="33" text-anchor="middle" font-family="Big Shoulders Display,Impact,sans-serif" font-weight="900" font-size="10" fill="#5a3200">MAX</text><path d="M38 6l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#fff"/>',
  kluis:'<rect x="6" y="6" width="36" height="36" rx="3" fill="#2a1406" stroke="#ff7a1a" stroke-width="3"/><circle cx="24" cy="24" r="11" fill="none" stroke="#ffad6b" stroke-width="3"/><g stroke="#ffad6b" stroke-width="3" stroke-linecap="round"><path d="M24 13v5M24 30v5M13 24h5M30 24h5"/></g><circle cx="24" cy="24" r="3.5" fill="#ff7a1a"/>'
 };
 const kkSvg=id=>`<svg viewBox="0 0 48 48" aria-hidden="true">${KK_ICON[id]}</svg>`;

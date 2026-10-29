@@ -37,7 +37,7 @@ function crumbHtml(){const g=groupOf(page);return `<div class="crumb"><i></i><sp
 function renderNav(){
   const name=k=>PAGES.find(p=>p[0]===k)[1];
   const link=k=>`<a class="navlink ${k===page?'on':''}" href="#${k}">${svg(k)}<span>${name(k)}</span>${k==='jail'&&inJail()?'<span class="badge">!</span>':''}${k==='crimes'&&!inJail()&&S.energy>=EN_MAX?'<span class="badge ok">●</span>':''}${k==='profiel'&&typeof RANK_CODES!=='undefined'&&RANKS.slice(1,rankIdx(S.xp)+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase()))?'<span class="badge">€</span>':''}</a>`;
-  $('#nav').innerHTML=`<a class="brand" href="/" style="text-decoration:none;color:inherit"><span class="mark">O</span><span><b>Onderwereld</b><small>${window.__USER__?esc(window.__USER__):'Offline modus'}</small></span></a>`
+  $('#nav').innerHTML=`<a class="brand" href="/" style="text-decoration:none;color:inherit"><span class="mark">O</span><span><b>Onderwereld</b><small>${window.__USER__?esc(window.__USER__):'Offline modus'} ${vipTag()}</small></span></a>`
    +NAV_GROUPS.map(([g,ks,col,rgb])=>`<div class="navgroup" style="--g:${col};--g-rgb:${rgb}"><div class="navlabel">${g}</div>${ks.map(link).join('')}</div>`).join('')
    +(window.__TOKEN__?`<div class="navspace"></div><button class="navlink logout" onclick="logout()">${svg('logout')}<span>Uitloggen</span></button>`:'');
 }
@@ -48,11 +48,11 @@ function renderRail(){
   const ri=rankIdx(S.xp),nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
   const bc=bestCrime(),left=cdLeft(bc.id),ok=!inJail()&&!left&&S.energy>=bc.en;
   const full=Math.max(0,Math.ceil((EN_MAX-S.energy)*EN_REGEN_S/60));
-  const all=[...S.npcs.map(n=>({n:n.n,xp:n.xp})),...(window.__LB__||[]).filter(p=>!window.__USER__||p.name.toLowerCase()!==window.__USER__.toLowerCase()).map(p=>({n:esc(p.name),xp:+p.xp})),{n:'★ '+esc(S.name),xp:S.xp,me:1}].sort((a,b)=>b.xp-a.xp);
+  const all=[...S.npcs.map(n=>({n:n.n,xp:n.xp})),...(window.__LB__||[]).filter(p=>!window.__USER__||p.name.toLowerCase()!==window.__USER__.toLowerCase()).map(p=>({n:esc(p.name)+(+p.vip?'<i class="vipt">VIP</i>':''),xp:+p.xp})),{n:'★ '+esc(S.name)+vipTag(),xp:S.xp,me:1}].sort((a,b)=>b.xp-a.xp);
   const pos=all.findIndex(x=>x.me)+1;
   el.innerHTML=`
    <section class="rcard hud"><div class="label">Dossier · <a href="#profiel" style="color:var(--acc)">profiel</a></div>
-    <a class="rname" href="#profiel" style="display:block;color:inherit;text-decoration:none">${esc(S.name)}</a>
+    <a class="rname" href="#profiel" style="display:block;color:inherit;text-decoration:none">${esc(S.name)}${vipTag()}</a>
     <div class="rrank"><b>${RANKS[ri][0]}</b><span>${nxt?Math.floor(S.xp).toLocaleString('nl-NL')+' / '+nxt[1].toLocaleString('nl-NL')+' XP':'Top bereikt'}</span></div>
     <div class="bar"><i style="width:${pct}%;background:var(--acc)"></i></div>
     <div class="rgrid">
@@ -72,7 +72,7 @@ function renderTop(){
   const ri=rankIdx(S.xp);const jt=Math.ceil((S.jailUntil-now())/1000);const pend=window.slotPending||0;
   const nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
   $('#topbar').innerHTML=`
-   <div class="chip rank"><small>Rang</small><b>${RANKS[ri][0]}</b><div class="mini"><i style="width:${pct}%;background:var(--acc)"></i></div></div>
+   <div class="chip rank"><small>Rang</small><b>${RANKS[ri][0]}${vipTag()}</b><div class="mini"><i style="width:${pct}%;background:var(--acc)"></i></div></div>
    <div class="chip cash"><small>Contant</small><b>${fmt(S.cash-pend)}</b></div>
    <div class="chip"><small>Bank</small><b>${fmt(S.bank)}</b></div>
    <div class="chip"><small>Energie</small><b style="color:var(--ice)">${Math.floor(S.energy)}/${EN_MAX}</b><div class="mini"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div></div>
