@@ -1,6 +1,6 @@
 // Tab: Ranglijst
 V.rank=()=>{
- const key=rankTab;const me={n:'★ '+esc(S.name)+vipTag()+' (jij)',xp:S.xp,cash:S.cash+S.bank,me:1};
+ const key=rankTab;const me={n:'★ '+esc(S.name)+vipTag()+' (jij)',xp:S.xp,cash:S.cash+bankNet(),me:1};
  if(window.__TOKEN__&&!window.__LB_LOADING__&&(!window.__LB__||Date.now()-window.__LB_AT__>30000))loadLeaderboard();
  const real=(window.__LB__||[]).filter(p=>!window.__USER__||p.name.toLowerCase()!==window.__USER__.toLowerCase()).map(p=>({n:esc(p.name)+(+p.vip?'<i class="vipt">VIP</i>':'')+' <span class="tag gr">speler</span>',xp:+p.xp,cash:+p.networth}));
  const list=[...S.npcs,...real,me].sort((a,b)=>b[key]-a[key]);

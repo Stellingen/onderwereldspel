@@ -51,7 +51,9 @@ document.addEventListener('touchstart',()=>{_touching=true},{passive:true,captur
 document.addEventListener('touchend',()=>{_touching=false;_lastScroll=performance.now()},{passive:true,capture:true});
 document.addEventListener('touchcancel',()=>{_touching=false},{passive:true,capture:true});
 window.addEventListener('scroll',()=>{_lastScroll=performance.now()},{passive:true,capture:true});
-const userBusy=()=>_touching||performance.now()-_lastScroll<700;
+// muisknop ingedrukt: niet hertekenen, anders valt de klik weg als de knop net vervangen wordt
+let _mouse=false;document.addEventListener('mousedown',()=>{_mouse=true},true);document.addEventListener('mouseup',()=>{setTimeout(()=>{_mouse=false},0)},true);
+const userBusy=()=>_touching||_mouse||performance.now()-_lastScroll<700;
 // Telefoon: onderbalk met de vier meest gebruikte pagina's + "Meer" (alle pagina's per groep, met wat er speelt)
 const MBAR=['dash','crimes','cars','casino'];
 const MSHORT={dash:'Start',crimes:'Misdaden',cars:"Auto's",casino:'Casino'};
@@ -60,7 +62,7 @@ function navBadges(){const b={};if(inJail())b.jail='!';if(!inJail()&&S.energy>=E
  if(typeof isVip==='function'&&isVip()&&typeof cbAvail==='function'&&cbAvail()>=1)b.casino='€';return b}
 function navHint(k){const jt=Math.ceil((S.jailUntil-now())/1000);
  return {dash:'Overzicht',verblijf:S.hide?'Ondergedoken':'Gezondheid '+S.hp+'%',crimes:Math.floor(S.energy)+' energie',cars:S.cars.length+(S.cars.length===1?' auto':" auto's"),
-  casino:'8 spellen',biz:typeof income==='function'?fmt(income())+'/min':'Bedrijven',bank:fmt(S.bank),shop:'Wapens',skills:'Training',
+  casino:'8 spellen',biz:typeof income==='function'?fmt(income())+'/min':'Bedrijven',bank:fmt(typeof bankNet==='function'?bankNet():S.bank),shop:'Wapens',skills:'Training',
   fam:S.family?fam().n:'Geen familie',jail:inJail()?'Vast, '+fmtTime(jt):'Vrij',rank:'Spelers',profiel:'Codes en account'}[k]||''}
 function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('nav');bar.id='mbar';bar.className='mbar';bar.setAttribute('aria-label','Menu');document.body.appendChild(bar)}
  let sh=$('#msheet');if(!sh){sh=document.createElement('div');sh.id='msheet';sh.className='msheet';sh.setAttribute('aria-hidden','true');document.body.appendChild(sh);

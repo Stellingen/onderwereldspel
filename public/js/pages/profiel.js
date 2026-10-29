@@ -35,7 +35,7 @@ V.profiel=()=>{
   </section>
   <section class="card pf-stats"><h3>Carrière</h3>
    <div class="pf-tiles">
-    ${tile('Vermogen',fmt(S.cash+S.bank+S.cars.reduce((a,c)=>a+c.v,0)),'var(--acc)')}
+    ${tile('Vermogen',fmt(S.cash+bankNet()+S.cars.reduce((a,c)=>a+c.v,0)),'var(--acc)')}
     ${tile('Geslaagde klussen',st.crimes)}
     ${tile('Mislukt',st.fails,'var(--red)')}
     ${tile('Gevlucht',st.fled||0,'var(--green)')}

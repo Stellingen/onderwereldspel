@@ -2,7 +2,7 @@
 V.dash=()=>{
   const ri=rankIdx(S.xp),cur=RANKS[ri][1],nxt=RANKS[ri+1];
   const pct=nxt?((S.xp-cur)/(nxt[1]-cur))*100:100;
-  const carsV=S.cars.reduce((a,c)=>a+c.v,0),net=S.cash+S.bank+carsV;
+  const carsV=S.cars.reduce((a,c)=>a+c.v,0),net=S.cash+bankNet()+carsV;
   const all=[...S.npcs.map(n=>n.xp),S.xp].sort((a,b)=>b-a);const pos=all.indexOf(S.xp)+1;
   const h=new Date().getHours(),greet=h<6?'Goedenacht':h<12?'Goedemorgen':h<18?'Goedemiddag':'Goedenavond';
   const full=Math.max(0,Math.ceil((EN_MAX-S.energy)*EN_REGEN_S/60));
@@ -27,7 +27,7 @@ V.dash=()=>{
    <section class="card d-money">
     <div class="label">Totaal vermogen</div><div class="d-big">${fmt(net)}</div>
     <div class="row"><span>Contant</span><b style="color:var(--acc)">${fmt(S.cash)}</b></div>
-    <div class="row"><span>Bank</span><b>${fmt(S.bank)}</b></div>
+    <div class="row"><span>Bank</span><b>${fmt(bankNet())}</b></div>
     <div class="row"><span>Auto's (${S.cars.length})</span><b>${fmt(carsV)}</b></div>
     <div class="row"><span>Passief inkomen</span><b style="color:var(--green)">${fmt(income())}/min</b></div>
    </section>

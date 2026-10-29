@@ -132,7 +132,7 @@ app.post('/api/state', auth, async (req, res) => {
   try {
     const json = JSON.stringify(s);
     const xp = +s.xp || 0;
-    const networth = Math.floor((+s.cash || 0) + (+s.bank || 0));
+    const networth = Math.floor((+s.cash || 0) + (+s.bank || 0) + Math.max(0, +s.bankExtra || 0)); // bankExtra = deposito's + beleggingen
     const rankname = String(s.rankname || 'Rookie').slice(0, 40);
     const day = +s.day || 1;
     await db.q(
