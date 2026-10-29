@@ -49,4 +49,4 @@ function bjView(){const b=window.bj;
   ${b.done?`<div class="big" style="font-size:20px;text-align:center;margin:8px 0 12px;color:${b.res>0?'var(--green)':b.res<0?'var(--red)':'var(--fg)'}">${b.msg}</div><button class="btn gold" onclick="act.bjDeal()">Nieuwe hand</button>`
   :`<div class="flex"><button class="btn" onclick="act.bjHit()">Kaart</button><button class="btn gold" onclick="act.bjStand()">Passen</button><button class="btn" onclick="act.bjDouble()" ${b.p.length>2||S.cash<b.bet?'disabled':''}>Verdubbelen</button></div>`}`}
 
-function casinoGo(k){if(kk.busy||['dealing','dealer'].includes(bt.phase)||tp.phase==='dealing'){toast('Wacht tot het spel klaar is','bad');return}casinoTab=k;render()}
+function casinoGo(k){if((kk.busy&&!kk.inBonus)||['dealing','dealer'].includes(bt.phase)||tp.phase==='dealing'){toast('Wacht tot het spel klaar is','bad');return}casinoTab=k;render()}

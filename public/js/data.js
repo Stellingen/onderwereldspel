@@ -97,3 +97,16 @@ const RELAX=[
   d:'Snel een bakje bij Luigi. Kleine oppepper.',energy:10},
  {id:'onderduik',place:'Onderduikadres',n:'Onderduiken',col:'#b8a1ff',ic:'house',cd:90,cost:r=>400+r*250,
   d:'Een paar uur van de radar op een adres dat niemand kent. Je hitte zakt en de gezochtlijst vergeet je.',heat:40,clearWanted:true}];
+
+// Rangcodes: typ de naam van een rang bij Profiel > Code inwisselen (één keer, zodra je die rang hebt)
+const RANK_CODES={straatschoffie:150,loopjongen:400,dief:1000,boef:2500,gangster:6000,soldaat:12000,huurmoordenaar:25000,capo:50000,onderbaas:100000,consigliere:200000,peetvader:500000};
+const CODE_ALIAS={kapo:'capo'};
+
+// Verblijf: je begint onder de brug. Rusten vult je energie in `rest` seconden, maar alleen zolang je blijft.
+const HOMES=[
+ {id:'brug',n:'Onder de brug',place:'Berlagebrug',d:'Een vochtig matras, een slaapzak en het geraas van de tram. Het is niet veel, maar je kunt er even je ogen dicht doen.',p:0,r:0,rest:10,en:0,hp:0,heat:0},
+ {id:'kraak',n:'Kraakpand',place:'Amsterdam-West',d:'Een leegstaand kantoor met een kapotte lift. Je hebt een deur die op slot kan.',p:2500,r:2,rest:9,en:10,hp:10,heat:0},
+ {id:'kamer',n:'Huurkamer',place:'De Pijp',d:'Zestien vierkante meter, een eigen douche en een huisbaas die geen vragen stelt.',p:15000,r:4,rest:8,en:20,hp:25,heat:0},
+ {id:'gracht',n:'Grachtenappartement',place:'Keizersgracht',d:'Hoge plafonds, uitzicht op het water. Niemand verwacht hier een crimineel.',p:80000,r:6,rest:7,en:30,hp:50,heat:5},
+ {id:'penthouse',n:'Penthouse',place:'Zuidas',d:'Bovenste verdieping, eigen lift, bewaking in de lobby.',p:400000,r:8,rest:6,en:40,hp:100,heat:10},
+ {id:'villa',n:'Villa',place:'Wassenaar',d:'Een hek, camera\'s, een zwembad en personeel. Zo slaapt een peetvader.',p:1500000,r:10,rest:5,en:50,hp:100,heat:20}];

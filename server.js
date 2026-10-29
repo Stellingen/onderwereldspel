@@ -82,11 +82,28 @@ app.get('/api/me', auth, async (req, res) => {
 
 // Inwisselcodes: elke code één keer per account. Bedrag in euro (spelgeld).
 const CODES = { lotto: 1500, welkom: 500 };
+// Rangcodes: de naam van een rang, alleen in te wisselen als je die rang hebt bereikt (xp uit game_state).
+const RANK_CODES = {
+  straatschoffie: [150, 150], loopjongen: [500, 400], dief: [1200, 1000], boef: [2500, 2500],
+  gangster: [5000, 6000], soldaat: [9000, 12000], huurmoordenaar: [15000, 25000], capo: [25000, 50000],
+  onderbaas: [40000, 100000], consigliere: [65000, 200000], peetvader: [100000, 500000]
+};
+const ALIASES = { kapo: 'capo' };
 app.post('/api/redeem', auth, limit, async (req, res) => {
   if (!db.state.ready) return need(res);
-  const code = String((req.body && req.body.code) || '').trim().toLowerCase();
+  let code = String((req.body && req.body.code) || '').trim().toLowerCase();
   if (!code || code.length > 40) return res.status(400).json({ error: 'Vul een code in' });
-  const amount = CODES[code];
+  code = ALIASES[code] || code;
+  let amount = CODES[code];
+  if (!amount && RANK_CODES[code]) {
+    const [need, pay] = RANK_CODES[code];
+    try {
+      const [rows] = await db.q('SELECT xp FROM game_state WHERE user_id=?', [req.user.id]);
+      const xp = rows.length ? +rows[0].xp : 0;
+      if (xp < need) return res.status(403).json({ error: 'Deze rangcode werkt pas als je die rang hebt bereikt' });
+    } catch (e) { console.error(e); return res.status(500).json({ error: 'Kon je rang niet controleren' }); }
+    amount = pay;
+  }
   if (!amount) return res.status(404).json({ error: 'Deze code bestaat niet' });
   try {
     await db.q('INSERT INTO redemptions(user_id,code,amount) VALUES(?,?,?)', [req.user.id, code, amount]);

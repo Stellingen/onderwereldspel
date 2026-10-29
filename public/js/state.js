@@ -1,23 +1,24 @@
 // Spelerstatus, opslaan/laden, spelregels, arrestaties, skills, meldingen
 let S;
-function fresh(){return{name:'Jij',cash:250,bank:0,xp:0,hp:100,heat:0,jailUntil:0,cred:0,energy:100,family:null,skills:{steal:0,cars:0,charisma:0,speed:0,conditie:0},train:{},buffs:{},redeemed:[],news:[],wanted:false,lastSentence:30,cd:{},cars:[],biz:{},gear:{},stats:{crimes:0,fails:0,cars:0,won:0,lost:0},log:[],last:now(),
+function fresh(){return{name:'Jij',cash:250,bank:0,xp:0,hp:100,heat:0,jailUntil:0,cred:0,energy:100,family:null,skills:{steal:0,cars:0,charisma:0,speed:0,conditie:0},train:{},buffs:{},redeemed:[],home:'brug',news:[],wanted:false,lastSentence:30,cd:{},cars:[],biz:{},gear:{},stats:{crimes:0,fails:0,cars:0,won:0,lost:0},log:[],last:now(),
   npcs:NPC_NAMES.map((n,i)=>({n,xp:Math.floor(200*Math.pow(1.55,i))+rnd(0,300),cash:rnd(1000,50000)*(i+1)}))}}
 // Opslag: met account in de database (via /api/state), anders alleen in de browser.
 const SAVE_KEY='onderwereld_v1'+(window.__USER__?'_'+window.__USER__.toLowerCase():'');
 function load(){
   let d=window.__SERVER_STATE__||null;
   if(!d){try{d=JSON.parse(localStorage.getItem(SAVE_KEY))||JSON.parse(localStorage.getItem('onderwereld_v1'))}catch(e){}}
-  if(d&&d.npcs){const f=fresh();d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);d.skills=Object.assign(fresh().skills,d.skills);d.train=d.train||{};d.buffs=d.buffs||{};d.redeemed=d.redeemed||[];
+  if(d&&d.npcs){const f=fresh();d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);d.skills=Object.assign(fresh().skills,d.skills);d.train=d.train||{};d.buffs=d.buffs||{};d.redeemed=d.redeemed||[];d.home=d.home||'brug';
     if(d.family==='rossi')d.family='colombra';if(d.family==='syndicaat')d.family='lucchetti';if(d.energy==null)d.energy=100;
     if(window.__USER__)d.name=window.__USER__;return d}
   const f=fresh();if(window.__USER__)f.name=window.__USER__;return f}
 let _pushTimer=null,_lastPush=0;
 function pushState(beacon){
-  if(!window.__TOKEN__)return;
+  if(!window.__TOKEN__)return Promise.resolve();
   const body=JSON.stringify({state:Object.assign({},S,{rankname:RANKS[rankIdx(S.xp)][0]})});
-  try{fetch('/api/state',{method:'POST',keepalive:!!beacon,headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.__TOKEN__},body})
+  let pr=Promise.resolve();
+  try{pr=fetch('/api/state',{method:'POST',keepalive:!!beacon,headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.__TOKEN__},body})
     .then(r=>{if(r.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/')}}).catch(()=>{})}catch(e){}
-  _lastPush=Date.now()}
+  _lastPush=Date.now();return pr}
 function save(){
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}
   if(!window.__TOKEN__)return;
@@ -91,4 +92,5 @@ function addXp(x){const before=rankIdx(S.xp);S.xp+=x;const after=rankIdx(S.xp);i
 
 const EN_BASE=100,EN_REGEN_S=18; // 1 energie per 18 seconden
 // Maximale energie groeit met Conditie (sportschool): +5 per level
-Object.defineProperty(window,'EN_MAX',{get:()=>EN_BASE+5*((S&&S.skills&&S.skills.conditie)||0),configurable:true});
+const home=()=>HOMES.find(h=>h.id===((S&&S.home)||'brug'))||HOMES[0];
+Object.defineProperty(window,'EN_MAX',{get:()=>EN_BASE+5*((S&&S.skills&&S.skills.conditie)||0)+((S&&S.home)?home().en:0),configurable:true});

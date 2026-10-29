@@ -40,6 +40,7 @@ function kkView(){
    <div class="kk-layer kk-cells" id="kkCells">${kkCellsHtml(g,'none')}</div>
    <div class="kk-layer kk-fx" id="kkFx"></div>
    <div id="kkBanner"></div>
+   ${kk.paused?`<div class="kk-banner pause"><div><b>Gepauzeerd</b><span>${kk.fs?'Free spin '+kk.fs.at+' van '+kk.fs.of+' · '+fmt(kk.fs.total)+' gewonnen':'Je bonus staat klaar'}</span><button class="btn kk-go" style="margin-top:18px" onclick="kkResume()">Bonus verder afspelen</button></div></div>`:''}
   </div>
   <div class="kk-ctl-mob">${kkControls()}</div>
  </div>
@@ -67,8 +68,12 @@ function kkControls(){const b=kkBet(),buy=b*SLOT.BUY_COST;return `<div class="la
     <div style="color:var(--mute);font-size:13px;margin-bottom:10px">Dat is ${SLOT.BUY_COST}× je inzet van ${fmt(b)}. Je krijgt direct ${SLOT.FS_BY_SC[4]} free spins waarin de vakjes blijven staan. Gemiddeld levert een bonus iets minder op dan hij kost, maar de uitschieters zijn groot.</div>
     <div class="flex"><button class="btn sm" onclick="act.kkSpin(true)" ${S.cash<buy?'disabled':''}>${S.cash<buy?'Te weinig geld':'Kopen'}</button><button class="btn ghost sm" onclick="kk.confirm=false;render()">Annuleren</button></div></div>`:''}`}
 function kkStepBet(d){if(kk.busy)return;kk.bi=Math.max(0,Math.min(KK_BETS.length-1,kk.bi+d));kk.confirm=false;SFX.chip();render()}
-const kkOn=()=>page==='casino'&&casinoTab==='kluis'&&!!document.getElementById('kkCells');
-const kkWait=ms=>new Promise(r=>setTimeout(r,kkOn()?ms:0));
+const kkOn=()=>page==='casino'&&casinoTab==='kluis'&&!document.hidden&&!!document.getElementById('kkCells');
+// Tijdens een bonus pauzeert de animatie als je wegklikt; terug op de slot klik je 'Bonus verder afspelen'.
+function kkGate(){return new Promise(res=>{kk.paused=true;kk._resume=res;if(kkOn())render()})}
+function kkResume(){if(!kk.paused)return;kk.paused=false;SFX.click();render();const r=kk._resume;kk._resume=null;if(r)setTimeout(r,60)}
+const kkWait=ms=>new Promise(async r=>{if(kk.inBonus&&(!kkOn()||kk.paused))await kkGate();setTimeout(r,kkOn()?ms:0)});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&kk.paused&&page==='casino'&&casinoTab==='kluis')render()});
 const kkEl=id=>document.getElementById(id);
 function kkText(id,v){const el=kkEl(id);if(el)el.textContent=v}
 function kkInfoRefresh(){const el=kkEl('kkInfo');if(el)el.innerHTML=kkInfo()}
@@ -125,6 +130,7 @@ async function kkPlay(round,bet,isBuy){
  const baseWin=round.base.win*bet;
  if(!isBuy&&baseWin>0){kk.lastWin=baseWin;kkText('kkLast',fmt(baseWin))}
  if(round.fs){
+  kk.inBonus=true;
   const sc=isBuy?4:round.base.scatters;
   const stage=kkEl('kkStage');if(stage)stage.classList.add('vault-open');
   SFX.bonus();await kkBanner(round.fsStart+' free spins',sc+' kluizen gekraakt · vakjes blijven de hele bonus staan',2200,'fsin');
@@ -141,7 +147,7 @@ async function kkPlay(round,bet,isBuy){
   const x=round.fs.total;
   if(x>=20)SFX.big();
   await kkBanner(fmt(x*bet),(x>=200?'Episch · ':x>=100?'Megawinst · ':x>=40?'Grote winst · ':'Bonus voorbij · ')+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× inzet',2600,x>=40?'big':'');
-  kk.fs=null;kk.spots=null;
+  kk.fs=null;kk.spots=null;kk.inBonus=false;
  }else{
   const x=round.total;
   if(x>=20){SFX.big();await kkBanner(fmt(x*bet),(x>=100?'Megawinst':'Grote winst')+' · '+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× inzet',2000,'big')}
@@ -152,7 +158,7 @@ Object.assign(act,{
  async kkSpin(isBuy){
   if(kk.busy||inJail())return;const bet=kkBet(),cost=isBuy?bet*SLOT.BUY_COST:bet;
   if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
-  kk.busy=true;kk.confirm=false;SFX.spin();
+  kk.busy=true;kk.confirm=false;kk.inBonus=!!isBuy;kk.paused=false;SFX.spin();
   const round=SLOT.playRound(Math.random,{buy:isBuy});
   const pay=Math.floor(round.total*bet*100)/100;
   // Uitkomst staat vast en wordt meteen verrekend; de animatie laat alleen zien wat er gebeurde.
@@ -160,7 +166,7 @@ Object.assign(act,{
   if(pay>cost)S.stats.won+=pay-cost;else S.stats.lost+=cost-pay;
   save();render();
   try{await kkPlay(round,bet,isBuy)}catch(e){console.error(e)}
-  window.slotPending=0;kk.busy=false;kk.lastWin=pay;kk.stepWin=0;
+  window.slotPending=0;kk.busy=false;kk.inBonus=false;kk.paused=false;kk.lastWin=pay;kk.stepWin=0;
   kk.msg=pay>0?(Math.round(round.total*100)/100).toLocaleString('nl-NL')+'× inzet':'Geen winst';
   if(pay>=bet*20||isBuy)log('Kluiskraker: '+fmt(pay)+' gewonnen ('+(isBuy?'gekochte bonus, ':'')+'inzet '+fmt(cost)+')',pay>=cost?'ok':'bad');
   if(pay>=bet*50)toast('Grote winst: '+fmt(pay)+'!','lvl');

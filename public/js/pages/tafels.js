@@ -5,8 +5,13 @@ const RNK=['','','2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const SUITS=['♠','♥','♦','♣'];const isRed=s=>s==='♥'||s==='♦';
 function newShoe(decks){const a=[];for(let d=0;d<decks;d++)for(const s of SUITS)for(let r=2;r<=14;r++)a.push({r,s});
   for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function cardEl(c,i,hidden){if(hidden||!c)return `<div class="tc back" style="--i:${i}"></div>`;
-  return `<div class="tc ${isRed(c.s)?'red':''}" style="--i:${i}"><span class="tl">${RNK[c.r]}<i>${c.s}</i></span><span class="tm">${c.s}</span><span class="tr">${RNK[c.r]}<i>${c.s}</i></span></div>`}
+// Alleen nieuwe kaarten schuiven binnen; een dichte kaart die opengaat draait om.
+function cardEl(c,i,hidden){
+  if(!c)return `<div class="tc ghost"></div>`;
+  let anim='';if(!c._seen){anim='new';c._seen=1;c._hid=!!hidden}else if(c._hid&&!hidden){anim='flip';c._hid=false}
+  if(hidden)return `<div class="tc back ${anim}"></div>`;
+  return `<div class="tc ${isRed(c.s)?'red':''} ${anim}"><span class="tl">${RNK[c.r]}<i>${c.s}</i></span><span class="tm">${c.s}</span><span class="tr">${RNK[c.r]}<i>${c.s}</i></span></div>`}
+const ghosts=n=>`<div class="ghosts">${'<div class="tc ghost"></div>'.repeat(n)}</div>`;
 function chipStack(v){if(!v)return '';const cs=[];let left=v;for(const c of [...TB.CHIPS].reverse()){while(left>=c&&cs.length<6){cs.push(c);left-=c}}
   return `<div class="stack">${cs.reverse().map((c,i)=>`<i class="chip c${c}" style="--n:${i}"></i>`).join('')}<b>${fmt(v)}</b></div>`}
 let tbChip=50;
@@ -26,18 +31,18 @@ function t3Result(cs){const rs=cs.map(c=>c.r).sort((x,y)=>x-y),fl=cs.every(c=>c.
   const st=(rs[2]-rs[0]===2&&rs[1]-rs[0]===1)||(rs[0]===2&&rs[1]===3&&rs[2]===14);
   if(tr&&fl)return ['Suited trips',100];if(st&&fl)return ['Straight flush',40];if(tr)return ['Drie gelijke',30];if(st)return ['Straat',10];if(fl)return ['Flush',5];return null}
 function bjTable(){
- const b=bt,bet=b.phase==='bet',h=b.hands,dUp=b.dealer.length?bjTotal(b.phase==='play'?[b.dealer[0]]:b.dealer).t:null;
+ const b=bt,bet=b.phase==='bet',h=b.hands,dUp=b.dealer.length?bjTotal((b.phase==='play'||b.phase==='dealing')?[b.dealer[0]]:b.dealer).t:null;
  const sideOut=k=>{const r=b.side[k];return r?(r.win?`${r.name} · +${fmt(r.win)}`:'Geen'):''};
  return `<div class="table bj">
   <div class="felt">
    <div class="felt-rules"><b>Blackjack betaalt 3 tegen 2</b><span>Dealer staat op alle 17 · 6 kaartspellen · splitsen en verdubbelen toegestaan</span></div>
    <div class="zone dealer"><div class="zl">Dealer${dUp!=null?` · <b>${dUp}${b.phase==='play'?'':''}</b>`:''}</div>
-    <div class="cards">${b.dealer.map((c,i)=>cardEl(c,i,b.phase==='play'&&i===1)).join('')||'<div class="tc ghost"></div><div class="tc ghost"></div>'}</div></div>
+    ${b.dealer.length?`<div class="cards">${b.dealer.map((c,i)=>cardEl(c,i,(b.phase==='play'||b.phase==='dealing')&&i===1)).join('')}</div>`:ghosts(2)}</div>
    <div class="felt-arc">Verzekering niet beschikbaar · Side bets €${TB.SIDE_MIN}–€${TB.SIDE_MAX}</div>
    <div class="zone player">
     <div class="hands">${h.length?h.map((hd,i)=>{const t=bjTotal(hd.cards);return `<div class="hand ${b.phase==='play'&&i===b.active?'act':''} ${hd.res?'r-'+hd.res:''}">
       <div class="cards">${hd.cards.map((c,j)=>cardEl(c,j)).join('')}</div>
-      <div class="hl"><b>${t.t>21?'Dood':(t.soft&&t.t<21?t.t-10+'/'+t.t:t.t)}</b><span>${fmt(hd.bet)}${hd.dbl?' · verdubbeld':''}</span>${hd.out?`<em>${hd.out}</em>`:''}</div></div>`}).join(''):'<div class="hand"><div class="cards"><div class="tc ghost"></div><div class="tc ghost"></div></div></div>'}</div>
+      <div class="hl"><b>${t.t>21?'Dood':(t.soft&&t.t<21?t.t-10+'/'+t.t:t.t)}</b><span>${fmt(hd.bet)}${hd.dbl?' · verdubbeld':''}</span>${hd.out?`<em>${hd.out}</em>`:''}</div></div>`}).join(''):`<div class="hand">${ghosts(2)}</div>`}</div>
     <div class="spots">
      ${spot('bj','pp','Perfect Pairs',b.bets.pp,{side:1,dis:!bet,sub:'25 : 1',out:bet?'':sideOut('pp'),res:b.side.pp&&(b.side.pp.win?'win':'lose')})}
      ${spot('bj','main','Inzet',b.bets.main,{dis:!bet,sub:`€${TB.MAIN_MIN}–€${TB.MAIN_MAX.toLocaleString('nl-NL')}`})}
@@ -116,10 +121,10 @@ function tpTable(){
   <div class="felt">
    <div class="felt-rules"><b>Three Card Poker</b><span>Dealer speelt met vrouw-hoog of beter · ante-bonus wordt altijd uitbetaald</span></div>
    <div class="zone dealer"><div class="zl">Dealer${dv?` · <b>${dv.name}</b>${o.qual===false?' · speelt niet':''}`:''}</div>
-    <div class="cards">${t.d.length?t.d.map((c,i)=>cardEl(c,i,!done)).join(''):'<div class="tc ghost"></div><div class="tc ghost"></div><div class="tc ghost"></div>'}</div></div>
+    ${t.d.length?`<div class="cards">${t.d.map((c,i)=>cardEl(c,i,!done)).join('')}</div>`:ghosts(3)}</div>
    <div class="felt-arc">Pair Plus en 6-Card Bonus €${TB.SIDE_MIN}–€${TB.SIDE_MAX} · winnen ook als je past</div>
    <div class="zone player">
-    <div class="hands"><div class="hand ${o.main?'r-'+o.main:''}"><div class="cards">${t.p.length?t.p.map((c,i)=>cardEl(c,i)).join(''):'<div class="tc ghost"></div><div class="tc ghost"></div><div class="tc ghost"></div>'}</div>
+    <div class="hands"><div class="hand ${o.main?'r-'+o.main:''}">${t.p.length?`<div class="cards">${t.p.map((c,i)=>cardEl(c,i)).join('')}</div>`:ghosts(3)}
      ${pv?`<div class="hl"><b>${pv.name}</b>${o.mainOut?`<em>${o.mainOut}</em>`:''}</div>`:''}</div></div>
     <div class="spots">
      ${spot('tp','pp','Pair Plus',t.bets.pp,{side:1,dis:!bet,sub:'tot 40 : 1',out:o.ppOut||'',res:o.pp})}

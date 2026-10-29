@@ -12,8 +12,10 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   toneelschool. **Ontspanning**: privéclub (focus +8%), sauna, espresso, onderduikadres. Elke knop toont nu → daarna.
 - **Blackjack** aan een volle tafel (6 kaartspellen, dealer staat op 17, splitsen/verdubbelen, 3:2) met side bets
   Perfect Pairs en 21+3 (€10–€50). **Three Card Poker** met Ante/Play, Pair Plus en 6-Card Bonus (€10–€50). Code: `public/js/pages/tafels.js`.
+- **Verblijf**: begin onder de brug en verhuis via kraakpand, huurkamer, grachtenappartement en penthouse naar een villa.
+  Rusten vult je energie in 10 seconden (sneller in een beter huis), maar alleen zolang je op de pagina blijft.
 - **8 families**, van De Nieuwe Garde tot La Cupola
-- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500) en `welkom` (€500).
+- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500) en `welkom` (€500), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
 - **Kluiskraker**: cluster-slot op 7×7 (5+ aangrenzende gelijke symbolen), Loper als wild, vakjes die bij elke
   nieuwe winst verdubbelen (x2 tot x128), 4+ kluizen = free spins waarin de vakjes blijven staan, extra spins vanaf
   2 kluizen in de bonus (2:+2 … 5+:+8), vakjes tot x1024, bonus kopen voor 100× inzet. Gesimuleerd: RTP ±96–97% basis,

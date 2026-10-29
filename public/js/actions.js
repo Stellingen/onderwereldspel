@@ -17,19 +17,21 @@ const act={
     toast(t.n+' level '+(l+1)+': '+a[0][0].toLowerCase()+' '+a[0][1]+' → '+b[0][1],'lvl');log(t.n+' naar level '+(l+1)+' ('+t.place+')','ok')}
   else toast(t.place+': sessie '+S.train[id]+' van '+trainNeed(l)+' gedaan');
   save();render()},
- async redeem(raw){const code=String(raw||'').trim().toLowerCase();const btn=document.getElementById('codeBtn');
+ async redeem(raw){let code=String(raw||'').trim().toLowerCase();code=CODE_ALIAS[code]||code;const btn=document.getElementById('codeBtn');
   if(!code){redeemMsg={ok:false,t:'Vul eerst een code in.'};render();return}
   S.redeemed=S.redeemed||[];
   if(S.redeemed.includes(code)){redeemMsg={ok:false,t:'Je hebt deze code al gebruikt.'};render();return}
+  if(RANK_CODES[code]){const ri=RANKS.findIndex(r=>r[0].toLowerCase()===code);if(rankIdx(S.xp)<ri){redeemMsg={ok:false,t:'Deze code werkt pas als je '+RANKS[ri][0]+' bent. Nog '+Math.ceil(RANKS[ri][1]-S.xp).toLocaleString('nl-NL')+' XP te gaan.'};render();return}}
   if(btn){btn.disabled=true;btn.textContent='Controleren…'}
   let amount=0;
+  if(window.__TOKEN__)await pushState();
   if(window.__TOKEN__){
     try{const r=await fetch('/api/redeem',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.__TOKEN__},body:JSON.stringify({code})});
       const j=await r.json().catch(()=>({}));
       if(!r.ok){if(r.status===409&&!S.redeemed.includes(code))S.redeemed.push(code);redeemMsg={ok:false,t:j.error||'Kon de code niet inwisselen.'};save();render();return}
       amount=j.amount}
     catch(e){redeemMsg={ok:false,t:'De server is niet bereikbaar. Probeer het later opnieuw.'};render();return}
-  }else{const LOCAL={lotto:1500,welkom:500};amount=LOCAL[code];if(!amount){redeemMsg={ok:false,t:'Deze code bestaat niet.'};render();return}}
+  }else{const LOCAL=Object.assign({lotto:1500,welkom:500},RANK_CODES);amount=LOCAL[code];if(!amount){redeemMsg={ok:false,t:'Deze code bestaat niet.'};render();return}}
   S.cash+=amount;S.redeemed.push(code);redeemMsg={ok:true,t:'Gelukt! '+fmt(amount)+' is bijgeschreven op je contant geld.'};
   toast('Code '+code.toUpperCase()+': +'+fmt(amount),'lvl');log('Code '+code.toUpperCase()+' ingewisseld: +'+fmt(amount),'ok');
   save();if(typeof pushState==='function')pushState();render()},
