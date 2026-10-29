@@ -44,8 +44,11 @@
       const h={Authorization:'Bearer '+token};
       const me=await fetch('/api/me',{headers:h});
       if(me.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/?login=1');return}
+      if(me.status===403){const j=await me.json().catch(()=>({}));try{localStorage.removeItem('ow_token')}catch(e){}
+        document.getElementById('boot').innerHTML='<div class="ban"><span>ONDERWERELD</span><b>Account geblokkeerd</b><p></p><a href="/">Terug naar de voorpagina</a></div>';document.querySelector('#boot p').textContent=j.error||'Dit account is geblokkeerd.';return}
       if(me.ok){
         window.__TOKEN__=token;const mj=await me.json();window.__USER__=mj.username;window.__SINCE__=mj.since||null;window.__REDEEMED__=mj.redeemed||[];
+        window.__TIER__=mj.tier!=null?+mj.tier:null;window.__ADMIN__=!!mj.admin;
         // dit apparaat wordt het actieve: andere apparaten mogen daarna niet meer opslaan
         const sid=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');window.__SID__=sid;
         const st=await fetch('/api/state?sid='+sid,{headers:h});
@@ -54,7 +57,7 @@
     }catch(e){/* server onbereikbaar: offline verder */}
   }
   const files=['js/slot.js','js/vis.js','js/market.js','js/data.js','js/state.js','js/ui.js','js/flee.js','js/carheist.js',
-    'js/pages/dashboard.js','js/pages/misdaden.js','js/pages/casino.js','js/pages/skills.js',
+    'js/pages/dashboard.js','js/pages/misdaden.js','js/pages/hits.js','js/pages/casino.js','js/pages/skills.js',
     'js/pages/wapens.js','js/pages/bajes.js','js/pages/ranglijst.js','js/pages/profiel.js',
     'js/actions.js','js/sfx.js','js/icons.js','js/pages/kluiskraker.js','js/pages/visdief.js','js/pages/tafels.js','js/pages/roulette.js','js/pages/munt.js','js/pages/mines.js','js/pages/vlucht.js','js/pages/bezit.js','js/pages/bank.js','js/pages/families.js','js/pages/verblijf.js','js/pages/autos.js','js/main.js'];
   for(const f of files){await new Promise(res=>{const s=document.createElement('script');s.src=f;s.onload=res;s.onerror=res;document.body.appendChild(s)})}

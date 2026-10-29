@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#08090b">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<title>Beheer · Onderwereld</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Big+Shoulders+Text:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<header class="ah">
+  <a class="ah-brand" href="/admin"><span class="mark">O</span><span><b>Onderwereld</b><small>Beheer</small></span></a>
+  <nav class="ah-tabs" id="tabs" hidden>
+    <button data-tab="spelers" class="on">Spelers</button>
+    <button data-tab="log">Logboek</button>
+  </nav>
+  <div class="ah-me" id="me"></div>
+</header>
+<main id="app"><div class="a-boot">Laden…</div></main>
+<div id="toasts" aria-live="polite"></div>
+<div id="dlg" hidden></div>
+<script src="/js/data.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>

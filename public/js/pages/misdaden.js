@@ -15,17 +15,18 @@ V.crimes=()=>{
    <div class="cr-s"><div><span>Buit</span><b class="g">${fmtK(c.min*mult)} – ${fmtK(c.max*mult)}</b></div>
     <div><span>Kans</span><b class="${ch>60?'up':ch>35?'':'dn'}">${ch}%</b><i class="cr-ch"><i style="width:${ch}%"></i></i></div>
     <div><span>Energie</span><b>${c.en}</b></div><div><span>Mislukt</span><b>${fmtTime(jailSec(c.jail))} cel</b><small class="lvl${c.flee}">vluchten ${FLEE_LEVELS[c.flee].label}</small></div>
-    <div class="cr-x"><span>Erbij</span><b>+${c.xp} XP</b>${c.cr?`<small>+${c.cr} cred</small>`:''}</div></div>
+    <div class="cr-x"><span>Erbij</span><b>+${c.xp} XP</b>${c.cr?`<small>+${Math.round(c.cr*credMult(''))} cred (perfect ${Math.round(c.cr*credMult('perfect'))})</small>`:''}</div></div>
    <button class="btn ${best&&!lock&&!left&&!tired&&!inJail()?'':''}" onclick="act.crime('${c.id}')" ${lock||left||inJail()||tired?'disabled':''}>${label}</button>
    ${left?`<div class="cd" style="transform:scaleX(${Math.min(1,left/crimeCd(c))})"></div>`:''}</div>`};
  const best=avail.slice().sort((a,b)=>crEv(b)-crEv(a)).slice(0,3);
- const bon=[['Rang',ri*RANK_LOOT+rankLvlBonus()],['Familie',fam().loot/100],['Uitrusting',gearFx('buit')],['Hacken',sk('hack')*SK.hack.loot/100],['Buit-boost',buffLoot()/100],['VIP',isVip()?VIP_LOOT:0]].filter(x=>x[1]>0);
+ const bon=[['Rang',ri*RANK_LOOT+rankLvlBonus()],['Familie',fam().loot/100],['Uitrusting',gearFx('buit')],['Hacken',sk('hack')*SK.hack.loot/100],['Buit-boost',buffLoot()/100],[lidName(),tierLoot()]].filter(x=>x[1]>0);
  const chb=[['Rang',ri*2],['Uitrusting',gearBonus()],['Familie',fam().chance],['Vingervlugheid',sk('steal')*SK.steal.all],['Focus',focusPct()]].filter(x=>x[1]>0);
  const pct=v=>'+'+Math.round(v*100)+'%';
  return `<h1>Misdaden</h1>
  <section class="card hud cr-hero">
   <div class="cr-h-k"><span class="label">Buit</span><b class="g">×${mult.toLocaleString('nl-NL',{maximumFractionDigits:2})}</b><em>${bon.map(([l,v])=>`${l} ${pct(v)}`).join(' · ')||'Nog geen bonus'}</em></div>
-  <div class="cr-h-k"><span class="label">Extra slaagkans</span><b class="up">+${Math.round(chb.reduce((a,x)=>a+x[1],0))}%</b><em>${chb.map(([l,v])=>`${l} +${Math.round(v)}%`).join(' · ')||'Nog geen bonus'}${S.heat>=4?` · hitte −${Math.floor(S.heat/4)}%`:''}</em></div>
+  <div class="cr-h-k"><span class="label">Extra slaagkans</span><b class="up">+${Math.round(chb.reduce((a,x)=>a+x[1],0))}%</b><em>${chb.map(([l,v])=>`${l} +${Math.round(v)}%`).join(' · ')||'Nog geen bonus'}${S.heat>=4?` · hitte −${Math.floor(S.heat/4)}%`:''}${tierK()?` · daarna ×${(1+tierK()).toLocaleString('nl-NL')} als ${lidName()}`:''}</em></div>
+  <div class="cr-h-k"><span class="label">Straatcredit</span><b style="color:var(--violet)">×${credMult('').toLocaleString('nl-NL',{maximumFractionDigits:2})}</b><em>Uitrusting +${Math.round(gearCredK()*100)}%${tierK()?` · ${lidName()} +${Math.round(tierK()*100)}%`:''} · perfect ×1,5, netjes ×1,2 · je hebt ${S.cred}</em></div>
   <div class="cr-h-k"><span class="label">Energie</span><b style="color:var(--ice)">${Math.floor(S.energy)}/${EN_MAX}</b><div class="bar"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div><em>1 punt per ${EN_REGEN_S} s${S.energy<EN_MAX?' · <a href="#ontspannen">bijvullen</a>':''}</em></div>
   <div class="cr-h-k"><span class="label">Hitte</span><b style="color:${S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--fg)'}">${S.heat}%</b><div class="bar"><i style="width:${S.heat}%;background:${S.heat>60?'var(--red)':'var(--acc)'}"></i></div><em>Elke 4% hitte = −1% kans</em></div>
  </section>

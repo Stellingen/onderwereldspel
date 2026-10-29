@@ -29,7 +29,8 @@ V.dash=()=>{
     <div class="row"><span>Contant</span><b style="color:var(--acc)">${fmt(S.cash)}</b></div>
     <div class="row"><span>Bank</span><b>${fmt(bankNet())}</b></div>
     <div class="row"><span>Auto's (${S.cars.length})</span><b>${fmt(carsV)}</b></div>
-    <div class="row"><span>Passief inkomen</span><b style="color:var(--green)">${fmt(income())}/min</b></div>
+    <div class="row"><span>Bedrijven</span><b style="color:var(--green)">${fmt(income())}/dag</b></div>
+    <div class="row"><span>In de kas · uitbetaling ${new Date(nextPayout()).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})}</span><b>${fmt(S.kas||0)}</b></div>
    </section>
    ${meter('Energie',Math.floor(S.energy)+'/'+EN_MAX,S.energy/EN_MAX*100,'var(--ice)',full?`<a class="btn ghost sm" href="#ontspannen">Vol over ${full} min · ontspannen</a>`:'Helemaal vol')}
    ${meter('Gezondheid',S.hp+'%',S.hp,S.hp>50?'var(--green)':'var(--red)',`<button class="btn ghost sm" onclick="act.heal()" ${S.hp>=100?'disabled':''}>Kliniek · ${fmt(healCost())}</button>`)}

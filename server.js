@@ -4,6 +4,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
+const mountAdmin = require('./admin');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -59,10 +60,11 @@ app.post('/api/login', limit, async (req, res) => {
   const { username, password } = req.body || {};
   if (!validName(username) || typeof password !== 'string') return res.status(400).json({ error: 'Ongeldige invoer' });
   try {
-    const [rows] = await db.q('SELECT id,display,password_hash FROM users WHERE username=?', [username.toLowerCase()]);
+    const [rows] = await db.q('SELECT id,display,password_hash,banned,ban_reason FROM users WHERE username=?', [username.toLowerCase()]);
     if (!rows.length) return res.status(401).json({ error: 'Onbekende gebruiker of verkeerd wachtwoord' });
     const ok = await bcrypt.compare(password, rows[0].password_hash);
     if (!ok) return res.status(401).json({ error: 'Onbekende gebruiker of verkeerd wachtwoord' });
+    if (rows[0].banned) return res.status(403).json({ error: 'Dit account is geblokkeerd' + (rows[0].ban_reason ? ': ' + rows[0].ban_reason : '') + '.', code: 'banned' });
     res.json({ token: sign(rows[0]), username: rows[0].display });
   } catch (e) { console.error(e); res.status(500).json({ error: 'Serverfout bij inloggen' }); }
 });
@@ -71,11 +73,16 @@ app.get('/api/me', auth, async (req, res) => {
   const out = { username: req.user.u };
   if (db.state.ready) {
     try {
-      const [rows] = await db.q('SELECT created_at FROM users WHERE id=?', [req.user.id]);
-      if (rows.length) out.since = rows[0].created_at;
+      const [rows] = await db.q('SELECT created_at, username, tier, is_admin, banned, ban_reason FROM users WHERE id=?', [req.user.id]);
+      if (!rows.length) return res.status(401).json({ error: 'Account bestaat niet meer' });
+      if (rows[0].banned) return res.status(403).json({ error: 'Dit account is geblokkeerd' + (rows[0].ban_reason ? ': ' + rows[0].ban_reason : '') + '.', code: 'banned' });
+      out.since = rows[0].created_at;
       const [red] = await db.q('SELECT code FROM redemptions WHERE user_id=?', [req.user.id]);
       // alleen codes die nog bestaan (verwijderde codes zoals broke en tester verdwijnen uit 'gebruikte codes')
       out.redeemed = red.map(r => r.code).filter(c => CODES[c] || RANK_CODES[c]);
+      // lidmaatschap: 0 gewoon, 1 VIP, 2 High roller (door de beheerder); zonder keuze telt de oude VIP-code
+      out.tier = rows[0].tier != null ? +rows[0].tier : (out.redeemed.includes('vip') ? 1 : 0);
+      out.admin = !!rows[0].is_admin || admin.ADMIN_USERS().includes(rows[0].username);
     } catch (e) { console.error(e); }
   }
   res.json(out);
@@ -120,9 +127,12 @@ app.post('/api/redeem', auth, limit, async (req, res) => {
 // Eén apparaat tegelijk: wie het spel opent, claimt de sessie (sid). Opslaan vanaf een ander (ouder) apparaat wordt geweigerd,
 // zodat twee apparaten elkaars voortgang niet kunnen overschrijven of geld dubbel kunnen uitgeven.
 const okSid = s => typeof s === 'string' && /^[a-f0-9]{16,40}$/.test(s);
+async function isBanned(id) { const [r] = await db.q('SELECT banned FROM users WHERE id=?', [id]); return !r.length || !!r[0].banned; }
+const banned = res => res.status(403).json({ error: 'Dit account is geblokkeerd.', code: 'banned' });
 app.get('/api/state', auth, async (req, res) => {
   if (!db.state.ready) return need(res);
   try {
+    if (await isBanned(req.user.id)) return banned(res);
     const sid = okSid(req.query.sid) ? req.query.sid : null;
     if (sid) await db.q('UPDATE game_state SET sid=? WHERE user_id=?', [sid, req.user.id]);
     const [rows] = await db.q('SELECT state, rev FROM game_state WHERE user_id=?', [req.user.id]);
@@ -134,7 +144,8 @@ app.get('/api/session', auth, async (req, res) => {
   if (!db.state.ready) return res.json({ active: true });
   try {
     const [rows] = await db.q('SELECT sid FROM game_state WHERE user_id=?', [req.user.id]);
-    res.json({ active: !rows.length || !rows[0].sid || rows[0].sid === req.query.sid });
+    const sid = rows.length ? String(rows[0].sid || '') : '';
+    res.json({ active: !sid || sid === req.query.sid, reason: sid.startsWith('adm') ? 'admin' : 'device' });
   } catch (e) { res.json({ active: true }); }
 });
 
@@ -143,9 +154,12 @@ app.post('/api/state', auth, async (req, res) => {
   const s = req.body && req.body.state, sid = okSid(req.body && req.body.sid) ? req.body.sid : null;
   if (!s || typeof s !== 'object') return res.status(400).json({ error: 'Geen status meegegeven' });
   try {
+    if (await isBanned(req.user.id)) return banned(res);
     const [cur] = await db.q('SELECT sid, rev FROM game_state WHERE user_id=?', [req.user.id]);
     if (cur.length && cur[0].sid && cur[0].sid !== sid)
-      return res.status(409).json({ error: 'Je speelt op een ander apparaat verder.', code: 'other_device' });
+      return String(cur[0].sid).startsWith('adm')
+        ? res.status(409).json({ error: 'Je account is bijgewerkt door een beheerder.', code: 'admin_update' })
+        : res.status(409).json({ error: 'Je speelt op een ander apparaat verder.', code: 'other_device' });
     const rev = (cur.length ? cur[0].rev : 0) + 1;
     const json = JSON.stringify(s);
     const xp = +s.xp || 0;
@@ -166,13 +180,19 @@ app.get('/api/leaderboard', async (req, res) => {
   try {
     const [rows] = await db.q(
       `SELECT u.display AS name, g.xp, g.networth, g.rankname, g.day,
-         EXISTS(SELECT 1 FROM redemptions r WHERE r.user_id=u.id AND r.code='vip') AS vip
+         COALESCE(u.tier, EXISTS(SELECT 1 FROM redemptions r WHERE r.user_id=u.id AND r.code='vip')) AS vip
        FROM game_state g JOIN users u ON u.id=g.user_id
+       WHERE u.banned=0
        ORDER BY g.xp DESC LIMIT 25`
     );
     res.json({ players: rows });
   } catch (e) { console.error(e); res.json({ players: [] }); }
 });
+
+// Beheer (dashboard op /admin)
+// rangnaam bij een aantal XP (zelfde drempels als de rangcodes)
+const rankOf = xp => { let n = 'Rookie'; for (const [k, [needXp]] of Object.entries(RANK_CODES)) if (xp >= needXp) n = k[0].toUpperCase() + k.slice(1); return n; };
+const admin = mountAdmin(app, { auth, db, need, rankOf });
 
 // Frontend
 app.use(express.static(PUBLIC, { extensions: ['html'] }));

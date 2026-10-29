@@ -3,7 +3,8 @@
 const KK_BETS_STD=[10,20,30,40,50,100,150,200,250,300,400,500,750,1000,1500,2000,3000,5000,7500,10000,15000,20000,25000,30000,40000,50000];
 // Code 'trainwreck': high roller, inzet tot €500.000 per spin
 const KK_HIGH=[100000,200000,250000,500000];
-const isHighRoller=()=>!!(S&&S.redeemed&&S.redeemed.includes('trainwreck'));
+// hoge inzetten: High roller-lidmaatschap of de code trainwreck
+const isHighRoller=()=>isHR()||!!(S&&S.redeemed&&S.redeemed.includes('trainwreck'));
 const kkBets=()=>isHighRoller()?KK_BETS_STD.concat(KK_HIGH):KK_BETS_STD;
 window.kk={bi:4,busy:false,turbo:false,confirm:false,grid:null,spots:null,msg:'Kies je inzet en draai',stepWin:0,fs:null,lastWin:0,shown:0};
 const kkBet=()=>{const B=kkBets();if(kk.bi>=B.length)kk.bi=B.length-1;return B[kk.bi]};
@@ -36,10 +37,13 @@ function kkInfo(){const fs=kk.fs;const pend=window.slotPending||0;
    ${fs?`<div class="kk-stat fsb"><span class="label">${fs.kind==='super'?'Superbonus':'Free spins'}</span><b id="kkMsg">${fs.at} / ${fs.of}</b></div>`:`<div class="kk-stat"><span class="label">Status</span><b id="kkMsg" class="sm">${kk.msg}</b></div>`}`}
 // Gouden baren in de gewone bonus: ze blijven staan, bij 3 is het de max win
 const kkBarsHtml=n=>`<span class="kk-bars" aria-label="${n} van ${SLOT.BAR.need} Gouden baren">${Array.from({length:SLOT.BAR.need},(_,i)=>`<i class="${i<n?'on':''}">${kkSvg('baar')}</i>`).join('')}</span>`;
+// doorgerekend per lidmaatschap (sim9.js en simbuy4.js): bonus 1 op …, superbonus 1 op …, RTP spinnen en bonus kopen
+const KK_TIER=[{b:200,sup:'15.000',rtp:'93',buy:'94,5'},{b:175,sup:'13.000',rtp:'95',buy:'95,5'},{b:145,sup:'7.500',rtp:'97',buy:'96,5'}];
+const kkTierTag=()=>isHR()?'<span class="vip hr">HIGH ROLLER</span>':isVip()?'<span class="vip gold">VIP</span>':'';
 function kkSubHtml(){const fs=kk.fs;return fs?(fs.kind==='super'?`<span class="vip gold">Superbonus</span><span class="kk-subtxt"> Meer lopers. Eén Gouden baar = max win</span>`:`<span class="vip">Bonus</span>${kkBarsHtml(fs.bars||0)}<span class="kk-subtxt"> 3 Gouden baren = max win</span>`)
-  :`${isVip()?'<span class="vip gold">VIP</span>':''}<span class="kk-subtxt">${isVip()?' bonus ±1 op 135 · superbonus ±1 op 7.000 · RTP ±96% · bonus kopen ±97%':' bonus ±1 op 200 · RTP ±92,5% · bonus kopen ±93%'} · max ${SLOT.MAX_WIN.toLocaleString('nl-NL')}× je inzet</span>`}
-function kkPayTab(){const b=kkBet(),sizes=[5,6,7,8,9,10,11,12,13,14,15],k=SLOT.BASE_K*(isVip()?SLOT.VIP_K:1),fsPct=Math.round(SLOT.FS_K/k*100);
- return `<div class="kk-pay-h"><div class="label">Uitbetaling per cluster bij ${fmt(b)} inzet (basisspel${isVip()?' als VIP':''} · in de bonus ${fsPct}% daarvan, maar de vakjes blijven staan)</div><span class="label">Aantal aaneengesloten symbolen</span></div>
+  :`${kkTierTag()}<span class="kk-subtxt">${(I=>` bonus ±1 op ${I.b} · superbonus ±1 op ${I.sup} · RTP ±${I.rtp}% · bonus kopen ±${I.buy}%`)(KK_TIER[tier()])} · max ${SLOT.MAX_WIN.toLocaleString('nl-NL')}× je inzet</span>`}
+function kkPayTab(){const b=kkBet(),sizes=[5,6,7,8,9,10,11,12,13,14,15],k=SLOT.BASE_K*(SLOT.VIP_KT[tier()]||1),fsPct=Math.round(SLOT.FS_K/k*100);
+ return `<div class="kk-pay-h"><div class="label">Uitbetaling per cluster bij ${fmt(b)} inzet (basisspel${isVip()?' als '+lidName():''} · in de bonus ${fsPct}% daarvan, maar de vakjes blijven staan)</div><span class="label">Aantal aaneengesloten symbolen</span></div>
   <div class="kk-ptab-w"><div class="kk-ptab" style="grid-template-columns:44px repeat(${sizes.length},minmax(72px,1fr))"><span></span>${sizes.map(n=>`<span class="label">${n}${n===15?'+':''}</span>`).join('')}
    ${SLOT.SYMS.slice().reverse().map(s=>`<span>${kkSvg(s.id)}</span>${sizes.map(n=>`<span>${fmt(s.pay[Math.min(n,15)-SLOT.MIN_CLUSTER]*k*b)}</span>`).join('')}`).join('')}</div></div>`}
 function kkView(){
@@ -67,7 +71,7 @@ function kkView(){
    <div><span class="kk-mini mk"></span><p><b>Vakje</b> raakt gemarkeerd waar een winst verdwijnt. Opnieuw raak: x2, dan x4, x8 … tot x${SLOT.MAX_SPOT}. In de bonus blijven vakjes staan.</p></div>
    <div><span>${kkSvg('kluis')}</span><p><b>3 kluizen</b> = ${SLOT.FS_BY_SC[3]} free spins, <b>4</b> = ${SLOT.FS_BY_SC[4]}, <b>5</b> = ${SLOT.FS_BY_SC[5]}. Extra kluizen <b>tumbelen erin</b>: zolang er winst valt, vallen er nieuwe symbolen in en liggen er al 3 kluizen, dan valt een 4e, 5e of 6e makkelijker in. Geen winst, geen tumble. In de bonus blijft elke <b>Gouden baar</b> staan; heb je er 3, dan win je de max win. Hoe meer kluizen bij de start, hoe meer spins en hoe groter die kans. Vakjes kunnen oplopen tot x${SLOT.MAX_SPOT.toLocaleString('nl-NL')}, maar je wint nooit meer dan ${SLOT.MAX_WIN.toLocaleString('nl-NL')}× je inzet per ronde. In de bonus: 2 kluizen = +${SLOT.FS_RETRIG[2]}, 3 = +${SLOT.FS_RETRIG[3]}, 4 = +${SLOT.FS_RETRIG[4]}, 5+ = +${SLOT.FS_RETRIG[5]} spins.</p></div>
    <div><span>${kkSvg('baar')}</span><p><b>6+ kluizen = superbonus</b>: ${SLOT.SUPER_SPINS} spins met veel meer lopers (dus veel grotere winsten), 25% meer kans op extra kluizen en hier is één <b>Gouden baar</b> al genoeg voor ${SLOT.MAX_WIN.toLocaleString('nl-NL')}× je inzet. Ook met een gekochte bonus kun je doortumbelen tot de superbonus.</p></div>
-   <div><span class="kk-mini key">␣</span><p><b>Spatiebalk</b> = draaien, ingedrukt houden blijft draaien. Klik op je inzet om meteen een bedrag te kiezen.${isVip()?' Als <b>VIP</b> kom je veel vaker in de bonus (±1 op 135 in plaats van 200), tumbelt er vaker een extra kluis in (ook bij een gekochte bonus) en haal je de superbonus ruim twee keer zo vaak (±1 op 7.000 in plaats van 14.500). Daarvoor betalen clusters in het basisspel 18% minder.':' <b>VIP</b>-spelers komen veel vaker in de bonus (±1 op 135), krijgen vaker een extra kluis en halen de superbonus ruim twee keer zo vaak.'} De max win is ${SLOT.MAX_WIN.toLocaleString('nl-NL')}× je inzet per ronde, ook bij een gekochte bonus: via de vakjes (tot x${SLOT.MAX_SPOT.toLocaleString('nl-NL')}) of met 3 Gouden baren.</p></div>
+   <div><span class="kk-mini key">␣</span><p><b>Spatiebalk</b> = draaien, ingedrukt houden blijft draaien. Klik op je inzet om meteen een bedrag te kiezen.${(I=>isVip()?` Als <b>${lidName()}</b> kom je vaker in de bonus (±1 op ${I.b} in plaats van ${KK_TIER[0].b}), tumbelt er vaker een extra kluis in (ook bij een gekochte bonus) en haal je de superbonus vaker (±1 op ${I.sup}). Daarvoor betalen clusters in het basisspel ${Math.round((1-SLOT.VIP_KT[tier()])*100)}% minder.`:` <b>VIP</b> komt ±15% vaker in de bonus (±1 op ${KK_TIER[1].b}), <b>High roller</b> ±40% (±1 op ${KK_TIER[2].b}).`)(KK_TIER[tier()])} De max win is ${SLOT.MAX_WIN.toLocaleString('nl-NL')}× je inzet per ronde, ook bij een gekochte bonus: via de vakjes (tot x${SLOT.MAX_SPOT.toLocaleString('nl-NL')}) of met 3 Gouden baren.</p></div>
   </div>
  </section></div>`;
 }
@@ -81,7 +85,7 @@ function kkSeedHtml(){const sd=kkSeed(),p=sd.prev;
   <div class="kk-seed-i"><span class="label">Op deze seed</span><b>${sd.spins} spin${sd.spins===1?'':'s'} · ${sd.bon} bonus${sd.bon===1?'':'sen'}${sd.sup?' · '+sd.sup+' super':''}</b></div>
   ${p?`<div class="kk-seed-i prev"><span class="label">Vorige seed</span><b>${p.id} · ${p.spins} spins · ${p.bon} bonus${p.bon===1?'':'sen'}</b></div>`:''}
   <button class="btn ghost sm" onclick="act.kkNewSeed()" ${kk.busy?'disabled':''}>Nieuwe seed</button></div>`}
-function kkConfirm(){const b=kkBet(),buy=b*SLOT.BUY_COST;return `<div class="kk-buyinfo"><b>Bonus kopen staat aan · ${fmt(buy)} per bonus</b><span>Elke klik op de grote knop koopt een bonus voor ${fmt(buy)} (${SLOT.BUY_COST}× je inzet van ${fmt(b)}). Je krijgt altijd 3 kluizen; valt er vanzelf al een kluis, dan heb je er meteen 4. Valt er winst, dan tumbelt hij door en kunnen er nog meer bij vallen (vaker dan bij gewoon spinnen${isVip()?', en als VIP valt er vaker vanzelf een':''}). Een gekochte bonus geeft ${SLOT.BUY_EXTRA} extra free spin: 3 kluizen = ${SLOT.FS_BY_SC[3]+SLOT.BUY_EXTRA}, 4 = ${SLOT.FS_BY_SC[4]+SLOT.BUY_EXTRA}, 5 = ${SLOT.FS_BY_SC[5]+SLOT.BUY_EXTRA}, superbonus ${SLOT.SUPER_SPINS+SLOT.BUY_EXTRA_SUP}. Winst in die spin krijg je ook. Zet hem uit om weer gewoon te draaien.</span></div>`}
+function kkConfirm(){const b=kkBet(),buy=b*SLOT.BUY_COST;return `<div class="kk-buyinfo"><b>Bonus kopen staat aan · ${fmt(buy)} per bonus</b><span>Elke klik op de grote knop koopt een bonus voor ${fmt(buy)} (${SLOT.BUY_COST}× je inzet van ${fmt(b)}). Je krijgt altijd 3 kluizen; valt er vanzelf al een kluis, dan heb je er meteen 4. Valt er winst, dan tumbelt hij door en kunnen er nog meer bij vallen (vaker dan bij gewoon spinnen${isVip()?', en als '+lidName()+' valt er vaker vanzelf een':''}). Een gekochte bonus geeft ${SLOT.BUY_EXTRA} extra free spin: 3 kluizen = ${SLOT.FS_BY_SC[3]+SLOT.BUY_EXTRA}, 4 = ${SLOT.FS_BY_SC[4]+SLOT.BUY_EXTRA}, 5 = ${SLOT.FS_BY_SC[5]+SLOT.BUY_EXTRA}, superbonus ${SLOT.SUPER_SPINS+SLOT.BUY_EXTRA_SUP}. Winst in die spin krijg je ook. Zet hem uit om weer gewoon te draaien.</span></div>`}
 // Inzet kiezen in een pop-up (Kluiskraker en Visdief): klik op een bedrag en de pop-up gaat meteen dicht.
 // game = 'kk' of 'vd'. Toont per bedrag ook wat een gekochte bonus kost.
 function slotBetPop(game){const B=kkBets(),cur=game==='kk'?kk.bi:vd.bi,cost=game==='kk'?SLOT.BUY_COST:VISD.BUY_COST,buy=game==='kk'?kk.buyMode:vd.buyMode;
@@ -245,7 +249,7 @@ Object.assign(act,{
   if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
   kk.busy=true;kk.confirm=false;kk.pick=false;kk.inBonus=!!isBuy;kk.paused=false;SFX.spin();
   const sd=kkSeed(),rng=SLOT.seedRng(sd.s+':'+sd.c+':'+sd.n);sd.n++;
-  const round=SLOT.playRound(rng,{buy:isBuy,vip:isVip()});
+  const round=SLOT.playRound(rng,{buy:isBuy,vip:tier()});
   if(isBuy)sd.buys++;else{sd.spins++;if(round.kind)sd.bon++;if(round.kind==='super')sd.sup++}
   const pay=Math.floor(round.total*bet*100)/100;
   // Uitkomst staat vast en wordt meteen verrekend; de animatie laat alleen zien wat er gebeurde.

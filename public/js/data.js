@@ -66,22 +66,31 @@ const RANK_LOOT=.06;
 // Families. r = vanaf rang, cred = straatcredit om binnen te komen. chance/loot/jail = familiebonus op het hoogste familielevel
 // (je begint als Aspirant met 50% daarvan, elk familielevel +10%). perk = het eigen voordeel van de familie (ook 50% → 100%).
 const FAMILIES=[
- {id:'garde',n:'De Nieuwe Garde',m:'NG',d:'Jonge honden uit Amsterdam-West. Snel, brutaal en loyaal tot op het bot.',r:2,cred:20,chance:4,loot:0,jail:0,col:'var(--ice)',
+ {id:'garde',n:'De Nieuwe Garde',m:'NG',d:'Jonge honden uit Amsterdam-West. Snel, brutaal en loyaal tot op het bot.',r:2,cred:30,chance:4,loot:0,jail:0,col:'var(--ice)',
   perk:{n:'Snel en brutaal',d:'kortere wachttijd bij klussen',fx:{cd:.2}}},
- {id:'kurogumi',n:'Kurogumi',m:'黒',d:'Een stille clan met tatoeages tot aan de pols. Bezit de helft van de nachtclubs.',r:3,cred:45,chance:5,loot:5,jail:5,col:'var(--fg)',
+ {id:'kurogumi',n:'Kurogumi',m:'黒',d:'Een stille clan met tatoeages tot aan de pols. Bezit de helft van de nachtclubs.',r:3,cred:70,chance:5,loot:5,jail:5,col:'var(--fg)',
   perk:{n:'De nachtclubs',d:'meer passief inkomen',fx:{inc:.2}}},
- {id:'colombra',n:'Famiglia Colombra',m:'FC',d:'Ouderwetse Italianen die nooit vergeten wie hen een gunst schuldig is.',r:4,cred:80,chance:6,loot:12,jail:10,col:'var(--green)',
+ {id:'colombra',n:'Famiglia Colombra',m:'FC',d:'Ouderwetse Italianen die nooit vergeten wie hen een gunst schuldig is.',r:4,cred:120,chance:6,loot:12,jail:10,col:'var(--green)',
   perk:{n:'Een gunst terug',d:'lagere borg',fx:{bail:.4}}},
- {id:'volkov',n:'Bratva Volkov',m:'BV',d:'Oost-Europese broederschap. Gedisciplineerd, hard en onverwoestbaar.',r:5,cred:130,chance:7,loot:15,jail:15,col:'var(--blue)',
+ {id:'volkov',n:'Bratva Volkov',m:'BV',d:'Oost-Europese broederschap. Gedisciplineerd, hard en onverwoestbaar.',r:5,cred:200,chance:7,loot:15,jail:15,col:'var(--blue)',
   perk:{n:'Onverwoestbaar',d:'makkelijker vluchten en ontsnappen',fx:{flee:.25,esc:.1}}},
- {id:'halcones',n:'Los Halcones',m:'LH',d:'Een kartel met routes van de Rotterdamse haven tot diep in Zuid-Amerika.',r:6,cred:200,chance:8,loot:22,jail:20,col:'var(--acc2)',
+ {id:'halcones',n:'Los Halcones',m:'LH',d:'Een kartel met routes van de Rotterdamse haven tot diep in Zuid-Amerika.',r:6,cred:300,chance:8,loot:22,jail:20,col:'var(--acc2)',
   perk:{n:'De routes',d:'gestolen auto\'s zijn meer waard',fx:{car:.25}}},
- {id:'lucchetti',n:'Famiglia Lucchetti',m:'FL',d:'Kleermakers, advocaten en twee rechters op de loonlijst.',r:7,cred:300,chance:9,loot:28,jail:28,col:'var(--violet)',
+ {id:'lucchetti',n:'Famiglia Lucchetti',m:'FL',d:'Kleermakers, advocaten en twee rechters op de loonlijst.',r:7,cred:450,chance:9,loot:28,jail:28,col:'var(--violet)',
   perk:{n:'Rechters op de loonlijst',d:'kans dat je zaak meteen wordt geseponeerd',fx:{free:.2}}},
- {id:'gambrino',n:'Famiglia Gambrino',m:'FG',d:'De grootste van de Vijf Families. Wie hier binnenkomt, gaat er niet meer uit.',r:8,cred:450,chance:10,loot:34,jail:34,col:'var(--red)',
+ {id:'gambrino',n:'Famiglia Gambrino',m:'FG',d:'De grootste van de Vijf Families. Wie hier binnenkomt, gaat er niet meer uit.',r:8,cred:700,chance:10,loot:34,jail:34,col:'var(--red)',
   perk:{n:'De grootste naam',d:'meer XP',fx:{xp:.2}}},
- {id:'cupola',n:'La Cupola',m:'LC',d:'De raad van peetvaders. Alleen de allergrootsten krijgen een stoel aan tafel.',r:9,cred:650,chance:12,loot:40,jail:40,col:'var(--acc)',
-  perk:{n:'De raad',d:'meer XP en inkomen, minder hitte',fx:{xp:.1,inc:.1,heat:.2}}}];
+ {id:'cupola',n:'La Cupola',m:'LC',d:'De raad van peetvaders. Alleen de allergrootsten krijgen een stoel aan tafel.',r:9,cred:1000,chance:12,loot:40,jail:40,col:'var(--acc)',
+  perk:{n:'De raad',d:'meer XP en inkomen, minder hitte',fx:{xp:.1,inc:.1,heat:.2}}},
+ // De vier zwaarste families: pas vanaf Huurmoordenaar, veel straatcredit en een aantal geslaagde huurmoorden (hits).
+ {id:'schaduw',n:'Het Schaduwcontract',m:'SC',d:'Huurmoordenaars zonder naam en zonder gezicht. Ze bestaan niet, tot iemand ze nodig heeft.',r:7,cred:1400,hits:3,chance:12,loot:44,jail:42,col:'#9aa4b2',
+  perk:{n:'Stille handen',d:'huurmoorden zijn makkelijker en betalen meer',fx:{hit:.25}}},
+ {id:'nachtwacht',n:'De Nachtwacht',m:'NW',d:'Corrupte rechercheurs en oud-commando\'s. Ze weten vandaag al waar de politie morgen staat.',r:8,cred:2000,hits:8,chance:13,loot:48,jail:50,col:'#5fb3ff',
+  perk:{n:'Tipgevers bij de politie',d:'veel minder hitte en lagere borg',fx:{heat:.3,bail:.3}}},
+ {id:'tafel',n:'De Ronde Tafel',m:'RT',d:'Bankiers, havenbaronnen en een minister. Geld dat zo schoon is dat het glimt.',r:10,cred:3000,hits:15,chance:14,loot:55,jail:55,col:'#f2c230',
+  perk:{n:'Schoon geld',d:'veel meer passief inkomen',fx:{inc:.3}}},
+ {id:'erven',n:'De Erven Morano',m:'EM',d:'De oudste familie van Europa. Twaalf stoelen, en er komt er zelden één vrij.',r:11,cred:4500,hits:25,chance:15,loot:60,jail:60,col:'#ff5fa2',
+  perk:{n:'Twaalf stoelen',d:'meer XP en inkomen, kortere wachttijd',fx:{xp:.15,inc:.1,cd:.15}}}];
 // Familielevels: eer verdien je met klussen, auto's voor de familie en de dagelijkse missies. Grotere families vragen meer eer.
 const FAM_RANKS=[['Aspirant',0],['Lid',150],['Vertrouweling',450],['Luitenant',1000],['Rechterhand',2000],['Erelid',3500]];
 // Grote klus van de dag (één per familie, zwaarder naarmate de familie groter is). need = dit item of beter in die soort.
@@ -93,8 +102,12 @@ const FAM_HEISTS=[
  {n:'Onderschep een lading in de haven',d:'Een container die nooit is aangekomen, als je het de douane vraagt.',vk:7,need:['jammer'],en:45,jail:210,loot:[180000,380000]},
  {n:'Overval de bank',d:'Het hoofdkantoor op de Zuidas. Binnen in vier minuten, anders is het te laat.',vk:7,need:['vest','jammer'],en:50,jail:240,loot:[350000,750000]},
  {n:'Kraak de kluis van een privébank',d:'Kluizen vol goud van mensen die liever niet zeggen waar het vandaan komt.',vk:9,need:['helm','laptop'],en:55,jail:270,loot:[700000,1500000]},
- {n:'Overval De Nederlandsche Bank',d:'De goudvoorraad van het land. Dit doet niemand twee keer.',vk:12,need:['mil','lans'],en:60,jail:300,loot:[1500000,3500000]}];
-const PLACES={dash:'op straat',crimes:'tijdens een klus',cars:'bij een parkeergarage',casino:'in het casino',biz:'bij je bedrijf',shop:'bij de wapenhandelaar',bank:'bij de bank',fam:'bij het familiehuis',rank:'in een café'};
+ {n:'Overval De Nederlandsche Bank',d:'De goudvoorraad van het land. Dit doet niemand twee keer.',vk:12,need:['mil','lans'],en:60,jail:300,loot:[1500000,3500000]},
+ {n:'Haal een kroongetuige weg',d:'Een safehouse in de duinen, zes agenten en een getuige die morgen gaat praten.',vk:12,need:['mil','lans','crypto'],en:62,jail:330,loot:[2500000,5000000]},
+ {n:'Kaap een vrachtvliegtuig op Schiphol',d:'Een pallet met bankbiljetten, vijf minuten tussen landen en de douane.',vk:12,need:['mil','lans','mol'],en:65,jail:360,loot:[4000000,8000000]},
+ {n:'Beroof de diamantbeurs van Antwerpen',d:'Honderdzestig kluizen, één nacht en een alarm dat niemand ooit heeft gekraakt.',vk:12,need:['mg','mil','lans','mol'],en:68,jail:390,loot:[6000000,12000000]},
+ {n:'Kraak de goudkluis onder Zürich',d:'Veertig meter onder de stad. Het goud van zeven landen, en geen weg terug.',vk:12,need:['mg','mil','lans','mol'],en:72,jail:420,loot:[10000000,20000000]}];
+const PLACES={dash:'op straat',crimes:'tijdens een klus',hits:'op een dak',cars:'bij een parkeergarage',casino:'in het casino',biz:'bij je bedrijf',shop:'bij de wapenhandelaar',bank:'bij de bank',fam:'bij het familiehuis',rank:'in een café'};
 // Auto's: d = moeilijkheid (1-5), b = carrosserie, lo/hi = straatwaarde, y = bouwjaren, w = hoe vaak hij op straat staat, leg = mythisch
 const CARS=[
  {id:'panda',n:'Fiat Panda',b:'hatch',lo:300,hi:1100,y:[2008,2019],d:1,w:26},{id:'corsa',n:'Opel Corsa',b:'hatch',lo:400,hi:1500,y:[2009,2020],d:1,w:26},
@@ -122,7 +135,8 @@ const CAR_RARITY=[null,['Gewoon','#9aa1ab'],['Ongewoon','#3fe395'],['Zeldzaam','
 const CAR_MYTH=['Mythisch','#ff3d52'];
 const CAR_SPOTS=['Op de stoep in De Pijp','Parkeergarage aan de Zuidas','Voor een villa in Amsterdam-Zuid','Bedrijventerrein Westpoort','Tankstation aan de A10',
  'Donker steegje bij de Wallen','Parkeerplaats van een sportschool','Oprit in Amstelveen','Achter een nachtclub op het Rembrandtplein','Laadpaal in Oost','Hotel aan de Amstel','Showroom op het Gooiplein'];
-// Bedrijven: p = prijs eerste vestiging (elke volgende ×1,25), inc = euro per minuut op level 1, r = minimale rang.
+// Bedrijven: p = prijs eerste vestiging (elke volgende ×1,25), r = minimale rang. Inkomen telt per SPELDAG (4 uur) en wordt
+// om de 4 uur uitbetaald (00:00, 04:00, 08:00 ...). inc = euro per speldag op level 1 (wordt hieronder uit de prijs berekend).
 // Elke vestiging kan 4 keer upgraden (level 1-5); up = de namen van die upgrades.
 const BIZ=[
  {id:'wash',n:'Wasserette',d:'Wast meer dan alleen kleding.',p:5000,inc:40,r:1,col:'#a9dcff',up:['Extra machines','Droogtrommels','Bezorgservice','Witwasafdeling']},
@@ -143,9 +157,13 @@ const BIZ_MAX=10,BIZ_LVL=['Basis','Opgeknapt','Uitgebreid','Topzaak','Imperium']
 const BIZ_PLACES=['De Pijp','Oost','Noord','West','Zuidoost','Jordaan','Zaandam','Rotterdam','Den Haag','Utrecht'];
 const bizPrice=(b,n)=>Math.floor(b.p*Math.pow(1.25,n));
 const bizUpCost=(b,l)=>Math.floor(b.p*BIZ_UPK[l-1]);
-// Passief inkomen groeit mee met je imperium: +25% basis, +1% per vestiging en +0,5% per upgrade (samen max +200%),
-// en +5% per rang (ervaring in de business). bizMult() staat in state.js.
-const BIZ_BOOST=1.25,BIZ_IMP_UNIT=.01,BIZ_IMP_UP=.005,BIZ_IMP_MAX=2,BIZ_RANK=.05;
+// Passief inkomen groeit mee met je imperium: +25% basis, +0,5% per vestiging en +0,25% per upgrade (samen max +50%),
+// en +3% per rang (+0,5% per level binnen je rang). bizMult() staat in state.js.
+const BIZ_BOOST=1.25,BIZ_IMP_UNIT=.005,BIZ_IMP_UP=.0025,BIZ_IMP_MAX=.5,BIZ_RANK=.03;
+// Inkomen per speldag (4 uur) op level 1: een vast deel van de prijs. Goedkope zaken verdienen zich sneller terug
+// (wasserette ±25% van de prijs per dag), dure langzamer (privéjet ±10%). Zo kun je het spel niet in een paar uur uitspelen.
+const DAY_MS=4*3600000,BIZ_DAY_RATE=p=>.25*Math.pow(p/5000,-.14);
+BIZ.forEach(b=>{b.inc=Math.round(b.p*BIZ_DAY_RATE(b.p)/10)*10});
 const bizIncRaw=(b,l)=>b.inc*BIZ_MULT[l-1];
 const bizInc=(b,l)=>bizIncRaw(b,l)*(typeof bizMult==='function'?bizMult().total:1);
 // Uitrusting in 4 soorten. Per soort telt alleen je beste item; wat je koopt houd je.
@@ -217,7 +235,7 @@ const TRAININGS=[
  // nieuwe plekken: pas open vanaf een bepaalde rang (r), duurder en met een langer tijdslot
  {id:'schiet',place:'Schietvereniging Ede',n:'Schieten',col:'#ff6b6b',ic:'target',base:180,cd:25,r:3,
   d:'Op de baan tussen jagers en agenten in hun vrije tijd. Zware klussen lukken vaker.',
-  eff:l=>[['Slaagkans zware klussen (vanaf Gangster)',pctTxt(SK.schiet.heavy*l,'+')]]},
+  eff:l=>[['Slaagkans zware klussen (vanaf Gangster)',pctTxt(SK.schiet.heavy*l,'+')],['Rustiger vizier bij huurmoorden',pctTxt(Math.min(40,l*.8),'−')]]},
  {id:'hack',place:'Hackerskelder in Delft',n:'Hacken',col:'#5ce1c4',ic:'chip',base:220,cd:25,r:4,
   d:'Alarmcodes, camera\'s en bankapps. Je weet beter waar het geld ligt.',
   eff:l=>[['Buit bij alle klussen',pctTxt(SK.hack.loot*l,'+')]]},

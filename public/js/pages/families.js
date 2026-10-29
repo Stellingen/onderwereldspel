@@ -48,22 +48,23 @@ const famUI={confirm:null};
 function famPerkTxt(f,scale){const fx=f.perk.fx,o=[];const p=v=>Math.round(v*scale*100)+'%';
  if(fx.cd)o.push('−'+p(fx.cd)+' wachttijd klussen');if(fx.inc)o.push('+'+p(fx.inc)+' passief inkomen');if(fx.bail)o.push('−'+p(fx.bail)+' borg');
  if(fx.flee)o.push('+'+p(fx.flee)+' groen gat bij vluchten');if(fx.esc)o.push('+'+p(fx.esc)+' ontsnappen uit de bajes');if(fx.car)o.push('+'+p(fx.car)+' waarde gestolen auto\'s');
- if(fx.free)o.push(p(fx.free)+' kans dat je zaak wordt geseponeerd');if(fx.xp)o.push('+'+p(fx.xp)+' XP');if(fx.heat)o.push('−'+p(fx.heat)+' hitte');return o.join(' · ')}
+ if(fx.free)o.push(p(fx.free)+' kans dat je zaak wordt geseponeerd');if(fx.xp)o.push('+'+p(fx.xp)+' XP');if(fx.heat)o.push('−'+p(fx.heat)+' hitte');if(fx.hit)o.push('+'+p(fx.hit)+' bij huurmoorden (rustiger vizier, meer geld)');return o.join(' · ')}
+const famHits=()=>(S.stats&&S.stats.hits)||0;
 
 V.fam=()=>{const ri=rankIdx(S.xp),f=famBase();famDaily();
- const card=x=>{const okR=ri>=x.r,okC=S.cred>=x.cred,isMine=S.family===x.id,T=FAMILIES.indexOf(x),cf=famUI.confirm===x.id;
+ const card=x=>{const okR=ri>=x.r,okC=S.cred>=x.cred&&famHits()>=(x.hits||0),isMine=S.family===x.id,T=FAMILIES.indexOf(x),cf=famUI.confirm===x.id;
   return `<article class="fm-card ${isMine?'on':''} ${okR?'':'lock'}" style="--fc:${x.col}">
-   <header><div class="crest" style="color:${x.col}">${x.m}</div><div><h3>${x.n}</h3><span class="label">Vanaf ${RANKS[x.r][0]} · ${x.cred} straatcredit</span></div></header>
+   <header><div class="crest" style="color:${x.col}">${x.m}</div><div><h3>${x.n}</h3><span class="label">Vanaf ${RANKS[x.r][0]} · ${x.cred} straatcredit${x.hits?` · ${x.hits} huurmoorden`:''}</span></div></header>
    <p>${x.d}</p>
    <div class="fm-perk"><span class="label">Eigen voordeel · ${x.perk.n}</span><b>${famPerkTxt(x,1)}</b></div>
    <div class="fm-tags"><span>+${x.chance}% kans</span>${x.loot?`<span>+${x.loot}% buit</span>`:''}${x.jail?`<span>−${x.jail}% straf</span>`:''}<span>Grote klus: ${FAM_HEISTS[T].n.toLowerCase()}</span></div>
-   <div class="fm-req"><span class="${okR?'ok':'no'}">${okR?'✓':'✗'} ${RANKS[x.r][0]}</span><span class="${okC?'ok':'no'}">${okC?'✓':'✗'} ${S.cred}/${x.cred} cred</span></div>
+   <div class="fm-req"><span class="${okR?'ok':'no'}">${okR?'✓':'✗'} ${RANKS[x.r][0]}</span><span class="${S.cred>=x.cred?'ok':'no'}">${S.cred>=x.cred?'✓':'✗'} ${S.cred}/${x.cred} cred</span>${x.hits?`<span class="${famHits()>=x.hits?'ok':'no'}">${famHits()>=x.hits?'✓':'✗'} ${famHits()}/${x.hits} huurmoorden</span>`:''}</div>
    ${isMine?`<div class="fm-mine">Jouw familie</div>`
     :cf?`<div class="fm-cf"><span>${S.family?`Je verlaat ${f.n} en verliest al je eer daar. Bij ${x.n} begin je onderaan als Aspirant.`:`Je begint onderaan als Aspirant.`}</span><button class="btn sm" onclick="act.join('${x.id}')">Ja, ${S.family?'overstappen':'aansluiten'}</button><button class="btn sm ghost" onclick="famUI.confirm=null;render()">Toch niet</button></div>`
     :`<button class="btn ${okR&&okC?'':'ghost'}" onclick="famUI.confirm='${x.id}';render()" ${okR&&okC&&!inJail()?'':'disabled'}>${okR&&okC?(S.family?'Overstappen':'Aansluiten'):'Nog niet toegelaten'}</button>`}</article>`};
  if(!f)return `<h1>Families</h1>
   <section class="card hud fm-intro"><div><span class="label">Je hoort nog nergens bij</span><h2>Kies een familie</h2>
-   <p>Met de juiste rang en genoeg straatcredit word je toegelaten. Iedereen begint onderaan als Aspirant. Met klussen, auto's voor de familie en de dagelijkse missies klim je op tot Erelid. Als Aspirant krijg je de helft van de familiebonus en het eigen voordeel, elk level +10%, als Erelid alles (de getallen hieronder).</p></div>
+   <p>Met de juiste rang en genoeg straatcredit word je toegelaten. De vier zwaarste families nemen alleen Huurmoordenaars en hoger aan die al een aantal huurmoorden op hun naam hebben. Iedereen begint onderaan als Aspirant. Met klussen, auto's voor de familie en de dagelijkse missies klim je op tot Erelid. Als Aspirant krijg je de helft van de familiebonus en het eigen voordeel, elk level +10%, als Erelid alles (de getallen hieronder).</p></div>
    <div class="fm-intro-k"><div><span class="label">Jouw straatcredit</span><b>${S.cred}</b></div><div><span class="label">Jouw rang</span><b>${RANKS[ri][0]}</b></div></div></section>
   <div class="fm-grid">${FAMILIES.map(card).join('')}</div>`;
  const T=famTier(),fr=famRankIdx(),eer=famEer(),nx=FAM_RANKS[fr+1],need=nx?famNeed(fr+1):null,cur=famNeed(fr),sc=famScale(),F=fam();
@@ -102,7 +103,7 @@ V.fam=()=>{const ri=rankIdx(S.xp),f=famBase();famDaily();
  <div class="fm-grid">${FAMILIES.filter(x=>x.id!==f.id).map(card).join('')}</div>`};
 
 Object.assign(act,{
- join(id){const x=FAMILIES.find(k=>k.id===id);if(!x||inJail()||rankIdx(S.xp)<x.r||S.cred<x.cred||S.family===id)return;const old=famBase();
+ join(id){const x=FAMILIES.find(k=>k.id===id);if(!x||inJail()||rankIdx(S.xp)<x.r||S.cred<x.cred||famHits()<(x.hits||0)||S.family===id)return;const old=famBase();
   S.family=id;S.fr={id,eer:0,since:now()};fmNew(true);famUI.confirm=null;toast('Welkom bij '+x.n+'. Je begint als Aspirant.','lvl');log((old?old.n+' verlaten, ':'')+'aangesloten bij '+x.n,'ok');save();pushState();render()},
  leave(){const f=famBase();if(!f)return;log('Familie '+f.n+' verlaten','info');S.family=null;S.fr=null;S.fm=null;famUI.confirm=null;toast('Je bent weer op jezelf');save();pushState();render()},
  famCar(i){const c=S.cars[i];if(!c||!S.family)return;S.cars.splice(i,1);const pay=Math.round(c.v*.3),e=Math.round(2+Math.sqrt(c.v)/20);S.cash+=pay;famAddEer(e);

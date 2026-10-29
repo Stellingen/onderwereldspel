@@ -10,7 +10,7 @@ const AV_ITEMS=[['bom',.413],['+1',.26],['+2',.13],['+5',.045],['+10',.012],['x2
 // natuurkunde (hoogte 0 = zee, 100 = plafond; snelheid in hoogte-eenheden per seconde)
 // g = zwaartekracht, vt = maximale daalsnelheid, v0 = klimsnelheid bij de start, hit = hoe dichtbij een item moet zijn,
 // gap = horizontale afstand tussen items in de lucht, L/G = lengte van een schip / water ertussen, R = doorrollen na de landing
-const AVC={free:420,a0:12,g:2.5,vt:9,v0:16,hit:7,gap:[38,95],lo:6,hi:97,hold:.9,cap:250,L:[170,260],G:[260,1150],R:[25,75],margin:6,vipL:1.12,speed:165,maxT:150};
+const AVC={free:420,a0:12,g:2.5,vt:9,v0:16,hit:7,gap:[38,95],lo:6,hi:97,hold:.9,cap:250,L:[170,260],G:[260,1150],R:[25,75],margin:6,vipLT:[1,1.065,1.11],speed:165,maxT:150};
 // stoot omhoog per plusje, duw omlaag bij een bom
 const AV_LIFT={'+1':7,'+2':8,'+5':10,'+10':13},AV_BOMB=7;
 const AV_BETS=[10,25,50,100,250,500,1000,2500,5000,10000,25000,50000];
@@ -39,7 +39,7 @@ function avPlan(vip,rng){rng=rng||avR;const tot=AV_ITEMS.reduce((a,b)=>a+b[1],0)
   if(a<=0){a=0;break}}
  path.push([x,0]);const touch=x;
  // 3) schepen over de hele route, met water ertussen
- const plats=[];let px=260;while(px<touch+3000){const g=U(AVC.G),l=U(AVC.L)*(vip?AVC.vipL:1);px+=g;plats.push([px,px+l,0]);px+=l}
+ const plats=[];let px=260;while(px<touch+3000){const g=U(AVC.G),l=U(AVC.L)*(AVC.vipLT[vip|0]||1);px+=g;plats.push([px,px+l,0]);px+=l}
  const pl=plats.find(p=>touch>=p[0]&&touch<=p[1])||null;if(pl)pl[2]=1;
  const R=U(AVC.R),on=!!pl,ok=on&&touch+R<=pl[1]-AVC.margin;
  return {path,items:items.filter(I=>I.x<touch+1400),ev,touch,R,on,ok,m:Math.round(m*100)/100,plat:pl,plats,start:-190}}
@@ -63,7 +63,7 @@ function aviaView(){const h=S.avHist||[],bet=avBet(),f=av.flying,res=av.res;setT
    <div><i class="bom">÷2</i><span>Bom: halveert, ontploft en hij zakt</span></div><div><i class="deck"></i><span>Land op een dek en blijf staan</span></div></div>
   <div class="label" style="margin-top:4px">Laatste vluchten</div>
   <div class="av-hist">${h.length?h.map(x=>`<i class="${x.ok?'w':'l'}" title="${x.ok?'Geland':'Niet geland'}">${x.ok?avX(x.m):'✕'}</i>`).join(''):'<span class="label">Nog niet gevlogen</span>'}</div>
-  <p class="cf-fine">Er is geen vaste baan: de items hangen willekeurig in de lucht en wat hij raakt bepaalt of hij stijgt of zakt. Een vlucht duurt meestal 12 tot 55 seconden, soms anderhalve minuut of langer. Doorgerekend: ${isVip()?'als VIP landt ±1 op 5 vluchten (dekken langer), RTP ±98%':'±1 op de 6 vluchten landt, RTP ±87% (VIP: langere dekken, vaker landen, RTP ±98%)'}. Max ${AVC.cap}× je inzet. De vlucht ligt vast zodra je opstijgt.</p>
+  <p class="cf-fine">Er is geen vaste baan: de items hangen willekeurig in de lucht en wat hij raakt bepaalt of hij stijgt of zakt. Een vlucht duurt meestal 12 tot 55 seconden, soms anderhalve minuut of langer. Doorgerekend: ${['±1 op de 6 vluchten landt, RTP ±86% (VIP en High roller: langere dekken, vaker landen)','als VIP zijn de dekken langer en land je ±6% vaker, RTP ±92%','als High roller zijn de dekken langer en land je ±12% vaker, RTP ±96%'][tier()]}. Max ${AVC.cap}× je inzet. De vlucht ligt vast zodra je opstijgt.</p>
  </section></div>`}
 /* ---------- Tekenen ---------- */
 function avSize(cv){const dpr=Math.min(2,devicePixelRatio||1),W=cv.clientWidth,H=cv.clientHeight;if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return [x,W,H]}
@@ -115,7 +115,7 @@ function avMount(){if(av.flying)return;const P=av.plan&&av.res?av.plan:null;
 window.addEventListener('resize',()=>{if(page==='casino'&&casinoTab==='avia'&&!av.flying)avMount()});
 Object.assign(act,{
  avFly(){if(av.flying||inJail())return;const bet=avBet();if(S.cash<bet){toast('Niet genoeg contant geld','bad');return}
-  const P=avPlan(isVip()),pay=P.ok?Math.floor(bet*P.m):0;
+  const P=avPlan(tier()),pay=P.ok?Math.floor(bet*P.m):0;
   // uitkomst staat vast en wordt meteen verrekend
   S.cash+=pay-bet;window.slotPending=pay;if(pay>bet)S.stats.won+=pay-bet;else S.stats.lost+=bet-pay;casinoRound(bet,pay,'avia');
   S.avHist=[{m:P.m,ok:P.ok}].concat(S.avHist||[]).slice(0,14);save();

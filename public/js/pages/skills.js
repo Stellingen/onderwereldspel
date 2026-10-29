@@ -57,7 +57,7 @@ V.skills=()=>{
   :`<section class="card hud tr-hero">
    <div class="tr-h-l"><span class="label">Jouw skills</span><div class="tr-h-big"><b>${tot}</b><span>/ ${TRAININGS.length*TRAIN_MAX} levels</span></div>
     <div class="bar"><i style="width:${tot/(TRAININGS.length*TRAIN_MAX)*100}%;background:var(--mc)"></i></div>
-    <p>${readyT?`<b class="up">${readyT} plek${readyT>1?'ken':''}</b> klaar om te trainen`:'Geen training klaar'}${isVip()?' · VIP: wachttijden 60%':''}</p></div>
+    <p>${readyT?`<b class="up">${readyT} plek${readyT>1?'ken':''}</b> klaar om te trainen`:'Geen training klaar'}${isVip()?` · ${lidName()}: wachttijden ${Math.round(waitK()*100)}%`:''}</p></div>
    <div class="tr-tiles">${tiles}</div></section>`;
  return `<div class="tr-page ${relax?'m-relax':'m-train'}"><h1>Training & ontspanning</h1>
  ${modes}

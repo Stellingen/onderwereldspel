@@ -2,14 +2,14 @@
 // Spaarrekening: veilig en vrij opneembaar, lage rente. Deposito: vaste tijd, vaste rente, kan niet zakken.
 // Beleggen: uitkering per uur (rente, huur, dividend, staking) plus een koers die kan stijgen én dalen.
 // Alles bij de bank ben je niet kwijt als je gepakt wordt. Maximaal bedrag per deposito en per fonds groeit met je rang.
-const SAV_RATE=.001,SAV_VIP=.0012; // per uur
+const SAV_RATE=.001; // per uur; VIP ×1,15 en High roller ×1,4 (rente), kosten −15% / −40%, +1 / +2 depositoplekken
 const DEP_TERMS=[{id:'1u',h:1,r:.0015,n:'1 uur'},{id:'6u',h:6,r:.012,n:'6 uur'},{id:'24u',h:24,r:.045,n:'24 uur'},{id:'3d',h:72,r:.15,n:'3 dagen'}];
-const DEP_VIP=1.25,DEP_SLOTS=3,DEP_EARLY=.02,DEP_MIN=1000,INV_MIN=100;
+const DEP_SLOTS=3,DEP_EARLY=.02,DEP_MIN=1000,INV_MIN=100;
 const bankCap=()=>250000*Math.pow(2,rankIdx(S.xp));
-const savRate=()=>isVip()?SAV_VIP:SAV_RATE;
-const depRate=t=>t.r*(isVip()?DEP_VIP:1);
-const depSlots=()=>DEP_SLOTS+(isVip()?1:0);
-const invFee=f=>f.fee*(isVip()?.5:1)*(1-sk('handel')*SK.handel.fee/100);
+const savRate=()=>SAV_RATE*(1+tierK());
+const depRate=t=>t.r*(1+tierK());
+const depSlots=()=>DEP_SLOTS+tier();
+const invFee=f=>f.fee*(1-tierK())*(1-sk('handel')*SK.handel.fee/100);
 const fundOf=id=>MK.FUNDS.find(f=>f.id===id);
 const invPos=id=>(S.inv||{})[id];
 const invVal=id=>{const p=invPos(id);return p&&p.u>0?p.u*MK.price(id,now()):0};
@@ -76,7 +76,7 @@ function bkRek(){const max=Math.max(S.cash,S.bank),a=bkAmt(),r=savRate();
     <button class="btn ghost" data-bk-btn onclick="act.bkWd()" ${a&&S.bank>=1?'':'disabled'}>Opnemen${a?' '+fmt(Math.min(a,S.bank)):''}</button></div>
    <div class="bk-mini"><span>Contant <b>${fmt(S.cash)}</b></span><span>Spaarrekening <b>${fmt(S.bank)}</b></span></div></section>
   <section class="card bk-box"><h3>Spaarrekening</h3><p class="sub">Vrij opneembaar, elke minuut rente. Ook offline (tot 12 uur).</p>
-   <div class="bk-rate"><b>${nl(r*100,2)}%</b><span>per uur · ±${nl((Math.pow(1+r,24)-1)*100,1)}% per dag${isVip()?' · VIP':''}</span></div>
+   <div class="bk-rate"><b>${nl(r*100,2)}%</b><span>per uur · ±${nl((Math.pow(1+r,24)-1)*100,1)}% per dag${isVip()?' · '+lidName():''}</span></div>
    <div class="bk-rows"><div><span>Nu per uur</span><b class="up">+${fmt(S.bank*r)}</b></div><div><span>Na 24 uur</span><b>${fmt(S.bank*Math.pow(1+r,24))}</b></div></div>
    <div class="bk-cmp"><span class="label">Vergelijk</span>
     <div><span>Spaarrekening</span><em>±${nl((Math.pow(1+r,24)-1)*100,1)}% per dag</em><i>vrij opneembaar</i></div>
@@ -97,9 +97,9 @@ function bkDepTab(){const t=DEP_TERMS.find(x=>x.id===bk.term),a=bkAmt(),src=bkSr
    ${bkSrc()}${bkInput(max)}
    <div class="bk-sum" data-bk-live>${a?`Je zet <b>${fmt(a)}</b> vast voor ${t.n} en krijgt <b class="up">${fmt(Math.round(a*(1+depRate(t))))}</b> terug (+${fmt(Math.round(a*depRate(t)))}).`:'Kies een looptijd en een bedrag.'}</div>
    <button class="btn" data-bk-btn onclick="act.depOpen()" ${why?'disabled':''}>${why||'Zet '+fmt(a)+' vast voor '+t.n}</button>
-   <div class="bk-mini"><span>Plekken <b>${used}/${slots}</b>${isVip()?' (VIP +1)':''}</span><span>Max per deposito <b>${fmt(cap)}</b> (groeit met je rang)</span></div></section>
+   <div class="bk-mini"><span>Plekken <b>${used}/${slots}</b>${isVip()?` (${lidName()} +${tier()})`:''}</span><span>Max per deposito <b>${fmt(cap)}</b> (groeit met je rang)</span></div></section>
   <section class="card bk-box"><h3>Lopende deposito's</h3>${list||'<p class="sub">Je hebt nog geen deposito\'s. Geld dat je vastzet staat veilig en levert meer op dan de spaarrekening.</p>'}
-   ${isVip()?'<p class="bk-vip">VIP: 25% hogere rente op deposito\'s en een extra plek.</p>':''}</section></div>`}
+   ${isVip()?`<p class="bk-vip">${lidName()}: ${Math.round(tierK()*100)}% hogere rente, ${tier()} extra plek${tier()>1?'ken':''} en ${Math.round(tierK()*100)}% minder kosten bij beleggen.</p>`:''}</section></div>`}
 
 function bkInvTab(){const f=fundOf(bk.fund),t=now(),p=invPos(f.id),px=MK.price(f,t),a=bkAmt(),src=bkSrcBal(),cap=bankCap(),room=Math.max(0,cap-((p&&p.c)||0)),fee=invFee(f);
  const tv=invTotal(),tc=invCost(),pl=tv-tc;
@@ -119,7 +119,7 @@ function bkInvTab(){const f=fundOf(bk.fund),t=now(),p=invPos(f.id),px=MK.price(f
    ${bkChart(f)}
    <div class="bk-facts"><div><span>${f.kind}</span><b>±${nl((Math.exp(24*f.y)-1)*100,1)}% per dag</b><i>bovenop de koers, ook offline (tot 12 uur)</i></div>
     <div><span>Kans op verlies</span><b>${rk[0]}% na 24 uur</b><i>${rk[1]}% na 7 dagen</i></div>
-    <div><span>Kosten</span><b>${nl(fee*100,2)}% bij kopen en verkopen</b><i>${isVip()?'VIP: halve kosten':'VIP betaalt de helft'}</i></div></div></section>
+    <div><span>Kosten</span><b>${nl(fee*100,2)}% bij kopen en verkopen</b><i>${isVip()?lidName()+': '+Math.round(tierK()*100)+'% minder kosten':'VIP −15%, High roller −40%'}</i></div></div></section>
   <section class="card bk-box"><h3>Jouw positie</h3>
    ${p?`<div class="bk-rows"><div><span>Waarde</span><b>${fmt(pv)}</b></div><div><span>Ingelegd</span><b>${fmt(p.c)}</b></div>
     <div><span>Winst / verlies</span><b class="${ppl>=0?'up':'dn'}">${ppl>=0?'+':'−'}${fmt(Math.abs(ppl))} (${pctNl(ppl/p.c)})</b></div><div><span>Ontvangen ${f.kind.toLowerCase()}</span><b class="up">+${fmt(p.paid||0)}</b></div></div>

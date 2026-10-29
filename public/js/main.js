@@ -10,7 +10,7 @@ function news(){const n=S.npcs[rnd(0,S.npcs.length-1)].n;const T=[
 function renderTicker(){if(!S.news.length)news();const t=S.news.map(s=>`<span>◆ ${s}</span>`).join('');$('#ticker').innerHTML=`<b>LIVE</b><div class="tk"><div class="tkin">${t}${t}</div></div>`}
 function tick(){
   const t=now(),dt=(t-S.last)/60000;S.last=t;const mins=Math.min(dt,720);
-  if(mins>0){S.cash+=income()*mins;S._enAcc=(S._enAcc||0)+mins*60/EN_REGEN_S*(1+furnFx('enRegen'));if(S._enAcc>=1){S.energy=Math.min(EN_MAX,S.energy+Math.floor(S._enAcc));S._enAcc%=1}const hd=mins*2*(1+furnFx('heat'));S.heat=Math.max(0,S.heat-Math.floor(hd>=1?hd:Math.random()<hd?1:0));
+  if(mins>0){bizPayTick(mins,t);S._enAcc=(S._enAcc||0)+mins*60/EN_REGEN_S*(1+furnFx('enRegen'));if(S._enAcc>=1){S.energy=Math.min(EN_MAX,S.energy+Math.floor(S._enAcc));S._enAcc%=1}const hd=mins*2*(1+furnFx('heat'));S.heat=Math.max(0,S.heat-Math.floor(hd>=1?hd:Math.random()<hd?1:0));
     if(typeof hideTick==='function')hideTick(mins,mins<.2);
     if(Math.random()<mins*6*(1+furnFx('hpRegen')))S.hp=Math.min(100,S.hp+1);
     if(typeof bankTick==='function')bankTick(mins);
@@ -18,9 +18,12 @@ function tick(){
     S.npcs.forEach((n,i)=>{n.xp+=mins*(4+i*3)*(0.5+Math.random());n.cash+=mins*(30+i*60)*(Math.random()*2-0.3)})}
   save();
 }
+// aanpassingen door een beheerder: meldingen tonen, energie bijvullen
+if(S._admin){const A=S._admin;if(A.refill){S.energy=Math.max(S.energy,EN_MAX);S.hp=100}(A.notes||[]).forEach((t,i)=>{setTimeout(()=>toast(t,'lvl'),600+i*400);log(t,'ok')});delete S._admin;save()}
 if(S._gearBack){toast('Uitrusting vernieuwd: per soort telt nu je beste item. Je krijgt '+fmt(S._gearBack)+' terug voor overbodige spullen.','lvl');log('Uitrusting: '+fmt(S._gearBack)+' terug voor overbodige spullen','ok');delete S._gearBack}
 // offline-inkomen bij openen
-(()=>{const away=(now()-S.last)/60000;if(away>1&&income()>0){const g=income()*Math.min(away,720);toast('Terwijl je weg was: +'+fmt(g)+' passief inkomen');log('Offline inkomen: '+fmt(g),'ok')}tick()})();
+// bij openen: wat je bedrijven offline verdienden (tot 12 uur) gaat in de kas; is er intussen een speldag voorbij, dan volgt de uitbetaling
+(()=>{tick()})();
 
 // snelkoppelingen: #ontspannen en #trainen openen de trainingspagina op het juiste deel
 window.addEventListener('hashchange',()=>{let p=location.hash.slice(1);if(p==='ontspannen'||p==='trainen'){if(window.trs)trs.tab=p==='ontspannen'?'relax':'train';p='skills';try{history.replaceState(null,'','#skills')}catch(e){}}if(PAGES.find(x=>x[0]===p)){page=p;render();window.scrollTo(0,0)}});
@@ -36,7 +39,7 @@ setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderR
   if(wasJail&&!inJail()){toast('Je bent vrijgelaten');wasJail=false;render()}else if(inJail())wasJail=true;
   const focusIn=document.activeElement&&document.activeElement.tagName==='INPUT';
   // pagina's met aftellers: alleen bijwerken als er iets veranderd is, en niet midden in het scrollen (telefoon)
-  if(!focusIn&&!spinning&&['crimes','jail','dash','skills','bank','biz','shop','fam','profiel'].includes(page)&&!window.__chase&&!userBusy()){const y=window.scrollY;if(setHTML($('#view'),crumbHtml()+V[page]())&&y&&Math.abs(window.scrollY-y)>2)window.scrollTo(0,y)}
+  if(!focusIn&&!spinning&&['crimes','hits','jail','dash','skills','bank','biz','shop','fam','profiel'].includes(page)&&!window.__chase&&!userBusy()){const y=window.scrollY;if(setHTML($('#view'),crumbHtml()+V[page]())&&y&&Math.abs(window.scrollY-y)>2)window.scrollTo(0,y)}
 },1000);
 render();renderTicker();
-if(!inJail())setTimeout(resumePending,300);else{S.pendingArrest=null;S.pendingHeist=null}
+if(!inJail())setTimeout(resumePending,300);else{S.pendingArrest=null;S.pendingHeist=null;S.pendingHit=null}

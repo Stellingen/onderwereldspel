@@ -8,9 +8,9 @@
 //   Elke volgende 4 zijn lastiger te vangen, en in hogere rondes zwemmen er vaker grote vissen (zo blijft de max win haalbaar).
 // - Hoge volatiliteit: de bonus is lastig te halen en de meeste bonussen zijn klein, maar heel soms vang je een reus.
 // - Max win 10.000× de inzet (€20 kan €200.000 worden). In ronde 4 (×10) zwemt de 1.000×-vis vaker: dat is de max win.
-// - VIP: veel vaker in de bonus (±1 op 140 in plaats van ±1 op 195) en iets vaker een Visdief. Om onder 100% RTP te blijven
-//   betaalt lijnwinst in het VIP-basisspel 17% minder (VIP_K). De bonus zelf is voor iedereen gelijk.
-// - Bonus kopen (66×): altijd 3 boeien, op de andere rollen kan er vanzelf nog een vallen (zelfde kans als spinnen, VIP hoger).
+// - Lidmaatschap (0 gewoon, 1 VIP, 2 High roller): VIP ±15% en High roller ±40% vaker in de bonus en iets vaker een Visdief.
+//   Om onder 100% RTP te blijven betaalt lijnwinst in hun basisspel minder (VIP_KT). De bonus zelf is voor iedereen gelijk.
+// - Bonus kopen (66×): altijd 3 boeien, op de andere rollen kan er vanzelf nog een vallen (iets vaker voor VIP/High roller).
 // - Doorgerekend (visim.js 2 mln. spins, vbuy.js): normaal RTP ±92%, VIP ±97% + 0,5% cashback, bonus kopen ±96,5% (VIP ±97,5%).
 //   Bonus van 10 spins: ronde 2 ±1 op 10, ronde 3 ±1 op 65, ronde 4 ±1 op 430, max win ±1 op 11.000 (20 spins: ±1 op 1.100).
 (function(root){
@@ -37,26 +37,26 @@ const FISH=[[.5,300],[1,260],[2,200],[3,140],[5,110],[10,70],[15,40],[25,22],[50
 let BIG={100:[1,1.5,2.5,5],250:[1,1.8,3,8],500:[1,2,4,30],1000:[1,2,5,200]};
 // fsVis = extra visgewicht in de bonus, wild = Visdief-gewicht in de bonus
 // lvlW = hoe vaak de Visdief valt per level: de eerste 4 zijn haalbaar, elke volgende 4 lastiger
-const FS={vis:50,wild:1.88,vipWild:1.04,lvlW:[1,.95,.85,.72]};
+const FS={vis:50,wild:1.88,wildT:[1,1.02,1.04],lvlW:[1,.95,.85,.72]};
 // kans per rol op een boei (normaal / VIP); buy = altijd 3 boeien
-const SC={p:.083,vip:.094,buy:.083,vipBuy:.094}; // buy = kans per overige rol bij een gekochte bonus
+const SC={p:.083,t:[.083,.087,.0935],buy:.083,buyT:[.083,.084,.085]}; // t = per lidmaatschap; buyT = kans per overige rol bij een gekochte bonus
 const FS_BY_SC={3:10,4:12,5:15},RETRIG=10,MULTS=[1,2,3,10],PER_LEVEL=4;
 let BUY_COST=66;
 const SYM_TOT=fs=>SYMS.reduce((a,s,i)=>a+(i===VIS&&fs?FS.vis:s.w),0);
 function fishVal(rng,rd){const W=f=>BIG[f[0]]?f[1]*BIG[f[0]][rd||0]:f[1];const t=FISH.reduce((a,f)=>a+W(f),0);let r=rng()*t;for(const f of FISH){r-=W(f);if(r<=0)return f[0]}return FISH[0][0]}
-function pick(rng,fs,vip,lvl,rd){const ww=fs?FS.wild*FS.lvlW[lvl||0]*(vip?FS.vipWild:1):0,tot=SYM_TOT(fs)+ww;let r=rng()*tot;
+function pick(rng,fs,vip,lvl,rd){const ww=fs?FS.wild*FS.lvlW[lvl||0]*(FS.wildT[vip|0]||1):0,tot=SYM_TOT(fs)+ww;let r=rng()*tot;
  for(let i=0;i<SYMS.length;i++){r-=(i===VIS&&fs?FS.vis:SYMS[i].w);if(r<=0)return i===VIS?{s:i,v:fishVal(rng,rd)}:{s:i}}
  return {w:1}}
 // raster g[rol][rij]; boeien: per rol hoogstens één
 function fill(rng,fs,vip,forceSc,lvl,rd){const g=[];
  for(let c=0;c<REELS;c++){g.push([]);for(let r=0;r<ROWS;r++)g[c].push(pick(rng,fs,vip,lvl,rd))}
  // gekochte bonus: 3 gegarandeerde boeien, en op de andere rollen kan er vanzelf nog een vallen (4 of zelfs 5)
- if(!fs){let cols=[];if(forceSc){cols=[...Array(REELS).keys()].sort(()=>rng()-.5).slice(0,forceSc);for(let c=0;c<REELS;c++)if(!cols.includes(c)&&rng()<(vip?SC.vipBuy:SC.buy))cols.push(c)}else{for(let c=0;c<REELS;c++)if(rng()<(vip?SC.vip:SC.p))cols.push(c)}
+ if(!fs){let cols=[];if(forceSc){cols=[...Array(REELS).keys()].sort(()=>rng()-.5).slice(0,forceSc);for(let c=0;c<REELS;c++)if(!cols.includes(c)&&rng()<(SC.buyT[vip|0]||SC.buy))cols.push(c)}else{for(let c=0;c<REELS;c++)if(rng()<(SC.t[vip|0]||SC.p))cols.push(c)}
   cols.forEach(c=>{g[c][Math.floor(rng()*ROWS)]={sc:1}})}
  return g}
 // lijnwinst (× inzet). Visdief (wild) vervangt alles behalve de boei.
-// VIP_K: lijnwinst in het VIP-basisspel (VIP komt veel vaker in de bonus; zo blijft VIP onder 100% RTP)
-let VIP_K=.825;
+// VIP_KT: lijnwinst in het basisspel per lidmaatschap (VIP komt veel vaker in de bonus; zo blijft VIP onder 100% RTP)
+let VIP_KT=[1,.94,.833];
 function lineWins(g,k){k=k||1;const out=[];
  LINES.forEach((L,li)=>{let sym=null,n=0;
   for(let c=0;c<REELS;c++){const x=g[c][L[c]];if(x.sc)break;if(x.w){n++;continue}if(sym==null){sym=x.s;n++;continue}if(x.s===sym){n++;continue}break}
@@ -65,7 +65,7 @@ function lineWins(g,k){k=k||1;const out=[];
  return out}
 function scCount(g){let n=0;g.forEach(col=>col.forEach(x=>{if(x.sc)n++}));return n}
 // één spin in het basisspel
-function spin(rng,opts){opts=opts||{};const g=fill(rng,false,!!opts.vip,opts.forceSc||0);const wins=opts.forceSc?[]:lineWins(g,opts.vip?VIP_K:1);
+function spin(rng,opts){opts=opts||{};const t=+opts.vip||0,g=fill(rng,false,t,opts.forceSc||0);const wins=opts.forceSc?[]:lineWins(g,VIP_KT[t]||1);
  const win=wins.reduce((a,w)=>a+w.pay,0),sc=scCount(g);return {grid:g,wins,win,sc,trigger:sc>=3}}
 // bonus: rondes van spins. lvl = huidige ronde (0 = ronde 1). Visdief-kans hangt af van hoeveel je er al hebt (elke 4 lastiger).
 function freeSpins(rng,start,vip){let left=start,total=0,caught=0,lvl=0,maxHit=false;const spins=[];let newRound=0;
@@ -85,10 +85,10 @@ function playRound(rng,opts){opts=opts||{};
  // gekochte bonus: voor iedereen gelijk (het VIP-voordeel zit in vaker de bonus halen en meer Visdieven in gewonnen bonussen)
  if(opts.buy){const s=spin(rng,{forceSc:3,vip:opts.vip});const n=FS_BY_SC[Math.min(5,s.sc)];const fs=freeSpins(rng,n,false);return {base:s,fs,fsStart:n,total:Math.min(MAX_WIN,fs.total),cost:BUY_COST}}
  const s=spin(rng,{vip:opts.vip});let tot=s.win,fs=null,n=0;
- if(s.trigger){n=FS_BY_SC[Math.min(5,s.sc)];fs=freeSpins(rng,n,!!opts.vip);tot+=fs.total}
+ if(s.trigger){n=FS_BY_SC[Math.min(5,s.sc)];fs=freeSpins(rng,n,+opts.vip||0);tot+=fs.total}
  return {base:s,fs,fsStart:n,total:Math.min(MAX_WIN,tot),cost:1}}
-const tune=o=>{if(o.payk!=null)PAYK=o.payk;if(o.p!=null)SC.p=o.p;if(o.pVip!=null)SC.vip=o.pVip;if(o.pBuy!=null)SC.buy=o.pBuy;if(o.pVipBuy!=null)SC.vipBuy=o.pVipBuy;if(o.fsVis!=null)FS.vis=o.fsVis;if(o.wild!=null)FS.wild=o.wild;if(o.vipWild!=null)FS.vipWild=o.vipWild;if(o.lvlW)FS.lvlW=o.lvlW;if(o.big)BIG=o.big;if(o.vipK!=null)VIP_K=o.vipK;
+const tune=o=>{if(o.payk!=null)PAYK=o.payk;if(o.p!=null)SC.p=o.p;if(o.scT)SC.t=o.scT;if(o.buyT)SC.buyT=o.buyT;if(o.wildT)FS.wildT=o.wildT;if(o.vipKT)VIP_KT=o.vipKT;if(o.pBuy!=null)SC.buy=o.pBuy;if(o.fsVis!=null)FS.vis=o.fsVis;if(o.wild!=null)FS.wild=o.wild;if(o.lvlW)FS.lvlW=o.lvlW;if(o.big)BIG=o.big;
  if(o.fish)o.fish.forEach((w,i)=>{if(FISH[i])FISH[i][1]=w});if(o.buyCost!=null)BUY_COST=o.buyCost};
-const API={REELS,ROWS,LINES,SYMS,FISH,FS,SC,FS_BY_SC,RETRIG,MULTS,PER_LEVEL,MAX_WIN,get BUY_COST(){return BUY_COST},get PAYK(){return PAYK},get VIP_K(){return VIP_K},VIS,tune,spin,freeSpins,playRound,lineWins,fill};
+const API={REELS,ROWS,LINES,SYMS,FISH,FS,SC,FS_BY_SC,RETRIG,MULTS,PER_LEVEL,MAX_WIN,get BUY_COST(){return BUY_COST},get PAYK(){return PAYK},get VIP_KT(){return VIP_KT},VIS,tune,spin,freeSpins,playRound,lineWins,fill};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.VISD=API;
 })(typeof window!=='undefined'?window:globalThis);

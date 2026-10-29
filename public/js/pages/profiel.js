@@ -11,7 +11,7 @@ V.profiel=()=>{
   <section class="card hud pf-id">
    <div class="pf-mug">${esc(S.name).slice(0,1).toUpperCase()}</div>
    <div class="pf-main"><div class="label">${window.__TOKEN__?'Account':'Offline speler'}${since?' · lid sinds '+since:''}</div>
-    <div class="pf-name">${esc(S.name)}${vipTag()}</div>${isVip()?'<div class="pf-vip">VIP-lid · alle wachttijden 60% · +15% buit bij misdaden · makkelijker vluchten en ontsnappen · cashback op elke casino-inzet · in de slots vaker de bonus</div>':''}
+    <div class="pf-name">${esc(S.name)}${vipTag()}</div>${isVip()?`<div class="pf-vip ${isHR()?'hr':''}">${lidName()} · ${Math.round(tierK()*100)}% meer slaagkans, straatcredit en bankrente · wachttijden ${Math.round(waitK()*100)}% · +${Math.round(tierLoot()*100)}% buit · makkelijker vluchten en ontsnappen · ${isHR()?'anderhalf keer zoveel ':''}cashback op elke casino-inzet · in de slots vaker de bonus${isHR()?' · hoge inzetten':''}</div>`:''}
     <div class="pf-rank"><b>${RANKS[ri][0]} ${rankStars(S.xp)}</b><span>${nxt?Math.floor(S.xp).toLocaleString('nl-NL')+' / '+nxt[1].toLocaleString('nl-NL')+' XP':'Hoogste rang'}</span></div>
     <div class="bar"><i style="width:${pct}%;background:var(--sec)"></i></div>
     <div class="pf-lvl">${rankLvlInfo()}</div>
@@ -19,7 +19,7 @@ V.profiel=()=>{
     <div class="pf-dos">
      <a href="#skills"><span class="label">Skills</span><b>${TRAININGS.reduce((a,t)=>a+(S.skills[t.id]||0),0)}</b><small>levels training</small></a>
      <a href="#shop"><span class="label">Uitrusting</span><b>+${gearBonus()}%</b><small>slaagkans · vuurkracht ${gearVk()}</small></a>
-     <a href="#biz"><span class="label">Bezit</span><b>${fmt(income())}</b><small>per minuut</small></a>
+     <a href="#biz"><span class="label">Bezit</span><b>${fmt(income())}</b><small>per speldag (4 uur)</small></a>
      <a href="#bank"><span class="label">Bank</span><b>${fmt(bankNet())}</b><small>sparen, deposito's, beleggen</small></a>
      <a href="#verblijf"><span class="label">Woning</span><b>${home().n}</b><small>${home().place}</small></a>
      <a href="#crimes"><span class="label">Buit</span><b>×${lootMult().toLocaleString('nl-NL',{maximumFractionDigits:2})}</b><small>op elke klus</small></a>

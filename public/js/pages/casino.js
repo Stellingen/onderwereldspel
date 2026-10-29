@@ -6,8 +6,8 @@ V.casino=()=>`<p class="sub cas-sub">Echte regels en eerlijke kansen. Het huis h
 
 const CAS_NAMES={kluis:'Kluiskraker',vis:'Visdief',mines:'Mines',avia:'Hoogvlieger',bj:'Blackjack',tcp:'Three Card Poker',roulette:'Roulette',coin:'Dubbel of niks'};
 // VIP-cashback: klein rechtsboven, direct te claimen. De percentages per spel staan in de tooltip.
-function vipCbHtml(){const a=cbAvail(),tip=Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*100).toLocaleString('nl-NL')+'%').join(' · ');
- return `<div class="cbmini" title="Cashback op elke inzet: ${tip}"><i class="vipt" style="margin:0">VIP</i><span>Cashback</span><b id="cbAmt">${fmt(a)}</b>
+function vipCbHtml(){const a=cbAvail(),m=TIER_CB[tier()]||1,tip=Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*m*100).toLocaleString('nl-NL',{maximumFractionDigits:3})+'%').join(' · ');
+ return `<div class="cbmini" title="Cashback op elke inzet${m>1?' (High roller ×1,5)':''}: ${tip}">${vipTag().replace('class="vipt','style="margin:0" class="vipt')}<span>Cashback</span><b id="cbAmt">${fmt(a)}</b>
   <button class="btn gold sm" id="cbBtn" onclick="act.claimCb()" ${a<1?'disabled':''}>${a>=1?'Claimen':'Nog niks te claimen'}</button></div>`}
 function cardHtml(c){if(c.hidden)return '<div class="pc back"></div>';const red=c.s==='♥'||c.s==='♦';return `<div class="pc ${red?'red':''}"><span>${c.v}</span><span>${c.s}</span></div>`}
 function handVal(h){let t=0,a=0;h.forEach(c=>{if(c.hidden)return;if(c.v==='A'){a++;t+=11}else t+=['K','Q','J'].includes(c.v)?10:+c.v});while(t>21&&a){t-=10;a--}return t}

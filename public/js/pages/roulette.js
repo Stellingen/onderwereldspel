@@ -61,8 +61,13 @@ function rlCtlHtml(){const r=rl,tot=rlTotal();return `
 // Alleen de vakken die veranderden bijwerken (geen hele pagina opnieuw tekenen bij elke fiche)
 function rlPaint(keys){[...new Set(keys)].forEach(k=>document.querySelectorAll(`.rt [data-k="${k}"]`).forEach(el=>{const old=el.querySelector('.rchip');if(old)old.remove();const v=rl.bets[k]||0;
   if(v)el.insertAdjacentHTML('beforeend',rlChip(v,false));el.classList.toggle('on',!!v)}));rlPaintCtl()}
+// telefoon: vaste balk onderin met je inzet en de draaiknop, zodat je na het zetten niet terug hoeft te scrollen
+function rlDockHtml(){const r=rl,tot=rlTotal();return `<button class="btn ghost" onclick="act.rlUndo()" ${r.spinning||!r.undo.length?'disabled':''} aria-label="Ongedaan maken">↶</button>
+  <div class="rl-dock-t"><span class="label">Inzet</span><b>${fmt(tot)}</b></div>
+  <button class="btn gold" onclick="act.rlSpin()" ${r.spinning||!tot||inJail()?'disabled':''}>${r.spinning?'Draait…':tot?'Draaien':'Zet een fiche'}</button>`}
 function rlPaintCtl(){if(!document.getElementById('rlCtl')){render();return}
  const t=document.getElementById('rlTot');if(t)t.textContent=fmt(rlTotal());document.getElementById('rlCtl').innerHTML=rlCtlHtml();
+ const dk=document.getElementById('rlDock');if(dk)dk.innerHTML=rlDockHtml();
  const g=document.getElementById('rlGroups');if(g)g.innerHTML=rlGroupsHtml();
  document.querySelectorAll('.rl-chips .pchip').forEach(b=>b.classList.toggle('on',+b.dataset.v===rl.chip));
  const rt=document.querySelector('.rt');if(rt)rt.classList.toggle('erase',!!rl.erase)}
@@ -78,7 +83,7 @@ function rouletteView(){const tot=rlTotal(),r=rl,done=!r.spinning&&r.res!=null,c
   <div class="rl-res card ${done?numCol(r.res):''}">
    <div class="label">${r.spinning?'Rien ne va plus':'Uitslag'}</div>
    <div class="rl-num">${r.spinning?'<span class="spin">…</span>':r.res==null?'<span class="dim">–</span>':r.res}</div>
-   <div class="rl-col">${r.spinning?'De bal rolt':r.res==null?'Plaats je fiches':({red:'Rood',black:'Zwart',green:'Nul'})[numCol(r.res)]+(r.res?' · '+(r.res%2?'oneven':'even')+' · '+(r.res<=18?'1-18':'19-36'):'')}</div>
+   <div class="rl-col">${r.spinning?'De bal rolt':r.res==null?'Plaats je fiches':'<span>'+({red:'Rood',black:'Zwart',green:'Nul'})[numCol(r.res)]+'</span>'+(r.res?' · <span>'+(r.res%2?'oneven':'even')+'</span> · <span>'+(r.res<=18?'1-18':'19-36')+'</span>':'')}</div>
    ${done&&r.lines?`<div class="rl-pay ${r.net>0?'w':r.net<0?'l':''}"><span>${r.lines.some(l=>l.back)?'Je krijgt terug':'Verloren'}</span><b>${fmt(r.lines.reduce((a,l)=>a+l.back,0))}</b><small>${r.net>=0?'+':'−'}${fmt(Math.abs(r.net))} netto · inzet ${fmt(r.lines.reduce((a,l)=>a+l.stake,0))}</small></div>`:''}
   </div>
  </section>
@@ -91,7 +96,8 @@ function rouletteView(){const tot=rlTotal(),r=rl,done=!r.spinning&&r.res!=null,c
   <div class="rl-groups" id="rlGroups">${rlGroupsHtml()}</div>
   <div class="rl-ctl" id="rlCtl">${rlCtlHtml()}</div>
   <p class="rl-help">Klik op een vak om een fiche te zetten. Op de lijnen tussen getallen zet je een split, op een kruispunt een hoek, onderaan een rij (3) of zes getallen. Rechtsklik of "Fiches weghalen" haalt een inzet weg. Max ${fmt(rlLim()[1])} per getal en ${fmt(rlLim()[2])} op de rest.${rankIdx(S.xp)<9?` Vanaf ${RANKS[rankIdx(S.xp)<6?6:9][0]}: ${fmt((rankIdx(S.xp)<6?RL_LIMITS[1]:RL_LIMITS[2])[1])} / ${fmt((rankIdx(S.xp)<6?RL_LIMITS[1]:RL_LIMITS[2])[2])}.`:''}</p>
- </section></div>`}
+ </section>
+ <div class="rl-dock" id="rlDock">${rlDockHtml()}</div></div>`}
 // Wiel + bal
 function drawWheel(a){const cv=document.getElementById('wheel');if(!cv)return;const x=cv.getContext('2d'),W=cv.width,c=W/2,R=c*.78,seg=Math.PI*2/37,k=W/680;
  x.clearRect(0,0,W,W);x.save();x.translate(c,c);
@@ -145,6 +151,8 @@ Object.assign(act,{
   const i=RL_ORDER.indexOf(n),seg=Math.PI*2/37,TAU=Math.PI*2,reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   const from=r.angle,delta=TAU*(4+Math.random())+Math.random()*TAU,to=from+delta,pocket=-Math.PI/2+i*seg,b0=r.ball||-Math.PI/2;
   const dur=reduce?400:6500,t0=performance.now();r.spinning=true;r.res=null;r.lines=null;render();SFX.spin();
+  // telefoon: terug naar het wiel als je onderaan bij de tafel stond
+  if(rlVert()){const top=document.querySelector('.rl-top');if(top&&top.getBoundingClientRect().bottom<80)top.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'})}
   let lastTick=0;
   const step=t=>{const p=Math.min(1,(t-t0)/dur);const ew=1-Math.pow(1-p,3);r.angle=from+delta*ew;
    // bal draait de andere kant op, valt rond 70% in de vakjes en ligt vanaf 86% stil in zijn vakje

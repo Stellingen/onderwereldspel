@@ -24,6 +24,7 @@ const SFX=(()=>{
     bonus(){[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,i*.11,.32,'triangle',.2));noise(.7,.5,.08,4000)},
     big(){[392,523,659,784,1047,1319,1568].forEach((f,i)=>{tone(f,i*.08,.5,'triangle',.18);tone(f/2,i*.08,.5,'sine',.1)})},
     lose(){tone(220,0,.25,'sine',.08,180)},
+    shot(){noise(0,.45,.55,120);tone(110,0,.3,'triangle',.45,38);noise(.03,.9,.08,2400)},
     card(){noise(0,.07,.12,2000)},
     chip(){tone(2200,0,.04,'square',.05);tone(1700,.03,.05,'square',.04)}
   };

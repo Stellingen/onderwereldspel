@@ -37,7 +37,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   elders loop je vermomd rond: 5% per minuut en een agent kan je herkennen (dan word je opgepakt). Bij 0% ben je niet meer gezocht.
 - **Borg** groeit met je rang: als Dief kost 2 minuten zo'n €900, als Peetvader 10 minuten zo'n €150.000. Charisma geeft korting.
 - **Telefoon**: onderbalk met Start, Misdaden, Auto's, Casino en **Meer**. Meer opent een menu met alle pagina's per groep
-  (Straat, Geld, Macht, Overig), met per pagina wat er speelt (energie, cel-tijd, inkomen per minuut, codes om te claimen).
+  (Straat, Geld, Macht, Overig), met per pagina wat er speelt (energie, cel-tijd, inkomen per speldag, codes om te claimen).
   Staat je pagina niet in de balk, dan toont de vijfde knop die pagina. De statusbalk blijft bovenaan staan, de nieuwsband en
   het kruimelpad vallen weg, en de casinospellen staan als 2 rijen knoppen. Hertekenen houdt je scrollpositie vast; in de slots
   worden alleen de onderdelen bijgewerkt die veranderen. Op de computer is niets veranderd.
@@ -49,13 +49,17 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   casinoronde gaat de stand meteen naar de server. Valt de server even weg, dan probeert het spel het opnieuw; browser-voortgang
   wint alleen als die op dezelfde versie verder bouwt.
 - **Arrestaties zijn verversbestendig**: openstaande keuze komt terug, afgebroken vlucht of autodiefstal telt als mislukt.
-- **Bezit**: 14 soorten bedrijven, van Wasserette (€5.000, €40/min) tot Privéjet-charter (€4 mln., €55.000/min), elk vanaf een
+- **Speldag = 4 uur.** Bedrijven verdienen per speldag; het geld gaat in de kas en wordt om 00:00, 04:00, 08:00, 12:00, 16:00
+  en 20:00 (eigen klok) uitbetaald. Terugverdientijd van ±3 speldagen (wasserette) tot ±8 (privéjet).
+- **Straatcredit** krijg je voor geslaagde klussen: hoe beter uitgevoerd (perfect ×1,5, netjes ×1,2) en hoe beter je uitrusting
+  (per soort je beste item, +4% per niveau), hoe meer. Families vragen nu veel meer cred (De Nieuwe Garde 30 … La Cupola 1.000).
+- **Bezit**: 14 soorten bedrijven, van Wasserette (€5.000, €1.250 per speldag) tot Privéjet-charter (€4 mln., €392.250 per speldag), elk vanaf een
   bepaalde rang. Klik op een bedrijf voor de details: tot 10 vestigingen per soort (elke volgende 25% duurder) en elke
   vestiging los upgraden van level 1 naar 5 (×1 / ×1,5 / ×2,2 / ×3,1 / ×4,3 inkomen) met eigen upgradenamen.
-  **Bonus op al je inkomen**: +25% basis, +1% per vestiging en +0,5% per upgrade (samen tot +200%), +5% per rang.
+  **Bonus op al je inkomen**: +25% basis, +0,5% per vestiging en +0,25% per upgrade (samen tot +50%), +3% per rang, +0,5% per level.
   Zo levert elk bedrijf meer op naarmate je imperium groeit en je hoger in rang komt (Bezit toont de verdeling).
   "Upgrade alles wat kan" upgradet steeds de laagste vestiging eerst. Oude saves worden omgezet (aantal → vestigingen op level 1).
-- **8 families** (`public/js/pages/families.js`), van De Nieuwe Garde (vanaf Loopjongen) tot La Cupola (vanaf Onderbaas, 650 cred).
+- **12 families** (`public/js/pages/families.js`), van De Nieuwe Garde (vanaf Loopjongen) tot La Cupola (vanaf Onderbaas, 650 cred).
   Iedereen begint onderaan als *Aspirant* en klimt met **eer** via Lid, Vertrouweling, Luitenant en Rechterhand naar *Erelid*.
   Als Aspirant krijg je 50% van de familiebonus (kans, buit, straf) en van het eigen voordeel, elk level +10%. Bij elke promotie
   krijg je geld. Grotere families vragen meer eer (+50% per familie). Overstappen kan, maar dan begin je weer onderaan.
@@ -107,31 +111,42 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   verdubbelen en herhalen; een fiche zetten werkt alleen dat vak bij (de pagina ververst niet). Op de telefoon staat de tafel rechtop.
   Maximum per vak: €50.000; vanaf Soldaat €75.000 op getallen en €100.000 op de rest, vanaf Onderbaas €150.000 en €200.000.
   De bon met de uitbetaling staat links naast het wiel. Code: `public/js/pages/roulette.js`.
-- **VIP** (code `vip`): VIP-tag bij je naam (ook in de ranglijst). **Alle wachttijden 60%** (klussen, auto stelen, training,
-  ontspanning, rusten en de dokter; celstraffen niet). Misdaden: +15% buit, 10% groter groen gat bij vluchten en
-  45% in plaats van 35% kans om uit de bajes te ontsnappen. Casino: cashback op elke inzet, direct te claimen
-  (Kluiskraker, Mines en Hoogvlieger 0,5%, roulette 1%, Three Card Poker 0,75%, blackjack 0,25%, Dubbel of niks 0% omdat daar geen huisvoordeel is).
-  Kluiskraker: bonus ±1 op 145 in plaats van 200 en superbonus ±1 op 2.500 in plaats van 4.400 (basisspel-clusters lager
-  om onder 100% te blijven). Visdief: bonus ±1 op 140 in plaats van 200, bij bonus kopen vaker een 4e of 5e boei. Hoogvlieger: langere dekken, vaker landen.
-- **Mines**: 5×5 vakjes, kies 1 tot 24 bommen of een stand (Makkelijk 3, Normaal 5, Moeilijk 10, Expert 15, Extreem 20,
-  Gekkenhuis 24: eerste vakje al 24,5×). Elk veilig vakje verhoogt de multiplier (98% van de echte kans, RTP 98%, max 10.000×). Cash out wanneer je wilt; de bommen
-  liggen vast zodra je start en het spel blijft staan als je ververst. Code: `public/js/pages/mines.js`.
-- **Visdief**: 3 boeien = 10 free spins, elke extra boei +2 (4 = 12), een volle rij van 5 = 15; per rol kan er één boei vallen.
-  **Bonus kopen** (66×, met de schakelaar): altijd 3 boeien, op de andere rollen kan er vanzelf nog een vallen (zelfde kans als
-  spinnen, VIP hoger): 4 boeien ±15% (VIP ±17%). Doorgerekend: RTP ±92% (VIP ±97%), bonus kopen ±96,5% (VIP ±97,5%).
-- **Live bijwerken**: Bezit, Wapens, Families, Profiel, Bank, Training en het dashboard verversen elke seconde als er iets
-  verandert (zoals je geld door passief inkomen), zodat knoppen meteen kloppen. In de slots loopt het saldo ook live mee.
-- **Hoogvlieger**: een vliegtuigje vliegt op eigen kracht over zee, zonder vaste baan. Overal in de lucht hangen willekeurig
-  items; wat hij raakt bepaalt zijn koers: een plusje (+1 tot +10) duwt hem omhoog, ×2 tot ×5 houdt hem even op dezelfde hoogte en
-  een bom (÷2) ontploft en laat hem zakken. Zonder items glijdt hij naar de zee. Op zee liggen vliegdekschepen met water ertussen;
-  na het aanraken rolt hij nog door. Blijft hij op het dek staan, dan win je inzet × multiplier (max 250×). De vlucht wordt bij het
-  opstijgen in één keer doorgerekend (natuurkunde + willekeurige items) en ligt dan vast. Meestal 12 tot 55 seconden (mediaan ±24 s),
-  soms anderhalve minuut of langer; "Sneller vliegen" speelt hem 3× zo snel af. Doorgerekend (`avsim2.js`, 80.000 vluchten):
-  normaal landt ±17%, RTP ±87%; VIP heeft 12% langere dekken, landt ±19%, RTP ±98%. Code: `public/js/pages/vlucht.js`.
-- **Dubbel of niks**: een munt die echt in 3D wordt opgegooid, precies 50% kans (crypto-random), geen huisvoordeel.
-  Win je, dan kies je: je pot pakken of nog een keer gooien voor het dubbele, tot 10 keer (×1024). De pot blijft bewaard bij verversen.
-  Code: `public/js/pages/munt.js`.
-- Kleur per sectie (Straat oranje, Geld groen, Macht paars, Overig blauw) en een zijbalk op brede schermen
+- **Lidmaatschap: VIP en High roller.** De beheerder geeft het (Beheer → speler → Lidmaatschap); zonder keuze telt de oude
+  code `vip` nog als VIP. Tag bij je naam (High roller paars) en in de ranglijst.
+  | | VIP | High roller |
+  |---|---|---|
+  | Slaagkans misdaden (na alle bonussen, max 95%) | ×1,15 | ×1,40 |
+  | Buit | +10% | +25% |
+  | Wachttijden (klussen, auto's, training, ontspanning, rusten, dokter, familieklus, huurmoord) | 75% | 55% |
+  | Groen gat bij vluchten en kans om te ontsnappen | ×1,15 | ×1,40 |
+  | Straatcredit | +15% | +40% |
+  | Bank: rente / kosten beleggen / depositoplekken | +15% / −15% / +1 | +40% / −40% / +2 |
+  | Casino-cashback (Kluiskraker, Visdief, Mines, Hoogvlieger 0,5%, roulette 1%, poker 0,75%, blackjack 0,25%) | ×1 | ×1,5 |
+  | Huurmoorden: rustiger vizier / meer tijd | −7,5% / +15% | −20% / +40% |
+  | Hoge inzetten in de slots | – | ja (ook met code `trainwreck`) |
+  Casino, doorgerekend (gewoon / VIP / High roller): Kluiskraker bonus 1 op 200 / 175 / 145, RTP 93% / 95% / 97%, bonus kopen
+  ±94,5% / 95,5% / 96,5%; Visdief bonus 1 op 200 / 172 / 143, RTP 91,5% / 94% / 96,5%, kopen ±97%; Hoogvlieger landt 17% / 18% / 19%,
+  RTP 86% / 92% / 96%. Alles blijft onder 100%, ook met cashback.
+- **Huurmoorden** (vanaf Huurmoordenaar, met een scherpschuttersgeweer of beter): 6 contracten (moeilijkheid 1–6, Huurmoordenaar
+  tot Peetvader). Je richt door een vizier dat meebeweegt met je adem: muis (telefoon: slepen), spatie/Adem ingedrukt = rustig
+  vizier, klik/Vuur = schieten. Hoofd = perfect (+25% geld, cred ×1,5), romp = gelukt. Mis = doelwit rent weg; laatste kogel mis
+  of een omstander geraakt = arrestatie (met vluchtspel). Rustiger vizier door training Schieten, beter wapen, lidmaatschap en
+  Het Schaduwcontract. Verversen tijdens een contract telt als mislukt. Code: `public/js/pages/hits.js`.
+- **Zware families**: Het Schaduwcontract (Huurmoordenaar, 1.400 cred, 3 huurmoorden), De Nachtwacht (Capo, 2.000, 8),
+  De Ronde Tafel (Consigliere, 3.000, 15) en De Erven Morano (Peetvader, 4.500, 25), elk met een eigen voordeel en een grote klus.
+
+## Beheer (admin-dashboard)
+
+Op **`/admin`** (link "Beheer" in het menu, alleen zichtbaar voor beheerders). Je logt in met je gewone account.
+Beheerder word je door je gebruikersnaam in Railway bij de variabele **`ADMIN_USERS`** te zetten (meerdere met komma's,
+bijvoorbeeld `jouwnaam,tweede`), of doordat een andere beheerder je rechten geeft in het dashboard.
+Wat kan het: spelers zoeken en filteren (VIP, High roller, geblokkeerd, beheerders), sorteren (actief, rang, geld, nieuw);
+per speler contant geld of spaarrekening bijschrijven, afschrijven of op een bedrag zetten (typ `250k`, `1,5m` of `2.000.000`);
+rang en level zetten of XP erbij; lidmaatschap Gewoon / VIP / High roller; straatcredit; uit de cel, energie vol, hitte 0;
+spel herladen, beheerder maken, blokkeren (met reden) en het account resetten (met bevestiging, optioneel codes vrijgeven).
+Elke aanpassing staat in het logboek. Het spel van de speler stopt meteen met opslaan, toont "Je account is bijgewerkt"
+en laadt de nieuwe stand; de speler ziet een melding met wat er is aangepast. Code: `admin.js` (server), `public/admin.html`,
+`public/js/admin.js`.
 
 ## Railway instellen
 
@@ -141,6 +156,7 @@ De app-service **Gangster Spel** draait `node server.js` (staat in `railway.json
 |---|---|
 | `MYSQL_URL` | `${{ MySQL.MYSQL_URL }}` (kies de MySQL-service via de referentie-knop) |
 | `JWT_SECRET` | een lange willekeurige tekst, bijvoorbeeld 40+ tekens |
+| `ADMIN_USERS` | gebruikersnaam (of namen met komma's) die beheerder is |
 
 De tabellen `users` en `game_state` worden bij de eerste start automatisch aangemaakt.
 Controleer de verbinding op `/api/health`: daar moet `"db": true` staan.
@@ -182,3 +198,5 @@ public/js/*.js       spelmodules; public/js/pages/ bevat één bestand per tabbl
 | GET | `/api/leaderboard` | top 25 spelers |
 | POST | `/api/redeem` | `{code}` → eenmalig spelgeld per account |
 | GET | `/api/health` | status van server en database |
+| GET | `/api/admin/stats`, `/api/admin/players?q=&f=&sort=`, `/api/admin/player/:id`, `/api/admin/log` | beheer (alleen beheerders) |
+| POST | `/api/admin/player/:id/action` | `{type: money/xp/cred/fix/tier/ban/admin/reset/kick, …}` |

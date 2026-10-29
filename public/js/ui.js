@@ -33,6 +33,8 @@ const ICONS={
  cup:'<path d="M4 9h13v5a5 5 0 01-5 5H9a5 5 0 01-5-5zM17 11h2a2 2 0 010 4h-2M8 3v3M12 3v3"/>',
  house:'<path d="M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-5h4v5"/>',
  logout:'<path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3M10 17l5-5-5-5M15 12H3"/>',
+ hits:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.5"/><path d="M12 1v5M12 18v5M1 12h5M18 12h5"/>',
+ beheer:'<path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/>',
  dash:'<path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/>',
  crimes:'<path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/>',
  cars:'<path d="M5 17h14M3 13l2-6h14l2 6v4H3zM7 17v2M17 17v2"/>',
@@ -44,22 +46,22 @@ const ICONS={
  skills:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
  fam:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 2 6 5.5"/>',
  rank:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0zM17 6h3v2a3 3 0 01-3 3M7 6H4v2a3 3 0 003 3"/>'};
-const PAGES=[['dash','Dashboard'],['verblijf','Verblijf'],['crimes','Misdaden'],['cars','Auto\'s'],['casino','Casino'],['biz','Bezit'],['shop','Wapens'],['skills','Training'],['bank','Bank'],['fam','Families'],['jail','Bajes'],['rank','Ranglijst'],['profiel','Profiel']];
+const PAGES=[['dash','Dashboard'],['verblijf','Verblijf'],['crimes','Misdaden'],['hits','Huurmoorden'],['cars','Auto\'s'],['casino','Casino'],['biz','Bezit'],['shop','Wapens'],['skills','Training'],['bank','Bank'],['fam','Families'],['jail','Bajes'],['rank','Ranglijst'],['profiel','Profiel']];
 const svg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 let page=(location.hash||'#dash').slice(1);if(!PAGES.find(p=>p[0]===page))page='dash';
 let casinoTab='kluis',rankTab='xp',slotState=['7','7','7'],spinning=false;
 
 // Elke sectie heeft een eigen kleur, zodat je ziet waar je bent
-const NAV_GROUPS=[['Straat',['dash','verblijf','crimes','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank'],'#3fe395','63,227,149'],['Macht',['shop','skills','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','rank','profiel'],'#a9dcff','169,220,255']];
+const NAV_GROUPS=[['Straat',['dash','verblijf','crimes','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank'],'#3fe395','63,227,149'],['Macht',['shop','skills','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','rank','profiel'],'#a9dcff','169,220,255']];
 const groupOf=k=>NAV_GROUPS.find(g=>g[1].includes(k))||NAV_GROUPS[0];
 function applySection(){document.body.classList.toggle('wide-page',page==='casino');const g=groupOf(page),r=document.documentElement.style;r.setProperty('--sec',g[2]);r.setProperty('--sec-rgb',g[3])}
 function crumbHtml(){const g=groupOf(page);return `<div class="crumb"><i></i><span>${g[0]}</span>/ ${PAGES.find(p=>p[0]===page)[1]}</div>`}
 function renderNav(){
   const name=k=>PAGES.find(p=>p[0]===k)[1];
   const link=k=>`<a class="navlink ${k===page?'on':''}" href="#${k}">${svg(k)}<span>${name(k)}</span>${k==='jail'&&inJail()?'<span class="badge">!</span>':''}${k==='crimes'&&!inJail()&&S.energy>=EN_MAX?'<span class="badge ok">●</span>':''}${k==='profiel'&&typeof RANK_CODES!=='undefined'&&RANKS.slice(1,rankIdx(S.xp)+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase()))?'<span class="badge">€</span>':''}</a>`;
-  setHTML($('#nav'),`<a class="brand" href="/" style="text-decoration:none;color:inherit"><span class="mark">O</span><span><b>Onderwereld</b><small>${window.__USER__?esc(window.__USER__):'Offline modus'} ${vipTag()}</small></span></a>`
+  setHTML($('#nav'),`<a class="brand" href="/" style="text-decoration:none;color:inherit"><span class="mark">O</span><span><b>Onderwereld</b><small>${window.__USER__?esc(window.__USER__):'Offline modus'} ${vipTag(1)}</small></span></a>`
    +NAV_GROUPS.map(([g,ks,col,rgb])=>`<div class="navgroup" style="--g:${col};--g-rgb:${rgb}"><div class="navlabel">${g}</div>${ks.map(link).join('')}</div>`).join('')
-   +(window.__TOKEN__?`<div class="navspace"></div><button class="navlink logout" onclick="logout()">${svg('logout')}<span>Uitloggen</span></button>`:''));
+   +(window.__TOKEN__?`<div class="navspace"></div>${window.__ADMIN__?`<a class="navlink beheer" href="/admin">${svg('beheer')}<span>Beheer</span></a>`:''}<button class="navlink logout" onclick="logout()">${svg('logout')}<span>Uitloggen</span></button>`:''));
   renderMbar();
 }
 // Alleen bijwerken als de inhoud echt veranderd is; scrollpositie binnen het element blijft staan.
@@ -81,8 +83,8 @@ function navBadges(){const b={};if(inJail())b.jail='!';if(!inJail()&&S.energy>=E
  if(typeof RANK_CODES!=='undefined'&&RANKS.slice(1,rankIdx(S.xp)+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase())))b.profiel='€';
  if(typeof isVip==='function'&&isVip()&&typeof cbAvail==='function'&&cbAvail()>=1)b.casino='€';return b}
 function navHint(k){const jt=Math.ceil((S.jailUntil-now())/1000);
- return {dash:'Overzicht',verblijf:S.hide?'Ondergedoken':'Gezondheid '+S.hp+'%',crimes:Math.floor(S.energy)+' energie',cars:S.cars.length+(S.cars.length===1?' auto':" auto's"),
-  casino:'8 spellen',biz:typeof income==='function'?fmt(income())+'/min':'Bedrijven',bank:fmt(typeof bankNet==='function'?bankNet():S.bank),shop:'Wapens',skills:'Trainen & ontspannen',
+ return {dash:'Overzicht',verblijf:S.hide?'Ondergedoken':'Gezondheid '+S.hp+'%',crimes:Math.floor(S.energy)+' energie',hits:rankIdx(S.xp)<7?'Vanaf '+RANKS[7][0]:cdLeft('hit')?'Over '+fmtClock(cdLeft('hit')):((S.stats&&S.stats.hits)||0)+' gedaan',cars:S.cars.length+(S.cars.length===1?' auto':" auto's"),
+  casino:'8 spellen',biz:typeof income==='function'?fmt(income())+'/dag':'Bedrijven',bank:fmt(typeof bankNet==='function'?bankNet():S.bank),shop:'Wapens',skills:'Trainen & ontspannen',
   fam:S.family?fam().n:'Geen familie',jail:inJail()?'Vast, '+fmtTime(jt):'Vrij',rank:'Spelers',profiel:'Codes en account'}[k]||''}
 function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('nav');bar.id='mbar';bar.className='mbar';bar.setAttribute('aria-label','Menu');document.body.appendChild(bar)}
  let sh=$('#msheet');if(!sh){sh=document.createElement('div');sh.id='msheet';sh.className='msheet';sh.setAttribute('aria-hidden','true');document.body.appendChild(sh);
@@ -96,7 +98,7 @@ function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('na
  setHTML(sh,`<div class="ms-panel" role="dialog" aria-label="Alle pagina's"><div class="ms-grab"></div>
   <div class="ms-head"><div><b>${esc(S.name)}${vipTag()}</b><span>${RANKS[ri][0]}, ${fmt(S.cash)} contant</span></div><button class="ms-x" data-close aria-label="Sluiten">✕</button></div>
   ${NAV_GROUPS.map(([g,ks,col])=>`<div class="ms-group" style="--g:${col}"><h3>${g}</h3><div class="ms-grid">${ks.map(k=>`<a class="ms-tile ${k===page?'on':''}" href="#${k}" data-close>${svg(k)}<b>${name(k)}</b><small>${navHint(k)}</small>${bd[k]?`<em class="${bd[k]==='●'?'ok':''}">${bd[k]==='●'?'vol':bd[k]}</em>`:''}</a>`).join('')}</div></div>`).join('')}
-  ${window.__TOKEN__?`<button class="btn ghost ms-out" onclick="logout()">Uitloggen</button>`:''}</div>`)}
+  ${window.__ADMIN__?`<a class="btn ghost ms-out ms-admin" href="/admin">${svg('beheer')} Beheerdashboard</a>`:''}${window.__TOKEN__?`<button class="btn ghost ms-out" onclick="logout()">Uitloggen</button>`:''}</div>`)}
 function mSheet(open){const sh=$('#msheet');if(!sh)return;if(open&&!sh.classList.contains('open')){sh._fresh=true;renderMbar();const p=sh.querySelector('.ms-panel');if(p)p.scrollTop=0}sh.classList.toggle('open',open);sh.setAttribute('aria-hidden',open?'false':'true');document.body.classList.toggle('ms-lock',open);
  if(open){if(typeof SFX!=='undefined')SFX.click();setTimeout(()=>{const t=sh.querySelector('.ms-tile.on')||sh.querySelector('.ms-x');t&&t.focus({preventScroll:true})},60)}}
 window.addEventListener('hashchange',()=>mSheet(false));
@@ -114,7 +116,7 @@ function todoItems(){const o=[],ri=rankIdx(S.xp);
   if(rx.length)o.push({ic:'spa',t:S.hp<60?'Gezondheid laag':'Energie bijvullen',s:'Ontspannen · '+rx.length+' klaar',h:'ontspannen',c:'#5ce1c4'})}
  if(S.family&&S.fm&&S.fm.fam===S.family){const d=S.fm.list.filter(m=>m.done).length;if(d<5)o.push({ic:'fam',t:'Familiemissies '+d+'/5',s:d<3?'Minimaal 3 vandaag':'Nog '+(5-d)+' voor de bonus',h:'fam',c:'var(--violet)'})}
  else if(!S.family){const can=FAMILIES.filter(f=>ri>=f.r&&S.cred>=f.cred).length;if(can)o.push({ic:'fam',t:'Sluit je aan bij een familie',s:can+' famil'+(can>1?'ies laten':'ie laat')+' je toe',h:'fam',c:'var(--violet)'})}
- if(typeof bzPlan==='function'){const ids=BIZ.filter(b=>bizUnits(b.id).length).map(b=>b.id);if(ids.length){const p=bzPlan(ids,S.cash);if(p.k)o.push({ic:'biz',t:p.k+' upgrade'+(p.k>1?'s':'')+' betaalbaar',s:fmt(p.cost)+' · +'+fmt(p.gain)+'/min',h:'biz',c:'var(--green)'})}}
+ if(typeof bzPlan==='function'){const ids=BIZ.filter(b=>bizUnits(b.id).length).map(b=>b.id);if(ids.length){const p=bzPlan(ids,S.cash);if(p.k)o.push({ic:'biz',t:p.k+' upgrade'+(p.k>1?'s':'')+' betaalbaar',s:fmt(p.cost)+' · +'+fmt(p.gain)+'/dag',h:'biz',c:'var(--green)'})}}
  if(!inJail()&&!cdLeft('car')&&typeof GARAGE_MAX!=='undefined'&&S.cars.length<GARAGE_MAX&&S.energy>=2)o.push({ic:'cars',t:'Auto zoeken',s:'Je kunt weer de straat op',h:'cars',c:'var(--acc2)'});
  if(RANKS.slice(1,ri+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase())))o.push({ic:'profiel',t:'Rangbeloning klaar',s:'Claim op je profiel',h:'profiel',c:'var(--acc)'});
  if(typeof cbAvail==='function'&&cbAvail()>=1)o.push({ic:'casino',t:'VIP-cashback '+fmt(cbAvail()),s:'Claim in het casino',h:'casino',c:'var(--acc)'});
@@ -126,7 +128,7 @@ function renderRail(){
   const ri=rankIdx(S.xp),nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
   const bc=bestCrime(),left=cdLeft(bc.id),ok=!inJail()&&!left&&S.energy>=bc.en;
   const full=Math.max(0,Math.ceil((EN_MAX-S.energy)*EN_REGEN_S/60));
-  const all=[...S.npcs.map(n=>({n:n.n,xp:n.xp})),...(window.__LB__||[]).filter(p=>!window.__USER__||p.name.toLowerCase()!==window.__USER__.toLowerCase()).map(p=>({n:esc(p.name)+(+p.vip?'<i class="vipt">VIP</i>':''),xp:+p.xp})),{n:'★ '+esc(S.name)+vipTag(),xp:S.xp,me:1}].sort((a,b)=>b.xp-a.xp);
+  const all=[...S.npcs.map(n=>({n:n.n,xp:n.xp})),...(window.__LB__||[]).filter(p=>!window.__USER__||p.name.toLowerCase()!==window.__USER__.toLowerCase()).map(p=>({n:esc(p.name)+(+p.vip>=2?'<i class="vipt hr">HIGH ROLLER</i>':+p.vip?'<i class="vipt">VIP</i>':''),xp:+p.xp})),{n:'★ '+esc(S.name)+vipTag(),xp:S.xp,me:1}].sort((a,b)=>b.xp-a.xp);
   const pos=all.findIndex(x=>x.me)+1;
   const td=todoItems();
   setHTML(el,`
@@ -152,7 +154,7 @@ function renderTop(){
   const ri=rankIdx(S.xp);const jt=Math.ceil((S.jailUntil-now())/1000);const pend=window.slotPending||0;
   const nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
   setHTML($('#topbar'),`
-   <div class="chip rank"><small>Rang · lv ${rankLevel(S.xp)}</small><b>${RANKS[ri][0]}${vipTag()}</b><div class="mini"><i style="width:${pct}%;background:var(--acc)"></i></div></div>
+   <div class="chip rank"><small>Rang · lv ${rankLevel(S.xp)}</small><b>${RANKS[ri][0]}${vipTag(1)}</b><div class="mini"><i style="width:${pct}%;background:var(--acc)"></i></div></div>
    <div class="chip cash"><small>Contant</small><b>${fmt(S.cash-pend)}</b></div>
    <div class="chip"><small>Bank</small><b>${fmt(S.bank)}</b></div>
    <div class="chip"><small>Energie</small><b style="color:var(--ice)">${Math.floor(S.energy)}/${EN_MAX}</b><div class="mini"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div></div>

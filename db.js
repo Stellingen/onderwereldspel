@@ -70,9 +70,23 @@ async function init() {
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
   // één actief apparaat per account: sid = sessie van het apparaat dat als laatste het spel opende, rev = versie van de opslag
-  for (const sql of ['ALTER TABLE game_state ADD COLUMN rev INT NOT NULL DEFAULT 0', 'ALTER TABLE game_state ADD COLUMN sid VARCHAR(40) NULL']) {
+  // lidmaatschap (tier: NULL = oude VIP-code telt, 0 gewoon, 1 VIP, 2 High roller), beheerder en blokkade per account
+  for (const sql of ['ALTER TABLE game_state ADD COLUMN rev INT NOT NULL DEFAULT 0', 'ALTER TABLE game_state ADD COLUMN sid VARCHAR(40) NULL',
+    'ALTER TABLE users ADD COLUMN tier TINYINT NULL', 'ALTER TABLE users ADD COLUMN is_admin TINYINT NOT NULL DEFAULT 0',
+    'ALTER TABLE users ADD COLUMN banned TINYINT NOT NULL DEFAULT 0', 'ALTER TABLE users ADD COLUMN ban_reason VARCHAR(200) NULL']) {
     try { await pool.query(sql); } catch (e) { if (e.code !== 'ER_DUP_FIELDNAME' && e.errno !== 1060) console.warn('Kolom toevoegen mislukt:', e.message); }
   }
+
+  // logboek van alles wat een beheerder aanpast
+  await pool.query(`CREATE TABLE IF NOT EXISTS admin_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
+    target_id INT NULL,
+    action VARCHAR(40) NOT NULL,
+    detail VARCHAR(500) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    KEY k_target (target_id), KEY k_time (created_at)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
   state.ready = true;
   console.log('✓ MySQL verbonden en tabellen klaar.');

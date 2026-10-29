@@ -1,7 +1,12 @@
 // Alle acties (klikken) en de politiecontroles
 const act={
  crime(id){const c=CRIMES.find(x=>x.id===id);if(inJail()||cdLeft(id)||rankIdx(S.xp)<c.r)return;if(S.energy<c.en){toast('Te moe. Je hebt '+c.en+' energie nodig','bad');return}S.energy-=c.en;S.cd[id]=now()+crimeCd(c);
-  if(rnd(1,100)<=chance(c)){const g=Math.floor(rnd(c.min,c.max)*lootMult());S.cash+=g;S.stats.crimes++;S.cred+=c.cr;addHeat(rnd(1,4));addXp(c.xp);if(typeof famEv==='function')famEv('crime',{r:c.r,g,cr:c.cr});toast(c.n+' gelukt: +'+fmt(g));log(c.n+' gelukt, buit '+fmt(g),'ok')}
+  const roll=rnd(1,100),ch=chance(c);
+  if(roll<=ch){const g=Math.floor(rnd(c.min,c.max)*lootMult());S.cash+=g;S.stats.crimes++;
+   // hoe ruim je slaagde bepaalt hoe goed het werd: perfect (ruim binnen je kans) of netjes
+   const q=roll<=ch*.3?'perfect':roll<=ch*.65?'netjes':'',cr=c.cr?credGain(c.cr,q):0;S.cred+=cr;if(q==='perfect')S.stats.perfect=(S.stats.perfect||0)+1;
+   addHeat(rnd(1,4));addXp(c.xp);if(typeof famEv==='function')famEv('crime',{r:c.r,g,cr});
+   toast(c.n+(q==='perfect'?' perfect uitgevoerd':q==='netjes'?' netjes gedaan':' gelukt')+': +'+fmt(g)+(cr?' · +'+cr+' straatcredit':''),q==='perfect'?'lvl':'ok');log(c.n+' gelukt'+(q?' ('+q+')':'')+', buit '+fmt(g)+(cr?', +'+cr+' cred':''),'ok')}
   else{const lost=Math.floor(Math.min(Math.floor(S.cash*0.1),c.max*2)*(1-furnFx('safe'))); // verlies past bij de grootte van de klus
   S.cash-=lost;S.stats.fails++;S.hp=Math.max(10,S.hp-rnd(5,15));addHeat(rnd(5,10));
    addXp(Math.ceil(c.xp/4));log(c.n+' mislukt, '+fmt(lost)+' kwijt','bad');save();

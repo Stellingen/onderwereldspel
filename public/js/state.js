@@ -12,6 +12,8 @@ function load(){
   let d=sv;if(lc&&lc.npcs&&(!sv||((lc.savedAt||0)>(sv.savedAt||0)&&(!window.__TOKEN__||(lc._rev||0)===svRev)))){d=lc;if(sv)window.__PUSH_LOCAL__=true}
   if(d&&window.__TOKEN__)d._rev=d===lc?(lc._rev||0):svRev;
   if(!d){try{d=JSON.parse(localStorage.getItem('onderwereld_v1'))}catch(e){}}
+  // beheerder heeft het account gereset: helemaal opnieuw beginnen (ook de browseropslag telt niet meer)
+  if(d&&d.__reset){const f=fresh();f.trainV=2;if(window.__USER__)f.name=window.__USER__;f._admin={notes:['Je account is door een beheerder gereset. Je begint opnieuw.']};return f}
   if(d&&d.npcs){const f=fresh(),oldBiz=!d.biz2,tv=d.trainV,oldTrain=tv!==2||Object.values(d.train||{}).some(n=>n>0),oldGear=d.gearV!==2;d=Object.assign(f,d);d.stats=Object.assign(fresh().stats,d.stats);d.skills=Object.assign(fresh().skills,d.skills);d.train=d.train||{};d.buffs=d.buffs||{};d.redeemed=d.redeemed||[];d.home=d.home||'brug';if(d.pendingArrest===undefined)d.pendingArrest=null;
     if(d.family==='rossi')d.family='colombra';if(d.family==='syndicaat')d.family='lucchetti';if(d.energy==null)d.energy=100;
     if(oldTrain){d.trainV=1;migrateTrain(d)}d.dep=Array.isArray(d.dep)?d.dep:[];
@@ -31,15 +33,20 @@ function pushState(beacon){
   const again=()=>{if(beacon)return;clearTimeout(_pushTimer);_retry=Math.min(_retry+1,6);_pushTimer=setTimeout(()=>pushState(),Math.min(60000,2000*Math.pow(2,_retry)))};
   let pr=Promise.resolve();
   try{pr=fetch('/api/state',{method:'POST',keepalive:!!beacon&&body.length<60000,headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.__TOKEN__},body})
-    .then(r=>{if(r.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/');return}if(r.status===409){deviceLock();return}if(!r.ok){again();return}_retry=0;
+    .then(r=>{if(r.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/');return}if(r.status===409||r.status===403){r.json().then(j=>deviceLock(j&&j.code)).catch(()=>deviceLock());return}if(!r.ok){again();return}_retry=0;
       return r.json().then(j=>{if(j&&j.rev){S._rev=j.rev;try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}}).catch(()=>{})}).catch(again)}catch(e){again()}
   _lastPush=Date.now();return pr}
 // Ander apparaat heeft het spel geopend: hier stoppen met opslaan en dat duidelijk laten zien
-function deviceLock(){if(window.__LOCKED__)return;window.__LOCKED__=true;clearTimeout(_pushTimer);
- const d=document.createElement('div');d.id='devLock';d.innerHTML=`<div class="dl-card"><span class="label">Account</span><b>Je speelt op een ander apparaat</b><p>Je account is ergens anders geopend. Om te voorkomen dat je voortgang dubbel of verkeerd wordt opgeslagen, kun je maar op één apparaat tegelijk spelen. Wat je hier sinds de vorige opslag deed, telt niet mee.</p><button class="btn" onclick="location.reload()">Hier verder spelen</button></div>`;document.body.appendChild(d)}
+// Of een beheerder heeft je account aangepast: dan opnieuw laden met de nieuwe stand. Geblokkeerd: terug naar de voorpagina.
+function deviceLock(code){if(window.__LOCKED__)return;window.__LOCKED__=true;clearTimeout(_pushTimer);
+ const T={admin_update:['Je account is bijgewerkt','Een beheerder heeft je account aangepast. Laad het spel opnieuw om de nieuwe stand te zien. Wat je hier in de laatste seconden deed, telt niet mee.','Opnieuw laden'],
+  banned:['Account geblokkeerd','Dit account is geblokkeerd door een beheerder. Je kunt niet verder spelen.','Naar de voorpagina'],
+  other_device:['Je speelt op een ander apparaat','Je account is ergens anders geopend. Om te voorkomen dat je voortgang dubbel of verkeerd wordt opgeslagen, kun je maar op één apparaat tegelijk spelen. Wat je hier sinds de vorige opslag deed, telt niet mee.','Hier verder spelen']}[code==='admin'?'admin_update':code]||null;
+ const t=T||['Je speelt op een ander apparaat','Je account is ergens anders geopend. Om te voorkomen dat je voortgang dubbel of verkeerd wordt opgeslagen, kun je maar op één apparaat tegelijk spelen. Wat je hier sinds de vorige opslag deed, telt niet mee.','Hier verder spelen'];
+ const d=document.createElement('div');d.id='devLock';d.innerHTML=`<div class="dl-card"><span class="label">Account</span><b>${t[0]}</b><p>${t[1]}</p><button class="btn" onclick="${code==='banned'?"try{localStorage.removeItem('ow_token')}catch(e){};location.replace('/')":'location.reload()'}">${t[2]}</button></div>`;document.body.appendChild(d)}
 // terug naar dit tabblad: meteen kijken of we nog het actieve apparaat zijn
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'||!window.__TOKEN__||!window.__SID__||window.__LOCKED__)return;
- fetch('/api/session?sid='+window.__SID__,{headers:{Authorization:'Bearer '+window.__TOKEN__}}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.active===false)deviceLock()}).catch(()=>{})});
+ fetch('/api/session?sid='+window.__SID__,{headers:{Authorization:'Bearer '+window.__TOKEN__}}).then(r=>r.ok?r.json():r.status===403?{active:false,reason:'banned'}:null).then(j=>{if(j&&j.active===false)deviceLock(j.reason)}).catch(()=>{})});
 // belangrijke momenten (casino, aankopen) meteen naar de server
 function pushSoon(){if(!window.__TOKEN__||window.__LOCKED__)return;clearTimeout(_pushTimer);_pushTimer=setTimeout(()=>pushState(),150)}
 function save(){
@@ -67,8 +74,8 @@ const rankLvlBonus=()=>(rankLevel(S.xp)-1)*RANK_SUB_LOOT;
 const rankLvlInfo=()=>{const l=rankLevel(S.xp),n=rankLevelNext(S.xp),b=Math.round(((rankIdx(S.xp)*RANK_LOOT)+rankLvlBonus())*100);
  return `Level ${l}/${RANK_SUB} · +${b}% buit${n?` · level ${l+1} op ${Math.ceil(n).toLocaleString('nl-NL')} XP`:l>=RANK_SUB?' · hoogste level':''}`};
 const rankStars=xp=>{const l=rankLevel(xp);return `<span class="rk-stars" title="Level ${l} van ${RANK_SUB} in deze rang">${'★'.repeat(l)}<i>${'★'.repeat(RANK_SUB-l)}</i></span>`};
-// VIP: alle wachttijden 60% van normaal (klussen, auto's, training, ontspanning, rusten, dokter)
-const VIP_WAIT=.6;const waitK=()=>isVip()?VIP_WAIT:1;
+// Wachttijden per lidmaatschap (klussen, auto's, training, ontspanning, rusten, dokter, familieklus): VIP 75%, High roller 55%
+const TIER_WAIT=[1,.75,.55];const waitK=()=>TIER_WAIT[tier()]||1;
 const inJail=()=>S.jailUntil>now();
 // per soort telt je beste item (het duurste dat je hebt)
 const gearBest=cat=>{let b=null;GEAR.forEach(g=>{if(g.cat===cat&&S.gear&&S.gear[g.id])b=g});return b};
@@ -92,10 +99,12 @@ const furnFx=k=>FURN.reduce((a,f)=>a+((S&&S.furn&&S.furn[f.id])?(f.fx[k]||0):0),
 const buffFocus=()=>(S.buffs&&S.buffs.focus&&S.buffs.focus.until>now())?S.buffs.focus.pct:0;
 const buffLoot=()=>(S.buffs&&S.buffs.loot&&S.buffs.loot.until>now())?S.buffs.loot.pct:0;
 const sk=id=>(S.skills&&S.skills[id])||0;
-// buit-vermenigvuldiger bij klussen: familie × (rang + rang-level + hacken + buit-buff) × VIP
-const lootMult=()=>(1+fam().loot/100)*(1+rankIdx(S.xp)*RANK_LOOT+rankLvlBonus()+sk('hack')*SK.hack.loot/100+buffLoot()/100+gearFx('buit'))*(isVip()?1+VIP_LOOT:1);
+// buit-vermenigvuldiger bij klussen: familie × (rang + rang-level + hacken + buit-buff + uitrusting) × lidmaatschap
+const lootMult=()=>(1+fam().loot/100)*(1+rankIdx(S.xp)*RANK_LOOT+rankLvlBonus()+sk('hack')*SK.hack.loot/100+buffLoot()/100+gearFx('buit'))*(1+tierLoot());
 const focusPct=()=>buffFocus()+furnFx('focus');
-const chance=c=>Math.max(5,Math.min(95,c.base+rankIdx(S.xp)*2+gearBonus()+fam().chance+S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)+(c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0)+focusPct()-Math.floor(S.heat/4)));
+// slaagkans: alle bonussen opgeteld, daarna × lidmaatschap (VIP ×1,15, High roller ×1,4), altijd tussen 5% en 95%
+const chanceRaw=c=>c.base+rankIdx(S.xp)*2+gearBonus()+fam().chance+S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)+(c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0)+focusPct()-Math.floor(S.heat/4);
+const chance=c=>Math.max(5,Math.min(95,Math.round(chanceRaw(c)*(1+tierK()))));
 const jailSec=sec=>Math.max(30,Math.min(600,Math.round(sec*(1-fam().jail/100)*(1-sk('rechten')*SK.rechten.jail/100)*(1-gearFx('jail')))));
 function sendToJail(sec){sec=jailSec(sec);S.lastSentence=sec;S.jailUntil=now()+sec*1000;return sec}
 // Borg groeit met je rang: als Dief kost 2 minuten zo'n €900, als Peetvader 10 minuten zo'n €150.000. Charisma geeft korting.
@@ -136,6 +145,8 @@ function arrest(sec,title,msg,opts){
 function resumePending(){
   if(S.pendingHeist){const c=CARS.find(k=>k.id===S.pendingHeist.id)||CARS[0];S.pendingHeist=null;S.heat=Math.min(100,S.heat+4+c.d*2);log('Autodiefstal afgebroken: '+c.n,'bad');
     arrest(30+c.d*20,'Alarm!','Je liet de '+c.n+' halverwege staan en het alarm ging af.',{flee:Math.min(5,Math.max(1,c.d))});return}
+  if(S.pendingHit){const H=(typeof HITS!=='undefined'&&HITS.find(h=>h.id===S.pendingHit.id))||{t:'het doelwit',d:3};S.pendingHit=null;addHeat(15);log('Huurmoord afgebroken','bad');
+    arrest(typeof hitJail==='function'?hitJail(H):300,'Gezien!','Je liet het contract op '+H.t+' halverwege liggen. Iemand heeft je gezien.',{flee:Math.min(5,H.d)});return}
   const pa=S.pendingArrest;if(!pa)return;
   if(pa.fleeing){jailFor(pa,1.2,'Vluchtpoging afgebroken (+20% straf)');return}
   arrest(pa.sec,pa.title,pa.msg,pa.opts);
@@ -151,17 +162,30 @@ function showModal(t,m,btns){$('#modal').hidden=false;$('#modalT').textContent=t
   btns=btns||[{l:'Begrepen',c:'red',f:closeModal}];const box=$('#modalB');box.innerHTML='';
   btns.forEach(b=>{const e=document.createElement('button');e.className='btn '+(b.c||'');e.textContent=b.l;e.onclick=b.f;box.appendChild(e)})}
 function closeModal(){$('#modal').hidden=true}
-// VIP (code "vip"): tag bij je naam, iets vaker de bonus in Kluiskraker (alleen het basisspel) en cashback op elke inzet.
+// VIP en High roller: tag bij je naam, vaker de bonus in de slots en cashback op elke inzet (High roller ×1,5).
 // Cashback per spel, afgestemd op het huisvoordeel, zodat je er nooit structureel winst mee maakt. Direct te claimen.
 const CB_RATE={kluis:.005,vis:.005,mines:.005,avia:.005,roulette:.01,tcp:.0075,bj:.0025,coin:0};
 const CB_NAME={kluis:'Kluiskraker',vis:'Visdief',mines:'Mines',avia:'Hoogvlieger',roulette:'Roulette',tcp:'Three Card Poker',bj:'Blackjack',coin:'Dubbel of niks'};
-const isVip=()=>!!(S&&S.redeemed&&S.redeemed.includes('vip'));
-// VIP bij misdaden: 15% meer buit, 10% groter groen gat bij vluchten en 10% meer kans om uit de bajes te ontsnappen
-const VIP_LOOT=.15,VIP_FLEE=.10,VIP_ESCAPE=.10;
-const escChance=()=>.35+(isVip()?VIP_ESCAPE:0)+famPerk('esc');
-const vipTag=()=>isVip()?'<i class="vipt" title="VIP-lid">VIP</i>':'';
+// Lidmaatschap: 0 = gewoon, 1 = VIP, 2 = High roller. Komt van je account (beheerder); oude VIP-code telt nog als VIP.
+const tier=()=>{const t=window.__TIER__;if(t!=null)return t;return (S&&S.redeemed&&S.redeemed.includes('vip'))?1:0};
+const isVip=()=>tier()>=1;
+const isHR=()=>tier()>=2;
+// algemeen voordeel per lidmaatschap: VIP +15%, High roller +40% (slaagkans, vluchten, ontsnappen, straatcredit, bankrente)
+const TIER_K=[0,.15,.40];const tierK=()=>TIER_K[tier()]||0;
+const TIER_NAME=['Gewoon','VIP','High roller'];const lidName=()=>TIER_NAME[tier()];
+const TIER_LOOT=[0,.10,.25];const tierLoot=()=>TIER_LOOT[tier()]||0;
+const TIER_CB=[0,1,1.5];
+// Straatcredit: je krijgt het voor goed uitgevoerde klussen. Betere uitrusting = meer respect op straat.
+// Per soort telt je beste item: tier × 4% (alles op het hoogste = +76%). Perfect uitgevoerd ×1,5, netjes ×1,2.
+const gearCredK=()=>GEAR_CATS.reduce((a,c)=>{const g=gearBest(c.id);return a+(g?GEAR.filter(x=>x.cat===c.id).indexOf(g)+1:0)},0)*.04;
+const credMult=q=>(1+gearCredK())*(1+tierK())*(q==='perfect'?1.5:q==='netjes'?1.2:1);
+const credGain=(base,q)=>{const v=base*credMult(q);return Math.floor(v)+(Math.random()<v%1?1:0)};
+// ontsnappen uit de bajes: 35% basis × lidmaatschap, plus het familievoordeel
+const escChance=()=>.35*(1+tierK())+famPerk('esc');
+// tag bij je naam; kort = 'HR' voor smalle plekken (balk bovenin)
+const vipTag=short=>isHR()?`<i class="vipt hr" title="High roller">${short?'HR':'HIGH ROLLER'}</i>`:isVip()?'<i class="vipt" title="VIP-lid">VIP</i>':'';
 // Elke afgeronde casinoronde: inzet, wat je terugkreeg en welk spel. VIP spaart een vast percentage van de inzet op.
-function casinoRound(stake,pay,game){if(typeof pushSoon==='function')setTimeout(pushSoon,0);if(!isVip())return;const r=CB_RATE[game]||0;if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
+function casinoRound(stake,pay,game){if(typeof pushSoon==='function')setTimeout(pushSoon,0);if(!isVip())return;const r=(CB_RATE[game]||0)*(TIER_CB[tier()]||0);if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
   const el=document.getElementById('cbAmt');if(el)el.textContent=fmt(cbAvail());const bt=document.getElementById('cbBtn');if(bt){bt.disabled=cbAvail()<1;bt.textContent=cbAvail()>=1?'Claimen':'Nog niks te claimen'}}
 const cbAvail=()=>isVip()&&S.cb?Math.floor(S.cb.acc||0):0;
 const crimeCd=c=>c.cd*1000*(1-S.skills.speed*SK.speed.cd)*(1-famPerk('cd'))*waitK();
@@ -170,12 +194,17 @@ const RL_ORDER=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1
 const REDS=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 const numCol=n=>n===0?'green':REDS.has(n)?'red':'black';
 window.rl={bets:{},angle:0,spinning:false,hist:[],chip:100,res:null,net:0};
-// Inkomen per minuut: per vestiging het inkomen van zijn level
+// Inkomen per speldag (4 uur): per vestiging het inkomen van zijn level
 const bizUnits=id=>(S.biz2&&S.biz2[id])||[];
-function bizMult(){let u=0,up=0;BIZ.forEach(b=>bizUnits(b.id).forEach(l=>{u++;up+=l-1}));const imp=Math.min(BIZ_IMP_MAX,u*BIZ_IMP_UNIT+up*BIZ_IMP_UP),rk=rankIdx(S.xp)*BIZ_RANK+(rankLevel(S.xp)-1)*.01;
+function bizMult(){let u=0,up=0;BIZ.forEach(b=>bizUnits(b.id).forEach(l=>{u++;up+=l-1}));const imp=Math.min(BIZ_IMP_MAX,u*BIZ_IMP_UNIT+up*BIZ_IMP_UP),rk=rankIdx(S.xp)*BIZ_RANK+(rankLevel(S.xp)-1)*.005;
  return {units:u,ups:up,imp,rk,total:BIZ_BOOST*(1+imp)*(1+rk)*(1+sk('handel')*SK.handel.inc/100)*(1+famPerk('inc'))}}
 const bizIncome=id=>{const b=BIZ.find(x=>x.id===id);return bizUnits(id).reduce((a,l)=>a+bizInc(b,l),0)};
-const income=()=>BIZ.reduce((a,b)=>a+bizIncome(b.id),0);
+const income=()=>BIZ.reduce((a,b)=>a+bizIncome(b.id),0); // per speldag (4 uur)
+// Speldag: 4 uur, vaste tijden (00:00, 04:00, 08:00 ... op je eigen klok). Bedrijven sparen in de kas en betalen aan het eind uit.
+const dayStart=t=>{const d=new Date(t);return new Date(d.getFullYear(),d.getMonth(),d.getDate(),Math.floor(d.getHours()/4)*4).getTime()};
+const nextPayout=()=>dayStart(now())+DAY_MS;
+function bizPayTick(mins,t){S.kas=(S.kas||0)+income()/240*mins;const ds=dayStart(t);if(!S.kasDay)S.kasDay=ds;
+ if(ds>S.kasDay){const pay=Math.floor(S.kas);S.kasDay=ds;S.kas=0;if(pay>0){S.cash+=pay;toast('Je bedrijven betalen uit: +'+fmt(pay),'lvl');log('Uitbetaling bedrijven: +'+fmt(pay),'ok')}}}
 
 function toast(msg,cls='ok'){const t=document.createElement('div');t.className='toast '+cls;t.textContent=msg;$('#toasts').prepend(t);setTimeout(()=>t.remove(),3200)}
 function log(msg,cls='info'){S.log.unshift({m:msg,c:cls,t:now()});S.log=S.log.slice(0,40)}
