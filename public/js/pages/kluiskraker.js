@@ -62,12 +62,14 @@ function kkControls(){const b=kkBet(),buy=b*SLOT.BUY_COST;return `<div class="la
    <div class="kk-bet"><button onclick="kkStepBet(-1)" ${kk.busy?'disabled':''} aria-label="Lagere inzet">−</button><b>${fmt(b)}</b><button onclick="kkStepBet(1)" ${kk.busy?'disabled':''} aria-label="Hogere inzet">+</button></div>
    <button class="btn kk-go" onclick="act.kkSpin(false)" ${kk.busy||inJail()?'disabled':''}>${kk.busy?'Bezig…':'Draaien'}</button>
    <div class="flex" style="margin-top:8px">
-    <button class="btn ghost sm" onclick="kk.turbo=!kk.turbo;render()" ${kk.busy?'disabled':''}>${kk.turbo?'Snel: aan':'Snel: uit'}</button>
+    <button class="btn ghost sm kk-turbo ${kk.turbo?'on':''}" onclick="kkTurbo()" aria-pressed="${kk.turbo}">${kk.turbo?'Snel: aan':'Snel: uit'}</button>
     <button class="btn ghost sm" onclick="kk.confirm=true;render()" ${kk.busy||inJail()?'disabled':''}>Bonus kopen</button>
    </div>
    ${kk.confirm&&!kk.busy?`<div class="kk-confirm"><div style="font-weight:600;margin-bottom:4px">Bonus kopen voor ${fmt(buy)}?</div>
     <div style="color:var(--mute);font-size:13px;margin-bottom:10px">Dat is ${SLOT.BUY_COST}× je inzet van ${fmt(b)}. Je krijgt direct ${SLOT.FS_BY_SC[4]} free spins waarin de vakjes blijven staan (de superbonus is niet te koop). Gemiddeld levert een bonus iets minder op dan hij kost, maar de uitschieters zijn groot.</div>
     <div class="flex"><button class="btn sm" onclick="act.kkSpin(true)" ${S.cash<buy?'disabled':''}>${S.cash<buy?'Te weinig geld':'Kopen'}</button><button class="btn ghost sm" onclick="kk.confirm=false;render()">Annuleren</button></div></div>`:''}`}
+// Snelheid mag ook tijdens een spin of bonus om: de volgende val/tumble gebruikt meteen het nieuwe tempo.
+function kkTurbo(){kk.turbo=!kk.turbo;SFX.click();document.querySelectorAll('.kk-turbo').forEach(b=>{b.textContent=kk.turbo?'Snel: aan':'Snel: uit';b.classList.toggle('on',kk.turbo);b.setAttribute('aria-pressed',kk.turbo)})}
 function kkStepBet(d){if(kk.busy)return;kk.bi=Math.max(0,Math.min(KK_BETS.length-1,kk.bi+d));kk.confirm=false;SFX.chip();render()}
 const kkOn=()=>page==='casino'&&casinoTab==='kluis'&&!document.hidden&&!!document.getElementById('kkCells');
 // Tijdens een bonus pauzeert de animatie als je wegklikt; terug op de slot klik je 'Bonus verder afspelen'.
@@ -99,9 +101,9 @@ function kkLandSounds(g,anim){const T=KK_T();for(let c=0;c<SLOT.COLS;c++){const 
   setTimeout(()=>{if(kkOn())SFX.land(c)},d-20)}}
 let kkScSeen=0;
 async function kkAnimateSpin(sp,bet,inFs,runTotal){
- let sofar=0;const T=KK_T();
+ let sofar=0;
  for(let i=0;i<sp.steps.length;i++){
-  const st=sp.steps[i],anim=i===0?'all':'tumble';
+  const T=KK_T(),st=sp.steps[i],anim=i===0?'all':'tumble';
   if(i===0&&!inFs)kkShowSpots(st.spots);
   kkShow(st.grid,anim);kkLandSounds(st.grid,anim);
   await kkWait(kkFallTime(st.grid,anim)+60);
@@ -168,7 +170,7 @@ Object.assign(act,{
   // Uitkomst staat vast en wordt meteen verrekend; de animatie laat alleen zien wat er gebeurde.
   S.cash+=pay-cost;window.slotPending=pay;
   if(pay>cost)S.stats.won+=pay-cost;else S.stats.lost+=cost-pay;
-  casinoRound(cost,pay);
+  casinoRound(cost,pay,'kluis');
   save();render();
   try{await kkPlay(round,bet,isBuy)}catch(e){console.error(e)}
   window.slotPending=0;kk.busy=false;kk.inBonus=false;kk.paused=false;kk.lastWin=pay;kk.stepWin=0;

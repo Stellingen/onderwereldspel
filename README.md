@@ -28,20 +28,24 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   het spel het opnieuw en gaat er geen voortgang verloren.
 - **Arrestaties zijn verversbestendig**: openstaande keuze komt terug, afgebroken vlucht of autodiefstal telt als mislukt.
 - **8 families**, van De Nieuwe Garde tot La Cupola
-- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000) en `vip` (€20.000), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
+- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000) en `spinnetje` (€25.000), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
 - **Kluiskraker**: cluster-slot op 7×7 (5+ aangrenzende gelijke symbolen), Loper als wild, vakjes die bij elke
   winst x2, x4 … tot x1024 worden. 4 kluizen = 10 free spins, 5 kluizen = 12. Tijdens de bonus geven 2+ kluizen extra spins
   (2:+2 … 5+:+8). **6+ kluizen = superbonus**: 8 spins met bijna twee keer zoveel lopers en de **Gouden baar**; landt die,
   dan win je direct de max win. De superbonus is niet te koop. **Max win 5.000× de inzet**, bij elke inzet.
-  Bonus kopen kost 100× de inzet (gewone bonus). Gesimuleerd (2,4 mln. spins, zie `slot.js`): RTP ±96% (bonus ±1 op 345,
+  Bonus kopen kost 100× de inzet (gewone bonus). De snelheid (Snel aan/uit) kun je ook tijdens een spin of bonus omzetten. Gesimuleerd (2,4 mln. spins, zie `slot.js`): RTP ±96% (bonus ±1 op 345,
   superbonus ±1 op 38.000, gemiddeld ±510×, 1 op 20 superbonussen haalt de max win), bonus kopen ±95%.
 - **Roulette** (Europees, één nul, 2,7% huisvoordeel): groot wiel met rollende bal bovenaan, echte inzettafel eronder.
   Nummer, split, rij, hoek, zes, drie met nul, eerste vier, kolom, dozijn en de kansen, plus groepen op het wiel
   (Buren van nul, Overkant, Weesjes, Nulspel). Ongedaan maken, fiches weghalen (ook met rechtsklik), alles wissen,
-  verdubbelen en herhalen. Op de telefoon staat de tafel rechtop. Code: `public/js/pages/roulette.js`.
-- **VIP** (code `vip`): VIP-tag bij je naam (ook in de ranglijst), 10% cashback op je netto casinoverlies (elke 6 uur,
-  max €50.000 per keer) en in Kluiskraker ongeveer 10% vaker de bonus in het basisspel. In de bonus zelf is alles gelijk.
-  Zo blijft het terugbetaalpercentage ook voor VIP onder de 100%.
+  verdubbelen en herhalen; een fiche zetten werkt alleen dat vak bij (de pagina ververst niet). Op de telefoon staat de tafel rechtop. Code: `public/js/pages/roulette.js`.
+- **VIP** (code `vip`): VIP-tag bij je naam (ook in de ranglijst). Misdaden: +15% buit, 10% groter groen gat bij vluchten en
+  45% in plaats van 35% kans om uit de bajes te ontsnappen. Casino: cashback op elke inzet, direct te claimen
+  (Kluiskraker 1%, roulette 1%, Three Card Poker 0,75%, blackjack 0,25%, Dubbel of niks 0% omdat daar geen huisvoordeel is),
+  en in Kluiskraker ongeveer 5% vaker de bonus in het basisspel. In de bonus zelf is alles gelijk. Zo blijft ook VIP onder de 100%.
+- **Dubbel of niks**: een munt die echt in 3D wordt opgegooid, precies 50% kans (crypto-random), geen huisvoordeel.
+  Win je, dan kies je: je pot pakken of nog een keer gooien voor het dubbele, tot 10 keer (×1024). De pot blijft bewaard bij verversen.
+  Code: `public/js/pages/munt.js`.
 - Kleur per sectie (Straat oranje, Geld groen, Macht paars, Overig blauw) en een zijbalk op brede schermen
 
 ## Railway instellen

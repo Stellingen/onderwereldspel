@@ -96,14 +96,19 @@ function showModal(t,m,btns){$('#modal').hidden=false;$('#modalT').textContent=t
   btns=btns||[{l:'Begrepen',c:'red',f:closeModal}];const box=$('#modalB');box.innerHTML='';
   btns.forEach(b=>{const e=document.createElement('button');e.className='btn '+(b.c||'');e.textContent=b.l;e.onclick=b.f;box.appendChild(e)})}
 function closeModal(){$('#modal').hidden=true}
-// VIP (code "vip"): tag bij je naam, iets vaker de bonus in Kluiskraker (alleen het basisspel) en cashback op het casino.
-const CB_PCT=.10,CB_EVERY=6*3600*1000,CB_MAX=50000;
+// VIP (code "vip"): tag bij je naam, iets vaker de bonus in Kluiskraker (alleen het basisspel) en cashback op elke inzet.
+// Cashback per spel, afgestemd op het huisvoordeel, zodat je er nooit structureel winst mee maakt. Direct te claimen.
+const CB_RATE={kluis:.01,roulette:.01,tcp:.0075,bj:.0025,coin:0};
+const CB_NAME={kluis:'Kluiskraker',roulette:'Roulette',tcp:'Three Card Poker',bj:'Blackjack',coin:'Dubbel of niks'};
 const isVip=()=>!!(S&&S.redeemed&&S.redeemed.includes('vip'));
+// VIP bij misdaden: 15% meer buit, 10% groter groen gat bij vluchten en 10% meer kans om uit de bajes te ontsnappen
+const VIP_LOOT=.15,VIP_FLEE=.10,VIP_ESCAPE=.10;
+const escChance=()=>.35+(isVip()?VIP_ESCAPE:0);
 const vipTag=()=>isVip()?'<i class="vipt" title="VIP-lid">VIP</i>':'';
-// Elke afgeronde casinoronde: inzet en wat je terugkreeg. Alleen VIP spaart cashback op (10% van het netto verlies).
-function casinoRound(stake,pay){if(!isVip())return;S.cb=S.cb||{net:0,last:0};S.cb.net+=stake-pay}
-const cbAvail=()=>isVip()&&S.cb?Math.min(CB_MAX,Math.floor(Math.max(0,S.cb.net)*CB_PCT)):0;
-const cbLeft=()=>isVip()&&S.cb&&S.cb.last?Math.max(0,S.cb.last+CB_EVERY-now()):0;
+// Elke afgeronde casinoronde: inzet, wat je terugkreeg en welk spel. VIP spaart een vast percentage van de inzet op.
+function casinoRound(stake,pay,game){if(!isVip())return;const r=CB_RATE[game]||0;if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
+  const el=document.getElementById('cbAmt');if(el)el.textContent=fmt(cbAvail());const bt=document.getElementById('cbBtn');if(bt){bt.disabled=cbAvail()<1;bt.textContent=cbAvail()>=1?'Claimen':'Nog niks te claimen'}}
+const cbAvail=()=>isVip()&&S.cb?Math.floor(S.cb.acc||0):0;
 const crimeCd=c=>c.cd*1000*(1-S.skills.speed*SK.speed.cd);
 const carCd=()=>30000*(1-S.skills.speed*SK.speed.cd);
 const RL_ORDER=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];

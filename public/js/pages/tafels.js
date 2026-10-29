@@ -92,7 +92,7 @@ function btFinish(){
  b.lines=lines;
  const staked=b.hands.reduce((a,h)=>a+h.bet,0)+b.bets.pp+b.bets.t21;
  S.cash+=back;b.net=back-staked;
- if(b.net>0)S.stats.won+=b.net;else S.stats.lost+=-b.net;casinoRound(staked,back);
+ if(b.net>0)S.stats.won+=b.net;else S.stats.lost+=-b.net;casinoRound(staked,back,'bj');
  b.msg=b.net>0?'Je krijgt '+fmt(back)+' terug':b.net<0?(back?'Je krijgt '+fmt(back)+' terug':'Je verliest '+fmt(-b.net)):'Quitte · '+fmt(back)+' terug';
  b.net>0?(b.net>=staked*3?SFX.big():SFX.win(2)):b.net<0?SFX.lose():SFX.chip();
  log('Blackjack: '+b.msg,b.net>0?'ok':b.net<0?'bad':'info');save();render();
@@ -185,7 +185,7 @@ function tpSettle(folded){
  if(t.bets.six)L.push({label:'6-Card Bonus',note:c6[2]?c6[0]:'geen',stake:t.bets.six,back:c6[2]?t.bets.six*(c6[2]+1):0});
  t.lines=L;
  t.res=o;S.cash+=back;t.net=back-staked;
- if(t.net>0)S.stats.won+=t.net;else S.stats.lost+=-t.net;casinoRound(staked,back);
+ if(t.net>0)S.stats.won+=t.net;else S.stats.lost+=-t.net;casinoRound(staked,back,'tcp');
  t.msg=t.net>0?'Je krijgt '+fmt(back)+' terug':t.net<0?(back?'Je krijgt '+fmt(back)+' terug':'Je verliest '+fmt(-t.net)):'Quitte · '+fmt(back)+' terug';
  t.net>0?(t.net>=staked*3?SFX.big():SFX.win(2)):t.net<0?SFX.lose():SFX.chip();
  log('Three Card Poker: '+t.msg,t.net>0?'ok':t.net<0?'bad':'info');save();render()}

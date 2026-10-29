@@ -26,7 +26,7 @@ const SYMS=[
 let PAYK=1;
 const setPay=k=>{PAYK=k;SYMS.forEach(s=>{s.pay=CURVE.map(c=>+(s.b*c*PAYK).toFixed(2))})};setPay(3.5);
 const WILD={id:'sleutel',n:'Loper',w:22,fsW:51.5,superW:95};
-const SCATTER={id:'kluis',n:'Kluis',w:11.8,fsW:6,vip:1.025};
+const SCATTER={id:'kluis',n:'Kluis',w:11.8,fsW:6,vip:1.015};
 // Gouden baar: alleen in de superbonus
 const BAR={id:'baar',n:'Gouden baar',w:.1};
 const FS_BY_SC={4:10,5:12};
