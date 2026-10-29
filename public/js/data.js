@@ -178,11 +178,11 @@ const RELAX=[
 
 // Rangcodes: typ de naam van een rang bij Profiel > Code inwisselen (één keer, zodra je die rang hebt)
 const RANK_CODES={straatschoffie:150,loopjongen:400,dief:1000,boef:2500,gangster:6000,soldaat:12000,huurmoordenaar:25000,capo:50000,onderbaas:100000,consigliere:200000,peetvader:500000};
-const CODE_ALIAS={kapo:'capo',m1:'m1v2',m2:'m2v2',m3:'m3v2',m4:'m4v2',m5:'m5v2',m6:'m6v2',m7:'m7v2',m8:'m8v2',m9:'m9v2'};
+const CODE_ALIAS={kapo:'capo',m1:'m1v3',m2:'m2v3',m3:'m3v3',m4:'m4v3',m5:'m5v3',m6:'m6v3',m7:'m7v3',m8:'m8v3',m9:'m9v3'};
 // zo toon je een code in 'gebruikte codes' (m1v2 → M1)
 const codeShow=c=>c.replace(/v\d+$/,'').toUpperCase();
 // Codes die nu bestaan (zelfde als CODES in server.js). Oude codes verdwijnen uit 'gebruikte codes'.
-const LIVE_CODES={lotto:1500,welkom:500,casino:5000,vip:20000,spinnetje:25000,jackpot:1000000,trainwreck:3000000,m1v2:5000000,m2v2:5000000,m3v2:5000000,m4v2:5000000,m5v2:5000000,m6v2:5000000,m7v2:5000000,m8v2:5000000,m9v2:5000000};
+const LIVE_CODES={lotto:1500,welkom:500,casino:5000,vip:20000,spinnetje:25000,jackpot:1000000,trainwreck:3000000,m1v3:5000000,m2v3:5000000,m3v3:5000000,m4v3:5000000,m5v3:5000000,m6v3:5000000,m7v3:5000000,m8v3:5000000,m9v3:5000000};
 
 // Verblijf: je begint onder de brug. Rusten vult je energie in `rest` seconden, maar alleen zolang je blijft.
 const HOMES=[

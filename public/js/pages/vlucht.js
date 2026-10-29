@@ -1,23 +1,26 @@
 // Casino: Hoogvlieger — een vliegtuigje vliegt over zee en pakt multipliers (+1, +2, +5, +10, ×2 … ×5) of bommen (÷2, en hij zakt).
 // Aan het eind moet hij landen op een plateau (een vliegdekschip). Tussen de plateaus zit water. Raakt hij het dek, dan rolt hij nog door:
 // blijft hij op het dek staan, dan win je inzet × multiplier; rolt hij eraf of valt hij in het water, dan ben je je inzet kwijt.
-// De vlucht ligt vast zodra je opstijgt (verversen verandert niets). Doorgerekend: RTP ±97%, landt ±29% van de vluchten.
-const AV_ITEMS=[['bom',.575],['+1',.30],['+2',.14],['+5',.05],['+10',.012],['x2',.07],['x3',.02],['x4',.006],['x5',.003]];
-const AVC={gap:[70,110],glide:[12,16],drop:12,cap:250,L:[100,140],G:[80,120],R:[25,75],margin:6,speed:165,slope:14/90};
+// Pakt hij een multiplier, dan stuitert hij omhoog; een bom halveert je multiplier en duwt hem omlaag. Er liggen weinig schepen.
+// VIP: dekken zijn 9% langer, dus ±13% meer kans om te landen. De vlucht ligt vast zodra je opstijgt (verversen verandert niets).
+// Doorgerekend (avsim): normaal RTP ±87% en landt ±22%; VIP RTP ±98% en landt ±25%.
+const AV_ITEMS=[['bom',.485],['+1',.30],['+2',.14],['+5',.05],['+10',.012],['x2',.07],['x3',.02],['x4',.006],['x5',.003]];
+const AVC={gap:[70,110],glide:[12,16],drop:12,bounce:[8,14],top:100,cap:250,L:[100,140],G:[140,200],R:[25,75],margin:6,vipL:1.09,speed:165,slope:14/90};
 const AV_BETS=[10,25,50,100,250,500,1000,2500,5000,10000,25000,50000];
 const avBets=()=>isHighRoller()?AV_BETS.concat([100000,250000,500000]):AV_BETS;
 window.av=window.av||{bi:3,flying:false,plan:null,t0:0,raf:null,res:null,shake:0};
 const avBet=()=>{const B=avBets();if(av.bi>=B.length)av.bi=B.length-1;return B[av.bi]};
 const avR=()=>crypto.getRandomValues(new Uint32Array(1))[0]/4294967296;
 const avX=v=>'×'+v.toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2});
-function avPlan(){const tot=AV_ITEMS.reduce((a,b)=>a+b[1],0),U=(a)=>a[0]+avR()*(a[1]-a[0]);let alt=100,m=1,x=0;const path=[[0,100]],ev=[];
+function avPlan(vip,rng){rng=rng||avR;const tot=AV_ITEMS.reduce((a,b)=>a+b[1],0),U=(a)=>a[0]+rng()*(a[1]-a[0]);let alt=100,m=1,x=0;const path=[[0,100]],ev=[];
  for(let n=0;n<60;n++){const nx=x+U(AVC.gap),na=alt-U(AVC.glide);if(na<=0)break;x=nx;alt=na;path.push([x,alt]);
-  let q=avR()*tot,it='bom';for(const [k,p] of AV_ITEMS){q-=p;if(q<=0){it=k;break}}
+  let q=rng()*tot,it='bom';for(const [k,p] of AV_ITEMS){q-=p;if(q<=0){it=k;break}}
+  // bom: winst gehalveerd en hij wordt omlaag geduwd · multiplier: hij stuitert omhoog
   if(it==='bom'){m=m/2;ev.push({x,alt,it,m});alt-=AVC.drop;path.push([x+30,Math.max(0,alt)]);if(alt<=0)break}
-  else{if(it[0]==='+')m+=+it.slice(1);else m*=+it.slice(1);m=Math.min(AVC.cap,m);ev.push({x,alt,it,m})}}
+  else{if(it[0]==='+')m+=+it.slice(1);else m*=+it.slice(1);m=Math.min(AVC.cap,m);ev.push({x,alt,it,m});alt=Math.min(AVC.top,alt+U(AVC.bounce));path.push([x+30,alt])}}
  const last=path[path.length-1],touch=last[0]+Math.max(0,last[1])/AVC.slope;path.push([touch,0]);
- // landen: plateau (lengte L) en gat (G) liggen willekeurig onder het landingspunt; R = hoe ver hij nog doorrolt
- const L=U(AVC.L),G=U(AVC.G),pos=avR()*(L+G),R=U(AVC.R),on=pos<L,ok=on&&pos+R<=L-AVC.margin;
+ // landen: dek (lengte L, VIP iets langer) en water (G) liggen willekeurig onder het landingspunt; R = hoe ver hij nog doorrolt
+ const L=U(AVC.L)*(vip?AVC.vipL:1),G=U(AVC.G),pos=rng()*(L+G),R=U(AVC.R),on=pos<L,ok=on&&pos+R<=L-AVC.margin;
  let plats=[];
  if(on)plats.push([touch-pos,touch-pos+L,1]);
  else{const e0=touch-(pos-L);plats.push([e0-U(AVC.L),e0,0]);plats.push([e0+G,e0+G+U(AVC.L),0])}
@@ -39,11 +42,11 @@ function aviaView(){const h=S.avHist||[],bet=avBet(),f=av.flying,res=av.res;setT
   <div class="cf-quick">${avBets().map((v,i)=>`<button class="${av.bi===i?'on':''}" onclick="av.bi=${i};SFX.chip();render()" ${f?'disabled':''}>${v>=1000?v/1000+'K':v}</button>`).join('')}</div>
   <button class="btn gold xl av-go" onclick="act.avFly()" ${f||inJail()||S.cash<bet?'disabled':''}>${f?'Vliegt…':S.cash<bet?'Te weinig geld':'Opstijgen · '+fmt(bet)}</button>
   <div class="av-legend">
-   <div><i class="add">+1</i><span>+1, +2, +5, +10 erbij</span></div><div><i class="mul">×2</i><span>×2 tot ×5 keer</span></div>
-   <div><i class="bom">÷2</i><span>Bom: halveert en hij zakt</span></div><div><i class="deck"></i><span>Land op een dek en blijf staan</span></div></div>
+   <div><i class="add">+1</i><span>+1 tot +10 · hij stuitert omhoog</span></div><div><i class="mul">×2</i><span>×2 tot ×5 · hij stuitert omhoog</span></div>
+   <div><i class="bom">÷2</i><span>Bom: halveert en duwt hem omlaag</span></div><div><i class="deck"></i><span>Land op een dek en blijf staan</span></div></div>
   <div class="label" style="margin-top:4px">Laatste vluchten</div>
   <div class="av-hist">${h.length?h.map(x=>`<i class="${x.ok?'w':'l'}" title="${x.ok?'Geland':'Niet geland'}">${x.ok?avX(x.m):'✕'}</i>`).join(''):'<span class="label">Nog niet gevlogen</span>'}</div>
-  <p class="cf-fine">Eerlijk doorgerekend: RTP ±97%. Ongeveer 3 op de 10 vluchten landen; max ${AVC.cap}× je inzet. De vlucht ligt vast zodra je opstijgt.</p>
+  <p class="cf-fine">Doorgerekend: ${isVip()?'als VIP landt ±1 op 4 vluchten (dekken iets langer), RTP ±98%':'ongeveer 1 op de 5 vluchten landt, RTP ±87% (VIP: langere dekken, ±13% vaker landen, RTP ±98%)'}. Max ${AVC.cap}× je inzet. De vlucht ligt vast zodra je opstijgt.</p>
  </section></div>`}
 /* ---------- Tekenen ---------- */
 function avSize(cv){const dpr=Math.min(2,devicePixelRatio||1),W=cv.clientWidth,H=cv.clientHeight;if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return [x,W,H]}
@@ -88,7 +91,7 @@ function avMount(){if(av.flying)return;const P=av.plan&&av.res?av.plan:null;
 window.addEventListener('resize',()=>{if(page==='casino'&&casinoTab==='avia'&&!av.flying)avMount()});
 Object.assign(act,{
  avFly(){if(av.flying||inJail())return;const bet=avBet();if(S.cash<bet){toast('Niet genoeg contant geld','bad');return}
-  const P=avPlan(),pay=P.ok?Math.floor(bet*P.m):0;
+  const P=avPlan(isVip()),pay=P.ok?Math.floor(bet*P.m):0;
   // uitkomst staat vast en wordt meteen verrekend
   S.cash+=pay-bet;window.slotPending=pay;if(pay>bet)S.stats.won+=pay-bet;else S.stats.lost+=bet-pay;casinoRound(bet,pay,'avia');
   S.avHist=[{m:P.m,ok:P.ok}].concat(S.avHist||[]).slice(0,14);save();
