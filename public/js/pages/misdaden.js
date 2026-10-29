@@ -4,7 +4,7 @@ V.crimes=()=>{
  const ri=rankIdx(S.xp);
  const tiers=[...new Set(CRIMES.map(c=>c.r))].sort((a,b)=>a-b);
  const visible=tiers.filter(t=>crimeShowAll||t<=ri+1);
- const avail=CRIMES.filter(c=>c.r<=ri).length,mult=(1+fam().loot/100)*(1+ri*RANK_LOOT+rankLvlBonus())*(isVip()?1+VIP_LOOT:1);
+ const avail=CRIMES.filter(c=>c.r<=ri).length,mult=lootMult();
  const row=c=>{const lock=ri<c.r,left=cdLeft(c.id),ch=chance(c),tired=S.energy<c.en;
   const label=lock?'Vanaf '+RANKS[c.r][0]:inJail()?'Je zit vast':left?Math.ceil(left/1000)+'s':tired?'Te moe':'Uitvoeren';
   return `<div class="crime ${lock?'locked':''}" style="${lock?'opacity:.45':''}">

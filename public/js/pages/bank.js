@@ -9,7 +9,7 @@ const bankCap=()=>250000*Math.pow(2,rankIdx(S.xp));
 const savRate=()=>isVip()?SAV_VIP:SAV_RATE;
 const depRate=t=>t.r*(isVip()?DEP_VIP:1);
 const depSlots=()=>DEP_SLOTS+(isVip()?1:0);
-const invFee=f=>f.fee*(isVip()?.5:1);
+const invFee=f=>f.fee*(isVip()?.5:1)*(1-sk('handel')*SK.handel.fee/100);
 const fundOf=id=>MK.FUNDS.find(f=>f.id===id);
 const invPos=id=>(S.inv||{})[id];
 const invVal=id=>{const p=invPos(id);return p&&p.u>0?p.u*MK.price(id,now()):0};

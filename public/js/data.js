@@ -145,7 +145,9 @@ const FLEE_LEVELS={
 const TRAIN_MAX=50;
 const pctTxt=(v,sign)=>v?sign+(+v.toFixed(1)).toLocaleString('nl-NL')+'%':'0%';
 // Effect per level (op level 50 haal je het maximum). Eén sessie = één level.
-const SK={conditie:{en:1,zone:.008},steal:{all:.4,zakken:.8},speed:{cd:.01,mark:.006},cars:{time:.01,price:.008},charisma:{talk:.9,bail:.008}};
+const SK={conditie:{en:1,zone:.008},steal:{all:.4,zakken:.8},speed:{cd:.01,mark:.006},cars:{time:.01,price:.008},charisma:{talk:.9,bail:.008},
+ schiet:{heavy:.5},hack:{loot:.5},handel:{inc:.4,fee:1},rechten:{jail:1,bail:.4}};
+const HEAVY_R=5; // zware klussen: vanaf Gangster
 // Prijs per sessie stijgt steil: level 1 kost een paar tientjes, de laatste levels honderdduizenden euro's.
 const trainCost=(t,l)=>Math.round(t.base*Math.pow(1+l,1.9)*Math.pow(1.04,l)/10)*10;
 const TRAIN_MILES=[10,20,30,40,50];
@@ -164,21 +166,48 @@ const TRAININGS=[
   eff:l=>[['Meer tijd bij contact maken',pctTxt(SK.cars.time*100*l,'+')],['Verkoopwaarde gestolen auto',pctTxt(SK.cars.price*100*l,'+')]]},
  {id:'charisma',place:'Toneelschool',n:'Charisma',col:'#ff7fb3',ic:'mask',base:150,cd:20,
   d:'Acteerles in de Jordaan. Agenten geloven je verhaal sneller.',
-  eff:l=>[['Kans om je eruit te praten',pctTxt(Math.min(45,SK.charisma.talk*l),'')],['Korting op borg',pctTxt(SK.charisma.bail*100*l,'')]]}];
+  eff:l=>[['Kans om je eruit te praten',pctTxt(Math.min(45,SK.charisma.talk*l),'')],['Korting op borg',pctTxt(SK.charisma.bail*100*l,'')]]},
+ // nieuwe plekken: pas open vanaf een bepaalde rang (r), duurder en met een langer tijdslot
+ {id:'schiet',place:'Schietvereniging Ede',n:'Schieten',col:'#ff6b6b',ic:'target',base:180,cd:25,r:3,
+  d:'Op de baan tussen jagers en agenten in hun vrije tijd. Zware klussen lukken vaker.',
+  eff:l=>[['Slaagkans zware klussen (vanaf Gangster)',pctTxt(SK.schiet.heavy*l,'+')]]},
+ {id:'hack',place:'Hackerskelder in Delft',n:'Hacken',col:'#5ce1c4',ic:'chip',base:220,cd:25,r:4,
+  d:'Alarmcodes, camera\'s en bankapps. Je weet beter waar het geld ligt.',
+  eff:l=>[['Buit bij alle klussen',pctTxt(SK.hack.loot*l,'+')]]},
+ {id:'handel',place:'Zakenschool Nyenrode',n:'Handelsgeest',col:'#ffd166',ic:'brief',base:260,cd:30,r:5,
+  d:'Boekhouden, onderhandelen en witwassen voor gevorderden. Je zaken draaien beter.',
+  eff:l=>[['Passief inkomen',pctTxt(SK.handel.inc*l,'+')],['Kosten bij beleggen',pctTxt(SK.handel.fee*l,'-')]]},
+ {id:'rechten',place:'Avondstudie rechten',n:'Rechtenkennis',col:'#9db4ff',ic:'scale',base:300,cd:30,r:6,
+  d:'Wetboeken op de Zuidas. Je weet precies wat ze wel en niet kunnen bewijzen.',
+  eff:l=>[['Kortere celstraf',pctTxt(SK.rechten.jail*l,'-')],['Lagere borg',pctTxt(SK.rechten.bail*l,'-')]]}];
 // Oude saves telden sessies per level (2, 2, 3, 3, ...). Nu telt elke gedane sessie als één level.
 function migrateTrain(d){if(d.trainV===2)return;d.skills=d.skills||{};d.train=d.train||{};
  TRAININGS.forEach(t=>{const L=d.skills[t.id]||0;let n=d.train[t.id]||0;for(let l=0;l<L;l++)n+=2+Math.floor(l/2);d.skills[t.id]=Math.min(TRAIN_MAX,n)});d.train={};d.trainV=2}
 
-// Ontspanning: tijdelijke effecten, elk met een eigen wachttijd
+// Ontspanning: tijdelijke effecten, elk met een eigen wachttijd (min). Hoe beter, hoe duurder en hoe langer je moet wachten.
+// Prijs = basis × (1 + 0,5 per rang) × (1 + 10% per level binnen je rang). r = vanaf welke rang. tier: 0 snel, 1 ontspannen, 2 luxe.
+// focus = slaagkans (+%, mins), loot = buit (+%, mins), hp/energy (999 = vol), heat = minder hitte, clearWanted = van de gezochtlijst
+const RELAX_TIERS=['Even bijkomen','Echt ontspannen','Luxe'];
 const RELAX=[
- {id:'club',place:'Privéclub op de Wallen',n:'Hoofd leegmaken',col:'#ff3d52',ic:'glass',cd:60,cost:r=>300+r*150,
+ {id:'espresso',tier:0,place:'Italiaanse bar',n:'Dubbele espresso',col:'#ffad6b',ic:'cup',cd:20,base:15,
+  d:'Snel een bakje bij Luigi. Kleine oppepper.',energy:12},
+ {id:'shoarma',tier:0,place:'Shoarmazaak in De Pijp',n:'Broodje shoarma',col:'#ffd166',ic:'snack',cd:30,base:50,
+  d:'Om drie uur \'s nachts, extra knoflooksaus. Het doet wonderen.',hp:15,energy:8},
+ {id:'kapper',tier:0,place:'Barbershop in West',n:'Nieuwe look',col:'#ff7fb3',ic:'scissors',cd:45,base:220,
+  d:'Een andere snit en een strakke baard. Agenten herkennen je minder snel.',heat:20},
+ {id:'sauna',tier:1,place:'Sauna & massage',n:'Herstellen',col:'#a9dcff',ic:'steam',cd:45,base:150,
+  d:'Stoom, een massage en een uur niemand aan je hoofd.',hp:35,energy:20},
+ {id:'club',tier:1,place:'Privéclub op de Wallen',n:'Hoofd leegmaken',col:'#ff3d52',ic:'glass',cd:60,base:400,
   d:'Een dure avond in een privéclub. Daarna is je hoofd leeg en ben je scherp.',focus:8,mins:20},
- {id:'sauna',place:'Sauna & massage',n:'Herstellen',col:'#a9dcff',ic:'steam',cd:40,cost:r=>120+r*40,
-  d:'Stoom, een massage en een uur niemand aan je hoofd.',hp:35,energy:15},
- {id:'espresso',place:'Italiaanse bar',n:'Dubbele espresso',col:'#ffad6b',ic:'cup',cd:20,cost:()=>15,
-  d:'Snel een bakje bij Luigi. Kleine oppepper.',energy:10},
- {id:'onderduik',place:'Onderduikadres',n:'Onderduiken',col:'#b8a1ff',ic:'house',cd:90,cost:r=>400+r*250,
-  d:'Een paar uur van de radar op een adres dat niemand kent. Je hitte zakt en de gezochtlijst vergeet je.',heat:40,clearWanted:true}];
+ {id:'onderduik',tier:1,place:'Onderduikadres',n:'Onderduiken',col:'#b8a1ff',ic:'house',cd:90,base:500,
+  d:'Een paar uur van de radar op een adres dat niemand kent. Je hitte zakt en de gezochtlijst vergeet je.',heat:40,clearWanted:true},
+ {id:'wellness',tier:2,r:5,place:'Wellnessresort in Zeeland',n:'Weekendje weg',col:'#3fe395',ic:'spa',cd:180,base:4000,
+  d:'Zee, stilte en een kamer met uitzicht. Je komt terug als nieuw.',hp:999,energy:50,focus:10,mins:45},
+ {id:'jacht',tier:2,r:8,place:'Jacht voor de kust van Monaco',n:'Op het water',col:'#4d9dff',ic:'yacht',cd:300,base:30000,
+  d:'Champagne aan dek en zakendoen met mensen die je anders nooit spreekt.',energy:999,heat:30,focus:15,loot:10,mins:60},
+ {id:'ibiza',tier:2,r:10,place:'Privéjet naar Ibiza',n:'Weekend Ibiza',col:'#ff7a1a',ic:'plane',cd:480,base:200000,
+  d:'Je verdwijnt een weekend. Als je terugkomt is de stad je vergeten en ben je scherper dan ooit.',hp:999,energy:999,heat:60,clearWanted:true,focus:20,loot:15,mins:90}];
+const relaxCost=(r,ri,lv)=>Math.round(r.base*(1+ri*.5)*(1+((lv||1)-1)*.1)/5)*5;
 
 // Rangcodes: typ de naam van een rang bij Profiel > Code inwisselen (één keer, zodra je die rang hebt)
 const RANK_CODES={straatschoffie:150,loopjongen:400,dief:1000,boef:2500,gangster:6000,soldaat:12000,huurmoordenaar:25000,capo:50000,onderbaas:100000,consigliere:200000,peetvader:500000};

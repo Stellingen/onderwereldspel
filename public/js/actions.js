@@ -1,13 +1,13 @@
 // Alle acties (klikken) en de politiecontroles
 const act={
  crime(id){const c=CRIMES.find(x=>x.id===id);if(inJail()||cdLeft(id)||rankIdx(S.xp)<c.r)return;if(S.energy<c.en){toast('Te moe. Je hebt '+c.en+' energie nodig','bad');return}S.energy-=c.en;S.cd[id]=now()+crimeCd(c);
-  if(rnd(1,100)<=chance(c)){const g=Math.floor(rnd(c.min,c.max)*(1+fam().loot/100)*(1+rankIdx(S.xp)*RANK_LOOT+rankLvlBonus())*(isVip()?1+VIP_LOOT:1));S.cash+=g;S.stats.crimes++;S.cred+=c.cr;S.heat=Math.min(100,S.heat+rnd(1,4));addXp(c.xp);toast(c.n+' gelukt: +'+fmt(g));log(c.n+' gelukt, buit '+fmt(g),'ok')}
+  if(rnd(1,100)<=chance(c)){const g=Math.floor(rnd(c.min,c.max)*lootMult());S.cash+=g;S.stats.crimes++;S.cred+=c.cr;S.heat=Math.min(100,S.heat+rnd(1,4));addXp(c.xp);toast(c.n+' gelukt: +'+fmt(g));log(c.n+' gelukt, buit '+fmt(g),'ok')}
   else{const lost=Math.floor(Math.min(Math.floor(S.cash*0.1),c.max*2)*(1-furnFx('safe'))); // verlies past bij de grootte van de klus
   S.cash-=lost;S.stats.fails++;S.hp=Math.max(10,S.hp-rnd(5,15));S.heat=Math.min(100,S.heat+rnd(5,10));
    addXp(Math.ceil(c.xp/4));log(c.n+' mislukt, '+fmt(lost)+' kwijt','bad');save();
    arrest(c.jail,'Betrapt!',c.n+' ging mis. '+FLEE_LEVELS[c.flee||2].where,{flee:c.flee||2})}
   save();render()},
- trainSession(id){const t=TRAININGS.find(x=>x.id===id);const l=S.skills[id]||0;if(!t||l>=TRAIN_MAX||inJail()||cdLeft('tr_'+id))return;
+ trainSession(id){const t=TRAININGS.find(x=>x.id===id);const l=S.skills[id]||0;if(!t||l>=TRAIN_MAX||inJail()||cdLeft('tr_'+id)||rankIdx(S.xp)<(t.r||0))return;
   const cost=trainCost(t,l);if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
   S.cash-=cost;S.cd['tr_'+id]=now()+t.cd*60000*waitK();S.skills[id]=l+1;addXp(3+Math.floor(l*1.5));const a=t.eff(l),b=t.eff(l+1);
   toast(t.n+' level '+(l+1)+': '+a[0][0].toLowerCase()+' '+a[0][1]+' → '+b[0][1],TRAIN_MILES.includes(l+1)?'lvl':'ok');log(t.n+' naar level '+(l+1)+' ('+t.place+', '+fmt(cost)+')','ok');
@@ -30,11 +30,13 @@ const act={
   S.cash+=amount;S.redeemed.push(code);redeemMsg={ok:true,t:'Gelukt! '+fmt(amount)+' is bijgeschreven op je contant geld.'};
   toast('Code '+codeShow(code)+': +'+fmt(amount),'lvl');log('Code '+codeShow(code)+' ingewisseld: +'+fmt(amount),'ok');
   save();if(typeof pushState==='function')pushState();render()},
- relax(id){const r=RELAX.find(x=>x.id===id);if(!r||inJail()||cdLeft('rx_'+id))return;const cost=r.cost(rankIdx(S.xp));if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
+ relax(id){const r=RELAX.find(x=>x.id===id);if(!r||inJail()||cdLeft('rx_'+id)||rankIdx(S.xp)<(r.r||0))return;const cost=relaxCost(r,rankIdx(S.xp),rankLevel(S.xp));if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
   S.cash-=cost;S.cd['rx_'+id]=now()+r.cd*60000*waitK();const m=[];
-  if(r.focus){S.buffs.focus={until:now()+r.mins*60000,pct:r.focus};m.push('focus +'+r.focus+'% voor '+r.mins+' min')}
-  if(r.hp){S.hp=Math.min(100,S.hp+r.hp);m.push('gezondheid +'+r.hp)}
-  if(r.energy){S.energy=Math.min(EN_MAX,S.energy+r.energy);m.push('energie +'+r.energy)}
+  const buff=(k,pct)=>{const b=S.buffs[k],until=now()+r.mins*60000;if(b&&b.until>now()&&b.pct>pct)b.until=Math.max(b.until,until);else S.buffs[k]={until,pct}};
+  if(r.focus){buff('focus',r.focus);m.push('focus +'+r.focus+'% voor '+r.mins+' min')}
+  if(r.loot){buff('loot',r.loot);m.push('buit +'+r.loot+'% voor '+r.mins+' min')}
+  if(r.hp){S.hp=Math.min(100,S.hp+r.hp);m.push(r.hp>=100?'gezondheid vol':'gezondheid +'+r.hp)}
+  if(r.energy){S.energy=Math.max(S.energy,Math.min(EN_MAX,S.energy+r.energy));m.push(r.energy>=999?'energie vol':'energie +'+r.energy)}
   if(r.heat){S.heat=Math.max(0,S.heat-r.heat);m.push('hitte -'+r.heat)}
   if(r.clearWanted&&S.wanted){S.wanted=false;m.push('niet meer gezocht')}
   toast(r.n+': '+m.join(', '));log(r.place+': '+m.join(', '),'info');save();render()},

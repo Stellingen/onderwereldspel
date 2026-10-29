@@ -1,44 +1,56 @@
 // Tab: Training — blijvende skills (sessies met tijdslot) en ontspanning (tijdelijke effecten)
+const trs={tab:'train'};
+const trRing=(l,col)=>{const r=18,c=2*Math.PI*r,p=Math.min(1,l/TRAIN_MAX);
+ return `<svg class="tr-ring" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="${r}" class="bg"/><circle cx="22" cy="22" r="${r}" class="fg" style="stroke:${col};stroke-dasharray:${(c*p).toFixed(1)} ${c.toFixed(1)}"/></svg>`};
+const trMins=m=>{const v=m*waitK();return v>=60&&v%60===0?v/60+' uur':v>=90?(v/60).toLocaleString('nl-NL',{maximumFractionDigits:1})+' uur':Math.round(v)+' min'};
+const trGo=id=>`trs.tab='train';render();setTimeout(()=>{const e=document.getElementById('tr-${id}');if(e)e.scrollIntoView({behavior:'smooth',block:'center'})},30)`;
+// alles wat een ontspanning doet, als korte labels
+function rxFx(r){const o=[];if(r.hp)o.push(['hp',r.hp>=100?'Gezondheid vol':'+'+r.hp+'% gezondheid']);if(r.energy)o.push(['en',r.energy>=999?'Energie vol':'+'+r.energy+' energie']);
+ if(r.focus)o.push(['fo','Slaagkans +'+r.focus+'% · '+r.mins+' min']);if(r.loot)o.push(['lo','Buit +'+r.loot+'% · '+r.mins+' min']);
+ if(r.heat)o.push(['he','Hitte −'+r.heat+'%']);if(r.clearWanted)o.push(['wa','Van de gezochtlijst']);return o}
 V.skills=()=>{
- const ri=rankIdx(S.xp);
- // voortgang naar level 50, met mijlpalen per 10 levels
- const pips=(l,col)=>`<div class="lvbar" style="--c:${col}"><i style="width:${l/TRAIN_MAX*100}%"></i>${TRAIN_MILES.slice(0,-1).map(m=>`<b class="${l>=m?'on':''}" style="left:${m/TRAIN_MAX*100}%"></b>`).join('')}</div><div class="lvmiles">${[0,...TRAIN_MILES].map(m=>`<span class="${l>=m&&m?'on':''}">${m}</span>`).join('')}</div>`;
- const btnLabel=(left,cost,extra)=>inJail()?'Je zit vast':left?'Weer over '+fmtClock(left):S.cash<cost?'Te weinig geld · '+fmt(cost):extra+' · '+fmt(cost);
- const trainCard=t=>{
-  const l=S.skills[t.id]||0,max=l>=TRAIN_MAX,cost=trainCost(t,l),left=cdLeft('tr_'+t.id),next=TRAIN_MILES.find(m=>m>l);
-  const a=t.eff(l),b=t.eff(Math.min(TRAIN_MAX,l+1));
-  return `<article class="act" style="--c:${t.col}">
-   <header><div class="act-ic">${svg(t.ic)}</div><div class="act-t"><div class="label">${t.place}</div><h3>${t.n}</h3></div><div class="act-lv"><b>${l}</b><span>/${TRAIN_MAX}</span></div></header>
-   <p class="act-d">${t.d}</p>
+ const ri=rankIdx(S.xp),lv=rankLevel(S.xp);
+ const pips=(l,col)=>`<div class="lvbar" style="--c:${col}"><i style="width:${l/TRAIN_MAX*100}%"></i>${TRAIN_MILES.slice(0,-1).map(m=>`<b class="${l>=m?'on':''}" style="left:${m/TRAIN_MAX*100}%"></b>`).join('')}</div>`;
+ const btnLabel=(left,cost,extra)=>inJail()?'Je zit vast':left?'Weer over '+fmtClock(left):S.cash<cost?'Te weinig contant · '+fmt(cost):extra+' · '+fmt(cost);
+ const st=t=>{const l=S.skills[t.id]||0,lock=ri<(t.r||0),max=l>=TRAIN_MAX,cost=trainCost(t,l),left=cdLeft('tr_'+t.id);
+  return {l,lock,max,cost,left,ready:!lock&&!max&&!left&&!inJail()&&S.cash>=cost}};
+ const trainCard=t=>{const {l,lock,max,cost,left,ready}=st(t),next=TRAIN_MILES.find(m=>m>l),a=t.eff(l),b=t.eff(Math.min(TRAIN_MAX,l+1));
+  return `<article class="tr-card ${lock?'lock':''} ${ready?'ready':''}" id="tr-${t.id}" style="--c:${t.col}">
+   <header><div class="act-ic">${svg(t.ic)}</div><div class="tr-t"><span class="label">${t.place}</span><h3>${t.n}</h3></div><div class="tr-lv"><b>${l}</b><span>/${TRAIN_MAX}</span></div></header>
+   <p class="tr-d">${t.d}</p>
    ${pips(l,t.col)}
-   ${max?'<div class="act-prog"><span>Maximaal level bereikt</span></div>':`<div class="act-prog"><span>Volgende sessie: level ${l+1}${next&&next!==l+1?' · mijlpaal '+next:''}</span></div>`}
-   <div class="act-eff"><div class="eh"><span>Effect</span><span>Nu</span><span>${max?'':'Level '+(l+1)}</span></div>
-    ${a.map((e,i)=>`<div class="er"><span>${e[0]}</span><b>${e[1]}</b><b class="up">${max?'—':'→ '+b[i][1]}</b></div>`).join('')}</div>
-   <button class="btn act-btn" onclick="act.trainSession('${t.id}')" ${max||inJail()||left||S.cash<cost?'disabled':''}>${max?'Maximaal':btnLabel(left,cost,'Trainen')}</button>
-   ${left?`<div class="act-cd"><i style="width:${left/(t.cd*60000*waitK())*100}%"></i></div>`:''}
-   <div class="act-foot">1 sessie = 1 level · elke ${t.cd} min · ${max?'klaar':'daarna '+fmt(trainCost(t,l+1))}</div></article>`};
- const relaxCard=r=>{
-  const cost=r.cost(ri),left=cdLeft('rx_'+r.id),rows=[];
-  if(r.focus)rows.push(['Slaagkans (focus)',pctTxt(focusPct(),'+'),'+'+r.focus+'% ('+r.mins+'m)']);
-  if(r.hp)rows.push(['Gezondheid',S.hp+'%',Math.min(100,S.hp+r.hp)+'%']);
-  if(r.energy)rows.push(['Energie',Math.floor(S.energy)+'',Math.min(EN_MAX,Math.floor(S.energy)+r.energy)+'']);
-  if(r.heat)rows.push(['Politie-hitte',S.heat+'%',Math.max(0,S.heat-r.heat)+'%']);
-  if(r.clearWanted)rows.push(['Op de gezochtlijst',S.wanted?'ja':'nee','nee']);
-  return `<article class="act" style="--c:${r.col}">
-   <header><div class="act-ic">${svg(r.ic)}</div><div class="act-t"><div class="label">${r.place}</div><h3>${r.n}</h3></div></header>
-   <p class="act-d">${r.d}</p>
-   <div class="act-eff"><div class="eh"><span>Effect</span><span>Nu</span><span>Daarna</span></div>
-    ${rows.map(e=>`<div class="er"><span>${e[0]}</span><b>${e[1]}</b><b class="up">→ ${e[2]}</b></div>`).join('')}</div>
-   <button class="btn act-btn" onclick="act.relax('${r.id}')" ${inJail()||left||S.cash<cost?'disabled':''}>${btnLabel(left,cost,'Doen')}</button>
-   ${left?`<div class="act-cd"><i style="width:${left/(r.cd*60000*waitK())*100}%"></i></div>`:''}
-   <div class="act-foot">1× per ${r.cd} min</div></article>`};
- const active=[];
- if(buffFocus())active.push(`<span class="chipline" style="--c:#ff3d52">Focus +${buffFocus()}% · nog ${fmtClock(S.buffs.focus.until-now())}</span>`);
- TRAININGS.forEach(t=>{const l=cdLeft('tr_'+t.id);if(!l&&(S.skills[t.id]||0)<TRAIN_MAX)active.push(`<span class="chipline" style="--c:${t.col}">${t.place} klaar</span>`)});
- return `<h1>Training</h1><p class="sub">Trainen maakt je blijvend beter: elke sessie is één level erbij, tot level 50. Elke plek kan maar eens per zoveel minuten en elk level is duurder dan het vorige. Ontspanning geeft een tijdelijk voordeel. Bij elke knop zie je precies wat er verandert.</p>
- ${active.length?`<div class="chiprow-act">${active.join('')}</div>`:''}
- <div class="tierhead"><h2>Trainen</h2><span>Blijvend · elke sessie is een level · tot level ${TRAIN_MAX} · hoe hoger, hoe duurder</span></div>
- <div class="acts">${TRAININGS.map(trainCard).join('')}</div>
- <div class="tierhead"><h2>Ontspannen</h2><span>Tijdelijk · prijs stijgt met je rang</span></div>
- <div class="acts">${RELAX.map(relaxCard).join('')}</div>`;
+   <div class="tr-eff">${a.map((e,i)=>`<div><span>${e[0]}</span><b>${e[1]}</b>${max?'':`<em>→ ${b[i][1]}</em>`}</div>`).join('')}</div>
+   <div class="tr-foot"><button class="btn act-btn" onclick="act.trainSession('${t.id}')" ${max||lock||inJail()||left||S.cash<cost?'disabled':''}>${lock?'Vanaf '+RANKS[t.r][0]:max?'Maximaal level':btnLabel(left,cost,'Trainen')}</button>
+    <div class="tr-meta">${lock?'Nog op slot':max?'Klaar':`Elke ${trMins(t.cd)} · daarna ${fmt(trainCost(t,l+1))}${next&&next!==l+1?' · mijlpaal '+next:''}`}</div></div>
+   ${left?`<div class="act-cd"><i style="width:${left/(t.cd*60000*waitK())*100}%"></i></div>`:''}</article>`};
+ const relaxCard=r=>{const lock=ri<(r.r||0),cost=relaxCost(r,ri,lv),left=cdLeft('rx_'+r.id),ready=!lock&&!left&&!inJail()&&S.cash>=cost;
+  return `<article class="tr-card rx ${lock?'lock':''} ${ready?'ready':''}" style="--c:${r.col}">
+   <header><div class="act-ic">${svg(r.ic)}</div><div class="tr-t"><span class="label">${r.place}</span><h3>${r.n}</h3></div><div class="rx-cd"><span class="label">Wachttijd</span><b>${trMins(r.cd)}</b></div></header>
+   <p class="tr-d">${r.d}</p>
+   <div class="rx-fx">${rxFx(r).map(([k,t])=>`<span class="${k}">${t}</span>`).join('')}</div>
+   <div class="tr-foot"><button class="btn act-btn" onclick="act.relax('${r.id}')" ${lock||inJail()||left||S.cash<cost?'disabled':''}>${lock?'Vanaf '+RANKS[r.r][0]:btnLabel(left,cost,'Doen')}</button></div>
+   ${left?`<div class="act-cd"><i style="width:${left/(r.cd*60000*waitK())*100}%"></i></div>`:''}</article>`};
+ const tot=TRAININGS.reduce((a,t)=>a+(S.skills[t.id]||0),0),readyT=TRAININGS.filter(t=>st(t).ready).length,
+  readyR=RELAX.filter(r=>ri>=(r.r||0)&&!cdLeft('rx_'+r.id)&&!inJail()&&S.cash>=relaxCost(r,ri,lv)).length;
+ const tiles=TRAININGS.map(t=>{const {l,lock,max,cost,left,ready}=st(t);
+  const s=lock?'Vanaf '+RANKS[t.r][0]:max?'Max':left?fmtClock(left):ready?'Klaar':fmt(cost);
+  return `<button class="tr-tile ${lock?'lock':''} ${ready?'ready':''}" style="--c:${t.col}" onclick="${trGo(t.id)}" title="${t.n}: level ${l}">
+   <div class="tr-tile-r">${trRing(l,t.col)}<b>${l}</b></div><span>${t.n}</span><em>${s}</em></button>`}).join('');
+ const buffs=[];
+ if(buffFocus())buffs.push(`<span style="--c:#ff3d52">Slaagkans +${buffFocus()}% · ${fmtClock(S.buffs.focus.until-now())}</span>`);
+ if(buffLoot())buffs.push(`<span style="--c:var(--green)">Buit +${buffLoot()}% · ${fmtClock(S.buffs.loot.until-now())}</span>`);
+ if(furnFx('focus'))buffs.push(`<span style="--c:var(--violet)">Inrichting: slaagkans +${furnFx('focus')}%</span>`);
+ return `<h1>Training</h1>
+ <section class="card hud tr-hero">
+  <div class="tr-h-l"><span class="label">Jouw skills</span><div class="tr-h-big"><b>${tot}</b><span>/ ${TRAININGS.length*TRAIN_MAX} levels</span></div>
+   <div class="bar"><i style="width:${tot/(TRAININGS.length*TRAIN_MAX)*100}%;background:var(--sec)"></i></div>
+   <p>${readyT?`<b class="up">${readyT} plek${readyT>1?'ken':''}</b> klaar om te trainen`:'Geen training klaar'} · ${readyR?`<b class="up">${readyR}</b> ontspanning klaar`:'geen ontspanning klaar'}${isVip()?' · VIP: wachttijden 60%':''}</p>
+   ${buffs.length?`<div class="tr-buffs">${buffs.join('')}</div>`:''}</div>
+  <div class="tr-tiles">${tiles}</div>
+ </section>
+ <div class="tabs tr-tabs"><button class="${trs.tab==='train'?'on':''}" onclick="trs.tab='train';render()">Trainen${readyT?` <i>${readyT}</i>`:''}</button><button class="${trs.tab==='relax'?'on':''}" onclick="trs.tab='relax';render()">Ontspannen${readyR?` <i>${readyR}</i>`:''}</button></div>
+ ${trs.tab==='train'?`<p class="sub tr-sub">Elke sessie is één level erbij, tot level ${TRAIN_MAX}. Elke plek heeft een eigen wachttijd en elk level is duurder dan het vorige. Nieuwe plekken gaan open als je hoger in rang komt.</p>
+  <div class="tr-grid">${TRAININGS.map(trainCard).join('')}</div>`
+ :`<p class="sub tr-sub">Tijdelijke voordelen. Hoe beter de ontspanning, hoe duurder en hoe langer je daarna moet wachten. De prijs stijgt met je rang en je level in die rang.</p>
+  ${RELAX_TIERS.map((n,i)=>`<div class="tierhead"><h2>${n}</h2><span>${['Kort en goedkoop','Sterker, langer wachten','Vanaf een hoge rang · alles tegelijk'][i]}</span></div><div class="tr-grid">${RELAX.filter(r=>r.tier===i).map(relaxCard).join('')}</div>`).join('')}`}`;
 };
