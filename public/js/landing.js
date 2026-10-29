@@ -71,7 +71,7 @@ function drawMap(t){
   cx.save();cx.beginPath();cx.arc(light.x,light.y,rad,0,Math.PI*2);cx.clip();cx.drawImage(off,0,0,W,H);cx.drawImage(off,0,0,W,H);cx.restore();
   const g=cx.createRadialGradient(light.x,light.y,0,light.x,light.y,rad);g.addColorStop(0,'rgba(255,122,26,.16)');g.addColorStop(1,'rgba(255,122,26,0)');cx.fillStyle=g;cx.fillRect(0,0,W,H);
   pings.forEach(p=>{const age=(t-p.t0)/1000;const col=p.hot?'255,61,82':'255,122,26';
-    for(let k=0;k<2;k++){const a2=(age+k*.9)%1.8;cx.strokeStyle=`rgba(${col},${Math.max(0,.7-a2*.4)})`;cx.lineWidth=1.5;cx.beginPath();cx.arc(p.x,p.y,4+a2*22,0,Math.PI*2);cx.stroke()}
+    for(let k=0;k<2;k++){const a2=(age+k*.9)%1.8;cx.strokeStyle=`rgba(${col},${Math.max(0,.7-a2*.4)})`;cx.lineWidth=1.5;cx.beginPath();cx.arc(p.x,p.y,Math.max(0,4+a2*22),0,Math.PI*2);cx.stroke()}
     cx.fillStyle=`rgba(${col},${Math.max(.35,1-age*.05)})`;cx.beginPath();cx.arc(p.x,p.y,3.2,0,Math.PI*2);cx.fill()});
   if(!reduce)requestAnimationFrame(drawMap);
 }

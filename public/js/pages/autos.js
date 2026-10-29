@@ -19,7 +19,7 @@ function spawnCar(m,spot){const [y0,y1]=m.y,year=y0+Math.floor(Math.random()*(y1
  const base=m.lo+(m.hi-m.lo)*(.55*(1-age)+.45*(1-Math.min(1,km/220000)));
  const v=Math.max(Math.round(m.lo*.7/50)*50,Math.min(Math.round(m.hi*1.08/50)*50,Math.round(base*st[1]/50)*50));
  const pal=CAR_COLORS[m.d];return {id:m.id,spot,year,km,staat:st[0],v,c:pal[Math.floor(Math.random()*pal.length)],plate:randPlate()}}
-const carSell=v=>Math.round(v*(1+((S.skills&&S.skills.cars)||0)*SK.cars.price)/10)*10;
+const carSell=v=>Math.round(v*(1+((S.skills&&S.skills.cars)||0)*SK.cars.price)*(1+famPerk('car'))/10)*10;
 let carSearch=null,oddsOpen=window.matchMedia?matchMedia('(min-width:900px)').matches:true;
 const findM=x=>CARS.find(k=>k.id===x.id)||CARS[0];
 function carExpire(quiet){const x=S.carFind;if(x&&x.until&&!x.res&&x.until<now()){S.carFind={...x,res:'gone'};if(!quiet)toast('De eigenaar komt terug. De '+findM(x).n+' rijdt weg.','bad');save();return true}return false}
@@ -61,7 +61,7 @@ V.cars=()=>{if(S.street)delete S.street;S.carDex=S.carDex||{};carExpire(true);co
  <div class="tierhead"><h2>Garage</h2><span>${S.cars.length} / ${GARAGE_MAX} · waarde ${fmt(gv)}</span></div>
  ${S.cars.length?`<div class="garage">${S.cars.map((c,i)=>{const m=CARS.find(k=>k.id===c.id)||CARS.find(k=>k.n===c.n)||{b:'hatch',d:1};
    return `<div class="gcar" style="--rc:${(carRarity(m)||CAR_RARITY[1])[1]}">${carSvg(c.b||m.b,c.c||'#8a929c')}<div class="g-n"><b>${c.n}</b><span>${c.year?c.year+' · '+kmTxt(c.km)+(c.staat?' · '+c.staat:''):'&nbsp;'}</span></div>
-    <div class="g-s"><span class="gv">${fmt(c.v)}</span><button class="btn sm" onclick="act.sell(${i})">Verkoop</button></div></div>`}).join('')}</div>
+    <div class="g-s"><span class="gv">${fmt(c.v)}</span><button class="btn sm" onclick="act.sell(${i})">Verkoop</button>${S.family?`<button class="btn sm ghost g-fam" onclick="act.famCar(${i})" title="Afleveren bij ${famBase().n}: ${fmt(Math.round(c.v*.3))} en +${Math.round(2+Math.sqrt(c.v)/20)} eer">Familie</button>`:''}</div></div>`}).join('')}</div>
   <button class="btn" style="margin-top:10px;width:auto" onclick="act.sellAll()">Alles verkopen · ${fmt(gv)}</button>`:'<div class="card empty">Je garage is leeg. Zoek hierboven je eerste auto.</div>'}`};
 // Eigen klok: aftellen zonder alles opnieuw te tekenen
 let _carSig='';
@@ -86,7 +86,7 @@ Object.assign(act,{
   S.energy-=en;S.cd.car=now()+carCd();S.pendingHeist={id:m.id};S.carFind={...x,res:'busy'};save();pushState();
   const ok=await carHeist(x);S.pendingHeist=null;S.carFind={...x,res:ok?'ok':'fail'};
   if(ok){const v=carSell(x.v);S.cars.push({id:m.id,n:m.n,v,b:m.b,c:x.c,year:x.year,km:x.km,staat:x.staat});S.stats.cars++;S.cred+=carTier(m)>=3?2:1;
-    addHeat(m.d*2);addXp(6+m.d*m.d*4+(m.leg?200:0));const d=S.carDex[m.id]||[1,0];d[1]++;S.carDex[m.id]=d;
+    addHeat(m.d*2);addXp(6+m.d*m.d*4+(m.leg?200:0));if(typeof famEv==='function')famEv('car',{v});const d=S.carDex[m.id]||[1,0];d[1]++;S.carDex[m.id]=d;
     toast(m.n+' gestolen! Waarde '+fmt(v),m.d>=5?'lvl':'ok');log(m.n+' gestolen ('+fmt(v)+')','ok');save();render()}
   else{addHeat(4+m.d*2);log('Mislukte poging: '+m.n,'bad');save();render();
     arrest(30+m.d*20,'Alarm!','Het alarm van de '+m.n+' gaat af. '+FLEE_LEVELS[Math.min(5,m.d)].where,{flee:Math.min(5,Math.max(1,m.d))})}}});

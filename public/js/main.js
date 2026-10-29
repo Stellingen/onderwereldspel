@@ -14,6 +14,7 @@ function tick(){
     if(typeof hideTick==='function')hideTick(mins,mins<.2);
     if(Math.random()<mins*6*(1+furnFx('hpRegen')))S.hp=Math.min(100,S.hp+1);
     if(typeof bankTick==='function')bankTick(mins);
+    if(typeof famDaily==='function')famDaily();
     S.npcs.forEach((n,i)=>{n.xp+=mins*(4+i*3)*(0.5+Math.random());n.cash+=mins*(30+i*60)*(Math.random()*2-0.3)})}
   save();
 }

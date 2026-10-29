@@ -63,15 +63,37 @@ const CRIMES=[
  {id:'kroon',n:'De kroonjuwelen',d:'De klus waar ze over honderd jaar nog over praten.',min:250000,max:500000,xp:1800,base:18,cd:720,jail:600,r:11,cr:30,en:50,flee:5}];
 // Rangbonus op elke buit: +6% per rang (Peetvader +66%)
 const RANK_LOOT=.06;
+// Families. r = vanaf rang, cred = straatcredit om binnen te komen. chance/loot/jail = familiebonus op het hoogste familielevel
+// (je begint als Aspirant met 50% daarvan, elk familielevel +10%). perk = het eigen voordeel van de familie (ook 50% → 100%).
 const FAMILIES=[
- {id:'garde',n:'De Nieuwe Garde',m:'NG',d:'Jonge honden uit Amsterdam-West. Snel, brutaal en loyaal tot op het bot.',r:2,cred:20,chance:4,loot:0,jail:0,col:'var(--ice)'},
- {id:'kurogumi',n:'Kurogumi',m:'黒',d:'Een stille clan met tatoeages tot aan de pols. Bezit de helft van de nachtclubs.',r:3,cred:45,chance:5,loot:5,jail:5,col:'var(--fg)'},
- {id:'colombra',n:'Famiglia Colombra',m:'FC',d:'Ouderwetse Italianen die nooit vergeten wie hen een gunst schuldig is.',r:4,cred:80,chance:6,loot:12,jail:10,col:'var(--green)'},
- {id:'volkov',n:'Bratva Volkov',m:'BV',d:'Oost-Europese broederschap. Gedisciplineerd, hard en onverwoestbaar.',r:5,cred:130,chance:7,loot:15,jail:15,col:'var(--blue)'},
- {id:'halcones',n:'Los Halcones',m:'LH',d:'Een kartel met routes van de Rotterdamse haven tot diep in Zuid-Amerika.',r:6,cred:200,chance:8,loot:22,jail:20,col:'var(--acc2)'},
- {id:'lucchetti',n:'Famiglia Lucchetti',m:'FL',d:'Kleermakers, advocaten en twee rechters op de loonlijst.',r:7,cred:300,chance:9,loot:28,jail:28,col:'var(--violet)'},
- {id:'gambrino',n:'Famiglia Gambrino',m:'FG',d:'De grootste van de Vijf Families. Wie hier binnenkomt, gaat er niet meer uit.',r:8,cred:450,chance:10,loot:34,jail:34,col:'var(--red)'},
- {id:'cupola',n:'La Cupola',m:'LC',d:'De raad van peetvaders. Alleen de allergrootsten krijgen een stoel aan tafel.',r:9,cred:650,chance:12,loot:40,jail:40,col:'var(--acc)'}];
+ {id:'garde',n:'De Nieuwe Garde',m:'NG',d:'Jonge honden uit Amsterdam-West. Snel, brutaal en loyaal tot op het bot.',r:2,cred:20,chance:4,loot:0,jail:0,col:'var(--ice)',
+  perk:{n:'Snel en brutaal',d:'kortere wachttijd bij klussen',fx:{cd:.2}}},
+ {id:'kurogumi',n:'Kurogumi',m:'黒',d:'Een stille clan met tatoeages tot aan de pols. Bezit de helft van de nachtclubs.',r:3,cred:45,chance:5,loot:5,jail:5,col:'var(--fg)',
+  perk:{n:'De nachtclubs',d:'meer passief inkomen',fx:{inc:.2}}},
+ {id:'colombra',n:'Famiglia Colombra',m:'FC',d:'Ouderwetse Italianen die nooit vergeten wie hen een gunst schuldig is.',r:4,cred:80,chance:6,loot:12,jail:10,col:'var(--green)',
+  perk:{n:'Een gunst terug',d:'lagere borg',fx:{bail:.4}}},
+ {id:'volkov',n:'Bratva Volkov',m:'BV',d:'Oost-Europese broederschap. Gedisciplineerd, hard en onverwoestbaar.',r:5,cred:130,chance:7,loot:15,jail:15,col:'var(--blue)',
+  perk:{n:'Onverwoestbaar',d:'makkelijker vluchten en ontsnappen',fx:{flee:.25,esc:.1}}},
+ {id:'halcones',n:'Los Halcones',m:'LH',d:'Een kartel met routes van de Rotterdamse haven tot diep in Zuid-Amerika.',r:6,cred:200,chance:8,loot:22,jail:20,col:'var(--acc2)',
+  perk:{n:'De routes',d:'gestolen auto\'s zijn meer waard',fx:{car:.25}}},
+ {id:'lucchetti',n:'Famiglia Lucchetti',m:'FL',d:'Kleermakers, advocaten en twee rechters op de loonlijst.',r:7,cred:300,chance:9,loot:28,jail:28,col:'var(--violet)',
+  perk:{n:'Rechters op de loonlijst',d:'kans dat je zaak meteen wordt geseponeerd',fx:{free:.2}}},
+ {id:'gambrino',n:'Famiglia Gambrino',m:'FG',d:'De grootste van de Vijf Families. Wie hier binnenkomt, gaat er niet meer uit.',r:8,cred:450,chance:10,loot:34,jail:34,col:'var(--red)',
+  perk:{n:'De grootste naam',d:'meer XP',fx:{xp:.2}}},
+ {id:'cupola',n:'La Cupola',m:'LC',d:'De raad van peetvaders. Alleen de allergrootsten krijgen een stoel aan tafel.',r:9,cred:650,chance:12,loot:40,jail:40,col:'var(--acc)',
+  perk:{n:'De raad',d:'meer XP en inkomen, minder hitte',fx:{xp:.1,inc:.1,heat:.2}}}];
+// Familielevels: eer verdien je met klussen, auto's voor de familie en de dagelijkse missies. Grotere families vragen meer eer.
+const FAM_RANKS=[['Aspirant',0],['Lid',150],['Vertrouweling',450],['Luitenant',1000],['Rechterhand',2000],['Erelid',3500]];
+// Grote klus van de dag (één per familie, zwaarder naarmate de familie groter is). need = dit item of beter in die soort.
+const FAM_HEISTS=[
+ {n:'Overval een avondwinkel',d:'Kassa leeg, camera kapot, binnen een minuut weer buiten.',vk:1,need:[],en:25,jail:90,loot:[6000,14000]},
+ {n:'Beroof een gokhal',d:'De kluis achter de fruitautomaten zit elke vrijdag vol.',vk:3,need:[],en:30,jail:120,loot:[15000,35000]},
+ {n:'Overval een geldtransport',d:'Twee bewakers, één busje en een route die je al weken kent.',vk:3,need:['vest'],en:35,jail:150,loot:[40000,90000]},
+ {n:'Leeg een wapendepot',d:'Een kazerne in Brabant met een hek dat al jaren kapot is.',vk:5,need:['vest'],en:40,jail:180,loot:[90000,180000]},
+ {n:'Onderschep een lading in de haven',d:'Een container die nooit is aangekomen, als je het de douane vraagt.',vk:7,need:['jammer'],en:45,jail:210,loot:[180000,380000]},
+ {n:'Overval de bank',d:'Het hoofdkantoor op de Zuidas. Binnen in vier minuten, anders is het te laat.',vk:7,need:['vest','jammer'],en:50,jail:240,loot:[350000,750000]},
+ {n:'Kraak de kluis van een privébank',d:'Kluizen vol goud van mensen die liever niet zeggen waar het vandaan komt.',vk:9,need:['helm','laptop'],en:55,jail:270,loot:[700000,1500000]},
+ {n:'Overval De Nederlandsche Bank',d:'De goudvoorraad van het land. Dit doet niemand twee keer.',vk:12,need:['mil','lans'],en:60,jail:300,loot:[1500000,3500000]}];
 const PLACES={dash:'op straat',crimes:'tijdens een klus',cars:'bij een parkeergarage',casino:'in het casino',biz:'bij je bedrijf',shop:'bij de wapenhandelaar',bank:'bij de bank',fam:'bij het familiehuis',rank:'in een café'};
 // Auto's: d = moeilijkheid (1-5), b = carrosserie, lo/hi = straatwaarde, y = bouwjaren, w = hoe vaak hij op straat staat, leg = mythisch
 const CARS=[

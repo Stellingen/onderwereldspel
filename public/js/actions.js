@@ -1,7 +1,7 @@
 // Alle acties (klikken) en de politiecontroles
 const act={
  crime(id){const c=CRIMES.find(x=>x.id===id);if(inJail()||cdLeft(id)||rankIdx(S.xp)<c.r)return;if(S.energy<c.en){toast('Te moe. Je hebt '+c.en+' energie nodig','bad');return}S.energy-=c.en;S.cd[id]=now()+crimeCd(c);
-  if(rnd(1,100)<=chance(c)){const g=Math.floor(rnd(c.min,c.max)*lootMult());S.cash+=g;S.stats.crimes++;S.cred+=c.cr;addHeat(rnd(1,4));addXp(c.xp);toast(c.n+' gelukt: +'+fmt(g));log(c.n+' gelukt, buit '+fmt(g),'ok')}
+  if(rnd(1,100)<=chance(c)){const g=Math.floor(rnd(c.min,c.max)*lootMult());S.cash+=g;S.stats.crimes++;S.cred+=c.cr;addHeat(rnd(1,4));addXp(c.xp);if(typeof famEv==='function')famEv('crime',{r:c.r,g,cr:c.cr});toast(c.n+' gelukt: +'+fmt(g));log(c.n+' gelukt, buit '+fmt(g),'ok')}
   else{const lost=Math.floor(Math.min(Math.floor(S.cash*0.1),c.max*2)*(1-furnFx('safe'))); // verlies past bij de grootte van de klus
   S.cash-=lost;S.stats.fails++;S.hp=Math.max(10,S.hp-rnd(5,15));addHeat(rnd(5,10));
    addXp(Math.ceil(c.xp/4));log(c.n+' mislukt, '+fmt(lost)+' kwijt','bad');save();
@@ -9,7 +9,7 @@ const act={
   save();render()},
  trainSession(id){const t=TRAININGS.find(x=>x.id===id);const l=S.skills[id]||0;if(!t||l>=TRAIN_MAX||inJail()||cdLeft('tr_'+id)||rankIdx(S.xp)<(t.r||0))return;
   const cost=trainCost(t,l);if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
-  S.cash-=cost;S.cd['tr_'+id]=now()+t.cd*60000*waitK();S.skills[id]=l+1;addXp(3+Math.floor(l*1.5));const a=t.eff(l),b=t.eff(l+1);
+  S.cash-=cost;S.cd['tr_'+id]=now()+t.cd*60000*waitK();S.skills[id]=l+1;addXp(3+Math.floor(l*1.5));if(typeof famEv==='function')famEv('train');const a=t.eff(l),b=t.eff(l+1);
   toast(t.n+' level '+(l+1)+': '+a[0][0].toLowerCase()+' '+a[0][1]+' → '+b[0][1],TRAIN_MILES.includes(l+1)?'lvl':'ok');log(t.n+' naar level '+(l+1)+' ('+t.place+', '+fmt(cost)+')','ok');
   save();pushState();render()},
  async redeem(raw){let code=String(raw||'').trim().toLowerCase();code=CODE_ALIAS[code]||code;const btn=document.getElementById('codeBtn');
@@ -54,8 +54,6 @@ const act={
  bail(){const c=bailCost();if(S.cash+S.bank<c)return;const fromCash=Math.min(S.cash,c);S.cash-=fromCash;S.bank-=c-fromCash;S.jailUntil=0;S.wanted=false;toast('Borg betaald. Je bent netjes vrij');log('Borg betaald: '+fmt(c),'info');save();render()},
  escape(){if(!inJail())return;if(Math.random()<escChance()){S.jailUntil=0;S.wanted=true;S.heat=Math.min(100,S.heat+15);addXp(15);toast('Ontsnapt! Je staat nu op de gezochtlijst','bad');log('Ontsnapt uit de bajes. Je bent gezocht','bad')}
   else{const left=Math.ceil((S.jailUntil-now())/1000);const nl=Math.min(600,left+30);S.jailUntil=now()+nl*1000;S.lastSentence=Math.max(S.lastSentence,nl);toast('Betrapt bij het hek. +30s straf','bad');log('Ontsnapping mislukt','bad')}save();render()},
- join(id){const f=FAMILIES.find(x=>x.id===id);if(rankIdx(S.xp)<f.r||S.cred<f.cred)return;S.family=id;toast('Welkom bij '+f.n,'lvl');log('Aangesloten bij '+f.n,'ok');save();render()},
- leave(){log('Familie '+fam().n+' verlaten','info');S.family=null;toast('Je bent weer op jezelf');save();render()},
  bjDeal(){const b=act.getBet();if(!b)return;const deck=[];['♠','♥','♦','♣'].forEach(s=>['A','2','3','4','5','6','7','8','9','10','J','Q','K'].forEach(v=>deck.push({s,v})));
   for(let i=deck.length-1;i>0;i--){const j=rnd(0,i);[deck[i],deck[j]]=[deck[j],deck[i]]}
   S.cash-=b;window.bj={deck,bet:b,p:[deck.pop(),deck.pop()],d:[deck.pop(),Object.assign(deck.pop(),{hidden:true})],done:false};
