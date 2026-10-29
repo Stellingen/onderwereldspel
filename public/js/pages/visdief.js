@@ -1,6 +1,6 @@
-// Casino: Visdief — nachtvissen in de haven. 5 rollen, 3 rijen, 10 lijnen. Engine: js/vis.js (VISD).
-// Bonus: in de free spins pakt de Visdief het geld van alle vissen. Elke 4 Visdieven: +10 spins en een hogere multiplier;
-// elke volgende 4 zijn lastiger. Uitkomst ligt vast bij het draaien en wordt meteen verrekend; de animatie laat alleen zien wat er gebeurde.
+// Casino: Visdief — nachtvissen in de haven. 5 rollen, 4 rijen, 20 lijnen. Engine: js/vis.js (VISD).
+// Bonus: in de free spins pakt de Visdief het geld van alle vissen. Een ronde speelt altijd uit; met 4 Visdieven begint daarna
+// een nieuwe ronde van 10 spins met een hogere multiplier (×2, ×3, ×10). Extra Visdieven tellen door; elke volgende 4 zijn lastiger. Uitkomst ligt vast bij het draaien en wordt meteen verrekend; de animatie laat alleen zien wat er gebeurde.
 window.vd=window.vd||{bi:4,busy:false,turbo:false,grid:null,msg:'Kies je inzet en draai',fs:null,lastWin:0,stepWin:0,pick:false,confirm:false,shown:0,bet:0,tick:''};
 const vdBet=()=>{const B=kkBets();if(vd.bi>=B.length)vd.bi=B.length-1;return B[vd.bi]};
 const vdEl=id=>document.getElementById(id);
@@ -50,13 +50,10 @@ const VD_PLATE={koffer:'hi',boot:'hi',hengel:'hi'};
 function vdCellHtml(x,fs,bet){const fish=x.s===VISD.VIS,id=x.sc?'boei':x.w?'visdief':VISD.SYMS[x.s].id;
  const cls='vd-cell'+(x.sc?' sc':'')+(x.w?' wild':'')+(fish?' fish':'')+(VD_PLATE[id]?' hi':'')+(fish&&fs&&x.v>=50?' rich':'');
  return `<div class="${cls}">${vdSvg(id,fs?x.v:0)}${x.w?'<span class="vd-lb">Visdief</span>':x.sc?'<span class="vd-lb sc">Bonus</span>':''}${fs&&fish&&x.v?`<b class="vd-tag">${vdShort(x.v*(bet||vd.bet||vdBet()))}</b>`:''}</div>`}
-function vdDemo(){const ids=[[0,5,8],[1,6,3],[8,7,2],[4,0,5],[2,8,1]];return ids.map(col=>col.map(s=>({s,v:s===VISD.VIS?10:0})))}
-function vdRand(fs,lvl){const x=VISD.fill(Math.random,!!fs,false,0,lvl||0)[0][0];return x.sc?{s:0}:x}
-function vdReelsHtml(g,fs){return g.map((col,c)=>`<div class="vd-reel" data-c="${c}"><div class="vd-strip" style="--n:3">${col.map(x=>vdCellHtml(x,fs)).join('')}</div></div>`).join('')}
+function vdDemo(){const ids=[[0,5,8,3],[1,6,3,7],[8,7,2,0],[4,0,5,6],[2,8,1,4]];return ids.map(col=>col.map(s=>({s,v:s===VISD.VIS?10:0})))}
+function vdRand(fs,lvl,rd){const x=VISD.fill(Math.random,!!fs,false,0,lvl||0,rd||0)[0][0];return x.sc?{s:0}:x}
+function vdReelsHtml(g,fs){return g.map((col,c)=>`<div class="vd-reel" data-c="${c}"><div class="vd-strip" style="--n:${VISD.ROWS}">${col.map(x=>vdCellHtml(x,fs)).join('')}</div></div>`).join('')}
 const vdCellEl=(c,r)=>{const re=document.querySelectorAll('#vdReels .vd-reel')[c];return re?re.querySelectorAll('.vd-cell')[r]:null};
-// Bolders met lijnnummers: links waar de lijn begint, rechts waar hij eindigt
-function vdPosts(side){const rows=[[],[],[]];VISD.LINES.forEach((L,i)=>rows[side?L[4]:L[0]].push(i));
- return `<div class="vd-posts ${side?'r':'l'}">${rows.map(r=>`<div>${r.map(i=>`<i data-l="${i}" style="--lc:${VD_LC[i]}">${i+1}</i>`).join('')}</div>`).join('')}</div>`}
 // Havensilhouet bovenaan: kranen, containers en lampen. De naam staat op een container.
 const VD_SKY=`<svg class="vd-sky" viewBox="0 0 900 90" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
  <circle cx="780" cy="30" r="17" fill="#f4e3b5" opacity=".9"/><circle cx="772" cy="26" r="17" fill="#0c1a24" opacity=".25"/>
@@ -72,12 +69,14 @@ function vdInfo(){const fs=vd.fs,pend=window.slotPending||0;
   <div class="kk-stat"><span class="label">Deze spin</span><b id="vdStep" class="acc">${fmt(vd.stepWin)}</b></div>
   <div class="kk-stat"><span class="label">${fs?'Bonuswinst':'Laatste winst'}</span><b id="vdLast" class="grn">${fmt(fs?fs.total:vd.lastWin)}</b></div>
   ${fs?`<div class="kk-stat fsb"><span class="label">Free spins</span><b id="vdMsg">${fs.at} / ${fs.of}</b></div>`:`<div class="kk-stat"><span class="label">Status</span><b id="vdMsg" class="sm">${vd.msg}</b></div>`}`}
-// Vangstmeter in de bonus: 4 haken per level, de multiplier als boei
-function vdFsBar(){const f=vd.fs;if(!f)return '';const top=f.lvl>=VISD.MULTS.length-1,inLvl=top?VISD.PER_LEVEL:f.caught-f.lvl*VISD.PER_LEVEL,need=VISD.PER_LEVEL-inLvl;
- return `<div class="vd-fs"><div class="vd-hooks">${Array.from({length:VISD.PER_LEVEL},(_,i)=>`<i class="${i<inLvl?'on':''}">${i<inLvl?vdSvg('visdief'):'<svg viewBox="0 0 24 24"><path d="M13 3v11a5 5 0 0 1-10 0v-2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>'}</i>`).join('')}</div>
-  <p class="vd-next">${top?'Hoogste multiplier bereikt':`Nog ${need} Visdie${need===1?'f':'ven'} voor <b>+${VISD.RETRIG} spins</b> en <b>×${VISD.MULTS[f.lvl+1]}</b>${f.lvl?' (deze ronde lastiger)':''}`}</p>
+// Vangstmeter in de bonus: ronde, multiplier en hoeveel Visdieven je nog nodig hebt voor de volgende ronde
+function vdFsBar(){const f=vd.fs;if(!f)return '';const P=VISD.PER_LEVEL,top=f.lvl>=VISD.MULTS.length-1,next=(f.lvl+1)*P,have=Math.max(0,Math.min(P,f.caught-f.lvl*P)),sec=!top&&f.caught>=next,extra=sec?f.caught-next:0;
+ const hook='<svg viewBox="0 0 24 24"><path d="M13 3v11a5 5 0 0 1-10 0v-2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+ return `<div class="vd-fs${sec?' sec':''}"><div class="vd-round"><span>Ronde</span><b>${f.lvl+1}</b></div>
+  <div class="vd-hooks">${Array.from({length:P},(_,i)=>`<i class="${top||i<have?'on':''}">${top||i<have?vdSvg('visdief'):hook}</i>`).join('')}</div>
+  <p class="vd-next">${top?'Laatste ronde: alles telt ×10':sec?`<b>Ronde ${f.lvl+2} is binnen</b> (×${VISD.MULTS[f.lvl+1]})${extra?`, ${extra} extra voor ronde ${f.lvl+3}`:''}. Deze ronde speelt eerst uit.`:`Nog ${next-f.caught} Visdie${next-f.caught===1?'f':'ven'} voor <b>ronde ${f.lvl+2}</b>: ${VISD.RETRIG} spins met ×${VISD.MULTS[f.lvl+1]}${f.lvl?'. Deze zijn lastiger.':''}`}</p>
   <div class="vd-mult${f.lvl?' up':''}"><span>Multiplier</span><b>×${VISD.MULTS[f.lvl]}</b></div></div>`}
-function vdSubHtml(){return vd.fs?'':`${isVip()?'<i class="vipt">VIP</i>':''}${isVip()?'Bonus ±1 op 130, vaker een Visdief':'Bonus ±1 op 150'}`}
+function vdSubHtml(){return vd.fs?'':`${isVip()?'<i class="vipt">VIP</i>':''}${isVip()?'Bonus ±1 op 140, vaker een Visdief':'Bonus ±1 op 150'}, 20 lijnen`}
 function vdControls(){const b=vdBet();return `<div class="kk-betbox"><span class="label">Inzet</span>
    <div class="kk-bet"><button onclick="vdStepBet(-1)" ${vd.busy?'disabled':''} aria-label="Lagere inzet">−</button><button class="kk-betv" onclick="vd.pick=!vd.pick;vd.confirm=false;vdRefresh()" ${vd.busy?'disabled':''} aria-label="Inzet kiezen">${fmt(b)}</button><button onclick="vdStepBet(1)" ${vd.busy?'disabled':''} aria-label="Hogere inzet">+</button></div></div>
    <button class="btn kk-go" onclick="act.vdSpin(false)" ${vd.busy||inJail()?'disabled':''}>${vd.busy?'Bezig…':'Draaien'}<small>spatie</small></button>
@@ -87,7 +86,7 @@ function vdPickHtml(){return `<div class="kk-pick"><div class="kk-pick-h"><b>Kie
   <div class="kk-pick-g">${kkBets().map((v,i)=>`<button class="${i===vd.bi?'on':''} ${S.cash<v?'no':''}" onclick="vdSetBet(${i})">${fmt(v)}</button>`).join('')}</div>
   <div class="kk-pick-q"><button class="btn ghost sm" onclick="vdSetBet(0)">Min · ${fmt(kkBets()[0])}</button><button class="btn sm" onclick="vdSetBet(kkBets().length-1)">Max · ${fmt(kkBets()[kkBets().length-1])}</button></div></div>`}
 function vdConfirm(){const b=vdBet(),buy=b*VISD.BUY_COST;return `<div class="kk-confirm"><div><b>Bonus kopen voor ${fmt(buy)}?</b>
-  <span>Dat is ${VISD.BUY_COST}× je inzet van ${fmt(b)}. Je krijgt direct ${VISD.FS_BY_SC[3]} free spins. Gemiddeld levert hij iets minder op dan hij kost (±96,5%). De meeste bonussen zijn klein; ×2 haal je ongeveer 1 op 10 keer, ×10 bijna nooit.</span></div>
+  <span>Dat is ${VISD.BUY_COST}× je inzet van ${fmt(b)}. Je krijgt direct ${VISD.FS_BY_SC[3]} free spins. Gemiddeld levert hij iets minder op dan hij kost (±96%). De meeste bonussen zijn klein; ronde 2 haal je ongeveer 1 op 10 keer, ronde 4 (×10) ongeveer 1 op 430.</span></div>
   <div class="flex"><button class="btn sm" onclick="act.vdSpin(true)" ${S.cash<buy?'disabled':''}>${S.cash<buy?'Te weinig geld':'Kopen'}</button><button class="btn ghost sm" onclick="vd.confirm=false;vdRefresh()">Annuleren</button></div></div>`}
 function vdSeed(){if(!S.vdSeed||!S.vdSeed.s)S.vdSeed=kkNewSd(S.vdSeed&&S.vdSeed.prev);return S.vdSeed}
 function vdSeedHtml(){const sd=vdSeed(),p=sd.prev;
@@ -96,19 +95,19 @@ function vdSeedHtml(){const sd=vdSeed(),p=sd.prev;
   ${p?`<div class="kk-seed-i prev"><span class="label">Vorige seed</span><b>${p.id}: ${p.spins} spins, ${p.bon} bonus${p.bon===1?'':'sen'}</b></div>`:''}
   <button class="btn ghost sm" onclick="act.vdNewSeed()" ${vd.busy?'disabled':''}>Nieuwe seed</button></div>`}
 // Uitbetaling + de 10 lijnen als kleine kaartjes
-function vdPayTab(){const b=vdBet(),k=VISD.PAYK/10;
+function vdPayTab(){const b=vdBet(),k=VISD.PAYK/VISD.LINES.length;
  const rows=VISD.SYMS.slice().reverse().map(s=>`<div class="vd-pt"><span>${vdSvg(s.id,s.id==='vis'?10:0)}</span><div>${[2,1,0].map(i=>`<p><i>${i+3}</i>${fmt(s.pay[i]*k*b)}</p>`).join('')}</div></div>`).join('');
- const lines=VISD.LINES.map((L,i)=>`<div class="vd-ln" style="--lc:${VD_LC[i]}"><b>${i+1}</b><svg viewBox="0 0 50 30"><g fill="#1b2a33">${[0,1,2,3,4].map(c=>[0,1,2].map(r=>`<rect x="${c*10+1}" y="${r*10+1}" width="8" height="8" rx="1.5"/>`).join('')).join('')}</g><polyline points="${L.map((r,c)=>(c*10+5)+','+(r*10+5)).join(' ')}"/></svg></div>`).join('');
+ const lines=VISD.LINES.map((L,i)=>`<div class="vd-ln" style="--lc:${VD_LC[i%VD_LC.length]}"><svg viewBox="0 0 50 40" aria-hidden="true"><g fill="#1b2a33">${[0,1,2,3,4].map(c=>[0,1,2,3].map(r=>`<rect x="${c*10+1}" y="${r*10+1}" width="8" height="8" rx="1.5"/>`).join('')).join('')}</g><polyline points="${L.map((r,c)=>(c*10+5)+','+(r*10+5)).join(' ')}"/></svg></div>`).join('');
  const fish=VISD.FISH.map(([v])=>`<i style="--fc:${vdTier(v)[0]}">${vdShort(v*b)}</i>`).join('');
  return `<div class="vd-pay-g"><div><h3 class="vd-h">Uitbetaling per lijn bij ${fmt(b)} inzet</h3><p class="vd-p">3, 4 of 5 dezelfde van links naar rechts. In de bonus telt de multiplier ook voor lijnwinst.</p><div class="vd-ptab">${rows}</div></div>
-  <div><h3 class="vd-h">De 10 lijnen</h3><div class="vd-lns">${lines}</div>
+  <div><h3 class="vd-h">De 20 lijnen</h3><div class="vd-lns">${lines}</div>
   <h3 class="vd-h" style="margin-top:18px">Waarde van een vis in de bonus</h3><div class="vd-fishv">${fish}</div></div></div>`}
 function visView(){const g=vd.grid||vdDemo(),fs=vd.fs;
  return `<div class="kk kk3 vd ${fs?'is-fs':''}">
  <div class="kk-stage vd-stage" id="vdStage">
   <div class="vd-board" id="vdBoard">${VD_SKY}<button class="kk-snd vd-snd" onclick="SFX.toggle();this.textContent=SFX.on?'🔊':'🔇'" aria-label="Geluid aan of uit">${SFX.on?'🔊':'🔇'}</button><span id="vdSub" class="vd-sub">${vdSubHtml()}</span>
    <div id="vdFs">${vdFsBar()}</div>
-   <div class="vd-deck">${vdPosts(0)}<div class="vd-reelwrap"><div class="vd-reels" id="vdReels">${vdReelsHtml(g,!!fs)}</div><svg class="vd-lines" id="vdLines" viewBox="0 0 500 300" preserveAspectRatio="none"></svg><div class="vd-fx" id="vdFx"></div></div>${vdPosts(1)}</div>
+   <div class="vd-deck"><div class="vd-reelwrap"><div class="vd-reels" id="vdReels">${vdReelsHtml(g,!!fs)}</div><svg class="vd-lines" id="vdLines" viewBox="0 0 500 ${VISD.ROWS*100}" preserveAspectRatio="none"></svg><div class="vd-fx" id="vdFx"></div></div></div>
    <div class="vd-tick" id="vdTick">${vd.tick||(fs?'De Visdief pakt alles wat op het scherm ligt':'3 boeien geven de bonus. In de bonus pakt de Visdief alle vissen.')}</div>
    <div id="vdBanner"></div></div>
   <div class="kk-bar"><div class="kk-hud" id="vdInfo">${vdInfo()}</div><div class="kk-ctl" id="vdCtl">${vdControls()}</div></div>
@@ -120,7 +119,7 @@ function visView(){const g=vd.grid||vdDemo(),fs=vd.fs;
   <div class="kk-rules">
    <div><span>${vdSvg('boei')}</span><p><b>3 boeien</b> geven ${VISD.FS_BY_SC[3]} free spins, 4 geven ${VISD.FS_BY_SC[4]} en 5 geven ${VISD.FS_BY_SC[5]}. Meer boeien betekent een langere bonus en meer kans op de max win.</p></div>
    <div><span>${vdSvg('vis',50)}</span><p><b>Vissen</b> hebben in de bonus een geldwaarde. Ze leveren alleen iets op als er een Visdief op het scherm staat.</p></div>
-   <div><span>${vdSvg('visdief')}</span><p><b>De Visdief</b> valt alleen in de bonus. Hij vervangt elk symbool en pakt het geld van alle vissen; twee pakken alles twee keer. Elke ${VISD.PER_LEVEL} Visdieven geven +${VISD.RETRIG} spins en daarna telt alles ×2, dan ×3 en ten slotte ×10. Elke volgende ${VISD.PER_LEVEL} zijn lastiger te vangen.</p></div>
+   <div><span>${vdSvg('visdief')}</span><p><b>De Visdief</b> valt alleen in de bonus. Hij vervangt elk symbool en pakt het geld van alle vissen; twee pakken alles twee keer. Een ronde speelt altijd helemaal uit. Heb je er dan ${VISD.PER_LEVEL}, dan volgt ronde 2: ${VISD.RETRIG} spins waarin alles ×2 telt. Bij ${VISD.PER_LEVEL*2} volgt ronde 3 (×3), bij ${VISD.PER_LEVEL*3} ronde 4 (×10). Extra Visdieven tellen door voor de volgende ronde. Elke volgende ${VISD.PER_LEVEL} zijn lastiger te vangen, maar in hogere rondes zwemmen er vaker grote vissen.</p></div>
    <div><span class="kk-mini key">␣</span><p><b>Spatiebalk</b> draait. De max win is ${VISD.MAX_WIN.toLocaleString('nl-NL')}× je inzet: daarvoor moet je ×10 halen en grote vissen vangen.${isVip()?' Als <b>VIP</b> kom je vaker in de bonus en valt de Visdief er iets vaker.':''}</p></div>
   </div></section></div>`}
 function vdRefresh(){const root=document.querySelector('.vd');if(!root)return;root.classList.toggle('is-fs',!!vd.fs);
@@ -139,13 +138,13 @@ function vdBanner(big,small,ms,cls){const el=vdEl('vdBanner');if(el)el.innerHTML
 function vdShowBal(add){vd.shown=(vd.shown||0)+add;vdText('vdBal',fmt(S.cash-(window.slotPending||0)+vd.shown))}
 // Rollen draaien: een korte aanloop omhoog, vaart (met bewegingsonscherpte) en een stuiter bij het stoppen.
 // Liggen er al 2 boeien, dan draaien de volgende rollen langer en lichten ze op.
-async function vdSpinReels(g,fs,lvl){const reels=[...document.querySelectorAll('#vdReels .vd-reel')];const T=vdT();
+async function vdSpinReels(g,fs,lvl,rd){const reels=[...document.querySelectorAll('#vdReels .vd-reel')];const T=vdT();
  if(!reels.length||!vdOn()){vd.grid=g;return}
  const cur=vd.grid||vdDemo();let sc=0,delay=0,maxT=0,heard=0;const anims=[];
- reels.forEach((el,c)=>{const tease=!fs&&sc>=2;if(tease)delay+=T.tease;const F=8+c*3+(tease?10:0),n=F+6,strip=el.querySelector('.vd-strip');
+ reels.forEach((el,c)=>{const tease=!fs&&sc>=2;if(tease)delay+=T.tease;const R=VISD.ROWS,F=8+c*3+(tease?10:0),n=F+2*R,strip=el.querySelector('.vd-strip');
   strip.getAnimations().forEach(a=>a.cancel());
-  strip.style.setProperty('--n',n);strip.innerHTML=[...g[c],...Array.from({length:F},()=>vdRand(fs,lvl)),...cur[c]].map(x=>vdCellHtml(x,fs)).join('');
-  const cell=100/n,S0=-(F+3)*cell,dur=T.spin+c*T.stag+delay;maxT=Math.max(maxT,dur);
+  strip.style.setProperty('--n',n);strip.innerHTML=[...g[c],...Array.from({length:F},()=>vdRand(fs,lvl,rd)),...cur[c]].map(x=>vdCellHtml(x,fs)).join('');
+  const cell=100/n,S0=-(F+R)*cell,dur=T.spin+c*T.stag+delay;maxT=Math.max(maxT,dur);
   strip.style.transform='translateY(0%)';el.classList.toggle('tease',tease);
   const kf=vdReduce()?[{transform:`translateY(${S0}%)`},{transform:'translateY(0%)'}]:[
    {transform:`translateY(${S0}%)`,filter:'blur(0px)',easing:'ease-out'},
@@ -159,24 +158,23 @@ async function vdSpinReels(g,fs,lvl){const reels=[...document.querySelectorAll('
   if(tease)setTimeout(()=>SFX.tease&&SFX.tease(sc,Math.min(1.2,T.tease/1000)),Math.max(0,dur-T.tease));
   sc+=scHere});
  await vdWait(maxT+60);
- reels.forEach((el,c)=>{const strip=el.querySelector('.vd-strip');strip.getAnimations().forEach(a=>a.cancel());strip.style.transform='none';strip.style.setProperty('--n',3);strip.innerHTML=g[c].map(x=>vdCellHtml(x,fs)).join('');el.classList.remove('scland','tease')});
+ reels.forEach((el,c)=>{const strip=el.querySelector('.vd-strip');strip.getAnimations().forEach(a=>a.cancel());strip.style.transform='none';strip.style.setProperty('--n',VISD.ROWS);strip.innerHTML=g[c].map(x=>vdCellHtml(x,fs)).join('');el.classList.remove('scland','tease')});
  vd.grid=g}
 function vdLineSvg(w,draw){const L=VISD.LINES[w.line],pts=['0,'+(L[0]*100+50)].concat(L.map((r,c)=>(c*100+50)+','+(r*100+50)),['500,'+(L[4]*100+50)]).join(' ');
  return `<polyline class="glow" points="${pts}" style="--lc:${VD_LC[w.line]}" pathLength="100"/><polyline class="${draw?'draw':''}" points="${pts}" style="--lc:${VD_LC[w.line]}" pathLength="100"/>`}
 const vdSymName=(w)=>{const s=VISD.SYMS[w.sym].n.toLowerCase();return w.n+'× '+s};
-function vdMark(cells){const hit=new Set(cells.map(([c,r])=>c*3+r));for(let c=0;c<5;c++)for(let r=0;r<3;r++){const e=vdCellEl(c,r);if(e){e.classList.toggle('win',hit.has(c*3+r));e.classList.toggle('dim',!hit.has(c*3+r))}}}
-function vdUnmark(){document.querySelectorAll('#vdReels .vd-cell').forEach(e=>e.classList.remove('win','dim','collect','caught'));document.querySelectorAll('.vd-posts i.on').forEach(e=>e.classList.remove('on'));const s=vdEl('vdLines');if(s)s.innerHTML=''}
+function vdMark(cells){const R=VISD.ROWS,hit=new Set(cells.map(([c,r])=>c*R+r));for(let c=0;c<VISD.REELS;c++)for(let r=0;r<R;r++){const e=vdCellEl(c,r);if(e){e.classList.toggle('win',hit.has(c*R+r));e.classList.toggle('dim',!hit.has(c*R+r))}}}
+function vdUnmark(){document.querySelectorAll('#vdReels .vd-cell').forEach(e=>e.classList.remove('win','dim','collect','caught'));const s=vdEl('vdLines');if(s)s.innerHTML=''}
 // Winlijnen: eerst alle lijnen tegelijk (getekend als vislijn), daarna een voor een met het bedrag
 async function vdShowWins(wins,mult,bet,stepFrom){if(!wins.length)return 0;const T=vdT();const svg=vdEl('vdLines');
- vdMark(wins.flatMap(w=>w.cells));wins.forEach(w=>document.querySelectorAll(`.vd-posts i[data-l="${w.line}"]`).forEach(e=>e.classList.add('on')));
+ vdMark(wins.flatMap(w=>w.cells));
  if(svg)svg.innerHTML=wins.map(w=>vdLineSvg(w,true)).join('');
  const add=wins.reduce((a,w)=>a+w.pay,0)*mult*bet;SFX.win(Math.min(6,wins.length+1));
- vdTick(wins.length>1?`${wins.length} lijnen winnen samen <b>${fmt(add)}</b>${mult>1?' (×'+mult+')':''}`:`Lijn ${wins[0].line+1}: ${vdSymName(wins[0])}, <b>${fmt(add)}</b>${mult>1?' (×'+mult+')':''}`);
+ vdTick(wins.length>1?`${wins.length} lijnen winnen samen <b>${fmt(add)}</b>${mult>1?' (×'+mult+')':''}`:`${vdSymName(wins[0])}: <b>${fmt(add)}</b>${mult>1?' (×'+mult+')':''}`);
  vdCount('vdStep',stepFrom,stepFrom+add,T.hold*.7);vdShowBal(add);
  await vdWait(T.hold);
  if(T.line&&wins.length>1)for(const w of wins.slice(0,5)){if(!vdOn())break;
-  vdMark(w.cells);document.querySelectorAll('.vd-posts i.on').forEach(e=>e.classList.remove('on'));document.querySelectorAll(`.vd-posts i[data-l="${w.line}"]`).forEach(e=>e.classList.add('on'));
-  if(svg)svg.innerHTML=vdLineSvg(w,false);vdTick(`Lijn ${w.line+1}: ${vdSymName(w)}, <b>${fmt(w.pay*mult*bet)}</b>`);await vdWait(T.line)}
+  vdMark(w.cells);if(svg)svg.innerHTML=vdLineSvg(w,false);vdTick(`${vdSymName(w)}: <b>${fmt(w.pay*mult*bet)}</b>`);await vdWait(T.line)}
  vdUnmark();return add}
 // De Visdief pakt alle vissen: de prijskaartjes vliegen naar hem toe
 async function vdCollect(s,bet,stepFrom){const board=vdEl('vdReels');if(!s.wilds||!s.fish.length)return 0;const T=vdT();
@@ -201,15 +199,18 @@ async function vdPlay(round,bet,isBuy){const T=vdT();vd.stepWin=0;vdText('vdStep
  const baseWin=round.base.win*bet;if(!isBuy&&baseWin>0){vd.lastWin=baseWin;vdText('vdLast',fmt(baseWin))}
  if(round.fs){const n=round.base.sc;document.querySelectorAll('#vdReels .vd-cell.sc').forEach(e=>e.classList.add('win'));SFX.bonus();vdTick(n+' boeien: bonus!');await vdWait(T.hold*.9);vdUnmark();
   await vdBanner(round.fsStart+' free spins',n+' boeien. De Visdief pakt alle vissen.',2200,'fsin');
-  vd.fs={at:0,of:round.fsStart,total:0,caught:0,lvl:0};vdRefresh();let of=round.fsStart;
-  for(let i=0;i<round.fs.spins.length;i++){const s=round.fs.spins[i];vd.fs.at=i+1;vdText('vdMsg',vd.fs.at+' / '+of);vd.stepWin=0;vdText('vdStep',fmt(0));SFX.spin();
-   const lvlBefore=vd.fs.lvl;await vdSpinReels(s.grid,true,lvlBefore);let step=0;
+  vd.fs={at:0,of:round.fsStart,total:0,caught:0,lvl:0};vdRefresh();let at=0,wasSec=false;
+  for(let i=0;i<round.fs.spins.length;i++){const s=round.fs.spins[i];
+   if(s.newRound){vd.fs.lvl=s.lvl;wasSec=false;at=0;const fb=vdEl('vdFs');if(fb)fb.innerHTML=vdFsBar();SFX.big();
+    await vdBanner('Ronde '+s.newRound,VISD.RETRIG+' free spins. Alles telt nu ×'+VISD.MULTS[s.lvl]+'.',2200,s.lvl>=3?'big gold':'fsin');vd.fs.of=VISD.RETRIG}
+   at++;vd.fs.at=at;vd.fs.of=at+s.left;vdText('vdMsg',at+' / '+vd.fs.of);vd.stepWin=0;vdText('vdStep',fmt(0));SFX.spin();
+   await vdSpinReels(s.grid,true,Math.min(VISD.MULTS.length-1,Math.floor((s.caught-s.wilds)/VISD.PER_LEVEL)),s.lvl);let step=0;
    if(s.wins.length)step+=await vdShowWins(s.wins,s.mult,bet,step);
    if(s.wilds&&s.fish.length)step+=await vdCollect(s,bet,step);
-   else if(s.wilds){SFX.lose();document.querySelectorAll('#vdReels .vd-cell.wild').forEach(e=>e.classList.add('win'));vdTick('Visdief, maar geen vis');await vdWait(T.hold*.5);vdUnmark()}
+   else if(s.wilds){SFX.lose();document.querySelectorAll('#vdReels .vd-cell.wild').forEach(e=>e.classList.add('win'));vdTick(s.wilds>1?s.wilds+' Visdieven, maar geen vis':'Visdief, maar geen vis');await vdWait(T.hold*.5);vdUnmark()}
    else if(!s.wins.length)vdTick(s.fish.length?'Vissen, maar geen Visdief':'Niets gevangen');
-   vd.fs.total=s.total*bet;vd.fs.caught=s.caught;vd.fs.lvl=s.lvl;vdText('vdLast',fmt(vd.fs.total));const fb=vdEl('vdFs');if(fb)fb.innerHTML=vdFsBar();
-   if(s.re){of+=s.re;vd.fs.of=of;vdText('vdMsg',vd.fs.at+' / '+of);SFX.big();await vdBanner('+'+s.re+' spins','Alles telt nu ×'+VISD.MULTS[s.lvl],2000,s.lvl>=3?'big gold':'fsin')}
+   vd.fs.total=s.total*bet;vd.fs.caught=s.caught;vdText('vdLast',fmt(vd.fs.total));const fb=vdEl('vdFs');if(fb)fb.innerHTML=vdFsBar();
+   if(s.secured&&!wasSec){wasSec=true;SFX.bonus();vdTick(`<b>Ronde ${s.lvl+2} is binnen</b>: na deze ronde nog ${VISD.RETRIG} spins met ×${VISD.MULTS[s.lvl+1]}`);await vdWait(T.hold*.8)}
    if(s.total>=VISD.MAX_WIN){SFX.big();await vdBanner('Max win',VISD.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3000,'big gold');break}
    await vdWait(vdFast()?100:280)}
   const x=round.fs.total;if(x>=20)SFX.big();

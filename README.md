@@ -12,7 +12,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Training** met tijdsloten: elke sessie is één level, tot level 50. Elk level is duurder (conditie: €60 voor level 1,
   ongeveer €690.000 voor level 50). Oude saves worden omgerekend: elke gedane sessie telt als één level.
 - **Blackjack** aan een volle tafel (6 kaartspellen, dealer staat op 17, splitsen/verdubbelen, 3:2) met side bets
-  Perfect Pairs en 21+3 (€10 tot €50 per rang: Rookie €50, Peetvader €600), hoofdinzet tot €50.000. **Three Card Poker** met Ante/Play, Pair Plus en 6-Card Bonus (zelfde maximum per rang). Code: `public/js/pages/tafels.js`.
+  Perfect Pairs en 21+3 (€10 tot €500 per rang: Straatschoffie €500, Boef €2.500, Peetvader €6.000), hoofdinzet tot €50.000. **Three Card Poker** met Ante/Play, Pair Plus en 6-Card Bonus (zelfde maximum per rang). Code: `public/js/pages/tafels.js`.
 - **Verblijf**: een getekend tafereel per woning (brug, kraakpand, huurkamer, grachtenpand, penthouse, villa).
   Rusten vult je energie en geeft +20% gezondheid of meer (beter huis = meer), daarna 5 minuten wachten (beter huis = korter).
   Dokter: +20% gezondheid in 10 seconden, daarna 10 minuten wachten. Ga je eerder weg, dan houd je wat je had en wacht je naar verhouding.
@@ -54,14 +54,17 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   normaal RTP ±92% (bonus ±1 op 390, superbonus ±1 op 7.400), VIP ±97,5% + 0,5% cashback (bonus ±1 op 280, superbonus ±1 op 4.200),
   bonus kopen ±96%. In de bonus betalen clusters 40% van de tabel, in het basisspel ±109% (VIP ±104%); de vakjes blijven in de bonus staan.
 - **Visdief** (tweede slot, eigen naam en tekeningen, in de stijl van een vis-collect-slot): nachtvissen in de Rotterdamse haven.
-  5 rollen × 3 rijen, 10 lijnen met genummerde bolders aan beide kanten; winlijnen worden als gloeiende vislijn getekend en daarna
-  een voor een getoond. Rollen draaien met aanloop, bewegingsonscherpte en een stuiter; na 2 boeien draaien de volgende rollen langer.
-  3 boeien = 10 free spins, 4 = 15, 5 = 20 (±1 op 150 spins, VIP ±1 op 130). In de bonus hebben vissen een prijskaartje (2× tot 500×)
-  en pakt de **Visdief** (wild) alles wat er ligt; twee Visdieven pakken alles twee keer. Elke 4 Visdieven: +10 spins en daarna
-  telt alles ×2, dan ×3, dan ×10. Elke volgende 4 zijn lastiger (Visdief-kans per level ×1 / ×0,72 / ×0,52 / ×0,4). In een bonus van
-  10 spins haal je ×2 ±1 op 10 keer, ×3 ±1 op 130 en ×10 ±1 op 3.000; VIP heeft ±5% meer kans op een Visdief.
-  Bonus kopen 44× (10 spins). Seed per slot, spatiebalk = draaien. Doorgerekend (model in `public/js/vis.js`):
-  normaal RTP ±92%, VIP ±97,7% + 0,5% cashback, bonus kopen ±96,5%.
+  5 rollen × 4 rijen, 20 lijnen; een winlijn wordt alleen getekend als hij valt (als gloeiende vislijn, daarna een voor een).
+  Rollen draaien met aanloop, bewegingsonscherpte en een stuiter; na 2 boeien draaien de volgende rollen langer.
+  3 boeien = 10 free spins, 4 = 15, 5 = 20 (±1 op 150 spins, VIP ±1 op 140). In de bonus hebben vissen een prijskaartje
+  (2× tot 500×) en pakt de **Visdief** (wild) alles wat er ligt; twee Visdieven pakken alles twee keer.
+  **Rondes**: een ronde speelt altijd helemaal uit. Heb je dan 4 Visdieven, dan volgt ronde 2 (10 spins, alles ×2); bij 8 ronde 3
+  (×3), bij 12 ronde 4 (×10). Extra Visdieven tellen door voor de volgende ronde. Elke volgende 4 zijn lastiger, maar in hogere
+  rondes zwemmen grote vissen vaker; in ronde 4 is de 500×-vis de max win (5.000×). In een bonus van 10 spins: ronde 2 ±1 op 10,
+  ronde 3 ±1 op 65, ronde 4 ±1 op 430, max win ±1 op 5.000 (bij 20 spins ±1 op 360). VIP: ±5% vaker een Visdief.
+  In de bonus vervangt de vangstmeter de haven bovenaan, zodat het bord even groot blijft. Bonus kopen 46× (10 spins).
+  Seed per slot, spatiebalk = draaien. Doorgerekend (`public/js/vis.js`, 1,5 mln. spins): normaal RTP ±92%, VIP ±97% + 0,5% cashback,
+  bonus kopen ±96%.
 - **Roulette** (Europees, één nul, 2,7% huisvoordeel): groot wiel met rollende bal bovenaan, echte inzettafel eronder.
   Nummer, split, rij, hoek, zes, drie met nul, eerste vier, kolom, dozijn en de kansen, plus groepen op het wiel
   (Buren van nul, Overkant, Weesjes, Nulspel). Ongedaan maken, fiches weghalen (ook met rechtsklik), alles wissen,

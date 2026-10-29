@@ -1,15 +1,20 @@
-// Visdief: 5 rollen × 3 rijen, 10 vaste lijnen. Pure functies, zodat de RTP in Node te simuleren is (sim: visim.js).
+// Visdief: 5 rollen × 4 rijen, 20 vaste lijnen. Pure functies, zodat de RTP in Node te simuleren is (sim: visim.js).
 // - Basisspel: lijnwinst van links naar rechts (3, 4 of 5 dezelfde). De vis is ook een gewoon lijnsymbool.
 // - Boei = scatter (max één per rol). 3 boeien = 10 free spins, 4 = 15, 5 = 20.
 // - Free spins: elke vis heeft een geldwaarde (× inzet). Valt er een Visdief (wild) op het scherm, dan pakt hij alle vissen.
-//   Twee Visdieven pakken alles twee keer. Elke 4 Visdieven: +10 spins en een hogere multiplier (×2, ×3, ×10).
+//   Twee Visdieven pakken alles twee keer.
+// - Rondes: een ronde speelt altijd helemaal uit. Heb je aan het eind 4 Visdieven (ronde 1), dan begint ronde 2 met 10 spins
+//   en telt alles ×2; bij 8 in totaal ronde 3 (×3), bij 12 ronde 4 (×10). Extra Visdieven tellen door voor de volgende ronde.
+//   Elke volgende 4 zijn lastiger te vangen, en in hogere rondes zwemmen er vaker grote vissen (zo blijft de max win haalbaar).
 // - Max win 5.000× de inzet. VIP: per rol iets meer kans op een boei en in de bonus iets vaker een Visdief.
-// - Elke volgende 4 Visdieven zijn lastiger (FS.lvlW). In een bonus van 10 spins: ×2 ±1 op 10, ×3 ±1 op 130, ×10 ±1 op 3.000.
-// - Doorgerekend (visim.js): normaal RTP ±92% (bonus ±1 op 149), VIP ±97,7% (bonus ±1 op 132, ±5% vaker een Visdief), bonus kopen 44× ±96,5%.
+// - Doorgerekend (visim.js, 1,5 mln. spins): normaal RTP ±92% (bonus ±1 op 150), VIP ±97% + 0,5% cashback (bonus ±1 op 140,
+//   ±5% vaker een Visdief), bonus kopen 46× ±96%. In een bonus van 10 spins: ronde 2 ±1 op 10, ronde 3 ±1 op 65, ronde 4 (×10)
+//   ±1 op 430, max win ±1 op 5.000 (bij 20 spins ±1 op 360).
 (function(root){
-const REELS=5,ROWS=3,MAX_WIN=5000;
-const LINES=[[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[1,0,0,0,1],[1,2,2,2,1],[0,0,1,2,2],[2,2,1,0,0],[1,2,1,0,1]];
-// pay = uitbetaling in lijninzet (= inzet/10) voor 3, 4, 5 op een lijn
+const REELS=5,ROWS=4,MAX_WIN=5000;
+const LINES=[[1,1,1,1,1],[2,2,2,2,2],[0,0,0,0,0],[3,3,3,3,3],[0,1,2,1,0],[3,2,1,2,3],[1,2,3,2,1],[2,1,0,1,2],[0,1,1,1,0],[3,2,2,2,3],
+ [1,0,0,0,1],[2,3,3,3,2],[1,2,2,2,1],[2,1,1,1,2],[0,0,1,2,3],[3,3,2,1,0],[1,1,0,1,1],[2,2,3,2,2],[0,1,0,1,0],[3,2,3,2,3]];
+// pay = uitbetaling in lijninzet (= inzet/20) voor 3, 4, 5 op een lijn
 const SYMS=[
  {id:'dobber',n:'Dobber',  w:30,pay:[4,15,60]},
  {id:'haak',  n:'Haak',    w:30,pay:[4,15,60]},
@@ -21,24 +26,26 @@ const SYMS=[
  {id:'hengel',n:'Hengel',  w:8, pay:[30,150,700]},
  {id:'vis',   n:'Vis',     w:14,pay:[10,40,150]}];
 const VIS=SYMS.findIndex(s=>s.id==='vis');
-let PAYK=4.31;
+let PAYK=4.12;
 // geldwaarde van een vis (× inzet) en hoe vaak hij voorkomt
 const FISH=[[2,320],[3,180],[5,160],[10,110],[15,60],[20,40],[25,26],[50,10],[100,3],[250,.6],[500,.12]];
+// grote vissen zwemmen in hogere rondes vaker: factor op het gewicht per ronde (1, 2, 3, 4). De 500×-vis is in ronde 4 (×10) de max win.
+let BIG={100:[1,1.5,2.5,5],250:[1,1.8,3,8],500:[1,2,4,300]};
 // fsVis = extra visgewicht in de bonus, wild = Visdief-gewicht in de bonus
 // lvlW = hoe vaak de Visdief valt per level: de eerste 4 zijn haalbaar, elke volgende 4 lastiger
-const FS={vis:30,wild:2.3,vipWild:1.05,lvlW:[1,.72,.52,.4]};
+const FS={vis:21.5,wild:1.64,vipWild:1.05,lvlW:[1,.95,.85,.72]};
 // kans per rol op een boei (normaal / VIP); buy = altijd 3 boeien
-const SC={p:.092,vip:.095};
+const SC={p:.092,vip:.094};
 const FS_BY_SC={3:10,4:15,5:20},RETRIG=10,MULTS=[1,2,3,10],PER_LEVEL=4;
-let BUY_COST=44;
+let BUY_COST=46;
 const SYM_TOT=fs=>SYMS.reduce((a,s,i)=>a+(i===VIS&&fs?FS.vis:s.w),0);
-function fishVal(rng){const t=FISH.reduce((a,f)=>a+f[1],0);let r=rng()*t;for(const [v,w] of FISH){r-=w;if(r<=0)return v}return FISH[0][0]}
-function pick(rng,fs,vip,lvl){const ww=fs?FS.wild*FS.lvlW[lvl||0]*(vip?FS.vipWild:1):0,tot=SYM_TOT(fs)+ww;let r=rng()*tot;
- for(let i=0;i<SYMS.length;i++){r-=(i===VIS&&fs?FS.vis:SYMS[i].w);if(r<=0)return i===VIS?{s:i,v:fishVal(rng)}:{s:i}}
+function fishVal(rng,rd){const W=f=>BIG[f[0]]?f[1]*BIG[f[0]][rd||0]:f[1];const t=FISH.reduce((a,f)=>a+W(f),0);let r=rng()*t;for(const f of FISH){r-=W(f);if(r<=0)return f[0]}return FISH[0][0]}
+function pick(rng,fs,vip,lvl,rd){const ww=fs?FS.wild*FS.lvlW[lvl||0]*(vip?FS.vipWild:1):0,tot=SYM_TOT(fs)+ww;let r=rng()*tot;
+ for(let i=0;i<SYMS.length;i++){r-=(i===VIS&&fs?FS.vis:SYMS[i].w);if(r<=0)return i===VIS?{s:i,v:fishVal(rng,rd)}:{s:i}}
  return {w:1}}
 // raster g[rol][rij]; boeien: per rol hoogstens één
-function fill(rng,fs,vip,forceSc,lvl){const g=[];
- for(let c=0;c<REELS;c++){g.push([]);for(let r=0;r<ROWS;r++)g[c].push(pick(rng,fs,vip,lvl))}
+function fill(rng,fs,vip,forceSc,lvl,rd){const g=[];
+ for(let c=0;c<REELS;c++){g.push([]);for(let r=0;r<ROWS;r++)g[c].push(pick(rng,fs,vip,lvl,rd))}
  if(!fs){let cols=[];if(forceSc){cols=[...Array(REELS).keys()].sort(()=>rng()-.5).slice(0,forceSc)}else{for(let c=0;c<REELS;c++)if(rng()<(vip?SC.vip:SC.p))cols.push(c)}
   cols.forEach(c=>{g[c][Math.floor(rng()*ROWS)]={sc:1}})}
  return g}
@@ -47,22 +54,25 @@ function lineWins(g){const out=[];
  LINES.forEach((L,li)=>{let sym=null,n=0;
   for(let c=0;c<REELS;c++){const x=g[c][L[c]];if(x.sc)break;if(x.w){n++;continue}if(sym==null){sym=x.s;n++;continue}if(x.s===sym){n++;continue}break}
   if(sym==null&&n>=3)sym=SYMS.length-2; // alleen wilds: betaal als het hoogste gewone symbool (hengel)
-  if(sym!=null&&n>=3){const pay=SYMS[sym].pay[n-3]*PAYK/10;out.push({line:li,sym,n,pay,cells:L.slice(0,n).map((r,c)=>[c,r])})}});
+  if(sym!=null&&n>=3){const pay=SYMS[sym].pay[n-3]*PAYK/LINES.length;out.push({line:li,sym,n,pay,cells:L.slice(0,n).map((r,c)=>[c,r])})}});
  return out}
 function scCount(g){let n=0;g.forEach(col=>col.forEach(x=>{if(x.sc)n++}));return n}
 // één spin in het basisspel
 function spin(rng,opts){opts=opts||{};const g=fill(rng,false,!!opts.vip,opts.forceSc||0);const wins=opts.forceSc?[]:lineWins(g);
  const win=wins.reduce((a,w)=>a+w.pay,0),sc=scCount(g);return {grid:g,wins,win,sc,trigger:sc>=3}}
-// bonusronde
-function freeSpins(rng,start,vip){let left=start,total=0,caught=0,lvl=0,maxHit=false;const spins=[];
- while(left>0&&spins.length<200){left--;const g=fill(rng,true,vip,0,lvl);const wins=lineWins(g);let lw=wins.reduce((a,w)=>a+w.pay,0)*MULTS[lvl];
+// bonus: rondes van spins. lvl = huidige ronde (0 = ronde 1). Visdief-kans hangt af van hoeveel je er al hebt (elke 4 lastiger).
+function freeSpins(rng,start,vip){let left=start,total=0,caught=0,lvl=0,maxHit=false;const spins=[];let newRound=0;
+ while(spins.length<300){
+  if(left<=0){if(lvl<MULTS.length-1&&caught>=(lvl+1)*PER_LEVEL){lvl++;left=RETRIG;newRound=lvl+1}else break}
+  left--;const wl=Math.min(MULTS.length-1,Math.floor(caught/PER_LEVEL)),mult=MULTS[lvl];
+  const g=fill(rng,true,vip,0,wl,lvl);const wins=lineWins(g);const lw=wins.reduce((a,w)=>a+w.pay,0)*mult;
   let nw=0,fishSum=0;const fish=[];g.forEach((col,c)=>col.forEach((x,r)=>{if(x.w)nw++;if(x.v){fishSum+=x.v;fish.push([c,r,x.v])}}));
-  const col=nw&&fishSum?nw*fishSum*MULTS[lvl]:0,mult=MULTS[lvl];
+  const col=nw&&fishSum?nw*fishSum*mult:0;
   total+=lw+col;caught+=nw;
-  let re=0;while(lvl<MULTS.length-1&&caught>=(lvl+1)*PER_LEVEL){lvl++;re+=RETRIG}left+=re;
   if(total>=MAX_WIN){total=MAX_WIN;maxHit=true}
-  spins.push({grid:g,wins,lineWin:lw,collect:col,fish,wilds:nw,mult,caught,lvl,re,left:maxHit?0:left,total});
-  if(maxHit)break}
+  const next=lvl<MULTS.length-1?(lvl+1)*PER_LEVEL:null;
+  spins.push({grid:g,wins,lineWin:lw,collect:col,fish,wilds:nw,mult,caught,lvl,round:lvl+1,newRound,left:maxHit?0:left,total,secured:next!=null&&caught>=next});
+  newRound=0;if(maxHit)break}
  return {spins,total:Math.min(total,MAX_WIN),maxHit,lvl,caught}}
 function playRound(rng,opts){opts=opts||{};
  // gekochte bonus: voor iedereen gelijk (het VIP-voordeel zit in vaker de bonus halen en meer Visdieven in gewonnen bonussen)
@@ -70,7 +80,7 @@ function playRound(rng,opts){opts=opts||{};
  const s=spin(rng,{vip:opts.vip});let tot=s.win,fs=null,n=0;
  if(s.trigger){n=FS_BY_SC[Math.min(5,s.sc)];fs=freeSpins(rng,n,!!opts.vip);tot+=fs.total}
  return {base:s,fs,fsStart:n,total:Math.min(MAX_WIN,tot),cost:1}}
-const tune=o=>{if(o.payk!=null)PAYK=o.payk;if(o.p!=null)SC.p=o.p;if(o.pVip!=null)SC.vip=o.pVip;if(o.fsVis!=null)FS.vis=o.fsVis;if(o.wild!=null)FS.wild=o.wild;if(o.vipWild!=null)FS.vipWild=o.vipWild;if(o.lvlW)FS.lvlW=o.lvlW;
+const tune=o=>{if(o.payk!=null)PAYK=o.payk;if(o.p!=null)SC.p=o.p;if(o.pVip!=null)SC.vip=o.pVip;if(o.fsVis!=null)FS.vis=o.fsVis;if(o.wild!=null)FS.wild=o.wild;if(o.vipWild!=null)FS.vipWild=o.vipWild;if(o.lvlW)FS.lvlW=o.lvlW;if(o.big)BIG=o.big;
  if(o.fish)o.fish.forEach((w,i)=>{if(FISH[i])FISH[i][1]=w});if(o.buyCost!=null)BUY_COST=o.buyCost};
 const API={REELS,ROWS,LINES,SYMS,FISH,FS,SC,FS_BY_SC,RETRIG,MULTS,PER_LEVEL,MAX_WIN,get BUY_COST(){return BUY_COST},get PAYK(){return PAYK},VIS,tune,spin,freeSpins,playRound,lineWins,fill};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.VISD=API;
