@@ -1346,3 +1346,10 @@ button.mn-t:not(:disabled){cursor:pointer}button.mn-t:not(:disabled):hover{trans
 @media (max-width:900px){.ms-tile em.ok{background:color-mix(in srgb,var(--ice) 18%,transparent);color:var(--ice)}}
 @container (max-width:760px){.cas-bar .tabs button{padding:7px 2px;font-size:12.5px}#view .cas-bar h1.cas-h1{font-size:28px}}
 @container (max-width:700px){.vd-tick{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;min-height:0}}
+
+/* Telefoon: snel twee keer tikken (bijv. op + bij je inzet) zoomt niet meer in. Knijpen om in te zoomen blijft werken. */
+html,body{touch-action:manipulation}
+a,button,input,select,textarea,label,summary,canvas,[onclick],[role="button"],.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button,.btn,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* iPhone zoomt in op invulvelden met tekst kleiner dan 16px */
+@media (max-width:900px){input,select,textarea,.input{font-size:16px}}
