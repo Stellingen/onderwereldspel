@@ -61,7 +61,8 @@ V.fam=()=>{const ri=rankIdx(S.xp),f=famBase();famDaily();
    <div class="fm-req"><span class="${okR?'ok':'no'}">${okR?'✓':'✗'} ${RANKS[x.r][0]}</span><span class="${S.cred>=x.cred?'ok':'no'}">${S.cred>=x.cred?'✓':'✗'} ${S.cred}/${x.cred} cred</span>${x.hits?`<span class="${famHits()>=x.hits?'ok':'no'}">${famHits()>=x.hits?'✓':'✗'} ${famHits()}/${x.hits} huurmoorden</span>`:''}</div>
    ${isMine?`<div class="fm-mine">Jouw familie</div>`
     :cf?`<div class="fm-cf"><span>${S.family?`Je verlaat ${f.n} en verliest al je eer daar. Bij ${x.n} begin je onderaan als Aspirant.`:`Je begint onderaan als Aspirant.`} Eerst volgt een gesprek: ze stellen 3 vragen over de familie (lees deze kaart dus goed). Charisma helpt.</span><button class="btn sm" onclick="famInterview('${x.id}')">Naar het gesprek</button><button class="btn sm ghost" onclick="famUI.confirm=null;render()">Toch niet</button></div>`
-    :(()=>{const wait=cdLeft('famint_'+x.id);return `<button class="btn ${okR&&okC&&!wait?'':'ghost'}" onclick="famUI.confirm='${x.id}';render()" ${okR&&okC&&!inJail()&&!wait?'':'disabled'}>${!(okR&&okC)?'Nog niet toegelaten':wait?'Nieuw gesprek over '+fmtClock(wait):(S.family?'Overstappen':'Aansluiten')}</button>`})()}</article>`};
+    :(()=>{const wait=cdLeft('famint_'+x.id),ban=feudBanLeft(x.id);if(ban)return `<div class="fm-ban"><b>Verbannen</b><span>Je kwam niet opdagen bij een bendegevecht. Nog ${feudDur(ban)} (${Math.ceil(ban/DAY_MS)} speldagen).</span></div>`;
+     return `<button class="btn ${okR&&okC&&!wait?'':'ghost'}" onclick="famUI.confirm='${x.id}';render()" ${okR&&okC&&!inJail()&&!wait?'':'disabled'}>${!(okR&&okC)?'Nog niet toegelaten':wait?'Nieuw gesprek over '+fmtClock(wait):(S.family?'Overstappen':'Aansluiten')}</button>`})()}</article>`};
  if(!f)return `<h1>Families</h1>
   <section class="card hud fm-intro"><div><span class="label">Je hoort nog nergens bij</span><h2>Kies een familie</h2>
    <p>Met de juiste rang en genoeg straatcredit word je toegelaten. De vier zwaarste families nemen alleen Huurmoordenaars en hoger aan die al een aantal huurmoorden op hun naam hebben. Iedereen begint onderaan als Aspirant. Met klussen, auto's voor de familie en de dagelijkse missies klim je op tot Erelid. Als Aspirant krijg je de helft van de familiebonus en het eigen voordeel, elk level +10%, als Erelid alles (de getallen hieronder).</p></div>
@@ -103,7 +104,7 @@ V.fam=()=>{const ri=rankIdx(S.xp),f=famBase();famDaily();
  <div class="fm-grid">${FAMILIES.filter(x=>x.id!==f.id).map(card).join('')}</div>`};
 
 Object.assign(act,{
- join(id){const x=FAMILIES.find(k=>k.id===id);if(!x||inJail()||rankIdx(S.xp)<x.r||S.cred<x.cred||famHits()<(x.hits||0)||S.family===id)return;const old=famBase();
+ join(id){const x=FAMILIES.find(k=>k.id===id);if(!x||inJail()||feudBanLeft(id)||rankIdx(S.xp)<x.r||S.cred<x.cred||famHits()<(x.hits||0)||S.family===id)return;const old=famBase();
   S.family=id;S.fr={id,eer:0,since:now()};fmNew(true);famUI.confirm=null;toast('Welkom bij '+x.n+'. Je begint als Aspirant.','lvl');log((old?old.n+' verlaten, ':'')+'aangesloten bij '+x.n,'ok');save();pushState();render()},
  leave(){const f=famBase();if(!f)return;log('Familie '+f.n+' verlaten','info');S.family=null;S.fr=null;S.fm=null;famUI.confirm=null;toast('Je bent weer op jezelf');save();pushState();render()},
  famCar(i){const c=S.cars[i];if(!c||!S.family)return;S.cars.splice(i,1);const pay=Math.round(c.v*.3),e=Math.round(2+Math.sqrt(c.v)/20);S.cash+=pay;famAddEer(e);
@@ -134,7 +135,7 @@ function famQuestions(x){const T=FAMILIES.indexOf(x),others=FAMILIES.filter(f=>f
  if(x.loot)mk(`Hoeveel extra buit geeft ${x.n} je als Erelid?`,'+'+x.loot+'%',others.filter(f=>f.loot).map(f=>'+'+f.loot+'%'));
  return shuf(Q).slice(0,3)}
 let FI=null;
-function famInterview(id){const x=FAMILIES.find(f=>f.id===id);if(!x||inJail()||cdLeft('famint_'+id))return;
+function famInterview(id){const x=FAMILIES.find(f=>f.id===id);if(!x||inJail()||feudBanLeft(id)||cdLeft('famint_'+id))return;
  S.cd['famint_'+id]=now()+FAM_INT_CD*60000*waitK();save();famUI.confirm=null;
  FI={x,qs:famQuestions(x),i:0,miss:0,hints:famIntHints(),gone:{},ans:null};famIntDraw()}
 function famIntDraw(){let el=document.getElementById('famInt');if(!FI){if(el)el.remove();return}

@@ -138,9 +138,21 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   omschrijving, buitbonus), alles staat op de familiekaart. Training **Charisma** helpt: elke 15 levels een hint (er valt een fout
   antwoord weg) en vanaf level 25 mag je één keer fout zitten. Afgewezen = 15 minuten wachten (VIP/High roller korter).
 - **Tags**: echte spelers krijgen in de ranglijst en de zijbalk een groene tag "Speler", plus VIP of High roller.
-- **Kluiskraker op brede schermen**: links een kolom om je inzet te kiezen (fiches per groep, bonus kopen, snel), rechts saldo,
-  deze spin, laatste winst, een grote draaiknop, een overzicht van deze sessie en je seed; beide kolommen sluiten aan op het bord
-  en zijn even hoog.
+- **Kluiskraker op brede schermen**: rechts alles om te spelen (saldo, inzet per groep, een opvallende kaart "Bonus kopen" en
+  onderaan DRAAIEN), links info (deze sessie, laatste rondes, spelregels, seed). Het bord draait als een rol: de oude symbolen
+  schuiven kolom voor kolom naar beneden uit beeld, precies gelijk met de nieuwe die vallen en met een kleine bounce vast landen.
+- **Vaste hand (huurmoorden)**: als beginner trillen je handen (een snelle bibber bovenop het zwiepen van het vizier; adem
+  inhouden helpt maar een beetje). Vijf niveaus van Bibberend tot IJskoud, opgebouwd uit training Schieten (45%), geslaagde
+  contracten (35%) en rang (20%).
+- **Ervaring (auto's)**: Groentje tot Meesterdief, uit het aantal gestolen auto's en je rang. Als groentje heb je minder tijd per
+  pijl (tot −22%) en meer kans (tot 28%) dat een voorbijganger je ziet: dan verlies je tijd, en mislukt het, dan belde hij 112
+  maar ben je op tijd weg (geen politie). Ook niet elk alarm trekt meteen politie aan (kans op wegkomen kleiner bij duurdere auto's).
+- **Wraak en bendegevecht** (`public/js/pages/feud.js`): na een huurmoord (18–48%), een ontsnapt doelwit (30%) of een gemiste
+  laatste kogel (45%, in plaats van politie) komen de mensen van het doelwit je zoeken. Je hebt 30 minuten. Meevechten vraagt
+  gezondheid (52–87%, naar moeilijkheid) en 15 energie; 3 rondes, 2 winnen, met je familie aan je zijde. Winnen = geld, cred, XP
+  en eer; verliezen = gezondheid en wat geld. Zit je in een familie en kom je niet (weigeren of tijd verlopen), dan word je eruit
+  gezet en ben je er 30 speldagen verbannen (1 speldag = 4 uur, dus 5 echte dagen). Zonder familie vinden ze je toch
+  (−20% gezondheid en wat geld). Zat je vast, dan wordt het zonder jou geregeld.
 - **Zware families**: Het Schaduwcontract (Huurmoordenaar, 1.400 cred, 3 huurmoorden), De Nachtwacht (Capo, 2.000, 8),
   De Ronde Tafel (Consigliere, 3.000, 15) en De Erven Morano (Peetvader, 4.500, 25), elk met een eigen voordeel en een grote klus.
 

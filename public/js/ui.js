@@ -55,7 +55,7 @@ let casinoTab='kluis',rankTab='xp',slotState=['7','7','7'],spinning=false;
 const NAV_GROUPS=[['Straat',['dash','verblijf','crimes','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank'],'#3fe395','63,227,149'],['Macht',['shop','skills','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','rank','profiel'],'#a9dcff','169,220,255']];
 const groupOf=k=>NAV_GROUPS.find(g=>g[1].includes(k))||NAV_GROUPS[0];
 function applySection(){document.body.classList.toggle('wide-page',page==='casino');const g=groupOf(page),r=document.documentElement.style;r.setProperty('--sec',g[2]);r.setProperty('--sec-rgb',g[3])}
-function crumbHtml(){const g=groupOf(page);return `<div class="crumb"><i></i><span>${g[0]}</span>/ ${PAGES.find(p=>p[0]===page)[1]}</div>`}
+function crumbHtml(){const g=groupOf(page);return `<div class="crumb"><i></i><span>${g[0]}</span>/ ${PAGES.find(p=>p[0]===page)[1]}</div>`+(typeof feudBar==='function'?feudBar():'')}
 function renderNav(){
   const name=k=>PAGES.find(p=>p[0]===k)[1];
   const link=k=>`<a class="navlink ${k===page?'on':''}" href="#${k}">${svg(k)}<span>${name(k)}</span>${k==='jail'&&inJail()?'<span class="badge">!</span>':''}${k==='crimes'&&!inJail()&&S.energy>=EN_MAX?'<span class="badge ok">●</span>':''}${k==='profiel'&&typeof RANK_CODES!=='undefined'&&RANKS.slice(1,rankIdx(S.xp)+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase()))?'<span class="badge">€</span>':''}</a>`;

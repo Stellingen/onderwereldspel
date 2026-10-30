@@ -50,7 +50,12 @@ const HEIST_TIERS={1:{locks:1,len:4,per:1500,miss:2,rev:0},2:{locks:1,len:5,per:
  4:{locks:2,len:6,per:620,miss:0,rev:1},5:{locks:3,len:6,per:480,miss:0,rev:2},6:{locks:3,len:7,per:400,miss:0,rev:3}};
 const carTier=m=>m.leg?6:m.d;
 const secTxt=ms=>(ms/1000).toLocaleString('nl-NL',{maximumFractionDigits:1})+' s';
-function heistParams(m){const sk=(S.skills&&S.skills.cars)||0,T=HEIST_TIERS[carTier(m)];return {...T,per:Math.round(T.per*(1+sk*SK.cars.time+gearFx('car'))),d:m.d}}
+// Ervaring als autodief: als groentje trillen je handen (minder tijd per pijl) en ziet vaker een voorbijganger je bezig.
+// Groeit met het aantal gestolen auto's en je rang.
+const CAR_LV=['Groentje','Leerling','Handig','Ervaren','Meesterdief'];
+const carNerve=()=>{const n=(S.stats&&S.stats.cars)||0,ri=rankIdx(S.xp),a=.6*Math.min(1,n/40),b=.4*Math.min(1,ri/6),lv=Math.min(1,a+b),i=Math.min(4,Math.floor(lv*5));
+ return {lv,i,name:CAR_LV[i],time:.78+.22*lv,wit:Math.max(.05,.28-.23*lv)}};
+function heistParams(m){const sk=(S.skills&&S.skills.cars)||0,T=HEIST_TIERS[carTier(m)],N=carNerve();return {...T,per:Math.round(T.per*(1+sk*SK.cars.time+gearFx('car'))*N.time),d:m.d,wit:N.wit,nv:N}}
 function heistTxt(P){return [P.locks>1?P.locks+' sloten':'1 slot',P.len+' pijlen in '+secTxt(P.len*P.per),P.rev?P.rev+' rode per slot':null,P.miss?P.miss+'× fout mag':'geen fouten'].filter(Boolean).join(' · ')}
 function carHeist(sp){const m=CARS.find(k=>k.id===sp.id)||CARS[0];
  return new Promise(resolve=>{
@@ -60,21 +65,27 @@ function carHeist(sp){const m=CARS.find(k=>k.id===sp.id)||CARS[0];
     <div class="hx-car">${carSvg(m.b,sp.c,{hl:1})}<span class="plate">${sp.plate}</span></div>
     <div class="heist-top"><span class="rar" style="--rc:${R[1]}">${R[0]}</span><span class="label">${esc(m.n)}</span></div>
     <div class="hx-head"><h2 id="hT">Contact maken</h2><div class="hx-locks" id="hLocks" aria-label="Sloten">${Array.from({length:P.locks},()=>'<i></i>').join('')}</div></div>
+    ${P.nv.i<2?`<div class="hx-nerve">${P.nv.name}: je handen trillen (−${Math.round((1-P.nv.time)*100)}% tijd). Let op voorbijgangers.</div>`:''}
+    <div class="hx-wit" id="hWit" hidden><i>👁</i><span>Een voorbijganger ziet je bezig en pakt zijn telefoon. Schiet op!</span></div>
     <p class="chase-p" id="hP">Toets de pijlen in deze volgorde in. ${P.rev?'<b class="rv">Rode pijl</b> = druk de andere kant op. ':''}${P.miss?'Je mag '+P.miss+'× fout.':'Eén fout en het alarm gaat af.'} Pijltjestoetsen, WASD of de knoppen.</p>
     <div class="heist-seq" id="hSeq">${'<i class="ghost"></i>'.repeat(P.len)}</div>
     <div class="hx-time"><i id="hTime"></i></div>
     <div class="heist-pad">${HEIST_KEYS.map((k,i)=>`<button data-k="${i}" aria-label="Pijl ${k}">${k}</button>`).join('')}</div></div>`;
   document.body.appendChild(ov);
-  const q=s=>ov.querySelector(s),bar=q('#hTime'),dur=P.len*P.per;
+  const q=s=>ov.querySelector(s),bar=q('#hTime');let dur=P.len*P.per;
   let lock=0,idx=0,miss=0,done=false,t0=0,run=0,seq=[],cells=[];
+  // voorbijganger: op een willekeurig moment ziet iemand je; je verliest tijd en mislukt het, dan belde hij 112 (maar je bent op tijd weg)
+  const wit={on:Math.random()<P.wit,lock:Math.floor(Math.random()*P.locks),at:.3+Math.random()*.35,seen:false};
   const need=s=>s.r?HEIST_OPP[s.k]:s.k;
   const mark=()=>cells.forEach((c,i)=>{c.classList.toggle('cur',i===idx&&!!t0);c.classList.toggle('ok',i<idx)});
   const lockUi=()=>q('#hLocks').querySelectorAll('i').forEach((e,i)=>{e.classList.toggle('open',i<lock);e.classList.toggle('cur',i===lock&&!done)});
   const newSeq=()=>{seq=Array.from({length:P.len},()=>({k:Math.floor(Math.random()*4),r:false}));
    [...Array(P.len-1).keys()].map(i=>i+1).sort(()=>Math.random()-.5).slice(0,P.rev).forEach(i=>seq[i].r=true);
    q('#hSeq').innerHTML=seq.map(s=>`<i class="${s.r?'rev':''}">${HEIST_KEYS[s.k]}</i>`).join('');cells=[...q('#hSeq').children];idx=0};
-  const loop=r=>t=>{if(done||r!==run)return;const p=(t-t0)/dur;bar.style.width=Math.max(0,100-p*100)+'%';bar.classList.toggle('low',p>.7);
-   if(p>=1)return finish(false,'Te traag. Het alarm gaat af.');requestAnimationFrame(loop(r))};
+  const loop=r=>t=>{if(done||r!==run)return;let p=(t-t0)/dur;
+   if(wit.on&&!wit.seen&&lock===wit.lock&&p>=wit.at){wit.seen=true;t0-=dur*.25;p=(t-t0)/dur;dur=Math.round(dur*.85);q('#hWit').hidden=false;try{SFX.lose()}catch(e){}}
+   bar.style.width=Math.max(0,100-p*100)+'%';bar.classList.toggle('low',p>.7);
+   if(p>=1)return finish(false,wit.seen?'Te traag. De voorbijganger belt 112.':'Te traag. Het alarm gaat af.');requestAnimationFrame(loop(r))};
   const startLock=()=>{if(done)return;newSeq();t0=performance.now();run++;mark();lockUi();bar.classList.remove('peek');requestAnimationFrame(loop(run))};
   const press=k=>{if(done||!t0)return;const btn=q(`.heist-pad [data-k="${k}"]`);btn.classList.remove('hit','bad');void btn.offsetWidth;
    if(k===need(seq[idx])){btn.classList.add('hit');SFX.tick();idx++;mark();
@@ -82,16 +93,16 @@ function carHeist(sp){const m=CARS.find(k=>k.id===sp.id)||CARS[0];
      if(lock>=P.locks)return finish(true,'De motor slaat aan. Rijden!');
      SFX.pop();q('#hP').textContent='Slot '+lock+' van '+P.locks+' open. Volgende reeks komt eraan.';setTimeout(startLock,450)}}
    else{btn.classList.add('bad');miss++;SFX.lose();const c=cells[idx];c.classList.add('err');setTimeout(()=>c.classList.remove('err'),300);
-    if(miss>P.miss)finish(false,(seq[idx].r?'Rode pijl gemist':'Verkeerde draad')+'. Het alarm gaat af.')}};
+    if(miss>P.miss)finish(false,(seq[idx].r?'Rode pijl gemist':'Verkeerde draad')+(wit.seen?'. De voorbijganger belt 112.':'. Het alarm gaat af.'))}};
   const KEYMAP={ArrowLeft:0,ArrowUp:1,ArrowRight:2,ArrowDown:3,KeyA:0,KeyW:1,KeyD:2,KeyS:3};
   const key=e=>{if(e.code in KEYMAP){e.preventDefault();press(KEYMAP[e.code])}};
   document.addEventListener('keydown',key);
   ov.querySelectorAll('.heist-pad button').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();press(+b.dataset.k)}));
   function finish(ok,msg){done=true;run++;document.removeEventListener('keydown',key);const box=q('.chase-box');box.classList.add(ok?'won':'lost');lockUi();
-   q('#hT').textContent=ok?'Gelukt!':'Alarm!';q('#hP').textContent=msg;
+   q('#hT').textContent=ok?'Gelukt!':wit.seen?'112 gebeld!':'Alarm!';q('#hP').textContent=msg;
    if(ok)box.querySelector('.hx-car').classList.add('drive');
    (ok?SFX.win(3):SFX.lose());const tb=document.createElement('div');tb.className='chase-auto';box.appendChild(tb);
-   setTimeout(()=>{ov.classList.add('out');setTimeout(()=>{ov.remove();window.__chase=false;resolve(ok)},220)},1500)}
+   setTimeout(()=>{ov.classList.add('out');setTimeout(()=>{ov.remove();window.__chase=false;resolve(ok?true:wit.seen?'witness':'alarm')},220)},1500)}
   bar.classList.add('peek');lockUi();setTimeout(startLock,800);
  });
 }

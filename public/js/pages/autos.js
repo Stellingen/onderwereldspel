@@ -30,19 +30,22 @@ function huntScene(){const x=S.carFind;
  const m=findM(x),R=carRarity(m),t=carTier(m);
  return `<div class="hunt-scene car t${t} ${x.res||''}" style="--rc:${R[1]}"><div class="hs-loc"><i></i>${x.spot}</div>
   <div class="hs-car">${carSvg(m.b,x.c,{reflect:1,hl:1})}</div><span class="plate">${x.plate}</span>
-  ${x.res==='ok'?'<span class="hs-stamp ok">Gestolen</span>':x.res==='fail'?'<span class="hs-stamp bad">Alarm</span>':x.res==='gone'?'<span class="hs-stamp">Weggereden</span>':''}
+  ${x.res==='ok'?'<span class="hs-stamp ok">Gestolen</span>':x.res==='fail'?'<span class="hs-stamp bad">Alarm</span>':x.res==='gone'?'<span class="hs-stamp">Weggereden</span>':x.res==='fled'?'<span class="hs-stamp bad">Gevlucht</span>':''}
   ${x.res?'':`<div class="hs-left"><span class="label">Staat er nog</span><b id="hsLeft">${fmtClock(x.until-now())}</b></div>`}</div>`}
 function huntInfo(){const x=S.carFind;if(carSearch||!x||x.none)return `<div class="hunt-tip"><h3>Hoe werkt het?</h3><ul>
   <li>Je loopt de straat af en komt willekeurig een auto tegen. Rechts zie je de kans per model.</li>
   <li>Hoe zeldzamer de auto, hoe zwaarder het contact maken: meer sloten achter elkaar, minder tijd en <b class="rv">rode pijlen</b> die je andersom moet indrukken.</li>
   <li>Een vondst staat er een minuut. Laat je hem staan, dan zoek je verder.</li>
-  <li>Rijvaardigheid (training) geeft je meer tijd per reeks en een betere prijs bij verkoop.</li></ul></div>`;
+  <li>Rijvaardigheid (training) geeft je meer tijd per reeks en een betere prijs bij verkoop.</li>
+  <li>Als groentje trillen je handen en word je vaker gezien. Hoe meer auto's je steelt en hoe hoger je rang, hoe rustiger het gaat. Je ervaring nu: <b>${carNerve().name}</b>.</li>
+  <li>Mislukt? Niet altijd politie: belt een omstander 112 of gaat het alarm af in een lege straat, dan ben je vaak op tijd weg.</li></ul></div>`;
  const m=findM(x),R=carRarity(m),P=heistParams(m),t=carTier(m),sk=(S.skills&&S.skills.cars)||0;
  return `<div class="hunt-info"><div class="sc-head"><span class="rar" style="--rc:${R[1]}">${R[0]}</span><span class="hi-odd">Kans per zoektocht ${oddTxt(CAR_ODDS[m.id])}</span></div>
   <h3>${m.n}</h3>
   <div class="hi-val">${fmt(carSell(x.v))}<small>${sk?'incl. +'+Math.round(sk*SK.cars.price*100)+'% rijvaardigheid · ':''}model ${fmt(m.lo)} tot ${fmt(m.hi)}</small></div>
   <dl class="sc-spec"><div><dt>Bouwjaar</dt><dd>${x.year}</dd></div><div><dt>Kilometers</dt><dd>${kmTxt(x.km)}</dd></div><div><dt>Staat</dt><dd>${x.staat}</dd></div></dl>
-  <div class="sc-diff" style="--rc:${R[1]}"><span class="label">Contact maken</span><div class="sc-bars">${[1,2,3,4,5,6].map(k=>`<i class="${k<=t?'on':''}"></i>`).join('')}</div><span class="sc-dtx">${heistTxt(P)}</span></div></div>`}
+  <div class="sc-diff" style="--rc:${R[1]}"><span class="label">Contact maken</span><div class="sc-bars">${[1,2,3,4,5,6].map(k=>`<i class="${k<=t?'on':''}"></i>`).join('')}</div><span class="sc-dtx">${heistTxt(P)}</span></div>
+  <div class="sc-nerve n${P.nv.i}"><span class="label">Jouw ervaring</span><b>${P.nv.name}</b><span>${P.nv.time<1?'−'+Math.round((1-P.nv.time)*100)+'% tijd door trillende handen · ':''}${Math.round(P.wit*100)}% kans dat een voorbijganger je ziet</span></div></div>`}
 function huntBtns(){const x=S.carFind,left=cdLeft('car'),full=S.cars.length>=GARAGE_MAX,jail=inJail(),live=x&&!x.none&&!x.res;let steal='';
  if(live){const m=findM(x),en=carEn(m),ok=!left&&!jail&&!full&&S.energy>=en;
   steal=`<button class="btn xl" onclick="act.stealCar()" ${ok?'':'disabled'}>${jail?'Je zit vast':full?'Garage vol, verkoop eerst':S.energy<en?'Te moe · '+en+' energie':'Stelen · '+en+' energie'}</button>`}
@@ -85,9 +88,14 @@ Object.assign(act,{
  async stealCar(){const x=S.carFind;if(!x||x.none||x.res||inJail()||cdLeft('car')||window.__chase)return;if(carExpire()){render();return}
   const m=findM(x),en=carEn(m);if(S.energy<en){toast('Te moe','bad');return}if(S.cars.length>=GARAGE_MAX){toast('Garage vol, verkoop eerst iets','bad');return}
   S.energy-=en;S.cd.car=now()+carCd();S.pendingHeist={id:m.id};S.carFind={...x,res:'busy'};save();pushState();
-  const ok=await carHeist(x);S.pendingHeist=null;S.carFind={...x,res:ok?'ok':'fail'};
+  const r=await carHeist(x),ok=r===true;S.pendingHeist=null;
+  // niet altijd politie: een omstander die 112 belt geeft je tijd om weg te komen, en niet elk alarm trekt meteen een agent aan
+  const fled=!ok&&(r==='witness'||Math.random()>Math.min(.97,.55+m.d*.08+(m.leg?.2:0)));S.carFind={...x,res:ok?'ok':fled?'fled':'fail'};
   if(ok){const v=carSell(x.v);S.cars.push({id:m.id,n:m.n,v,b:m.b,c:x.c,year:x.year,km:x.km,staat:x.staat});S.stats.cars++;S.cred+=carTier(m)>=3?2:1;
     addHeat(m.d*2);addXp(6+m.d*m.d*4+(m.leg?200:0));if(typeof famEv==='function')famEv('car',{v});const d=S.carDex[m.id]||[1,0];d[1]++;S.carDex[m.id]=d;
     toast(m.n+' gestolen! Waarde '+fmt(v),m.d>=5?'lvl':'ok');log(m.n+' gestolen ('+fmt(v)+')','ok');save();render()}
+  else if(fled){addHeat(2+m.d);const w=r==='witness';S.stats.carFled=(S.stats.carFled||0)+1;
+    log(`Mislukt: ${m.n}. ${w?'Een omstander belde 112, maar je bent op tijd weggekomen':'Het alarm ging af, maar je was weg voordat er iemand kwam'}`,'bad');save();render();
+    toast(w?'Mislukt. Een omstander belde 112, maar je bent op tijd weggekomen.':'Mislukt. Het alarm gaat af, maar je bent weg voordat er iemand komt.','bad')}
   else{addHeat(4+m.d*2);log('Mislukte poging: '+m.n,'bad');save();render();
     arrest(30+m.d*20,'Alarm!','Het alarm van de '+m.n+' gaat af. '+FLEE_LEVELS[Math.min(5,m.d)].where,{flee:Math.min(5,Math.max(1,m.d))})}}});

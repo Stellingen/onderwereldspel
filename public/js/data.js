@@ -235,7 +235,7 @@ const TRAININGS=[
  // nieuwe plekken: pas open vanaf een bepaalde rang (r), duurder en met een langer tijdslot
  {id:'schiet',place:'Schietvereniging Ede',n:'Schieten',col:'#ff6b6b',ic:'target',base:180,cd:25,r:3,
   d:'Op de baan tussen jagers en agenten in hun vrije tijd. Zware klussen lukken vaker.',
-  eff:l=>[['Slaagkans zware klussen (vanaf Gangster)',pctTxt(SK.schiet.heavy*l,'+')],['Rustiger vizier bij huurmoorden',pctTxt(Math.min(40,l*.8),'−')]]},
+  eff:l=>[['Slaagkans zware klussen (vanaf Gangster)',pctTxt(SK.schiet.heavy*l,'+')],['Rustiger vizier bij huurmoorden',pctTxt(Math.min(40,l*.8),'−')],['Vastere hand bij huurmoorden (minder trillen)',pctTxt(Math.min(45,l*45/40),'+')]]},
  {id:'hack',place:'Hackerskelder in Delft',n:'Hacken',col:'#5ce1c4',ic:'chip',base:220,cd:25,r:4,
   d:'Alarmcodes, camera\'s en bankapps. Je weet beter waar het geld ligt.',
   eff:l=>[['Buit bij alle klussen',pctTxt(SK.hack.loot*l,'+')]]},

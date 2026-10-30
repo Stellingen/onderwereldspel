@@ -16,12 +16,18 @@ const HIT_GUN=4; // Scherpschuttersgeweer of beter
 // hoe rustig je vizier is: training Schieten, beter wapen, lidmaatschap en het voordeel van Het Schaduwcontract
 const hitSteady=()=>{const sk_=Math.min(.4,sk('schiet')*.008),wp=hitWeapon()>HIT_GUN?.1:0,tr=tierK()*.5,fp=famPerk('hit');
  return {sk:sk_,wp,tr,fp,k:(1-sk_)*(1-wp)*(1-tr)*(1-fp)}};
+// Vaste hand: als beginnende huurmoordenaar trillen je handen (snelle bibber bovenop het zwiepen van je vizier).
+// Trainen bij Schieten, ervaring (geslaagde contracten) en een hogere rang maken je hand rustiger.
+const HAND_LV=['Bibberend','Zenuwachtig','Redelijk vast','Vast','IJskoud'];
+const hitNerve=()=>{const ri=rankIdx(S.xp),done=(S.stats&&S.stats.hits)||0;
+ const a=.45*Math.min(1,sk('schiet')/40),b=.35*Math.min(1,done/15),c=.2*Math.min(1,Math.max(0,ri-HIT_RANK)/4),lv=Math.min(1,a+b+c);
+ return {lv,a,b,c,amp:.6+5.4*(1-lv),name:HAND_LV[Math.min(4,Math.floor(lv*5))],i:Math.min(4,Math.floor(lv*5))}};
 const hitParams=H=>{const d=H.d;return {speed:24+d*9,size:1.12-d*.07,sway:8+d*4.4,time:Math.round((32-d*2.6)*(1+tierK())),bullets:d<=2?2:1,civ:[0,1,2,2,3,4][d-1],cover:d>=3,guards:d>=6?2:d>=5?1:0}};
 const hitPay=H=>{const k=lootMult()*(1+famPerk('hit'));return [H.pay[0]*k,H.pay[1]*k]};
 const hitCd=H=>H.cd*60000*waitK();
 const hitJail=H=>180+H.d*70;
 
-V.hits=()=>{const ri=rankIdx(S.xp),st=hitSteady(),done=(S.stats&&S.stats.hits)||0,left=cdLeft('hit'),gunOk=hitWeapon()>=HIT_GUN;
+V.hits=()=>{const ri=rankIdx(S.xp),st=hitSteady(),nv=hitNerve(),done=(S.stats&&S.stats.hits)||0,left=cdLeft('hit'),gunOk=hitWeapon()>=HIT_GUN;
  const pct=v=>Math.round(v*100)+'%';
  if(ri<HIT_RANK)return `<h1>Huurmoorden</h1>
   <section class="card ht-lock"><div class="ht-scope-ic">${hitScopeSvg()}</div><div><span class="label">Nog op slot</span><h2>Vanaf ${RANKS[HIT_RANK][0]}</h2>
@@ -40,10 +46,13 @@ V.hits=()=>{const ri=rankIdx(S.xp),st=hitSteady(),done=(S.stats&&S.stats.hits)||
  <section class="card hud ht-hero">
   <div class="ht-h-k"><span class="label">Geslaagde huurmoorden</span><b style="color:var(--red)">${done}</b><em>${S.stats&&S.stats.hitsPerfect?S.stats.hitsPerfect+' met een hoofdschot':'Nog geen hoofdschot'}</em></div>
   <div class="ht-h-k"><span class="label">Rustig vizier</span><b style="color:var(--ice)">−${pct(1-st.k)}</b><em>Schieten ${pct(st.sk)}${st.wp?' · wapen 10%':''}${st.tr?` · ${lidName()} ${pct(st.tr)}`:''}${st.fp?` · familie ${pct(st.fp)}`:''}</em></div>
+  <div class="ht-h-k ht-hand"><span class="label">Vaste hand</span><b style="color:${['var(--red)','var(--acc)','var(--gold)','var(--ice)','var(--green)'][nv.i]}">${nv.name}</b><div class="ht-lv">${HAND_LV.map((x,i)=>`<i class="${i<=nv.i?'on':''}"></i>`).join('')}</div><em>Trillen −${pct(nv.lv)} · Schieten ${pct(nv.a)} · ervaring ${pct(nv.b)} · rang ${pct(nv.c)}</em></div>
   <div class="ht-h-k"><span class="label">Wapen</span><b class="${gunOk?'up':'dn'}">${gunOk?esc(gearBest('wapen').n):'Geen geweer'}</b><em>${gunOk?'Klaar voor een contract':'<a href="#shop">Koop een scherpschuttersgeweer</a>'}</em></div>
   <div class="ht-h-k"><span class="label">Volgende contract</span><b>${left?fmtClock(left):'Nu'}</b><em>${Math.floor(S.energy)}/${EN_MAX} energie${tierK()?` · ${lidName()}: ${Math.round(tierK()*100)}% meer tijd`:''}</em></div>
  </section>
- <div class="ht-how"><span class="label">Zo werkt het</span><p><b>Richten</b> met je muis, op de telefoon <b>slepen</b> over het beeld. Je vizier beweegt een beetje mee met je ademhaling: houd <b>spatie</b> of <b>Adem</b> ingedrukt voor een paar seconden rust. <b>Klik</b> of tik op <b>Vuur</b> om te schieten. Hoofd = perfect (meer geld en cred), romp = gelukt. Mis je, dan rent het doelwit weg. Raak je een omstander of mis je je laatste kogel, dan komt de politie.</p></div>
+ <div class="ht-how"><span class="label">Zo werkt het</span><p><b>Richten</b> met je muis, op de telefoon <b>slepen</b> over het beeld. Je vizier beweegt een beetje mee met je ademhaling: houd <b>spatie</b> of <b>Adem</b> ingedrukt voor een paar seconden rust. <b>Klik</b> of tik op <b>Vuur</b> om te schieten. Hoofd = perfect (meer geld en cred), romp = gelukt. Mis je, dan rent het doelwit weg. Raak je een omstander, dan komt de politie.</p>
+  <p><b>Trillende handen.</b> Als beginner trillen je handen; adem inhouden helpt maar een beetje. Train <b>Schieten</b>, doe meer contracten en stijg in rang voor een vaste hand.</p>
+  <p><b>Wraak.</b> Een doelwit heeft vaak eigen mensen. Na een contract (of als hij ontsnapt) kunnen ze je komen zoeken: dan volgt een <b>bendegevecht</b>. Daarvoor heb je genoeg gezondheid nodig. Wie in een familie zit en niet komt opdagen, wordt ${FEUD_BAN_DAYS} speldagen verbannen.</p></div>
  <div class="ht-grid">${HITS.map(card).join('')}</div>`};
 
 function hitScopeSvg(){return '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="3"/><path d="M24 2v12M24 34v12M2 24h12M34 24h12"/></svg>'}
@@ -59,18 +68,22 @@ function hitEnd(H,res){S.pendingHit=null;S.stats.hitTries=(S.stats.hitTries||0)+
   S.cash+=pay;S.cred+=cr;S.stats.hits=(S.stats.hits||0)+1;if(perfect)S.stats.hitsPerfect=(S.stats.hitsPerfect||0)+1;addHeat(8+H.d*3);addXp(Math.round(H.xp*(perfect?1.2:1)));
   if(typeof famEv==='function')famEv('crime',{r:H.r,g:pay,cr});
   log(`Huurmoord: ${H.t} uitgeschakeld${perfect?' met een hoofdschot':''} (+${fmt(pay)}, +${cr} cred)`,'ok');save();pushState();render();
-  toast(`${perfect?'Hoofdschot! ':''}${H.t} is uitgeschakeld: +${fmt(pay)} · +${cr} cred`,'lvl');return}
- if(res.why==='escaped'||res.why==='quit'){addHeat(12);log(`Huurmoord mislukt: ${H.t} is ontkomen`,'bad');save();pushState();render();toast(res.why==='quit'?'Contract afgebroken. Het doelwit is gewaarschuwd.':'Het doelwit is ontkomen.','bad');return}
+  toast(`${perfect?'Hoofdschot! ':''}${H.t} is uitgeschakeld: +${fmt(pay)} · +${cr} cred`,'lvl');
+  if(!S.feud&&Math.random()<.12+H.d*.06)setTimeout(()=>feudStart(H,'hit'),1600);return}
+ if(res.why==='escaped'||res.why==='quit'){addHeat(12);log(`Huurmoord mislukt: ${H.t} is ontkomen`,'bad');save();pushState();render();toast(res.why==='quit'?'Contract afgebroken. Het doelwit is gewaarschuwd.':'Het doelwit is ontkomen.','bad');
+  if(res.why==='escaped'&&!S.feud&&Math.random()<.3)setTimeout(()=>feudStart(H,'escaped'),1400);return}
+ // gemist: niet altijd politie. Soms laat het doelwit het aan zijn eigen mensen over.
+ if(res.why==='missed'&&!S.feud&&Math.random()<.45){addHeat(10);log(`Huurmoord mislukt: ${H.t} gemist. Geen politie, maar zijn mensen zoeken je`,'bad');save();pushState();render();feudStart(H,'missed');return}
  const civ=res.why==='civilian';addHeat(civ?35:18);log(civ?`Huurmoord mislukt: een omstander geraakt`:`Huurmoord mislukt: ${H.t} gemist`,'bad');save();
  arrest(hitJail(H)*(civ?1.3:1),civ?'Een omstander geraakt!':'Gemist!',civ?'Je raakte iemand die er niets mee te maken had. Binnen een minuut staat de straat vol politie.':`${H.t} rent weg en iemand heeft je raam gezien. De politie is onderweg.`,{flee:Math.min(5,H.d+(civ?1:0))})}
 
 function hitGame(H){return new Promise(resolve=>{
- const P=hitParams(H),ST=hitSteady(),W=1000,GH=600,seed=Math.floor(Math.random()*1e9);let rs=seed;const R=()=>(rs=(rs*1664525+1013904223)%4294967296)/4294967296;
+ const P=hitParams(H),ST=hitSteady(),NV=hitNerve(),W=1000,GH=600,seed=Math.floor(Math.random()*1e9);let rs=seed;const R=()=>(rs=(rs*1664525+1013904223)%4294967296)/4294967296;
  window.__hitG=true;window.__chase=true;
  const L=document.createElement('div');L.id='hitLayer';L.innerHTML=`<div class="hg">
   <div class="hg-top"><div><span class="label">${esc(H.n)} · ${esc(H.w)}</span><b>Doelwit: ${esc(H.t)} <i class="hg-tag">rode jas</i></b></div>
    <div class="hg-k"><span>Tijd</span><b id="hgT">${P.time}</b></div><div class="hg-k"><span>Kogels</span><b id="hgB">${'●'.repeat(P.bullets)}</b></div>
-   <div class="hg-k hg-br"><span>Adem</span><i><i id="hgA"></i></i></div><button class="btn ghost sm" id="hgQ">Opgeven</button></div>
+   <div class="hg-k hg-br"><span>Adem</span><i><i id="hgA"></i></i></div><div class="hg-k hg-hand"><span>Hand</span><b class="h${NV.i}">${NV.name}</b></div><button class="btn ghost sm" id="hgQ">Opgeven</button></div>
   <div class="hg-stage" id="hgS"><canvas id="hgC"></canvas><div class="hg-msg" id="hgM"></div>
    <div class="hg-pad"><button class="hg-breath" id="hgBr">Adem<br><small>ingedrukt houden</small></button><button class="hg-fire" id="hgF">Vuur</button></div></div>
   <p class="hg-help" id="hgH">Zoek de man in de <b>rode jas</b>. Richt met je muis, houd <b>spatie</b> ingedrukt voor een rustig vizier en <b>klik</b> om te schieten.</p></div>`;
@@ -99,14 +112,18 @@ function hitGame(H){return new Promise(resolve=>{
  const people=[mk('target',0)];for(let i=0;i<P.civ;i++)people.push(mk('civ',i+1));for(let i=0;i<P.guards;i++)people.push(mk('guard',i));
  const T=people[0];
  // vizier
- const aim={x:500,y:420},sway={ph:[R()*6,R()*6,R()*6,R()*6]};let breath=1,holding=false,winded=0,recoil=0,flash=0,bullets=P.bullets,tLeft=P.time,over=false,result=null,last=performance.now(),t0=last,shots=[];
+ const aim={x:500,y:420},sway={ph:[R()*6,R()*6,R()*6,R()*6,R()*6,R()*6,R()*6,R()*6]};let breath=1,holding=false,winded=0,recoil=0,flash=0,bullets=P.bullets,tLeft=P.time,over=false,result=null,last=performance.now(),t0=last,shots=[];
  let cw=0,ch=0,s=1,camX=0,viewW=W,dpr=1;
  function size(){const r=stage.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);cw=r.width;ch=r.height;cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);cv.style.width=cw+'px';cv.style.height=ch+'px';s=ch/GH;viewW=Math.min(W,cw/s);if(cw/s>W){s=cw/W;viewW=W}}
  size();const ro=new ResizeObserver(size);ro.observe(stage);
- try{if(localStorage.getItem('ow_debug')==='1')window.__hitDbg={T,people,aim,covers,get s(){return s},get camX(){return camX},get swayK(){return swayK()}}}catch(e){}
+ try{if(localStorage.getItem('ow_debug')==='1')window.__hitDbg={T,people,aim,covers,get s(){return s},get camX(){return camX},get swayK(){return swayK()},get trem(){return tremK()}}}catch(e){}
  const cam=()=>{camX=Math.max(0,Math.min(W-viewW,aim.x-viewW/2))};
  const swayK=()=>P.sway*ST.k*(holding&&breath>0?.16:winded>0?1.45:1);
- const shotPt=t=>{const A=swayK(),u=t/1000,p=sway.ph;return {x:aim.x+A*(.62*Math.sin(u*1.15+p[0])+.38*Math.sin(u*2.45+p[1])),y:aim.y+A*.8*(.6*Math.sin(u*1.42+p[2])+.4*Math.sin(u*3.05+p[3]))-recoil}};
+ // trillen: snelle bibber (7 tot 15 Hz) die met adem inhouden maar een beetje minder wordt
+ const tremK=()=>NV.amp*(holding&&breath>0?.7:winded>0?1.35:1);
+ const shotPt=t=>{const A=swayK(),u=t/1000,p=sway.ph,B=tremK();
+  return {x:aim.x+A*(.62*Math.sin(u*1.15+p[0])+.38*Math.sin(u*2.45+p[1]))+B*(.5*Math.sin(u*44+p[4])+.3*Math.sin(u*67+p[5])+.2*Math.sin(u*97+p[6])),
+   y:aim.y+A*.8*(.6*Math.sin(u*1.42+p[2])+.4*Math.sin(u*3.05+p[3]))+B*(.5*Math.sin(u*51+p[7])+.3*Math.sin(u*73+p[5]*1.7)+.2*Math.sin(u*89+p[4]*.6))-recoil}};
  // invoer
  let drag=null;
  const toWorld=(px,py)=>({x:camX+px/s,y:py/s});
