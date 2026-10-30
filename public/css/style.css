@@ -2301,3 +2301,31 @@ body.hg-open{overflow:hidden}
 .ord.done{opacity:.55}.ord-ok{font-style:normal;color:var(--green);font-size:22px;justify-self:start}
 @media (max-width:980px){.ord-grid{grid-template-columns:1fr}}
 @media (max-width:640px){.jk-box .hx-head{flex-direction:column;align-items:flex-start;gap:8px}.jk-steps{flex-wrap:nowrap}.jk-steps span{font-size:9.5px;padding:3px 5px}}
+/* Bonus: free spins ook rechts in het saldovak (telefoon, en Visdief op elk scherm) en "× inzet" van de bonus tot nu toe */
+.kk-bal-l{display:flex;flex-direction:column;justify-content:center;min-width:0;flex:1 1 auto}
+.kk-hud .kk-fsin,.kk-hud .kk-fsx{display:none}
+.kk-fsn.bump{animation:kkFsBump .6s ease-out}
+@keyframes kkFsBump{0%{transform:scale(1)}30%{transform:scale(1.16);filter:brightness(1.5)}100%{transform:scale(1)}}
+.kk-hud .label.plus{color:var(--green);font-weight:700;animation:kkPlus .35s ease-out}
+@keyframes kkPlus{0%{opacity:0;transform:translateY(4px)}100%{opacity:1;transform:none}}
+.vd.kk3.is-fs .kk-hud{grid-template-columns:repeat(3,minmax(0,1fr))}
+.vd.kk3.is-fs .kk-hud .kk-bal{grid-column:1/-1}
+.vd.kk3.is-fs .kk-hud>div{padding-left:14px;padding-right:14px}
+.vd.kk3.is-fs .kk-hud .kk-bal .kk-bal-l b{font-size:clamp(22px,1.9vw,30px)}
+.vd.kk3.is-fs .kk-hud .fsb{display:none}
+.vd.kk3.is-fs .kk-hud .kk-fsx{display:flex}
+.vd.kk3.is-fs .kk-hud .kk-bal,.kk-hud .kk-bal.has-fs.ph{flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
+.vd.kk3.is-fs .kk-hud .kk-bal .kk-fsin{display:flex;flex-direction:column;align-items:flex-end;text-align:right;flex:none;padding-left:14px;border-left:1px solid #24404f}
+.vd.kk3.is-fs .kk-hud .kk-bal .kk-fsin b{font-family:var(--f-display);font-weight:900;font-size:clamp(22px,1.9vw,30px);line-height:1.05;color:var(--vd-goud)}
+@container (max-width:700px){
+ .kk-hud .fsb{display:none}
+ .kk-hud .kk-fsx{display:flex}
+ .kk-hud .kk-bal.has-fs{flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
+ .kk-hud .kk-bal .kk-fsin{display:flex;flex-direction:column;align-items:flex-end;text-align:right;flex:none;padding-left:12px;border-left:1px solid var(--line2)}
+ .kk-hud .kk-bal .kk-fsin b{font-family:var(--f-display);font-weight:900;font-size:24px;line-height:1.05;color:var(--acc)}
+ .vd.kk3.is-fs .kk-hud .kk-bal .kk-fsin b{font-size:24px;color:var(--vd-goud)}
+ .vd.kk3.is-fs .kk-hud .kk-bal .kk-bal-l b{font-size:24px}
+ .vd.kk3.is-fs .kk-hud>div{padding:7px 10px}
+ /* tijdens de bonus staan saldo, spins en bonuswinst direct onder het bord; de (uitgeschakelde) knoppen daaronder */
+ .kk3.is-fs .kk-bar .kk-hud{order:-2}
+}

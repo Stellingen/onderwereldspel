@@ -141,6 +141,9 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   vanzelf valt en kunt doortumbelen tot de superbonus; +2 free spins (superbonus +1). **8 vakjes beginnen op x2** en er is een
   **vangnet**: altijd minstens 20× je inzet terug. Verdeling (gewoon): mediaan ±52×, 25% van de keren 100× of meer, 9% 200× of meer.
   **Inzet kiezen** gaat via een pop-up (ook bij Visdief).
+  **Teller in de bonus**: extra spins (2+ kluizen) komen pas bij de teller als de spin helemaal is uitgetumbeld (eerst
+  "+2 spins", dan bijv. 3 / 14); vooraf verraadt de teller niets. Op de telefoon staan de free spins rechts in het saldovak en
+  staat het saldovak tijdens de bonus direct onder het bord, met "Bonus: X× inzet" tot nu toe (Visdief net zo, ook op de computer).
   **Geschiedenis**: de laatste 40 rondes (inzet, betaald, terug, ×) worden bij je account bewaard; knop met het klokje bovenin.
   **Narekenen**: `verify.js`-controle (clusters, lopers, baren, vakjes, tumbles, totalen, afronding) gaf 0 afwijkingen op 900 rondes.
   Het bord is net zo hoog dat het met de knoppen ernaast zonder scrollen op een laptopscherm past.

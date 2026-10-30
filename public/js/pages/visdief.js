@@ -65,10 +65,10 @@ const VD_SKY=`<svg class="vd-sky" viewBox="0 0 900 90" preserveAspectRatio="xMid
  <g stroke="#ff9a3c" stroke-width="1" opacity=".35"><path d="M210 58v32M520 54v36M740 62v28"/></g></svg>`;
 
 function vdInfo(){const fs=vd.fs,pend=window.slotPending||0;
- return `<div class="kk-bal"><span class="label">Saldo</span><b id="vdBal">${fmt(S.cash-pend+(vd.shown||0))}</b></div>
+ return `<div class="kk-bal${fs?' has-fs':''}"><div class="kk-bal-l"><span class="label">Saldo</span><b id="vdBal">${fmt(S.cash-pend+(vd.shown||0))}</b></div>${fs?slotFsIn(fs,'Free spins'):''}</div>
   <div class="kk-stat"><span class="label">Deze spin</span><b id="vdStep" class="acc">${fmt(vd.stepWin)}</b></div>
   <div class="kk-stat"><span class="label">${fs?'Bonuswinst':'Laatste winst'}</span><b id="vdLast" class="grn">${fmt(fs?fs.total:vd.lastWin)}</b></div>
-  ${fs?`<div class="kk-stat fsb"><span class="label">Free spins</span><b id="vdMsg">${fs.at} / ${fs.of}</b></div>`:''}`}
+  ${fs?`<div class="kk-stat kk-fsx"><span class="label">Bonus</span><b class="sm kk-xn">${slotX(fs.total,vd.bet)}</b></div><div class="kk-stat fsb"><span class="label">Free spins</span><b class="kk-fsn">${fs.at} / ${fs.of}</b></div>`:''}`}
 // Vangstmeter in de bonus: ronde, multiplier en hoeveel Visdieven je nog nodig hebt voor de volgende ronde
 function vdFsBar(){const f=vd.fs;if(!f)return '';const P=VISD.PER_LEVEL,top=f.lvl>=VISD.MULTS.length-1,next=(f.lvl+1)*P,have=Math.max(0,Math.min(P,f.caught-f.lvl*P)),sec=!top&&f.caught>=next,extra=sec?f.caught-next:0;
  const hook='<svg viewBox="0 0 24 24"><path d="M13 3v11a5 5 0 0 1-10 0v-2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
@@ -212,13 +212,13 @@ async function vdPlay(round,bet,isBuy,from){const T=vdT();vd.stepWin=0;vdText('v
    if(S.slotRun&&S.slotRun.g==='vis'&&i>(S.slotRun.at||0)){S.slotRun.at=i;save()}
    if(s.newRound){vd.fs.lvl=s.lvl;wasSec=false;at=0;const fb=vdEl('vdFs');if(fb)fb.innerHTML=vdFsBar();SFX.big();
     await vdBanner('Ronde '+s.newRound,VISD.RETRIG+' free spins. Alles telt nu ×'+VISD.MULTS[s.lvl]+'.',2200,s.lvl>=3?'big gold':'fsin');vd.fs.of=VISD.RETRIG}
-   at++;vd.fs.at=at;vd.fs.of=at+s.left;vdText('vdMsg',at+' / '+vd.fs.of);vd.stepWin=0;vdText('vdStep',fmt(0));SFX.spin();
+   at++;vd.fs.at=at;vd.fs.of=at+s.left;slotFsSet(at,vd.fs.of);vd.stepWin=0;vdText('vdStep',fmt(0));SFX.spin();
    await vdSpinReels(s.grid,true,Math.min(VISD.MULTS.length-1,Math.floor((s.caught-s.wilds)/VISD.PER_LEVEL)),s.lvl);let step=0;
    if(s.wins.length)step+=await vdShowWins(s.wins,s.mult,bet,step);
    if(s.wilds&&s.fish.length)step+=await vdCollect(s,bet,step);
    else if(s.wilds){SFX.lose();document.querySelectorAll('#vdReels .vd-cell.wild').forEach(e=>e.classList.add('win'));vdTick(s.wilds>1?s.wilds+' Visdieven, maar geen vis':'Visdief, maar geen vis');await vdWait(T.hold*.5);vdUnmark()}
    else if(!s.wins.length)vdTick(s.fish.length?'Vissen, maar geen Visdief':'Niets gevangen');
-   vd.fs.total=s.total*bet;vd.fs.caught=s.caught;vdText('vdLast',fmt(vd.fs.total));const fb=vdEl('vdFs');if(fb)fb.innerHTML=vdFsBar();
+   vd.fs.total=s.total*bet;vd.fs.caught=s.caught;vdText('vdLast',fmt(vd.fs.total));slotXSet(vd.fs.total,bet);const fb=vdEl('vdFs');if(fb)fb.innerHTML=vdFsBar();
    if(s.secured&&!wasSec){wasSec=true;SFX.bonus();vdTick(`<b>Ronde ${s.lvl+2} is binnen</b>: na deze ronde nog ${VISD.RETRIG} spins met ×${VISD.MULTS[s.lvl+1]}`);await vdWait(T.hold*.8)}
    if(s.total>=VISD.MAX_WIN){SFX.big();await vdBanner('Max win',VISD.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3000,'big gold');break}
    await vdWait(vdFast()?100:280)}
