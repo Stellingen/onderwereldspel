@@ -4,7 +4,7 @@ V.casino=()=>czBanLeft()&&!casSwitchBusy()?casBanView():casinoTab&&CAS_NAMES[cas
 function casBanView(){const L=czBanLeft(),t=typeof tier==='function'?tier():0;
  return `<section class="cas-ban"><div class="cas-ban-in">${czEyesSvg(2)}<span class="label">Casino</span><h1>U bent verbannen</h1><p>De beveiliging heeft u te vaak gezien. U bent hier voorlopig niet meer welkom.</p>
   <div class="cas-ban-t"><span>Nog</span><b id="casBanT">${fmtClock(L)}</b></div>
-  <small>${['Gewone spelers 30 minuten','VIP 20 minuten','High roller 10 minuten'][t]}. Daarna mag je terug en staat je verdenking weer op 0%. Speel met wit geld en lagere inzetten als je niet wilt opvallen.</small>
+  <small>${['Gewone spelers 30 minuten','VIP 20 minuten','High roller 10 minuten'][t]}. Daarna mag je terug en staat je verdenking weer op 0%. Met wit geld loopt de verdenking niet op, dat kun je verantwoorden.</small>
   <div class="cas-ban-b"><a class="btn ghost" href="#wit">Naar witwassen</a><a class="btn ghost" href="#dash">Naar je dashboard</a></div></div></section>`}
 const CAS_LIST=[['kluis','Kluiskraker'],['vis','Visdief'],['mines','Mines'],['avia','Hoogvlieger'],['bj','Blackjack'],['tcp','Three Card Poker','Poker'],['th',"Texas Hold'em","Hold'em"],['roulette','Roulette'],['coin','Dubbel of niks','Dubbel']];
 const CAS_NAMES=Object.fromEntries(CAS_LIST.map(([k,n])=>[k,n]));

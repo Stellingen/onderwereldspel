@@ -7,7 +7,7 @@ const act={
    if(ml1>ml0)setTimeout(()=>toast(`Vakmanschap ${MAST[ml1][1]}: ${c.n} (+${ml1*2}% kans, +${ml1*5}% buit)`,'lvl'),600);
    // hoe ruim je slaagde bepaalt hoe goed het werd: perfect (ruim binnen je kans) of netjes
    const q=roll<=ch*.3?'perfect':roll<=ch*.65?'netjes':'',cr=c.cr?credGain(c.cr,q):0;S.cred+=cr;if(q==='perfect')S.stats.perfect=(S.stats.perfect||0)+1;
-   addHeat(rnd(1,4));addXp(c.xp);if(typeof famEv==='function')famEv('crime',{r:c.r,g,cr});
+   addHeat(crimeUp(c)>=2?rnd(2,3):rnd(1,4));addXp(c.xp);if(typeof famEv==='function')famEv('crime',{r:c.r,g,cr});
    toast(c.n+(q==='perfect'?' perfect uitgevoerd':q==='netjes'?' netjes gedaan':' gelukt')+': +'+fmt(g)+(cr?' · +'+cr+' straatcredit':''),q==='perfect'?'lvl':'ok');log(c.n+' gelukt'+(q?' ('+q+')':'')+', buit '+fmt(g)+(cr?', +'+cr+' cred':''),'ok')}
   else{const lost=Math.floor(Math.min(Math.floor(S.cash*0.1),c.max*2)*(1-furnFx('safe'))); // verlies past bij de grootte van de klus
   S.cash-=lost;S.stats.fails++;S.hp=Math.max(10,S.hp-rnd(5,15));addHeat(rnd(5,10));

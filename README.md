@@ -24,7 +24,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   nieuwe soorten (container, vuilniszakken, dranghek, natte-vloerbord, printer, bureaustoel, schoonmaker, hond). De tijd tussen
   twee rijen zakt van ±1,05× naar ±0,6× het tempo van het niveau, nooit onder een halve seconde. Conditie, vervoer, outfit,
   familie en woning maken het makkelijker. Lukt het: vrij en niet gezocht. Mislukt het: cel met 20% extra straf.
-- **Misdaden** (`misdaden.js`): elke klus heeft een eigen icoon en een balk met kans, opbrengst (plus XP en cred) en wat er
+- **Misdaden** (`misdaden.js`): klussen onder je rang gaan makkelijker: per rang erboven +1% extra kans, de hitte drukt minder op je kans en het plafond gaat van 95% naar 98% (er blijft altijd 2% risico). Lukt zo'n klus (2+ rangen eronder), dan stijgt je hitte 2 tot 3. elke klus heeft een eigen icoon en een balk met kans, opbrengst (plus XP en cred) en wat er
   gebeurt als het misgaat (straf en hoe moeilijk vluchten is). Bovenaan de drie beste klussen voor jou, met opbrengst per energie.
 - **Training** met tijdsloten: elke sessie is één level, tot level 50. Elk level is duurder (conditie: €60 voor level 1,
   ongeveer €690.000 voor level 50). Oude saves worden omgerekend: elke gedane sessie telt als één level.
@@ -145,10 +145,10 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   **Inzet kiezen** gaat via een pop-up (ook bij Visdief).
   **Snelheid** 1× (rustig), 2× (sneller) en 3× (snelst, het oude 'snel'), voor Kluiskraker en Visdief, bewaard bij je account.
   Op brede schermen staat rechts: saldo, dan de inzet met − en + ernaast en alle inzetten van €10 t/m €50K in één raster. High rollers zien onderaan een knop High roller die de inzetten €100K t/m €500K toont (en terug). Daaronder de snelheid 1×/2×/3×, bonus kopen en Draaien.
-  **Spelen met wit of zwart** kies je in de casinobalk. Wit (legaal) laat de verdenking nauwelijks oplopen; met zwart wordt wat je
-  wint wit, maar de verdenking loopt op: per ronde (inzet/limiet van je rang ×90 + 0,1) × spel (slots 1,4, roulette 1, kaarten 0,85,
+  **Spelen met wit of zwart** kies je in de casinobalk. Wit (legaal, te verantwoorden) laat de verdenking niet oplopen; met zwart wordt
+  wat je wint wit, maar de verdenking loopt op: per ronde (inzet/limiet van je rang ×35 + 0,04) × spel (slots 1,4, roulette 1, kaarten 0,85,
   dubbel of niks 0,8, Mines en Hoogvlieger 0,55) × lidmaatschap (gewoon 1, VIP 0,65, High roller 0,35) × de **ogen** van de
-  beveiliging (dicht 0,35, open 1, rood op jouw tafel 2,3; per 40 seconden wisselend). Zakt 3%/min in het casino, 6%/min als je weg
+  beveiliging (dicht 0,25, open 1, rood op jouw tafel 2; per 40 seconden wisselend). Zakt 4%/min in het casino, 8%/min als je weg
   bent. Op 100%: **verbannen** (30 / 20 / 10 minuten), het casino wordt rood; daarna staat de verdenking weer op 0%.
   **Teller in de bonus**: extra spins (2+ kluizen) komen pas bij de teller als de spin helemaal is uitgetumbeld (eerst
   "+2 spins", dan bijv. 3 / 14); vooraf verraadt de teller niets. Op de telefoon staan de free spins rechts in het saldovak en

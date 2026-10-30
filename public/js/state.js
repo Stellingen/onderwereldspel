@@ -90,13 +90,13 @@ const wit=()=>Math.max(0,S.cash-zwart());
 function addZwart(x){x=+x||0;if(x>0)S.zwart=Math.min(S.cash,(S.zwart||0)+x)}
 function spendWit(x){zwWit=true;try{S.cash-=x}finally{zwWit=false}}
 // Casino: je kiest zelf of je speelt met wit (legaal) of zwart geld (S.casPay). Wat je wint is altijd wit.
-// Verdenking (0-100%) loopt op per ronde: vooral met zwart geld en grote inzetten, het snelst bij de slots (daar was je
-// zwart geld het makkelijkst wit), minder bij kaarten en roulette, het minst bij Mines en Hoogvlieger. VIP ±35% en
-// High roller ±65% minder (het casino verwacht dat zij veel geld hebben). Kijkt de beveiliging (ogen open) dan telt het
-// gewoon, kijken ze naar jouw tafel (rood) dan ruim dubbel, ogen dicht maar een derde. Zakt 3% per minuut in het casino,
-// 6% per minuut als je weg bent. Op 100%: verbannen (30 / 20 / 10 minuten), daarna begint het weer op 0%.
+// Wit geld kun je verantwoorden: daarmee loopt de verdenking niet op. Alleen zwart geld telt: per ronde
+// (inzet/limiet ×35 + 0,04), het snelst bij de slots (daar was je zwart geld het makkelijkst wit), minder bij kaarten en
+// roulette, het minst bij Mines en Hoogvlieger. VIP ±35% en High roller ±65% minder (het casino verwacht dat zij veel geld
+// hebben). Kijkt de beveiliging (ogen open) dan telt het gewoon, kijken ze naar jouw tafel (rood) dan dubbel, ogen dicht
+// maar een kwart. Zakt 4% per minuut in het casino, 8% per minuut als je weg bent. Op 100%: verbannen (30 / 20 / 10 minuten), daarna begint het weer op 0%.
 const czLim=()=>20000*Math.pow(1.35,rankIdx(S.xp));
-const CZ_GAME={kluis:1.4,vis:1.4,roulette:1,bj:.85,tcp:.85,th:.85,coin:.8,mines:.55,avia:.55},CZ_TIER=[1,.65,.35],CZ_BAN=[30,20,10],CZ_EYE=[.35,1,2.3];
+const CZ_GAME={kluis:1.4,vis:1.4,roulette:1,bj:.85,tcp:.85,th:.85,coin:.8,mines:.55,avia:.55},CZ_TIER=[1,.65,.35],CZ_BAN=[30,20,10],CZ_EYE=[.25,1,2];
 const casPayMode=()=>S.casPay==='zwart'?'zwart':'wit';
 const casCash=()=>casPayMode()==='zwart'?zwart():wit();
 const casShort=()=>casPayMode()==='zwart'?'Niet genoeg zwart geld. Speel met wit geld of was je geld wit.':zwart()>=1?'Niet genoeg wit geld. Kies "zwart" om met je zwarte geld te spelen.':'Niet genoeg contant geld';
@@ -105,11 +105,11 @@ function czEyes(t){t=t||now();const P=40000,k=Math.floor(t/P),x=(t%P)/P;let h=21
  const closed=.32+r*.2,red=.16+r*.12;return x<closed?0:x<1-red?1:2}
 const czEyesLeft=()=>{const P=40000,t=now();let e=czEyes(t),d=0;while(d<P&&czEyes(t+d)===e)d+=500;return d};
 const czBanLeft=()=>S.czBan?Math.max(0,S.czBan-now()):0;
-function czVal(){const C=S.cz;if(!C)return 0;const m=Math.max(0,(now()-(C.t||now()))/60000),onCas=typeof page!=='undefined'&&page==='casino';C.s=Math.max(0,(C.s||0)-m*(onCas?3:6));C.t=now();if(!C.s)C.g=0;return C.s}
+function czVal(){const C=S.cz;if(!C)return 0;const m=Math.max(0,(now()-(C.t||now()))/60000),onCas=typeof page!=='undefined'&&page==='casino';C.s=Math.max(0,(C.s||0)-m*(onCas?4:8));C.t=now();if(!C.s)C.g=0;return C.s}
 function zwCasinoRound(stake,game){if(!(stake>0))return;const C=S.cz||(S.cz={s:0,t:now(),g:0});czVal();
  const gw=CZ_GAME[game]||1,tf=CZ_TIER[typeof tier==='function'?tier():0]||1,ew=CZ_EYE[czEyes()];let gain;
- if(casPayMode()==='zwart'){const used=Math.min(zwart(),stake);S.zwart=zwart()-used;C.g=(C.g||0)+used;gain=(used/czLim()*90+.1)*gw*tf*ew}
- else gain=stake/czLim()*12*gw*tf*ew;
+ if(casPayMode()==='zwart'){const used=Math.min(zwart(),stake);S.zwart=zwart()-used;C.g=(C.g||0)+used;gain=(used/czLim()*35+.04)*gw*tf*ew}
+ else return; // wit geld: aan te tonen, geen verdenking
  C.s=Math.min(100,C.s+gain);if(C.s>=100)window.__czBan=true}
 if(window.__PUSH_LOCAL__)setTimeout(()=>pushState(),1200);
 if(window.__REDEEMED__)window.__REDEEMED__.forEach(c=>{if(!S.redeemed.includes(c))S.redeemed.push(c)});
@@ -167,8 +167,11 @@ const MAST=[[0,'Nieuw'],[10,'Brons'],[30,'Zilver'],[75,'Goud'],[150,'Meester']];
 const mastN=id=>(S.mast&&S.mast[id])||0;
 const mastLv=id=>{const n=mastN(id);let l=0;MAST.forEach((m,i)=>{if(n>=m[0])l=i});return l};
 const mastLoot=id=>1+mastLv(id)*.05;
-const chanceRaw=c=>mastLv(c.id)*2+c.base+rankIdx(S.xp)*2+gearBonus()+fitFx('kans')+fam().chance+S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)+(c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0)+focusPct()-Math.floor(S.heat/4);
-const chance=c=>Math.max(5,Math.min(95,Math.round(chanceRaw(c)*(1+tierK()))));
+// Lagere misdaden dan je rang: +1% extra per rang erboven, de hitte telt minder mee (vakmensen blijven rustig)
+// en het plafond gaat van 95% naar maximaal 98%. Er blijft altijd 2% risico in het vak.
+const crimeUp=c=>Math.max(0,rankIdx(S.xp)-(c.r||0));
+const chanceRaw=c=>mastLv(c.id)*2+c.base+rankIdx(S.xp)*2+crimeUp(c)+gearBonus()+fitFx('kans')+fam().chance+S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)+(c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0)+focusPct()-Math.floor(S.heat/4*Math.max(.4,1-crimeUp(c)*.1));
+const chance=c=>Math.max(5,Math.min(95+Math.min(3,crimeUp(c)),Math.round(chanceRaw(c)*(1+tierK()))));
 // straf 30 s – 10 min, plus 30–60 s (hoe langer de straf, hoe meer) omdat je in de bajes kunt werken: 1 – 11 minuten
 const jailSec=sec=>{const b=Math.max(30,Math.min(600,Math.round(sec*(1-fam().jail/100)*(1-sk('rechten')*SK.rechten.jail/100)*(1-gearFx('jail')))));return b+Math.round(30+30*(b-30)/570)};
 function sendToJail(sec){sec=jailSec(sec);S.lastSentence=sec;S.jailUntil=now()+sec*1000;if(typeof celNew==='function')celNew(sec);return sec}

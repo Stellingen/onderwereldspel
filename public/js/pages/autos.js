@@ -100,6 +100,25 @@ function carSaleHtml(i){const c=S.cars[i];if(!c)return '';const left=saleLeft(),
    <div class="cs-btns"><button class="btn" onclick="act.carAccept(${i})">Accepteren · ${fmt(amt)}</button>${left?`<button class="btn ghost" onclick="act.carReject(${i})">Weigeren, volgende koper</button>`:`<button class="btn ghost" disabled>Nieuwe kopers over ${fmtClock(GHOUR-(now()%GHOUR))}</button>`}</div>`
   :`<div class="cs-btns"><button class="btn" onclick="act.carOffer(${i})" ${left?'':'disabled'}>${left?'Kopers zoeken':'Nieuwe kopers over '+fmtClock(GHOUR-(now()%GHOUR))}</button></div>`}
   <p class="cs-note">Je krijgt ${SALE_TRIES} biedingen per speluur (10 minuten). Wijs je ze af, dan wacht je op het volgende speluur.</p></div>`}
+// Het Autokerkhof: hek met prikkeldraad, gestapelde geperste auto's, een kraan met magneet en banden
+function yardSvg(){const crush=(x,y,w,c,r)=>`<g transform="translate(${x} ${y}) rotate(${r||0})"><rect width="${w}" height="15" rx="2" fill="${c}"/><rect y="0" width="${w}" height="15" rx="2" fill="url(#ykS)"/><path d="M${w*.18} 4h${w*.22}M${w*.5} 4h${w*.24}" stroke="#9fb3c4" stroke-opacity=".55" stroke-width="3"/><path d="M3 11h${w-6}" stroke="#000" stroke-opacity=".35" stroke-width="1.5" stroke-dasharray="6 3 2 4"/></g>`;
+ const tire=(x,y)=>`<g transform="translate(${x} ${y})"><ellipse rx="17" ry="6" fill="#141518"/><ellipse rx="17" ry="6" fill="none" stroke="#2c2f35" stroke-width="2"/><ellipse rx="7" ry="2.4" fill="#0a0b0c"/></g>`;
+ return `<svg class="yardsvg" viewBox="0 0 320 220" aria-hidden="true"><defs><pattern id="ykF" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M0 0l10 10M10 0L0 10" stroke="#5b616b" stroke-opacity=".45" stroke-width="1"/></pattern>
+  <linearGradient id="ykS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></linearGradient>
+  <linearGradient id="ykG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2620"/><stop offset="1" stop-color="#121110"/></linearGradient></defs>
+  <rect x="0" y="92" width="320" height="86" fill="url(#ykF)"/>
+  <g stroke="#3a3f47" stroke-width="3">${[8,72,136,200,264,312].map(x=>`<path d="M${x} 86v92"/>`).join('')}</g>
+  <path d="M0 92h320" stroke="#5b616b" stroke-width="1.5"/><path d="M0 86 ${Array.from({length:32},(_,i)=>`l5 ${i%2?4:-4} l5 ${i%2?-4:4}`).join(' ')}" fill="none" stroke="#7a808a" stroke-width="1" opacity=".7"/>
+  <g stroke="#c9a227" stroke-width="3" fill="none"><path d="M236 178V34M250 178V34"/><path d="M236 178l14-14-14-14 14-14-14-14 14-14-14-14 14-14-14-14 14-14" stroke-width="1.5"/>
+   <path d="M243 34H112M243 26l-120 8M243 26v8" /><path d="M243 34h40l0 10h-12" stroke-width="2.5"/></g>
+  <rect x="270" y="34" width="22" height="18" fill="#3d3424"/><rect x="228" y="40" width="30" height="20" rx="2" fill="#2b2f36" stroke="#c9a227" stroke-width="1.5"/><rect x="232" y="44" width="10" height="8" fill="#ffd78c" opacity=".7"/>
+  <path d="M148 34v36" stroke="#9aa1ab" stroke-width="1.5"/><path d="M134 70h28v6h-28z" fill="#4b5059"/><path d="M136 76h24" stroke="#c9a227" stroke-width="1.5"/>
+  <g transform="rotate(-5 148 96)">${typeof carSvg==='function'?carSvg('hatch','#7a2a2a').replace('<svg ','<svg x="102" y="70" width="92" height="46" ').replace('class="carsvg"','class="yk-car"'):''}</g>
+  <rect x="0" y="176" width="320" height="44" fill="url(#ykG)"/>
+  ${crush(18,160,74,'#3d6b8a',-1)}${crush(96,161,70,'#6b5a3a',1)}${crush(26,144,66,'#7a3a3a',2)}${crush(88,145,68,'#4a5866',-2)}${crush(48,129,62,'#5d6b3a',-1)}${crush(56,113,46,'#8a6f2a',3)}
+  ${tire(208,172)}${tire(208,164)}${tire(208,156)}${tire(290,174)}${tire(286,166)}
+  <path d="M170 182h28M120 190h40M230 188h22" stroke="#3a352c" stroke-width="2" stroke-linecap="round"/>
+ </svg>`}
 // kleine taferelen voor de banners
 const caArt=(k,html)=>`<span class="ca-sc ${k}">${html||''}</span>`;
 function carLobby(){const ri=rankIdx(S.xp),cap=garageCap(),gv=S.cars.reduce((a,c)=>a+c.v,0),rep=S.cars.filter(carRep).length,O=carOrders(),od=O.list.filter(o=>!o.done&&S.cars.some(c=>c.id===o.id)).length;
@@ -108,10 +127,10 @@ function carLobby(){const ri=rankIdx(S.xp),cap=garageCap(),gv=S.cars.reduce((a,c
   <span class="bzb-art" aria-hidden="true">${art}</span><span class="bzb-t"><span class="bzb-k">${kind}</span><b>${title}</b><span class="bzb-d">${desc}</span><span class="bzb-f">${facts}</span><span class="bzb-go">${go}</span></span></button>`;
  return `<h1>Auto's</h1>
  <div class="bzb-grid">
-  ${b('zoek','#7fd1c7','Stelen','Straat afzoeken','Kijk wat er geparkeerd staat. Een Polo vind je zo, een Lamborghini bijna nooit.',`<em>${cdLeft('car')?'nog '+fmtClock(cdLeft('car')):'klaar'}</em><em><b>${SEARCH_EN}</b> energie</em>`,'Op pad ›',caArt('street',carSvg('hatch','#5a6270')))}
+  ${b('zoek','#7fd1c7','Stelen','Straat afzoeken','Kijk wat er geparkeerd staat. Een Polo vind je zo, een Lamborghini bijna nooit.',`<em>${cdLeft('car')?'nog '+fmtClock(cdLeft('car')):'klaar'}</em><em><b>${SEARCH_EN}</b> energie</em>`,'Op pad ›',caArt('street','<i class="lamp"></i>'+carSvg('hatch','#5a6270')))}
   ${b('jack','#ff5c6c','Stelen','Carjacken','Bij het stoplicht, portier open en gas erop. Snel, maar heet.',ri<JACK_R?`<em>vanaf ${RANKS[JACK_R][0]}</em>`:`<em>${cdLeft('jack')?'nog '+fmtClock(cdLeft('jack')):'klaar'}</em><em><b>${JACK_EN}</b> energie</em>`,'Naar het stoplicht ›',caArt('light',carSvg('sedan','#7a1424')+'<i class="tl"><i></i><i></i><i></i></i>'))}
   ${b('garage','#ffad6b','Jouw garage','Garage',`${S.cars.length} van ${cap} plekken${cap<10?' · uit te breiden tot 10':''}. Verkopen aan kopers die bieden.`,`<em><b>${fmt(gv)}</b> waarde</em>${rep?`<em class="dn"><b>${rep}</b> gemeld als gestolen</em>`:''}`,'Openen ›',typeof bzArt==='function'?bzArt({id:'cg',col:'#ffad6b',icp:ICONS.cars,kind:'garage'},'cag'):'')}
-  ${b('sloop','#c9a227','Onderdelen · zwart geld','Het Autokerkhof',S.sloop?'Je eigen sloperij. Hier gaat elke auto weg, ook als hij als gestolen is gemeld.':`Koop een sloperij en verkoop auto's als onderdelen. Ook gemelde auto's raak je hier kwijt.`,S.sloop?`<em><b>${Math.round(SLOOP_K*100)}%</b> van de waarde</em><em>zwart geld</em>`:`<em>${ri<SLOOP_R?'vanaf '+RANKS[SLOOP_R][0]:fmt(SLOOP_P)}</em>`,S.sloop?'Openen ›':'Bekijken ›',caArt('yard','<i class="stack"><i></i><i></i><i></i></i>'+carSvg('van','#4a4f57')))}
+  ${b('sloop','#c9a227','Onderdelen · zwart geld','Het Autokerkhof',S.sloop?'Je eigen sloperij. Hier gaat elke auto weg, ook als hij als gestolen is gemeld.':`Koop een sloperij en verkoop auto's als onderdelen. Ook gemelde auto's raak je hier kwijt.`,S.sloop?`<em><b>${Math.round(SLOOP_K*100)}%</b> van de waarde</em><em>zwart geld</em>`:`<em>${ri<SLOOP_R?'vanaf '+RANKS[SLOOP_R][0]:fmt(SLOOP_P)}</em>`,S.sloop?'Openen ›':'Bekijken ›',caArt('yard',yardSvg()))}
   ${b('heler','#b8a1ff','Op bestelling','De heler',`Elke speldag vraagt hij drie modellen, en betaalt er ×1,4 tot ×1,9 voor.`,`<em><b>${O.list.filter(o=>!o.done).length}</b> open</em>${od?`<em class="up"><b>${od}</b> in je garage</em>`:''}`,'Bekijken ›',caArt('van',carSvg('van','#2f3640')))}
  </div>
  <button class="dex-bn" onclick="carMode='dex';render();window.scrollTo({top:0,behavior:'smooth'})"><span><span class="label">Collectie en kansen</span><b>${CARS.filter(m=>((S.carDex||{})[m.id]||[0,0])[1]>0).length} van de ${CARS.length} modellen gestolen</b><small>Bekijk per model hoe groot de kans is en wat hij waard is</small></span><i>›</i></button>`}
@@ -126,7 +145,7 @@ function garageView(){const L=garageLvl(),cap=garageCap(),nx=GARAGE_CAPS[L+1],gv
     ${rep&&!S.sloop?'<div class="g-note">Als gestolen gemeld: geen koper wil hem. Alleen het autokerkhof, de heler of je familie.</div>':''}
     ${open?carSaleHtml(i):''}</div>`}).join('')}</div>`:'<div class="card empty">Je garage is leeg. Zoek de straat af voor je eerste auto.</div>'}`}
 function sloopView(){const ri=rankIdx(S.xp);
- if(!S.sloop)return `${carBack('Het Autokerkhof')}<section class="card sl-buy"><div class="sl-art">${caArt('yard','<i class="stack"><i></i><i></i><i></i></i>'+carSvg('van','#4a4f57'))}</div>
+ if(!S.sloop)return `${carBack('Het Autokerkhof')}<section class="card sl-buy"><div class="sl-art">${caArt('yard',yardSvg())}</div>
   <div><h3>Een eigen sloperij</h3><p class="sub">Een terrein vol wrakken, een pers en een man die onderdelen per stuk verkoopt. Elke auto gaat hier weg voor ${Math.round(SLOOP_K*100)}% van de waarde, in zwart geld. Ook auto's die als gestolen zijn opgegeven.</p>
    <button class="btn gold" onclick="act.buySloop()" ${ri>=SLOOP_R&&wit()>=SLOOP_P?'':'disabled'}>${ri<SLOOP_R?'Vanaf '+RANKS[SLOOP_R][0]:wit()<SLOOP_P?'Nog '+fmt(SLOOP_P-wit())+' wit nodig':'Koop het autokerkhof · '+fmt(SLOOP_P)}</button></div></section>`;
  const parts=[['Motor',.24],['Versnellingsbak',.1],['Velgen en banden',.08],['Elektronica',.1],['Plaatwerk',.05],['Interieur',.03]];
