@@ -236,6 +236,16 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   zilver +8% (€750.000, Soldaat) en goud +15% (€5 mln., alleen High roller). Het extra geld wordt na de ronde apart getoond;
   roulette, blackjack, poker, mines, hoogvlieger en de munt houden de echte kansen. Gebruiken kan op Outfit en in de saldobalk
   van het casino.
+- **Zwart geld en witwassen** (`public/js/pages/witwas.js`, kern in `state.js`): geld uit klussen, huurmoorden, auto's
+  verkopen, de heler, de familie (missies, klussen, oorlog, afdracht) en bendegevechten is zwart (`S.zwart`, het deel van je
+  contant geld dat zwart is). Gewoon uitgeven (wapens, kleding, training, ontspannen, inrichting) gaat eerst van zwart. De bank
+  (storten, deposito's, beleggen), zaken kopen en verbouwen en verhuizen kan alleen met wit geld. Witwassen kan op drie
+  manieren: **via je zaken** (een werkdag aan de kassa: druk op een zwarte bon vlak nadat een echte klant afrekent, niet als de
+  inspecteur meekijkt; 10% kosten als niemand iets merkt, anders 12%, te opvallend = 30% in beslag en hitte; per speldag tot
+  2,5× je inkomen), **via Ome Kees** (meteen, 35%, maximum per speldag groeit met je rang) en **via het casino** (wat je wint
+  is wit; elke inzet met zwart geld laat de verdenking oplopen, 3% per minuut omlaag, en geeft kans op een controle: dan nemen
+  ze je zwarte geld en de helft van wat je net zwart inzette in beslag en word je aangehouden). Bezit, bank, casinowinst,
+  codes, rangbeloningen en werk in de bajes leveren wit geld op. Oude saves: al je contant geld telt als wit.
 - **Profielen**: standaard privé. Op Profiel → Zichtbaarheid zet je het openbaar; dan zien anderen via de ranglijst je
   vermogen, familie, woning, outfit en prestaties. Bij een privé profiel zien ze alleen naam en rang. Beheerders zien elk
   profiel, en in het beheerdashboard staat per speler of zijn profiel openbaar is en wat hij deed (zijn logboek uit het spel).

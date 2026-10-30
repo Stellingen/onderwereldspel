@@ -90,7 +90,7 @@ setInterval(()=>{if(page!=='cars'||window.__chase||carSearch)return;if(carExpire
  const c=document.getElementById('huntCd');if(c)c.textContent=fmtClock(cdLeft('car'));const j=document.getElementById('jackCd');if(j)j.textContent=fmtClock(cdLeft('jack'))},1000);
 Object.assign(act,{
  carOrder(i){const O=carOrders(),o=O.list[i];if(!o||o.done)return;const at=S.cars.findIndex(c=>c.id===o.id);if(at<0)return;const c=S.cars.splice(at,1)[0];
-  const pay=Math.round(c.v*o.k/10)*10,cr=2+Math.floor(carTier(CARS.find(m=>m.id===o.id)||{d:1})/2);o.done=1;S.cash+=pay;S.cred+=cr;S.stats.orders=(S.stats.orders||0)+1;
+  const pay=Math.round(c.v*o.k/10)*10,cr=2+Math.floor(carTier(CARS.find(m=>m.id===o.id)||{d:1})/2);o.done=1;S.cash+=pay;addZwart(pay);S.cred+=cr;S.stats.orders=(S.stats.orders||0)+1;
   toast(`${c.n} afgeleverd bij de heler: +${fmt(pay)} · +${cr} cred`,'lvl');log(`Bestelling: ${c.n} afgeleverd (+${fmt(pay)})`,'ok');save();render()},
  async searchCar(){if(carSearch||window.__chase||inJail()||cdLeft('car'))return;if(S.cars.length>=GARAGE_MAX){toast('Garage vol, verkoop eerst iets','bad');return}
   if(S.energy<SEARCH_EN){toast('Te moe om te zoeken','bad');return}

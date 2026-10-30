@@ -44,7 +44,7 @@ function bankTick(mins){if(!S.dep)S.dep=[];if(!S.inv)S.inv={};
 
 const bk={tab:'rek',amt:'',src:'bank',term:'24u',fund:'coin',rng:'24u',brk:null};
 const bkAmt=()=>Math.max(0,Math.floor(+bk.amt||0));
-const bkSrcBal=()=>Math.floor(bk.src==='bank'?S.bank:S.cash);
+const bkSrcBal=()=>Math.floor(bk.src==='bank'?S.bank:wit());
 // invoer + snelknoppen. max = wat je hier maximaal kunt gebruiken
 function bkInput(max,label){const a=bkAmt();
  const q=[[1e4,'10k'],[1e5,'100k'],[1e6,'1 mln'],[1e7,'10 mln']].filter(x=>x[0]<=Math.max(max,1e4)).slice(-3);
@@ -83,7 +83,7 @@ function bkRek(){const max=Math.max(S.cash,S.bank),a=bkAmt(),r=savRate();
   <section class="card bk-box"><h3>Geld verplaatsen</h3><p class="sub">Contant geld kun je kwijtraken als je gepakt wordt. Op de bank staat het veilig.</p>
    <div class="bk-flow"><div><span class="label">Contant</span><b class="acc">${fmt(S.cash)}</b></div>${BK_ARROWS}<div><span class="label">Spaarrekening</span><b>${fmt(S.bank)}</b></div></div>
    ${bkInput(max)}
-   <div class="bk-two"><button class="btn" data-bk-btn onclick="act.bkDep()" ${a&&S.cash>=1?'':'disabled'}>Storten${a?' '+fmt(Math.min(a,S.cash)):''}</button>
+   <div class="bk-two"><button class="btn" data-bk-btn onclick="act.bkDep()" ${a&&wit()>=1?'':'disabled'}>Storten${a?' '+fmt(Math.min(a,wit())):''}</button>
     <button class="btn ghost" data-bk-btn onclick="act.bkWd()" ${a&&S.bank>=1?'':'disabled'}>Opnemen${a?' '+fmt(Math.min(a,S.bank)):''}</button></div></section>
   <section class="card bk-box"><h3>Spaarrekening</h3><p class="sub">Vrij opneembaar, elke minuut rente. Ook offline (tot 12 uur).</p>
    <div class="bk-rate"><b>${nl(r*100,2)}%</b><span>per uur · ±${nl((Math.pow(1+r,24)-1)*100,1)}% per dag${isVip()?' · '+lidName():''}</span></div>
@@ -164,8 +164,8 @@ V.bank=()=>{if(!S.dep)S.dep=[];if(!S.inv)S.inv={};const sv=S.bank,dp=depTotal(),
    ${k('inv','iv','Beleggingen',fmt(iv),tc?`<span class="${pl>=0?'up':'dn'}">${pl>=0?'+':'−'}${fmt(Math.abs(pl))}</span> sinds aankoop`:'nog niets belegd')}
   </div>
   <div class="bk-dist" aria-hidden="true"><i style="width:${sv/tot*100}%;background:var(--ice)"></i><i style="width:${dp/tot*100}%;background:var(--violet)"></i><i style="width:${iv/tot*100}%;background:var(--acc)"></i></div>
-  <div class="bk-cash ${cash>=1?'':'none'}"><div><span class="label">Contant op zak</span><b>${fmt(cash)}</b><em>${cash>=1?'Dit ben je kwijt als je gepakt wordt.':'Je hebt niets contant op zak.'}</em></div>
-   <button class="btn sm" onclick="act.bkAll()" ${cash>=1?'':'disabled'}>${cash>=1?'Alles storten':'Niets te storten'}</button></div>
+  <div class="bk-cash ${cash>=1?'':'none'}"><div><span class="label">Contant op zak</span><b>${fmt(cash)}</b><em>${cash<1?'Je hebt niets contant op zak.':zwart()>=1?`Waarvan ${fmt(zwart())} zwart: dat neemt de bank niet aan. <a href="#wit">Witwassen ›</a>`:'Dit ben je kwijt als je gepakt wordt.'}</em></div>
+   <button class="btn sm" onclick="act.bkAll()" ${wit()>=1?'':'disabled'}>${wit()>=1?'Stort '+fmt(wit())+' wit':cash>=1?'Alleen zwart geld':'Niets te storten'}</button></div>
  </section>
  <div class="tabs bk-tabs">${[['rek','Rekening'],['dep',`Deposito's${S.dep.length?' · '+S.dep.length:''}`],['inv','Beleggen']].map(([k,l])=>`<button class="${bk.tab===k?'on':''}" onclick="act.bkTab('${k}')">${l}</button>`).join('')}</div>
  ${bk.tab==='dep'?bkDepTab():bk.tab==='inv'?bkInvTab():bkRek()}`};
@@ -173,20 +173,20 @@ V.bank=()=>{if(!S.dep)S.dep=[];if(!S.inv)S.inv={};const sv=S.bank,dp=depTotal(),
 Object.assign(act,{
  bkSet(v){bk.amt=v>0?String(Math.floor(v)):'';render()},
  bkTab(t){bk.tab=t;bk.brk=null;if(t!=='rek'&&bk.src==='bank'&&S.bank<1&&S.cash>=1)bk.src='cash';render()},
- bkDep(){const a=Math.min(bkAmt(),Math.floor(S.cash));if(a<=0){toast('Geen contant geld om te storten','bad');return}S.cash-=a;S.bank+=a;toast(fmt(a)+' gestort');bk.amt='';save();render()},
+ bkDep(){const a=Math.min(bkAmt(),Math.floor(wit()));if(a<=0){toast(zwart()>=1?'De bank neemt geen zwart geld aan. Was het eerst wit (Witwassen).':'Geen contant geld om te storten','bad');return}spendWit(a);S.bank+=a;toast(fmt(a)+' gestort');bk.amt='';save();render()},
  // in één klik al je contante geld veilig op de spaarrekening
- bkAll(){const a=Math.floor(S.cash);if(a<=0){toast('Geen contant geld om te storten','bad');return}S.cash-=a;S.bank+=a;toast(fmt(a)+' gestort op je spaarrekening','ok');bk.amt='';save();render()},
+ bkAll(){const a=Math.floor(wit());if(a<=0){toast(zwart()>=1?'De bank neemt geen zwart geld aan. Was het eerst wit (Witwassen).':'Geen contant geld om te storten','bad');return}spendWit(a);S.bank+=a;toast(fmt(a)+' gestort op je spaarrekening','ok');bk.amt='';save();render()},
  // naar het formulier voor een nieuw deposito en meteen in het bedrag
  bkNew(){const el=document.getElementById('bkNew');if(!el)return;el.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>{const i=el.querySelector('input');if(i)i.focus({preventScroll:true})},380)},
  bkWd(){const a=Math.min(bkAmt(),Math.floor(S.bank));if(a<=0){toast('Er staat niets op je spaarrekening','bad');return}S.bank-=a;S.cash+=a;toast(fmt(a)+' opgenomen');bk.amt='';save();render()},
  depOpen(){const t=DEP_TERMS.find(x=>x.id===bk.term),a=bkAmt();if(!t||S.dep.length>=depSlots()||a<DEP_MIN||a>bankCap()||a>bkSrcBal())return;
-  if(bk.src==='bank')S.bank-=a;else S.cash-=a;const r=depRate(t),id=now();
+  if(bk.src==='bank')S.bank-=a;else spendWit(a);const r=depRate(t),id=now();
   S.dep.push({id,n:t.n,h:t.h,a,r,t0:id,t1:id+t.h*36e5});toast(fmt(a)+' vastgezet voor '+t.n+': je krijgt '+fmt(Math.round(a*(1+r))),'ok');log('Deposito '+t.n+': '+fmt(a)+' tegen '+nl(r*100,2)+'%','info');bk.amt='';save();render()},
  depBreak(id){const d=S.dep.find(x=>x.id===id);if(!d)return;const back=Math.floor(d.a*(1-DEP_EARLY));S.dep=S.dep.filter(x=>x.id!==id);S.bank+=back;bk.brk=null;
   toast('Deposito opgezegd: '+fmt(back)+' terug op je spaarrekening','bad');log('Deposito opgezegd: '+fmt(back)+' terug','info');save();render()},
  invBuy(){const f=fundOf(bk.fund),a=bkAmt();if(!f)return;const p=S.inv[f.id]||{u:0,c:0,paid:0,bp:0},room=invCap()-invCost();
   if(a<INV_MIN||a>room||a>bkSrcBal())return;const px=MK.price(f,now()),u=a*(1-invFee(f))/px;
-  if(bk.src==='bank')S.bank-=a;else S.cash-=a;p.bp=(p.bp*p.u+px*u)/(p.u+u);p.u+=u;p.c+=a;S.inv[f.id]=p;
+  if(bk.src==='bank')S.bank-=a;else spendWit(a);p.bp=(p.bp*p.u+px*u)/(p.u+u);p.u+=u;p.c+=a;S.inv[f.id]=p;
   toast('Gekocht: '+f.s+' voor '+fmt(a),'ok');log(f.n+' gekocht voor '+fmt(a)+' à '+fmtPx(px),'info');bk.amt='';save();render()},
  invSell(q){const f=fundOf(bk.fund),p=f&&S.inv[f.id];if(!p||p.u<=0)return;q=Math.min(1,Math.max(0,q));const px=MK.price(f,now()),u=p.u*q,got=u*px*(1-invFee(f)),cost=p.c*q,res=got-cost;
   p.u-=u;p.c-=cost;p.paid=(p.paid||0)*(1-q);if(q>=1||p.u<=1e-9)delete S.inv[f.id];S.bank+=got;

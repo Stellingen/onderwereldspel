@@ -48,7 +48,7 @@ const JJ_EV=[
   ch:[{l:'Betalen',s:v=>fmt(v.cost)+' · '+Math.round(v.ok*100)+'% kans · helft eraf',c:'gold',cost:v=>v.cost,f:v=>{if(!celPay(v.cost))return {t:'Je hebt het geld niet.',c:'bad'};
      if(Math.random()<v.ok){const s=celCutFrac(.5),c=celBase();let t=`De deur staat open. ${fmtTime(s)} van je straf is weg.`;if(!c.c.henk){c.c.henk=1;t+=' Henk de bewaker is nu je contact: bij elke nieuwe straf 10% minder.'}return {t,c:'ok'}}
      const a=celAdd(30);return {t:`Het was een val. Je geld is weg en je krijgt ${fmtTime(a)} extra.`,c:'bad'}}},
-   {l:'Pakketje meenemen',s:v=>'+'+fmt(v.smug)+' · 30% kans gepakt',f:v=>{if(Math.random()<.7){S.cash+=v.smug;return {t:`Het pakketje komt aan. De bewaker betaalt ${fmt(v.smug)}.`,c:'ok'}}
+   {l:'Pakketje meenemen',s:v=>'+'+fmt(v.smug)+' · 30% kans gepakt',f:v=>{if(Math.random()<.7){S.cash+=v.smug;addZwart(v.smug);return {t:`Het pakketje komt aan. De bewaker betaalt ${fmt(v.smug)}.`,c:'ok'}}
      const a=celAdd(45);return {t:`Gepakt bij de poort. De bewaker kent je ineens niet meer: +${fmtTime(a)}.`,c:'bad'}}},
    {l:'Nee bedankt',s:()=>'netjes · −5s',f:()=>{const s=celGood(5);return {t:s?`Je zegt nee. Dat valt op, op een goede manier: −${s}s.`:'Je zegt nee. De bewaker loopt door.',c:'ok'}}}]},
  {id:'tip',where:'Je cel',h:'Je celgenoot weet iets',p:()=>'"Mijn neef rijdt voor een geldtransport. Als je eruit bent, weet ik wanneer de bus stopt."',

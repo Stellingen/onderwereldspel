@@ -35,7 +35,7 @@ module.exports = function mountAdmin(app, { auth, db, need, rankOf }) {
     let units = 0; Object.values(biz2).forEach(a => { if (Array.isArray(a)) units += a.length; });
     const dep = Array.isArray(st.dep) ? st.dep.reduce((a, d) => a + (+d.amt || +d.a || 0), 0) : 0;
     return {
-      name: st.name, cash: +st.cash || 0, bank: +st.bank || 0, bankExtra: +st.bankExtra || 0, xp: +st.xp || 0, cred: +st.cred || 0,
+      name: st.name, cash: +st.cash || 0, zwart: Math.min(+st.cash || 0, +st.zwart || 0), bank: +st.bank || 0, bankExtra: +st.bankExtra || 0, xp: +st.xp || 0, cred: +st.cred || 0,
       heat: +st.heat || 0, energy: +st.energy || 0, hp: +st.hp || 0, family: st.family || null, famEer: st.fr && st.fr.id === st.family ? +st.fr.eer || 0 : 0,
       jailUntil: +st.jailUntil || 0, wanted: !!st.wanted, home: st.home || null, skills: st.skills || {}, units, dep,
       gear: Object.keys(st.gear || {}).length, cars: Array.isArray(st.cars) ? st.cars.length : 0, kas: +st.kas || 0,

@@ -66,7 +66,7 @@ function feudFight(){const F=S.feud;if(!F||inJail()||S.hp<feudNeed(F.d)||S.energ
  const f=F.fam&&FAMILIES.find(x=>x.id===F.fam),inFam=f&&S.family===f.id,p=feudP(F.d),rounds=[];let w=0,l=0,dmg=0;
  while(w<2&&l<2){const ok=Math.random()<p;rounds.push(ok);if(ok){w++;dmg+=rnd(3,7)}else{l++;dmg+=rnd(9,16)}}
  const won=w>=2;delete S.feud;S.energy-=FEUD_EN;S.hp=Math.max(5,S.hp-dmg);S.stats.feudFights=(S.stats.feudFights||0)+1;let got='';
- if(won){const [a,b]=feudLoot(F),g=Math.round(rnd(a,b)),cr=credGain(6+F.d*3,'netjes');S.cash+=g;S.cred+=cr;S.stats.feudWins=(S.stats.feudWins||0)+1;addXp(120+F.d*60);
+ if(won){const [a,b]=feudLoot(F),g=Math.round(rnd(a,b)),cr=credGain(6+F.d*3,'netjes');S.cash+=g;addZwart(g);S.cred+=cr;S.stats.feudWins=(S.stats.feudWins||0)+1;addXp(120+F.d*60);
   if(inFam)famAddEer(15+F.d*8);got=`+${fmt(g)} · +${cr} cred · +${120+F.d*60} XP${inFam?` · +${15+F.d*8} eer`:''}`;
   log(`Bendegevecht tegen de mensen van ${F.t} gewonnen (${got})`,'ok')}
  else{const [a]=feudLoot(F),lose=Math.min(Math.round(S.cash*.05),a);S.cash-=lose;if(inFam)famAddEer(5);addXp(40+F.d*15);

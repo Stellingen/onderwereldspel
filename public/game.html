@@ -25,6 +25,7 @@
 <link rel="stylesheet" href="css/crimes.css">
 <link rel="stylesheet" href="css/woning.css">
 <link rel="stylesheet" href="css/geld.css">
+<link rel="stylesheet" href="css/witwas.css">
 </head>
 <body>
 <script src="/js/notap.js"></script>
@@ -67,7 +68,7 @@
   const files=['js/slot.js','js/vis.js','js/market.js','js/data.js','js/lore.js','js/state.js','js/ui.js','js/flee.js','js/carheist.js',
     'js/pages/dashboard.js','js/pages/misdaden.js','js/pages/hits.js','js/pages/casino.js','js/pages/skills.js',
     'js/pages/wapens.js','js/pages/bajes.js','js/pages/ranglijst.js','js/pages/profiel.js',
-    'js/actions.js','js/pages/look.js','js/pages/jailjobs.js','js/sfx.js','js/icons.js','js/pages/kluiskraker.js','js/pages/visdief.js','js/pages/tafels.js','js/pages/roulette.js','js/pages/munt.js','js/pages/mines.js','js/pages/vlucht.js','js/pages/bezit.js','js/pages/bank.js','js/pages/families.js','js/pages/famwar.js','js/pages/verblijf.js','js/pages/inrichting.js','js/pages/autos.js','js/pages/carjack.js','js/pages/feud.js','js/main.js'];
+    'js/actions.js','js/pages/look.js','js/pages/jailjobs.js','js/pages/witwas.js','js/sfx.js','js/icons.js','js/pages/kluiskraker.js','js/pages/visdief.js','js/pages/tafels.js','js/pages/roulette.js','js/pages/munt.js','js/pages/mines.js','js/pages/vlucht.js','js/pages/bezit.js','js/pages/bank.js','js/pages/families.js','js/pages/famwar.js','js/pages/verblijf.js','js/pages/inrichting.js','js/pages/autos.js','js/pages/carjack.js','js/pages/feud.js','js/main.js'];
   for(const f of files){await new Promise(res=>{const s=document.createElement('script');s.src=f;s.onload=res;s.onerror=res;document.body.appendChild(s)})}
   // Eerste keer inloggen met bestaande browser-voortgang: meteen naar de database sturen.
   if(window.__TOKEN__&&!window.__SERVER_STATE__&&typeof pushState==='function')pushState();

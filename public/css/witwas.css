@@ -1,0 +1,92 @@
+/* Witwassen: zwart en wit geld, drie manieren, en een werkdag aan de kassa */
+.dm-t small.zw{color:#c9ced6;background:rgba(255,255,255,.06);padding:0 4px;align-self:flex-start}
+.ch-main .label em.zw{font-style:normal;color:#c9ced6}
+.ch-sus{min-width:120px}
+.ch-sus b{color:var(--fg)}.ch-sus.warm b{color:var(--acc)}.ch-sus.hot b{color:var(--red)}
+.ch-sus .mini{display:block;height:3px;background:var(--line2);margin-top:3px}
+.ch-sus .mini i{display:block;height:100%;background:var(--acc)}.ch-sus.hot .mini i{background:var(--red)}
+.ww-hero{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);padding:0;margin-bottom:12px}
+.ww-bal{display:flex;align-items:center;gap:14px;padding:18px 20px;background:var(--panel)}
+.ww-bal .dm-ic{width:46px;height:46px;flex:none}
+.ww-bal.zw .dm-ic{filter:grayscale(1) brightness(.7)}
+.ww-bal b{display:block;font-family:var(--f-display);font-weight:900;font-size:clamp(30px,3.4vw,44px);line-height:1;margin:2px 0}
+.ww-bal.zw b{color:#c9ced6}.ww-bal.wt b{color:var(--green)}
+.ww-bal em{font-style:normal;font-size:12px;color:var(--faint)}
+.ww-split{grid-column:1/-1;height:4px;background:var(--green)}
+.ww-split i{display:block;height:100%;background:#5d626b}
+.ww-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch}
+.ww-m{display:flex;flex-direction:column;gap:12px}
+.ww-m header h3{margin:4px 0 6px;font-family:var(--f-head);font-weight:800;font-size:22px;text-transform:uppercase}
+.ww-m header p{margin:0;font-size:13px;color:var(--mute);line-height:1.5}
+.ww-tag{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--line2);color:var(--mute)}
+.ww-zaak .ww-tag{color:var(--green);border-color:rgba(63,227,149,.4)}.ww-kees .ww-tag{color:var(--violet);border-color:rgba(184,161,255,.4)}.ww-cas .ww-tag{color:var(--red);border-color:rgba(255,61,82,.4)}
+.ww-m .btn{margin-top:auto}
+.ww-fronts{display:flex;flex-wrap:wrap;gap:6px}
+.ww-fronts button{padding:6px 10px;border:1px solid var(--line2);background:var(--bg2);font-size:12.5px;color:var(--mute);display:flex;gap:6px;align-items:baseline}
+.ww-fronts button small{font-family:var(--f-mono);font-size:10px;color:var(--faint)}
+.ww-fronts button.on{border-color:var(--green);color:var(--fg);box-shadow:inset 0 -2px 0 var(--green)}
+.ww-cap{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 12px;border:1px solid var(--line);background:var(--bg2)}
+.ww-cap span{font-size:12.5px;color:var(--mute)}.ww-cap b{font-family:var(--f-mono);font-size:15px}
+.ww-cap small{grid-column:1/-1;font-family:var(--f-mono);font-size:10px;color:var(--faint)}
+.ww-amt{display:grid;grid-template-columns:auto 1fr;align-items:baseline;gap:4px 12px}
+.ww-amt b{font-family:var(--f-mono);font-size:18px;text-align:right}
+.ww-q{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.ww-q button{padding:7px 0;border:1px solid var(--line2);background:var(--bg2);font-family:var(--f-mono);font-size:12px;color:var(--mute)}
+.ww-q button.on{border-color:var(--acc);color:var(--fg)}
+.ww-q button:disabled{opacity:.4;cursor:not-allowed}
+.ww-calc{font-size:12.5px;color:var(--mute);min-height:18px}
+.ww-none{font-size:13px;color:var(--mute);line-height:1.5;padding:12px;border:1px dashed var(--line2)}
+.ww-none a{display:block;margin-top:8px;color:var(--acc);font-family:var(--f-mono);font-size:12px;text-decoration:none}
+.ww-meter>div{display:flex;justify-content:space-between;align-items:baseline}
+.ww-meter b{font-family:var(--f-display);font-weight:900;font-size:30px}
+.ww-meter.warm b{color:var(--acc)}.ww-meter.hot b{color:var(--red)}
+.ww-meter>i{display:block;height:6px;background:var(--bg2);border:1px solid var(--line);margin:6px 0}
+.ww-meter>i>i{display:block;height:100%;background:var(--acc)}.ww-meter.hot>i>i{background:var(--red)}
+.ww-meter small{font-size:12px;color:var(--faint)}
+.ww-log{margin-top:12px}
+.ww-row{display:grid;grid-template-columns:52px 1fr auto;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:13px}
+.ww-row:first-of-type{border-top:0}
+.ww-row time{font-family:var(--f-mono);font-size:11px;color:var(--faint)}
+.ww-row b{font-family:var(--f-mono);font-size:12.5px;color:var(--green)}.ww-row.bust b{color:var(--red)}
+@media (min-width:1280px) and (max-width:1599px){.ww-grid{grid-template-columns:1fr 1fr}.ww-cas{grid-column:1/-1}}
+@media (max-width:900px){.ww-hero{grid-template-columns:1fr}.ww-grid{grid-template-columns:1fr}.ww-bal{padding:14px 16px}}
+/* minigame */
+.ww-box{width:min(620px,100%)}
+.ww-gh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.ww-gh h2{margin:2px 0 0}
+.ww-gh>b{font-family:var(--f-mono);font-size:24px;color:var(--acc2)}
+.ww-shop{position:relative;height:150px;margin:12px 0;border:1px solid var(--line2);overflow:hidden;
+  background:linear-gradient(180deg,#14171c 0 62%,#0d0f12 62% 100%),var(--bg2)}
+.ww-shop::before{content:"";position:absolute;left:0;right:0;top:62%;height:2px;background:#2b3038}
+.ww-door{position:absolute;left:3%;top:18%;width:9%;height:44%;border:2px solid #3a404a;border-bottom:0;background:linear-gradient(180deg,rgba(169,220,255,.12),transparent)}
+.ww-till{position:absolute;left:68%;top:36%;width:15%;height:26%;background:#262b33;border:1px solid #3a404a;display:grid;place-items:center}
+.ww-till::after{content:"KASSA";font-family:var(--f-mono);font-size:9px;letter-spacing:.12em;color:#8a8f98}
+.ww-till i{position:absolute;inset:-6px;border:2px solid transparent;pointer-events:none}
+.ww-till.cover i{border-color:var(--green);box-shadow:0 0 18px rgba(63,227,149,.45)}
+.ww-till.ring{animation:wwRing .35s ease-out}
+@keyframes wwRing{0%{transform:translateY(-3px)}100%{transform:none}}
+.ww-c{position:absolute;bottom:38%;width:16px;height:30px;margin-left:-8px;border-radius:7px 7px 3px 3px;background:hsl(var(--h) 18% 46%);transition:opacity .2s}
+.ww-c::before{content:"";position:absolute;left:3px;top:-12px;width:10px;height:10px;border-radius:50%;background:hsl(var(--h) 14% 62%)}
+.ww-insp{position:absolute;right:3%;top:10%;display:flex;flex-direction:column;align-items:center;gap:2px;color:#3a404a;opacity:.35;transition:color .15s,opacity .15s}
+.ww-insp svg{width:46px;height:28px}
+.ww-insp span{font-family:var(--f-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+.ww-insp.warn{color:var(--acc);opacity:1;animation:pulse .5s infinite}
+.ww-insp.on{color:var(--red);opacity:1}
+.ww-bars{display:grid;grid-template-columns:1fr 1.4fr;gap:14px;align-items:end}
+.ww-bars>div{display:flex;flex-direction:column;gap:5px}
+.ww-sus{display:block;height:10px;background:var(--bg2);border:1px solid var(--line2)}
+.ww-sus i{display:block;height:100%;width:0;background:var(--acc);transition:width .12s}
+.ww-sus.hot i{background:var(--red)}
+.ww-prog{display:grid;grid-template-columns:repeat(12,1fr);gap:3px}
+.ww-prog i{height:10px;background:var(--bg2);border:1px solid var(--line2)}
+.ww-prog i.f{background:var(--green);border-color:var(--green)}
+.ww-bars b{font-family:var(--f-mono);font-size:12px;color:var(--mute)}
+.ww-go{margin-top:14px;width:100%}
+.chase-p.ok{color:var(--green)}.chase-p.warn{color:var(--acc)}.chase-p.bad{color:var(--red)}
+@media (max-width:620px){.ww-bars{grid-template-columns:1fr}.ww-shop{height:120px}}
+
+/* casinobalk: niets afknippen op smallere schermen */
+.chud>*{flex:1 1 auto}
+.chud>.ch-main{flex:0 0 auto}
+.ch-bank{min-width:140px}
+@media (max-width:1499px){.chud .ch-r{display:none}.ch-luck .dm-ic{display:none}}

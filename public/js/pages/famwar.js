@@ -206,8 +206,8 @@ function fwEnd(quit){const G=FWG;if(!G||G.phase==='end')return;cancelAnimationFr
  S.fwh=(S.fwh&&S.fwh.f===S.family)?S.fwh:{f:S.family,h:{}};S.fwh.h[G.P]=(S.fwh.h[G.P]||0)+pts;Object.keys(S.fwh.h).forEach(p=>{if(+p<G.P-30)delete S.fwh.h[p]});
  w.res=w.res||[];w.res.push(res);
  if(res==='win'){w.w++;S.fr.ww=(S.fr.ww||0)+1;const cash=fwWinCash(T,s.a-s.b),e=Math.round(18*(1+T*.5)),cr=credGain(4+Math.floor(T/2),'netjes'),xp=50+T*25;
-  S.cash+=cash;S.cred+=cr;famAddEer(e);addXp(xp);S.stats.warWins=(S.stats.warWins||0)+1;got=[fmt(cash),'+'+e+' eer','+'+cr+' cred','+'+xp+' XP']}
- else if(res==='draw'){w.d=(w.d||0)+1;const cash=Math.round(900*Math.pow(2,T)),e=Math.round(8*(1+T*.5)),xp=25+T*12;S.cash+=cash;famAddEer(e);addXp(xp);got=[fmt(cash),'+'+e+' eer','+'+xp+' XP']}
+  S.cash+=cash;addZwart(cash);S.cred+=cr;famAddEer(e);addXp(xp);S.stats.warWins=(S.stats.warWins||0)+1;got=[fmt(cash),'+'+e+' eer','+'+cr+' cred','+'+xp+' XP']}
+ else if(res==='draw'){w.d=(w.d||0)+1;const cash=Math.round(900*Math.pow(2,T)),e=Math.round(8*(1+T*.5)),xp=25+T*12;S.cash+=cash;addZwart(cash);famAddEer(e);addXp(xp);got=[fmt(cash),'+'+e+' eer','+'+xp+' XP']}
  else{w.l++;if(!quit){famAddEer(4);addXp(15+T*6);got=['+4 eer omdat je er was','+'+(15+T*6)+' XP']}}
  addHeat(4);S.fw=w;
  log(`Bendeoorlog tegen ${G.R.f.n}: slag ${res==='win'?'gewonnen':res==='draw'?'gelijk':'verloren'} (${s.a}–${s.b})${got.length?', '+got.join(', '):''}`,res==='win'?'ok':res==='draw'?'info':'bad');
@@ -261,7 +261,7 @@ function fduEnd(ok,msg){const D=FDU;if(!D||D.phase==='res'||D.phase==='end')retu
  D.tm.push(setTimeout(()=>{if(D.w>=2||D.l>=2)fduFinish();else fduRound()},1500))}
 function fduFinish(){const D=FDU;if(!D)return;D.phase='end';document.removeEventListener('keydown',fduKey);const f=D.f,T=D.T,won=D.w>=2;let txt='';
  if(won&&S.family===f.id){if(!S.fr||S.fr.id!==S.family)S.fr={id:S.family,eer:0,since:now()};S.fr.lead=2;S.fr.boss=now();S.fr.trib=S.fr.trib||now();const pay=famPromoPay(FAM_TOP+2,T),cr=credGain(15+T*2,'netjes');
-  S.cash+=pay;S.cred+=cr;addXp(300+T*120);S.stats.takeovers=(S.stats.takeovers||0)+1;
+  S.cash+=pay;addZwart(pay);S.cred+=cr;addXp(300+T*120);S.stats.takeovers=(S.stats.takeovers||0)+1;
   txt=`Jij bent nu de Baas van ${f.n}. +${fmt(pay)} · +${cr} cred`;log(`Overname: ${D.boss} is weg, jij bent de Baas van ${f.n} (+${fmt(pay)})`,'ok');toast(`Jij bent de Baas van ${f.n}!`,'lvl');try{SFX.win(5)}catch(e){}}
  else if(!won){const h=rnd(15,25),lose=Math.ceil(famEer()*.04);S.hp=Math.max(5,S.hp-h);if(lose)famAddEer(-lose);
   txt=`${D.boss} blijft de baas. −${h}% gezondheid${lose?' · −'+lose.toLocaleString('nl-NL')+' eer':''}. Opnieuw over ${fwDur(cdLeft('fam_tko'))}.`;log(`Overname mislukt: ${D.boss} blijft de baas van ${f.n} (−${h}% gezondheid)`,'bad');toast('De overname is mislukt','bad');try{SFX.lose()}catch(e){}}
@@ -271,6 +271,6 @@ function fduFinish(){const D=FDU;if(!D)return;D.phase='end';document.removeEvent
 function fduClose(){FDU&&FDU.tm.forEach(clearTimeout);FDU=null;document.removeEventListener('keydown',fduKey);const el=document.getElementById('fwLayer');if(el)el.remove();window.__chase=false;render()}
 
 Object.assign(act,{
- fwPay(){const x=fwIncome();if(!x)return;S.cash+=x.amt;S.fpay=x.P;toast(`Opbrengst van de periode: +${fmt(x.amt)}`,'lvl');log(`${famBase().n} staat #${x.pos} in de stad: +${fmt(x.amt)}`,'ok');save();render()},
- famTrib(){const a=famTribAvail();if(a<famTribMin())return;S.cash+=a;S.fr.trib=now();toast(`Afdracht van de familie: +${fmt(a)}`,'lvl');log(`Afdracht als ${FAM_RANKS[famRankIdx()][0]}: +${fmt(a)}`,'ok');save();render()}
+ fwPay(){const x=fwIncome();if(!x)return;S.cash+=x.amt;addZwart(x.amt);S.fpay=x.P;toast(`Opbrengst van de periode: +${fmt(x.amt)}`,'lvl');log(`${famBase().n} staat #${x.pos} in de stad: +${fmt(x.amt)}`,'ok');save();render()},
+ famTrib(){const a=famTribAvail();if(a<famTribMin())return;S.cash+=a;addZwart(a);S.fr.trib=now();toast(`Afdracht van de familie: +${fmt(a)}`,'lvl');log(`Afdracht als ${FAM_RANKS[famRankIdx()][0]}: +${fmt(a)}`,'ok');save();render()}
 });

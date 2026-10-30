@@ -97,9 +97,9 @@ function vbFocus(){const st=document.getElementById('vbStage');if(!st)return;con
 // wat je spullen samen doen
 function vbFurnSum(){const keys=Object.keys(FURN_FX).filter(k=>furnFx(k));return keys.length?keys.map(k=>`<li><span>${FURN_FX[k][0]}</span><b>${FURN_FX[k][1](Math.round(furnFx(k)*100)/100)}</b></li>`).join(''):''}
 function vbStep(x,i){const hi=HOMES.indexOf(home()),ri=rankIdx(S.xp),cur=i===hi,past=i<hi,next=i===hi+1,lock=ri<x.r,sel=(vb.sel||home().id)===x.id;
- const st=cur?`Hier woon je · ${furnPlaced().length}/${x.slots} plekken`:past?'Gewoond':next?(lock?'Vanaf '+RANKS[x.r][0]+' · '+fmt(x.p):S.cash>=x.p?'Verhuizen · '+fmt(x.p):fmt(x.p)):'Vanaf '+RANKS[x.r][0]+' · '+fmt(x.p);
+ const st=cur?`Hier woon je · ${furnPlaced().length}/${x.slots} plekken`:past?'Gewoond':next?(lock?'Vanaf '+RANKS[x.r][0]+' · '+fmt(x.p):wit()>=x.p?'Verhuizen · '+fmt(x.p):fmt(x.p)):'Vanaf '+RANKS[x.r][0]+' · '+fmt(x.p);
  const thumb=vhScene(x.id,{thumb:1,key:'t',furn:cur?S.furn:{}});
- return `<button class="vh-step ${cur?'cur':past?'past':next?'next':'lock'} ${sel?'sel':''} ${next&&!lock&&S.cash>=x.p?'can':''}" onclick="vbSel('${x.id}')" aria-pressed="${sel}" ${stay.kind&&!cur?'disabled':''}>
+ return `<button class="vh-step ${cur?'cur':past?'past':next?'next':'lock'} ${sel?'sel':''} ${next&&!lock&&wit()>=x.p?'can':''}" onclick="vbSel('${x.id}')" aria-pressed="${sel}" ${stay.kind&&!cur?'disabled':''}>
   <span class="vh-th">${thumb}</span><span class="vh-sb"><span class="vh-pl">${x.place}</span><b>${x.n}</b><em>${st}</em></span></button>`}
 function vbInfo(){const h=home(),hi=HOMES.indexOf(h),nx=HOMES[hi+1],used=furnPlaced().length,sum=vbFurnSum();
  return `<div class="vh-info"><div class="label">${h.place}</div><h2>${h.n}</h2><p>${h.d}</p>
@@ -111,10 +111,10 @@ function vbInfo(){const h=home(),hi=HOMES.indexOf(h),nx=HOMES[hi+1],used=furnPla
   ${sum?`<div class="vh-sum"><div class="label">Je spullen</div><ul>${sum}</ul></div>`:''}
   <div class="vh-cta"><button class="btn" onclick="vbEdit(true)">Inrichten · ${used}/${h.slots} plekken</button>
    ${nx?`<button class="vh-next" onclick="vbSel('${nx.id}')"><span>Volgende woning</span><b>${nx.n}</b><em>${fmt(nx.p)} ›</em></button>`:''}</div></div>`}
-function vbPreview(x){const h=home(),i=HOMES.indexOf(x),hi=HOMES.indexOf(h),ri=rankIdx(S.xp),lock=ri<x.r,afford=S.cash>=x.p,next=i===hi+1,past=i<hi;
+function vbPreview(x){const h=home(),i=HOMES.indexOf(x),hi=HOMES.indexOf(h),ri=rankIdx(S.xp),lock=ri<x.r,afford=wit()>=x.p,next=i===hi+1,past=i<hi;
  const R=[['Rust',h.rest+' s',x.rest+' s',x.rest<h.rest],['Wachttijd rusten',fmtClock(h.cd*1000),fmtClock(x.cd*1000),x.cd<h.cd],['Per rustbeurt','+'+h.hp+'%','+'+x.hp+'%',x.hp>h.hp],['Max. energie','+'+h.en,'+'+x.en,x.en>h.en],['Hitte per rust',h.heat?'−'+h.heat+'%':'—',x.heat?'−'+x.heat+'%':'—',x.heat>h.heat],['Plekken voor spullen',h.slots,x.slots,x.slots>h.slots]];
  const gone=FURN.filter(f=>S.furn[f.id]&&f.hmax!=null&&i>f.hmax);
- const label=past?'Al achter je gelaten':lock?'Vanaf '+RANKS[x.r][0]:!next?'Eerst '+HOMES[i-1].n.toLowerCase():!afford?'Nog '+fmt(x.p-S.cash)+' nodig':'Verhuizen · '+fmt(x.p);
+ const label=past?'Al achter je gelaten':lock?'Vanaf '+RANKS[x.r][0]:!next?'Eerst '+HOMES[i-1].n.toLowerCase():!afford?(S.cash>=x.p?'Eerst witwassen · '+fmt(x.p-wit())+' wit nodig':'Nog '+fmt(x.p-wit())+' wit nodig'):'Verhuizen · '+fmt(x.p);
  return `<div class="vh-info prev"><div class="label">${x.place}</div><h2>${x.n}</h2><p>${x.d}</p>
   <table class="vh-cmp"><thead><tr><th></th><th>Nu</th><th>${x.n}</th></tr></thead><tbody>${R.map(r=>`<tr class="${!past&&r[3]?'up':''}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table>
   ${gone.length&&!past?`<p class="vh-warn">${gone.map(f=>f.n).join(' en ')} ${gone.length>1?'gaan':'gaat'} naar de opslag: dat neem je niet mee.</p>`:''}
@@ -135,6 +135,6 @@ V.verblijf=()=>{const h=home(),prev=vb.sel&&vb.sel!==h.id&&!stay.kind?HOMES.find
  </section>
  <div class="vb-acts vh-acts">${['rest','doc'].map(vbAct).join('')}${vbHideCard()}</div>`};
 Object.assign(act,{moveHome(id){const i=HOMES.findIndex(h=>h.id===id),cur=HOMES.indexOf(home()),x=HOMES[i];
-  if(i!==cur+1||rankIdx(S.xp)<x.r||S.cash<x.p||stay.kind)return;S.cash-=x.p;S.home=id;const moved=furnNormalize();vb.sel=null;vb.edit=false;
+  if(i!==cur+1||rankIdx(S.xp)<x.r||stay.kind)return;if(wit()<x.p){toast(S.cash>=x.p?'Een woning koop je met wit geld. Was je zwarte geld eerst wit.':'Niet genoeg contant geld','bad');return}spendWit(x.p);S.home=id;const moved=furnNormalize();vb.sel=null;vb.edit=false;
   SFX.big();toast('Verhuisd naar '+x.n+' ('+x.place+')'+(moved.length?'. '+moved.map(f=>f.n).join(' en ')+' '+(moved.length>1?'staan':'staat')+' in de opslag.':''),'lvl');
   log('Verhuisd naar '+x.n+', '+x.place,'ok');addXp(Math.floor(x.p/400));save();render();window.scrollTo({top:0,behavior:'smooth'})}});

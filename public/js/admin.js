@@ -122,7 +122,7 @@ function renderDetail(){const el=$('#detail');if(!el)return;
   ${openF.length&&A.flagOpen?`<section class="a-flags"><div class="a-flags-h">${WARN}<div><b>Mogelijk misbruik</b><span>Automatische signalen van het spel en notities van beheer. Het is geen bewijs: kijk ook naar de cijfers en het logboek.</span></div></div>
    ${openF.map(f=>`<div class="a-flag"><div><b>${esc(flagName(f.kind))}${f.count>1?` <em>${f.count}×</em>`:''}</b><span>${esc((FLAG[f.kind]||['',''])[1])}</span><code>${esc(f.detail||'')}</code></div><small>${ago(f.ago_s)}</small></div>`).join('')}
    <div class="a-flags-b"><button class="a-btn ghost sm" id="flagOk" ${busy}>Afgehandeld</button>${p.banned?'':`<button class="a-btn red sm" id="flagBan" ${busy}>Verbannen</button>`}</div></section>`:''}
-  ${played?`<div class="a-kvs">${kv('Contant',fmt(s.cash))}${kv('Spaarrekening',fmt(s.bank))}${kv('Deposito\'s en beleggen',fmt(s.bankExtra))}${kv('Straatcredit',nl(s.cred))}
+  ${played?`<div class="a-kvs">${kv('Contant',fmt(s.cash),s.zwart?fmt(s.zwart)+' zwart':'')}${kv('Spaarrekening',fmt(s.bank))}${kv('Deposito\'s en beleggen',fmt(s.bankExtra))}${kv('Straatcredit',nl(s.cred))}
    ${kv('Energie / gezondheid',nl(s.energy)+' / '+nl(s.hp)+'%')}${kv('Hitte',nl(s.heat)+'%',s.wanted?'gezocht door de politie':'',s.heat>60?'bad':'')}${kv('Cel',jail?'Zit vast':'Vrij',jail?'nog '+Math.ceil((s.jailUntil-Date.now())/60000)+' min':'',jail?'bad':'')}
    ${kv('Familie',s.family?esc(famName(s.family)):'Geen',s.family?nl(s.famEer)+' eer':'')}${kv('Bedrijven',nl(s.units)+' vestigingen',s.kas?'kas '+fmt(s.kas):'')}${kv('Casino',fmtK((s.stats&&s.stats.won)||0)+' gewonnen',fmtK((s.stats&&s.stats.lost)||0)+' verloren')}</div>`:''}
   <div class="a-cards">

@@ -2,7 +2,7 @@
 const act={
  crime(id){const c=CRIMES.find(x=>x.id===id);if(inJail()||cdLeft(id)||rankIdx(S.xp)<c.r)return;if(S.energy<c.en){toast('Te moe. Je hebt '+c.en+' energie nodig','bad');return}S.energy-=c.en;S.cd[id]=now()+crimeCd(c);
   const roll=rnd(1,100),ch=chance(c);
-  if(roll<=ch){const g=Math.floor(rnd(c.min,c.max)*lootMult()*mastLoot(c.id));S.cash+=g;S.stats.crimes++;
+  if(roll<=ch){const g=Math.floor(rnd(c.min,c.max)*lootMult()*mastLoot(c.id));S.cash+=g;addZwart(g);S.stats.crimes++;
    const ml0=mastLv(c.id);S.mast=S.mast||{};S.mast[c.id]=(S.mast[c.id]||0)+1;const ml1=mastLv(c.id);
    if(ml1>ml0)setTimeout(()=>toast(`Vakmanschap ${MAST[ml1][1]}: ${c.n} (+${ml1*2}% kans, +${ml1*5}% buit)`,'lvl'),600);
    // hoe ruim je slaagde bepaalt hoe goed het werd: perfect (ruim binnen je kans) of netjes
@@ -47,8 +47,8 @@ const act={
   if(r.heat){S.heat=Math.max(0,S.heat-r.heat);m.push('hitte -'+r.heat)}
   if(r.clearWanted&&S.wanted){S.wanted=false;m.push('niet meer gezocht')}
   toast(r.n+': '+m.join(', '));log(r.place+': '+m.join(', '),'info');save();render()},
- sell(i){const c=S.cars.splice(i,1)[0];S.cash+=c.v;toast(c.n+' verkocht: +'+fmt(c.v));save();render()},
- sellAll(){const t=S.cars.reduce((a,c)=>a+c.v,0);S.cash+=t;S.cars=[];toast('Alles verkocht: +'+fmt(t));save();render()},
+ sell(i){const c=S.cars.splice(i,1)[0];S.cash+=c.v;addZwart(c.v);toast(c.n+' verkocht: +'+fmt(c.v));save();render()},
+ sellAll(){const t=S.cars.reduce((a,c)=>a+c.v,0);S.cash+=t;addZwart(t);S.cars=[];toast('Alles verkocht: +'+fmt(t));save();render()},
  getBet(){if(inJail()){toast('Je zit vast, geen gokken','bad');return 0}const b=Math.floor(+($('#bet').value||0));if(b<10){toast('Minimale inzet is €10','bad');return 0}if(b>S.cash){toast('Niet genoeg contant geld','bad');return 0}return b},
  claimCb(){const a=cbAvail();if(a<1)return;S.cash+=a;S.cb.acc=(S.cb.acc||0)-a;SFX.big();toast('VIP-cashback: +'+fmt(a),'lvl');log('VIP-cashback ontvangen: '+fmt(a),'ok');save();pushState();render()},
  win(b,m,label){casinoRound(b,m>0?b*m:0,'coin');if(m>0){S.cash+=b*m-b;S.stats.won+=b*m-b;toast(label+' Gewonnen: +'+fmt(b*m-b));log('Casino: +'+fmt(b*m-b),'ok')}else{S.cash-=b;S.stats.lost+=b;toast(label+' Verloren: -'+fmt(b),'bad');log('Casino: -'+fmt(b),'bad')}save()},

@@ -199,7 +199,7 @@ function hitStart(id){const H=HITS.find(h=>h.id===id);if(!H||window.__hitG||wind
 function hitEnd(H,res,m){m=HIT_M[m]?m:'geweer';const M=HIT_M[m],pref=H.pref===m,R0=hm();S.pendingHit=null;S.stats.hitTries=(S.stats.hitTries||0)+1;
  const feudK=M.feud,wl=hitWantLv(H,m);
  if(res.ok){const [a,b]=hitPayM(H,m),perfect=res.zone==='head',pay=Math.round(rnd(a,b)*(perfect?1.25:1)),cr=credGain(H.cr*M.cr*(pref?1.1:1),perfect?'perfect':'netjes');
-  S.cash+=pay;S.cred+=cr;S.stats.hits=(S.stats.hits||0)+1;if(perfect)S.stats.hitsPerfect=(S.stats.hitsPerfect||0)+1;R0.n[m]=(R0.n[m]||0)+1;
+  S.cash+=pay;addZwart(pay);S.cred+=cr;S.stats.hits=(S.stats.hits||0)+1;if(perfect)S.stats.hitsPerfect=(S.stats.hitsPerfect||0)+1;R0.n[m]=(R0.n[m]||0)+1;
   addHeat((8+H.d*3)*(m==='ongeluk'?.4:1));addXp(Math.round(H.xp*(perfect?1.2:1)));
   if(typeof famEv==='function')famEv('crime',{r:H.r,g:pay,cr});
   const wanted=Math.random()<hitWantChance(H,m,perfect),lv0=hitRepLv();R0.rep+=hitRepGain(H,m,perfect,!wanted);const lv1=hitRepLv();
@@ -676,7 +676,7 @@ function bhGame(w){return new Promise(resolve=>{window.__bhG=true;window.__chase
   q('#bhP').textContent=ok?`${ms} ms. Hij was niet snel genoeg en gaat ervandoor zonder zijn papieren.`:why==='early'?'Je bewoog voordat hij dat deed. Hij was er klaar voor.':'Hij was sneller dan jij.';
   q('#bhB').disabled=true;try{ok?SFX.shot():SFX.lose()}catch(e){}
   setTimeout(()=>{L.remove();document.body.classList.remove('hg-open');window.__bhG=false;window.__chase=false;resolve({ok,why,ms})},1800)}})}
-function bhWin(ms){const w=wantedObj(),g=Math.round(rnd(20,50)*100*(1+hitRepLv()*.5)),cr=credGain(3,'netjes');S.cash+=g;S.cred+=cr;hm().rep+=6;
+function bhWin(ms){const w=wantedObj(),g=Math.round(rnd(20,50)*100*(1+hitRepLv()*.5)),cr=credGain(3,'netjes');S.cash+=g;addZwart(g);S.cred+=cr;hm().rep+=6;
  if(w&&w.lv>1)w.lv--;log(`Premiejager afgeschud (${ms} ms): +${fmt(g)}, +${cr} cred${w?', nu '+WANT_LV[w.lv].n.toLowerCase():''}`,'ok');
  save();pushState();if(!window.__chase)render();toast(`Je was sneller (${ms} ms). Zijn geld en zijn dossier over jou: +${fmt(g)}${w?' · nog '+WANT_LV[w.lv].n.toLowerCase():''}`,'lvl')}
 function bhLose(refresh){const h=rnd(12,24),c=Math.min(40000,Math.max(0,Math.round(S.cash*.06)));S.hp=Math.max(5,S.hp-h);S.cash-=c;if(S.hm)S.hm.bhPend=0;

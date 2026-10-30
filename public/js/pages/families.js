@@ -35,13 +35,13 @@ function famAddEer(x){if(!S.family)return;if(!S.fr||S.fr.id!==S.family)S.fr={id:
  // leiding kwijt als je eer onder Erelid zakt (je moet het daarna opnieuw verdienen)
  if(L&&famRankEer()<FAM_TOP){S.fr.lead=0;const a=famRankIdx();toast(`Je eer zakte onder ${FAM_RANKS[FAM_TOP][0]}: je bent geen ${FAM_RANKS[FAM_TOP+L][0]} meer, nu ${FAM_RANKS[a][0]}`,'bad');log(`Familie: je plek als ${FAM_RANKS[FAM_TOP+L][0]} kwijt, nu ${FAM_RANKS[a][0]}`,'bad');return}
  const a=famRankIdx();
- if(a>b){const pay=famPromoPay(a,famTier());S.cash+=pay;toast(`Promotie in ${famBase().n}: je bent nu ${FAM_RANKS[a][0]}! +${fmt(pay)}`,'lvl');log(`Familie: gepromoveerd tot ${FAM_RANKS[a][0]} (+${fmt(pay)})`,'ok')}
+ if(a>b){const pay=famPromoPay(a,famTier());S.cash+=pay;addZwart(pay);toast(`Promotie in ${famBase().n}: je bent nu ${FAM_RANKS[a][0]}! +${fmt(pay)}`,'lvl');log(`Familie: gepromoveerd tot ${FAM_RANKS[a][0]} (+${fmt(pay)})`,'ok')}
  else if(a<b){toast(`Gedegradeerd tot ${FAM_RANKS[a][0]} in ${famBase().n}`,'bad');log(`Familie: gedegradeerd tot ${FAM_RANKS[a][0]}`,'bad')}}
 // gebeurtenissen uit de rest van het spel
 function famEv(ev,e){if(!S.family)return;e=e||{};famDaily();
  if(ev==='crime'&&e.cr)famAddEer(e.cr);if(ev==='car')famAddEer(1);
  S.fm.list.forEach(m=>{if(m.done)return;const D=FM_DEF[m.k];if(D.ev!==ev||(D.ok&&!D.ok(m,e)))return;m.p=Math.min(m.n,m.p+(D.amt?D.amt(e):1));
-  if(m.p>=m.n){m.done=true;const pay=fmPay(m);famAddEer(m.eer);if(pay)S.cash+=pay;toast(`Familiemissie gehaald: +${m.eer} eer${pay?' en '+fmt(pay):''}`,'lvl');log(`Familiemissie: ${D.t(m)} (+${m.eer} eer)`,'ok')}});
+  if(m.p>=m.n){m.done=true;const pay=fmPay(m);famAddEer(m.eer);if(pay){S.cash+=pay;addZwart(pay)}toast(`Familiemissie gehaald: +${m.eer} eer${pay?' en '+fmt(pay):''}`,'lvl');log(`Familiemissie: ${D.t(m)} (+${m.eer} eer)`,'ok')}});
  if(!S.fm.bonus&&S.fm.list.every(m=>m.done)){S.fm.bonus=true;const B=FM_BONUS(famTier());famAddEer(B.eer);S.cred+=B.cred;toast(`Alle 5 familiemissies gehaald! +${B.eer} eer en +${B.cred} straatcredit`,'lvl');log(`Familie: alle missies gehaald (+${B.eer} eer, +${B.cred} cred)`,'ok')}}
 // grote klus van de dag
 function famHeistReq(){const H=famHeist(),o=[{l:`Vuurkracht ${H.vk} (jij ${gearVk()})`,ok:gearVk()>=H.vk}];
@@ -171,14 +171,14 @@ Object.assign(act,{
  join(id){const x=FAMILIES.find(k=>k.id===id);if(!x||inJail()||feudBanLeft(id)||rankIdx(S.xp)<x.r||S.cred<x.cred||famHits()<(x.hits||0)||S.family===id)return;const old=famBase();
   S.family=id;S.fr={id,eer:0,since:now()};fmNew(true);famUI.confirm=null;toast('Welkom bij '+x.n+'. Je begint als Aspirant.','lvl');log((old?old.n+' verlaten, ':'')+'aangesloten bij '+x.n,'ok');save();pushState();render()},
  famUp(){const T=famTier();if(!S.family||famLead()||famRankEer()<FAM_TOP||famEer()<famNeed(FAM_TOP+1,T)||((S.fr&&S.fr.ww)||0)<3)return;
-  S.fr.lead=1;S.fr.trib=now();const pay=famPromoPay(FAM_TOP+1,T),cr=5+T;S.cash+=pay;S.cred+=cr;
+  S.fr.lead=1;S.fr.trib=now();const pay=famPromoPay(FAM_TOP+1,T),cr=5+T;S.cash+=pay;addZwart(pay);S.cred+=cr;
   toast(`Je bent nu Onderbaas van ${famBase().n}! +${fmt(pay)}`,'lvl');log(`Familie: Onderbaas van ${famBase().n} (+${fmt(pay)}, +${cr} cred)`,'ok');save();pushState();render()},
  leave(){const f=famBase();if(!f)return;log('Familie '+f.n+' verlaten','info');S.family=null;S.fr=null;S.fm=null;famUI.confirm=null;toast('Je bent weer op jezelf');save();pushState();render()},
- famCar(i){const c=S.cars[i];if(!c||!S.family)return;S.cars.splice(i,1);const pay=Math.round(c.v*.3),e=Math.round(2+Math.sqrt(c.v)/20);S.cash+=pay;famAddEer(e);
+ famCar(i){const c=S.cars[i];if(!c||!S.family)return;S.cars.splice(i,1);const pay=Math.round(c.v*.3),e=Math.round(2+Math.sqrt(c.v)/20);S.cash+=pay;addZwart(pay);famAddEer(e);
   toast(`${c.n} afgeleverd bij ${famBase().n}: +${e} eer en ${fmt(pay)}`,'ok');log(`${c.n} afgeleverd bij de familie (+${e} eer)`,'ok');famEv('deliver',{v:c.v});save();render()},
  famHeist(){famDaily();const H=famHeist(),m=S.fm.list.find(x=>x.k==='heist');if(!m||m.done||inJail()||cdLeft('fam_heist')||!famHeistReq().every(r=>r.ok))return;
   S.energy-=H.en;const ch=famHeistChance();
-  if(rnd(1,100)<=ch){const [a,b]=famHeistLoot(),g=Math.floor(a+Math.random()*(b-a));S.cash+=g;S.stats.crimes++;addHeat(15);addXp(20+10*famTier());famEv('heist');
+  if(rnd(1,100)<=ch){const [a,b]=famHeistLoot(),g=Math.floor(a+Math.random()*(b-a));S.cash+=g;addZwart(g);S.stats.crimes++;addHeat(15);addXp(20+10*famTier());famEv('heist');
    toast(H.n+' gelukt: +'+fmt(g),'lvl');log(H.n+' gelukt, buit '+fmt(g),'ok');save();render()}
   else{S.cd.fam_heist=now()+20*60000*waitK();S.hp=Math.max(10,S.hp-rnd(10,25));addHeat(20);addXp(5);log(H.n+' mislukt','bad');save();
    arrest(H.jail,'Overval mislukt!','De politie stond al te wachten bij '+H.n.toLowerCase().replace(/^\w+ /,'')+'.',{flee:4})}}

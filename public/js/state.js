@@ -75,6 +75,26 @@ window.addEventListener('pagehide',flushNow);document.addEventListener('freeze',
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushNow()});
 function logout(){pushState(true);try{localStorage.removeItem('ow_token')}catch(e){}setTimeout(()=>location.replace('/'),150)}
 S=load();
+// Zwart geld: wat je verdient met klussen, huurmoorden, auto's, de familie en bendes. S.zwart = het deel van je contant geld
+// dat zwart is. Gewoon uitgeven (wapens, kleding, training, ontspannen) gaat eerst van je zwarte geld. De bank, deposito's,
+// beleggen, zaken en woningen nemen alleen wit geld (spendWit). In het casino regelt casinoRound het zwarte deel van je
+// inzet, met een kans op een controle; uitbetalingen uit het casino zijn wit. Witwassen: pages/witwas.js.
+let zwWit=false;
+const zwCasino=()=>typeof page!=='undefined'&&page==='casino';
+function zwInit(){const d=Object.getOwnPropertyDescriptor(S,'cash');if(d&&d.get)return;let c=+S.cash||0;S.zwart=Math.max(0,Math.min(c,+S.zwart||0));
+ Object.defineProperty(S,'cash',{enumerable:true,configurable:true,get(){return c},set(v){v=+v||0;const dl=v-c;c=v;
+  if(dl<0&&!zwWit&&!zwCasino())S.zwart=Math.max(0,(S.zwart||0)+dl);if((S.zwart||0)>c)S.zwart=Math.max(0,c)}})}
+zwInit();
+const zwart=()=>Math.max(0,Math.min(S.cash,S.zwart||0));
+const wit=()=>Math.max(0,S.cash-zwart());
+function addZwart(x){x=+x||0;if(x>0)S.zwart=Math.min(S.cash,(S.zwart||0)+x)}
+function spendWit(x){zwWit=true;try{S.cash-=x}finally{zwWit=false}}
+// casino: verdenking (0-100%) loopt op met het zwarte geld dat je inzet, zakt 3% per minuut. Op 100% volgt zeker een controle.
+const czLim=()=>20000*Math.pow(1.8,rankIdx(S.xp));
+function czVal(){const C=S.cz;if(!C)return 0;const m=Math.max(0,(now()-(C.t||now()))/60000);C.s=Math.max(0,(C.s||0)-m*3);C.t=now();if(!C.s)C.g=0;return C.s}
+function zwCasinoRound(stake){const z=zwart();if(!z||!(stake>0))return;const used=Math.min(z,stake);S.zwart=z-used;
+ const C=S.cz||(S.cz={s:0,t:now(),g:0});czVal();C.g=(C.g||0)+used;C.s=Math.min(100,C.s+used/czLim()*100);
+ const p=C.s>=100?1:Math.pow(C.s/100,2)*.25;if(Math.random()<p)window.__czCheck=true}
 if(window.__PUSH_LOCAL__)setTimeout(()=>pushState(),1200);
 if(window.__REDEEMED__)window.__REDEEMED__.forEach(c=>{if(!S.redeemed.includes(c))S.redeemed.push(c)});
 S.redeemed=S.redeemed.filter(c=>LIVE_CODES[c]||RANK_CODES[c]);
@@ -219,7 +239,7 @@ const playerTags=t=>'<i class="spt" title="Echte speler">SPELER</i>'+lidTag(t);
 // tag bij je naam; kort = 'HR' voor smalle plekken (balk bovenin)
 const vipTag=short=>isHR()?`<i class="vipt hr" title="High roller">${short?'HR':'HIGH ROLLER'}</i>`:isVip()?'<i class="vipt" title="VIP-lid">VIP</i>':'';
 // Elke afgeronde casinoronde: inzet, wat je terugkreeg en welk spel. VIP spaart een vast percentage van de inzet op.
-function casinoRound(stake,pay,game){if(typeof pushSoon==='function')setTimeout(pushSoon,0);if(!isVip())return;const r=(CB_RATE[game]||0)*(TIER_CB[tier()]||0);if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
+function casinoRound(stake,pay,game){zwCasinoRound(stake);if(typeof pushSoon==='function')setTimeout(pushSoon,0);if(!isVip())return;const r=(CB_RATE[game]||0)*(TIER_CB[tier()]||0);if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
   const el=document.getElementById('cbAmt');if(el)el.textContent=fmt(cbAvail());const bt=document.getElementById('cbBtn');if(bt){bt.disabled=cbAvail()<1;bt.textContent=cbAvail()>=1?'Claimen':'Nog niks te claimen'}}
 const cbAvail=()=>isVip()&&S.cb?Math.floor(S.cb.acc||0):0;
 const crimeCd=c=>c.cd*1000*(1-S.skills.speed*SK.speed.cd)*(1-famPerk('cd'))*(1-fitFx('cd'))*waitK();
