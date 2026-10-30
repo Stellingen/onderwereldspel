@@ -303,7 +303,7 @@ function renderTop(){
   const ri=rankIdx(S.xp);const jt=Math.ceil((S.jailUntil-now())/1000);const pend=window.slotPending||0;
   const nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
   setHTML($('#topbar'),`
-   <div class="chip rank"><small>Rang · lv ${rankLevel(S.xp)}</small><b>${RANKS[ri][0]}${vipTag(1)}</b><div class="mini"><i style="width:${pct}%;background:var(--acc)"></i></div></div>
+   <div class="chip rank"><small>Rang · lv ${rankLevel(S.xp)}</small><b><span class="rk-n">${RANKS[ri][0]}</span>${vipTag(1)}</b><div class="mini"><i style="width:${pct}%;background:var(--acc)"></i></div></div>
    <a class="chip cash" href="#bank" title="Wit geld: schoon, overal aan uit te geven"><small><i class="ci">${ICO_CASH}</i>Wit geld</small><b>${fmt(witNu(pend))}</b></a>
    <a class="chip zwc ${zwart()<1?'nul':''}" href="#wit" title="Zwart geld: eerst witwassen voor de bank of een zaak"><small><i class="ci">${ICO_ZWART}</i>Zwart geld</small><b>${fmt(zwart())}</b></a>
    <a class="chip bankc" href="#bank" title="Op de bank staat je geld veilig"><small><i class="ci">${ICO_BANK}</i>Bank</small><b>${fmt(typeof bankNet==='function'?bankNet():S.bank)}</b></a>

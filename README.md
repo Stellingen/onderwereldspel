@@ -58,10 +58,10 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   De vijfde knop heet altijd **Meer** (oplichtend als je op een pagina uit het menu zit), zodat je het menu nooit kwijtraakt.
   Bovenin het menu een zoekveld dat pagina's én wat je erop kunt doen vindt (kliniek, onderduiken, trainen, roulette,
   codes, witwassen...; Enter opent het eerste resultaat, een casinospel opent meteen dat spel), en je laatst bezochte pagina's.
-  De statusbalk heeft twee rijen zonder zijwaarts vegen: boven wit geld, zwart geld en bank, onder rang, energie, cred,
-  gezondheid en hitte (tik op energie, gezondheid of hitte om er iets aan te doen). In het casino: saldo groot met daaronder
+  De statusbalk heeft twee rijen zonder zijwaarts vegen: boven je rang (VIP- of HR-tag erboven), energie, cred, gezondheid
+  en hitte (tik op energie, gezondheid of hitte om er iets aan te doen), onder je geld: contant (wit) groot, zwart en bank. In het casino: saldo groot met daaronder
   wit en zwart apart, bank rechts, en een rij knoppen voor cashback claimen, de geluksdobbelsteen en de verdenking.
-  De statusbalk staat bovenaan de pagina en scrolt gewoon mee weg; bovenin houdt een strook in de achtergrondkleur alles
+  De statusbalk blijft bovenaan staan als je scrolt (in het casino schuiven claim/geluk weg en blijven saldo en bank staan); bovenin houdt een strook in de achtergrondkleur alles
   vrij van de klok, batterij en het eiland van de iPhone (ook in pop-ups en het vluchtspel). De nieuwsband en
   het kruimelpad vallen weg, en de casinospellen staan als 2 rijen knoppen. Hertekenen houdt je scrollpositie vast; in de slots
   worden alleen de onderdelen bijgewerkt die veranderen. Op de computer is niets veranderd.
