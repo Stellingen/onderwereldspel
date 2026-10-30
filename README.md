@@ -37,7 +37,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   Hoe beter, hoe duurder en hoe langer de wachttijd (20 minuten tot 8 uur). Prijs = basis × (1 + 0,5 per rang) × (1 + 10% per
   rang-level). Luxe geeft ook een tijdelijke buitbonus (+10% of +15%).
 - **Blackjack** aan een volle tafel (6 kaartspellen, dealer staat op 17, splitsen/verdubbelen, 3:2) met side bets
-  Perfect Pairs en 21+3 (€10 tot €500 per rang: Straatschoffie €500, Boef €2.500, Peetvader €6.000), hoofdinzet tot €50.000. **Three Card Poker** met Ante/Play, Pair Plus en 6-Card Bonus (zelfde maximum per rang). Code: `public/js/pages/tafels.js`.
+  Perfect Pairs (perfect pair 27:1, gekleurd 12:1, gemengd 6:1; RTP ±97% bij 6 decks) en 21+3 (€10 tot €500 per rang: Straatschoffie €500, Boef €2.500, Peetvader €6.000), hoofdinzet tot €50.000. **Three Card Poker** met Ante/Play, Pair Plus en 6-Card Bonus (zelfde maximum per rang). Knoppen: Kaart (hit), Passen (stand), Verdubbelen, Splitsen; kan verdubbelen of splitsen niet, dan is de knop rood en doorgestreept met de reden (geen paar, te weinig saldo). Play bij Three Card Poker is gelijk aan de ante, net als in het casino. Code: `public/js/pages/tafels.js`.
 - **Verblijf** (`verblijf.js`, scènes en inrichten in `inrichting.js`): de woningen staan bovenaan als ladder, elk met een
   isometrische scène (onder de brug, kraakpand, huurkamer, grachtenappartement, penthouse, villa) en een aantal plekken
   (1, 2, 4, 6, 9, 13). Klik op je woning om in te richten: 19 spullen, neerzetten, opbergen of verkopen (de helft terug);

@@ -2331,3 +2331,10 @@ body.hg-open{overflow:hidden}
  /* saldo, winst en (in de bonus) spins direct onder het bord, de knoppen daaronder: bij gewone spins en in de bonus */
  .kk3 .kk-bar .kk-hud{order:-2}
 }
+/* Blackjack: actieknoppen met de Engelse term eronder; kan het niet, dan rood met de reden */
+.tb-act.play .btn.bj-a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.1}
+.btn.bj-a small{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;font-weight:500}
+.btn.bj-a.no,.btn.bj-a.no:disabled{background:rgba(255,77,94,.08);color:#ff8a95;border:1.5px dashed rgba(255,77,94,.65);cursor:not-allowed;box-shadow:none}
+.btn.bj-a.no span{text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:rgba(255,77,94,.8)}
+.btn.bj-a.no small{opacity:1;color:#ff6b78}
+@media (max-width:900px){.tb-act.play{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tb-act.play .btn.bj-a{min-width:0;padding:10px 8px}}

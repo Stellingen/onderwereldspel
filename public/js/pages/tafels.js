@@ -33,7 +33,7 @@ window.bt=window.bt||{shoe:newShoe(6),bets:{main:0,pp:0,t21:0},last:null,phase:'
 const bjv=c=>c.r>=11&&c.r<=13?10:c.r===14?11:c.r;
 function bjTotal(cards){let t=0,a=0;cards.forEach(c=>{t+=bjv(c);if(c.r===14)a++});while(t>21&&a){t-=10;a--}return {t,soft:a>0}}
 function bjDraw(){if(bt.shoe.length<78)bt.shoe=newShoe(6);return bt.shoe.pop()}
-function ppResult(a,b){if(a.r!==b.r)return null;if(a.s===b.s)return ['Perfect pair',25];if(isRed(a.s)===isRed(b.s))return ['Gekleurd paar',12];return ['Gemengd paar',6]}
+function ppResult(a,b){if(a.r!==b.r)return null;if(a.s===b.s)return ['Perfect pair',27];if(isRed(a.s)===isRed(b.s))return ['Gekleurd paar',12];return ['Gemengd paar',6]}
 function t3Result(cs){const rs=cs.map(c=>c.r).sort((x,y)=>x-y),fl=cs.every(c=>c.s===cs[0].s),tr=rs[0]===rs[2];
   const st=(rs[2]-rs[0]===2&&rs[1]-rs[0]===1)||(rs[0]===2&&rs[1]===3&&rs[2]===14);
   if(tr&&fl)return ['Suited trips',100];if(st&&fl)return ['Straight flush',40];if(tr)return ['Drie gelijke',30];if(st)return ['Straat',10];if(fl)return ['Flush',5];return null}
@@ -51,7 +51,7 @@ function bjTable(){
       <div class="cards">${hd.cards.map((c,j)=>cardEl(c,j)).join('')}</div>
       <div class="hl"><b>${t.t>21?'Dood':(t.soft&&t.t<21?t.t-10+'/'+t.t:t.t)}</b><span>${fmt(hd.bet)}${hd.dbl?' · verdubbeld':''}</span>${hd.out?`<em>${hd.out}</em>`:''}</div></div>`}).join(''):`<div class="hand">${ghosts(2)}</div>`}</div>
     <div class="spots">
-     ${spot('bj','pp','Perfect Pairs',b.bets.pp,{side:1,dis:!bet,sub:'25 : 1',out:bet?'':sideOut('pp'),res:b.side.pp&&(b.side.pp.win?'win':'lose')})}
+     ${spot('bj','pp','Perfect Pairs',b.bets.pp,{side:1,dis:!bet,sub:'27 : 1',out:bet?'':sideOut('pp'),res:b.side.pp&&(b.side.pp.win?'win':'lose')})}
      ${spot('bj','main','Inzet',b.bets.main,{dis:!bet,sub:`€${TB.MAIN_MIN}–€${TB.MAIN_MAX.toLocaleString('nl-NL')}`})}
      ${spot('bj','t21','21 + 3',b.bets.t21,{side:1,dis:!bet,sub:'100 : 1',out:bet?'':sideOut('t21'),res:b.side.t21&&(b.side.t21.win?'win':'lose')})}
     </div>
@@ -64,13 +64,17 @@ function bjTable(){
      ${b.last?`<button class="btn ghost" onclick="act.tbRebet('bj')">Zelfde inzet</button>`:''}
      <button class="btn" onclick="act.btDeal()" ${b.bets.main>=TB.MAIN_MIN&&!inJail()?'':'disabled'}>Delen · ${fmt(b.bets.main+b.bets.pp+b.bets.t21)}</button></div>`
    :b.phase==='play'?`<div class="tb-act play">${(()=>{const hd=h[b.active],c=hd.cards,can2=c.length===2&&!hd.splitAce;
-     const canSplit=can2&&h.length===1&&bjv(c[0])===bjv(c[1])&&S.cash>=hd.bet,canDbl=can2&&S.cash>=hd.bet;
-     return `<button class="btn" onclick="act.btHit()">Kaart</button><button class="btn" onclick="act.btStand()">Passen</button>
-      <button class="btn ghost" onclick="act.btDouble()" ${canDbl?'':'disabled'}>Verdubbelen</button><button class="btn ghost" onclick="act.btSplit()" ${canSplit?'':'disabled'}>Splitsen</button>`})()}</div>`
+     const pair=bjv(c[0])===bjv(c[1]),money=S.cash>=hd.bet;
+     const canSplit=can2&&h.length===1&&pair&&money,canDbl=can2&&money;
+     // Kan het niet, dan duidelijk rood met de reden eronder
+     const whyDbl=!can2?'alleen bij 2 kaarten':!money?'te weinig saldo':'',whySpl=!can2||h.length>1?'alleen bij je eerste 2 kaarten':!pair?'geen paar':!money?'te weinig saldo':'';
+     const ab=(fn,lab,en,ok,why)=>`<button class="btn bj-a ${ok?'ghost':'no'}" onclick="${fn}" ${ok?'':'disabled aria-disabled="true"'}><span>${lab}</span><small>${ok?en:why}</small></button>`;
+     return ab('act.btHit()','Kaart','hit',1).replace('bj-a ghost','bj-a')+ab('act.btStand()','Passen','stand',1).replace('bj-a ghost','bj-a')
+      +ab('act.btDouble()','Verdubbelen','double · '+fmt(hd.bet)+' erbij',canDbl,whyDbl)+ab('act.btSplit()','Splitsen','split · '+fmt(hd.bet)+' erbij',canSplit,whySpl)})()}</div>`
    :`<div class="tb-act"><button class="btn" onclick="act.btNew()">Nieuwe ronde</button><button class="btn ghost" onclick="act.tbRebet('bj');act.btDeal()" ${b.last&&S.cash>=b.last.main+b.last.pp+b.last.t21?'':'disabled'}>Zelfde inzet en delen</button></div>`}
   </div>
   <div class="paytabs">
-   <div class="card"><h3>Perfect Pairs</h3><p class="sub">Je eerste twee kaarten vormen een paar.</p>${tbPayRow([['Perfect pair (zelfde kleur en teken)','25 : 1'],['Gekleurd paar (zelfde kleur)','12 : 1'],['Gemengd paar','6 : 1']])}</div>
+   <div class="card"><h3>Perfect Pairs</h3><p class="sub">Je eerste twee kaarten vormen een paar.</p>${tbPayRow([['Perfect pair (zelfde kleur en teken)','27 : 1'],['Gekleurd paar (zelfde kleur)','12 : 1'],['Gemengd paar','6 : 1']])}</div>
    <div class="card"><h3>21 + 3</h3><p class="sub">Je twee kaarten plus de open kaart van de dealer, als pokerhand.</p>${tbPayRow([['Suited trips','100 : 1'],['Straight flush','40 : 1'],['Drie gelijke','30 : 1'],['Straat','10 : 1'],['Flush','5 : 1']])}</div>
   </div>
  </div>`;
