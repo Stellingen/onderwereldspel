@@ -196,6 +196,11 @@ app.post('/api/state', auth, async (req, res) => {
       return String(cur[0].sid).startsWith('adm')
         ? res.status(409).json({ error: 'Je account is bijgewerkt door een beheerder.', code: 'admin_update' })
         : res.status(409).json({ error: 'Je speelt op een ander apparaat verder.', code: 'other_device' });
+    // een oudere stand van hetzelfde apparaat die later binnenkomt (twee opslagen tegelijk onderweg) mag een nieuwere niet overschrijven
+    if (cur.length && cur[0].state && s._dev) {
+      let ps = null; try { ps = JSON.parse(cur[0].state); } catch (e) {}
+      if (ps && ps._dev === s._dev && (+s.savedAt || 0) < (+ps.savedAt || 0)) return res.json({ ok: true, rev: cur[0].rev, stale: true });
+    }
     const rev = (cur.length ? cur[0].rev : 0) + 1;
     if (cur.length) checkJump(req.user.id, cur[0], s, +cur[0].dt || 1);
     const json = JSON.stringify(s);

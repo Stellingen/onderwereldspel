@@ -4,12 +4,17 @@ function fresh(){return{name:'Jij',cash:250,bank:0,xp:0,hp:100,heat:0,jailUntil:
   npcs:NPC_NAMES.map((n,i)=>({n,xp:Math.floor(200*Math.pow(1.55,i))+rnd(0,300),cash:rnd(1000,50000)*(i+1)}))}}
 // Opslag: met account in de database (via /api/state), anders alleen in de browser.
 const SAVE_KEY='onderwereld_v1'+(window.__USER__?'_'+window.__USER__.toLowerCase():'');
+// vaste id van deze browser: zo weet het spel of de opslag op de server van dit apparaat komt (of van een ander apparaat / een beheerder)
+const DEV_ID=(()=>{try{let d=localStorage.getItem('ow_dev');if(!d){d=Array.from(crypto.getRandomValues(new Uint8Array(8)),b=>b.toString(16).padStart(2,'0')).join('');localStorage.setItem('ow_dev',d)}return d}catch(e){return 'x'+Math.random().toString(36).slice(2,12)}})();
 function load(){
   const sv=window.__SERVER_STATE__||null;let lc=null;try{lc=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){}
   // de nieuwste opslag wint: als de server een update kreeg terwijl jij speelde, staat je laatste voortgang nog in de browser
   // met een account wint de server, tenzij deze browser nog niet-opgeslagen voortgang heeft op precies dezelfde versie (bv. server even weg)
   const svRev=window.__SERVER_REV__||0;
-  let d=sv;if(lc&&lc.npcs&&(!sv||((lc.savedAt||0)>(sv.savedAt||0)&&(!window.__TOKEN__||(lc._rev||0)===svRev)))){d=lc;if(sv)window.__PUSH_LOCAL__=true}
+  // nieuw: kwam de serveropslag van dít apparaat en is de browseropslag nieuwer, dan wint de browser altijd
+  // (bijvoorbeeld als de app werd gesloten terwijl de laatste opslag nog onderweg was)
+  const mine=sv&&sv._dev&&sv._dev===DEV_ID;
+  let d=sv;if(lc&&lc.npcs&&(!sv||((lc.savedAt||0)>(sv.savedAt||0)&&(!window.__TOKEN__||(lc._rev||0)===svRev||mine)))){d=lc;if(sv)window.__PUSH_LOCAL__=true}
   if(d&&window.__TOKEN__)d._rev=d===lc?(lc._rev||0):svRev;
   if(!d){try{d=JSON.parse(localStorage.getItem('onderwereld_v1'))}catch(e){}}
   // beheerder heeft het account gereset: helemaal opnieuw beginnen (ook de browseropslag telt niet meer)
@@ -25,16 +30,21 @@ function load(){
     if(oldBiz){d.biz2={};Object.entries(d.biz||{}).forEach(([k,n])=>{if(n>0)d.biz2[k]=Array(n).fill(1)})}
     if(window.__USER__)d.name=window.__USER__;return d}
   const f=fresh();f.trainV=2;if(window.__USER__)f.name=window.__USER__;return f}
-let _pushTimer=null,_lastPush=0,_retry=0;
+let _pushTimer=null,_lastPush=0,_retry=0,_inFlight=false,_pushAgain=false;
+// Opslaan naar de server, één tegelijk (anders kan een oudere stand een nieuwere inhalen). Bij weggaan (beacon) altijd meteen;
+// de server negeert zelf een oudere stand van hetzelfde apparaat.
 function pushState(beacon){
   if(!window.__TOKEN__)return Promise.resolve();
   if(window.__LOCKED__)return Promise.resolve();
+  if(_inFlight&&!beacon){_pushAgain=true;return Promise.resolve()}
+  S._dev=DEV_ID;if(!S.savedAt)S.savedAt=Date.now();
+  if(!beacon)_inFlight=true;const done=()=>{if(beacon)return;_inFlight=false;if(_pushAgain){_pushAgain=false;clearTimeout(_pushTimer);_pushTimer=setTimeout(()=>pushState(),50)}};
   const body=JSON.stringify({sid:window.__SID__||null,state:Object.assign({},S,{rankname:RANKS[rankIdx(S.xp)][0],bankExtra:typeof bankNet==='function'?Math.floor(bankNet()-S.bank):0})});
   const again=()=>{if(beacon)return;clearTimeout(_pushTimer);_retry=Math.min(_retry+1,6);_pushTimer=setTimeout(()=>pushState(),Math.min(60000,2000*Math.pow(2,_retry)))};
   let pr=Promise.resolve();
   try{pr=fetch('/api/state',{method:'POST',keepalive:!!beacon&&body.length<60000,headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.__TOKEN__},body})
     .then(r=>{if(r.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/');return}if(r.status===409||r.status===403){r.json().then(j=>deviceLock(j&&j.code)).catch(()=>deviceLock());return}if(!r.ok){again();return}_retry=0;
-      return r.json().then(j=>{if(j&&j.rev){S._rev=j.rev;try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}}).catch(()=>{})}).catch(again)}catch(e){again()}
+      return r.json().then(j=>{if(j&&j.rev){S._rev=j.rev;try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}}).catch(()=>{})}).catch(again).finally(done)}catch(e){done();again()}
   _lastPush=Date.now();return pr}
 // Ander apparaat heeft het spel geopend: hier stoppen met opslaan en dat duidelijk laten zien
 // Of een beheerder heeft je account aangepast: dan opnieuw laden met de nieuwe stand. Geblokkeerd: terug naar de voorpagina.
@@ -54,13 +64,15 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState!==
 // belangrijke momenten (casino, aankopen) meteen naar de server
 function pushSoon(){if(!window.__TOKEN__||window.__LOCKED__)return;clearTimeout(_pushTimer);_pushTimer=setTimeout(()=>pushState(),150)}
 function save(){
-  S.savedAt=Date.now();
+  S.savedAt=Math.max(Date.now(),(S.savedAt||0)+1);S._dev=DEV_ID;
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}
   if(!window.__TOKEN__)return;
   clearTimeout(_pushTimer);
   _pushTimer=setTimeout(()=>pushState(),Date.now()-_lastPush>15000?400:3000)}
-window.addEventListener('pagehide',()=>pushState(true));
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')pushState(true)});
+// weggaan uit de app of het tabblad: eerst de laatste stand in de browser vastleggen, dan meteen naar de server (keepalive)
+const flushNow=()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}clearTimeout(_pushTimer);pushState(true)};
+window.addEventListener('pagehide',flushNow);document.addEventListener('freeze',flushNow);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushNow()});
 function logout(){pushState(true);try{localStorage.removeItem('ow_token')}catch(e){}setTimeout(()=>location.replace('/'),150)}
 S=load();
 if(window.__PUSH_LOCAL__)setTimeout(()=>pushState(),1200);

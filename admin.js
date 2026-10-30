@@ -119,7 +119,7 @@ module.exports = function mountAdmin(app, { auth, db, need, rankOf }) {
       let st; try { st = JSON.parse(g[0].state); } catch (e) { throw Object.assign(new Error('Opslag van deze speler is onleesbaar'), { status: 500 }); }
       if (st.__reset) throw Object.assign(new Error('Dit account is net gereset; de speler moet eerst opnieuw inloggen'), { status: 409 });
       const detail = fn(st);
-      st._admin = st._admin || {}; st._admin.at = Date.now();
+      st._admin = st._admin || {}; st._admin.at = Date.now(); st._dev = 'admin'; st.savedAt = Date.now();
       const networth = Math.floor((+st.cash || 0) + (+st.bank || 0) + Math.max(0, +st.bankExtra || 0));
       const xp = Math.floor(+st.xp || 0);
       const [r] = await db.q('UPDATE game_state SET state=?, xp=?, networth=?, rankname=?, rev=rev+1, sid=?, updated_at=updated_at WHERE user_id=? AND rev=?',
