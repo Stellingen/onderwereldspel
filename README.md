@@ -240,7 +240,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   rechterkolom maar een saldobalk bovenaan: saldo om mee te spelen (knippert groen of rood bij een verandering) met wit en zwart
   apart eronder, bank, lidmaatschap en cashback
   om te claimen. Smallere schermen en de telefoon houden de statusbalk bovenaan.
-- **Outfit** (`public/js/pages/look.js`): kleding en sieraden op zes plekken (hoofd, kleding, schoenen, ketting, pols,
+- **Outfit** (`public/js/pages/look.js`): **drie winkelstraten** als banners: Albert Cuypmarkt (lage klasse, Rookie tot Dief), Kalverstraat (midden, Boef tot Huurmoordenaar) en P.C. Hooftstraat (hoog, vanaf Capo), plus Dobbelstenen en Je kast. Iets boven je rang kopen mag met toeslag (+40% en +25% per rang die je mist). 25 nieuwe stukken (o.a. bucket hat, durag, panamahoed, designer zonnebril, diamanten grill, spijkerjack, voetbalshirt, linnen colbert, krokodillenleren jas, kasjmier overjas, limited sneakers, loafers met gesp, lakschoenen, Cubaanse ketting, platina kruis, iced-out hanger en horloge, presidentshorloge, skeleton-horloge, duimring, diamanten zegelring); de Borsalino zit nu op het voorhoofd met de rand achter het hoofd. kleding en sieraden op zes plekken (hoofd, kleding, schoenen, ketting, pols,
   ring), 55 stukken. Vaak zijn er stukken van dezelfde prijs met een ander voordeel, zodat je kiest wat voor figuur je wordt:
   onopvallend (minder hitte, meer kans), sportief (makkelijker vluchten, sneller energie), patser (meer buit en inkomen, maar
   meer hitte) of zakelijk (meer inkomen, lagere borg, XP). Drie of vijf stukken in dezelfde stijl geven een setbonus (Grijze
