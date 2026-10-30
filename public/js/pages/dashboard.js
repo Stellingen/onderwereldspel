@@ -50,7 +50,7 @@ V.dash=()=>{
      <div class="row"><span>Auto's gestolen</span><b>${S.stats.cars}</b></div>
      <div class="row"><span>Casino +/−</span><b style="color:${S.stats.won-S.stats.lost>=0?'var(--green)':'var(--red)'}">${S.stats.won-S.stats.lost>=0?'+':'−'}${fmt(Math.abs(S.stats.won-S.stats.lost))}</b></div>
    </section>
-   <section class="card d-log"><h3>Laatste gebeurtenissen</h3><div class="log">${S.log.length?S.log.map(l=>`<div class="${l.c}">${l.m}</div>`).join(''):'<div class="info">Nog niks gebeurd. Begin met een klus hierboven.</div>'}</div></section>
+   <section class="card d-log"><h3>Laatste gebeurtenissen</h3><div class="log">${logShown().length?logShown().map(l=>`<div class="${l.c}">${l.m}</div>`).join(''):'<div class="info">Nog niks gebeurd. Begin met een klus hierboven.</div>'}</div></section>
   </div>`;
 };
 const healCost=()=>(100-S.hp)*15;

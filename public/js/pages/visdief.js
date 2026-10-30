@@ -90,7 +90,7 @@ function vdPickHtml(){return `<div class="kk-pick"><div class="kk-pick-h"><b>Kie
   <div class="kk-pick-q"><button class="btn ghost sm" onclick="vdSetBet(0)">Min · ${fmt(kkBets()[0])}</button><button class="btn sm" onclick="vdSetBet(kkBets().length-1)">Max · ${fmt(kkBets()[kkBets().length-1])}</button></div></div>`}
 function vdConfirm(){const b=vdBet(),buy=b*VISD.BUY_COST;return `<div class="kk-buyinfo"><b>Bonus kopen staat aan</b><span>Elke klik op de grote knop koopt een bonus voor ${fmt(buy)} (${VISD.BUY_COST}× je inzet van ${fmt(b)}). Je krijgt altijd 3 boeien; op de andere rollen kan er vanzelf nog een vallen${isVip()?' (als '+lidName()+' vaker)':''}: 3 boeien = ${VISD.FS_BY_SC[3]} free spins, 4 = ${VISD.FS_BY_SC[4]}, 5 (volle rij) = ${VISD.FS_BY_SC[5]}. Gemiddeld levert hij iets minder op dan hij kost (±${VD_TIER[tier()].buy}%), maar de uitschieters zijn enorm. Zet hem uit om weer gewoon te draaien.</span></div>`}
 function vdSeed(){if(!S.vdSeed||!S.vdSeed.s)S.vdSeed=kkNewSd(S.vdSeed&&S.vdSeed.prev);return S.vdSeed}
-function vdSeedHtml(){const sd=vdSeed(),p=sd.prev;
+function vdSeedHtml(){const s0=vdSeed(),p=s0.prev,sd={...s0,bon:s0.bon-(vd.busy&&vd.sdPend?1:0)};
  return `<div class="kk-seed"><div class="kk-seed-i"><span class="label">Seed</span><b>${kkSeedId(sd)}</b></div>
   <div class="kk-seed-i"><span class="label">Op deze seed</span><b>${sd.spins} spin${sd.spins===1?'':'s'}, ${sd.bon} bonus${sd.bon===1?'':'sen'}</b></div>
   ${p?`<div class="kk-seed-i prev"><span class="label">Vorige seed</span><b>${p.id}: ${p.spins} spins, ${p.bon} bonus${p.bon===1?'':'sen'}</b></div>`:''}
@@ -247,11 +247,12 @@ Object.assign(act,{
   const round=VISD.playRound(rng,{buy:isBuy,vip:tier()});if(!isBuy){sd.spins++;if(round.fs)sd.bon++}
   const pay=Math.floor(round.total*bet*100)/100;
   S.cash+=pay-cost;window.slotPending=pay;if(pay>cost)S.stats.won+=pay-cost;else S.stats.lost+=cost-pay;
+  vd.sdPend=!isBuy&&round.fs?1:0;
   if(round.fs)S.slotRun={g:'vis',seed:seedStr,buy:!!isBuy,t:tier(),bet,cost,pay,tot:round.total,at:0,ts:now()};
   casinoRound(cost,pay,'vis');
   save();renderTop();vdRefresh();
   try{await vdPlay(round,bet,isBuy)}catch(e){console.error(e)}
-  window.slotPending=0;vd.busy=false;vd.shown=0;vd.fs=null;vd.lastWin=pay;vd.stepWin=0;if(S.slotRun&&S.slotRun.g==='vis')delete S.slotRun;
+  window.slotPending=0;vd.busy=false;vd.shown=0;vd.fs=null;vd.lastWin=pay;vd.stepWin=0;vd.sdPend=0;if(S.slotRun&&S.slotRun.g==='vis')delete S.slotRun;
   vd.msg=pay>0?(Math.round(round.total*100)/100).toLocaleString('nl-NL')+'× inzet':'Geen winst';
   if(pay>=bet*20||isBuy||round.fs)log('Visdief: '+fmt(pay)+' gewonnen ('+(isBuy?'gekochte bonus, ':round.fs?'bonus, ':'')+'inzet '+fmt(cost)+')',pay>=cost?'ok':'bad');
   if(pay>=bet*50)toast('Grote vangst: '+fmt(pay)+'!','lvl');

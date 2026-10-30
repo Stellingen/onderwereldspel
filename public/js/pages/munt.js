@@ -14,7 +14,8 @@ function cfFaceSvg(id){if(id==='kop')return `<svg viewBox="0 0 100 100" aria-hid
 function cfCoinHtml(){return `<div class="cf-coin" id="cfCoin" style="transform:rotateX(${cf.rot}deg)">
   ${Array.from({length:9},(_,i)=>`<i class="cf-rim" style="transform:translateZ(${i-4}px)"></i>`).join('')}
   <div class="cf-face kop">${cfFaceSvg('kop')}</div><div class="cf-face munt">${cfFaceSvg('munt')}</div></div>`}
-function coinView(){const c=S.coin,st=S.cfStats||{k:0,m:0,best:0,flips:0},flip=cf.flipping,bet=cfBet();
+// Tijdens het gooien tonen we de stand van vóór de worp (cf.show): pot, knoppen en statistiek verraden de uitkomst dus niet.
+function coinView(){const flip=cf.flipping,sh=flip&&cf.show,c=sh?sh.coin:S.coin,st=(sh?sh.st:S.cfStats)||{k:0,m:0,best:0,flips:0},bet=cfBet();
  const m=cf.msg,stake=c?c.stake:bet,step=c?c.step:0;
  const msg=flip?'<b>De munt draait…</b>':m?(m.win?`<b class="w">${m.res==='kop'?'Kop':'Munt'}! Gewonnen</b><span>Je pot is nu ${fmt(m.pot)}</span>`:`<b class="l">${m.res==='kop'?'Kop':'Munt'}. Verloren</b><span>${fmt(m.stake)} kwijt</span>`)
   :c?`<b>Pot staat klaar</b><span>Pak je geld of gooi nog een keer</span>`:'<b>Kies kop of munt</b><span>Win je, dan verdubbel je je inzet</span>';
@@ -45,13 +46,15 @@ function coinView(){const c=S.coin,st=S.cfStats||{k:0,m:0,best:0,flips:0},flip=c
 const cfReduce=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 Object.assign(act,{
  async cfFlip(){if(cf.flipping||inJail())return;let c=S.coin;const side=cf.side;
-  if(!c){const bet=cfBet();if(S.cash<bet){toast('Niet genoeg contant geld','bad');return}S.cash-=bet;c={stake:bet,pot:bet,step:0}}
-  else if(c.step>=CF_MAX)return;
+  if(!c){const bet=cfBet();if(S.cash<bet){toast('Niet genoeg contant geld','bad');return}}else if(c.step>=CF_MAX)return;
+  cf.show={coin:c?{...c}:null,st:{...(S.cfStats||{k:0,m:0,best:0})}};
+  if(!c){const bet=cfBet();S.cash-=bet;c={stake:bet,pot:bet,step:0}}
   // uitkomst: precies 50/50 en meteen vastgelegd
   const res=(crypto.getRandomValues(new Uint8Array(1))[0]&1)?'kop':'munt',win=res===side;
   S.cfStats=S.cfStats||{k:0,m:0,best:0};S.cfStats[res==='kop'?'k':'m']++;
   if(win){S.coin={stake:c.stake,pot:c.pot*2,step:c.step+1};S.cfStats.best=Math.max(S.cfStats.best,S.coin.step)}
-  else{S.coin=null;S.stats.lost+=c.stake;casinoRound(c.stake,0,'coin');log('Dubbel of niks: '+fmt(c.stake)+' verloren'+(c.step?' na '+c.step+'× winst':''),'bad')}
+  let lg=null;
+  if(!win){S.coin=null;S.stats.lost+=c.stake;lg=log('Dubbel of niks: '+fmt(c.stake)+' verloren'+(c.step?' na '+c.step+'× winst':''),'bad',4000)}
   save();
   cf.flipping=true;cf.msg=null;render();SFX.click();
   const el=document.getElementById('cfCoin'),toss=document.getElementById('cfToss'),sh=document.getElementById('cfShadow'),dur=cfReduce()?350:1700;
@@ -59,7 +62,7 @@ Object.assign(act,{
   if(el){void el.offsetWidth;el.style.transition=`transform ${dur}ms cubic-bezier(.22,.62,.28,1)`;el.style.transform=`rotateX(${target}deg)`}
   if(toss){toss.style.animationDuration=dur+'ms';toss.classList.add('go')}if(sh){sh.style.animationDuration=dur+'ms';sh.classList.add('go')}
   await new Promise(r=>setTimeout(r,dur+60));
-  cf.flipping=false;cf.hist.unshift(res);cf.hist=cf.hist.slice(0,24);
+  cf.flipping=false;cf.show=null;if(lg)delete lg.r;if(!win)casinoRound(c.stake,0,'coin');cf.hist.unshift(res);cf.hist=cf.hist.slice(0,24);
   cf.msg={win,res,pot:win?S.coin.pot:0,stake:c.stake};
   if(win){SFX.win(Math.min(5,S.coin.step));if(S.coin.step>=CF_MAX){toast('Maximaal verdubbeld! Je pot wordt uitbetaald','lvl');act.cfCash();return}}else SFX.lose();
   if(page==='casino'&&casinoTab==='coin')render();else renderTop()},

@@ -145,7 +145,7 @@ function renderRail(){
    <section class="rcard"><div class="label">Snelle klus</div>
     <div class="rq"><div><b>${bc.n}</b><small>${chance(bc)}% kans · ${bc.en} energie · ${fmt(bc.min*lootMult())}–${fmt(bc.max*lootMult())}</small></div></div>
     <button class="btn" onclick="act.crime('${bc.id}')" ${ok?'':'disabled'}>${inJail()?'Je zit vast':left?'Wacht '+Math.ceil(left/1000)+'s':S.energy<bc.en?'Te moe':'Uitvoeren'}</button></section>
-   <section class="rcard grow"><div class="label">Logboek</div><div class="log">${S.log.length?S.log.slice(0,14).map(l=>`<div class="${l.c}">${l.m}</div>`).join(''):'<div class="info">Nog niks gebeurd.</div>'}</div></section>
+   <section class="rcard grow"><div class="label">Logboek</div><div class="log">${logShown().length?logShown().slice(0,14).map(l=>`<div class="${l.c}">${l.m}</div>`).join(''):'<div class="info">Nog niks gebeurd.</div>'}</div></section>
    <section class="rcard"><div class="label">Top 5 · <a href="#rank" style="color:var(--acc)">ranglijst</a></div>
     <ol class="rtop">${all.slice(0,5).map((p,i)=>`<li class="${p.me?'me':''}"><span>${i+1}</span><b>${p.n}</b><em>${RANKS[rankIdx(p.xp)][0]}</em></li>`).join('')}</ol></section>`);
 }

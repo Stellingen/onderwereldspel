@@ -146,7 +146,7 @@ Object.assign(act,{
   const lines=Object.entries(r.bets).map(([k,v])=>{const ns=rlNums(k);return {k,label:rlLabel(k),note:ns.length>1&&ns.length<=6?(36/ns.length-1)+':1':'',stake:v,back:ns.includes(n)?v*36/ns.length:0}});
   const pay=lines.reduce((a,l)=>a+l.back,0),net=pay-tot;
   S.cash+=pay-tot;window.slotPending=pay;if(net>0)S.stats.won+=net;else S.stats.lost+=-net;casinoRound(tot,pay,'roulette');
-  log('Roulette: '+n+' · inzet '+fmt(tot)+', terug '+fmt(pay),net>0?'ok':net<0?'bad':'info');save();
+  const lg=log('Roulette: '+n+' · inzet '+fmt(tot)+', terug '+fmt(pay),net>0?'ok':net<0?'bad':'info',8000);save();
   r.last=Object.assign({},r.bets);r.undo=[];r.erase=false;
   const i=RL_ORDER.indexOf(n),seg=Math.PI*2/37,TAU=Math.PI*2,reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   const from=r.angle,delta=TAU*(4+Math.random())+Math.random()*TAU,to=from+delta,pocket=-Math.PI/2+i*seg,b0=r.ball||-Math.PI/2;
@@ -161,7 +161,7 @@ Object.assign(act,{
    if(p>.62&&p<.9&&t-lastTick>110+(p-.62)*600){lastTick=t;SFX.tick()}
    drawWheel(r.angle);if(p<1)requestAnimationFrame(step);else finish()};
   requestAnimationFrame(step);
-  const finish=()=>{r.spinning=false;r.res=n;r.net=net;r.lines=lines;r.hist.unshift(n);r.hist=r.hist.slice(0,16);r.bets={};window.slotPending=0;
+  const finish=()=>{if(lg)delete lg.r;r.spinning=false;r.res=n;r.net=net;r.lines=lines;r.hist.unshift(n);r.hist=r.hist.slice(0,16);r.bets={};window.slotPending=0;
    if(net>0){toast(n+' '+({red:'rood',black:'zwart',green:'nul'})[numCol(n)]+'. Je krijgt '+fmt(pay)+' terug (+'+fmt(net)+')');net>=tot*5?SFX.big():SFX.win(2)}
    else if(pay>0){toast(n+'. Je krijgt '+fmt(pay)+' terug ('+fmt(net)+')','bad');SFX.chip()}
    else{toast(n+' '+({red:'rood',black:'zwart',green:'nul'})[numCol(n)]+'. Verloren: '+fmt(tot),'bad');SFX.lose()}

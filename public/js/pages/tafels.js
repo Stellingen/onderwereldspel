@@ -124,14 +124,14 @@ function cat5(cs){const rs=cs.map(c=>c.r).sort((a,b)=>a-b),fl=cs.every(c=>c.s===
   if(fl)return ['Flush',5,20];if(st)return ['Straat',4,10];if(v[0]===3)return ['Drie gelijke',3,5];return ['Niets',0,0]}
 const PP_PAY={5:40,4:30,3:6,2:3,1:1},ANTE_BONUS={5:5,4:4,3:1};
 function tpTable(){
- const t=tp,bet=t.phase==='bet',dec=t.phase==='decide',done=t.phase==='done';
+ const t=tp,bet=t.phase==='bet',dec=t.phase==='decide',done=t.phase==='done',rv=t.phase==='reveal';
  const pv=t.p.length?tp3(t.p):null,dv=done&&t.d.length?tp3(t.d):null;
  const o=t.res||{};
  return `<div class="table tcp">
   <div class="felt">
    <div class="felt-rules"><b>Three Card Poker</b><span>Dealer speelt met vrouw-hoog of beter · ante-bonus wordt altijd uitbetaald</span></div>
    <div class="zone dealer"><div class="zl">Dealer${dv?` · <b>${dv.name}</b>${o.qual===false?' · speelt niet':''}`:''}</div>
-    ${t.d.length?`<div class="cards">${t.d.map((c,i)=>cardEl(c,i,!done)).join('')}</div>`:ghosts(3)}</div>
+    ${t.d.length?`<div class="cards">${t.d.map((c,i)=>cardEl(c,i,!(done||(rv&&i<(t.rv||0))))).join('')}</div>`:ghosts(3)}</div>
    <div class="felt-arc">Pair Plus en 6-Card Bonus €${TB.SIDE_MIN}–€${TB.SIDE_MAX} (hoger met je rang) · winnen ook als je past</div>
    <div class="zone player">
     <div class="hands"><div class="hand ${o.main?'r-'+o.main:''}">${t.p.length?`<div class="cards">${t.p.map((c,i)=>cardEl(c,i)).join('')}</div>`:ghosts(3)}
@@ -150,6 +150,7 @@ function tpTable(){
    ${bet?`${chipTray('tp')}<div class="tb-act"><button class="btn ghost" onclick="act.tbClear('tp')" ${t.bets.ante+t.bets.pp+t.bets.six?'':'disabled'}>Wissen</button>
      ${t.last?`<button class="btn ghost" onclick="act.tbRebet('tp')">Zelfde inzet</button>`:''}
      <button class="btn" onclick="act.tpDeal()" ${(t.bets.ante>=TB.MAIN_MIN||t.bets.pp||t.bets.six)&&!inJail()?'':'disabled'}>Delen · ${fmt(t.bets.ante+t.bets.pp+t.bets.six)}</button></div>`
+   :rv?`<div class="tb-act"><button class="btn" disabled>De dealer draait zijn kaarten om…</button></div>`
    :dec?`<div class="tb-act play"><button class="btn" onclick="act.tpPlay()" ${S.cash>=t.bets.ante?'':'disabled'}>Spelen · ${fmt(t.bets.ante)}</button><button class="btn red" onclick="act.tpFold()">Passen (ante kwijt)</button></div>`
    :`<div class="tb-act"><button class="btn" onclick="act.tpNew()">Nieuwe ronde</button><button class="btn ghost" onclick="act.tbRebet('tp');act.tpDeal()" ${t.last&&S.cash>=t.last.ante*2+t.last.pp+t.last.six?'':'disabled'}>Zelfde inzet en delen</button></div>`}
   </div>
@@ -161,6 +162,10 @@ function tpTable(){
  </div>`;
 }
 function tpDraw(){if(!tp.shoe||tp.shoe.length<10)tp.shoe=newShoe(1);return tp.shoe.pop()}
+// de dealer draait zijn kaarten één voor één om; pas daarna volgt de uitslag
+async function tpReveal(folded){const t=tp;t.phase='reveal';t.rv=0;render();await tbWait(300);
+ for(let i=0;i<t.d.length;i++){t.rv=i+1;SFX.card();render();await tbWait(480)}
+ await tbWait(200);tpSettle(folded)}
 function tpSettle(folded){
  const t=tp;t.phase='done';const pv=tp3(t.p),dv=tp3(t.d),qual=dv.cat>0||dv.hi>=12;const o={qual};let back=0;
  const staked=t.bets.ante+t.bets.pp+t.bets.six+(t.play||0);
@@ -227,6 +232,6 @@ Object.assign(act,{
   for(let i=0;i<3;i++){t.p.push(tpDraw());t.d.push(tpDraw());SFX.card();render();await tbWait(220)}
   if(!t.bets.ante){tpSettle(false);return}
   t.phase='decide';save();render()},
- tpPlay(){const t=tp;if(t.phase!=='decide'||S.cash<t.bets.ante)return;S.cash-=t.bets.ante;t.play=t.bets.ante;SFX.chip();SFX.card();tpSettle(false)},
- tpFold(){const t=tp;if(t.phase!=='decide')return;tpSettle(true)}
+ tpPlay(){const t=tp;if(t.phase!=='decide'||S.cash<t.bets.ante)return;S.cash-=t.bets.ante;t.play=t.bets.ante;SFX.chip();tpReveal(false)},
+ tpFold(){const t=tp;if(t.phase!=='decide')return;tpReveal(true)}
 });

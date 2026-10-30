@@ -45,7 +45,7 @@ function avPlan(vip,rng){rng=rng||avR;const tot=AV_ITEMS.reduce((a,b)=>a+b[1],0)
  return {path,items:items.filter(I=>I.x<touch+1400),ev,touch,R,on,ok,m:Math.round(m*100)/100,plat:pl,plats,start:-190}}
 function avAltAt(P,x){const p=P.path;if(x<=p[0][0])return p[0][1];let lo=0,hi=p.length-1;while(hi-lo>1){const mid=(lo+hi)>>1;if(p[mid][0]<=x)lo=mid;else hi=mid}
  const [x0,y0]=p[lo],[x1,y1]=p[hi];return x>=x1?y1:y0+(y1-y0)*((x-x0)/Math.max(1e-6,x1-x0))}
-function aviaView(){const h=S.avHist||[],bet=avBet(),f=av.flying,res=av.res;setTimeout(avMount,0);
+function aviaView(){const h=(av.flying&&av.prevHist?av.prevHist:S.avHist)||[],bet=avBet(),f=av.flying,res=av.res;setTimeout(avMount,0);
  return `<div class="avx">
  <section class="av-stage card ${res&&!f?(res.ok?'won':'lost'):''}">
   <canvas id="avCanvas" aria-label="Hoogvlieger"></canvas>
@@ -146,8 +146,8 @@ Object.assign(act,{
   const P=avPlan(tier()),pay=P.ok?Math.floor(bet*P.m):0;
   // uitkomst staat vast en wordt meteen verrekend
   S.cash+=pay-bet;window.slotPending=pay;if(pay>bet)S.stats.won+=pay-bet;else S.stats.lost+=bet-pay;casinoRound(bet,pay,'avia');
-  S.avHist=[{m:P.m,ok:P.ok}].concat(S.avHist||[]).slice(0,14);save();
-  log('Hoogvlieger: '+(P.ok?'geland op '+avX(P.m)+', '+fmt(pay):'niet geland ('+fmt(bet)+' kwijt)'),P.ok?'ok':'bad');
+  av.prevHist=(S.avHist||[]).slice();S.avHist=[{m:P.m,ok:P.ok}].concat(S.avHist||[]).slice(0,14);save();
+  const lg=log('Hoogvlieger: '+(P.ok?'geland op '+avX(P.m)+', '+fmt(pay):'niet geland ('+fmt(bet)+' kwijt)'),P.ok?'ok':'bad',60000);
   av.plan=P;av.res=null;av.flying=true;av.cur=1;av.shake=0;av.fx=[];render();SFX.spin();
   let T0=performance.now(),tt=0,lastNow=T0;const flyT=(P.touch+40)/AVC.speed*1000,rollT=1300,fallT=1100,reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;let seen=0,splash=null,endX=P.touch,endAlt=0,endAng=0;
   const hud=()=>{const m=document.getElementById('avMult'),p=document.getElementById('avPay');if(m)m.textContent=avX(av.cur);if(p)p.textContent=fmt(bet*av.cur)};
@@ -161,7 +161,7 @@ Object.assign(act,{
      if(!P.ok&&k>=1){const ft=rt-dur;pa=-Math.min(1,ft/400)*14;ang=Math.min(.9,ft/400);px=P.touch+dist+ft/1000*40;splash={x:P.plat[1]+14,k:Math.min(1,ft/fallT)};ex={splash};if(ft<30)SFX.lose();if(ft>fallT){endX=px;endAlt=pa;endAng=ang;return finish()}}
      else if(P.ok&&rt>dur+350){endX=px;return finish()}}}
    av.shake=Math.max(0,av.shake*.88-.2);avDraw(P,px,pa,ang,ex);av.raf=requestAnimationFrame(step)};
-  const finish=()=>{cancelAnimationFrame(av.raf);av.flying=false;window.slotPending=0;av.res={ok:P.ok,on:P.on,m:P.m,pay,bet,endX,endAlt,endAng};
+  const finish=()=>{if(lg)delete lg.r;cancelAnimationFrame(av.raf);av.flying=false;window.slotPending=0;av.res={ok:P.ok,on:P.on,m:P.m,pay,bet,endX,endAlt,endAng};
    if(P.ok){(P.m>=10?SFX.big():SFX.win(5));toast('Geland! '+avX(P.m)+' · je krijgt '+fmt(pay),P.m>=10?'lvl':'ok')}else toast(P.on?'Van het dek gerold. '+fmt(bet)+' kwijt':'In het water. '+fmt(bet)+' kwijt','bad');
    save();if(page==='casino'&&casinoTab==='avia')render();else renderTop()};
   av.raf=requestAnimationFrame(step)}});

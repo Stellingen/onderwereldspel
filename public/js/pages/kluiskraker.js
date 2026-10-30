@@ -87,7 +87,7 @@ const kkHex=n=>Array.from(crypto.getRandomValues(new Uint32Array(n)),x=>x.toStri
 const kkNewSd=prev=>({s:kkHex(4),c:kkHex(2),n:0,spins:0,bon:0,sup:0,buys:0,at:Date.now(),prev:prev||null});
 function kkSeed(){if(!S.kkSeed||!S.kkSeed.s)S.kkSeed=kkNewSd(S.kkSeed&&S.kkSeed.prev);return S.kkSeed}
 const kkSeedId=sd=>SLOT.seedHash(sd.s+sd.c).slice(0,2).map(x=>x.toString(16).padStart(8,'0')).join('').replace(/^(.{6}).*(.{4})$/,'$1…$2');
-function kkSeedHtml(){const sd=kkSeed(),p=sd.prev;
+function kkSeedHtml(){const s0=kkSeed(),p=s0.prev,pd=kk.busy&&kk.sdPend,sd={...s0,bon:s0.bon-(pd?pd.bon:0),sup:s0.sup-(pd?pd.sup:0)};
  return `<div class="kk-seed"><div class="kk-seed-i"><span class="label">Seed</span><b>${kkSeedId(sd)}</b></div>
   <div class="kk-seed-i"><span class="label">Op deze seed</span><b>${sd.spins} spin${sd.spins===1?'':'s'} · ${sd.bon} bonus${sd.bon===1?'':'sen'}${sd.sup?' · '+sd.sup+' super':''}</b></div>
   ${p?`<div class="kk-seed-i prev"><span class="label">Vorige seed</span><b>${p.id} · ${p.spins} spins · ${p.bon} bonus${p.bon===1?'':'sen'}</b></div>`:''}
@@ -324,13 +324,15 @@ Object.assign(act,{
   S.cash+=pay-cost;window.slotPending=pay;
   if(pay>cost)S.stats.won+=pay-cost;else S.stats.lost+=cost-pay;
   // een bonus duurt even: bewaar hem, zodat hij na verversen of op een ander apparaat verder kan (zonder opnieuw te betalen)
-  kk.hist=[{cost,pay,x:round.total,bonus:!!round.fs,buy:!!isBuy}].concat(kk.hist||[]).slice(0,8);
-  kk.sess=kk.sess||{n:0,bet:0,won:0,best:0,bon:0};kk.sess.n++;kk.sess.bet+=cost;kk.sess.won+=pay;kk.sess.best=Math.max(kk.sess.best,pay);if(round.fs)kk.sess.bon++;
+  // laatste rondes, sessie en de bonusteller van de seed pas bijwerken als de animatie klaar is (anders verklappen ze de uitslag)
+  kk.sdPend={bon:!isBuy&&round.kind?1:0,sup:!isBuy&&round.kind==='super'?1:0};
   if(round.fs)S.slotRun={g:'kluis',seed:seedStr,buy:!!isBuy,t:tier(),bet,cost,pay,tot:round.total,at:0,ts:now()};
   casinoRound(cost,pay,'kluis');
   save();renderTop();kkRefreshUI();
   try{await kkPlay(round,bet,isBuy)}catch(e){console.error(e)}
-  window.slotPending=0;kk.busy=false;kk.inBonus=false;kk.paused=false;kk.lastWin=pay;kk.stepWin=0;if(S.slotRun&&S.slotRun.g==='kluis')delete S.slotRun;
+  window.slotPending=0;kk.busy=false;kk.inBonus=false;kk.paused=false;kk.lastWin=pay;kk.stepWin=0;kk.sdPend=null;if(S.slotRun&&S.slotRun.g==='kluis')delete S.slotRun;
+  kk.hist=[{cost,pay,x:round.total,bonus:!!round.fs,buy:!!isBuy}].concat(kk.hist||[]).slice(0,8);
+  kk.sess=kk.sess||{n:0,bet:0,won:0,best:0,bon:0};kk.sess.n++;kk.sess.bet+=cost;kk.sess.won+=pay;kk.sess.best=Math.max(kk.sess.best,pay);if(round.fs)kk.sess.bon++;
   kk.msg=pay>0?(Math.round(round.total*100)/100).toLocaleString('nl-NL')+'× inzet':'Geen winst';
   if(pay>=bet*20||isBuy)log('Kluiskraker: '+fmt(pay)+' gewonnen ('+(isBuy?'gekochte bonus, ':'')+'inzet '+fmt(cost)+')',pay>=cost?'ok':'bad');
   if(pay>=bet*50)toast('Grote winst: '+fmt(pay)+'!','lvl');
