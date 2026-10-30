@@ -40,6 +40,7 @@ window.addEventListener('hashchange',()=>{let p=location.hash.slice(1);if(p==='o
   // naar het casino vanaf een andere pagina: eerst de lobby (behalve als je via zoeken een spel koos of er nog iets loopt)
   if(p==='casino'&&page!=='casino'&&!window._casPick&&typeof casSwitchBusy==='function'&&!casSwitchBusy()&&!(window.kk&&kk.inBonus))casinoTab='';window._casPick=0;
   if(p==='verblijf'&&page!=='verblijf'&&window.vb)vb.view=null;
+  if(p==='crimes'&&page!=='crimes'&&typeof crimeRank!=='undefined')crimeRank=null;
   page=p;render();window.scrollTo(0,0)}});
 let wasJail=inJail();
 setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderRail();

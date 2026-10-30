@@ -1,6 +1,6 @@
 // Tab: Misdaden — je bonussen, de beste klussen voor jou en alle klussen per rang (inklapbaar).
 // Elke klus heeft een eigen pictogram. Per klus: kans, opbrengst (buit, XP, straatcredit) en wat er gebeurt als het misgaat.
-let crimeShowAll=false;const crimeOpen={};
+let crimeShowAll=false;const crimeOpen={};let crimeRank=null;
 const fmtK=v=>v>=1e6?'€'+(v/1e6).toLocaleString('nl-NL',{maximumFractionDigits:1})+' mln':v>=1e4?'€'+Math.round(v/1000)+'k':fmt(v);
 const crEv=c=>chance(c)/100*(c.min+c.max)/2*lootMult()*mastLoot(c.id)/c.en;
 // Pictogrammen (24×24, lijnen) en welke klus welk pictogram krijgt
@@ -97,7 +97,7 @@ function klRow(c){const st=klState(c),v=klVals(c);
   ${st.left?`<div class="kl-cd" style="transform:scaleX(${Math.min(1,st.left/crimeCd(c)).toFixed(3)})"></div>`:''}</article>`}
 // Beste voor jou: groter, met de opbrengst per energiepunt waar de volgorde op gebaseerd is
 function klBest(c){const st=klState(c),v=klVals(c),ev=crEv(c);
- return `<article class="klb ${st.left?'cool':''}">
+ return `<article class="klb ${st.left?'cool':''} ${st.lock?'locked':''}">
   <header><div class="kl-ic">${klIc(c)}</div><div><h3>${c.n}</h3><p>${c.d}</p></div></header>
   <div class="klb-ch"><b class="${klChCls(v.ch)}">${v.ch}%</b><span>kans</span>${klSeg(v.ch)}</div>
   <dl class="klb-dl">
@@ -107,11 +107,28 @@ function klBest(c){const st=klState(c),v=klVals(c),ev=crEv(c);
    <div><dt>Mislukt</dt><dd>${v.jail}</dd></div>
    <div><dt>Vluchten</dt><dd class="lv${c.flee}">${klPips(c.flee)}${v.fl}</dd></div>
   </dl>
-  ${mastHtml(c)}
+  ${st.lock?'<div class="cr-m"><small>Nog niet vrijgespeeld</small></div>':mastHtml(c)}
   ${klBtn(c,st)}
   ${st.left?`<div class="kl-cd" style="transform:scaleX(${Math.min(1,st.left/crimeCd(c)).toFixed(3)})"></div>`:''}</article>`}
+// Rangen als banners: alleen wat je hebt vrijgespeeld, plus de eerstvolgende rang (met hoeveel XP je nog nodig hebt)
+const KL_RCOL=['#9aa3ad','#d9a066','#ffad6b','#ff7a1a','#ff5c6c','#ff3d52','#b8a1ff','#7c5cff','#5ad1ff','#3fe395','#f2c230','#ffd84d'];
+function klRankBanner(t,ri){const cs=CRIMES.filter(c=>c.r===t),lock=t>ri,ready=cs.filter(c=>!lock&&!cdLeft(c.id)&&S.energy>=c.en).length,mst=cs.filter(c=>mastLv(c.id)>0).length,need=Math.ceil(RANKS[t][1]-S.xp);
+ const prevXp=RANKS[Math.max(0,t-1)][1],pct=lock?Math.max(0,Math.min(100,(S.xp-prevXp)/(RANKS[t][1]-prevXp)*100)):100;
+ return `<button class="krb ${lock?'locked':''} ${t===ri?'cur':''}" style="--c:${KL_RCOL[t]||'var(--acc)'}" onclick="crimeRank=${t};render();window.scrollTo({top:0,behavior:'smooth'})">
+  <span class="krb-bg" aria-hidden="true">${klIc(cs[cs.length-1])}</span>
+  <span class="krb-n">${String(t+1).padStart(2,'0')}</span>
+  <span class="krb-t"><b>${RANKS[t][0]}</b><small>${lock?`Nog ${need.toLocaleString('nl-NL')} XP om deze klussen te doen`:`${cs.length} klussen · ${ready} klaar${mst?' · '+mst+' met vakmanschap':''}`}</small></span>
+  <span class="krb-ics" aria-hidden="true">${cs.map(c=>`<i title="${c.n}">${klIc(c)}</i>`).join('')}</span>
+  ${lock?`<span class="krb-bar"><i style="width:${pct}%"></i></span><span class="krb-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7.5a4 4 0 018 0V11"/></svg></span>`:`<span class="krb-go">›</span>`}</button>`}
+function klRankView(t,ri){const cs=CRIMES.filter(c=>c.r===t),lock=t>ri,prev=t>0?t-1:null,next=t<ri+1&&t+1<RANKS.length&&t+1<=ri+1?t+1:null;
+ return `<div class="kl-page"><div class="kr-bar"><button class="kr-back" onclick="crimeRank=null;render()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Alle rangen</span></button>
+  <h1 style="--c:${KL_RCOL[t]}">${RANKS[t][0]}</h1><span class="kr-sub">${lock?'Nog '+Math.ceil(RANKS[t][1]-S.xp).toLocaleString('nl-NL')+' XP':cs.length+' klussen'}</span></div>
+  ${lock?`<div class="kr-lockmsg">Deze klussen kun je doen vanaf <b>${RANKS[t][0]}</b>. Je hebt nog <b>${Math.ceil(RANKS[t][1]-S.xp).toLocaleString('nl-NL')} XP</b> nodig.</div>`:''}
+  <div class="klr-grid">${cs.map(klBest).join('')}</div>
+  <div class="kr-nav">${prev!=null?`<button onclick="crimeRank=${prev};render()">‹ ${RANKS[prev][0]}</button>`:'<span></span>'}${next!=null?`<button onclick="crimeRank=${next};render()">${RANKS[next][0]} ›</button>`:''}</div></div>`}
 V.crimes=()=>{
  const ri=rankIdx(S.xp),mult=lootMult(),fit=k=>typeof fitFx==='function'?fitFx(k):0;
+ if(crimeRank!=null&&crimeRank<=ri+1)return klRankView(crimeRank,ri);crimeRank=null;
  const tiers=[...new Set(CRIMES.map(c=>c.r))].sort((a,b)=>a-b);
  const visible=tiers.filter(t=>crimeShowAll||t<=ri+1);
  const avail=CRIMES.filter(c=>c.r<=ri);
@@ -130,10 +147,6 @@ V.crimes=()=>{
  </section>
  <div class="cr-mast-how"><b>Vakmanschap</b><span>Elke klus die lukt telt mee voor die klus: na 10 keer <em>Brons</em>, 30 <em>Zilver</em>, 75 <em>Goud</em> en 150 <em>Meester</em>. Elk niveau geeft +2% kans en +5% buit op die klus.</span></div>
  ${best.length?`<div class="tierhead kl-besth"><h2>Beste voor jou</h2><span>Meeste buit per energiepunt, met jouw kans</span></div><div class="klb-grid n${best.length}">${best.map(klBest).join('')}</div>`:''}
- <div class="kl-bar"><span>${avail.length} van de ${CRIMES.length} klussen staan voor je open. Mislukt een klus, dan kun je vluchten of ga je de cel in.</span>
-  <div class="filters"><button class="chip-toggle ${crimeShowAll?'':'on'}" onclick="crimeShowAll=false;render()">Tot mijn rang</button><button class="chip-toggle ${crimeShowAll?'on':''}" onclick="crimeShowAll=true;render()">Alle ${CRIMES.length}</button></div></div>
- ${visible.map(t=>{const cs=CRIMES.filter(c=>c.r===t),open=isOpen(t),lock=t>ri,ready=cs.filter(c=>!lock&&!cdLeft(c.id)&&S.energy>=c.en).length,mst=cs.filter(c=>mastLv(c.id)>0).length;
-  return `<button class="kl-tier ${lock?'locked':''} ${open?'open':''}" onclick="crimeOpen[${t}]=${!open};render()" aria-expanded="${open}">
-   <h2>${RANKS[t][0]}</h2><span>${lock?'Nog '+Math.ceil(RANKS[t][1]-S.xp).toLocaleString('nl-NL')+' XP':cs.length+' klussen · '+ready+' klaar'+(mst?' · '+mst+' met vakmanschap':'')}</span>
-   <i aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${lock?'<rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7.5a4 4 0 018 0V11"/>':'<path d="M6 9l6 6 6-6"/>'}</svg></i></button>
-  ${open?`<div class="kl-list">${cs.map(klRow).join('')}</div>`:''}`}).join('')}</div>`};
+ <div class="tierhead kl-besth"><h2>Klussen per rang</h2><span>${avail.length} van de ${CRIMES.length} vrijgespeeld · tik op een rang</span></div>
+ <div class="krb-grid">${tiers.filter(t=>t<=ri+1).slice().reverse().map(t=>klRankBanner(t,ri)).join('')}</div>
+ <p class="kr-foot">Mislukt een klus, dan kun je vluchten of ga je de cel in. Hogere rangen verschijnen hier zodra je dichtbij bent.</p></div>`};
