@@ -144,7 +144,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   **vangnet**: altijd minstens 20× je inzet terug. Verdeling (gewoon): mediaan ±52×, 25% van de keren 100× of meer, 9% 200× of meer.
   **Inzet kiezen** gaat via een pop-up (ook bij Visdief).
   **Snelheid** 1× (rustig), 2× (sneller) en 3× (snelst, het oude 'snel'), voor Kluiskraker en Visdief, bewaard bij je account.
-  Op brede schermen staat rechts: saldo, de inzetkeuze die de ruimte vult, een rij met − / snelheid / +, bonus kopen en Draaien.
+  Op brede schermen staat rechts: saldo, dan de inzet met − en + ernaast en alle inzetten van €10 t/m €50K in één raster. High rollers zien onderaan een knop High roller die de inzetten €100K t/m €500K toont (en terug). Daaronder de snelheid 1×/2×/3×, bonus kopen en Draaien.
   **Spelen met wit of zwart** kies je in de casinobalk. Wit (legaal) laat de verdenking nauwelijks oplopen; met zwart wordt wat je
   wint wit, maar de verdenking loopt op: per ronde (inzet/limiet van je rang ×90 + 0,1) × spel (slots 1,4, roulette 1, kaarten 0,85,
   dubbel of niks 0,8, Mines en Hoogvlieger 0,55) × lidmaatschap (gewoon 1, VIP 0,65, High roller 0,35) × de **ogen** van de
