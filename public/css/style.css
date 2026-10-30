@@ -2245,3 +2245,59 @@ body.hg-open{overflow:hidden}
 /* families: verbannen */
 .fm-ban{display:grid;gap:2px;padding:10px 12px;border:1px solid var(--red);background:rgba(255,61,82,.08)}.fm-ban b{color:var(--red);font-family:var(--f-display);font-size:18px;text-transform:uppercase;letter-spacing:.04em}.fm-ban span{font-size:12.5px;color:var(--mute)}
 @media (max-width:640px){.fd-top{display:grid;grid-template-columns:auto 1fr;gap:8px 12px}.fd-clock{grid-column:1/-1;display:flex;gap:8px;align-items:baseline;text-align:left}.fd-clock b{font-size:18px}}
+/* ===== Kluiskraker: geschiedenis ===== */
+.kk-histbtn{display:grid;place-items:center}
+.kl-more{margin-top:6px;width:100%;padding:7px 8px;background:transparent;border:1px dashed var(--line2);color:var(--mute);font:600 12px var(--f-body);cursor:pointer}.kl-more:hover{color:var(--fg);border-color:var(--acc)}
+#kkHist{position:fixed;inset:0;z-index:930;display:grid;place-items:center;padding:16px;background:rgba(4,5,7,.84);backdrop-filter:blur(5px)}
+.kh{width:min(640px,100%);max-height:calc(100svh - 32px);display:grid;grid-template-rows:auto auto 1fr auto;gap:12px;padding:20px;background:var(--panel);border:1px solid var(--line2);border-top:3px solid var(--acc);box-shadow:0 30px 80px -20px #000;animation:fsin .22s ease-out}
+.kh-top{display:flex;justify-content:space-between;align-items:center;gap:12px}.kh-top h2{margin:2px 0 0;font-size:26px}.kh-top .btn{width:auto}
+.kh-sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line)}
+.kh-sum>div{background:var(--panel2);padding:8px 10px;display:grid;gap:2px}.kh-sum span{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.kh-sum b{font-family:var(--f-mono);font-size:15px}.kh-sum b.g{color:var(--green)}.kh-sum b.r{color:var(--red)}
+.kh-list{overflow-y:auto;min-height:0;border:1px solid var(--line)}
+.kh-row{display:grid;grid-template-columns:1.1fr .9fr 1.5fr 1fr .7fr;gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);font-family:var(--f-mono);font-size:12.5px}
+.kh-row:last-child{border-bottom:0}.kh-row.kh-h{position:sticky;top:0;background:var(--panel2);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.kh-row span:first-child{color:var(--mute)}.kh-row b{font-weight:700}.kh-row.w b{color:var(--green)}.kh-row small{color:var(--mute);font-size:11.5px}
+.kh-row i{font-style:normal;font-size:9.5px;letter-spacing:.06em;margin-left:6px;padding:1px 4px;border:1px solid var(--acc);color:var(--acc)}.kh-row i.b{border-color:#ffd35a;color:#ffd35a}.kh-row i.s{border-color:#f2c230;color:#f2c230}.kh-row i.mx{border-color:var(--green);color:var(--green)}
+.kh-empty{color:var(--mute)}.kh-note{margin:0;font-size:12px;color:var(--faint);line-height:1.5}
+@media (max-width:560px){.kh{padding:14px}.kh-sum{grid-template-columns:1fr 1fr}.kh-row{grid-template-columns:1fr .8fr 1.3fr .9fr;font-size:11.5px}.kh-row>:nth-child(5){display:none}}
+/* ===== Misdaden: vakmanschap ===== */
+.cr-m{display:flex;align-items:center;gap:7px;margin-top:6px;font-size:11.5px;color:var(--mute)}
+.cr-ms{display:flex;gap:2px}.cr-ms i{width:7px;height:7px;transform:rotate(45deg);background:var(--line2)}
+.cr-m.l1 .cr-ms i.on{background:#c98a4b}.cr-m.l2 .cr-ms i.on{background:#c9d1da}.cr-m.l3 .cr-ms i.on{background:#ffd35a}.cr-m.l4 .cr-ms i.on{background:var(--acc);box-shadow:0 0 6px var(--acc)}
+.cr-m b{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg)}
+.cr-m.l0 b{color:var(--faint)}.cr-m.l1 b{color:#d89a5c}.cr-m.l2 b{color:#d6dde5}.cr-m.l3 b{color:#ffd35a}.cr-m.l4 b{color:var(--acc)}
+.cr-m em{position:relative;flex:0 1 70px;height:3px;background:var(--line2)}.cr-m em i{position:absolute;inset:0 auto 0 0;background:var(--acc)}
+.cr-m small{font-family:var(--f-mono);font-size:10.5px;color:var(--faint)}
+.cr-mast-how{display:flex;gap:10px;align-items:baseline;margin:14px 0 4px;padding:10px 14px;background:var(--panel);border:1px solid var(--line);border-left:3px solid #ffd35a;font-size:13px;color:var(--mute)}
+.cr-mast-how b{font-family:var(--f-display);font-size:16px;letter-spacing:.04em;text-transform:uppercase;color:#ffd35a;flex:none}.cr-mast-how em{font-style:normal;color:var(--fg)}
+@media (max-width:640px){.cr-mast-how{flex-direction:column;gap:2px}}
+/* ===== Auto's: twee manieren + carjacken ===== */
+.car-modes{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin:0 0 12px;background:var(--line);border:1px solid var(--line)}
+.car-modes button{display:grid;gap:2px;text-align:left;padding:12px 16px;background:var(--panel);border:0;color:var(--mute);cursor:pointer;border-bottom:2px solid transparent;font:inherit}
+.car-modes button b{font-family:var(--f-display);font-size:20px;letter-spacing:.03em;text-transform:uppercase;color:var(--fg)}
+.car-modes button span{font-size:12.5px}.car-modes button.on{background:var(--panel2);border-bottom-color:var(--acc)}.car-modes button.on b{color:var(--acc)}
+.car-modes button:hover:not(.on){background:#13161b}
+.hunt.jk{grid-column:1/-1}
+.jk-scene{background:linear-gradient(180deg,#0b0d12 0%,#11141b 60%,#1a1d23 60%,#121418 100%)}
+.jk-road{position:absolute;left:0;right:0;bottom:18%;height:4px;display:flex;gap:28px;justify-content:center}.jk-road i{width:60px;height:4px;background:rgba(255,255,255,.18)}
+.jk-light{position:absolute;top:18px;right:22px;display:grid;gap:5px;padding:7px;background:#07080a;border:1px solid #23262d;border-radius:8px}
+.jk-light i{width:16px;height:16px;border-radius:50%;background:#1b1d22}.jk-light .r.on{background:#ff3d52;box-shadow:0 0 14px #ff3d52}.jk-light .a.on{background:#ffb02e;box-shadow:0 0 14px #ffb02e}.jk-light .g.on{background:#3fe395;box-shadow:0 0 14px #3fe395}
+.jk-light.sm{top:10px;right:12px;padding:5px;gap:4px}.jk-light.sm i{width:11px;height:11px}
+.jk-steps{display:flex;gap:6px;flex-wrap:wrap}.jk-steps span{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:4px 7px;border:1px solid var(--line2);color:var(--faint)}
+.jk-steps span.cur{border-color:var(--acc);color:var(--acc)}.jk-steps span.ok{border-color:var(--green);color:var(--green)}
+.jk-bar{position:relative;height:46px;margin:12px 0 10px;background:linear-gradient(90deg,#1a1c21,#14161a);border:1px solid var(--line2);cursor:pointer;touch-action:manipulation}
+.jk-zone{position:absolute;top:0;bottom:0;background:linear-gradient(180deg,rgba(63,227,149,.45),rgba(63,227,149,.22));border-left:2px solid var(--green);border-right:2px solid var(--green)}
+.jk-mk{position:absolute;top:-4px;bottom:-4px;width:4px;margin-left:-2px;background:#fff;box-shadow:0 0 12px #fff}
+.jk-now{width:100%;height:58px;font-size:22px;margin-top:12px;touch-action:manipulation}
+.g-hot{font-style:normal;margin-left:6px;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border:1px solid var(--red);color:var(--red);vertical-align:2px}
+@media (max-width:640px){.car-modes button{padding:10px 12px}.car-modes button b{font-size:17px}.car-modes button span{font-size:11.5px}}
+/* ===== Auto's: bestellingen ===== */
+.ord-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ord{display:grid;grid-template-columns:96px minmax(0,1fr);grid-template-rows:auto auto;gap:6px 12px;align-items:center;padding:12px;background:var(--panel);border:1px solid var(--line);border-top:2px solid var(--rc)}
+.ord-car{grid-row:1/3;opacity:.85}.ord-car svg{width:100%;height:auto;display:block}
+.ord-t{display:grid;gap:3px;min-width:0}.ord-t .rar{justify-self:start}.ord-t b{font-family:var(--f-display);font-size:18px;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ord-t small{font-size:12px;color:var(--mute)}.ord .btn{width:auto;justify-self:start}
+.ord.done{opacity:.55}.ord-ok{font-style:normal;color:var(--green);font-size:22px;justify-self:start}
+@media (max-width:980px){.ord-grid{grid-template-columns:1fr}}
+@media (max-width:640px){.jk-box .hx-head{flex-direction:column;align-items:flex-start;gap:8px}.jk-steps{flex-wrap:nowrap}.jk-steps span{font-size:9.5px;padding:3px 5px}}

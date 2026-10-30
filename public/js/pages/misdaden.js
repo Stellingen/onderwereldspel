@@ -1,7 +1,10 @@
 // Tab: Misdaden — bonusoverzicht, de beste klussen voor jou en per rang inklapbaar
 let crimeShowAll=false;const crimeOpen={};
 const fmtK=v=>v>=1e6?'€'+(v/1e6).toLocaleString('nl-NL',{maximumFractionDigits:1})+' mln':v>=1e4?'€'+Math.round(v/1000)+'k':fmt(v);
-const crEv=c=>chance(c)/100*(c.min+c.max)/2*lootMult()/c.en;
+const crEv=c=>chance(c)/100*(c.min+c.max)/2*lootMult()*mastLoot(c.id)/c.en;
+// vakmanschap: sterretjes en de voortgang naar het volgende niveau
+function mastHtml(c){const n=mastN(c.id),l=mastLv(c.id),nx=MAST[l+1];
+ return `<div class="cr-m l${l}" title="Vakmanschap: ${n}× gelukt${nx?`, nog ${nx[0]-n} tot ${nx[1]}`:''}"><span class="cr-ms">${[1,2,3,4].map(i=>`<i class="${i<=l?'on':''}"></i>`).join('')}</span><b>${MAST[l][1]}</b>${nx?`<em><i style="width:${Math.round((n-MAST[l][0])/(nx[0]-MAST[l][0])*100)}%"></i></em><small>${n}/${nx[0]}</small>`:'<small>+8% kans · +20% buit</small>'}</div>`}
 V.crimes=()=>{
  const ri=rankIdx(S.xp),mult=lootMult();
  const tiers=[...new Set(CRIMES.map(c=>c.r))].sort((a,b)=>a-b);
@@ -11,8 +14,8 @@ V.crimes=()=>{
  const row=(c,best)=>{const lock=ri<c.r,left=cdLeft(c.id),ch=chance(c),tired=S.energy<c.en;
   const label=lock?'Vanaf '+RANKS[c.r][0]:inJail()?'Je zit vast':left?Math.ceil(left/1000)+' s':tired?'Te moe · '+c.en:'Uitvoeren';
   return `<div class="cr ${lock?'locked':''} ${best?'best':''}">
-   <div class="cr-t"><h3>${c.n}</h3><p>${c.d}</p></div>
-   <div class="cr-s"><div><span>Buit</span><b class="g">${fmtK(c.min*mult)} – ${fmtK(c.max*mult)}</b></div>
+   <div class="cr-t"><h3>${c.n}</h3><p>${c.d}</p>${lock?'':mastHtml(c)}</div>
+   <div class="cr-s"><div><span>Buit</span><b class="g">${fmtK(c.min*mult*mastLoot(c.id))} – ${fmtK(c.max*mult*mastLoot(c.id))}</b></div>
     <div><span>Kans</span><b class="${ch>60?'up':ch>35?'':'dn'}">${ch}%</b><i class="cr-ch"><i style="width:${ch}%"></i></i></div>
     <div><span>Energie</span><b>${c.en}</b></div><div><span>Mislukt</span><b>${fmtTime(jailSec(c.jail))} cel</b><small class="lvl${c.flee}">vluchten ${FLEE_LEVELS[c.flee].label}</small></div>
     <div class="cr-x"><span>Erbij</span><b>+${c.xp} XP</b>${c.cr?`<small>+${Math.round(c.cr*credMult(''))} cred (perfect ${Math.round(c.cr*credMult('perfect'))})</small>`:''}</div></div>
@@ -30,6 +33,7 @@ V.crimes=()=>{
   <div class="cr-h-k"><span class="label">Energie</span><b style="color:var(--ice)">${Math.floor(S.energy)}/${EN_MAX}</b><div class="bar"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div><em>1 punt per ${EN_REGEN_S} s${S.energy<EN_MAX?' · <a href="#ontspannen">bijvullen</a>':''}</em></div>
   <div class="cr-h-k"><span class="label">Hitte</span><b style="color:${S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--fg)'}">${S.heat}%</b><div class="bar"><i style="width:${S.heat}%;background:${S.heat>60?'var(--red)':'var(--acc)'}"></i></div><em>Elke 4% hitte = −1% kans</em></div>
  </section>
+ <div class="cr-mast-how"><b>Vakmanschap</b><span>Elke klus die lukt telt mee voor die klus: na 10 keer <em>Brons</em>, 30 <em>Zilver</em>, 75 <em>Goud</em> en 150 <em>Meester</em>. Elk niveau geeft +2% kans en +5% buit op die klus.</span></div>
  ${best.length?`<div class="tierhead"><h2>Beste voor jou</h2><span>Meeste buit per energiepunt, met jouw kans</span></div><div class="cr-list">${best.map(c=>row(c,true)).join('')}</div>`:''}
  <div class="cr-bar"><span>${avail.length} van de ${CRIMES.length} klussen staan voor je open. Mislukt een klus, dan kun je vluchten of ga je de cel in.</span>
   <div class="filters"><button class="chip-toggle ${crimeShowAll?'':'on'}" onclick="crimeShowAll=false;render()">Tot mijn rang</button><button class="chip-toggle ${crimeShowAll?'on':''}" onclick="crimeShowAll=true;render()">Alle ${CRIMES.length}</button></div></div>

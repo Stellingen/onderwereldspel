@@ -93,11 +93,15 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   6+ = superbonus.** Extra kluizen **tumbelen erin**: zolang er winst valt vallen er nieuwe symbolen in, en liggen er al 3 kluizen,
   dan valt een 4e, 5e of 6e makkelijker in. Tijdens de bonus geven 2+ kluizen extra spins.
   **Gouden baar**: valt hij in de gewone bonus, dan blijft hij de hele bonus vast op zijn vakje liggen (ook bij tumbles en nieuwe
-  spins) en telt hij als **loper**, dus hij helpt clusters maken. Heb je er 3, dan win je de max win (±1 op 170 bonussen van 10 spins).
-  **Superbonus**: 8 spins met veel meer lopers; daar is één Gouden baar al de max win (±1 op 13).
-  **Max win**: 500× je inzet per ronde, ook bij een gekochte bonus (de inzet telt, niet de prijs van de bonus).
+  spins) en telt hij als **loper**, dus hij helpt clusters maken. Heb je er 3, dan win je de max win (heel zeldzaam).
+  **Superbonus**: 8 spins met veel meer lopers; daar is één Gouden baar al de max win.
+  **Max win**: 5.000× je inzet per ronde, ook bij een gekochte bonus (de inzet telt, niet de prijs van de bonus); ±1 op 1.000 gekochte bonussen.
   **Bonus kopen** (100× de inzet) zet je aan met een schakelaar naast de draaiknop; je krijgt altijd 3 kluizen bovenop wat er
-  vanzelf valt en kunt doortumbelen tot de superbonus; +2 free spins (superbonus +1). **Inzet kiezen** gaat via een pop-up (ook bij Visdief).
+  vanzelf valt en kunt doortumbelen tot de superbonus; +2 free spins (superbonus +1). **8 vakjes beginnen op x2** en er is een
+  **vangnet**: altijd minstens 20× je inzet terug. Verdeling (gewoon): mediaan ±52×, 25% van de keren 100× of meer, 9% 200× of meer.
+  **Inzet kiezen** gaat via een pop-up (ook bij Visdief).
+  **Geschiedenis**: de laatste 40 rondes (inzet, betaald, terug, ×) worden bij je account bewaard; knop met het klokje bovenin.
+  **Narekenen**: `verify.js`-controle (clusters, lopers, baren, vakjes, tumbles, totalen, afronding) gaf 0 afwijkingen op 900 rondes.
   Het bord is net zo hoog dat het met de knoppen ernaast zonder scrollen op een laptopscherm past.
   Spatiebalk = draaien. **Seed**: elke spin komt uit jouw seed + spinnummer. Doorgerekend (`sim9.js`, 1,5 mln. spins per
   lidmaatschap, `simbuy4.js` voor gekochte bonussen): gewoon bonus ±1 op 200 (4+ ±1 op 880, superbonus ±1 op 20.000), RTP ±92%;
@@ -126,7 +130,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   | Casino-cashback (Kluiskraker, Visdief, Mines, Hoogvlieger 0,5%, roulette 1%, poker 0,75%, blackjack 0,25%) | ×1 | ×1,5 |
   | Huurmoorden: rustiger vizier / meer tijd | −7,5% / +15% | −20% / +40% |
   | Hoge inzetten in de slots | – | ja (ook met code `trainwreck`) |
-  Casino, doorgerekend (gewoon / VIP / High roller): Kluiskraker (10×10, max 500×) bonus 1 op 200 / 175 / 143, RTP 92% / 95% / 96%, bonus kopen
+  Casino, doorgerekend (gewoon / VIP / High roller): Kluiskraker (10×10, max 5.000×) bonus 1 op 200 / 175 / 143, RTP 92% / 95% / 96%, bonus kopen
   ±95% / 95,5% / 96,5%; Visdief bonus 1 op 200 / 172 / 143, RTP 91,5% / 94% / 96,5%, kopen ±97%; Hoogvlieger landt 17% / 18% / 19%,
   RTP 86% / 92% / 96%. Alles blijft onder 100%, ook met cashback.
 - **Huurmoorden** (vanaf Huurmoordenaar, met een scherpschuttersgeweer of beter): 6 contracten (moeilijkheid 1–6, Huurmoordenaar
@@ -147,6 +151,17 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Ervaring (auto's)**: Groentje tot Meesterdief, uit het aantal gestolen auto's en je rang. Als groentje heb je minder tijd per
   pijl (tot −22%) en meer kans (tot 28%) dat een voorbijganger je ziet: dan verlies je tijd, en mislukt het, dan belde hij 112
   maar ben je op tijd weg (geen politie). Ook niet elk alarm trekt meteen politie aan (kans op wegkomen kleiner bij duurdere auto's).
+- **Vakmanschap (misdaden)**: elke geslaagde klus telt mee voor die klus: 10× Brons, 30× Zilver, 75× Goud, 150× Meester.
+  Per niveau +2% kans en +5% buit op die klus (Meester: +8% en +20%). Te zien als ruitjes en een voortgangsbalk op elke klus.
+- **Carjacken** (`public/js/pages/carjack.js`, vanaf Boef, met een wapen): tweede manier om aan een auto te komen. Geen zoektocht;
+  er stopt een auto voor rood (tot en met zeldzaamheid 4) en je drukt drie keer op het juiste moment (portier, bestuurder eruit, gas
+  erop). Het groene stuk is groter met ervaring, Conditie, Rijvaardigheid en een zwaarder wapen. De auto is "heet" (15% minder waard,
+  meer hitte). Mislukt: hij rijdt weg, de bestuurder vecht terug (gezondheid) of er staat politie om de hoek. 12 energie, 4 min wachten.
+- **Bestellingen van de heler**: elke speldag 3 gevraagde modellen; lever er een uit je garage af voor ×1,4 tot ×1,9 de waarde
+  en wat straatcredit. Het dashboard meldt het als je een gevraagde auto hebt.
+- **Opslaan**: elke browser heeft een vaste apparaat-id. Kwam de serveropslag van dit apparaat en is de browseropslag nieuwer
+  (app gesloten terwijl de laatste opslag onderweg was), dan wint de browser. Opslaan gaat één tegelijk; de server negeert een
+  oudere stand van hetzelfde apparaat die later binnenkomt. Bij verbergen/sluiten (ook `freeze`) wordt meteen opgeslagen.
 - **Wraak en bendegevecht** (`public/js/pages/feud.js`): na een huurmoord (18–48%), een ontsnapt doelwit (30%) of een gemiste
   laatste kogel (45%, in plaats van politie) komen de mensen van het doelwit je zoeken. Je hebt 30 minuten. Meevechten vraagt
   gezondheid (52–87%, naar moeilijkheid) en 15 energie; 3 rondes, 2 winnen, met je familie aan je zijde. Winnen = geld, cred, XP

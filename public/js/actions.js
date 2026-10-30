@@ -2,7 +2,9 @@
 const act={
  crime(id){const c=CRIMES.find(x=>x.id===id);if(inJail()||cdLeft(id)||rankIdx(S.xp)<c.r)return;if(S.energy<c.en){toast('Te moe. Je hebt '+c.en+' energie nodig','bad');return}S.energy-=c.en;S.cd[id]=now()+crimeCd(c);
   const roll=rnd(1,100),ch=chance(c);
-  if(roll<=ch){const g=Math.floor(rnd(c.min,c.max)*lootMult());S.cash+=g;S.stats.crimes++;
+  if(roll<=ch){const g=Math.floor(rnd(c.min,c.max)*lootMult()*mastLoot(c.id));S.cash+=g;S.stats.crimes++;
+   const ml0=mastLv(c.id);S.mast=S.mast||{};S.mast[c.id]=(S.mast[c.id]||0)+1;const ml1=mastLv(c.id);
+   if(ml1>ml0)setTimeout(()=>toast(`Vakmanschap ${MAST[ml1][1]}: ${c.n} (+${ml1*2}% kans, +${ml1*5}% buit)`,'lvl'),600);
    // hoe ruim je slaagde bepaalt hoe goed het werd: perfect (ruim binnen je kans) of netjes
    const q=roll<=ch*.3?'perfect':roll<=ch*.65?'netjes':'',cr=c.cr?credGain(c.cr,q):0;S.cred+=cr;if(q==='perfect')S.stats.perfect=(S.stats.perfect||0)+1;
    addHeat(rnd(1,4));addXp(c.xp);if(typeof famEv==='function')famEv('crime',{r:c.r,g,cr});

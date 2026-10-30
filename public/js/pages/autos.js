@@ -58,23 +58,40 @@ function oddsList(){const dex=S.carDex||{},got=CARS.filter(m=>(dex[m.id]||[0,0])
   ${[1,2,3,4,5,6].map(t=>{const R=tierName(t),ms=CARS.filter(m=>carTier(m)===t).sort((a,b)=>CAR_ODDS[b.id]-CAR_ODDS[a.id]);
    return `<div class="od-tier" style="--rc:${R[1]}"><div class="od-th"><b>${R[0]}</b><span>${oddTxt(FIND_TIER[t])}</span></div>
    ${ms.map(m=>{const d=dex[m.id]||[0,0];return `<div class="od-row ${d[1]?'got':''} ${cur===m.id?'now':''}"><span class="od-n">${m.n}</span><span class="od-v">${kTxt(m.lo)}–${kTxt(m.hi)}</span><b>${oddTxt(CAR_ODDS[m.id])}</b><i title="${d[1]?d[1]+'× gestolen':'Nog niet gestolen'}">${d[1]?'✓':''}</i></div>`}).join('')}</div>`}).join('')}</div></details>`}
+// Bestellingen van de heler: elke speldag (4 uur) vraagt hij 3 modellen. Lever je zo'n auto af uit je garage,
+// dan krijg je ×1,4 tot ×1,9 de waarde en wat straatcredit. Geeft een doel aan het verzamelen.
+const ORD_TIER={1:.34,2:.34,3:.22,4:.1};
+function carOrders(){const d=dayStart(now());if(S.orders&&S.orders.day===d)return S.orders;
+ const pick=()=>{let r=Math.random(),t=1;for(const k of [1,2,3,4]){r-=ORD_TIER[k];if(r<=0){t=k;break}}const pool=CARS.filter(m=>carTier(m)===t);return pool[Math.floor(Math.random()*pool.length)]};
+ const list=[];for(let g=0;list.length<3&&g<40;g++){const m=pick();if(!list.some(o=>o.id===m.id))list.push({id:m.id,k:+(1.4+Math.random()*.5).toFixed(2),done:0})}
+ S.orders={day:d,list};return S.orders}
+function ordersHtml(){const O=carOrders(),left=O.day+DAY_MS-now();
+ return `<div class="tierhead"><h2>Bestellingen van de heler</h2><span>Lever een auto uit je garage af voor extra geld · nieuwe lijst over ${bkDur(left)}</span></div>
+ <div class="ord-grid">${O.list.map((o,i)=>{const m=CARS.find(c=>c.id===o.id)||CARS[0],R=carRarity(m),have=S.cars.findIndex(c=>c.id===o.id),car=have>=0?S.cars[have]:null;
+  return `<div class="ord ${o.done?'done':''}" style="--rc:${R[1]}"><div class="ord-car">${carSvg(m.b,'#3a404a')}</div><div class="ord-t"><span class="rar" style="--rc:${R[1]}">${R[0]}</span><b>${m.n}</b><small>${o.done?'Afgeleverd':`×${o.k.toLocaleString('nl-NL')} de waarde${car?' · jij hebt hem: '+fmt(Math.round(car.v*o.k)):''}`}</small></div>
+   ${o.done?'<em class="ord-ok">✓</em>':`<button class="btn sm ${car?'':'ghost'}" onclick="act.carOrder(${i})" ${car?'':'disabled'}>${car?'Afleveren':'Niet in je garage'}</button>`}</div>`}).join('')}</div>`}
 V.cars=()=>{if(S.street)delete S.street;S.carDex=S.carDex||{};carExpire(true);const gv=S.cars.reduce((a,c)=>a+c.v,0);
  return `<h1>Auto's</h1><p class="sub">Zoek de straat af en kijk wat je tegenkomt. Een gewone Polo vind je zo, een Lamborghini bijna nooit. En als je er een vindt, moet je wel snel zijn.</p>
- <div class="hunt-grid"><section class="hunt">${huntScene()}<div class="hunt-body">${huntInfo()}${huntBtns()}</div></section></div>
+ <div class="car-modes" role="tablist"><button role="tab" class="${carMode==='zoek'?'on':''}" onclick="carMode='zoek';render()"><b>Straat afzoeken</b><span>Zoek, kies en kraak het slot</span></button><button role="tab" class="${carMode==='jack'?'on':''}" onclick="carMode='jack';render()"><b>Carjacken</b><span>${rankIdx(S.xp)<JACK_R?'Vanaf '+RANKS[JACK_R][0]:'Snel, maar heet en riskant'}</span></button></div>
+ <div class="hunt-grid">${carMode==='jack'?jackSection():`<section class="hunt">${huntScene()}<div class="hunt-body">${huntInfo()}${huntBtns()}</div></section>`}</div>
+ ${ordersHtml()}
  <div class="tierhead"><h2>Garage</h2><span>${S.cars.length} / ${GARAGE_MAX} · waarde ${fmt(gv)}</span></div>
  ${S.cars.length?`<div class="garage">${S.cars.map((c,i)=>{const m=CARS.find(k=>k.id===c.id)||CARS.find(k=>k.n===c.n)||{b:'hatch',d:1};
-   return `<div class="gcar" style="--rc:${(carRarity(m)||CAR_RARITY[1])[1]}">${carSvg(c.b||m.b,c.c||'#8a929c')}<div class="g-n"><b>${c.n}</b><span>${c.year?c.year+' · '+kmTxt(c.km)+(c.staat?' · '+c.staat:''):'&nbsp;'}</span></div>
+   return `<div class="gcar" style="--rc:${(carRarity(m)||CAR_RARITY[1])[1]}">${carSvg(c.b||m.b,c.c||'#8a929c')}<div class="g-n"><b>${c.n}${c.hot?'<i class="g-hot" title="Gejat bij het stoplicht: minder waard">heet</i>':''}</b><span>${c.year?c.year+' · '+kmTxt(c.km)+(c.staat?' · '+c.staat:''):'&nbsp;'}</span></div>
     <div class="g-s"><span class="gv">${fmt(c.v)}</span><button class="btn sm" onclick="act.sell(${i})">Verkoop</button>${S.family?`<button class="btn sm ghost g-fam" onclick="act.famCar(${i})" title="Afleveren bij ${famBase().n}: ${fmt(Math.round(c.v*.3))} en +${Math.round(2+Math.sqrt(c.v)/20)} eer">Familie</button>`:''}</div></div>`}).join('')}</div>
   <button class="btn" style="margin-top:10px;width:auto" onclick="act.sellAll()">Alles verkopen · ${fmt(gv)}</button>`:'<div class="card empty">Je garage is leeg. Zoek hierboven je eerste auto.</div>'}
  <div class="cars-odds">${oddsList()}</div>`};
 // Eigen klok: aftellen zonder alles opnieuw te tekenen
 let _carSig='';
 setInterval(()=>{if(page!=='cars'||window.__chase||carSearch)return;if(carExpire()){render();return}const x=S.carFind;
- const sig=[cdLeft('car')>0,inJail(),S.cars.length>=GARAGE_MAX,S.energy>=SEARCH_EN,x&&x.id&&!x.res?S.energy>=carEn(findM(x)):0].join();
+ const sig=[cdLeft('jack')>0,carMode,cdLeft('car')>0,inJail(),S.cars.length>=GARAGE_MAX,S.energy>=SEARCH_EN,x&&x.id&&!x.res?S.energy>=carEn(findM(x)):0].join();
  if(_carSig&&sig!==_carSig){_carSig=sig;render();return}_carSig=sig;
  const a=document.getElementById('hsLeft');if(a&&x&&x.until)a.textContent=fmtClock(x.until-now());
- const c=document.getElementById('huntCd');if(c)c.textContent=fmtClock(cdLeft('car'))},1000);
+ const c=document.getElementById('huntCd');if(c)c.textContent=fmtClock(cdLeft('car'));const j=document.getElementById('jackCd');if(j)j.textContent=fmtClock(cdLeft('jack'))},1000);
 Object.assign(act,{
+ carOrder(i){const O=carOrders(),o=O.list[i];if(!o||o.done)return;const at=S.cars.findIndex(c=>c.id===o.id);if(at<0)return;const c=S.cars.splice(at,1)[0];
+  const pay=Math.round(c.v*o.k/10)*10,cr=2+Math.floor(carTier(CARS.find(m=>m.id===o.id)||{d:1})/2);o.done=1;S.cash+=pay;S.cred+=cr;S.stats.orders=(S.stats.orders||0)+1;
+  toast(`${c.n} afgeleverd bij de heler: +${fmt(pay)} · +${cr} cred`,'lvl');log(`Bestelling: ${c.n} afgeleverd (+${fmt(pay)})`,'ok');save();render()},
  async searchCar(){if(carSearch||window.__chase||inJail()||cdLeft('car'))return;if(S.cars.length>=GARAGE_MAX){toast('Garage vol, verkoop eerst iets','bad');return}
   if(S.energy<SEARCH_EN){toast('Te moe om te zoeken','bad');return}
   S.energy-=SEARCH_EN;S.carFind=null;const spot=CAR_SPOTS[Math.floor(Math.random()*CAR_SPOTS.length)];carSearch={spot};S.stats.searches=(S.stats.searches||0)+1;
