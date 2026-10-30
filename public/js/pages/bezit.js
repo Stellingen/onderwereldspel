@@ -16,9 +16,12 @@ const BZ_IC={
  speelhal:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.4"/><circle cx="16" cy="16" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="16" cy="8" r="1.4"/><circle cx="8" cy="16" r="1.4"/>',
  port:'<circle cx="12" cy="5" r="2"/><path d="M12 7v14M8 11h8"/><path d="M4 14c0 4 4 7 8 7s8-3 8-7"/>',
  vastgoed:'<path d="M3 21V10l6-4v15M9 21V3l12 4v14M3 21h18"/><path d="M13 9h4M13 13h4M13 17h4"/>',
- jet:'<path d="M2 14l20-8-6 14-3-6z"/><path d="M13 14l-4 6v-5"/>'};
+ jet:'<path d="M2 14l20-8-6 14-3-6z"/><path d="M13 14l-4 6v-5"/>',
+ boven:'<path d="M3 21V9l4-4 4 4v12M11 21V7l5-4 5 4v14M3 21h18"/><path d="M6 12h2M6 16h2M14 10h3M14 14h3M14 18h3"/>',
+ winkelpand:'<path d="M3 10l1.5-5h15L21 10z"/><path d="M4 10v11h16V10"/><path d="M9 21v-6h6v6"/><path d="M3 10c0 1.5 1.5 2 3 2s3-.5 3-2c0 1.5 1.5 2 3 2s3-.5 3-2c0 1.5 1.5 2 3 2s3-.5 3-2"/>',
+ bedrijfshal:'<path d="M2 21V10l10-6 10 6v11z"/><path d="M6 21v-7h12v7M6 17h12"/>'};
 // Illustratie per zaak (gevel bij nacht) voor de banners: winkelpui, garage, toren, haven of hangar. Verlichte ramen = je vestigingen.
-const BZ_KIND={autogarage:'garage',dealer:'garage',garage:'garage',hotel:'tower',vastgoed:'tower',port:'port',jet:'jet'};
+const BZ_KIND={autogarage:'garage',dealer:'garage',garage:'garage',bedrijfshal:'garage',hotel:'tower',vastgoed:'tower',port:'port',jet:'jet',boven:'row'};
 function bzArt(b,uid){const c=b.col,k=b.kind||BZ_KIND[b.id]||'shop',n=bizUnits(b.id).length,lit=i=>i<Math.max(2,n*2),u=uid||'a'+b.id;
  const ic=(x,y,sz,col)=>`<g transform="translate(${x-sz/2} ${y-sz/2}) scale(${sz/24})" fill="none" stroke="${col||'#fff'}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${BZ_IC[b.id]||b.icp||''}</g>`;
  const defs=`<defs><radialGradient id="${u}g" cx="50%" cy="60%" r="60%"><stop offset="0" stop-color="${c}" stop-opacity=".55"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></radialGradient>
@@ -42,6 +45,12 @@ function bzArt(b,uid){const c=b.col,k=b.kind||BZ_KIND[b.id]||'shop',n=bizUnits(b
    ${Array.from({length:7},(_,r)=>Array.from({length:4},(_,q)=>{const i=r*4+q;return `<rect x="${120+q*22}" y="${28+r*20}" width="14" height="12" fill="${lit(i)?'url(#'+u+'w)':'#111317'}" opacity="${lit(i)?.8:1}"/>`}).join('')).join('')}
    <rect x="138" y="168" width="44" height="22" fill="#0c0e11" stroke="${c}"/><rect x="124" y="160" width="72" height="6" fill="${c}" opacity=".9"/>
    <circle cx="250" cy="60" r="20" fill="${c}" opacity=".12"/>${ic(250,60,26,c)}`}
+ else if(k==='row'){const H=[[44,58,'#2a2420'],[100,52,'#24272c'],[150,60,'#2b2320'],[208,54,'#23262b']];
+  body=H.map(([x,w,f],h)=>{const top=48+(h%2)*14,mid=x+w/2;return `<path d="M${x} 190V${top+18}h${w*.2}v-8h${w*.15}v-8h${w*.3}v8h${w*.15}v8h${w*.2}V190z" fill="${f}" stroke="#34302c"/>
+   <rect x="${mid-5}" y="${top+2}" width="10" height="8" fill="${lit(h)?c:'#111317'}" opacity="${lit(h)?.85:1}"/>
+   ${[0,1,2].map(r=>[0,1].map(q=>{const i=h*6+r*2+q;return `<rect x="${x+w*.18+q*w*.38}" y="${top+30+r*28}" width="${w*.26}" height="18" fill="${lit(i)?'url(#'+u+'w)':'#111317'}" opacity="${lit(i)?.8:1}"/>`}).join('')).join('')}
+   <rect x="${x+4}" y="166" width="${w-8}" height="24" fill="#0c0e11" stroke="#3a3f47"/><rect x="${x+4}" y="166" width="${w-8}" height="24" fill="url(#${u}g)" opacity=".7"/>`}).join('')+
+   `<circle cx="282" cy="56" r="20" fill="${c}" opacity=".12"/>${ic(282,56,24,c)}`}
  else if(k==='port'){body=`<path d="M0 190h320" stroke="${c}" stroke-opacity=".3"/>
    <g stroke="${c}" stroke-width="5" fill="none"><path d="M70 190V40M70 40h150M70 70l40-30M200 40v40"/></g><rect x="186" y="80" width="28" height="18" fill="${c}"/>
    ${[[96,160,'#c8102e'],[146,160,c],[196,160,'#2f6fd6'],[121,134,'#e38a12'],[171,134,'#1f9d5a']].map(([x,y,f])=>`<rect x="${x}" y="${y}" width="48" height="26" fill="${f}" opacity=".9"/><path d="M${x+6} ${y+4}v18M${x+14} ${y+4}v18M${x+22} ${y+4}v18M${x+30} ${y+4}v18M${x+38} ${y+4}v18" stroke="#000" stroke-opacity=".3"/>`).join('')}`}
@@ -72,7 +81,7 @@ const bzKv=(l,v,c)=>`<span class="bz-kv-r"><span class="label">${l}</span><b cla
 function bzBonusHtml(){const M=bizMult(),pct=v=>'+'+Math.round(v*100)+'%';
  return `<div class="bz-bonus"><div class="bz-bonus-t"><span class="label">Bonus op al je inkomen</span><b>×${M.total.toFixed(2).replace('.',',')}</b></div>
   <div class="bz-bonus-p"><span><b>${pct(BIZ_BOOST-1)}</b> basis</span><span><b>${pct(M.imp)}</b> imperium (${M.units} vestiging${M.units===1?'':'en'}, ${M.ups} upgrade${M.ups===1?'':'s'}${M.imp>=BIZ_IMP_MAX?', maximaal':''})</span><span><b>${pct(M.rk)}</b> rang (${RANKS[rankIdx(S.xp)][0]})</span>${(()=>{const o=[];if(sk('handel'))o.push([sk('handel')*SK.handel.inc/100,'handel']);if(famPerk('inc'))o.push([famPerk('inc'),'familie']);if(fitFx('inc'))o.push([fitFx('inc'),'outfit']);return o.map(([v,l])=>`<span><b>${pct(v)}</b> ${l}</span>`).join('')})()}</div>
-  <p>Elke vestiging geeft +0,5% en elke upgrade +0,25% op al je bedrijven (samen tot +50%). Elke rang hoger geeft +3%, elk level binnen je rang +0,5%.${typeof wwFee==='function'&&wwFronts().length?` Hoe groter je imperium, hoe goedkoper <a href="#wit">witwassen</a>: via je beste zaak nu ${(Math.round(Math.min(...wwFronts().map(b=>wwFee(b).fee))*1000)/10).toLocaleString('nl-NL')}% (Ome Kees ${Math.round(WW_KEES*100)}%).`:''}</p></div>`}
+  <p>Elke vestiging geeft +0,5% en elke upgrade +0,25% op al je bedrijven (samen tot +50%). Elke rang hoger geeft +3%, elk level binnen je rang +0,5%.${typeof keesFee==='function'?` <a href="#wit">Witwassen</a> via een zaak kost altijd 21% belasting; een betere zaak wast sneller. Ome Kees neemt nu ${wwPct(keesFee())}.`:''}</p></div>`}
 // Wat 'upgrade alles' zou doen: steeds de goedkoopste upgrade eerst, zolang het budget het toelaat (budget=Infinity: alles naar max)
 function bzPlan(ids,budget){const M=bizMult().total;let c=budget,k=0,cost=0,gain=0;const v={};ids.forEach(id=>v[id]=bizUnits(id).slice());
  for(;;){let best=null;ids.forEach(id=>{const b=BIZ.find(x=>x.id===id);v[id].forEach((l,i)=>{if(l<5){const x=bizUpCost(b,l);if(!best||x<best.x)best={id,i,x,b,l}}})});
@@ -81,13 +90,26 @@ function bzPlan(ids,budget){const M=bizMult().total;let c=budget,k=0,cost=0,gain
 V.biz=()=>bz.sel&&BIZ.find(b=>b.id===bz.sel)?bzDetail(BIZ.find(b=>b.id===bz.sel)):bzOverview();
 // Banner per zaak (zelfde stijl als de casino-lobby): illustratie rechts, naam, cijfers en wat je nu kunt doen
 function bzBanner(b){const u=bizUnits(b.id),n=u.length,lock=bzLock(b),price=bizPrice(b,n),up=bzCanUp(b),inc=bizIncome(b.id),can=wit()>=price,job=typeof wwJob==='function'&&wwJob(b.id);
- const facts=n?`<span class="bzb-f"><em><b>${fmt(inc)}</b>/dag</em><em><b>${n}</b>/${BIZ_MAX} vestigingen</em>${up?`<em class="up"><b>${up}</b> upgrade${up>1?'s':''} klaar</em>`:''}${job?'<em class="ww">witwassen bezig</em>':''}</span>`
-  :`<span class="bzb-f"><em><b>${fmt(bizInc(b,1))}</b>/dag per vestiging</em><em>terug in ${bzDays(b.p/bizInc(b,1)).split(' (')[0]}</em></span>`;
+ const facts=n?`<span class="bzb-f"><em><b>${fmt(inc)}</b>/dag</em><em><b>${n}</b>/${BIZ_MAX} vestigingen</em>${up?`<em class="up"><b>${up}</b> upgrade${up>1?'s':''} klaar</em>`:''}${job?'<em class="ww">witwassen bezig</em>':''}${b.cat==='vastgoed'?'<em class="nw">huur · geen witwassen</em>':''}</span>`
+  :`<span class="bzb-f"><em><b>${fmt(bizInc(b,1))}</b>/dag per vestiging</em><em>terug in ${bzDays(b.p/bizInc(b,1)).split(' (')[0]}</em>${b.cat==='vastgoed'?'<em class="nw">geen witwassen</em>':''}</span>`;
  const go=lock?`<span class="bzb-lock">Vanaf ${RANKS[b.r][0]} · ${fmt(price)}</span>`:n?`<span class="bzb-go">Openen ›</span>`:`<span class="bzb-go ${can?'':'dim'}">${can?'Kopen · '+fmt(price):fmt(price)+' wit nodig'}</span>`;
  return `<button class="bzb ${n?'own':''} ${lock?'lock':''}" style="--c:${b.col}" onclick="bz.open('${b.id}')" aria-label="${b.n}${lock?', vanaf '+RANKS[b.r][0]:''}">
   <span class="bzb-art" aria-hidden="true">${bzArt(b,'o'+b.id)}</span>
   <span class="bzb-t"><span class="bzb-k">${n?'Jouw zaak':lock?'Op slot':'Te koop'}${n?' · '+bzSlots(u):''}</span><b>${b.n}</b><span class="bzb-d">${b.d}</span>${facts}${go}</span></button>`}
 
+// Categorieën: kleur per categorie, een tegel per eigen zaak en een sectie met banners per categorie
+const BZ_CATC={dienst:'#3fe395',horeca:'#ff3d52',auto:'#ff7a1a',handel:'#38bdf8',vastgoed:'#d9b48a'};
+function bzTile(b){const u=bizUnits(b.id),n=u.length,up=bzCanUp(b),avg=n?u.reduce((a,l)=>a+l,0)/n:0,job=typeof wwJob==='function'&&wwJob(b.id);
+ return `<button class="bz-pt" style="--c:${b.col}" onclick="bz.open('${b.id}')">${bzIcon(b,38)}<span class="bz-pt-t"><b>${b.n}</b><small>${n}/${BIZ_MAX} · level ${avg.toFixed(1).replace('.',',')}${b.cat==='vastgoed'?' · huur':''}</small></span>
+  <span class="bz-pt-v"><b>${fmt(bizIncome(b.id))}</b><small>/dag</small></span>${up?`<i class="bz-pt-up">${up}↑</i>`:''}${job?'<i class="bz-pt-ww" title="Witwassen bezig"></i>':''}</button>`}
+function bzCatHtml(c){const it=BIZ.filter(b=>b.cat===c.id),own=it.filter(b=>bizUnits(b.id).length),open=it.filter(b=>!bizUnits(b.id).length&&!bzLock(b)),lock=it.filter(b=>!bizUnits(b.id).length&&bzLock(b));
+ const show=own.concat(open,bz.cat?lock:lock.slice(0,1)),rest=bz.cat?[]:lock.slice(1),inc=own.reduce((a,b)=>a+bizIncome(b.id),0);
+ return `<section class="bz-cat" style="--c:${BZ_CATC[c.id]}">
+  <header class="bz-cat-h"><div><span class="label">Categorie</span><h2>${c.n}</h2><p>${c.d}</p></div>
+   <div class="bz-cat-m"><span><b>${own.length}</b>/${it.length} in bezit</span>${inc?`<span><b>${fmt(inc)}</b>/dag</span>`:''}<em class="${c.nowash?'no':'ok'}">${c.nowash?'Geen witwassen':'Witwassen kan'}</em></div></header>
+  <div class="bzb-grid">${show.map(bzBanner).join('')}</div>
+  ${rest.length?`<button class="bz-more" onclick="bz.cat='${c.id}';render();window.scrollTo({top:0,behavior:'smooth'})"><span>Ook in deze categorie</span>${rest.map(b=>`<em>${b.n} <small>vanaf ${RANKS[b.r][0]}</small></em>`).join('')}<i>›</i></button>`:''}
+ </section>`}
 function bzOverview(){const inc=income(),units=BIZ.reduce((a,b)=>a+bizUnits(b.id).length,0),types=BIZ.filter(b=>bizUnits(b.id).length).length;
  const lv=BIZ.reduce((a,b)=>a+bizUnits(b.id).reduce((x,l)=>x+l,0),0),maxed=BIZ.reduce((a,b)=>a+bizUnits(b.id).filter(l=>l>=5).length,0);
  const own=BIZ.filter(b=>bizUnits(b.id).length),buy=BIZ.filter(b=>!bizUnits(b.id).length&&!bzLock(b)),lock=BIZ.filter(b=>!bizUnits(b.id).length&&bzLock(b));
@@ -104,10 +126,12 @@ function bzOverview(){const inc=income(),units=BIZ.reduce((a,b)=>a+bizUnits(b.id
   </div>
   ${bzBonusHtml()}
  </header>
- ${own.length?`<div class="bz-sec"><h2>Jouw zaken</h2><span>${own.length}</span></div>${(()=>{const ids=own.map(b=>b.id),c=bzPlan(ids,wit()),f=bzPlan(ids,Infinity);return f.k?`<div class="bz-upall"><div><span class="label">Wat je nu kunt betalen</span><b>${c.k?c.k+' upgrade'+(c.k>1?'s':'')+' · '+fmt(c.cost):'Nu niets betaalbaar'}</b><em>${c.k?'+'+fmt(c.gain)+'/dag extra, goedkoopste eerst':'Spaar nog even'}</em></div><div><span class="label">Alles naar max level</span><b>${f.k} upgrade${f.k>1?'s':''} · ${fmt(f.cost)}</b><em>+${fmt(f.gain)}/dag extra${f.cost>S.cash?', nog '+fmt(f.cost-S.cash)+' nodig':''}</em></div><button class="btn ${c.k?'gold':'ghost'}" onclick="act.bizUpEvery()" ${c.k?'':'disabled'}>${c.k?'Upgrade '+c.k+' · '+fmt(c.cost):'Geen upgrade betaalbaar'}</button></div>`:''})()}<div class="bzb-grid">${own.map(bzBanner).join('')}</div>`
+ ${own.length?`<div class="bz-sec"><h2>Jouw bezit</h2><span>${own.length} soort${own.length===1?'':'en'} · ${units} vestiging${units===1?'':'en'}</span></div>${(()=>{const ids=own.map(b=>b.id),c=bzPlan(ids,wit()),f=bzPlan(ids,Infinity);return f.k?`<div class="bz-upall"><div><span class="label">Wat je nu kunt betalen</span><b>${c.k?c.k+' upgrade'+(c.k>1?'s':'')+' · '+fmt(c.cost):'Nu niets betaalbaar'}</b><em>${c.k?'+'+fmt(c.gain)+'/dag extra, goedkoopste eerst':'Spaar nog even'}</em></div><div><span class="label">Alles naar max level</span><b>${f.k} upgrade${f.k>1?'s':''} · ${fmt(f.cost)}</b><em>+${fmt(f.gain)}/dag extra${f.cost>S.cash?', nog '+fmt(f.cost-S.cash)+' nodig':''}</em></div><button class="btn ${c.k?'gold':'ghost'}" onclick="act.bizUpEvery()" ${c.k?'':'disabled'}>${c.k?'Upgrade '+c.k+' · '+fmt(c.cost):'Geen upgrade betaalbaar'}</button></div>`:''})()}
+  <div class="bz-port">${own.map(bzTile).join('')}</div>`
   :`<div class="bz-empty card"><b>Je hebt nog geen zaken.</b><span>${bzLock(BIZ[0])?`Je eerste zaak, een ${BIZ[0].n.toLowerCase()}, kun je kopen vanaf ${RANKS[BIZ[0].r][0]}.`:`Begin met een ${BIZ[0].n.toLowerCase()}: goedkoop, en hij verdient zichzelf in ruim drie speldagen (±13 uur) terug.`}</span></div>`}
- ${buy.length?`<div class="bz-sec"><h2>Te koop</h2><span>${buy.length}</span></div><div class="bzb-grid">${buy.map(bzBanner).join('')}</div>`:''}
- ${lock.length?`<div class="bz-sec"><h2>Nog op slot</h2><span>${lock.slice(0,2).length} van ${lock.length}</span></div><div class="bzb-grid lockd">${lock.slice(0,2).map(bzBanner).join('')}</div>`:''}
+ <nav class="bz-cats" aria-label="Categorieën">${[{id:'',n:'Alles'}].concat(BIZ_CATS).map(c=>{const it=c.id?BIZ.filter(b=>b.cat===c.id):BIZ,o=it.filter(b=>bizUnits(b.id).length).length;
+  return `<button class="${(bz.cat||'')===c.id?'on':''}" style="--c:${BZ_CATC[c.id]||'#ff7a1a'}" onclick="bz.cat='${c.id}';render()" aria-pressed="${(bz.cat||'')===c.id}">${c.n}<small>${o}/${it.length}</small></button>`}).join('')}</nav>
+ ${BIZ_CATS.filter(c=>!bz.cat||bz.cat===c.id).map(bzCatHtml).join('')}
  </div>`}
 
 // Kaart per bedrijf. Cijfers staan als regels (label links, bedrag rechts), zodat er bij geen enkele breedte iets over elkaar valt.
@@ -153,7 +177,7 @@ function bzDetail(b){const u=bizUnits(b.id),n=u.length,lock=bzLock(b),price=bizP
    <div class="bz-stat"><span class="label">Vestigingen</span><b>${n}<small>/${BIZ_MAX}</small></b><em>${full?'vol':'volgende '+fmt(price)}</em></div>
    <div class="bz-stat"><span class="label">Levels</span><b>${tot}<small>/${maxTot||50}</small></b><em>${n?Math.round(tot/(maxTot||1)*100)+'% opgewaardeerd':'nog niets'}</em></div>
   </div>
-  ${n&&typeof wwDur==='function'?`<div class="bzd-ww">${wwJob(b.id)?wwJobHtml(b.id,b):`<div><span class="label">Witwassen via deze zaak</span><b>${wwGT(wwDur(b))}</b><small>kosten ${(Math.round(wwFee(b).fee*1000)/10).toLocaleString('nl-NL')}% · meer vestigingen en upgrades = sneller</small></div>`}<a class="btn ghost sm" href="#wit" onclick="ww.front='${b.id}'">Naar witwassen</a></div>`:''}
+  ${n&&typeof wwDur==='function'&&wwCan(b)?`<div class="bzd-ww">${wwJob(b.id)?wwJobHtml(b.id,b):`<div><span class="label">Witwassen via deze zaak</span><b>${wwTime(wwDur(b,1))} tot ${fmt(WW_BIG)} · ${wwTime(wwDur(b))} daarboven</b><small>21% belasting · meer vestigingen en upgrades = sneller</small></div>`}<a class="btn ghost sm" href="#wit" onclick="ww.front='${b.id}'">Naar witwassen</a></div>`:''}
   <div class="bz-buy">${buyBtn}<span>${lock?'Klim in rang om dit bedrijf te kunnen kopen.':full?'Upgrade je vestigingen voor meer inkomen.':`Nieuwe vestiging start op level 1 · +${fmt(bizInc(b,1))}/dag · elke volgende is 25% duurder`}</span></div>
  </header>
  <div class="bz-cols">

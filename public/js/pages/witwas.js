@@ -1,32 +1,41 @@
 // Tab: Witwassen. Zwart geld (klussen, huurmoorden, auto's, familie) wordt hier wit, zodat je het op de bank kunt zetten
 // en er zaken en woningen mee kunt kopen. Drie manieren:
-// - Via je zaken: een werkdag aan de kassa (minigame), daarna gaat het geld door de boeken. Dat kost tijd: met één vestiging
-//   op level 1 10 speldagen, met één vestiging op max level 1 speldag, met tien vestigingen op max level ±1 speluur (wwDur).
+// - Via je zaken: een werkdag aan de kassa (minigame), daarna gaat het geld door de boeken. Je betaalt 21% belasting
+//   (vast). Tot €50.000 duurt het 2 minuten, daarboven 10 minuten. Hoe beter je zaak (q = som van de levels van je
+//   vestigingen van die soort, 1 tot 50), hoe sneller: alles gemaximeerd = 8 seconden tot €50K en 25 seconden daarboven.
 //   Per soort zaak loopt er één tegelijk; het geld staat zolang in de wasstraat (S.wwJobs) en komt daarna wit binnen.
-//   Hoe beter je bezit, hoe minder het kost: basis 26%, tot 18% minder
-//   door je imperium (vestigingen en upgrades, zelfde maat als de inkomensbonus) en tot 5% minder door het niveau van de zaak
-//   waar je het doorheen haalt (minimaal 5%, nog 2% minder als niemand iets merkt). Een beter uitgebouwde zaak heeft meer
-//   klanten en minder bonnen nodig, dus het gaat ook sneller. Per speldag maximaal 2,5× wat je zaken verdienen.
-//   Te opvallend = controle: 30% van die dag in beslag en hitte.
-// - Via Ome Kees: meteen klaar, 30% voor hem (de normale prijs), met een maximum per speldag dat met je rang meegroeit.
+//   Per speldag maximaal 2,5× wat je zaken verdienen. Te opvallend = controle: 30% in beslag en hitte.
+//   Vastgoed (b.cat==='vastgoed') verdient huur, maar daar kun je niet door witwassen.
+// - Via Ome Kees: tot €500.000 meteen klaar, daarboven duurt het 10 minuten. Hij begint op 60%. Hoe vaker je bij hem
+//   wast (je band, S.kees.n: elke keer vanaf €5.000 telt) en hoe hoger je rang, hoe minder hij neemt: −20% voor je band
+//   (vol na 60 keer) en −15% voor je rang, minimaal 25%. Altijd iets duurder dan je eigen zaak (21%).
 // - Via het casino: kies 'zwart' in de casinobalk en speel; wat je wint is wit. De verdenking loopt op (zie zwCasinoRound in
 //   state.js); op 100% word je verbannen uit het casino.
-const WW_BASE=.26,WW_IMP=.18,WW_LVL=.05,WW_MIN=.05,WW_TOP=.02,WW_KEES=.30,WW_BUST=.3,WW_CHUNKS=12;
-// kosten via een zaak: basis min imperium (0..1 van de maximale bonus) min het gemiddelde niveau van die zaak
-function wwFee(B){const M=bizMult(),q=Math.min(1,M.imp/(typeof BIZ_IMP_MAX!=='undefined'?BIZ_IMP_MAX:.5)),u=B?bizUnits(B.id):[],f=u.length?u.reduce((a,l)=>a+l,0)/u.length/5:0;
- const imp=WW_IMP*q,lvl=WW_LVL*f;return {fee:Math.max(WW_MIN,WW_BASE-imp-lvl),imp,lvl,f}}
-const wwChunks=B=>Math.max(8,WW_CHUNKS-Math.round(4*wwFee(B).f));
+const WW_TAX=.21,WW_BUST=.3,WW_CHUNKS=12,WW_BIG=50000,WW_D=[[120000,8000],[600000,25000]];
+const KEES_MAX=.60,KEES_MIN=.25,KEES_BOND=.20,KEES_RANK=.15,KEES_BN=60,KEES_CNT=5000,KEES_NOW=500000,KEES_DUR=600000;
+const wwCan=b=>!!b&&b.cat!=='vastgoed';
+// kosten via een zaak: altijd 21% belasting
+function wwFee(B){return {fee:WW_TAX,f:B?wwF(B):0}}
+const wwChunks=B=>Math.max(8,WW_CHUNKS-Math.round(4*wwF(B)));
 const wwS=()=>{const d=dayStart(now());if(!S.ww||S.ww.day!==d)S.ww={day:d,zaak:0,kees:0,hist:(S.ww&&S.ww.hist)||[]};return S.ww};
 const wwZaakCap=()=>Math.round(2.5*(typeof income==='function'?income():0)/100)*100;
 const wwKeesCap=()=>Math.round(25000*Math.pow(1.7,rankIdx(S.xp))/100)*100;
 const wwZaakLeft=()=>Math.max(0,wwZaakCap()-wwS().zaak);
 const wwKeesLeft=()=>Math.max(0,wwKeesCap()-wwS().kees);
-const wwFronts=()=>BIZ.filter(b=>bizUnits(b.id).length);
-// Hoe lang het duurt via een soort zaak: q = som van de levels van je vestigingen van die soort (1 tot 50).
-// 10 speldagen × q^-1,43: 1 vestiging level 1 = 10 dagen, 1 op max = 1 dag, 10 op max = ±1 speluur (minimaal 1 speluur).
-const WW_DMAX=10,WW_DEXP=1.43;
+const wwFronts=()=>BIZ.filter(b=>wwCan(b)&&bizUnits(b.id).length);
 const wwQ=B=>B?bizUnits(B.id).reduce((a,l)=>a+l,0):0;
-const wwDur=B=>Math.max(DAY_MS/24,WW_DMAX*Math.pow(Math.max(1,wwQ(B)),-WW_DEXP)*DAY_MS);
+const wwF=B=>Math.max(0,Math.min(1,(wwQ(B)-1)/(BIZ_MAX*5-1)));
+// duur via een soort zaak voor een bedrag (zonder bedrag: de lange variant boven €50K)
+const wwDur=(B,a)=>{const [w,b]=WW_D[a!=null&&a<=WW_BIG?0:1];return Math.round(w*Math.pow(b/w,wwF(B)))};
+// Ome Kees: band (aantal keer) en wat hij nu neemt
+const keesS=()=>S.kees||(S.kees={n:0,sum:0});
+const keesBond=()=>Math.min(1,keesS().n/KEES_BN);
+const keesFee=()=>Math.max(KEES_MIN,KEES_MAX-KEES_BOND*Math.pow(keesBond(),.7)-KEES_RANK*rankIdx(S.xp)/(RANKS.length-1));
+const KEES_LV=[[0,'Vreemde'],[5,'Bekende'],[15,'Vaste klant'],[30,'Vertrouweling'],[60,'Familie']];
+const keesLv=()=>{const n=keesS().n;let i=0;KEES_LV.forEach((x,k)=>{if(n>=x[0])i=k});return i};
+const wwPct=v=>(Math.round(v*1000)/10).toLocaleString('nl-NL')+'%';
+// echte tijd: 25 sec, 3 min 20 sec, 10 min
+const wwTime=ms=>{const s=Math.max(1,Math.round(ms/1000));if(s<60)return s+' sec';const m=Math.floor(s/60),r=s%60;return m+' min'+(r?' '+r+' sec':'')};
 // tijd in speltijd (een speldag = 4 uur) met de echte tijd erbij
 function wwGT(ms){const d=ms/DAY_MS,h=ms/(DAY_MS/24),r=ms/60000;
  const real=r>=120?Math.round(r/60*10)/10+' uur':Math.max(1,Math.round(r))+' min';
@@ -34,12 +43,14 @@ function wwGT(ms){const d=ms/DAY_MS,h=ms/(DAY_MS/24),r=ms/60000;
 const wwJobs=()=>S.wwJobs||(S.wwJobs={});
 const wwJob=id=>wwJobs()[id]||null;
 // klaar? dan komt het witte geld binnen
+const KEES_B={n:'Ome Kees',col:'#b8a1ff'};
 function wwJobsTick(){const J=wwJobs();let any=false;Object.keys(J).forEach(id=>{const j=J[id];if(now()>=j.t1){S.cash+=j.got;delete J[id];any=true;
+  if(id==='kees'){wwHist('kees',j.a,j.got,'klaar');toast(`Ome Kees is klaar: ${fmt(j.got)} wit`,'ok');log(`Witwassen klaar via Ome Kees: ${fmt(j.a)} → ${fmt(j.got)} wit`,'ok');return}
   const b=BIZ.find(x=>x.id===id);wwHist('zaak',j.a,j.got,(b?b.n:'zaak')+' · klaar');toast(`${fmt(j.got)} wit binnen via je ${b?b.n.toLowerCase():'zaak'}`,'ok');log(`Witwassen klaar via ${b?b.n:'zaak'}: ${fmt(j.a)} → ${fmt(j.got)} wit`,'ok')}});
  if(any){save();if(page==='wit'||page==='biz')render();else renderTop()}}
-setInterval(()=>{if(typeof S!=='undefined'&&S.wwJobs)wwJobsTick()},1000);
+setInterval(()=>{if(typeof S!=='undefined'&&S.wwJobs){wwJobsTick();document.querySelectorAll('.ww-job').forEach(el=>{const l=el.querySelector('.ww-left'),t1=+(l&&l.dataset.t1),t0=+el.dataset.t0;if(!t1)return;l.textContent='Klaar over '+wwTime(Math.max(0,t1-now()));const bar=el.querySelector('i>i');if(bar&&t0)bar.style.width=Math.min(100,(now()-t0)/(t1-t0)*100).toFixed(1)+'%'})}},1000);
 const wwJobHtml=(id,b)=>{const j=wwJob(id);if(!j)return '';const p=Math.min(100,(now()-j.t0)/(j.t1-j.t0)*100);
- return `<div class="ww-job" style="--c:${b.col}"><div><span class="label">In de wasstraat · ${esc(b.n)}</span><b>${fmt(j.a)} → ${fmt(j.got)} wit</b></div><i><i style="width:${p.toFixed(1)}%"></i></i><small>Klaar over ${wwGT(Math.max(0,j.t1-now()))}</small></div>`};
+ return `<div class="ww-job" style="--c:${b.col}" data-t0="${j.t0}"><div><span class="label">${id==='kees'?'Bij Ome Kees':'In de wasstraat · '+esc(b.n)}</span><b>${fmt(j.a)} → ${fmt(j.got)} wit</b></div><i><i style="width:${p.toFixed(1)}%"></i></i><small class="ww-left" data-t1="${j.t1}">Klaar over ${wwTime(Math.max(0,j.t1-now()))}</small></div>`};
 const ww={front:null,amt:{zaak:0,kees:0},busy:false};
 function wwHist(kind,a,got,note){const W=wwS();W.hist=[{t:now(),k:kind,a,got,n:note||''}].concat(W.hist||[]).slice(0,10)}
 // witwassen: het zwarte deel wordt wit, de kosten gaan van het nu witte geld af
@@ -48,13 +59,13 @@ const wwPick=(kind,max)=>{const a=ww.amt[kind]||0;return Math.max(0,Math.min(a||
 function wwAmtRow(kind,max){const cur=wwPick(kind,max);return `<div class="ww-amt"><span class="label">Bedrag</span><b>${fmt(cur)}</b>
   <div class="ww-q">${[[.1,'10%'],[.25,'25%'],[.5,'50%'],[1,'Max']].map(([f,l])=>`<button class="${Math.abs(cur-Math.floor(max*f))<1&&max>0?'on':''}" onclick="ww.amt.${kind}=${Math.floor(max*f)};render()" ${max<1?'disabled':''}>${l}</button>`).join('')}</div></div>`}
 function czBar(){const v=Math.round(czVal());return `<div class="ww-meter ${v>=70?'hot':v>=35?'warm':''}"><div><span class="label">Verdenking in het casino</span><b>${v}%</b></div><i><i style="width:${v}%"></i></i><small>${czBanLeft()?'Je bent verbannen: nog '+fmtClock(czBanLeft()):v?'Zakt 4% per minuut in het casino, 8% als je weg bent. Alleen zwart geld telt. Op 100% word je verbannen.':'Niemand let op je.'}</small></div>`}
-// Illustraties bovenaan de drie routes
-const WW_ART={kees:`<svg viewBox="0 0 320 220" style="overflow:visible"><path d="M30 150h260v12H30z" fill="#4a2f1d"/><path d="M40 162h10v48H40zM270 162h10v48h-10z" fill="#33200f"/>
+// Illustraties bovenaan de drie routes (Kees: zijn huidige prijs op het kaartje)
+const WW_ART={kees:pct=>`<svg viewBox="0 0 320 220" style="overflow:visible"><path d="M30 150h260v12H30z" fill="#4a2f1d"/><path d="M40 162h10v48H40zM270 162h10v48h-10z" fill="#33200f"/>
   <g transform="translate(70 70)"><path d="M0 80L20 0" stroke="#9aa1ab" stroke-width="5"/><path d="M8 -6l40 -8 4 14-40 10z" fill="#c9a227"/><circle cx="50" cy="8" r="14" fill="#ffd27a" opacity=".35"/></g>
   <g transform="translate(118 104) rotate(-6)"><rect width="74" height="46" fill="#efe9dc"/><path d="M8 10h50M8 18h40M8 26h56M8 34h30" stroke="#9a907d" stroke-width="2"/></g>
   <g transform="translate(150 96) rotate(8)"><rect width="74" height="46" fill="#f6f1e6"/><path d="M8 10h50M8 18h44M8 26h30" stroke="#9a907d" stroke-width="2"/><circle cx="56" cy="32" r="10" fill="none" stroke="#c8102e" stroke-width="2.5"/><path d="M51 32h10" stroke="#c8102e" stroke-width="2"/></g>
   <g transform="translate(240 96)"><rect x="-10" y="34" width="34" height="10" rx="2" fill="#7a1424"/><rect x="0" y="6" width="14" height="30" rx="3" fill="#2a1a10"/><circle cx="7" cy="4" r="8" fill="#3a2414"/></g>
-  <g transform="translate(250 40)" fill="#b8a1ff"><circle r="16" opacity=".14"/><text y="6" text-anchor="middle" font-family="Big Shoulders Display,Impact,sans-serif" font-weight="900" font-size="18">30%</text></g></svg>`};
+  <g transform="translate(250 46)" fill="#b8a1ff"><circle r="20" opacity=".14"/><text y="6" text-anchor="middle" font-family="Big Shoulders Display,Impact,sans-serif" font-weight="900" font-size="18">${pct}</text></g></svg>`};
 V.wit=()=>{const z=zwart(),w=wit(),W=wwS(),fr=wwFronts(),zl=wwZaakLeft(),kl=wwKeesLeft(),zMax=Math.min(z,zl),kMax=Math.min(z,kl);
  if(!ww.front||!fr.find(b=>b.id===ww.front))ww.front=fr.length?fr[fr.length-1].id:null;const F=fr.find(b=>b.id===ww.front);
  const tot=Math.max(1,S.cash);
@@ -65,23 +76,29 @@ V.wit=()=>{const z=zwart(),w=wit(),W=wwS(),fr=wwFronts(),zl=wwZaakLeft(),kl=wwKe
   <div class="ww-split" aria-hidden="true"><i style="width:${z/tot*100}%"></i></div>
  </section>
  <div class="ww-grid">
-  <section class="card ww-m ww-zaak"><div class="ww-art" aria-hidden="true">${typeof bzArt==='function'?bzArt(F||BIZ[0],'ww'+(F||BIZ[0]).id):''}</div><header><span class="ww-tag">Goedkoopst</span><h3>Via je zaken</h3><p>Een werkdag aan de kassa. Je laat zwarte bonnen meelopen met echte klanten, daarna gaat het door de boeken en dat kost tijd. Hoe beter je bezit, hoe minder het kost en hoe sneller het gaat. Te opvallend? Dan nemen ze ${Math.round(WW_BUST*100)}% in beslag.</p></header>
-   ${fr.length?`<div class="ww-fronts">${fr.map(b=>`<button class="${b.id===ww.front?'on':''} ${wwJob(b.id)?'busy':''}" onclick="ww.front='${b.id}';render()" style="--c:${b.col||'var(--green)'}">${esc(b.n)}<small>${wwJob(b.id)?'bezig':wwGT(wwDur(b)).split(' · ')[0]}</small></button>`).join('')}</div>
+  <section class="card ww-m ww-zaak"><div class="ww-art" aria-hidden="true">${typeof bzArt==='function'?bzArt(F||BIZ[0],'ww'+(F||BIZ[0]).id):''}</div><header><span class="ww-tag">Goedkoopst · 21%</span><h3>Via je zaken</h3><p>Een werkdag aan de kassa. Je laat zwarte bonnen meelopen met echte klanten, daarna gaat het door de boeken. Je betaalt ${wwPct(WW_TAX)} belasting. Tot ${fmt(WW_BIG)} duurt het 2 minuten, daarboven 10 minuten. Hoe beter je zaak, hoe sneller. Te opvallend? Dan nemen ze ${Math.round(WW_BUST*100)}% in beslag. Vastgoed telt niet mee.</p></header>
+   ${fr.length?`<div class="ww-fronts">${fr.map(b=>`<button class="${b.id===ww.front?'on':''} ${wwJob(b.id)?'busy':''}" onclick="ww.front='${b.id}';render()" style="--c:${b.col||'var(--green)'}">${esc(b.n)}<small>${wwJob(b.id)?'bezig':wwTime(wwDur(b))}</small></button>`).join('')}</div>
     ${fr.filter(b=>wwJob(b.id)).map(b=>wwJobHtml(b.id,b)).join('')}
-    ${(()=>{const f=wwFee(F),pc=v=>(Math.round(v*1000)/10).toLocaleString('nl-NL');return `<div class="ww-fee"><div><span class="label">Kosten via je ${esc(F?F.n.toLowerCase():'zaak')}</span><b>${pc(f.fee)}%</b><small>${Math.max(WW_MIN,f.fee-WW_TOP)===f.fee?'':'of '+pc(Math.max(WW_MIN,f.fee-WW_TOP))+'% als niemand iets merkt'}</small></div>
-     <ul><li><span>Basis</span><em>${pc(WW_BASE)}%</em></li><li><span>Je imperium (vestigingen en upgrades)</span><em>−${pc(f.imp)}%</em></li><li><span>Niveau van deze zaak</span><em>−${pc(f.lvl)}%</em></li><li class="k"><span>Ome Kees ter vergelijking</span><em>${pc(WW_KEES)}%</em></li></ul>
-     <div class="ww-dur"><span class="label">Duur via je ${esc(F?F.n.toLowerCase():'zaak')}</span><b>${wwGT(wwDur(F))}</b><small>${bizUnits(F.id).length} vestiging${bizUnits(F.id).length===1?'':'en'}, samen level ${wwQ(F)} van ${BIZ_MAX*5}. Meer vestigingen en upgrades = sneller (10 op max: ±1 speluur).</small></div></div>`})()}
+    ${(()=>{const q=wwQ(F),nm=esc(F.n.toLowerCase());return `<div class="ww-fee"><div><span class="label">Kosten via je ${nm}</span><b>${wwPct(WW_TAX)}</b><small>belasting, bij elke zaak hetzelfde</small></div>
+     <ul><li><span>Tot ${fmt(WW_BIG)}</span><em>${wwTime(wwDur(F,1))}</em></li><li><span>Boven ${fmt(WW_BIG)}</span><em>${wwTime(wwDur(F))}</em></li><li class="k"><span>Ome Kees nu</span><em>${wwPct(keesFee())}</em></li></ul>
+     <div class="ww-dur"><span class="label">Hoe goed je ${nm} is</span><b>level ${q} van ${BIZ_MAX*5}</b><i class="ww-q-bar"><i style="width:${q/(BIZ_MAX*5)*100}%"></i></i><small>${bizUnits(F.id).length} vestiging${bizUnits(F.id).length===1?'':'en'}. Alles op max: ${wwTime(WW_D[0][1])} tot ${fmt(WW_BIG)}, ${wwTime(WW_D[1][1])} daarboven.</small></div></div>`})()}
     <div class="ww-cap"><span>Vandaag nog door de boeken</span><b>${fmt(zl)}</b><small>van ${fmt(wwZaakCap())} (2,5× je inkomen per speldag)</small></div>
     ${wwAmtRow('zaak',zMax)}
+    <div class="ww-calc">${zMax>=WW_CHUNKS?(()=>{const a=wwPick('zaak',zMax);return `Je geeft ${fmt(a)} zwart en krijgt ${fmt(a-Math.round(a*WW_TAX))} wit, na ${wwTime(wwDur(F,a))}.`})():''}</div>
     <button class="btn xl act-btn" style="--c:var(--green)" onclick="act.wwZaak()" ${zMax>=WW_CHUNKS&&!inJail()&&!wwJob(F.id)?'':'disabled'}>${inJail()?'Je zit vast':wwJob(F.id)?'Je '+esc(F.n.toLowerCase())+' is nog bezig':!z?'Geen zwart geld':!zl?'Vandaag zit het vol':'Werkdag in je '+esc(F?F.n.toLowerCase():'zaak')}</button>`
-   :`<div class="ww-none">Je hebt nog geen zaak. Een zaak koop je met wit geld: begin via Ome Kees of het casino, en koop dan bijvoorbeeld een wasserette.<a href="#biz">Naar Bezit ›</a></div>`}
+   :`<div class="ww-none">${BIZ.some(b=>bizUnits(b.id).length)?'Je hebt alleen vastgoed. Daar kun je niet door witwassen: koop een zaak, zoals een wasserette.':'Je hebt nog geen zaak. Een zaak koop je met wit geld: begin via Ome Kees of het casino, en koop dan bijvoorbeeld een wasserette.'}<a href="#biz">Naar Bezit ›</a></div>`}
   </section>
-  <section class="card ww-m ww-kees"><div class="ww-art" aria-hidden="true">${WW_ART.kees}</div><header><span class="ww-tag">Meteen</span><h3>Via Ome Kees</h3><p>Een oude boekhouder met een stempel voor alles. Hij regelt het meteen, zonder vragen. Hij houdt wel ${Math.round(WW_KEES*100)}% voor zichzelf.</p></header>
+  ${(()=>{const fee=keesFee(),K=keesS(),lv=keesLv(),nx=KEES_LV[lv+1],kb=KEES_BOND*Math.pow(keesBond(),.7),kr=KEES_RANK*rankIdx(S.xp)/(RANKS.length-1),a=wwPick('kees',kMax),big=a>KEES_NOW,job=wwJob('kees');
+   return `<section class="card ww-m ww-kees"><div class="ww-art" aria-hidden="true">${WW_ART.kees(wwPct(fee))}</div><header><span class="ww-tag">Meteen tot ${fmt(KEES_NOW).replace('.000.000',' mln').replace('.000','K')}</span><h3>Via Ome Kees</h3><p>Een oude boekhouder met een stempel voor alles. Tot ${fmt(KEES_NOW)} regelt hij het meteen, daarboven duurt het 10 minuten. Nieuwe klanten betalen ${wwPct(KEES_MAX)}. Hoe vaker je komt en hoe hoger je rang, hoe minder hij neemt, tot ${wwPct(KEES_MIN)}.</p></header>
+   <div class="ww-bond"><div><span class="label">Je band met Kees · ${KEES_LV[lv][1]}</span><b>${wwPct(fee)}</b></div><i class="ww-q-bar"><i style="width:${keesBond()*100}%"></i></i>
+    <ul><li><span>Nieuwe klant</span><em>${wwPct(KEES_MAX)}</em></li><li><span>Je band (${K.n} keer)</span><em>−${wwPct(kb)}</em></li><li><span>Je rang (${RANKS[rankIdx(S.xp)][0]})</span><em>−${wwPct(kr)}</em></li></ul>
+    <small>${nx?`Nog ${nx[0]-K.n} keer voor ${nx[1].toLowerCase()}. Elke keer vanaf ${fmt(KEES_CNT)} telt.`:'Sterker wordt de band niet. Meer korting komt nu alleen nog van je rang.'}</small></div>
+   ${job?wwJobHtml('kees',KEES_B):''}
    <div class="ww-cap"><span>Vandaag kan Kees nog</span><b>${fmt(kl)}</b><small>van ${fmt(wwKeesCap())} (groeit met je rang)</small></div>
    ${wwAmtRow('kees',kMax)}
-   <div class="ww-calc">${kMax?`Je geeft ${fmt(wwPick('kees',kMax))} zwart en krijgt ${fmt(wwPick('kees',kMax)-Math.round(wwPick('kees',kMax)*WW_KEES))} wit terug.`:''}</div>
-   <button class="btn xl act-btn" style="--c:var(--violet)" onclick="act.wwKees()" ${kMax>=1&&!inJail()?'':'disabled'}>${inJail()?'Je zit vast':!z?'Geen zwart geld':!kl?'Kees doet vandaag niks meer':'Laat Kees het doen'}</button>
-  </section>
+   <div class="ww-calc">${kMax?`Je geeft ${fmt(a)} zwart en krijgt ${fmt(a-Math.round(a*fee))} wit, ${big?'over 10 minuten':'meteen'}.`:''}</div>
+   <button class="btn xl act-btn" style="--c:var(--violet)" onclick="act.wwKees()" ${kMax>=1&&!inJail()&&!(big&&job)?'':'disabled'}>${inJail()?'Je zit vast':!z?'Geen zwart geld':!kl?'Kees doet vandaag niks meer':big&&job?'Kees is nog bezig met je vorige stapel':big?'Geef het aan Kees · klaar over 10 min':'Laat Kees het doen'}</button>
+  </section>`})()}
   <section class="card ww-m ww-cas"><div class="ww-art" aria-hidden="true">${window.COV?COV.coverSvg('roulette','wwc'):''}</div><header><span class="ww-tag">Riskant</span><h3>Via het casino</h3><p>Kies in de casinobalk <b>zwart</b> en speel. Wat je wint, is wit. Maar de beveiliging kijkt mee: zwart geld kun je niet verantwoorden, dus daarmee loopt de verdenking op, vooral bij grote inzetten, de slots en als ze naar jouw tafel kijken. Met wit geld loopt er niks op. Op 100% word je verbannen (30 minuten, VIP 20, High roller 10).</p></header>
    ${czBar()}
    <a class="btn xl ghost" href="#casino">Naar het casino</a>
@@ -156,10 +173,16 @@ Object.assign(act,{
   ww.busy=true;const r=await wwGame(a,B);ww.busy=false;const W=wwS();
   if(r.bust){const conf=Math.min(zwart(),Math.round(a*WW_BUST));S.cash-=conf;addHeat(20);W.zaak+=a;wwHist('bust',conf,0,B.n);
    toast(`Controle bij je ${B.n.toLowerCase()}: ${fmt(conf)} in beslag genomen`,'bad');log(`Witwassen mislukt bij ${B.n}: ${fmt(conf)} in beslag`,'bad')}
-  else if(r.k){const part=Math.min(zwart(),Math.floor(a*r.k/r.n)),f0=wwFee(B).fee,fee=r.maxSus<50?Math.max(WW_MIN,f0-WW_TOP):f0,got=part-Math.round(part*fee),dur=wwDur(B);
+  else if(r.k){const part=Math.min(zwart(),Math.floor(a*r.k/r.n)),fee=WW_TAX,got=part-Math.round(part*fee),dur=wwDur(B,part);
    // het zwarte geld gaat de boeken in en komt na de looptijd wit terug
-   S.zwart=zwart()-part;S.cash-=part;wwJobs()[B.id]={a:part,got,t0:now(),t1:now()+dur};W.zaak+=part;wwHist('start',part,0,B.n+' · '+wwGT(dur).split(' · ')[0]);
-   toast(`${fmt(part)} gaat door de boeken van je ${B.n.toLowerCase()}. Over ${wwGT(dur)} krijg je ${fmt(got)} wit.`,'ok');log(`Witwassen gestart via ${B.n}: ${fmt(part)} → ${fmt(got)} wit over ${wwGT(dur)}`,'info')}
+   S.zwart=zwart()-part;S.cash-=part;wwJobs()[B.id]={a:part,got,t0:now(),t1:now()+dur};W.zaak+=part;wwHist('start',part,0,B.n+' · '+wwTime(dur));
+   toast(`${fmt(part)} gaat door de boeken van je ${B.n.toLowerCase()}. Over ${wwTime(dur)} krijg je ${fmt(got)} wit.`,'ok');log(`Witwassen gestart via ${B.n}: ${fmt(part)} → ${fmt(got)} wit over ${wwTime(dur)}`,'info')}
   ww.amt.zaak=0;save();render()},
- wwKees(){if(inJail())return;const a=wwPick('kees',Math.min(zwart(),wwKeesLeft()));if(a<1)return;const got=wwClean(a,WW_KEES);wwS().kees+=a;wwHist('kees',a,got);
-  try{SFX.chip()}catch(e){}toast(`Ome Kees: ${fmt(a)} zwart → ${fmt(got)} wit`,'ok');log(`Witgewassen via Ome Kees: ${fmt(a)} → ${fmt(got)} wit`,'ok');ww.amt.kees=0;save();render()}});
+ wwKees(){if(inJail())return;const a=wwPick('kees',Math.min(zwart(),wwKeesLeft()));if(a<1)return;const fee=keesFee(),K=keesS(),lv0=keesLv();
+  if(a>KEES_NOW){if(wwJob('kees')){toast('Kees is nog bezig met je vorige stapel','bad');return}
+   const got=a-Math.round(a*fee);S.zwart=zwart()-a;S.cash-=a;wwJobs().kees={a,got,t0:now(),t1:now()+KEES_DUR};wwHist('start',a,0,'Ome Kees · 10 min');
+   toast(`Kees telt het na. Over 10 minuten krijg je ${fmt(got)} wit.`,'ok');log(`Ome Kees begonnen: ${fmt(a)} → ${fmt(got)} wit over 10 minuten (${wwPct(fee)})`,'info')}
+  else{const got=wwClean(a,fee);wwHist('kees',a,got,wwPct(fee));try{SFX.chip()}catch(e){}toast(`Ome Kees (${wwPct(fee)}): ${fmt(a)} zwart → ${fmt(got)} wit`,'ok');log(`Witgewassen via Ome Kees: ${fmt(a)} → ${fmt(got)} wit (${wwPct(fee)})`,'ok')}
+  wwS().kees+=a;if(a>=KEES_CNT)K.n++;K.sum=(K.sum||0)+a;
+  if(keesLv()>lv0)setTimeout(()=>toast(`Je band met Kees groeit: ${KEES_LV[keesLv()][1].toLowerCase()}. Hij neemt nu ${wwPct(keesFee())}.`,'lvl'),700);
+  ww.amt.kees=0;save();render()}});

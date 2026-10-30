@@ -150,20 +150,30 @@ const CAR_SPOTS=['Op de stoep in De Pijp','Parkeergarage aan de Zuidas','Voor ee
 // om de 4 uur uitbetaald (00:00, 04:00, 08:00 ...). inc = euro per speldag op level 1 (wordt hieronder uit de prijs berekend).
 // Elke vestiging kan 4 keer upgraden (level 1-5); up = de namen van die upgrades.
 const BIZ=[
- {id:'wash',n:'Wasserette',d:'Wast meer dan alleen kleding.',p:5000,inc:40,r:1,col:'#a9dcff',up:['Extra machines','Droogtrommels','Bezorgservice','Witwasafdeling']},
- {id:'snack',n:'Snackbar',d:'Frikandellen voor de buurt, enveloppen voor de baas.',p:12000,inc:95,r:2,col:'#ffad6b',up:['Nieuwe frituur','Bezorgscooters','Nachtloket','Tweede keuken']},
- {id:'shop',n:'Belwinkel',d:'Goede dekmantel, constante cashflow.',p:20000,inc:180,r:3,col:'#3fe395',up:['Simkaarten in bulk','Reparatiebalie','Geld overmaken','Eigen prepaid-netwerk']},
- {id:'barber',n:'Barbershop',d:'Fades, baardolie en de roddels uit de hele wijk.',p:35000,inc:300,r:3,col:'#ff7fb3',up:['Extra stoelen','Tattoohoek','VIP-kamer','Eigen productlijn']},
- {id:'autogarage',n:'Autogarage',d:'APK, banden en zo nu en dan een ander kenteken.',p:60000,inc:520,r:4,col:'#ff7a1a',up:['Hefbrug','Spuitcabine','Tuningafdeling','Showroom']},
- {id:'shisha',n:'Shishalounge',d:'Rook, muziek en een achterkamer zonder camera\'s.',p:75000,inc:650,r:4,col:'#b8a1ff',up:['Loungebanken','Dakterras','Eigen DJ','Privékamers']},
- {id:'club',n:'Nachtclub',d:'VIP-ruimte, portiers en dure flessen.',p:90000,inc:900,r:5,col:'#ff3d52',up:['Lichtshow','Extra bar','Bekende DJ\'s','Skybox']},
- {id:'dealer',n:'Autodealer',d:'Dure wagens, contant betaald, geen vragen.',p:150000,inc:1500,r:6,col:'#4d9dff',up:['Grotere showroom','Leasedesk','Exportlijn','Exclusieve merken']},
- {id:'garage',n:'Chop shop',d:'Gestolen auto\'s omkatten en doorverkopen.',p:250000,inc:2800,r:7,col:'#c9a227',up:['Snijbranders','Onderdelenmagazijn','Containerexport','Valse papieren']},
- {id:'hotel',n:'Boetiekhotel',d:'Kamers op uurbasis en een kluis achter de receptie.',p:450000,inc:5000,r:8,col:'#e6e1d6',up:['Rooftop bar','Spa','Suites','Privé-ingang']},
- {id:'speelhal',n:'Speelhal',d:'Gokkasten, pokertafels en een kassa die nooit leeg is.',p:650000,inc:7500,r:9,col:'#f2c230',up:['Meer kasten','Pokerzaal','High-roller-kamer','Eigen wisselkantoor']},
- {id:'port',n:'Havenloods',d:'Controle over de smokkel in Rotterdam.',p:900000,inc:11000,r:9,col:'#38bdf8',up:['Eigen kraan','Koelcontainers','Contact bij de douane','Tweede kade']},
- {id:'vastgoed',n:'Vastgoedportefeuille',d:'Panden in de hele stad, de huur gaat contant.',p:2000000,inc:26000,r:10,col:'#9aa1ab',up:['Studentenpanden','Kantoortoren','Projectontwikkeling','Grond in de haven']},
- {id:'jet',n:'Privéjet-charter',d:'Vluchten zonder passagierslijst.',p:4000000,inc:55000,r:11,col:'#ffffff',up:['Tweede toestel','Eigen hangar','Internationale route','Luchthavenlounge']}];
+ {id:'wash',cat:'dienst',n:'Wasserette',d:'Wast meer dan alleen kleding.',p:5000,inc:40,r:1,col:'#a9dcff',up:['Extra machines','Droogtrommels','Bezorgservice','Witwasafdeling']},
+ {id:'boven',cat:'vastgoed',n:'Bovenwoningen',d:'Een rij bovenhuizen boven de winkels. De huur komt contant binnen.',p:30000,inc:0,r:2,col:'#d9b48a',up:['Nieuwe keukens','Dakkapellen','Kamerverhuur','Hele portiek']},
+ {id:'snack',cat:'horeca',n:'Snackbar',d:'Frikandellen voor de buurt, enveloppen voor de baas.',p:12000,inc:95,r:2,col:'#ffad6b',up:['Nieuwe frituur','Bezorgscooters','Nachtloket','Tweede keuken']},
+ {id:'shop',cat:'dienst',n:'Belwinkel',d:'Goede dekmantel, constante cashflow.',p:20000,inc:180,r:3,col:'#3fe395',up:['Simkaarten in bulk','Reparatiebalie','Geld overmaken','Eigen prepaid-netwerk']},
+ {id:'barber',cat:'dienst',n:'Barbershop',d:'Fades, baardolie en de roddels uit de hele wijk.',p:35000,inc:300,r:3,col:'#ff7fb3',up:['Extra stoelen','Tattoohoek','VIP-kamer','Eigen productlijn']},
+ {id:'autogarage',cat:'auto',n:'Autogarage',d:'APK, banden en zo nu en dan een ander kenteken.',p:60000,inc:520,r:4,col:'#ff7a1a',up:['Hefbrug','Spuitcabine','Tuningafdeling','Showroom']},
+ {id:'shisha',cat:'horeca',n:'Shishalounge',d:'Rook, muziek en een achterkamer zonder camera\'s.',p:75000,inc:650,r:4,col:'#b8a1ff',up:['Loungebanken','Dakterras','Eigen DJ','Privékamers']},
+ {id:'club',cat:'horeca',n:'Nachtclub',d:'VIP-ruimte, portiers en dure flessen.',p:90000,inc:900,r:5,col:'#ff3d52',up:['Lichtshow','Extra bar','Bekende DJ\'s','Skybox']},
+ {id:'dealer',cat:'auto',n:'Autodealer',d:'Dure wagens, contant betaald, geen vragen.',p:150000,inc:1500,r:6,col:'#4d9dff',up:['Grotere showroom','Leasedesk','Exportlijn','Exclusieve merken']},
+ {id:'garage',cat:'auto',n:'Chop shop',d:'Gestolen auto\'s omkatten en doorverkopen.',p:250000,inc:2800,r:7,col:'#c9a227',up:['Snijbranders','Onderdelenmagazijn','Containerexport','Valse papieren']},
+ {id:'winkelpand',cat:'vastgoed',n:'Winkelpanden',d:'Panden in de winkelstraat. Jij int de huur, de huurders vragen niks.',p:300000,inc:0,r:7,col:'#8fd3ff',up:['Nieuwe puien','Bovenverdieping erbij','Hoekpand','Hele straatkant']},
+ {id:'hotel',cat:'horeca',n:'Boetiekhotel',d:'Kamers op uurbasis en een kluis achter de receptie.',p:450000,inc:5000,r:8,col:'#e6e1d6',up:['Rooftop bar','Spa','Suites','Privé-ingang']},
+ {id:'speelhal',cat:'horeca',n:'Speelhal',d:'Gokkasten, pokertafels en een kassa die nooit leeg is.',p:650000,inc:7500,r:9,col:'#f2c230',up:['Meer kasten','Pokerzaal','High-roller-kamer','Eigen wisselkantoor']},
+ {id:'port',cat:'handel',n:'Havenloods',d:'Controle over de smokkel in Rotterdam.',p:900000,inc:11000,r:9,col:'#38bdf8',up:['Eigen kraan','Koelcontainers','Contact bij de douane','Tweede kade']},
+ {id:'bedrijfshal',cat:'vastgoed',n:'Bedrijfshallen',d:'Loodsen op het industrieterrein. Niemand vraagt wat er binnen staat.',p:1100000,inc:0,r:9,col:'#a3b18a',up:['Laadperrons','Koelcel','Hek en camera\'s','Tweede hal']},
+ {id:'vastgoed',cat:'vastgoed',n:'Vastgoedportefeuille',d:'Panden in de hele stad, de huur gaat contant.',p:2000000,inc:26000,r:10,col:'#9aa1ab',up:['Studentenpanden','Kantoortoren','Projectontwikkeling','Grond in de haven']},
+ {id:'jet',cat:'handel',n:'Privéjet-charter',d:'Vluchten zonder passagierslijst.',p:4000000,inc:55000,r:11,col:'#ffffff',up:['Tweede toestel','Eigen hangar','Internationale route','Luchthavenlounge']}];
+// Categorieën voor Bezit. Vastgoed verdient 20% meer huur dan een zaak van dezelfde prijs, maar daar kun je niet door witwassen.
+const BIZ_CATS=[
+ {id:'dienst',n:'Winkels en diensten',d:'Kleine zaken in de buurt. Goedkoop, en elke kassa is een wasstraat.'},
+ {id:'horeca',n:'Horeca en nachtleven',d:'Contant geld, laat open en veel klanten: daar valt een zwarte bon niet op.'},
+ {id:'auto',n:"Auto's",d:'Garages en showrooms. Grote bedragen per klant en weinig vragen.'},
+ {id:'handel',n:'Handel en transport',d:'De haven en vliegtuigen. Duur, maar daar gaat het grote geld doorheen.'},
+ {id:'vastgoed',n:'Vastgoed',d:'Huur komt vanzelf binnen, 20% meer dan een zaak van dezelfde prijs. Witwassen kan hier niet: er gaat niks over de toonbank.',nowash:1}];
 const BIZ_MAX=10,BIZ_LVL=['Basis','Opgeknapt','Uitgebreid','Topzaak','Imperium'],BIZ_MULT=[1,1.5,2.2,3.1,4.3],BIZ_UPK=[.6,1.1,1.9,3.2];
 const BIZ_PLACES=['De Pijp','Oost','Noord','West','Zuidoost','Jordaan','Zaandam','Rotterdam','Den Haag','Utrecht'];
 const bizPrice=(b,n)=>Math.floor(b.p*Math.pow(1.25,n));
@@ -174,7 +184,7 @@ const BIZ_BOOST=1.25,BIZ_IMP_UNIT=.005,BIZ_IMP_UP=.0025,BIZ_IMP_MAX=.5,BIZ_RANK=
 // Inkomen per speldag (4 uur) op level 1: een vast deel van de prijs. Goedkope zaken verdienen zich sneller terug
 // (wasserette ±25% van de prijs per dag), dure langzamer (privéjet ±10%). Zo kun je het spel niet in een paar uur uitspelen.
 const DAY_MS=4*3600000,BIZ_DAY_RATE=p=>.25*Math.pow(p/5000,-.14);
-BIZ.forEach(b=>{b.inc=Math.round(b.p*BIZ_DAY_RATE(b.p)/10)*10});
+BIZ.forEach(b=>{b.inc=Math.round(b.p*BIZ_DAY_RATE(b.p)*(b.cat==='vastgoed'?1.2:1)/10)*10});
 const bizIncRaw=(b,l)=>b.inc*BIZ_MULT[l-1];
 const bizInc=(b,l)=>bizIncRaw(b,l)*(typeof bizMult==='function'?bizMult().total:1);
 // Uitrusting in 4 soorten. Per soort telt alleen je beste item; wat je koopt houd je.

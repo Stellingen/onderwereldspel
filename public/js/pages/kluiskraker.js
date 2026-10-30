@@ -40,18 +40,18 @@ function kkSpotsHtml(sp,prev){let h='';for(let r=0;r<SLOT.ROWS;r++)for(let c=0;c
   h+=`<div class="kk-spot${v===1?' mk':''}${v>=2?' mx lv'+lv:''}${nw?' bump':''}${gb?' gb':''}">${v>=2?'<b>x'+v+'</b>':''}${gb?`<i class="kk-gb">${kkSvg('baar')}</i>`:''}</div>`}return h}
 function kkInfo(){const fs=kk.fs;const pend=window.slotPending||0;
   return `<div class="kk-bal has-r"><div class="kk-bal-l"><span class="label">Saldo</span><b id="kkBal">${fmt(S.cash-pend+(kk.shown||0))}</b></div>${fs?slotFsIn(fs,kk.fs.kind==='super'?'Superbonus':'Free spins'):slotBetIn(kkBet(),kk.buyMode,SLOT.BUY_COST)}</div>
-   <div class="kk-stat"><span class="label">Deze spin</span><b id="kkStep" class="acc">${fmt(kk.stepWin)}</b></div>
-   <div class="kk-stat"><span class="label">${fs?'Bonuswinst':'Gewonnen'}</span><b id="kkLast" class="grn">${fmt(fs?fs.total:kk.lastWin)}</b></div>
-   ${fs?`<div class="kk-stat kk-fsx"><span class="label">Bonus</span><b class="sm kk-xn">${slotX(fs.total,kk.fsBet)}</b></div><div class="kk-stat fsb"><span class="label">${fs.kind==='super'?'Superbonus':'Free spins'}</span><b class="kk-fsn">${fs.at} / ${fs.of}</b></div>`:`<div class="kk-stat"><span class="label">Status</span><b id="kkMsg" class="sm">${kk.msg}</b></div>`}`}
+   <div class="kk-stat k-spin"><span class="label">Deze spin</span><b id="kkStep" class="acc">${fmt(kk.stepWin)}</b></div>
+   <div class="kk-stat k-won"><span class="label">${fs?'Bonuswinst':'Gewonnen'}</span><b id="kkLast" class="grn">${fmt(fs?fs.total:kk.lastWin)}</b></div>
+   ${fs?`<div class="kk-stat kk-fsx"><span class="label">Bonus</span><b class="sm kk-xn">${slotX(fs.total,kk.fsBet)}</b></div><div class="kk-stat fsb"><span class="label">${fs.kind==='super'?'Superbonus':'Free spins'} over</span><b class="kk-fsl">${Math.max(0,fs.of-fs.at)}</b><small>spin <span class="kk-fsn">${fs.at} / ${fs.of}</span></small></div>`:`<div class="kk-stat"><span class="label">Status</span><b id="kkMsg" class="sm">${kk.msg}</b></div>`}`}
 // Free spins rechts in het saldovak (telefoon: dan zie je saldo en spins samen) en "× inzet" van de bonus tot nu toe
 const slotFsIn=(fs,lab)=>`<div class="kk-fsin"><span class="label">${lab}</span><b class="kk-fsn">${fs.at} / ${fs.of}</b></div>`;
 // buiten de bonus: je inzet (of de prijs van een bonus) rechts in het saldovak
 const slotBetIn=(b,buy,cost)=>`<div class="kk-fsin bet"><span class="label">${buy?'Bonus kopen':'Inzet'}</span><b>${fmt(buy?b*cost:b)}</b></div>`;
 const slotX=(won,bet)=>bet?(Math.round(won/bet*10)/10).toLocaleString('nl-NL')+'× inzet':'–';
 // Teller bijwerken op alle plekken; plus = er kwamen spins bij (pas als de spin helemaal is uitgespeeld)
-function slotFsSet(at,of,plus){document.querySelectorAll('.kk-fsn').forEach(el=>{el.textContent=at+' / '+of;if(!plus)return;
+function slotFsSet(at,of,plus){document.querySelectorAll('.kk-fsl').forEach(el=>{el.textContent=Math.max(0,of-at);if(plus){el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump')}});document.querySelectorAll('.kk-fsn').forEach(el=>{el.textContent=at+' / '+of;if(!plus)return;
   el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');
-  const lb=el.parentNode&&el.parentNode.querySelector('.label');if(!lb)return;if(!lb.dataset.t)lb.dataset.t=lb.textContent;
+  const lb=el.closest('.kk-stat,.kk-fsin')&&el.closest('.kk-stat,.kk-fsin').querySelector('.label');if(!lb)return;if(!lb.dataset.t)lb.dataset.t=lb.textContent;
   lb.textContent='+'+plus+' spins';lb.classList.add('plus');clearTimeout(lb._t);lb._t=setTimeout(()=>{lb.textContent=lb.dataset.t;lb.classList.remove('plus')},2600)})}
 function slotXSet(won,bet){document.querySelectorAll('.kk-xn').forEach(el=>el.textContent=slotX(won,bet))}
 // Gouden baren in de gewone bonus: ze blijven staan, bij 3 is het de max win
@@ -155,12 +155,19 @@ function kkBetRHtml(){const b=kkBet(),buy=!!kk.buyMode,cost=SLOT.BUY_COST,dis=kk
   <span class="kr-buy-ic">${kkSvg('kluis')}</span><span class="kr-buy-t"><b>Bonus kopen</b><small>${buy?'Aan: de grote knop koopt':`3+ kluizen · ${SLOT.BUY_SPOTS} vakjes op x2 · min. ${SLOT.BUY_FLOOR}×`}</small></span>
   <span class="kr-buy-p">${fmt(b*cost)}</span><span class="kr-sw"><i></i></span></button>`}
 // Links (brede schermen): informatie — deze sessie, je laatste rondes, hoe je wint en je seed
-// Rondes worden bewaard in je opslag (S.kkHist, laatste 40), ook na verversen of op een ander apparaat.
+// Rondes worden bewaard in je opslag (S.kkHist, laatste 100), ook na verversen of op een ander apparaat.
 // Een ronde die nog speelt (p) blijft verborgen tot de animatie klaar is, zodat de lijst de uitslag niet verraadt.
 const kkHistList=()=>(S.kkHist||[]).filter(h=>!(h.p&&kk.busy));
-function kkLeftHtml(){const H=kkHistList().slice(0,8);
+// Links zie je minstens je laatste 4 winsten: rondes zonder winst achter elkaar worden één regel ("5× niks").
+function kkHistRows(){const H=kkHistList(),rows=[];let wins=0;
+ for(const h of H){if(h.pay>0){rows.push({h});wins++}else{const r=rows[rows.length-1];if(r&&r.loss)r.loss.push(h);else rows.push({loss:[h]})}
+  if(wins>=4&&rows.length>=6)break;if(rows.length>=14)break}
+ return {rows,wins,all:H.length}}
+function kkLeftHtml(){const {rows,all}=kkHistRows();
+ const row=r=>r.loss?`<div class="ls"><span>${r.loss.length>1?r.loss.length+'× ':''}${r.loss.length>1?'geen winst':fmt(r.loss[0].cost)}</span><b>–</b><small>${r.loss.length>1?fmt(r.loss.reduce((a,h)=>a+h.cost,0)):''}</small></div>`
+  :(h=>`<div class="${h.pay>h.cost?'w':'p'}"><span>${h.buy?'<i class="b">KOOP</i>':h.bonus?'<i>BONUS</i>':''}${fmt(h.cost)}</span><b>${fmt(h.pay)}</b><small>${(Math.round(h.x*10)/10).toLocaleString('nl-NL')}×</small></div>`)(r.h);
  return `${kkSessHtml()}
-  <div class="kl-hist"><span class="label">Laatste rondes</span>${H.length?H.map(h=>`<div class="${h.pay>h.cost?'w':h.pay>0?'p':''}"><span>${h.buy?'<i class="b">KOOP</i>':h.bonus?'<i>BONUS</i>':''}${fmt(h.cost)}</span><b>${h.pay>0?fmt(h.pay):'–'}</b><small>${h.pay>0?(Math.round(h.x*10)/10).toLocaleString('nl-NL')+'×':''}</small></div>`).join('')+`<button class="kl-more" onclick="kkHistOpen()">Alle rondes bekijken</button>`:'<p>Nog geen rondes gespeeld.</p>'}</div>
+  <div class="kl-hist"><span class="label">Laatste rondes</span>${rows.length?rows.map(row).join('')+`<button class="kl-more" onclick="kkHistOpen()">Alle ${all} rondes bekijken ›</button>`:'<p>Nog geen rondes gespeeld.</p>'}</div>
   <div class="kl-how"><span class="label">Zo win je</span>
    <div><span>${kkSvg('kluis')}</span><p><b>3 / 4 / 5 kluizen</b> = ${SLOT.FS_BY_SC[3]} / ${SLOT.FS_BY_SC[4]} / ${SLOT.FS_BY_SC[5]} free spins, <b>6+</b> = superbonus</p></div>
    <div><span>${kkSvg('baar')}</span><p><b>Gouden baar</b> blijft liggen en telt als loper; 3 = ${SLOT.MAX_WIN.toLocaleString('nl-NL')}× je inzet (heel zeldzaam)</p></div>
@@ -353,7 +360,7 @@ Object.assign(act,{
   // laatste rondes, sessie en de bonusteller van de seed pas bijwerken als de animatie klaar is (anders verklappen ze de uitslag)
   kk.sdPend={bon:!isBuy&&round.kind?1:0,sup:!isBuy&&round.kind==='super'?1:0};
   const hrec={t:now(),bet,cost,pay:pay+lk,lk,x:Math.round(round.total*100)/100,buy:isBuy?1:0,bonus:round.fs?1:0,sup:round.kind==='super'?1:0,max:round.total>=SLOT.MAX_WIN?1:0,floor:round.floor?1:0,p:1};
-  S.kkHist=[hrec].concat(S.kkHist||[]).slice(0,40);
+  S.kkHist=[hrec].concat(S.kkHist||[]).slice(0,100);
   if(round.fs)S.slotRun={g:'kluis',seed:seedStr,buy:!!isBuy,t:tier(),bet,cost,pay,tot:round.total,at:0,ts:now()};
   casinoRound(cost,pay+lk,'kluis');
   save();renderTop();kkRefreshUI();
