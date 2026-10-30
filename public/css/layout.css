@@ -315,3 +315,19 @@ body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area
   .ms-panel{max-height:min(90svh,calc(100svh - env(safe-area-inset-top,0px) - 12px))}
   .msheet.ms-q .ms-panel{min-height:min(90svh,calc(100svh - env(safe-area-inset-top,0px) - 12px))}
 }
+
+/* Grote schermen (bijv. 27 inch, 2560×1440): profiel, pop-ups en het vluchtspel groter, met genoeg ruimte eromheen om weg te klikken */
+@media (min-width:1500px) and (min-height:900px){
+  .pv-box{zoom:1.22;max-height:calc((100vh - 80px)/1.22)}
+  .modalbox,.chase-box{zoom:1.2}
+  .fl-ov .fl-box{width:min(1080px,62vw);padding:24px 26px 20px;gap:14px}
+  .fl-ov .fl-stage{height:clamp(420px,56vh,780px)}
+  .fl-ov .fl-top h2{font-size:52px}.fl-ov .fl-where{font-size:15px}
+}
+@media (min-width:2200px) and (min-height:1250px){
+  .pv-box{zoom:1.45;max-height:calc((100vh - 120px)/1.45)}
+  .modalbox,.chase-box{zoom:1.4}
+  .fl-ov .fl-box{width:min(1280px,58vw)}
+  .fl-ov .fl-stage{height:clamp(520px,58vh,900px)}
+  .fl-ov .fl-top h2{font-size:60px}
+}
