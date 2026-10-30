@@ -65,6 +65,7 @@ function kkView(){
   </div>
   <aside class="kk-right">
    <div class="kk-bar"><div class="kk-hud" id="kkInfo">${kkInfo()}</div><div class="kk-ctl" id="kkCtl">${kkControls()}</div></div>
+   <div id="kkBetR">${kkBetRHtml()}</div>
    <div id="kkSess">${kkSessHtml()}</div>
    <div id="kkPickBox">${kk.pick&&!kk.busy?kkPickHtml():''}</div>
    <div id="kkConfirmBox">${kk.buyMode&&!kk.busy?kkConfirm():''}</div>
@@ -122,15 +123,27 @@ function kkControls(){const b=kkBet();return `<div class="kk-betbox"><span class
    </div>`}
 // Brede schermen: links je inzet kiezen (fiches per groep, bonus kopen, snel), rechts saldo, draaien en een sessie-overzicht
 const kkShortBet=v=>v>=1e6?'€'+(v/1e6).toLocaleString('nl-NL')+'M':v>=1000?'€'+(v/1000).toLocaleString('nl-NL')+'K':'€'+v;
-function kkLeftHtml(){const B=kkBets(),b=kkBet(),buy=!!kk.buyMode,cost=SLOT.BUY_COST,dis=kk.busy?'disabled':'';
- const groups=[['Klein',v=>v<300],['Middel',v=>v>=300&&v<5000],['Groot',v=>v>=5000&&v<=50000],['High roller',v=>v>50000]];
- return `<div class="kl-bet"><span class="label">Inzet per spin</span><b>${fmt(b)}</b>${buy?`<small>bonus kopen: ${fmt(b*cost)}</small>`:'<small>spatie = draaien</small>'}
-   <div class="kl-step"><button onclick="kkStepBet(-1)" ${dis} aria-label="Lagere inzet">−</button><button onclick="kkStepBet(1)" ${dis} aria-label="Hogere inzet">+</button></div></div>
-  <div class="kl-chips">${groups.map(([n,f])=>{const ix=B.map((v,i)=>[v,i]).filter(([v])=>f(v));if(!ix.length)return '';
-   return `<span class="label">${n}</span><div class="kl-grid">${ix.map(([v,i])=>`<button class="${i===kk.bi?'on':''} ${S.cash<(buy?v*cost:v)?'no':''}" onclick="kkSetBet(${i})" ${dis} title="${fmt(v)}${buy?' · bonus '+fmt(v*cost):''}">${kkShortBet(v)}</button>`).join('')}</div>`}).join('')}</div>
-  <div class="kl-opts">
-   <button class="kk-buyt ${buy?'on':''}" onclick="kk.buyMode=!kk.buyMode;SFX.click();kkRefreshUI()" ${dis} aria-pressed="${buy}"><i></i><span>Bonus kopen</span><small>${buy?'aan':'uit'}</small></button>
-   <button class="btn ghost sm kk-turbo ${kk.turbo?'on':''}" onclick="kkTurbo()" aria-pressed="${kk.turbo}">${kk.turbo?'Snel: aan':'Snel: uit'}</button></div>`}
+const KK_GROUPS=[['Klein',v=>v<300],['Middel',v=>v>=300&&v<5000],['Groot',v=>v>=5000&&v<=50000],['High roller',v=>v>50000]];
+// Rechts (brede schermen): inzet kiezen per groep en een duidelijke kaart voor bonus kopen
+function kkBetRHtml(){const B=kkBets(),b=kkBet(),buy=!!kk.buyMode,cost=SLOT.BUY_COST,dis=kk.busy?'disabled':'';
+ const gs=KK_GROUPS.filter(([n,f])=>B.some(f));let gi=kk.betG!=null?kk.betG:gs.findIndex(([n,f])=>f(b));if(gi<0||gi>=gs.length)gi=0;
+ const ix=B.map((v,i)=>[v,i]).filter(([v])=>gs[gi][1](v));
+ return `<div class="kr-bet"><div class="kr-bet-h"><div><span class="label">Inzet per spin</span><b>${fmt(b)}</b></div>
+   <div class="kl-step"><button class="kk-turbo kr-snel ${kk.turbo?'on':''}" onclick="kkTurbo()" aria-pressed="${kk.turbo}" title="Sneller draaien">${kk.turbo?'Snel: aan':'Snel: uit'}</button><button onclick="kkStepBet(-1)" ${dis} aria-label="Lagere inzet">−</button><button onclick="kkStepBet(1)" ${dis} aria-label="Hogere inzet">+</button></div></div>
+  <div class="kr-tabs">${gs.map(([n],k)=>`<button class="${k===gi?'on':''}" onclick="kk.betG=${k};kkRefreshUI()">${n}</button>`).join('')}</div>
+  <div class="kl-grid">${ix.map(([v,i])=>`<button class="${i===kk.bi?'on':''} ${S.cash<(buy?v*cost:v)?'no':''}" onclick="kk.betG=null;kkSetBet(${i})" ${dis} title="${fmt(v)}${buy?' · bonus '+fmt(v*cost):''}">${kkShortBet(v)}</button>`).join('')}</div></div>
+ <button class="kr-buy ${buy?'on':''}" onclick="kk.buyMode=!kk.buyMode;SFX.click();kkRefreshUI()" ${dis} aria-pressed="${buy}" title="Zet bonus kopen aan of uit">
+  <span class="kr-buy-ic">${kkSvg('kluis')}</span><span class="kr-buy-t"><b>Bonus kopen</b><small>${buy?'Aan: de grote knop koopt':'3+ kluizen · '+cost+'× je inzet'}</small></span>
+  <span class="kr-buy-p">${fmt(b*cost)}</span><span class="kr-sw"><i></i></span></button>`}
+// Links (brede schermen): informatie — deze sessie, je laatste rondes, hoe je wint en je seed
+function kkLeftHtml(){const H=kk.hist||[];
+ return `${kkSessHtml()}
+  <div class="kl-hist"><span class="label">Laatste rondes</span>${H.length?H.map(h=>`<div class="${h.pay>h.cost?'w':h.pay>0?'p':''}"><span>${h.buy?'<i class="b">KOOP</i>':h.bonus?'<i>BONUS</i>':''}${fmt(h.cost)}</span><b>${h.pay>0?fmt(h.pay):'–'}</b><small>${h.pay>0?(Math.round(h.x*10)/10).toLocaleString('nl-NL')+'×':''}</small></div>`).join(''):'<p>Nog geen rondes gespeeld.</p>'}</div>
+  <div class="kl-how"><span class="label">Zo win je</span>
+   <div><span>${kkSvg('kluis')}</span><p><b>3 / 4 / 5 kluizen</b> = ${SLOT.FS_BY_SC[3]} / ${SLOT.FS_BY_SC[4]} / ${SLOT.FS_BY_SC[5]} free spins, <b>6+</b> = superbonus</p></div>
+   <div><span>${kkSvg('baar')}</span><p><b>Gouden baar</b> blijft liggen en telt als loper; 3 = ${SLOT.MAX_WIN}× je inzet</p></div>
+   <div><span class="kk-mini mk"></span><p><b>Vakjes</b> x2 tot x${SLOT.MAX_SPOT.toLocaleString('nl-NL')}, in de bonus blijven ze staan</p></div></div>
+  ${kkSeedHtml()}`}
 function kkSessHtml(){const x=kk.sess||{n:0,bet:0,won:0,best:0,bon:0},net=x.won-x.bet;
  return `<div class="kk-sess"><span class="label">Deze sessie</span>
   <div><span>Spins</span><b>${x.n.toLocaleString('nl-NL')}</b></div><div><span>Bonussen</span><b>${x.bon}</b></div><div><span>Beste</span><b class="g">${fmt(x.best)}</b></div>
@@ -139,7 +152,7 @@ function kkSessHtml(){const x=kk.sess||{n:0,bet:0,won:0,best:0,bon:0},net=x.won-
 function kkRefreshUI(){const root=document.querySelector('.kk3');if(!root)return;const fs=kk.fs;
  root.classList.toggle('is-fs',!!fs);root.classList.toggle('is-super',!!(fs&&fs.kind==='super'));
  const set=(id,h)=>{const e=kkEl(id);if(e)e.innerHTML=h};
- set('kkSub',kkSubHtml());kkInfoRefresh();set('kkCtl',kkControls());set('kkPickBox','');set('kkConfirmBox',kk.buyMode&&!kk.busy?kkConfirm():'');set('kkSeedBox',kkSeedHtml());set('kkPayTab',kkPayTab());set('kkLeft',kkLeftHtml());set('kkSess',kkSessHtml());
+ set('kkSub',kkSubHtml());kkInfoRefresh();set('kkCtl',kkControls());set('kkPickBox','');set('kkConfirmBox',kk.buyMode&&!kk.busy?kkConfirm():'');set('kkSeedBox',kkSeedHtml());set('kkPayTab',kkPayTab());set('kkLeft',kkLeftHtml());set('kkSess',kkSessHtml());set('kkBetR',kkBetRHtml());
  if(!kk.busy){const st=kkEl('kkStage');if(st)st.classList.remove('vault-open')}}
 // Snelheid mag ook tijdens een spin of bonus om: de volgende val/tumble gebruikt meteen het nieuwe tempo.
 function kkTurbo(){kk.turbo=!kk.turbo;SFX.click();document.querySelectorAll('.kk-turbo').forEach(b=>{b.textContent=kk.turbo?'Snel: aan':'Snel: uit';b.classList.toggle('on',kk.turbo);b.setAttribute('aria-pressed',kk.turbo)})}
@@ -161,7 +174,7 @@ document.addEventListener('keydown',e=>{if(e.code!=='Space'||page!=='casino'||ca
  const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;if(!$('#modal').hidden)return;
  e.preventDefault();if(document.activeElement&&document.activeElement.tagName==='BUTTON')document.activeElement.blur();
  if(kk.paused){kkResume();return}if(kk.busy)return;if(S.slotRun&&S.slotRun.g==='kluis'){kkResumeRun();return}if(kk.buyMode){if(!e.repeat)act.kkSpin(true);return}act.kkSpin(false)});
-function kkStepBet(d){if(kk.busy)return;kk.bi=Math.max(0,Math.min(kkBets().length-1,kk.bi+d));kk.confirm=false;SFX.chip();kkRefreshUI()}
+function kkStepBet(d){if(kk.busy)return;kk.betG=null;kk.bi=Math.max(0,Math.min(kkBets().length-1,kk.bi+d));kk.confirm=false;SFX.chip();kkRefreshUI()}
 const kkOn=()=>page==='casino'&&casinoTab==='kluis'&&!document.hidden&&!!document.getElementById('kkCells');
 // Tijdens een bonus pauzeert de animatie als je wegklikt; terug op de slot klik je 'Bonus verder afspelen'.
 function kkGate(){return new Promise(res=>{kk.paused=true;kk._resume=res;if(kkOn())render()})}
@@ -300,6 +313,7 @@ Object.assign(act,{
   S.cash+=pay-cost;window.slotPending=pay;
   if(pay>cost)S.stats.won+=pay-cost;else S.stats.lost+=cost-pay;
   // een bonus duurt even: bewaar hem, zodat hij na verversen of op een ander apparaat verder kan (zonder opnieuw te betalen)
+  kk.hist=[{cost,pay,x:round.total,bonus:!!round.fs,buy:!!isBuy}].concat(kk.hist||[]).slice(0,8);
   kk.sess=kk.sess||{n:0,bet:0,won:0,best:0,bon:0};kk.sess.n++;kk.sess.bet+=cost;kk.sess.won+=pay;kk.sess.best=Math.max(kk.sess.best,pay);if(round.fs)kk.sess.bon++;
   if(round.fs)S.slotRun={g:'kluis',seed:seedStr,buy:!!isBuy,t:tier(),bet,cost,pay,tot:round.total,at:0,ts:now()};
   casinoRound(cost,pay,'kluis');
