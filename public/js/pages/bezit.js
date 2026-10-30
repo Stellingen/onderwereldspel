@@ -19,8 +19,8 @@ const BZ_IC={
  jet:'<path d="M2 14l20-8-6 14-3-6z"/><path d="M13 14l-4 6v-5"/>'};
 // Illustratie per zaak (gevel bij nacht) voor de banners: winkelpui, garage, toren, haven of hangar. Verlichte ramen = je vestigingen.
 const BZ_KIND={autogarage:'garage',dealer:'garage',garage:'garage',hotel:'tower',vastgoed:'tower',port:'port',jet:'jet'};
-function bzArt(b,uid){const c=b.col,k=BZ_KIND[b.id]||'shop',n=bizUnits(b.id).length,lit=i=>i<Math.max(2,n*2),u=uid||'a'+b.id;
- const ic=(x,y,sz,col)=>`<g transform="translate(${x-sz/2} ${y-sz/2}) scale(${sz/24})" fill="none" stroke="${col||'#fff'}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${BZ_IC[b.id]||''}</g>`;
+function bzArt(b,uid){const c=b.col,k=b.kind||BZ_KIND[b.id]||'shop',n=bizUnits(b.id).length,lit=i=>i<Math.max(2,n*2),u=uid||'a'+b.id;
+ const ic=(x,y,sz,col)=>`<g transform="translate(${x-sz/2} ${y-sz/2}) scale(${sz/24})" fill="none" stroke="${col||'#fff'}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${BZ_IC[b.id]||b.icp||''}</g>`;
  const defs=`<defs><radialGradient id="${u}g" cx="50%" cy="60%" r="60%"><stop offset="0" stop-color="${c}" stop-opacity=".55"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></radialGradient>
   <linearGradient id="${u}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity=".9"/><stop offset="1" stop-color="${c}" stop-opacity=".35"/></linearGradient></defs>`;
  const city=`<g fill="#14171c">${[[0,70,40],[34,90,30],[260,60,36],[290,96,30]].map(([x,h,w])=>`<rect x="${x}" y="${190-h}" width="${w}" height="${h}"/>`).join('')}</g>

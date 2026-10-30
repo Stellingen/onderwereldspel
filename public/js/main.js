@@ -41,6 +41,7 @@ window.addEventListener('hashchange',()=>{let p=location.hash.slice(1);if(p==='o
   if(p==='casino'&&page!=='casino'&&!window._casPick&&typeof casSwitchBusy==='function'&&!casSwitchBusy()&&!(window.kk&&kk.inBonus))casinoTab='';window._casPick=0;
   if(p==='verblijf'&&page!=='verblijf'&&window.vb)vb.view=null;
   if(p==='crimes'&&page!=='crimes'&&typeof crimeRank!=='undefined')crimeRank=null;
+  if(p==='shop'&&page!=='shop'&&window.gsel)gsel.shop=null;
   page=p;render();window.scrollTo(0,0)}});
 let wasJail=inJail();
 setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderRail();

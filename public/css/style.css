@@ -2450,3 +2450,9 @@ body.hg-open{overflow:hidden}
 .ww-fee>.ww-dur{display:grid!important;grid-template-columns:1fr;gap:3px;align-items:start}
 .ww-fee>.ww-dur b{font-family:var(--f-mono)!important;font-size:15px!important;font-weight:700;color:var(--violet)!important;line-height:1.3}
 .ww-fee>.ww-dur small{font-family:var(--f-body)!important;font-size:12px!important;letter-spacing:0!important;text-transform:none!important}
+/* Winkelstraat (wapens): kop van een zaak met de gevel */
+.gs-head{--c:var(--acc);display:grid;grid-template-columns:minmax(200px,340px) minmax(0,1fr);gap:18px;align-items:center;padding:14px 16px;margin:0 0 14px;border-radius:14px;background:radial-gradient(120% 140% at 0% 50%,color-mix(in srgb,var(--c) 14%,#121419),#0f1114 70%);box-shadow:inset 0 0 0 1px var(--line2)}
+.gs-art svg{width:100%;height:auto;display:block}
+.gs-ht p{margin:4px 0 10px;color:var(--mute);font-size:14px}.gs-ht .label{color:var(--c)}
+.gs-ht .gr-tot{display:flex;flex-wrap:wrap;gap:8px}
+@container (max-width:760px){.gs-head{grid-template-columns:1fr}.gs-art{max-width:300px;margin:0 auto}}

@@ -112,7 +112,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   straf (hooguit 40%). Bij langere straffen komen er gebeurtenissen met een keuze: ruzie op de luchtplaats, een bewaker met een
   deal (Henk wordt een vaste contact: −10% op elke volgende straf), een tip van je celgenoot, een celinspectie of een advocaat.
   Borg betalen en ontsnappen werken zoals voorheen.
-- **Wapens & uitrusting** (`public/js/pages/wapens.js`): 24 items in 5 soorten, elk met tiers en een rang-eis. Per soort telt je
+- **Wapens & uitrusting** (`public/js/pages/wapens.js`): een **winkelstraat** met vier zaken als banner met gevel: Het Arsenaal (wapens en bescherming), Bouwmarkt Hamer (gereedschap), Belwinkel De Lijn (communicatie) en Motorhuis Snel (vervoer om te vluchten); tik op een zaak om naar binnen te gaan. 24 items in 5 soorten, elk met tiers en een rang-eis. Per soort telt je
   beste item. Wapens: slaagkans en vuurkracht (Vlindermes tot Machinegeweer, +3% tot +18%). Bescherming: slaagkans en kortere
   celstraf. Gereedschap: buit en meer tijd bij auto stelen. Communicatie: minder hitte na elke klus (−10% tot −55%).
   Vervoer: makkelijker vluchten (opgevoerde scooter +6% tot helikopter op afroep +25%), de duurdere ook wat minder hitte.
