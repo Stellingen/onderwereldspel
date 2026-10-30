@@ -102,13 +102,18 @@ const BZ_CATC={dienst:'#3fe395',horeca:'#ff3d52',auto:'#ff7a1a',handel:'#38bdf8'
 function bzTile(b){const u=bizUnits(b.id),n=u.length,up=bzCanUp(b),avg=n?u.reduce((a,l)=>a+l,0)/n:0,job=typeof wwJob==='function'&&wwJob(b.id);
  return `<button class="bz-pt" style="--c:${b.col}" onclick="bz.open('${b.id}')">${bzIcon(b,38)}<span class="bz-pt-t"><b>${b.n}</b><small>${n}/${BIZ_MAX} · level ${avg.toFixed(1).replace('.',',')}${b.cat==='vastgoed'?' · huur':''}</small></span>
   <span class="bz-pt-v"><b>${fmt(bizIncome(b.id))}</b><small>/dag</small></span>${up?`<i class="bz-pt-up">${up}↑</i>`:''}${job?'<i class="bz-pt-ww" title="Witwassen bezig"></i>':''}</button>`}
+// Elke categorie is in te klappen: dicht zie je de zaken als kleine iconen (jouw zaken gekleurd), open de banners.
+const bzExp=()=>bz.exp||(bz.exp={});
+function bzToggle(id){const E=bzExp(),open=!E[id];E[id]=open;SFX.chip();render();if(open)setTimeout(()=>{const el=document.getElementById('bzc-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})},30)}
+function bzToggleAll(){const E=bzExp(),all=BIZ_CATS.every(c=>E[c.id]);BIZ_CATS.forEach(c=>E[c.id]=!all);SFX.chip();render()}
 function bzCatHtml(c){const it=BIZ.filter(b=>b.cat===c.id),own=it.filter(b=>bizUnits(b.id).length),open=it.filter(b=>!bizUnits(b.id).length&&!bzLock(b)),lock=it.filter(b=>!bizUnits(b.id).length&&bzLock(b));
- const show=own.concat(open,bz.cat?lock:lock.slice(0,1)),rest=bz.cat?[]:lock.slice(1),inc=own.reduce((a,b)=>a+bizIncome(b.id),0);
- return `<section class="bz-cat" style="--c:${BZ_CATC[c.id]}">
-  <header class="bz-cat-h"><div><span class="label">Categorie</span><h2>${c.n}</h2><p>${c.d}</p></div>
-   <div class="bz-cat-m"><span><b>${own.length}</b>/${it.length} in bezit</span>${inc?`<span><b>${fmt(inc)}</b>/dag</span>`:''}<em class="${c.nowash?'no':'ok'}">${c.nowash?'Geen witwassen':'Witwassen kan'}</em></div></header>
-  <div class="bzb-grid">${show.map(bzBanner).join('')}</div>
-  ${rest.length?`<button class="bz-more" onclick="bz.cat='${c.id}';render();window.scrollTo({top:0,behavior:'smooth'})"><span>Ook in deze categorie</span>${rest.map(b=>`<em>${b.n} <small>vanaf ${RANKS[b.r][0]}</small></em>`).join('')}<i>›</i></button>`:''}
+ const ex=!!bzExp()[c.id],inc=own.reduce((a,b)=>a+bizIncome(b.id),0);
+ return `<section class="bz-cat ${ex?'ex':''}" id="bzc-${c.id}" style="--c:${BZ_CATC[c.id]}">
+  <button class="bz-cat-h" onclick="bzToggle('${c.id}')" aria-expanded="${ex}" aria-controls="bzcb-${c.id}">
+   <span class="bz-cat-t"><span class="label">${it.length} zaken${open.length?' · '+open.length+' te koop':''}</span><h2>${c.n}</h2><p>${c.d}</p>
+    <span class="bz-cat-ics">${it.map(b=>`<span class="${bizUnits(b.id).length?'own':bzLock(b)?'lk':''}" title="${b.n}${bizUnits(b.id).length?' · in bezit':bzLock(b)?' · vanaf '+RANKS[b.r][0]:''}">${bzIcon(b,30)}<small>${b.n}</small></span>`).join('')}</span></span>
+   <span class="bz-cat-m"><span><b>${own.length}</b>/${it.length} in bezit</span>${inc?`<span><b>${fmt(inc)}</b>/dag</span>`:''}<em class="${c.nowash?'no':'ok'}">${c.nowash?'Geen witwassen':'Witwassen kan'}</em><i class="bz-cat-chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></i><b class="bz-cat-go">${ex?'Inklappen':'Bekijken'}</b></span></button>
+  ${ex?`<div class="bzb-grid" id="bzcb-${c.id}">${own.concat(open,lock).map(bzBanner).join('')}</div>`:''}
  </section>`}
 function bzOverview(){const inc=income(),units=BIZ.reduce((a,b)=>a+bizUnits(b.id).length,0),types=BIZ.filter(b=>bizUnits(b.id).length).length;
  const lv=BIZ.reduce((a,b)=>a+bizUnits(b.id).reduce((x,l)=>x+l,0),0),maxed=BIZ.reduce((a,b)=>a+bizUnits(b.id).filter(l=>l>=5).length,0);
@@ -129,9 +134,8 @@ function bzOverview(){const inc=income(),units=BIZ.reduce((a,b)=>a+bizUnits(b.id
  ${own.length?`<div class="bz-sec"><h2>Jouw bezit</h2><span>${own.length} soort${own.length===1?'':'en'} · ${units} vestiging${units===1?'':'en'}</span></div>${(()=>{const ids=own.map(b=>b.id),c=bzPlan(ids,wit()),f=bzPlan(ids,Infinity);return f.k?`<div class="bz-upall"><div><span class="label">Wat je nu kunt betalen</span><b>${c.k?c.k+' upgrade'+(c.k>1?'s':'')+' · '+fmt(c.cost):'Nu niets betaalbaar'}</b><em>${c.k?'+'+fmt(c.gain)+'/dag extra, goedkoopste eerst':'Spaar nog even'}</em></div><div><span class="label">Alles naar max level</span><b>${f.k} upgrade${f.k>1?'s':''} · ${fmt(f.cost)}</b><em>+${fmt(f.gain)}/dag extra${f.cost>S.cash?', nog '+fmt(f.cost-S.cash)+' nodig':''}</em></div><button class="btn ${c.k?'gold':'ghost'}" onclick="act.bizUpEvery()" ${c.k?'':'disabled'}>${c.k?'Upgrade '+c.k+' · '+fmt(c.cost):'Geen upgrade betaalbaar'}</button></div>`:''})()}
   <div class="bz-port">${own.map(bzTile).join('')}</div>`
   :`<div class="bz-empty card"><b>Je hebt nog geen zaken.</b><span>${bzLock(BIZ[0])?`Je eerste zaak, een ${BIZ[0].n.toLowerCase()}, kun je kopen vanaf ${RANKS[BIZ[0].r][0]}.`:`Begin met een ${BIZ[0].n.toLowerCase()}: goedkoop, en hij verdient zichzelf in ruim drie speldagen (±13 uur) terug.`}</span></div>`}
- <nav class="bz-cats" aria-label="Categorieën">${[{id:'',n:'Alles'}].concat(BIZ_CATS).map(c=>{const it=c.id?BIZ.filter(b=>b.cat===c.id):BIZ,o=it.filter(b=>bizUnits(b.id).length).length;
-  return `<button class="${(bz.cat||'')===c.id?'on':''}" style="--c:${BZ_CATC[c.id]||'#ff7a1a'}" onclick="bz.cat='${c.id}';render()" aria-pressed="${(bz.cat||'')===c.id}">${c.n}<small>${o}/${it.length}</small></button>`}).join('')}</nav>
- ${BIZ_CATS.filter(c=>!bz.cat||bz.cat===c.id).map(bzCatHtml).join('')}
+ <div class="bz-sec bz-sec-c"><h2>Alle categorieën</h2><span>tik om uit te klappen</span><button class="bz-all" onclick="bzToggleAll()">${BIZ_CATS.every(c=>bzExp()[c.id])?'Alles inklappen':'Alles uitklappen'}</button></div>
+ ${BIZ_CATS.map(bzCatHtml).join('')}
  </div>`}
 
 // Kaart per bedrijf. Cijfers staan als regels (label links, bedrag rechts), zodat er bij geen enkele breedte iets over elkaar valt.
