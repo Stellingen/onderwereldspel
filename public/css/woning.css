@@ -233,3 +233,76 @@
 .va.hd .va-eff i{display:none}
 .va.hd .va-eff em{grid-column:1/-1;font-size:10.5px;margin-top:-1px}
 .vh-acts .va-eff b{white-space:nowrap}
+
+/* ================= Verblijf: acties bovenaan, winkel en upgraden als twee grote knoppen ================= */
+.vb-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 12px}
+#view .vb-head h1{margin:0}
+.vb-head span{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.vb-top{margin:0 0 12px}
+.vb-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 12px}
+.vb-big{display:flex;align-items:center;gap:14px;padding:16px 18px;text-align:left;color:var(--fg);background:var(--panel);border:1px solid var(--line2);border-radius:14px;
+ font-family:var(--f-body);text-transform:none;letter-spacing:0;transition:transform .15s,border-color .2s,box-shadow .2s;--c:var(--acc)}
+.vb-big.shop{--c:#ffad6b}.vb-big.up{--c:#a9dcff}.vb-big.up.can{--c:var(--green)}
+.vb-big:hover:not(:disabled){transform:translateY(-2px);border-color:var(--c);box-shadow:0 18px 40px -26px var(--c)}
+.vb-big:disabled{opacity:.5}
+.vb-ic{flex:none;width:52px;height:52px;border-radius:12px;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 14%,var(--bg2));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 40%,transparent)}
+.vb-ic svg{width:28px;height:28px}
+.vb-bt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.vb-bt b{font-family:var(--f-display);font-weight:900;font-size:24px;text-transform:uppercase;line-height:1}
+.vb-bt small{font-size:12.5px;color:var(--mute);line-height:1.35}
+.vb-big.up.can .vb-bt small{color:var(--green)}
+.vb-arr{font-style:normal;font-size:26px;color:var(--c);flex:none}
+.vb-bar{display:flex;align-items:center;gap:12px;margin:0 0 12px}
+#view .vb-bar h2{margin:0;font-size:clamp(26px,3vw,36px);text-transform:uppercase}
+.vb-back{display:inline-flex;align-items:center;gap:6px;padding:8px 12px 8px 8px;border-radius:10px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line2);color:var(--fg);font-family:var(--f-head);font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.05em}
+.vb-back svg{width:18px;height:18px}.vb-back:hover{color:var(--sec,var(--acc));box-shadow:inset 0 0 0 1.5px var(--sec,var(--acc))}
+/* betalen met contant of bank */
+.vb-pay{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.vb-pay>span{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-right:4px}
+.vb-pay button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 12px;border-radius:10px;background:var(--bg2);box-shadow:inset 0 0 0 1px var(--line2);color:var(--fg);font-family:var(--f-body);text-transform:none;letter-spacing:0;min-width:110px}
+.vb-pay button small{font-size:10.5px;color:var(--mute)}.vb-pay button b{font-family:var(--f-mono);font-size:14px}
+.vb-pay button.on{box-shadow:inset 0 0 0 2px var(--sec,var(--acc));background:color-mix(in srgb,var(--sec,var(--acc)) 10%,var(--bg2))}
+/* winkel */
+.fs-top{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 12px;padding:14px 16px;background:var(--panel);border:1px solid var(--line)}
+.fs-slots{display:flex;flex-direction:column;gap:6px}.fs-slots .vh-slots{justify-content:flex-start;max-width:none}.fs-slots small{font-size:12px;color:var(--mute)}
+.fs-stage{grid-template-columns:1fr}.fs-stage .vh-scene{height:clamp(240px,38vh,400px);min-height:0}
+.fs-sec{margin:18px 0 0}
+.fs-sh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 10px}
+#view .fs-sh h3{margin:0;font-size:20px;text-transform:uppercase}
+.fs-sh span{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.fs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.fs-card{--c:var(--acc);display:grid;grid-template-columns:54px minmax(0,1fr);gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;transition:border-color .2s,transform .15s}
+.fs-card:hover{border-color:color-mix(in srgb,var(--c) 55%,transparent)}
+.fs-ic{width:54px;height:54px;border-radius:12px;display:grid;place-items:center;color:var(--c);background:radial-gradient(circle at 30% 25%,color-mix(in srgb,var(--c) 30%,transparent),color-mix(in srgb,var(--c) 8%,var(--bg2)));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 40%,transparent)}
+.fs-ic svg{width:28px;height:28px}
+.fs-b{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fs-h{display:flex;align-items:center;gap:8px;justify-content:space-between}.fs-h b{font-family:var(--f-head);font-weight:800;font-size:17px;line-height:1.1}
+.fs-h span{flex:none;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:99px}
+.fs-in{color:var(--green);background:rgba(63,227,149,.12)}.fs-st{color:var(--ice);background:rgba(169,220,255,.12)}.fs-lock{color:var(--faint);background:var(--bg2)}
+.fs-b p{margin:0;font-size:12.5px;color:var(--mute);line-height:1.4}
+.fs-fx{display:flex;flex-wrap:wrap;gap:4px}.fs-fx span{font-size:11px;color:var(--mute);background:var(--bg2);padding:3px 7px;border-radius:6px}.fs-fx b{color:var(--green);font-family:var(--f-mono);font-weight:500}
+.fs-f{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:4px}
+.fs-p{font-family:var(--f-mono);font-size:15px;font-weight:700}
+.fs-btn{display:flex;gap:6px}.fs-btn .btn{width:auto;padding:8px 14px}
+.fs-why{font-size:11.5px;color:var(--faint)}
+.fs-card.later{opacity:.6}.fs-card.later .fs-ic{filter:grayscale(.6)}
+.fs-card.in{border-color:color-mix(in srgb,var(--green) 35%,var(--line))}
+/* upgraden: twee betaalknoppen */
+.vh-buy2{display:grid;gap:8px}
+.vh-buy2 .btn{display:flex;flex-direction:column;gap:2px;align-items:center;line-height:1.15}
+.vh-buy2 .btn small{font-family:var(--f-mono);font-size:10.5px;font-weight:500;text-transform:none;letter-spacing:0;opacity:.8}
+@container (max-width:760px){
+ .vb-nav{grid-template-columns:1fr;gap:8px}
+ .vb-big{padding:12px 14px;gap:12px}.vb-ic{width:44px;height:44px}.vb-ic svg{width:24px;height:24px}.vb-bt b{font-size:21px}.vb-bt small{font-size:12px}
+ /* rusten, dokter, onderduiken: drie compacte tegels naast elkaar */
+ .vb-top.vh-acts{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .vb-top .va{grid-template-columns:1fr;justify-items:center;text-align:center;padding:10px 8px;gap:6px;border-radius:12px}
+ .vb-top .va-ring{width:64px;height:64px}.vb-top .va-c b{font-size:14px}.vb-top .va-c span{font-size:8.5px}
+ .vb-top .ecg{left:10px;right:10px;bottom:11px;height:9px}
+ .vb-top .va-b{width:100%;align-items:center}
+ .vb-top .va-b h3{font-size:16px}.vb-top .va-b p,.vb-top .va-eff,.vb-top .va-note{display:none}
+ .vb-top .va .btn{padding:8px 4px;font-size:12px;margin-top:6px;min-height:36px;white-space:normal;line-height:1.1}
+ .fs-top{padding:12px}.vb-pay{width:100%}.vb-pay>span{width:100%}.vb-pay button{flex:1;min-width:0}
+ .fs-grid{grid-template-columns:1fr}
+ .fs-stage .vh-scene{height:230px}
+}
