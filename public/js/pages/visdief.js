@@ -65,9 +65,9 @@ const VD_SKY=`<svg class="vd-sky" viewBox="0 0 900 90" preserveAspectRatio="xMid
  <g stroke="#ff9a3c" stroke-width="1" opacity=".35"><path d="M210 58v32M520 54v36M740 62v28"/></g></svg>`;
 
 function vdInfo(){const fs=vd.fs,pend=window.slotPending||0;
- return `<div class="kk-bal${fs?' has-fs':''}"><div class="kk-bal-l"><span class="label">Saldo</span><b id="vdBal">${fmt(S.cash-pend+(vd.shown||0))}</b></div>${fs?slotFsIn(fs,'Free spins'):''}</div>
+ return `<div class="kk-bal has-r"><div class="kk-bal-l"><span class="label">Saldo</span><b id="vdBal">${fmt(S.cash-pend+(vd.shown||0))}</b></div>${fs?slotFsIn(fs,'Free spins'):slotBetIn(vd.busy&&vd.bet?vd.bet:vdBet(),vd.buyMode,VISD.BUY_COST)}</div>
   <div class="kk-stat"><span class="label">Deze spin</span><b id="vdStep" class="acc">${fmt(vd.stepWin)}</b></div>
-  <div class="kk-stat"><span class="label">${fs?'Bonuswinst':'Laatste winst'}</span><b id="vdLast" class="grn">${fmt(fs?fs.total:vd.lastWin)}</b></div>
+  <div class="kk-stat"><span class="label">${fs?'Bonuswinst':'Gewonnen'}</span><b id="vdLast" class="grn">${fmt(fs?fs.total:vd.lastWin)}</b></div>
   ${fs?`<div class="kk-stat kk-fsx"><span class="label">Bonus</span><b class="sm kk-xn">${slotX(fs.total,vd.bet)}</b></div><div class="kk-stat fsb"><span class="label">Free spins</span><b class="kk-fsn">${fs.at} / ${fs.of}</b></div>`:''}`}
 // Vangstmeter in de bonus: ronde, multiplier en hoeveel Visdieven je nog nodig hebt voor de volgende ronde
 function vdFsBar(){const f=vd.fs;if(!f)return '';const P=VISD.PER_LEVEL,top=f.lvl>=VISD.MULTS.length-1,next=(f.lvl+1)*P,have=Math.max(0,Math.min(P,f.caught-f.lvl*P)),sec=!top&&f.caught>=next,extra=sec?f.caught-next:0;

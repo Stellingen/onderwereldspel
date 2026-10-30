@@ -143,7 +143,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   **Inzet kiezen** gaat via een pop-up (ook bij Visdief).
   **Teller in de bonus**: extra spins (2+ kluizen) komen pas bij de teller als de spin helemaal is uitgetumbeld (eerst
   "+2 spins", dan bijv. 3 / 14); vooraf verraadt de teller niets. Op de telefoon staan de free spins rechts in het saldovak en
-  staat het saldovak tijdens de bonus direct onder het bord, met "Bonus: X× inzet" tot nu toe (Visdief net zo, ook op de computer).
+  staat het saldovak (ook bij gewone spins, dan met je inzet rechts) direct onder het bord, de knoppen daaronder, met "Bonus: X× inzet" tot nu toe (Visdief net zo, ook op de computer).
   **Geschiedenis**: de laatste 40 rondes (inzet, betaald, terug, ×) worden bij je account bewaard; knop met het klokje bovenin.
   **Narekenen**: `verify.js`-controle (clusters, lopers, baren, vakjes, tumbles, totalen, afronding) gaf 0 afwijkingen op 900 rondes.
   Het bord is net zo hoog dat het met de knoppen ernaast zonder scrollen op een laptopscherm past.

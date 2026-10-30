@@ -33,12 +33,14 @@ function kkSpotsHtml(sp,prev){let h='';for(let r=0;r<SLOT.ROWS;r++)for(let c=0;c
   const gb=kk.fs&&kk.fs.barCells&&kk.fs.barCells.some(([x,y])=>x===c&&y===r);
   h+=`<div class="kk-spot${v===1?' mk':''}${v>=2?' mx lv'+lv:''}${nw?' bump':''}${gb?' gb':''}">${v>=2?'<b>x'+v+'</b>':''}${gb?`<i class="kk-gb">${kkSvg('baar')}</i>`:''}</div>`}return h}
 function kkInfo(){const fs=kk.fs;const pend=window.slotPending||0;
-  return `<div class="kk-bal${fs?' has-fs':''}"><div class="kk-bal-l"><span class="label">Saldo</span><b id="kkBal">${fmt(S.cash-pend+(kk.shown||0))}</b></div>${fs?slotFsIn(fs,kk.fs.kind==='super'?'Superbonus':'Free spins'):''}</div>
+  return `<div class="kk-bal has-r"><div class="kk-bal-l"><span class="label">Saldo</span><b id="kkBal">${fmt(S.cash-pend+(kk.shown||0))}</b></div>${fs?slotFsIn(fs,kk.fs.kind==='super'?'Superbonus':'Free spins'):slotBetIn(kkBet(),kk.buyMode,SLOT.BUY_COST)}</div>
    <div class="kk-stat"><span class="label">Deze spin</span><b id="kkStep" class="acc">${fmt(kk.stepWin)}</b></div>
-   <div class="kk-stat"><span class="label">${fs?'Bonuswinst':'Laatste winst'}</span><b id="kkLast" class="grn">${fmt(fs?fs.total:kk.lastWin)}</b></div>
+   <div class="kk-stat"><span class="label">${fs?'Bonuswinst':'Gewonnen'}</span><b id="kkLast" class="grn">${fmt(fs?fs.total:kk.lastWin)}</b></div>
    ${fs?`<div class="kk-stat kk-fsx"><span class="label">Bonus</span><b class="sm kk-xn">${slotX(fs.total,kk.fsBet)}</b></div><div class="kk-stat fsb"><span class="label">${fs.kind==='super'?'Superbonus':'Free spins'}</span><b class="kk-fsn">${fs.at} / ${fs.of}</b></div>`:`<div class="kk-stat"><span class="label">Status</span><b id="kkMsg" class="sm">${kk.msg}</b></div>`}`}
 // Free spins rechts in het saldovak (telefoon: dan zie je saldo en spins samen) en "× inzet" van de bonus tot nu toe
 const slotFsIn=(fs,lab)=>`<div class="kk-fsin"><span class="label">${lab}</span><b class="kk-fsn">${fs.at} / ${fs.of}</b></div>`;
+// buiten de bonus: je inzet (of de prijs van een bonus) rechts in het saldovak
+const slotBetIn=(b,buy,cost)=>`<div class="kk-fsin bet"><span class="label">${buy?'Bonus kopen':'Inzet'}</span><b>${fmt(buy?b*cost:b)}</b></div>`;
 const slotX=(won,bet)=>bet?(Math.round(won/bet*10)/10).toLocaleString('nl-NL')+'× inzet':'–';
 // Teller bijwerken op alle plekken; plus = er kwamen spins bij (pas als de spin helemaal is uitgespeeld)
 function slotFsSet(at,of,plus){document.querySelectorAll('.kk-fsn').forEach(el=>{el.textContent=at+' / '+of;if(!plus)return;

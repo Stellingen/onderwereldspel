@@ -2314,18 +2314,20 @@ body.hg-open{overflow:hidden}
 .vd.kk3.is-fs .kk-hud .kk-bal .kk-bal-l b{font-size:clamp(22px,1.9vw,30px)}
 .vd.kk3.is-fs .kk-hud .fsb{display:none}
 .vd.kk3.is-fs .kk-hud .kk-fsx{display:flex}
-.vd.kk3.is-fs .kk-hud .kk-bal,.kk-hud .kk-bal.has-fs.ph{flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
+.vd.kk3.is-fs .kk-hud .kk-bal,.kk-hud .kk-bal.has-r.ph{flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
 .vd.kk3.is-fs .kk-hud .kk-bal .kk-fsin{display:flex;flex-direction:column;align-items:flex-end;text-align:right;flex:none;padding-left:14px;border-left:1px solid #24404f}
 .vd.kk3.is-fs .kk-hud .kk-bal .kk-fsin b{font-family:var(--f-display);font-weight:900;font-size:clamp(22px,1.9vw,30px);line-height:1.05;color:var(--vd-goud)}
 @container (max-width:700px){
  .kk-hud .fsb{display:none}
  .kk-hud .kk-fsx{display:flex}
- .kk-hud .kk-bal.has-fs{flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
+ .kk-hud .kk-bal.has-r{flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
  .kk-hud .kk-bal .kk-fsin{display:flex;flex-direction:column;align-items:flex-end;text-align:right;flex:none;padding-left:12px;border-left:1px solid var(--line2)}
  .kk-hud .kk-bal .kk-fsin b{font-family:var(--f-display);font-weight:900;font-size:24px;line-height:1.05;color:var(--acc)}
  .vd.kk3.is-fs .kk-hud .kk-bal .kk-fsin b{font-size:24px;color:var(--vd-goud)}
+ .kk-hud .kk-bal .kk-fsin.bet b,.vd.kk3 .kk-hud .kk-bal .kk-fsin.bet b{color:var(--fg)}
+ .vd.kk3 .kk-hud .kk-bal .kk-fsin{border-left-color:#24404f}
  .vd.kk3.is-fs .kk-hud .kk-bal .kk-bal-l b{font-size:24px}
  .vd.kk3.is-fs .kk-hud>div{padding:7px 10px}
- /* tijdens de bonus staan saldo, spins en bonuswinst direct onder het bord; de (uitgeschakelde) knoppen daaronder */
- .kk3.is-fs .kk-bar .kk-hud{order:-2}
+ /* saldo, winst en (in de bonus) spins direct onder het bord, de knoppen daaronder: bij gewone spins en in de bonus */
+ .kk3 .kk-bar .kk-hud{order:-2}
 }
