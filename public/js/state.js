@@ -215,8 +215,8 @@ function showModal(t,m,btns){$('#modal').hidden=false;$('#modalT').textContent=t
 function closeModal(){$('#modal').hidden=true}
 // VIP en High roller: tag bij je naam, vaker de bonus in de slots en cashback op elke inzet (High roller ×1,5).
 // Cashback per spel, afgestemd op het huisvoordeel, zodat je er nooit structureel winst mee maakt. Direct te claimen.
-const CB_RATE={kluis:.005,vis:.005,mines:.005,avia:.005,roulette:.01,tcp:.0075,bj:.0025,coin:0};
-const CB_NAME={kluis:'Kluiskraker',vis:'Visdief',mines:'Mines',avia:'Hoogvlieger',roulette:'Roulette',tcp:'Three Card Poker',bj:'Blackjack',coin:'Dubbel of niks'};
+const CB_RATE={kluis:.005,vis:.005,mines:.005,avia:.005,roulette:.01,tcp:.0075,th:.005,bj:.0025,coin:0};
+const CB_NAME={kluis:'Kluiskraker',vis:'Visdief',mines:'Mines',avia:'Hoogvlieger',roulette:'Roulette',tcp:'Three Card Poker',th:"Texas Hold'em",bj:'Blackjack',coin:'Dubbel of niks'};
 // Lidmaatschap: 0 = gewoon, 1 = VIP, 2 = High roller. Komt van je account (beheerder); oude VIP-code telt nog als VIP.
 const tier=()=>{const t=window.__TIER__;if(t!=null)return t;return (S&&S.redeemed&&S.redeemed.includes('vip'))?1:0};
 const isVip=()=>tier()>=1;

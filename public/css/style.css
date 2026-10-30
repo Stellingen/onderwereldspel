@@ -2338,3 +2338,71 @@ body.hg-open{overflow:hidden}
 .btn.bj-a.no span{text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:rgba(255,77,94,.8)}
 .btn.bj-a.no small{opacity:1;color:#ff6b78}
 @media (max-width:900px){.tb-act.play{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tb-act.play .btn.bj-a{min-width:0;padding:10px 8px}}
+/* ================= Casino-lobby: elk spel als banner met de illustratie erachter ================= */
+.cl{display:flex;flex-direction:column;gap:clamp(18px,2.4vw,30px)}
+.cl-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line2);padding-bottom:14px}
+#view .cl-head h1{margin:0;font-size:clamp(34px,4vw,52px);line-height:.95}
+.cl-head p{margin:8px 0 0;color:var(--mute);max-width:60ch;font-size:14px}
+.cl-warn{border-color:var(--acc);color:var(--acc);margin:0}
+.cl-run{display:flex;flex-direction:column;gap:3px;text-align:left;padding:14px 18px;border-radius:12px;background:color-mix(in srgb,var(--acc) 14%,var(--panel));box-shadow:inset 0 0 0 1.5px var(--acc);color:var(--fg)}
+.cl-run b{font-family:var(--f-head);font-weight:800;font-size:17px;color:var(--acc)}.cl-run span{font-size:13px;color:var(--mute)}
+.cl-sec{display:flex;flex-direction:column;gap:12px}
+.cl-sh{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+#view .cl-sh h2{margin:0;font-size:clamp(20px,1.8vw,26px);text-transform:uppercase;letter-spacing:.04em}
+.cl-sh span{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.cl-grid{display:grid;gap:clamp(10px,1.2vw,16px)}
+.cl-grid.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.cl-grid.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.cl-grid.g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cl-card{--c:var(--acc);position:relative;display:flex;align-items:stretch;min-height:200px;padding:0;text-align:left;color:var(--fg);overflow:hidden;isolation:isolate;font-family:var(--f-body);text-transform:none;letter-spacing:0;font-weight:400;
+ border-radius:14px;background:radial-gradient(120% 140% at 100% 50%,color-mix(in srgb,var(--c) 16%,#121419) 0%,#101216 55%,#0c0d10 100%);
+ box-shadow:inset 0 0 0 1px var(--line2),0 18px 40px -30px #000;transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .2s}
+.cl-card.big{min-height:clamp(220px,20vw,280px)}
+.cl-card::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#0c0d10 0%,rgba(12,13,16,.95) 40%,rgba(12,13,16,.55) 56%,rgba(12,13,16,0) 76%);pointer-events:none}
+.cl-art{position:absolute;z-index:-2;right:-3%;top:50%;width:min(60%,420px);aspect-ratio:320/220;transform:translateY(-50%);transition:transform .35s cubic-bezier(.2,.7,.2,1)}
+.cl-art svg{width:100%;height:100%;display:block}
+.cl-txt{position:relative;display:flex;flex-direction:column;gap:6px;padding:clamp(16px,1.8vw,24px);max-width:min(54%,400px);justify-content:flex-end}
+.cl-k{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
+.cl-n{font-family:var(--f-display);font-weight:900;font-size:clamp(26px,2.4vw,36px);line-height:.95;text-transform:uppercase;letter-spacing:.01em}
+.cl-card.big .cl-n{font-size:clamp(32px,3.2vw,48px)}
+.cl-s{font-size:13.5px;line-height:1.45;color:#b9bcc3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cl-f{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px;flex-wrap:wrap}
+.cl-tags{display:flex;gap:6px;flex-wrap:wrap}
+.cl-tags em{font-style:normal;font-family:var(--f-mono);font-size:10.5px;padding:3px 8px;border-radius:99px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);color:#d9dbe0;white-space:nowrap}
+.cl-go{display:inline-flex;align-items:center;gap:4px;font-family:var(--f-head);font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:#0b0c0e;background:var(--c);padding:7px 10px 7px 14px;border-radius:99px}
+.cl-go svg{width:16px;height:16px}
+.cl-card:hover{transform:translateY(-3px);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 70%,transparent),0 26px 50px -30px color-mix(in srgb,var(--c) 70%,#000)}
+.cl-card:hover .cl-art{transform:translateY(-50%) scale(1.05)}
+.cl-card:focus-visible{outline:2px solid var(--c);outline-offset:3px}
+/* gestapeld: illustratie boven, tekst eronder (snelle spellen; tafels op heel brede schermen) */
+.cl-grid.g3 .cl-card{flex-direction:column;justify-content:flex-end;min-height:330px}
+.cl-grid.g3 .cl-art{top:0;right:auto;left:50%;transform:translateX(-50%);width:min(100%,380px)}
+.cl-grid.g3 .cl-card:hover .cl-art{transform:translateX(-50%) scale(1.05)}
+.cl-grid.g3 .cl-card::after{background:linear-gradient(0deg,#0c0d10 0%,rgba(12,13,16,.94) 40%,rgba(12,13,16,.3) 66%,rgba(12,13,16,0) 85%)}
+.cl-grid.g3 .cl-txt{max-width:100%}
+@media (min-width:1500px){.cl-grid.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.cl-grid.g4 .cl-card{flex-direction:column;justify-content:flex-end;min-height:340px}.cl-grid.g4 .cl-txt{max-width:100%}.cl-grid.g4 .cl-card::after{background:linear-gradient(0deg,#0c0d10 0%,rgba(12,13,16,.94) 40%,rgba(12,13,16,.3) 66%,rgba(12,13,16,0) 85%)}.cl-grid.g4 .cl-art{top:0;right:auto;left:50%;transform:translateX(-50%);width:100%}.cl-grid.g4 .cl-card:hover .cl-art{transform:translateX(-50%) scale(1.05)}}
+@container (max-width:1000px){.cl-grid.g3{grid-template-columns:1fr}}
+@container (max-width:760px){
+ .cl{gap:20px}.cl-head{padding-bottom:10px}.cl-head p{font-size:13px}
+ .cl-grid.g2,.cl-grid.g3,.cl-grid.g4{grid-template-columns:1fr;gap:10px}
+ .cl-card,.cl-grid.g3 .cl-card,.cl-grid.g4 .cl-card{min-height:140px;flex-direction:row;justify-content:flex-start}
+ .cl-card.big{min-height:168px}
+ .cl-art,.cl-grid.g3 .cl-art,.cl-grid.g4 .cl-art{top:50%;left:auto;right:-10%;transform:translateY(-50%);width:66%}
+ .cl-grid.g3 .cl-card:hover .cl-art,.cl-card:hover .cl-art{transform:translateY(-50%)}
+ .cl-card::after,.cl-grid.g3 .cl-card::after,.cl-grid.g4 .cl-card::after{background:linear-gradient(90deg,#0c0d10 0%,rgba(12,13,16,.95) 46%,rgba(12,13,16,.5) 64%,rgba(12,13,16,0) 86%)}
+ .cl-txt,.cl-grid.g3 .cl-txt,.cl-grid.g4 .cl-txt{max-width:66%;padding:14px 12px 14px 16px;gap:5px;justify-content:center}
+ .cl-n{font-size:26px}.cl-card.big .cl-n{font-size:32px}
+ .cl-s{font-size:12.5px;-webkit-line-clamp:2}
+ .cl-tags em:nth-child(n+2){display:none}
+ .cl-go{padding:6px 8px 6px 11px;font-size:12.5px}
+ .cl-sh span{flex-basis:100%;margin-top:-8px}
+}
+/* In een spel: terug naar de lobby */
+.cas-back{display:inline-flex;align-items:center;gap:6px;flex:none;margin:0 0 6px;padding:8px 12px 8px 8px;border-radius:10px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line2);color:var(--fg);font-family:var(--f-head);font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.05em}
+.cas-back svg{width:18px;height:18px}.cas-back:hover{box-shadow:inset 0 0 0 1.5px var(--sec);color:var(--sec)}
+@container (max-width:760px){.cas-back{margin:0;min-height:44px;padding:0 10px}.cas-back span{display:none}.cas-bar .tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* Texas Hold'em: blauw laken, tafelkaarten naast elkaar */
+.th .felt{background:radial-gradient(ellipse at 50% 20%,#17406b 0%,#0f2d4f 55%,#091c33 100%)}
+.th .zone.board .cards{gap:clamp(4px,.8vw,10px)}.th .zone.board .tc{margin-left:0}
+.th .zone.board .tc.ghost{border:2px dashed rgba(243,212,138,.28);background:rgba(0,0,0,.12)}
+.th .felt::after{display:none}
+.tb-act.play .btn.bj-a.red{background:var(--red);color:#fff}
+@media (max-width:900px){.th .zone.board{--cw:clamp(44px,15.5vw,64px)}}

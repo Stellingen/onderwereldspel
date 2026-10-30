@@ -36,7 +36,10 @@ if(S._gearBack){toast('Uitrusting vernieuwd: per soort telt nu je beste item. Je
 (()=>{tick()})();
 
 // snelkoppelingen: #ontspannen en #trainen openen de trainingspagina op het juiste deel
-window.addEventListener('hashchange',()=>{let p=location.hash.slice(1);if(p==='ontspannen'||p==='trainen'){if(window.trs)trs.tab=p==='ontspannen'?'relax':'train';p='skills';try{history.replaceState(null,'','#skills')}catch(e){}}if(PAGES.find(x=>x[0]===p)){page=p;render();window.scrollTo(0,0)}});
+window.addEventListener('hashchange',()=>{let p=location.hash.slice(1);if(p==='ontspannen'||p==='trainen'){if(window.trs)trs.tab=p==='ontspannen'?'relax':'train';p='skills';try{history.replaceState(null,'','#skills')}catch(e){}}if(PAGES.find(x=>x[0]===p)){
+  // naar het casino vanaf een andere pagina: eerst de lobby (behalve als je via zoeken een spel koos of er nog iets loopt)
+  if(p==='casino'&&page!=='casino'&&!window._casPick&&typeof casSwitchBusy==='function'&&!casSwitchBusy()&&!(window.kk&&kk.inBonus))casinoTab='';window._casPick=0;
+  page=p;render();window.scrollTo(0,0)}});
 let wasJail=inJail();
 setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderRail();
   // casino: saldo van de slots live bijwerken (passief inkomen loopt door), knoppen opnieuw als je ineens wel/niet genoeg hebt

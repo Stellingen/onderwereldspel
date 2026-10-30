@@ -53,7 +53,7 @@ const ICONS={
 const PAGES=[['dash','Dashboard'],['verblijf','Verblijf'],['crimes','Misdaden'],['hits','Huurmoorden'],['cars','Auto\'s'],['casino','Casino'],['biz','Bezit'],['shop','Wapens'],['look','Outfit'],['skills','Training'],['bank','Bank'],['wit','Witwassen'],['fam','Families'],['jail','Bajes'],['rank','Ranglijst'],['profiel','Profiel']];
 const svg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 let page=(location.hash||'#dash').slice(1);if(!PAGES.find(p=>p[0]===page))page='dash';
-let casinoTab='kluis',rankTab='xp',slotState=['7','7','7'],spinning=false;
+let casinoTab='',rankTab='xp',slotState=['7','7','7'],spinning=false;
 
 // Elke sectie heeft een eigen kleur, zodat je ziet waar je bent
 const NAV_GROUPS=[['Straat',['dash','verblijf','crimes','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank','wit'],'#3fe395','63,227,149'],['Macht',['shop','look','skills','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','rank','profiel'],'#a9dcff','169,220,255']];
@@ -91,13 +91,13 @@ function navBadges(){const b={};if(inJail())b.jail='!';if(!inJail()&&S.energy>=E
  if(typeof isVip==='function'&&isVip()&&typeof cbAvail==='function'&&cbAvail()>=1)b.casino='€';return b}
 function navHint(k){const jt=Math.ceil((S.jailUntil-now())/1000);
  return {dash:'Overzicht',verblijf:S.hide?'Ondergedoken':'Gezondheid '+S.hp+'%',crimes:Math.floor(S.energy)+' energie',hits:rankIdx(S.xp)<7?'Vanaf '+RANKS[7][0]:cdLeft('hit')?'Over '+fmtClock(cdLeft('hit')):((S.stats&&S.stats.hits)||0)+' gedaan',cars:S.cars.length+(S.cars.length===1?' auto':" auto's"),
-  casino:'8 spellen',biz:typeof income==='function'?fmt(income())+'/dag':'Bedrijven',bank:fmt(typeof bankNet==='function'?bankNet():S.bank),shop:'Wapens',skills:'Trainen & ontspannen',
+  casino:'9 spellen',biz:typeof income==='function'?fmt(income())+'/dag':'Bedrijven',bank:fmt(typeof bankNet==='function'?bankNet():S.bank),shop:'Wapens',skills:'Trainen & ontspannen',
   fam:S.family?fam().n:'Geen familie',jail:inJail()?'Vast, '+fmtTime(jt):'Vrij',rank:'Spelers',profiel:'Codes en account',look:'Kleding en sieraden',wit:typeof zwart==='function'&&zwart()>=1?fmt(zwart())+' zwart':'Zwart geld wit maken'}[k]||''}
 function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('nav');bar.id='mbar';bar.className='mbar';bar.setAttribute('aria-label','Menu');document.body.appendChild(bar)}
  let sh=$('#msheet');if(!sh){sh=document.createElement('div');sh.id='msheet';sh.className='msheet';sh.setAttribute('aria-hidden','true');document.body.appendChild(sh);
   sh.addEventListener('click',e=>{const c=e.target.closest('[data-cas]');
    // zoekresultaat voor een casinospel: meteen het goede spel openen
-   if(c){const k=c.dataset.cas;if(page==='casino'&&typeof casinoGo==='function')casinoGo(k);else if(typeof casinoTab!=='undefined')casinoTab=k}
+   if(c){const k=c.dataset.cas;if(page==='casino'&&typeof casinoGo==='function')casinoGo(k);else if(typeof casinoTab!=='undefined'){casinoTab=k;window._casPick=1}}
    if(e.target===sh||e.target.closest('[data-close]'))mSheet(false)})}
  const bd=navBadges(),name=k=>PAGES.find(p=>p[0]===k)[1],inMain=MBAR.includes(page),more=Object.keys(bd).some(k=>!MBAR.includes(k));
  setHTML(bar,MBAR.map(k=>`<a class="mb ${k===page?'on':''}" href="#${k}" style="--g:${groupOf(k)[2]}">${svg(k)}<span>${MSHORT[k]}</span>${bd[k]?`<em class="${bd[k]==='●'?'ok':''}">${bd[k]}</em>`:''}</a>`).join('')
@@ -137,6 +137,7 @@ const MS_FIND=[
  ['Roulette','Tafelspel','casino:roulette','rood zwart tafel'],
  ['Blackjack','Kaartspel','casino:bj','21 kaarten eenentwintig'],
  ['Three Card Poker','Kaartspel','casino:tcp','poker kaarten'],
+ ['Texas Hold\'em','Poker tegen de dealer','casino:th','poker holdem hold em texas flop turn river kaarten'],
  ['Mines','Mijnenveld','casino:mines','mijnen bom'],
  ['Hoogvlieger','Uitbetalen voor hij neerstort','casino:avia','vliegtuig crash'],
  ['Dubbel of niks','Munt opgooien','casino:coin','munt kop munt'],

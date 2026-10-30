@@ -106,7 +106,7 @@ function wwGame(amount,B){return new Promise(resolve=>{
 })}
 
 // ---------- Controle in het casino ----------
-const casBusy=()=>(window.kk&&kk.busy)||(window.vd&&vd.busy)||(window.cf&&cf.flipping)||(window.av&&av.flying)||(window.rl&&rl.spinning)||(window.bt&&['dealing','dealer'].includes(bt.phase))||(window.tp&&['dealing','reveal'].includes(tp.phase));
+const casBusy=()=>(window.kk&&kk.busy)||(window.vd&&vd.busy)||(window.cf&&cf.flipping)||(window.av&&av.flying)||(window.rl&&rl.spinning)||(window.bt&&['dealing','dealer'].includes(bt.phase))||(window.tp&&['dealing','reveal'].includes(tp.phase))||(window.th&&['dealing','reveal'].includes(th.phase));
 function czControl(){window.__czCheck=false;const C=S.cz||(S.cz={s:0,t:now(),g:0});czVal();const z=zwart(),g=Math.round((C.g||0)*.5);
  if(z<1&&g<1){C.s=Math.max(0,C.s-40);toast('Controle in het casino. Je bent schoon, ze laten je gaan.','ok');log('Casino: gecontroleerd, niets gevonden','info');save();return}
  const conf=Math.min(S.cash,z+g);S.cash-=conf;S.zwart=0;C.s=0;C.g=0;addHeat(25);wwHist('bust',conf,0,'controle in het casino');

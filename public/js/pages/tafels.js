@@ -201,16 +201,18 @@ function tpSettle(folded){
  log('Three Card Poker: '+t.msg,t.net>0?'ok':t.net<0?'bad':'info');save();render()}
 
 /* ======================= Acties ======================= */
+const tbT=g=>g==='bj'?bt:g==='tp'?tp:th;
+const tbNew=g=>g==='bj'?act.btNew():g==='tp'?act.tpNew():act.thNew();
 Object.assign(act,{
- tbBet(game,key){const T=game==='bj'?bt:tp;if(T.phase!=='bet'&&T.phase!=='done')return;if(T.phase==='done'){game==='bj'?act.btNew():act.tpNew()}
+ tbBet(game,key){const T=tbT(game);if(T.phase!=='bet'&&T.phase!=='done')return;if(T.phase==='done')tbNew(game);
   const side=key!=='main'&&key!=='ante',cap=side?TB.SIDE_MAX:TB.MAIN_MAX;
   const cur=T.bets[key],tot=Object.values(T.bets).reduce((a,b)=>a+b,0);
   let add=Math.min(tbChip,cap-cur);if(add<=0){toast(side?'Side bets gaan bij jouw rang tot €'+TB.SIDE_MAX+' (+€500 per rang)':'Maximale inzet bereikt','bad');return}
   if(side&&cur+add<TB.SIDE_MIN)add=TB.SIDE_MIN-cur;
   if(tot+add>S.cash){toast('Niet genoeg contant geld','bad');return}
   T.bets[key]=cur+add;SFX.chip();render()},
- tbClear(game){const T=game==='bj'?bt:tp;if(T.phase!=='bet')return;Object.keys(T.bets).forEach(k=>T.bets[k]=0);render()},
- tbRebet(game){const T=game==='bj'?bt:tp;if(!T.last)return;if(T.phase==='done')game==='bj'?act.btNew():act.tpNew();T.bets=Object.assign({},T.last);render()},
+ tbClear(game){const T=tbT(game);if(T.phase!=='bet')return;Object.keys(T.bets).forEach(k=>T.bets[k]=0);render()},
+ tbRebet(game){const T=tbT(game);if(!T.last)return;if(T.phase==='done')tbNew(game);T.bets=Object.assign({},T.last);render()},
  btNew(){Object.assign(bt,{bets:{main:0,pp:0,t21:0},lines:null,phase:'bet',hands:[],dealer:[],active:0,side:{},msg:'',net:0});render()},
  async btDeal(){const b=bt;if(b.phase!=='bet'||inJail())return;const tot=b.bets.main+b.bets.pp+b.bets.t21;
   if(b.bets.main<TB.MAIN_MIN){toast('Minimale inzet is €'+TB.MAIN_MIN,'bad');return}if(tot>S.cash){toast('Niet genoeg contant geld','bad');return}
