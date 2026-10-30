@@ -186,6 +186,9 @@ const credMult=q=>(1+gearCredK())*(1+tierK())*(q==='perfect'?1.5:q==='netjes'?1.
 const credGain=(base,q)=>{const v=base*credMult(q);return Math.floor(v)+(Math.random()<v%1?1:0)};
 // ontsnappen uit de bajes: 35% basis × lidmaatschap, plus het familievoordeel
 const escChance=()=>.35*(1+tierK())+famPerk('esc');
+// tags in lijsten: echte spelers krijgen 'Speler', plus VIP of High roller (t = lidmaatschap 0/1/2)
+const lidTag=t=>+t>=2?'<i class="vipt hr" title="High roller">HIGH ROLLER</i>':+t>=1?'<i class="vipt" title="VIP-lid">VIP</i>':'';
+const playerTags=t=>'<i class="spt" title="Echte speler">SPELER</i>'+lidTag(t);
 // tag bij je naam; kort = 'HR' voor smalle plekken (balk bovenin)
 const vipTag=short=>isHR()?`<i class="vipt hr" title="High roller">${short?'HR':'HIGH ROLLER'}</i>`:isVip()?'<i class="vipt" title="VIP-lid">VIP</i>':'';
 // Elke afgeronde casinoronde: inzet, wat je terugkreeg en welk spel. VIP spaart een vast percentage van de inzet op.

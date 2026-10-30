@@ -55,6 +55,7 @@ function kkView(){
   <div class="kk-head"><div class="kk-title">Kluis<span>kraker</span></div>
    <div class="kk-sub"><span id="kkSub">${kkSubHtml()}</span>
     <button class="kk-snd" id="kkSnd" onclick="SFX.toggle();this.textContent=SFX.on?'🔊':'🔇'" aria-label="Geluid aan of uit">${SFX.on?'🔊':'🔇'}</button></div></div>
+  <aside class="kk-left" id="kkLeft">${kkLeftHtml()}</aside>
   <div class="kk-board" id="kkBoard">
    <div class="kk-layer kk-spots" id="kkSpots">${kkSpotsHtml(kk.spots)}</div>
    <div class="kk-layer kk-cells" id="kkCells">${kkCellsHtml(g,'none')}</div>
@@ -62,10 +63,13 @@ function kkView(){
    <div id="kkBanner"></div>${kkRunHtml()}
    ${kk.paused?`<div class="kk-banner pause"><div><b>Gepauzeerd</b><span>${kk.fs?'Free spin '+kk.fs.at+' van '+kk.fs.of+' · '+fmt(kk.fs.total)+' gewonnen':'Je bonus staat klaar'}</span><button class="btn kk-go" style="margin-top:18px" onclick="kkResume()">Bonus verder afspelen</button></div></div>`:''}
   </div>
-  <div class="kk-bar"><div class="kk-hud" id="kkInfo">${kkInfo()}</div><div class="kk-ctl" id="kkCtl">${kkControls()}</div></div>
-  <div id="kkPickBox">${kk.pick&&!kk.busy?kkPickHtml():''}</div>
-  <div id="kkConfirmBox">${kk.buyMode&&!kk.busy?kkConfirm():''}</div>
-  <div id="kkSeedBox">${kkSeedHtml()}</div>
+  <aside class="kk-right">
+   <div class="kk-bar"><div class="kk-hud" id="kkInfo">${kkInfo()}</div><div class="kk-ctl" id="kkCtl">${kkControls()}</div></div>
+   <div id="kkSess">${kkSessHtml()}</div>
+   <div id="kkPickBox">${kk.pick&&!kk.busy?kkPickHtml():''}</div>
+   <div id="kkConfirmBox">${kk.buyMode&&!kk.busy?kkConfirm():''}</div>
+   <div id="kkSeedBox">${kkSeedHtml()}</div>
+  </aside>
  </div>
  <section class="card kk-pay"><div id="kkPayTab">${kkPayTab()}</div>
   <div class="kk-rules">
@@ -116,11 +120,26 @@ function kkControls(){const b=kkBet();return `<div class="kk-betbox"><span class
     <button class="btn ghost sm kk-turbo ${kk.turbo?'on':''}" onclick="kkTurbo()" aria-pressed="${kk.turbo}">${kk.turbo?'Snel: aan':'Snel: uit'}</button>
     <button class="kk-buyt ${kk.buyMode?'on':''}" onclick="kk.buyMode=!kk.buyMode;SFX.click();kkRefreshUI()" ${kk.busy?'disabled':''} aria-pressed="${!!kk.buyMode}"><i></i><span>Bonus kopen</span><small>${kk.buyMode?'aan':'uit'}</small></button>
    </div>`}
+// Brede schermen: links je inzet kiezen (fiches per groep, bonus kopen, snel), rechts saldo, draaien en een sessie-overzicht
+const kkShortBet=v=>v>=1e6?'€'+(v/1e6).toLocaleString('nl-NL')+'M':v>=1000?'€'+(v/1000).toLocaleString('nl-NL')+'K':'€'+v;
+function kkLeftHtml(){const B=kkBets(),b=kkBet(),buy=!!kk.buyMode,cost=SLOT.BUY_COST,dis=kk.busy?'disabled':'';
+ const groups=[['Klein',v=>v<300],['Middel',v=>v>=300&&v<5000],['Groot',v=>v>=5000&&v<=50000],['High roller',v=>v>50000]];
+ return `<div class="kl-bet"><span class="label">Inzet per spin</span><b>${fmt(b)}</b>${buy?`<small>bonus kopen: ${fmt(b*cost)}</small>`:'<small>spatie = draaien</small>'}
+   <div class="kl-step"><button onclick="kkStepBet(-1)" ${dis} aria-label="Lagere inzet">−</button><button onclick="kkStepBet(1)" ${dis} aria-label="Hogere inzet">+</button></div></div>
+  <div class="kl-chips">${groups.map(([n,f])=>{const ix=B.map((v,i)=>[v,i]).filter(([v])=>f(v));if(!ix.length)return '';
+   return `<span class="label">${n}</span><div class="kl-grid">${ix.map(([v,i])=>`<button class="${i===kk.bi?'on':''} ${S.cash<(buy?v*cost:v)?'no':''}" onclick="kkSetBet(${i})" ${dis} title="${fmt(v)}${buy?' · bonus '+fmt(v*cost):''}">${kkShortBet(v)}</button>`).join('')}</div>`}).join('')}</div>
+  <div class="kl-opts">
+   <button class="kk-buyt ${buy?'on':''}" onclick="kk.buyMode=!kk.buyMode;SFX.click();kkRefreshUI()" ${dis} aria-pressed="${buy}"><i></i><span>Bonus kopen</span><small>${buy?'aan':'uit'}</small></button>
+   <button class="btn ghost sm kk-turbo ${kk.turbo?'on':''}" onclick="kkTurbo()" aria-pressed="${kk.turbo}">${kk.turbo?'Snel: aan':'Snel: uit'}</button></div>`}
+function kkSessHtml(){const x=kk.sess||{n:0,bet:0,won:0,best:0,bon:0},net=x.won-x.bet;
+ return `<div class="kk-sess"><span class="label">Deze sessie</span>
+  <div><span>Spins</span><b>${x.n.toLocaleString('nl-NL')}</b></div><div><span>Bonussen</span><b>${x.bon}</b></div><div><span>Beste</span><b class="g">${fmt(x.best)}</b></div>
+  <div><span>Ingezet</span><b>${fmt(x.bet)}</b></div><div><span>Gewonnen</span><b>${fmt(x.won)}</b></div><div><span>Netto</span><b class="${net>0?'up':net<0?'dn':''}">${net>=0?'+':'−'}${fmt(Math.abs(net))}</b></div></div>`}
 // Alleen de onderdelen bijwerken die veranderen (geen hele pagina, dus geen sprong naar boven op de telefoon)
 function kkRefreshUI(){const root=document.querySelector('.kk3');if(!root)return;const fs=kk.fs;
  root.classList.toggle('is-fs',!!fs);root.classList.toggle('is-super',!!(fs&&fs.kind==='super'));
  const set=(id,h)=>{const e=kkEl(id);if(e)e.innerHTML=h};
- set('kkSub',kkSubHtml());kkInfoRefresh();set('kkCtl',kkControls());set('kkPickBox','');set('kkConfirmBox',kk.buyMode&&!kk.busy?kkConfirm():'');set('kkSeedBox',kkSeedHtml());set('kkPayTab',kkPayTab());
+ set('kkSub',kkSubHtml());kkInfoRefresh();set('kkCtl',kkControls());set('kkPickBox','');set('kkConfirmBox',kk.buyMode&&!kk.busy?kkConfirm():'');set('kkSeedBox',kkSeedHtml());set('kkPayTab',kkPayTab());set('kkLeft',kkLeftHtml());set('kkSess',kkSessHtml());
  if(!kk.busy){const st=kkEl('kkStage');if(st)st.classList.remove('vault-open')}}
 // Snelheid mag ook tijdens een spin of bonus om: de volgende val/tumble gebruikt meteen het nieuwe tempo.
 function kkTurbo(){kk.turbo=!kk.turbo;SFX.click();document.querySelectorAll('.kk-turbo').forEach(b=>{b.textContent=kk.turbo?'Snel: aan':'Snel: uit';b.classList.toggle('on',kk.turbo);b.setAttribute('aria-pressed',kk.turbo)})}
@@ -281,6 +300,7 @@ Object.assign(act,{
   S.cash+=pay-cost;window.slotPending=pay;
   if(pay>cost)S.stats.won+=pay-cost;else S.stats.lost+=cost-pay;
   // een bonus duurt even: bewaar hem, zodat hij na verversen of op een ander apparaat verder kan (zonder opnieuw te betalen)
+  kk.sess=kk.sess||{n:0,bet:0,won:0,best:0,bon:0};kk.sess.n++;kk.sess.bet+=cost;kk.sess.won+=pay;kk.sess.best=Math.max(kk.sess.best,pay);if(round.fs)kk.sess.bon++;
   if(round.fs)S.slotRun={g:'kluis',seed:seedStr,buy:!!isBuy,t:tier(),bet,cost,pay,tot:round.total,at:0,ts:now()};
   casinoRound(cost,pay,'kluis');
   save();renderTop();kkRefreshUI();

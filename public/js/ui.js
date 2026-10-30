@@ -128,7 +128,7 @@ function renderRail(){
   const ri=rankIdx(S.xp),nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
   const bc=bestCrime(),left=cdLeft(bc.id),ok=!inJail()&&!left&&S.energy>=bc.en;
   const full=Math.max(0,Math.ceil((EN_MAX-S.energy)*EN_REGEN_S/60));
-  const all=[...S.npcs.map(n=>({n:n.n,xp:n.xp})),...(window.__LB__||[]).filter(p=>!window.__USER__||p.name.toLowerCase()!==window.__USER__.toLowerCase()).map(p=>({n:esc(p.name)+(+p.vip>=2?'<i class="vipt hr">HIGH ROLLER</i>':+p.vip?'<i class="vipt">VIP</i>':''),xp:+p.xp})),{n:'★ '+esc(S.name)+vipTag(),xp:S.xp,me:1}].sort((a,b)=>b.xp-a.xp);
+  const all=[...S.npcs.map(n=>({n:n.n,xp:n.xp})),...(window.__LB__||[]).filter(p=>!window.__USER__||p.name.toLowerCase()!==window.__USER__.toLowerCase()).map(p=>({n:esc(p.name)+playerTags(p.vip),xp:+p.xp})),{n:'★ '+esc(S.name)+(window.__TOKEN__?playerTags(tier()):vipTag()),xp:S.xp,me:1}].sort((a,b)=>b.xp-a.xp);
   const pos=all.findIndex(x=>x.me)+1;
   const td=todoItems();
   setHTML(el,`

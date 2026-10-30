@@ -1995,3 +1995,79 @@ body.hg-open{overflow:hidden}
 /* Kluiskraker: bord breder (vakjes iets breder dan hoog) en de volle hoogte van het scherm benutten */
 @container (min-width:1100px){.kk3:not(.vd) .kk-board{--bh:clamp(340px,calc(100svh - 335px),940px);aspect-ratio:1.5;width:min(100%,calc(var(--bh) * 1.5))}}
 .kk-run-b{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:18px}.kk-run-b .btn{width:auto;min-width:240px}.kk-run-b .btn.ghost{min-width:0}
+/* ===== Kluiskraker op brede schermen: kolommen links en rechts tegen het bord aan, even hoog als het bord ===== */
+.kk-left,#kkSess{display:none}
+@container (min-width:1100px){
+ .kk3:not(.vd) .kk-stage{display:grid;grid-template-columns:auto 300px;grid-template-rows:auto auto;grid-template-areas:"head head" "board right";column-gap:12px;row-gap:0;justify-content:center;align-items:stretch}
+ .kk3:not(.vd) .kk-head{grid-area:head}
+ .kk3:not(.vd) .kk-board{grid-area:board;margin:0;--bh:clamp(340px,calc(100svh - 335px),940px);aspect-ratio:1.5;width:min(calc(100cqi - 362px),calc(var(--bh) * 1.5))}
+ .kk3:not(.vd) .kk-right{grid-area:right;display:flex;flex-direction:column;gap:10px;min-height:0;padding:10px;background:rgba(0,0,0,.28);box-shadow:inset 0 0 0 1px var(--line)}
+ .kk3:not(.vd) .kk-right .kk-bar{margin:0}
+ .kk3:not(.vd) .kk-right .kk-ctl .kk-go{min-height:84px;font-size:26px}
+ .kk3:not(.vd) #kkSess{display:block}
+ .kk3:not(.vd) #kkSeedBox{margin-top:auto}
+ .kk3:not(.vd) #kkConfirmBox:empty,.kk3:not(.vd) #kkPickBox:empty{display:none}
+ .kk3:not(.vd) .kk-right .kk-seed{margin:0}
+}
+@container (min-width:1360px){
+ .kk3:not(.vd) .kk-stage{grid-template-columns:240px auto 300px;grid-template-areas:"head head head" "left board right"}
+ .kk3:not(.vd) .kk-board{width:min(calc(100cqi - 618px),calc(var(--bh) * 1.5))}
+ .kk3:not(.vd) .kk-left{grid-area:left;display:flex;flex-direction:column;gap:12px;min-height:0;padding:12px;background:rgba(0,0,0,.28);box-shadow:inset 0 0 0 1px var(--line)}
+ /* inzet en schakelaars staan links: rechts alleen de draaiknop */
+ .kk3:not(.vd) .kk-right .kk-betbox,.kk3:not(.vd) .kk-right .kk-small{display:none}
+ .kk3:not(.vd) .kk-right .kk-ctl{grid-template-columns:1fr}
+ .kk3:not(.vd) .kk-right .kk-ctl .kk-go{min-height:110px}
+}
+.kl-bet{position:relative;display:grid;gap:2px;padding:10px 12px;background:var(--panel);border:1px solid var(--line2)}
+.kl-bet b{font-family:var(--f-display);font-weight:900;font-size:32px;line-height:1.05;color:var(--acc2)}
+.kl-bet small{font-family:var(--f-mono);font-size:11px;color:var(--faint)}
+.kl-step{position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex;gap:6px}
+.kl-step button{width:34px;height:34px;border:1px solid var(--line2);background:var(--bg2);font-size:18px;font-weight:700}
+.kl-step button:hover:not(:disabled){border-color:var(--acc);color:var(--acc2)}
+.kl-chips{display:grid;gap:6px;align-content:start;overflow-y:auto;min-height:0;flex:1}
+.kl-chips .label{margin-top:2px}
+.kl-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.kl-grid button{padding:7px 2px;font-family:var(--f-mono);font-size:12.5px;background:var(--bg2);border:1px solid var(--line2);color:var(--fg);transition:border-color .15s,background .15s}
+.kl-grid button:hover:not(:disabled){border-color:var(--acc)}
+.kl-grid button.on{border-color:var(--acc);background:rgba(255,122,26,.18);color:var(--acc2);font-weight:700}
+.kl-grid button.no{opacity:.35}
+.kl-opts{display:grid;gap:8px}
+.kl-opts .kk-buyt{width:100%;justify-content:center;min-height:44px}
+.kl-opts .btn{width:100%}
+.kk-sess{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line2)}
+.kk-sess>.label{grid-column:1/-1;background:var(--panel);padding:8px 12px 4px}
+.kk-sess>div{background:var(--panel);padding:6px 12px 8px;display:grid;min-width:0}
+.kk-sess>div span{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.kk-sess>div b{font-family:var(--f-mono);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kk-sess b.up{color:var(--green)}.kk-sess b.dn{color:var(--red)}.kk-sess b.g{color:var(--acc2)}
+@container (min-width:1100px){
+ /* de kolommen bepalen de hoogte niet: ze vullen precies de hoogte van het bord en scrollen zo nodig zelf */
+ .kk3:not(.vd) .kk-left,.kk3:not(.vd) .kk-right{contain:size;overflow-y:auto;overflow-x:hidden}
+ .kk3:not(.vd) .kk-board{align-self:start}
+}
+.kk-sess{grid-template-columns:repeat(3,minmax(0,1fr))}
+@container (min-width:1100px){.kk3:not(.vd) #kkSess{display:none}.kk3:not(.vd) .kk-right .kk-ctl .kk-go{min-height:70px}}
+@container (min-width:1360px){.kk3:not(.vd) #kkSess{display:block}.kk3:not(.vd) .kk-right .kk-ctl .kk-go{min-height:96px}.kl-grid button{padding:6px 2px}}
+@container (min-width:1100px) and (max-width:1359px){
+ .kk3:not(.vd) .kk-right .kk-seed-i:nth-child(2){display:none}
+ .kk3:not(.vd) .kk-right .kk-ctl .kk-go{height:auto;min-height:62px;font-size:22px}
+ .kk3:not(.vd) .kk-right .kk-hud>div{padding:7px 12px}
+}
+/* Familiegesprek */
+#famInt{position:fixed;inset:0;z-index:940;display:grid;place-items:center;padding:16px;background:rgba(4,5,7,.86);backdrop-filter:blur(5px)}
+.fi-card{width:min(620px,100%);max-height:calc(100svh - 32px);overflow-y:auto;display:grid;gap:14px;padding:22px;background:var(--panel);border:1px solid var(--line2);border-top:3px solid var(--fc,var(--acc));box-shadow:0 30px 80px -20px #000;animation:fsin .25s ease-out}
+.fi-top{display:flex;align-items:center;gap:12px}.fi-top>div:nth-child(2){flex:1;display:grid}.fi-top b{font-size:15px}
+.fi-crest{flex:none;display:grid;place-items:center;width:46px;height:46px;border:2px solid var(--fc,var(--acc));color:var(--fc,var(--acc));font-family:var(--f-display);font-weight:900;font-size:20px}
+.fi-dots{display:flex;gap:6px}.fi-dots i{width:12px;height:12px;border-radius:50%;background:var(--line2)}.fi-dots i.now{background:var(--fc,var(--acc))}.fi-dots i.ok{background:var(--green)}.fi-dots i.no{background:var(--red)}
+.fi-card h2{margin:0;font-family:var(--f-display);font-weight:800;font-size:26px;line-height:1.15}
+.fi-opts{display:grid;gap:8px}
+.fi-opts button{text-align:left;padding:12px 14px;background:var(--bg2);border:1px solid var(--line2);font-size:14.5px;line-height:1.35;transition:border-color .15s,background .15s}
+.fi-opts button:hover:not(:disabled){border-color:var(--fc,var(--acc))}
+.fi-opts button.right{border-color:var(--green);background:rgba(63,227,149,.12);color:#c9f7da}
+.fi-opts button.wrong{border-color:var(--red);background:rgba(255,61,82,.12);color:#ffd0d6}
+.fi-opts button.dim{opacity:.4}.fi-opts button.gone{opacity:.15;text-decoration:line-through}
+.fi-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.fi-foot span{font-size:13px;color:var(--mute)}.fi-foot .btn{width:auto}
+.fi-card.ok,.fi-card.bad{text-align:center;justify-items:center}.fi-card.ok h2{color:var(--green)}.fi-card.bad h2{color:var(--red)}.fi-card p{margin:0;color:var(--mute);max-width:460px}
+.fi-card.ok .btn,.fi-card.bad .btn{width:auto;min-width:200px}
+/* tag voor echte spelers (naast VIP / High roller) */
+.spt{display:inline-block;margin-left:6px;vertical-align:middle;font-style:normal;font-family:var(--f-head);font-weight:800;font-size:9.5px;letter-spacing:.12em;line-height:1;padding:3px 5px 2px;color:var(--green);box-shadow:inset 0 0 0 1px rgba(63,227,149,.6);background:rgba(63,227,149,.08)}

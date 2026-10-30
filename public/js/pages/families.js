@@ -60,8 +60,8 @@ V.fam=()=>{const ri=rankIdx(S.xp),f=famBase();famDaily();
    <div class="fm-tags"><span>+${x.chance}% kans</span>${x.loot?`<span>+${x.loot}% buit</span>`:''}${x.jail?`<span>−${x.jail}% straf</span>`:''}<span>Grote klus: ${FAM_HEISTS[T].n.toLowerCase()}</span></div>
    <div class="fm-req"><span class="${okR?'ok':'no'}">${okR?'✓':'✗'} ${RANKS[x.r][0]}</span><span class="${S.cred>=x.cred?'ok':'no'}">${S.cred>=x.cred?'✓':'✗'} ${S.cred}/${x.cred} cred</span>${x.hits?`<span class="${famHits()>=x.hits?'ok':'no'}">${famHits()>=x.hits?'✓':'✗'} ${famHits()}/${x.hits} huurmoorden</span>`:''}</div>
    ${isMine?`<div class="fm-mine">Jouw familie</div>`
-    :cf?`<div class="fm-cf"><span>${S.family?`Je verlaat ${f.n} en verliest al je eer daar. Bij ${x.n} begin je onderaan als Aspirant.`:`Je begint onderaan als Aspirant.`}</span><button class="btn sm" onclick="act.join('${x.id}')">Ja, ${S.family?'overstappen':'aansluiten'}</button><button class="btn sm ghost" onclick="famUI.confirm=null;render()">Toch niet</button></div>`
-    :`<button class="btn ${okR&&okC?'':'ghost'}" onclick="famUI.confirm='${x.id}';render()" ${okR&&okC&&!inJail()?'':'disabled'}>${okR&&okC?(S.family?'Overstappen':'Aansluiten'):'Nog niet toegelaten'}</button>`}</article>`};
+    :cf?`<div class="fm-cf"><span>${S.family?`Je verlaat ${f.n} en verliest al je eer daar. Bij ${x.n} begin je onderaan als Aspirant.`:`Je begint onderaan als Aspirant.`} Eerst volgt een gesprek: ze stellen 3 vragen over de familie (lees deze kaart dus goed). Charisma helpt.</span><button class="btn sm" onclick="famInterview('${x.id}')">Naar het gesprek</button><button class="btn sm ghost" onclick="famUI.confirm=null;render()">Toch niet</button></div>`
+    :(()=>{const wait=cdLeft('famint_'+x.id);return `<button class="btn ${okR&&okC&&!wait?'':'ghost'}" onclick="famUI.confirm='${x.id}';render()" ${okR&&okC&&!inJail()&&!wait?'':'disabled'}>${!(okR&&okC)?'Nog niet toegelaten':wait?'Nieuw gesprek over '+fmtClock(wait):(S.family?'Overstappen':'Aansluiten')}</button>`})()}</article>`};
  if(!f)return `<h1>Families</h1>
   <section class="card hud fm-intro"><div><span class="label">Je hoort nog nergens bij</span><h2>Kies een familie</h2>
    <p>Met de juiste rang en genoeg straatcredit word je toegelaten. De vier zwaarste families nemen alleen Huurmoordenaars en hoger aan die al een aantal huurmoorden op hun naam hebben. Iedereen begint onderaan als Aspirant. Met klussen, auto's voor de familie en de dagelijkse missies klim je op tot Erelid. Als Aspirant krijg je de helft van de familiebonus en het eigen voordeel, elk level +10%, als Erelid alles (de getallen hieronder).</p></div>
@@ -115,3 +115,46 @@ Object.assign(act,{
   else{S.cd.fam_heist=now()+20*60000*waitK();S.hp=Math.max(10,S.hp-rnd(10,25));addHeat(20);addXp(5);log(H.n+' mislukt','bad');save();
    arrest(H.jail,'Overval mislukt!','De politie stond al te wachten bij '+H.n.toLowerCase().replace(/^\w+ /,'')+'.',{flee:4})}}
 });
+
+// ---------- Sollicitatiegesprek ----------
+// Een familie neemt alleen mensen aan die weten bij wie ze aankloppen: 3 vragen over de familie (alles staat op de familiekaart).
+// Charisma (training) helpt: elke 15 levels een hint (er valt een fout antwoord weg), vanaf level 25 mag je één keer fout zitten.
+// Afgewezen = 15 minuten wachten (korter als VIP/High roller). Het gesprek telt meteen, dus verversen helpt niet.
+const FAM_INT_CD=15;
+const famIntHints=()=>Math.floor(sk('charisma')/15);
+const famIntMiss=()=>sk('charisma')>=25?1:0;
+function famQuestions(x){const T=FAMILIES.indexOf(x),others=FAMILIES.filter(f=>f.id!==x.id);
+ const shuf=a=>a.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]);const cap=t=>t.charAt(0).toUpperCase()+t.slice(1);
+ const Q=[];const mk=(q,right,wrong)=>{const w=shuf([...new Set(wrong)].filter(v=>v!==right)).slice(0,3);if(w.length>=2)Q.push({q,right,opts:shuf([right,...w])})};
+ mk(`Wat is het eigen voordeel van ${x.n}?`,cap(x.perk.d),others.map(f=>cap(f.perk.d)));
+ mk(`Welke grote klus doet ${x.n}?`,FAM_HEISTS[T].n,FAM_HEISTS.filter((h,i)=>i!==T).map(h=>h.n));
+ mk(`Vanaf welke rang neemt ${x.n} mensen aan?`,RANKS[x.r][0],RANKS.slice(1).map(r=>r[0]));
+ mk(`Wie zijn ${x.n}?`,x.d,others.map(f=>f.d));
+ mk(`Hoeveel straatcredit vraagt ${x.n} minimaal?`,x.cred.toLocaleString('nl-NL'),others.map(f=>f.cred.toLocaleString('nl-NL')));
+ if(x.loot)mk(`Hoeveel extra buit geeft ${x.n} je als Erelid?`,'+'+x.loot+'%',others.filter(f=>f.loot).map(f=>'+'+f.loot+'%'));
+ return shuf(Q).slice(0,3)}
+let FI=null;
+function famInterview(id){const x=FAMILIES.find(f=>f.id===id);if(!x||inJail()||cdLeft('famint_'+id))return;
+ S.cd['famint_'+id]=now()+FAM_INT_CD*60000*waitK();save();famUI.confirm=null;
+ FI={x,qs:famQuestions(x),i:0,miss:0,hints:famIntHints(),gone:{},ans:null};famIntDraw()}
+function famIntDraw(){let el=document.getElementById('famInt');if(!FI){if(el)el.remove();return}
+ if(!el){el=document.createElement('div');el.id='famInt';document.body.appendChild(el)}
+ const x=FI.x,Q=FI.qs[FI.i],done=FI.i>=FI.qs.length,allowed=famIntMiss();
+ if(done){const ok=FI.miss<=allowed;
+  el.innerHTML=`<div class="fi-card ${ok?'ok':'bad'}" style="--fc:${x.col}"><div class="fi-crest">${x.m}</div><span class="label">${esc(x.n)}</span>
+   <h2>${ok?'Welkom in de familie':'Afgewezen'}</h2><p>${ok?`Je wist precies bij wie je aanklopte${FI.miss?' (op één foutje na, maar je praatte het recht)':''}. Je begint als Aspirant.`:`Je had ${FI.miss} van de ${FI.qs.length} vragen fout. Ze vertrouwen je nog niet. Lees de familiekaart nog eens goed en probeer het over ${Math.round(FAM_INT_CD*waitK())} minuten opnieuw.`}</p>
+   <button class="btn ${ok?'':'red'}" onclick="famIntEnd(${ok})">${ok?'Aansluiten':'Sluiten'}</button></div>`;return}
+ const ansd=FI.ans!=null;
+ el.innerHTML=`<div class="fi-card" style="--fc:${x.col}"><div class="fi-top"><div class="fi-crest">${x.m}</div><div><span class="label">Gesprek bij ${esc(x.n)}</span><b>Vraag ${FI.i+1} van ${FI.qs.length}</b></div>
+   <div class="fi-dots">${FI.qs.map((q,i)=>`<i class="${i<FI.i?(q.ok?'ok':'no'):i===FI.i?'now':''}"></i>`).join('')}</div></div>
+  <h2>${esc(Q.q)}</h2>
+  <div class="fi-opts">${Q.opts.map((o,k)=>{const gone=FI.gone[k],right=o===Q.right,cls=ansd?(right?'right':FI.ans===k?'wrong':'dim'):gone?'gone':'';
+   return `<button class="${cls}" onclick="famIntAns(${k})" ${ansd||gone?'disabled':''}>${esc(o)}</button>`}).join('')}</div>
+  <div class="fi-foot"><span>Charisma ${sk('charisma')}: ${FI.hints} hint${FI.hints===1?'':'s'} over${allowed?' · 1 fout toegestaan':''}${FI.miss?` · ${FI.miss} fout`:''}</span>
+   ${ansd?`<button class="btn" onclick="FI.i++;FI.ans=null;FI.gone={};famIntDraw()">${FI.i+1<FI.qs.length?'Volgende vraag':'Uitslag'}</button>`
+   :`<button class="btn ghost sm" onclick="famIntHint()" ${FI.hints<1||Object.keys(FI.gone).length>=2?'disabled':''}>Hint gebruiken</button>`}</div></div>`}
+function famIntHint(){if(!FI||FI.hints<1||FI.ans!=null)return;const Q=FI.qs[FI.i];const c=Q.opts.map((o,k)=>k).filter(k=>Q.opts[k]!==Q.right&&!FI.gone[k]);if(c.length<=1)return;
+ FI.gone[c[Math.floor(Math.random()*c.length)]]=1;FI.hints--;SFX.click&&SFX.click();famIntDraw()}
+function famIntAns(k){if(!FI||FI.ans!=null)return;const Q=FI.qs[FI.i];FI.ans=k;Q.ok=Q.opts[k]===Q.right;if(!Q.ok)FI.miss++;famIntDraw()}
+function famIntEnd(ok){const x=FI&&FI.x;FI=null;famIntDraw();if(!x)return;
+ if(ok){delete S.cd['famint_'+x.id];act.join(x.id)}else{log('Afgewezen door '+x.n,'bad');toast('Afgewezen door '+x.n+'. Probeer het later opnieuw.','bad');save();render()}}

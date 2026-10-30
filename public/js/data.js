@@ -230,8 +230,8 @@ const TRAININGS=[
   d:'Rondjes op het circuit. Je hebt meer tijd bij het contact maken en weet beter wat een wagen waard is.',
   eff:l=>[['Meer tijd bij contact maken',pctTxt(SK.cars.time*100*l,'+')],['Verkoopwaarde gestolen auto',pctTxt(SK.cars.price*100*l,'+')]]},
  {id:'charisma',place:'Toneelschool',n:'Charisma',col:'#ff7fb3',ic:'mask',base:150,cd:20,
-  d:'Acteerles in de Jordaan. Agenten geloven je verhaal sneller.',
-  eff:l=>[['Kans om je eruit te praten',pctTxt(Math.min(45,SK.charisma.talk*l),'')],['Korting op borg',pctTxt(SK.charisma.bail*100*l,'')]]},
+  d:'Acteerles in de Jordaan. Agenten geloven je verhaal sneller, en bij een familiegesprek praat je je overal doorheen.',
+  eff:l=>[['Kans om je eruit te praten',pctTxt(Math.min(45,SK.charisma.talk*l),'')],['Korting op borg',pctTxt(SK.charisma.bail*100*l,'')],['Familiegesprek',Math.floor(l/15)+' hint'+(Math.floor(l/15)===1?'':'s')+(l>=25?', 1 fout mag':'')]]},
  // nieuwe plekken: pas open vanaf een bepaalde rang (r), duurder en met een langer tijdslot
  {id:'schiet',place:'Schietvereniging Ede',n:'Schieten',col:'#ff6b6b',ic:'target',base:180,cd:25,r:3,
   d:'Op de baan tussen jagers en agenten in hun vrije tijd. Zware klussen lukken vaker.',
