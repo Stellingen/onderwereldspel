@@ -237,7 +237,7 @@ async function vdResumeRun(){const run=S.slotRun;if(!run||run.g!=='vis'||vd.busy
 function vdSkipRun(){const run=S.slotRun;if(!run||run.g!=='vis'||vd.busy)return;delete S.slotRun;save();vd.lastWin=run.pay;render();toast('Bonus overgeslagen. Hij was al uitbetaald: '+fmt(run.pay))}
 const vdRunHtml=()=>{const run=S.slotRun;if(!run||run.g!=='vis'||vd.busy)return '';
  return `<div class="kk-banner pause"><div><b>Je bonus loopt nog</b><span>${run.buy?'Gekochte bonus':'Bonus'} bij ${fmt(run.bet)} inzet · free spin ${(run.at||0)+1} · uitbetaald: ${fmt(run.pay)}. Het geld staat al op je saldo.</span>
-  <button class="btn kk-go" style="margin-top:18px" onclick="vdResumeRun()">Bonus verder afspelen</button><button class="btn ghost sm" style="margin-top:8px" onclick="vdSkipRun()">Overslaan</button></div></div>`};
+  <div class="kk-run-b"><button class="btn kk-go" onclick="vdResumeRun()">Bonus verder afspelen</button><button class="btn ghost sm" onclick="vdSkipRun()">Overslaan</button></div></div></div>`};
 Object.assign(act,{
  vdNewSeed(){if(vd.busy)return;const o=vdSeed();S.vdSeed=kkNewSd({id:kkSeedId(o),spins:o.spins,bon:o.bon,sup:0});SFX.chip();save();vdRefresh();toast('Nieuwe seed: '+kkSeedId(S.vdSeed))},
  async vdSpin(isBuy){if(vd.busy||inJail())return;const bet=vdBet(),cost=isBuy?bet*VISD.BUY_COST:bet;if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}

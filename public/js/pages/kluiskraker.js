@@ -265,7 +265,7 @@ async function kkResumeRun(){const run=S.slotRun;if(!run||run.g!=='kluis'||kk.bu
 function kkSkipRun(){const run=S.slotRun;if(!run||run.g!=='kluis'||kk.busy)return;delete S.slotRun;save();kk.lastWin=run.pay;kk.msg='Bonus: '+fmt(run.pay);render();toast('Bonus overgeslagen. Hij was al uitbetaald: '+fmt(run.pay))}
 const kkRunHtml=()=>{const run=S.slotRun;if(!run||run.g!=='kluis'||kk.busy)return '';
  return `<div class="kk-banner pause"><div><b>Je bonus loopt nog</b><span>${run.buy?'Gekochte bonus':'Bonus'} bij ${fmt(run.bet)} inzet · free spin ${(run.at||0)+1} · uitbetaald: ${fmt(run.pay)}. Het geld staat al op je saldo.</span>
-  <button class="btn kk-go" style="margin-top:18px" onclick="kkResumeRun()">Bonus verder afspelen</button><button class="btn ghost sm" style="margin-top:8px" onclick="kkSkipRun()">Overslaan</button></div></div>`};
+  <div class="kk-run-b"><button class="btn kk-go" onclick="kkResumeRun()">Bonus verder afspelen</button><button class="btn ghost sm" onclick="kkSkipRun()">Overslaan</button></div></div></div>`};
 Object.assign(act,{
  kkNewSeed(){if(kk.busy)return;const o=kkSeed();S.kkSeed=kkNewSd({id:kkSeedId(o),spins:o.spins,bon:o.bon,sup:o.sup});SFX.chip();save();kkRefreshUI();toast('Nieuwe seed: '+kkSeedId(S.kkSeed))},
  async kkSpin(isBuy){

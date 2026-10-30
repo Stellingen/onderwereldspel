@@ -1992,3 +1992,6 @@ body.hg-open{overflow:hidden}
 .kk-cell.barwin::after{content:"";position:absolute;inset:5%;box-shadow:0 0 0 2px #f2c230 inset,0 0 20px rgba(242,194,48,.75);pointer-events:none}
 .kk-cell .wl.wb{background:#f2c230;color:#1a1206}
 .kk-cell.gbar .wl{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);font-family:var(--f-head);font-weight:800;font-size:clamp(8px,.7vw,11px);letter-spacing:.08em;text-transform:uppercase;padding:0 5px;line-height:1.5;z-index:2}
+/* Kluiskraker: bord breder (vakjes iets breder dan hoog) en de volle hoogte van het scherm benutten */
+@container (min-width:1100px){.kk3:not(.vd) .kk-board{--bh:clamp(340px,calc(100svh - 335px),940px);aspect-ratio:1.5;width:min(100%,calc(var(--bh) * 1.5))}}
+.kk-run-b{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:18px}.kk-run-b .btn{width:auto;min-width:240px}.kk-run-b .btn.ghost{min-width:0}
