@@ -12,102 +12,42 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Onderwereld">
-<title>Onderwereld</title>
+<title>Onderwereld · Van rookie tot peetvader</title>
 <meta name="description" content="Begin als Rookie en werk je op tot Peetvader. 60 misdaden, 12 families, een eigen casino en een echte ranglijst.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Big+Shoulders+Text:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="css/landing.css">
+<link rel="stylesheet" href="/css/landing.css">
 </head>
 <body class="lp">
 <script src="/js/notap.js"></script>
+<a class="skip" href="#app">Naar de inhoud</a>
 
-<header class="top" id="top">
-  <a class="logo" href="/"><span class="mark">O</span><span class="word">Onderwereld</span></a>
-  <nav class="toplinks"><a href="#spel">Het spel</a><a href="#kluis">Kluiskraker</a><a href="#families">Families</a><a href="#rangen">Rangen</a></nav>
-  <div class="topauth" id="topAuth">
-    <button class="tlink" data-auth="login">Inloggen</button>
-    <button class="btn sm" data-auth="register">Account aanmaken</button>
-  </div>
+<header class="mast" id="top">
+  <a class="logo" href="/" data-link aria-label="Onderwereld, voorpagina"><span class="mark">O</span><span class="word">Onderwereld</span></a>
+  <nav class="toplinks" aria-label="Hoofdmenu">
+    <a href="/misdaden" data-link data-nav="misdaden">Misdaden</a>
+    <a href="/casino" data-link data-nav="casino">Casino</a>
+    <a href="/families" data-link data-nav="families">Families</a>
+    <a href="/rangen" data-link data-nav="rangen">Rangen</a>
+    <a href="/training" data-link data-nav="training">Training</a>
+  </nav>
+  <div class="topauth" id="topAuth"></div>
+  <button class="burger" id="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mnav"><i></i><i></i></button>
 </header>
+<div class="mnav" id="mnav" hidden>
+  <nav class="mnav-links" id="mnavLinks" aria-label="Menu"></nav>
+  <div class="mnav-auth" id="mnavAuth"></div>
+</div>
 
-<section class="hero" id="hero">
-  <canvas id="map" aria-hidden="true"></canvas>
-  <div class="hero-grid">
-    <div class="hero-copy">
-      <div class="kick" id="kick"><span class="dot"></span>Meldkamer · live</div>
-      <h1 class="mega" id="mega"><span>Van rookie</span><span>tot <em>peetvader</em>.</span></h1>
-      <p class="lede" id="lede">Je begint met €250 en een open rugzak op de Dam. Hoe ver je komt, hangt af van je lef, je familie en hoe vaak je de politie te slim af bent.</p>
-      <div class="hero-cta" id="heroCta">
-        <button class="btn xl" data-auth="register">Begin je carrière</button>
-        <button class="btn ghost xl" data-auth="login">Inloggen</button>
-      </div>
-    </div>
-    <aside class="feed" aria-label="Meldingen uit de stad">
-      <div class="feed-head"><span>Meldingen</span><span id="clock">00:00</span></div>
-      <ol id="feed"></ol>
-    </aside>
+<main class="app" id="app" tabindex="-1"><noscript><p style="padding:120px 24px">Onderwereld heeft JavaScript nodig.</p></noscript></main>
+
+<footer class="foot">
+  <div class="foot-in">
+    <a class="logo" href="/" data-link><span class="mark">O</span><span class="word">Onderwereld</span></a>
+    <nav class="foot-links" aria-label="Onderdelen"><a href="/misdaden" data-link>Misdaden</a><a href="/casino" data-link>Casino</a><a href="/families" data-link>Families</a><a href="/rangen" data-link>Rangen</a><a href="/training" data-link>Training</a><a href="/game.html">Spelen</a></nav>
   </div>
-  <div class="stats">
-    <div><b data-count="12">12</b><span>rangen</span></div>
-    <div><b data-count="60">60</b><span>misdaden</span></div>
-    <div><b data-count="12">12</b><span>families</span></div>
-    <div><b data-count="8">8</b><span>casinospellen</span></div>
-    <div><b data-count="6">6</b><span>huurmoord-contracten</span></div>
-  </div>
-</section>
-
-<section class="blk" id="spel">
-  <div class="blk-head"><span class="idx">01</span><h2>Wat je doet</h2><p>Tik op een onderdeel voor de details.</p></div>
-  <div class="index" id="index">
-    <button class="ix" aria-expanded="false"><span class="ix-n">Misdaden</span><span class="ix-c">60 klussen</span><span class="ix-d">Van bedelen bij Centraal tot de kluis van de Centrale Bank. Elke klus kost energie en heeft een slaagkans. Gaat het mis, dan kun je nog vluchten: op straat lukt dat makkelijker dan in een afgesloten gebouw.</span></button>
-    <button class="ix" aria-expanded="false"><span class="ix-n">Casino</span><span class="ix-c">8 spellen</span><span class="ix-d">Kluiskraker en Visdief, Mines, Hoogvlieger, blackjack, Three Card Poker, roulette met een Europees wiel en dubbel of niks. Doorgerekende kansen, uitkomst ligt vast bij het klikken.</span></button>
-    <button class="ix" aria-expanded="false"><span class="ix-n">Auto's</span><span class="ix-c">38 modellen</span><span class="ix-d">Zoek de straat af en kraak het slot, of jat er een bij het stoplicht. Lever bestellingen af bij de heler of verkoop ze zelf.</span></button>
-    <button class="ix" aria-expanded="false"><span class="ix-n">Families</span><span class="ix-c">12 clans</span><span class="ix-d">Verdien straatcredit en word toegelaten tot een familie. Elke familie geeft je een bonus op kans, buit of straf.</span></button>
-    <button class="ix" aria-expanded="false"><span class="ix-n">Training</span><span class="ix-c">9 vaardigheden</span><span class="ix-d">Sportschool, circuit, toneelschool en meer. Elke plek heeft een tijdslot, dus je groeit gestaag. Ontspannen in een privéclub of sauna geeft je tijdelijk extra focus of energie.</span></button>
-    <button class="ix" aria-expanded="false"><span class="ix-n">Bezit</span><span class="ix-c">14 zaken</span><span class="ix-d">Een wasserette, een nachtclub, een havenloods. Ze verdienen door terwijl jij slaapt, tot 12 uur lang.</span></button>
-    <button class="ix" aria-expanded="false"><span class="ix-n">Bajes</span><span class="ix-c">30 s – 10 min</span><span class="ix-d">Gepakt? Praat je eruit, betaal borg of ontsnap. Wie ontsnapt, staat op de gezochtlijst en kan overal worden opgepakt.</span></button>
-    <button class="ix" aria-expanded="false"><span class="ix-n">Ranglijst</span><span class="ix-c">live</span><span class="ix-d">Je voortgang staat op je account. Meet je met andere spelers en met de rivalen van de stad.</span></button>
-  </div>
-</section>
-
-<section class="blk kluis" id="kluis">
-  <div class="kluis-copy">
-    <div class="blk-head"><span class="idx">02</span><h2>Kluiskraker</h2></div>
-    <p class="big-p">Een eigen cluster-slot. Vijf gelijke symbolen die elkaar raken is een winst. Ze ontploffen, er vallen nieuwe in, en het vakje blijft gemarkeerd. Valt daar weer een winst, dan wordt het x2, daarna x4, x8, tot x128.</p>
-    <dl class="spec">
-      <div><dt>Raster</dt><dd>7 × 7</dd></div>
-      <div><dt>Veld</dt><dd>10 × 10</dd></div>
-      <div><dt>Vakjes</dt><dd>x2 tot x4096</dd></div>
-      <div><dt>Bonus</dt><dd>10 tot 14 free spins</dd></div>
-      <div><dt>Bonus kopen</dt><dd>100× inzet</dd></div>
-      <div><dt>RTP</dt><dd>±92%</dd></div>
-      <div><dt>Max. winst</dt><dd>5.000×</dd></div>
-    </dl>
-  </div>
-  <div class="minislot" id="minislot" aria-hidden="true"></div>
-</section>
-
-<section class="blk" id="families">
-  <div class="blk-head"><span class="idx">03</span><h2>Acht families</h2><p>Kies je kant. Je kunt maar bij één tegelijk horen.</p></div>
-  <div class="crests" id="crests"></div>
-</section>
-
-<section class="blk" id="rangen">
-  <div class="blk-head"><span class="idx">04</span><h2>De meetlat</h2><p>Twaalf rangen. Iedereen begint onderaan.</p></div>
-  <div class="wall">
-    <div class="wall-lines" id="wall"></div>
-    <div class="wall-info" id="wallInfo"></div>
-  </div>
-</section>
-
-<section class="blk final">
-  <h2 class="mega small" id="finTitle"><span>De stad</span><span><em>wacht niet.</em></span></h2>
-  <p class="lede" id="finLead">Terwijl jij twijfelt, klimt een rivaal een rang hoger.</p>
-  <div class="hero-cta" id="finCta"><button class="btn xl" data-auth="register">Maak je account aan</button></div>
-</section>
-
-<footer class="foot"><span>Onderwereld</span><span>Een fictief spel. Alle namen, families en buit zijn verzonnen.</span></footer>
+  <p>Een fictief spel. Alle namen, families en buit zijn verzonnen.</p>
+</footer>
 
 <div class="auth" id="auth" hidden>
   <div class="auth-board" aria-hidden="true">
@@ -123,11 +63,11 @@
     </div>
   </div>
   <div class="auth-side">
-    <button class="auth-x" id="authClose" aria-label="Sluiten">Sluiten ✕</button>
+    <button class="auth-x" id="authClose" type="button" aria-label="Sluiten">Sluiten ✕</button>
     <div class="auth-inner">
       <div class="seg" role="tablist">
-        <button role="tab" id="tabLogin" data-mode="login">Inloggen</button>
-        <button role="tab" id="tabReg" data-mode="register">Account aanmaken</button>
+        <button role="tab" id="tabLogin" type="button" data-mode="login">Inloggen</button>
+        <button role="tab" id="tabReg" type="button" data-mode="register">Account aanmaken</button>
       </div>
       <h2 class="auth-title" id="authTitle">Welkom terug</h2>
       <p class="auth-hint" id="authHint">Log in en ga verder waar je gebleven was.</p>
@@ -155,8 +95,9 @@
   </div>
 </div>
 
-<script src="js/data.js"></script>
-<script src="js/icons.js"></script>
-<script src="js/landing.js"></script>
+<script src="/js/data.js"></script>
+<script src="/js/lore.js"></script>
+<script src="/js/icons.js"></script>
+<script src="/js/landing.js"></script>
 </body>
 </html>

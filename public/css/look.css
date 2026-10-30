@@ -1,0 +1,75 @@
+/* Outfit: etalagepop links, kast rechts */
+.fit{display:grid;grid-template-columns:minmax(250px,320px) minmax(0,1fr);gap:14px;align-items:start}
+.fit-left{position:sticky;top:16px;padding:0;display:flex;flex-direction:column;max-height:calc(100vh - 32px);overflow-y:auto;scrollbar-width:thin}
+.fit-stage{flex:none;height:clamp(260px,42vh,420px);display:flex;align-items:center;justify-content:center;padding:14px 0 6px;border-bottom:1px solid var(--line);
+  background:radial-gradient(60% 55% at 50% 38%,rgba(184,161,255,.10),transparent 70%),linear-gradient(180deg,transparent 78%,rgba(255,255,255,.025) 78%,transparent 100%),var(--bg2);transition:background .2s}
+.fit-stage .doll{height:100%;width:auto;max-width:100%;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
+.fit-stage.try{background:radial-gradient(60% 55% at 50% 38%,rgba(255,173,107,.13),transparent 70%),linear-gradient(180deg,transparent 78%,rgba(255,255,255,.025) 78%,transparent 100%),var(--bg2)}
+.fit-stage.try::after{content:"Passen";position:absolute;top:10px;left:12px;font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc2)}
+.fit-stage{position:relative}
+.fit-spark{transform-origin:110px 122px;animation:fitSpark 2.4s ease-in-out infinite}
+@keyframes fitSpark{0%,70%,100%{opacity:0;transform:scale(.4)}80%{opacity:1;transform:scale(1)}}
+.fit-worn{display:grid;grid-template-columns:1fr;border-bottom:1px solid var(--line)}
+.fit-worn button{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:8px 16px;text-align:left;border-top:1px solid var(--line);transition:background .15s}
+.fit-worn button:first-child{border-top:0}
+.fit-worn button:hover{background:var(--panel2)}
+.fit-worn button.on{background:var(--panel2);box-shadow:inset 3px 0 0 var(--sec)}
+.fit-worn b{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.fit-sum{padding:12px 16px;border-bottom:1px solid var(--line)}
+.fit-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.fit-chips span{font-family:var(--f-mono);font-size:10.5px;padding:3px 7px;border:1px solid var(--line2);background:var(--bg2);white-space:nowrap}
+.fit-chips span.g{color:var(--green);border-color:rgba(63,227,149,.3)}
+.fit-chips span.b{color:var(--red);border-color:rgba(255,61,82,.3)}
+.fit-chips em{font-style:normal;font-size:12.5px;color:var(--faint)}
+.fit-sets{padding:10px 16px 14px;display:flex;flex-direction:column;gap:9px}
+.fit-set>div{display:flex;justify-content:space-between;align-items:baseline}
+.fit-set b{font-family:var(--f-head);font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:13.5px;color:var(--mute)}
+.fit-set>div span{font-family:var(--f-mono);font-size:10.5px;color:var(--faint)}
+.fit-set.on b{color:var(--sc)}.fit-set.on>div span{color:var(--sc)}
+.fit-pips{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin:5px 0 4px}
+.fit-pips i{height:4px;background:var(--line2)}
+.fit-pips i.f{background:var(--sc)}
+.fit-pips i.m{box-shadow:0 -3px 0 -1px var(--faint)}
+.fit-set small{display:block;font-family:var(--f-mono);font-size:10px;color:var(--faint);line-height:1.4}
+.fit-set.on small{color:var(--mute)}
+.fit-tabs{margin-bottom:8px}
+.fit-tabs button{position:relative}
+.fit-tabs button i{position:absolute;top:8px;right:6px;width:5px;height:5px;background:var(--sec);border-radius:50%}
+.fit-hint{margin:0 0 12px;font-size:12.5px;color:var(--faint)}.fit-hint b{color:var(--fg);font-weight:600}
+.fit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.fit-item{--c:var(--sc);display:grid;grid-template-columns:96px minmax(0,1fr);grid-template-rows:1fr auto;background:var(--panel);border:1px solid var(--line);transition:border-color .15s,transform .15s;min-width:0}
+.fit-item:hover{border-color:color-mix(in srgb,var(--sc) 55%,transparent)}
+.fit-item.on{border-color:var(--sc);box-shadow:inset 0 2px 0 var(--sc)}
+.fit-item.lock{opacity:.55}
+.fit-th{grid-row:1/3;display:grid;place-items:center;background:radial-gradient(70% 70% at 50% 40%,color-mix(in srgb,var(--sc) 12%,transparent),transparent 75%),var(--bg2);border-right:1px solid var(--line);padding:6px}
+.fit-th .doll{width:84px;height:84px}
+.fit-b{padding:12px 14px 4px;min-width:0}
+.fit-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.fit-t h4{margin:0;font-family:var(--f-head);font-weight:800;font-size:16.5px;text-transform:uppercase;letter-spacing:.02em;line-height:1.1}
+.fit-st{flex:none;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--sc)}
+.fit-b p{margin:5px 0 0;font-size:12.5px;color:var(--mute);line-height:1.4}
+.fit-btn{padding:6px 14px 12px;display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
+.fit-btn .btn{width:auto;min-width:150px;padding:8px 14px;font-size:12.5px}
+.fit-btn .fit-on,.fit-btn .fit-own{margin-right:auto}
+.fit-on,.fit-own{flex:none;font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--sc)}
+.fit-own{color:var(--mute)}
+@media (min-width:1280px) and (max-width:1499px){.fit{grid-template-columns:minmax(230px,270px) minmax(0,1fr)}.fit-grid{grid-template-columns:1fr}}
+@media (max-width:900px){
+  .fit{grid-template-columns:minmax(0,1fr)}
+  .fit-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .fit-tabs::-webkit-scrollbar{display:none}
+  .fit-tabs button{flex:none;padding:10px 12px}
+  .fit-left{position:static}
+  .fit-stage{height:300px}
+  .fit-left{max-height:none;overflow:visible}
+  .fit-btn .btn{flex:1}
+  .fit-grid{grid-template-columns:1fr}
+  .fit-item{grid-template-columns:84px minmax(0,1fr)}
+  .fit-th .doll{width:72px;height:72px}
+}
+@media (hover:none){.fit-hint .hv{display:none}}
+/* Wapens: nieuwe soort Vervoer (vluchten) */
+.gr-st .f{color:#7fd1c7}.gr-tot .f b{color:#7fd1c7}
+@media (min-width:621px){.gr-tot{grid-template-columns:repeat(7,minmax(0,1fr))}}
+@media (max-width:620px){.gr-tot>div:nth-child(7){border-left:0}}
+@media (min-width:901px) and (max-width:1599px){.gr-hero{grid-template-columns:1fr}}

@@ -7,10 +7,11 @@ function news(){const n=S.npcs[rnd(0,S.npcs.length-1)].n;const T=[
   ()=>n+' zit '+rnd(1,10)+' minuten vast na een mislukte klus',()=>'Politie verhoogt controles in '+['Rotterdam','Amsterdam','Den Haag','Eindhoven'][rnd(0,3)],
   ()=>n+' won '+fmt(rnd(5,90)*1000)+' aan de blackjacktafel',()=>n+' koopt een nachtclub aan de Zeedijk',()=>'Lading van 400 kilo onderschept in de haven'];
   S.news.unshift(T[rnd(0,T.length-1)]());S.news=S.news.slice(0,6);renderTicker()}
-function renderTicker(){if(!S.news.length)news();const t=S.news.map(s=>`<span>◆ ${s}</span>`).join('');$('#ticker').innerHTML=`<b>LIVE</b><div class="tk"><div class="tkin">${t}${t}</div></div>`}
+// (de nieuwsband bovenaan is weg; het nieuws staat nog in S.news)
+function renderTicker(){}
 function tick(){
   const t=now(),dt=(t-S.last)/60000;S.last=t;const mins=Math.min(dt,720);
-  if(mins>0){bizPayTick(mins,t);S._enAcc=(S._enAcc||0)+mins*60/EN_REGEN_S*(1+furnFx('enRegen'));if(S._enAcc>=1){S.energy=Math.min(EN_MAX,S.energy+Math.floor(S._enAcc));S._enAcc%=1}const hd=mins*2*(1+furnFx('heat'));S.heat=Math.max(0,S.heat-Math.floor(hd>=1?hd:Math.random()<hd?1:0));
+  if(mins>0){bizPayTick(mins,t);S._enAcc=(S._enAcc||0)+mins*60/EN_REGEN_S*(1+furnFx('enRegen')+fitFx('en'));if(S._enAcc>=1){S.energy=Math.min(EN_MAX,S.energy+Math.floor(S._enAcc));S._enAcc%=1}const hd=mins*2*(1+furnFx('heat'));S.heat=Math.max(0,S.heat-Math.floor(hd>=1?hd:Math.random()<hd?1:0));
     if(typeof hideTick==='function')hideTick(mins,mins<.2);
     if(Math.random()<mins*6*(1+furnFx('hpRegen')))S.hp=Math.min(100,S.hp+1);
     if(typeof bankTick==='function')bankTick(mins);
@@ -44,7 +45,7 @@ setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderR
   // verblijf: alleen opnieuw tekenen als je ineens wel/niet genoeg geld hebt voor inrichting of een woning (tafereel blijft rustig)
   if(page==='verblijf'&&!userBusy()&&typeof FURN!=='undefined'){const sig=FURN.map(f=>S.cash>=f.p?1:0).join('')+HOMES.map(h=>S.cash>=h.p?1:0).join('');if(window._vbSig!==sig){if(window._vbSig!=null&&!stay.kind)render();window._vbSig=sig}}
   if(Math.random()<0.05)news();
-  if(S.wanted&&!S.hide&&!inJail()&&$('#modal').hidden&&Math.random()<0.004){policeRaid();return}
+  if(S.wanted&&!S.hide&&!inJail()&&$('#modal').hidden&&Math.random()<0.004*(typeof wantedK==='function'?wantedK('tick'):1)){policeRaid();return}
   if(wasJail&&!inJail()){toast('Je bent vrijgelaten');wasJail=false;render()}else if(inJail())wasJail=true;
   const focusIn=document.activeElement&&document.activeElement.tagName==='INPUT';
   // pagina's met aftellers: alleen bijwerken als er iets veranderd is, en niet midden in het scrollen (telefoon)

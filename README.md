@@ -2,7 +2,13 @@
 
 Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op tot Peetvader.
 
-- **Landingspagina** (`/`) met uitleg, een speelbare demo en inloggen of account aanmaken
+- **Website** (`/`, `public/js/landing.js`): elk onderwerp heeft een eigen pagina en adres (History API, de server geeft voor
+  onbekende paden `index.html`): `/misdaden` (alle 60 klussen in een kans-tegen-buit grafiek, filter per rang en sorteren),
+  `/casino` en `/casino/<spel>` (elk spel een eigen illustratie, regels en uitbetalingen; de tabellen van Kluiskraker en Visdief
+  komen live uit `slot.js` en `vis.js`; oefendemo's van Mines, roulette en de munt), `/families` en `/families/<id>` (verhaal uit
+  `lore.js`, plek in de voedselketen, de machtsverhoudingen van nu uit `famwar.js`, doorgroeien tot Onderbaas en Baas), `/rangen`
+  en `/training`. De voorpagina heeft een 3D-stadskaart met een meldkamer en een loopbaanlijn van Rookie tot Peetvader die je
+  kunt slepen. Inloggen en account aanmaken werken zoals voorheen (`?login=1`, `?register=1`).
 - **Spel** (`/game.html`) alleen voor ingelogde spelers; voortgang wordt opgeslagen in MySQL
 - **Ranglijst** met echte spelers en rivalen uit de stad
 - **60 misdaden** over 12 rangen (vijf per rang), met energie (1 punt per 18 s) zodat je niet alles kunt speedrunnen.
@@ -10,8 +16,12 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   **Levels binnen je rang**: elke rang heeft 5 levels (★ tot ★★★★★) op basis van je XP in die rang. Elk level geeft +3% buit
   en +1% op je passieve inkomen. Peetvader heeft eigen levels (100k, 150k, 225k, 340k en 500k XP). Je ziet je level in de
   topbalk, op het dashboard en op je profiel.
-- **Vluchtspel**: gaat een klus mis, dan kun je vluchten (tik op het juiste moment). Op straat is dat makkelijk,
-  in een afgesloten gebouw bijna onmogelijk. Lukt het: vrij en niet gezocht. Mislukt het: cel met 20% extra straf.
+- **Vluchtspel** (`flee.js`): gaat een klus mis, dan ren je weg door een steeg of een gebouw (2.5D): wissel van baan met
+  pijltjes/A-D, vegen of tikken, spring met omhoog of spatie, ontwijk obstakels en agenten. Op straat is dat makkelijk, in een
+  afgesloten gebouw bijna onmogelijk. Conditie, vervoer, outfit, familie en woning maken het makkelijker. Lukt het: vrij en
+  niet gezocht. Mislukt het: cel met 20% extra straf.
+- **Misdaden** (`misdaden.js`): elke klus heeft een eigen icoon en een balk met kans, opbrengst (plus XP en cred) en wat er
+  gebeurt als het misgaat (straf en hoe moeilijk vluchten is). Bovenaan de drie beste klussen voor jou, met opbrengst per energie.
 - **Training** met tijdsloten: elke sessie is één level, tot level 50. Elk level is duurder (conditie: €60 voor level 1,
   ongeveer €690.000 voor level 50). Oude saves worden omgerekend: elke gedane sessie telt als één level.
   9 plekken: Conditie, Vingervlugheid, Snelheid, Rijvaardigheid, Charisma en (vanaf een rang) Schieten (Dief: +0,5% slaagkans
@@ -24,12 +34,15 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   rang-level). Luxe geeft ook een tijdelijke buitbonus (+10% of +15%).
 - **Blackjack** aan een volle tafel (6 kaartspellen, dealer staat op 17, splitsen/verdubbelen, 3:2) met side bets
   Perfect Pairs en 21+3 (€10 tot €500 per rang: Straatschoffie €500, Boef €2.500, Peetvader €6.000), hoofdinzet tot €50.000. **Three Card Poker** met Ante/Play, Pair Plus en 6-Card Bonus (zelfde maximum per rang). Code: `public/js/pages/tafels.js`.
-- **Verblijf**: een getekend tafereel per woning (brug, kraakpand, huurkamer, grachtenpand, penthouse, villa).
+- **Verblijf** (`verblijf.js`, scènes en inrichten in `inrichting.js`): de woningen staan bovenaan als ladder, elk met een
+  isometrische scène (onder de brug, kraakpand, huurkamer, grachtenappartement, penthouse, villa) en een aantal plekken
+  (1, 2, 4, 6, 9, 13). Klik op je woning om in te richten: 19 spullen, neerzetten, opbergen of verkopen (de helft terug);
+  wat niet past na een verhuizing gaat naar de opslag. Bekijk een andere woning voor een vergelijking.
   Rusten vult je energie en geeft +20% gezondheid of meer (beter huis = meer), daarna 5 minuten wachten (beter huis = korter).
   Dokter: +20% gezondheid in 10 seconden, daarna 10 minuten wachten. Ga je eerder weg, dan houd je wat je had en wacht je naar verhouding.
   **Inrichting** vanaf de huurkamer: planten, espressomachine, goed bed, bokszak, aquarium, camera's, kluis, thuisbioscoop, sauna
   en meditatieruimte, elk met een blijvend voordeel (sneller herstel, focus, energie, minder hitte of verlies).
-- **Auto's**: 38 modellen. Klik op "Zoek een auto" (2 energie) en je komt willekeurig iets tegen; de kans per model staat
+- **Auto's**: 38 modellen, elk getekend in zijn eigen klasse (stadsauto, hatchback, sedan, stationwagen, SUV, super-SUV, sportwagen, GT, supercar, hypercar, terreinwagen, limousine en meer) op basis van echte afmetingen, zonder merktekens (`carSvg` in `carheist.js`). Klik op "Zoek een auto" (2 energie) en je komt willekeurig iets tegen; de kans per model staat
   ernaast (een Fiat Panda ruim 6%, een Lamborghini Huracán 0,4%, een Bugatti Chiron 0,15%). Elke vondst heeft een eigen bouwjaar,
   kilometerstand, staat en dus prijs binnen de prijsklasse van het model. Stelen met 'Contact maken': zeldzamer = meer sloten achter elkaar,
   minder tijd per reeks en rode pijlen die je andersom moet indrukken. Rijvaardigheid geeft meer tijd en een betere prijs.
@@ -64,7 +77,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   Als Aspirant krijg je 50% van de familiebonus (kans, buit, straf) en van het eigen voordeel, elk level +10%. Bij elke promotie
   krijg je geld. Grotere families vragen meer eer (+50% per familie). Overstappen kan, maar dan begin je weer onderaan.
   - *Eigen voordeel*: Nieuwe Garde −20% wachttijd klussen, Kurogumi +20% passief inkomen, Colombra −40% borg, Bratva Volkov
-    +25% groen gat bij vluchten en +10% ontsnappen, Los Halcones +25% autowaarde, Lucchetti 20% kans dat je zaak wordt
+    +25% makkelijker vluchten en +10% ontsnappen, Los Halcones +25% autowaarde, Lucchetti 20% kans dat je zaak wordt
     geseponeerd, Gambrino +20% XP, La Cupola +10% XP, +10% inkomen en −20% hitte.
   - *Eer*: elke geslaagde klus (je straatcredit telt als eer), elke gestolen auto, auto's afleveren in de garage (30% van de
     waarde plus eer) en missies.
@@ -73,9 +86,24 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
     verdienen) en een grote klus die vuurkracht en uitrusting vraagt: van een avondwinkel overvallen (mes) tot de bank
     (AK-47, kogelvrij vest, signaalverstoorder) en De Nederlandsche Bank (machinegeweer, militaire uitrusting, thermische lans).
     Missiegeld groeit met je familielevel (Erelid ×2).
-- **Wapens & uitrusting** (`public/js/pages/wapens.js`): 19 items in 4 soorten, elk met tiers en een rang-eis. Per soort telt je
+  - *Machtsverhoudingen en bendeoorlog* (`famwar.js`): elke periode van 5 speldagen (20 uur) staat er een nieuwe stand van alle
+    families, voor iedereen gelijk (vaste seed per periode); de grootste families blijven meestal bovenaan. De laatste 2 speldagen
+    is het oorlog tegen de familie boven je: 3 slagen per oorlog op een stadskaart met 19 wijken (aanvallen en verdedigen op
+    timing). Winst geeft geld, eer, cred en XP en duwt je familie omhoog; verlies kost gezondheid. De top 3 krijgt per periode een
+    uitkering.
+  - *De familie leiden*: na Erelid volgen **Onderbaas** (genoeg eer en 3 gewonnen slagen) en **Baas** (een duel tegen de baas uit
+    het verhaal). Beide krijgen elke speldag een afdracht en een sterkere familiebonus (Onderbaas 110%, Baas 125%).
+  - Klik op een familie voor het verhaal (`lore.js`), haar plek in de stad over de laatste 8 periodes, toelating en voordeel.
+- **Bajes** (`bajes.js`, werk in `jailjobs.js`): een straf duurt 30 tot 60 seconden langer, zodat je er iets kunt doen. Vier
+  klussen in de bajes (wasserij: sorteren, keuken: timing, werkplaats: ritme bij het nummerplaten slaan, bibliotheek: geheugen),
+  elk 16 tot 25 seconden met een wachttijd. Ze betalen een klein bedrag dat met je rang meegroeit en goed werk haalt tijd van je
+  straf (hooguit 40%). Bij langere straffen komen er gebeurtenissen met een keuze: ruzie op de luchtplaats, een bewaker met een
+  deal (Henk wordt een vaste contact: −10% op elke volgende straf), een tip van je celgenoot, een celinspectie of een advocaat.
+  Borg betalen en ontsnappen werken zoals voorheen.
+- **Wapens & uitrusting** (`public/js/pages/wapens.js`): 24 items in 5 soorten, elk met tiers en een rang-eis. Per soort telt je
   beste item. Wapens: slaagkans en vuurkracht (Vlindermes tot Machinegeweer, +3% tot +18%). Bescherming: slaagkans en kortere
   celstraf. Gereedschap: buit en meer tijd bij auto stelen. Communicatie: minder hitte na elke klus (−10% tot −55%).
+  Vervoer: makkelijker vluchten (opgevoerde scooter +6% tot helikopter op afroep +25%), de duurdere ook wat minder hitte.
   Oude saves: vroeger telde alles bij elkaar op; overbodige oude items worden terugbetaald.
 - **Bank** (`public/js/pages/bank.js`, koersen in `public/js/market.js`). Alles bij de bank ben je niet kwijt als je gepakt wordt.
   - *Spaarrekening*: 0,10% rente per uur (VIP 0,12%), vrij opneembaar, ook offline tot 12 uur. (Was 1% per 10 minuten:
@@ -103,10 +131,13 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   **Geschiedenis**: de laatste 40 rondes (inzet, betaald, terug, ×) worden bij je account bewaard; knop met het klokje bovenin.
   **Narekenen**: `verify.js`-controle (clusters, lopers, baren, vakjes, tumbles, totalen, afronding) gaf 0 afwijkingen op 900 rondes.
   Het bord is net zo hoog dat het met de knoppen ernaast zonder scrollen op een laptopscherm past.
-  Spatiebalk = draaien. **Seed**: elke spin komt uit jouw seed + spinnummer. Doorgerekend (`sim9.js`, 1,5 mln. spins per
-  lidmaatschap, `simbuy4.js` voor gekochte bonussen): gewoon bonus ±1 op 200 (4+ ±1 op 880, superbonus ±1 op 20.000), RTP ±92%;
-  VIP ±1 op 175, RTP ±95%; High roller ±1 op 143, RTP ±96%. Bonus kopen ±95% / 95,5% / 96,5%. Basisspel 143% van de tabel
-  (VIP ×0,99, High roller ×0,89), de bonus 92%.
+  Spatiebalk = draaien. **Seed**: elke spin komt uit jouw seed + spinnummer. Doorgerekend (`sim12.js`, 1,8 mln. spins per
+  lidmaatschap plus ruim 100.000 bonussen, `bsplit.js` voor gekochte bonussen): gewoon bonus ±1 op 195 (superbonus ±1 op
+  21.000), RTP ±92%; VIP ±1 op 175, RTP ±95%; High roller ±1 op 145, RTP ±96%. Bonus kopen ±95% / 95,5% / 96,5%.
+  **Uitbetalingstabel** (5 op een cluster, bij €10 inzet als VIP): speelkaart €2, sigaar €4, munt €6, dobbelsteen €7, fiche €8,
+  horloge €12, ring €20, diamant €27, goudstaaf €80; grotere clusters schalen mee (goudstaaf 20+ ±€5.200). Basisspel 143% van
+  de tabel (VIP ×0,99, High roller ×0,89), de bonus 77,5%. Sinds de hogere uitbetalingen valt de loper in het basisspel iets
+  minder vaak (17,55 in plaats van 22) en is de goudstaaf iets zeldzamer, zodat de RTP gelijk bleef.
 - **Lopende bonus blijft bewaard**: een slotronde wordt bij de start meteen verrekend en opgeslagen (met de seed). Ververs je
   midden in een bonus van Kluiskraker of Visdief, of open je het spel op een ander apparaat, dan zie je "Je bonus loopt nog":
   hij speelt verder vanaf de free spin waar je was (zonder dubbel uitbetalen), of je slaat hem over. Wordt het spel ergens
@@ -133,7 +164,12 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   Casino, doorgerekend (gewoon / VIP / High roller): Kluiskraker (10×10, max 5.000×) bonus 1 op 200 / 175 / 143, RTP 92% / 95% / 96%, bonus kopen
   ±95% / 95,5% / 96,5%; Visdief bonus 1 op 200 / 172 / 143, RTP 91,5% / 94% / 96,5%, kopen ±97%; Hoogvlieger landt 17% / 18% / 19%,
   RTP 86% / 92% / 96%. Alles blijft onder 100%, ook met cashback.
-- **Huurmoorden** (vanaf Huurmoordenaar, met een scherpschuttersgeweer of beter): 6 contracten (moeilijkheid 1–6, Huurmoordenaar
+- **Huurmoorden** (`hits.js`): 9 contracten in drie niveaus (Straat, Professioneel vanaf Capo, Elite vanaf Onderbaas) en een
+  reputatie in 6 niveaus (+3% beloning per niveau). Per contract kies je de methode: **mes** (sluipen, stilstaan als hij omkijkt,
+  toeslaan op een timingring), **pistool**, **geweer** (vizier met wind) of een **ongeluk** (vanaf Capo, een slingerende lading
+  van een kraan). Een methode die de klant wil geeft +20%. Daarna kun je **gezocht** worden: 12, 25 of 45 minuten, ondergedoken
+  drie keer zo snel voorbij, meer kans op controles, en vanaf niveau 2 soms een premiejager (snel trekken). Onopvallende
+  kleding maakt gezocht worden minder waarschijnlijk. Oorspronkelijk: 6 contracten (moeilijkheid 1–6, Huurmoordenaar
   tot Peetvader). Je richt door een vizier dat meebeweegt met je adem: muis (telefoon: slepen), spatie/Adem ingedrukt = rustig
   vizier, klik/Vuur = schieten. Hoofd = perfect (+25% geld, cred ×1,5), romp = gelukt. Mis = doelwit rent weg; laatste kogel mis
   of een omstander geraakt = arrestatie (met vluchtspel). Rustiger vizier door training Schieten, beter wapen, lidmaatschap en
@@ -179,6 +215,23 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   Breed bord (rollen breder dan hoog, houten kade, water in de rollen) met saldo, deze spin, laatste winst en de bediening
   eronder, even breed als het bord. Doorgerekend (`visim2.js`, 3 mln. spins per lidmaatschap, `vbuy2.js`): gewoon bonus ±1 op 200,
   RTP ±91,5%; VIP ±1 op 172, RTP ±94%; High roller ±1 op 143, RTP ±96,5%; bonus kopen ±97%.
+- **Indeling (computer)**: vanaf 1280px breed staat alles over jou in de rechterkolom: naam, status (vrij, gezocht, cel,
+  ondergedoken), rang en level met XP-balk, contant en bank, energie, gezondheid, hitte en familie, daaronder wat er klaarstaat,
+  een snelle klus, het logboek en de top 5 (met jouw plek als je er niet in staat). Klik op energie, gezondheid of hitte voor
+  een paneel met wat je er nu aan kunt doen (ontspannen, kliniek, omkopen, rusten, onderduiken). De nieuwsband is weg. Het menu
+  links toont kleine standen (#plek op de ranglijst, auto's in de garage, cel- en wachttijd). In het casino is er geen
+  rechterkolom maar een saldobalk bovenaan: saldo (knippert groen of rood bij een verandering), bank, lidmaatschap en cashback
+  om te claimen. Smallere schermen en de telefoon houden de statusbalk bovenaan.
+- **Outfit** (`public/js/pages/look.js`): kleding en sieraden op vijf plekken (hoofd, kleding, schoenen, sieraden, pols), 26
+  stukken. Elk stuk geeft een voordeel en soms een nadeel: onopvallend (minder hitte, meer kans), sportief (makkelijker vluchten,
+  sneller energie), patser (meer buit en inkomen, maar meer hitte) of zakelijk (meer inkomen, lagere borg, XP). Drie of vijf
+  stukken in dezelfde stijl geven een setbonus (Grijze muis, Atleet, Patser, Zakenman). Een etalagepop laat zien wat je draagt;
+  met de muis over een stuk pas je het. Wat je koopt blijft in je kast, omkleden is gratis. De effecten lopen via `fitFx` in
+  `state.js` (slaagkans, buit, hitte, inkomen bedrijven, borg, wachttijd, XP, energie, autowaarde, ontsnappen, vluchten).
+- **Profielen**: standaard privé. Op Profiel → Zichtbaarheid zet je het openbaar; dan zien anderen via de ranglijst je
+  vermogen, familie, woning, outfit en prestaties. Bij een privé profiel zien ze alleen naam en rang. Beheerders zien elk
+  profiel, en in het beheerdashboard staat per speler of zijn profiel openbaar is en wat hij deed (zijn logboek uit het spel).
+  API: `GET /api/profile/:naam` en `POST /api/profile/privacy {public}`; kolom `users.public_profile`.
 - **Live bijwerken**: Bezit, Wapens, Families, Profiel, Bank, Training, Huurmoorden en het dashboard verversen elke seconde als
   er iets verandert, zodat knoppen meteen kloppen. In de slots loopt het saldo ook live mee.
 - **Hoogvlieger**: een propellervliegtuigje (met rookspoor) vliegt op eigen kracht over zee, zonder vaste baan. Overal in de lucht
@@ -266,6 +319,8 @@ public/js/*.js       spelmodules; public/js/pages/ bevat één bestand per tabbl
 | GET/POST | `/api/state` | voortgang laden / opslaan |
 | GET | `/api/leaderboard` | top 25 spelers |
 | POST | `/api/redeem` | `{code}` → eenmalig spelgeld per account |
+| GET | `/api/profile/:naam` | profiel van een speler; privé geeft alleen naam en rang (behalve voor de speler zelf en beheerders) |
+| POST | `/api/profile/privacy` | `{public: true/false}` → eigen profiel openbaar of privé |
 | GET | `/api/health` | status van server en database |
 | GET | `/api/admin/stats`, `/api/admin/players?q=&f=&sort=`, `/api/admin/player/:id`, `/api/admin/log` | beheer (alleen beheerders) |
 | POST | `/api/admin/player/:id/action` | `{type: money/xp/cred/fix/tier/ban/admin/reset/kick, …}` |

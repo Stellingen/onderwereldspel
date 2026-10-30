@@ -45,20 +45,23 @@ const ICONS={
  jail:'<path d="M5 3v18M10 3v18M15 3v18M20 3v18M3 3h19M3 21h19"/>',
  skills:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
  fam:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 2 6 5.5"/>',
- rank:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0zM17 6h3v2a3 3 0 01-3 3M7 6H4v2a3 3 0 003 3"/>'};
-const PAGES=[['dash','Dashboard'],['verblijf','Verblijf'],['crimes','Misdaden'],['hits','Huurmoorden'],['cars','Auto\'s'],['casino','Casino'],['biz','Bezit'],['shop','Wapens'],['skills','Training'],['bank','Bank'],['fam','Families'],['jail','Bajes'],['rank','Ranglijst'],['profiel','Profiel']];
+ rank:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0zM17 6h3v2a3 3 0 01-3 3M7 6H4v2a3 3 0 003 3"/>',
+ moto:'<circle cx="5.5" cy="16.5" r="3.5"/><circle cx="18.5" cy="16.5" r="3.5"/><path d="M5.5 16.5L9 10h4.5l2 4h-6.5M13 10l1.5-3.5H17M15.5 14l3 2.5"/>',
+ heli:'<path d="M3 4.5h18M12 4.5v3.5"/><path d="M5.5 12.5c0 2.2 2.9 3.5 6.5 3.5s6.5-1.3 6.5-3.5V11a3 3 0 00-3-3h-7a3 3 0 00-3 3z"/><path d="M18.5 11.5h3M9 16l-1 3.5M15 16l1 3.5M6 19.5h12"/>',
+ look:'<path d="M9 3.5L12 6l3-2.5 5.5 3.2-2.3 4.3-2.2-1V21H8V10l-2.2 1-2.3-4.3z"/><path d="M12 6v4"/>'};
+const PAGES=[['dash','Dashboard'],['verblijf','Verblijf'],['crimes','Misdaden'],['hits','Huurmoorden'],['cars','Auto\'s'],['casino','Casino'],['biz','Bezit'],['shop','Wapens'],['look','Outfit'],['skills','Training'],['bank','Bank'],['fam','Families'],['jail','Bajes'],['rank','Ranglijst'],['profiel','Profiel']];
 const svg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 let page=(location.hash||'#dash').slice(1);if(!PAGES.find(p=>p[0]===page))page='dash';
 let casinoTab='kluis',rankTab='xp',slotState=['7','7','7'],spinning=false;
 
 // Elke sectie heeft een eigen kleur, zodat je ziet waar je bent
-const NAV_GROUPS=[['Straat',['dash','verblijf','crimes','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank'],'#3fe395','63,227,149'],['Macht',['shop','skills','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','rank','profiel'],'#a9dcff','169,220,255']];
+const NAV_GROUPS=[['Straat',['dash','verblijf','crimes','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank'],'#3fe395','63,227,149'],['Macht',['shop','look','skills','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','rank','profiel'],'#a9dcff','169,220,255']];
 const groupOf=k=>NAV_GROUPS.find(g=>g[1].includes(k))||NAV_GROUPS[0];
 function applySection(){document.body.classList.toggle('wide-page',page==='casino');const g=groupOf(page),r=document.documentElement.style;r.setProperty('--sec',g[2]);r.setProperty('--sec-rgb',g[3])}
 function crumbHtml(){const g=groupOf(page);return `<div class="crumb"><i></i><span>${g[0]}</span>/ ${PAGES.find(p=>p[0]===page)[1]}</div>`+(typeof feudBar==='function'?feudBar():'')}
 function renderNav(){
   const name=k=>PAGES.find(p=>p[0]===k)[1];
-  const link=k=>`<a class="navlink ${k===page?'on':''}" href="#${k}">${svg(k)}<span>${name(k)}</span>${k==='jail'&&inJail()?'<span class="badge">!</span>':''}${k==='crimes'&&!inJail()&&S.energy>=EN_MAX?'<span class="badge ok">●</span>':''}${k==='profiel'&&typeof RANK_CODES!=='undefined'&&RANKS.slice(1,rankIdx(S.xp)+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase()))?'<span class="badge">€</span>':''}</a>`;
+  const st=navStat(),link=k=>`<a class="navlink ${k===page?'on':''}" href="#${k}">${svg(k)}<span>${name(k)}</span>${st[k]?`<em class="nst">${st[k]}</em>`:''}${k==='jail'&&inJail()?'<span class="badge">!</span>':''}${k==='crimes'&&!inJail()&&S.energy>=EN_MAX?'<span class="badge ok">●</span>':''}${k==='profiel'&&typeof RANK_CODES!=='undefined'&&RANKS.slice(1,rankIdx(S.xp)+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase()))?'<span class="badge">€</span>':''}</a>`;
   setHTML($('#nav'),`<a class="brand" href="/" style="text-decoration:none;color:inherit"><span class="mark">O</span><span><b>Onderwereld</b><small>${window.__USER__?esc(window.__USER__):'Offline modus'} ${vipTag(1)}</small></span></a>`
    +NAV_GROUPS.map(([g,ks,col,rgb])=>`<div class="navgroup" style="--g:${col};--g-rgb:${rgb}"><div class="navlabel">${g}</div>${ks.map(link).join('')}</div>`).join('')
    +(window.__TOKEN__?`<div class="navspace"></div>${window.__ADMIN__?`<a class="navlink beheer" href="/admin">${svg('beheer')}<span>Beheer</span></a>`:''}<button class="navlink logout" onclick="logout()">${svg('logout')}<span>Uitloggen</span></button>`:''));
@@ -79,13 +82,16 @@ const userBusy=()=>_touching||_mouse||performance.now()-_lastScroll<700;
 // Telefoon: onderbalk met de vier meest gebruikte pagina's + "Meer" (alle pagina's per groep, met wat er speelt)
 const MBAR=['dash','crimes','cars','casino'];
 const MSHORT={dash:'Start',crimes:'Misdaden',cars:"Auto's",casino:'Casino'};
+// Klein getal rechts in het menu (computer): waar je staat, wat er loopt
+function navStat(){const o={};try{const [p]=myPos();o.rank='#'+p;if(inJail())o.jail=fmtClock(S.jailUntil-now());const h=cdLeft('hit');if(h&&rankIdx(S.xp)>=7)o.hits=fmtClock(h);
+ if(typeof GARAGE_MAX!=='undefined')o.cars=S.cars.length+'/'+GARAGE_MAX;if(S.family)o.fam=fam().m}catch(e){}return o}
 function navBadges(){const b={};if(inJail())b.jail='!';if(!inJail()&&S.energy>=EN_MAX)b.crimes='●';
  if(typeof RANK_CODES!=='undefined'&&RANKS.slice(1,rankIdx(S.xp)+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase())))b.profiel='€';
  if(typeof isVip==='function'&&isVip()&&typeof cbAvail==='function'&&cbAvail()>=1)b.casino='€';return b}
 function navHint(k){const jt=Math.ceil((S.jailUntil-now())/1000);
  return {dash:'Overzicht',verblijf:S.hide?'Ondergedoken':'Gezondheid '+S.hp+'%',crimes:Math.floor(S.energy)+' energie',hits:rankIdx(S.xp)<7?'Vanaf '+RANKS[7][0]:cdLeft('hit')?'Over '+fmtClock(cdLeft('hit')):((S.stats&&S.stats.hits)||0)+' gedaan',cars:S.cars.length+(S.cars.length===1?' auto':" auto's"),
   casino:'8 spellen',biz:typeof income==='function'?fmt(income())+'/dag':'Bedrijven',bank:fmt(typeof bankNet==='function'?bankNet():S.bank),shop:'Wapens',skills:'Trainen & ontspannen',
-  fam:S.family?fam().n:'Geen familie',jail:inJail()?'Vast, '+fmtTime(jt):'Vrij',rank:'Spelers',profiel:'Codes en account'}[k]||''}
+  fam:S.family?fam().n:'Geen familie',jail:inJail()?'Vast, '+fmtTime(jt):'Vrij',rank:'Spelers',profiel:'Codes en account',look:'Kleding en sieraden'}[k]||''}
 function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('nav');bar.id='mbar';bar.className='mbar';bar.setAttribute('aria-label','Menu');document.body.appendChild(bar)}
  let sh=$('#msheet');if(!sh){sh=document.createElement('div');sh.id='msheet';sh.className='msheet';sh.setAttribute('aria-hidden','true');document.body.appendChild(sh);
   sh.addEventListener('click',e=>{if(e.target===sh||e.target.closest('[data-close]'))mSheet(false)})}
@@ -118,6 +124,7 @@ function todoItems(){const o=[],ri=rankIdx(S.xp);
  else if(!S.family){const can=FAMILIES.filter(f=>ri>=f.r&&S.cred>=f.cred).length;if(can)o.push({ic:'fam',t:'Sluit je aan bij een familie',s:can+' famil'+(can>1?'ies laten':'ie laat')+' je toe',h:'fam',c:'var(--violet)'})}
  if(typeof bzPlan==='function'){const ids=BIZ.filter(b=>bizUnits(b.id).length).map(b=>b.id);if(ids.length){const p=bzPlan(ids,S.cash);if(p.k)o.push({ic:'biz',t:p.k+' upgrade'+(p.k>1?'s':'')+' betaalbaar',s:fmt(p.cost)+' · +'+fmt(p.gain)+'/dag',h:'biz',c:'var(--green)'})}}
  if(!inJail()&&!cdLeft('car')&&typeof GARAGE_MAX!=='undefined'&&S.cars.length<GARAGE_MAX&&S.energy>=2)o.push({ic:'cars',t:'Auto zoeken',s:'Je kunt weer de straat op',h:'cars',c:'var(--acc2)'});
+ if(typeof fwTodo==='function'&&!inJail()){const w=fwTodo();if(w)o.unshift(w)}
  if(S.feud)o.unshift({ic:'hits',t:'Bendegevecht',s:'De mensen van '+S.feud.t+' zoeken je',h:'hits',c:'var(--red)'});
  if(typeof carOrders==='function'&&S.cars.length){const O=carOrders(),n=O.list.filter(x=>!x.done&&S.cars.some(c=>c.id===x.id)).length;if(n)o.push({ic:'cars',t:'Bestelling voor de heler',s:n+' auto'+(n>1?"'s":'')+' uit je garage gevraagd',h:'cars',c:'var(--acc2)'})}
  if(RANKS.slice(1,ri+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase())))o.push({ic:'profiel',t:'Rangbeloning klaar',s:'Claim op je profiel',h:'profiel',c:'var(--acc)'});
@@ -125,34 +132,71 @@ function todoItems(){const o=[],ri=rankIdx(S.xp);
  if(S.cash>=25000&&S.cash>S.bank*.25)o.push({ic:'bank',t:fmt(S.cash)+' contant',s:'Zet het veilig op de bank',h:'bank',c:'var(--ice)'});
  return o}
 const todoHtml=(o,max)=>o.slice(0,max||99).map(x=>`<a class="todo" href="#${x.h}" style="--c:${x.c}"><i>${svg(x.ic)}</i><div><b>${x.t}</b><span>${x.s}</span></div><em>›</em></a>`).join('');
+// Rechterkolom op brede schermen: alles over jou op één plek (rang, geld, energie, gezondheid, hitte, familie),
+// daaronder wat er klaarstaat, een snelle klus, het logboek en de top 5. Energie, gezondheid en hitte openen een paneel
+// met wat je er nu aan kunt doen (ontspannen, rusten, onderduiken).
+let _rpop=null;
+function rPop(k){_rpop=_rpop===k?null:k;const el=$('#rail');if(el)el._h=null;renderRail()}
+document.addEventListener('pointerdown',e=>{if(_rpop&&!e.target.closest('.dos'))rPop(null)},true);
+function lbAll(){return [...S.npcs.map((n,i)=>({n:esc(n.n),xp:n.xp,npc:i})),...(window.__LB__||[]).filter(p=>!window.__USER__||p.name.toLowerCase()!==window.__USER__.toLowerCase()).map(p=>({n:esc(p.name)+playerTags(p.vip),xp:+p.xp,u:p.name})),{n:esc(S.name)+(window.__TOKEN__?playerTags(tier()):vipTag()),xp:S.xp,me:1}].sort((a,b)=>b.xp-a.xp)}
+const myPos=()=>{const a=lbAll();return [a.findIndex(x=>x.me)+1,a.length]};
+function rxRows(key){const ri=rankIdx(S.xp),lv=rankLevel(S.xp);
+ const L=RELAX.filter(r=>r[key]&&ri>=(r.r||0)).sort((a,b)=>relaxCost(a,ri,lv)-relaxCost(b,ri,lv)).slice(0,4);
+ return L.map(r=>{const c=relaxCost(r,ri,lv),left=cdLeft('rx_'+r.id),ok=!left&&!inJail()&&S.cash>=c,amt=key==='hp'&&r.hp>=100?'vol':'+'+r[key]+(key==='energy'?'':'%');
+  return `<button class="rp-row" onclick="act.relax('${r.id}')" ${ok?'':'disabled'}><b>${r.n}</b><span>${amt} ${key==='energy'?'energie':key==='hp'?'gezondheid':'hitte'}</span><em>${left?fmtClock(left):fmt(c)}</em></button>`}).join('')}
+function rPopHtml(){if(!_rpop)return '';const full=Math.max(0,Math.ceil((EN_MAX-S.energy)*EN_REGEN_S/60));
+ const P={en:['Energie',S.energy>=EN_MAX?'Je energie is vol. Doe een klus.':`Vanzelf vol over ${full} min. Sneller:`,rxRows('energy'),`<a href="#ontspannen">Alles bij ontspannen ›</a><a href="#verblijf">Rusten in je woning ›</a>`],
+  hp:['Gezondheid',S.hp>=100?'Je bent fit.':'Langzaam herstel vanzelf. Sneller:',(S.hp<100?`<button class="rp-row" onclick="act.heal()" ${S.cash<healCost()?'disabled':''}><b>Kliniek</b><span>meteen 100% gezondheid</span><em>${fmt(healCost())}</em></button>`:'')+rxRows('hp'),`<a href="#verblijf">Dokter of rusten ›</a>`],
+  heat:['Hitte',S.heat<=0?'Niemand let op je.':`Zakt vanzelf, ongeveer 2% per minuut${S.wanted?'. Je staat ook op de gezochtlijst':''}. Sneller:`,(S.heat>0?`<button class="rp-row" onclick="act.bribe()" ${S.cash<bribeCost()?'disabled':''}><b>Omkopen</b><span>hitte meteen naar 0%</span><em>${fmt(bribeCost())}</em></button>`:'')+rxRows('heat'),`<a href="#verblijf">Onderduiken ›</a><a href="#look">Onopvallende kleding ›</a>`]}[_rpop];
+ if(!P)return '';return `<div class="rpop" role="dialog" aria-label="${P[0]}"><div class="rp-h"><b>${P[0]}</b><button onclick="rPop(null)" aria-label="Sluiten">✕</button></div><p>${P[1]}</p>${(_rpop==='en'&&S.energy<EN_MAX)||(_rpop==='hp'&&S.hp<100)||(_rpop==='heat'&&S.heat>0)?P[2]:''}<div class="rp-links">${P[3]}</div></div>`}
+function statusTag(){const jt=Math.ceil((S.jailUntil-now())/1000);return inJail()?`<a class="dos-st jail" href="#jail">Cel · ${fmtTime(jt)}</a>`:S.hide?'<a class="dos-st hide" href="#verblijf">Ondergedoken</a>':S.wanted?`<span class="dos-st wanted">Gezocht${typeof wantedLeft==='function'&&isFinite(wantedLeft())&&wantedLeft()>0?' · '+fmtClock(wantedLeft()):''}</span>`:'<span class="dos-st free">Vrij</span>'}
 function renderRail(){
   const el=$('#rail');if(!el||getComputedStyle(el).display==='none')return;
-  const ri=rankIdx(S.xp),nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
+  const ri=rankIdx(S.xp),nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100,pend=window.slotPending||0;
   const bc=bestCrime(),left=cdLeft(bc.id),ok=!inJail()&&!left&&S.energy>=bc.en;
   const full=Math.max(0,Math.ceil((EN_MAX-S.energy)*EN_REGEN_S/60));
-  const all=[...S.npcs.map(n=>({n:n.n,xp:n.xp})),...(window.__LB__||[]).filter(p=>!window.__USER__||p.name.toLowerCase()!==window.__USER__.toLowerCase()).map(p=>({n:esc(p.name)+playerTags(p.vip),xp:+p.xp})),{n:'★ '+esc(S.name)+(window.__TOKEN__?playerTags(tier()):vipTag()),xp:S.xp,me:1}].sort((a,b)=>b.xp-a.xp);
-  const pos=all.findIndex(x=>x.me)+1;
-  const td=todoItems();
+  const all=lbAll(),pos=all.findIndex(x=>x.me)+1;
+  const td=todoItems(),F=S.family?fam():null,fr=S.family&&typeof famRankIdx==='function'&&typeof FAM_RANKS!=='undefined'?FAM_RANKS[famRankIdx()]:null;
+  const hc=S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--green)',pc=S.hp>50?'var(--green)':S.hp>25?'var(--acc)':'var(--red)';
+  const bl=buffLoot(),fp=focusPct();
+  const top=all.slice(0,5);
   setHTML(el,`
-   <section class="rcard hud"><div class="label">Dossier · <a href="#profiel" style="color:var(--acc)">profiel</a></div>
-    <a class="rname" href="#profiel" style="display:block;color:inherit;text-decoration:none">${esc(S.name)}${vipTag()}</a>
-    <div class="rrank"><b>${RANKS[ri][0]}</b><span>${nxt?Math.floor(S.xp).toLocaleString('nl-NL')+' / '+nxt[1].toLocaleString('nl-NL')+' XP':'Top bereikt'}</span></div>
+   <section class="rcard hud dos ${_rpop?'pop':''}">
+    <div class="dos-top"><a class="dos-name" href="#profiel">${esc(S.name)}${vipTag()}</a>${statusTag()}</div>
+    <div class="dos-rank"><b>${RANKS[ri][0]}</b><span>lv ${rankLevel(S.xp)}</span><em>${nxt?Math.floor(S.xp).toLocaleString('nl-NL')+' / '+nxt[1].toLocaleString('nl-NL')+' XP':'Top bereikt'}</em></div>
     <div class="bar"><i style="width:${pct}%;background:var(--acc)"></i></div>
-    <div class="rgrid">
-     <div><span class="label">Energie</span><b style="color:var(--ice)">${Math.floor(S.energy)}</b><small>${full?'vol over '+full+' min':'vol'}</small></div>
-     <div><span class="label">Familie</span><b style="color:${S.family?fam().col:'var(--faint)'}">${S.family?fam().m:'—'}</b><small>${S.family?fam().n:'geen'}</small></div>
-     <div><span class="label">Positie</span><b>#${pos}</b><small>van ${all.length}</small></div>
-    </div></section>
-   ${td.length?`<section class="rcard"><div class="label">Klaar voor je · ${td.length}</div><div class="todos">${todoHtml(td,3)}</div>${td.length>3?`<a class="todo-more" href="#dash">Nog ${td.length-3} op het dashboard ›</a>`:''}</section>`:''}
+    <div class="dos-money"><a href="#bank"><span class="label">Contant</span><b class="cash">${fmt(S.cash-pend)}</b></a><a href="#bank"><span class="label">Bank</span><b>${fmt(typeof bankNet==='function'?bankNet():S.bank)}</b></a></div>
+    <div class="dos-vit">
+     <button class="rs ${_rpop==='en'?'on':''}" onclick="rPop('en')" aria-expanded="${_rpop==='en'}" title="Wat je nu aan je energie kunt doen"><span class="label">Energie</span><b style="color:var(--ice)">${Math.floor(S.energy)}<small>/${EN_MAX}</small></b><i class="mini"><i style="width:${Math.min(100,S.energy/EN_MAX*100)}%;background:var(--ice)"></i></i><small>${full?'vol over '+full+' min':'vol'}</small></button>
+     <button class="rs ${_rpop==='hp'?'on':''}" onclick="rPop('hp')" aria-expanded="${_rpop==='hp'}" title="Wat je nu aan je gezondheid kunt doen"><span class="label">Gezondheid</span><b style="color:${pc}">${S.hp}%</b><i class="mini"><i style="width:${S.hp}%;background:${pc}"></i></i><small>${S.hp>=100?'fit':S.hp>50?'gaat wel':'oppassen'}</small></button>
+     <button class="rs ${_rpop==='heat'?'on':''}" onclick="rPop('heat')" aria-expanded="${_rpop==='heat'}" title="Wat je nu aan je hitte kunt doen"><span class="label">Hitte</span><b style="color:${S.heat>30?hc:'var(--fg)'}">${S.heat}%</b><i class="mini"><i style="width:${S.heat}%;background:${hc}"></i></i><small>${S.heat>60?'politie let op':S.heat>30?'lauw':'koel'}</small></button>
+     <a class="rs" href="#fam"><span class="label">Familie</span><b style="color:${F?F.col:'var(--faint)'}">${F?F.m:'—'}</b><small>${F?esc(F.n)+(fr?' · '+fr[0]:''):'geen familie'}</small></a>
+    </div>
+    <div class="dos-foot"><span>Cred <b style="color:var(--violet)">${S.cred}</b></span>${bl?`<span>Buit <b style="color:var(--green)">+${bl}%</b> ${fmtClock(S.buffs.loot.until-now())}</span>`:''}${fp?`<span>Focus <b style="color:#ff6b7c">+${fp}%</b>${buffFocus()?' '+fmtClock(S.buffs.focus.until-now()):''}</span>`:''}</div>
+    ${rPopHtml()}
+   </section>
+   ${td.length?`<section class="rcard"><div class="label">Klaar voor je · ${td.length}</div><div class="todos">${todoHtml(td,4)}</div>${td.length>4?`<a class="todo-more" href="#dash">Nog ${td.length-4} op het dashboard ›</a>`:''}</section>`:''}
    <section class="rcard"><div class="label">Snelle klus</div>
     <div class="rq"><div><b>${bc.n}</b><small>${chance(bc)}% kans · ${bc.en} energie · ${fmt(bc.min*lootMult())}–${fmt(bc.max*lootMult())}</small></div></div>
     <button class="btn" onclick="act.crime('${bc.id}')" ${ok?'':'disabled'}>${inJail()?'Je zit vast':left?'Wacht '+Math.ceil(left/1000)+'s':S.energy<bc.en?'Te moe':'Uitvoeren'}</button></section>
    <section class="rcard grow"><div class="label">Logboek</div><div class="log">${logShown().length?logShown().slice(0,14).map(l=>`<div class="${l.c}">${l.m}</div>`).join(''):'<div class="info">Nog niks gebeurd.</div>'}</div></section>
    <section class="rcard"><div class="label">Top 5 · <a href="#rank" style="color:var(--acc)">ranglijst</a></div>
-    <ol class="rtop">${all.slice(0,5).map((p,i)=>`<li class="${p.me?'me':''}"><span>${i+1}</span><b>${p.n}</b><em>${RANKS[rankIdx(p.xp)][0]}</em></li>`).join('')}</ol></section>`);
+    <ol class="rtop">${top.map((p,i)=>`<li class="${p.me?'me':''}"><span>${i+1}</span><b><button class="lb-name" onclick="${p.me?(window.__USER__?`pvShow('${window.__USER__}')`:''):p.u?`pvShow('${p.u}')`:`pvNpc(${p.npc})`}">${p.n}</button></b><em>${RANKS[rankIdx(p.xp)][0]}</em></li>`).join('')}${pos>5?`<li class="me gap"><span>${pos}</span><b>${all[pos-1].n}</b><em>${RANKS[ri][0]}</em></li>`:''}</ol></section>`);
 }
 
+// Statusbalk bovenaan: op de telefoon en op smallere schermen (zonder rechterkolom). In het casino: saldo en lidmaatschap.
+function casHudHtml(){const pend=window.slotPending||0,b=typeof bankNet==='function'?bankNet():S.bank,t=typeof tier==='function'?tier():0;
+ const lid=['Gewoon','VIP','High roller'][t]||'Gewoon',cb=typeof cbAvail==='function'?cbAvail():0;
+ return `<div class="chud">
+  <div class="ch-main"><span class="label">Saldo</span><b id="casBal">${fmt(S.cash-pend)}</b></div>
+  <a class="ch-cell" href="#bank"><span class="label">Bank</span><b>${fmt(b)}</b></a>
+  <div class="ch-cell"><span class="label">Lidmaatschap</span><b class="${t?'gold':''}">${lid}</b></div>
+  ${t?`<div class="ch-cell ch-cb" title="${typeof CB_RATE!=='undefined'?'Cashback op elke inzet: '+Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*(TIER_CB[t]||1)*100).toLocaleString('nl-NL',{maximumFractionDigits:3})+'%').join(' · '):''}"><span class="label">Cashback</span><div class="ch-cbrow"><b id="cbAmt">${fmt(cb)}</b><button class="btn gold sm" id="cbBtn" onclick="act.claimCb()" ${cb<1?'disabled':''}>${cb>=1?'Claimen':'Nog niks te claimen'}</button></div></div>`:`<a class="ch-cell ch-up" href="#profiel"><span class="label">Lid worden</span><b>VIP: cashback en vaker bonus</b></a>`}
+  <div class="ch-cell ch-r"><span class="label">${RANKS[rankIdx(S.xp)][0]} · lv ${rankLevel(S.xp)}</span>${statusTag()}</div></div>`}
+let _casPrev=null;
 function renderTop(){
+  if(page==='casino'){const v=S.cash-(window.slotPending||0),el=$('#topbar');if(setHTML(el,casHudHtml())&&_casPrev!=null&&v!==_casPrev){const b=el.querySelector('#casBal');if(b)b.classList.add(v>_casPrev?'up':'dn')}_casPrev=v;return}
+  _casPrev=null;
   const ri=rankIdx(S.xp);const jt=Math.ceil((S.jailUntil-now())/1000);const pend=window.slotPending||0;
   const nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
   setHTML($('#topbar'),`
@@ -165,7 +209,7 @@ function renderTop(){
    ${buffLoot()?`<div class="chip"><small>Buit</small><b style="color:var(--green)">+${buffLoot()}% · ${fmtClock(S.buffs.loot.until-now())}</b></div>`:''}
    ${focusPct()?`<div class="chip"><small>Focus</small><b style="color:#ff6b7c">+${focusPct()}%${buffFocus()?' · '+fmtClock(S.buffs.focus.until-now()):''}</b></div>`:''}
    <div class="chip"><small>Hitte</small><b style="color:${S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--fg)'}">${S.heat}%</b></div>
-   <div class="status ${inJail()?'jail':S.hide?'hide':S.wanted?'wanted':'free'}">${inJail()?'■ CEL · '+fmtTime(jt):S.hide?(page==='verblijf'?'◐ ONDERGEDOKEN':'◐ VERMOMD'):S.wanted?'▲ GEZOCHT':'● VRIJ'}</div>`);
+   <div class="status ${inJail()?'jail':S.hide?'hide':S.wanted?'wanted':'free'}">${inJail()?'■ CEL · '+fmtTime(jt):S.hide?(page==='verblijf'?'◐ ONDERGEDOKEN':'◐ VERMOMD'):S.wanted?(typeof wantedLabel==='function'?wantedLabel():'▲ GEZOCHT'):'● VRIJ'}</div>`);
 }
 
 

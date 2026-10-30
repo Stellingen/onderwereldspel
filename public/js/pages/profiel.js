@@ -53,6 +53,43 @@ V.profiel=()=>{
     ${tile('Politiecontroles',st.raids||0)}
    </div>
   </section>
+  ${window.__TOKEN__?`<section class="card pf-priv"><h3>Zichtbaarheid</h3>
+   <label class="pv-switch"><input type="checkbox" ${window.__PUB__?'checked':''} onchange="pvSetPublic(this.checked)"><i></i><span><b>${window.__PUB__?'Openbaar profiel':'Privé profiel'}</b><small>${window.__PUB__?'Andere spelers zien je vermogen, familie, outfit en wat je hebt bereikt.':'Anderen zien alleen je naam en rang op de ranglijst. Zet het aan om meer te laten zien.'}</small></span></label>
+   <p class="pf-note">Beheerders kunnen elk profiel inzien, ook als het privé is.</p>
+   <button class="btn ghost" onclick="pvShow(window.__USER__)">Bekijk zoals anderen het zien</button></section>`:''}
   ${window.__TOKEN__?`<section class="card pf-acc"><h3>Account</h3><p class="sub" style="margin:0 0 12px">Je voortgang wordt automatisch opgeslagen op je account.</p><button class="btn ghost" onclick="logout()">Uitloggen</button></section>`:''}
  </div>`;
 };
+
+// ---------- Profielen van andere spelers (vanuit de ranglijst) ----------
+// Standaard privé. Openbaar: vermogen, familie, woning, outfit en prestaties. Beheerders zien alles, ook bij een privé profiel.
+function pvClose(){const o=document.getElementById('pvOv');if(o){o.classList.add('out');setTimeout(()=>o.remove(),160)}document.removeEventListener('keydown',pvKey)}
+function pvKey(e){if(e.key==='Escape')pvClose()}
+function pvOpen(html){let o=document.getElementById('pvOv');if(!o){o=document.createElement('div');o.id='pvOv';o.className='pv-ov';o.addEventListener('click',e=>{if(e.target===o)pvClose()});document.body.appendChild(o);document.addEventListener('keydown',pvKey)}
+ o.innerHTML=`<div class="pv-box" role="dialog" aria-modal="true" aria-labelledby="pvT"><button class="pv-x" onclick="pvClose()" aria-label="Sluiten">✕</button>${html}</div>`;const x=o.querySelector('.pv-x');if(x)x.focus({preventScroll:true})}
+const pvAgo=s=>s==null?'nooit actief':s<300?'nu online':s<3600?Math.round(s/60)+' min geleden actief':s<86400?Math.round(s/3600)+' uur geleden actief':Math.round(s/86400)+' dagen geleden actief';
+const pvLock=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8 10.5V7.5a4 4 0 018 0v3M12 14.5v2.5"/></svg>`;
+function pvHead(name,xp,tagH,sub,extra){const ri=rankIdx(xp);return `<div class="pv-who"><span class="label">Profiel</span><h2 id="pvT">${esc(name)}${tagH||''}</h2>
+  <div class="pv-rank"><b>${RANKS[ri][0]}</b><span>lv ${rankLevel(xp)}</span><em>${Math.floor(xp).toLocaleString('nl-NL')} XP</em></div>${sub?`<p>${sub}</p>`:''}${extra||''}</div>`}
+function pvNpc(i){const n=S.npcs[i];if(!n)return;pvOpen(`<div class="pv-head solo">${pvHead(n.n,n.xp,'','Rivaal uit de onderwereld')}</div><div class="pv-lock">${pvLock}<b>Dit profiel is privé</b><span>Van rivalen weet je alleen de naam en de rang.</span></div>`)}
+function pvShow(name){if(!name)return;pvOpen('<div class="pv-load">Profiel laden…</div>');
+ const h=window.__TOKEN__?{Authorization:'Bearer '+window.__TOKEN__}:{};
+ fetch('/api/profile/'+encodeURIComponent(String(name).toLowerCase()),{headers:h}).then(r=>r.json().then(j=>({ok:r.ok,j}))).then(({ok,j})=>{
+  if(!document.getElementById('pvOv'))return;if(!ok||j.error){pvOpen(`<div class="pv-load">${esc(j.error||'Kon het profiel niet laden')}</div>`);return}
+  const tagH=typeof playerTags==='function'?playerTags(j.tier):'';
+  if(j.private){pvOpen(`<div class="pv-head solo">${pvHead(j.name,j.xp,tagH)}</div><div class="pv-lock">${pvLock}<b>Dit profiel is privé</b><span>${esc(j.name)} laat alleen de naam en de rang zien.</span></div>`);return}
+  const p=j.p||{},since=j.since?new Date(j.since).toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'}):'';
+  const F=p.family?FAMILIES.find(f=>f.id===p.family):null;let fr='';if(F&&typeof FAM_RANKS!=='undefined'){const t=FAMILIES.indexOf(F);let r=0;FAM_RANKS.forEach((x,i)=>{if(!x[2]&&(p.famEer||0)>=Math.round(x[1]*(1+t*.5)))r=i});const top=FAM_RANKS.findIndex(x=>x[2])-1;if(top>=0&&r>=top&&p.famLead)r=Math.min(FAM_RANKS.length-1,top+p.famLead);fr=FAM_RANKS[r][0]}
+  const H=typeof HOMES!=='undefined'&&p.home?HOMES.find(x=>x.id===p.home):null,st=p.stats||{},net=(j.networth||0);
+  const note=j.own?`<div class="pv-note">${j.public?'Zo zien andere spelers je profiel.':'Je profiel is privé: anderen zien alleen je naam en rang. Hieronder zie je wat ze zouden zien als je het openbaar zet.'} <button class="pv-tg" onclick="pvSetPublic(${!j.public});pvClose()">${j.public?'Zet op privé':'Zet openbaar'}</button></div>`
+   :j.admin&&!j.public?`<div class="pv-note adm">Privé profiel. Je ziet het omdat je beheerder bent.</div>`:'';
+  const tile=(l,v,s_,c)=>`<div class="pv-t"><span class="label">${l}</span><b${c?` style="color:${c}"`:''}>${v}</b>${s_?`<small>${s_}</small>`:''}</div>`;
+  const casino=(st.won||0)-(st.lost||0);
+  pvOpen(`<div class="pv-head">${typeof dollSvg==='function'?`<div class="pv-doll">${dollSvg(p.wear||{})}</div>`:''}${pvHead(j.name,j.xp,tagH,(since?'Lid sinds '+since+' · ':'')+pvAgo(j.seen_s)+(p.jail?' · <em class="bad">zit vast</em>':p.wanted?' · <em class="bad">gezocht</em>':''),note)}</div>
+   <div class="pv-grid">${tile('Vermogen',fmt(net),'contant en bank','var(--acc)')}${tile('Familie',F?esc(F.n):'Geen',fr,F?F.col:'')}${tile('Woning',H?esc(H.n):'Onbekend',H&&H.place?esc(H.place):'')}
+    ${tile("Auto's",p.cars||0,'in de garage')}${tile('Bedrijven',p.units||0,'vestigingen')}${tile('Straatcredit',(p.cred||0).toLocaleString('nl-NL'),'','var(--violet)')}</div>
+   <div class="pv-stats"><span class="label">Prestaties</span><div>${[['Klussen gelukt',st.crimes],['Mislukt',st.fails],["Auto's gestolen",st.cars],['Carjackings',st.jacks],['Huurmoorden',st.hits]].map(([l,v])=>`<span>${l}<b>${(+v||0).toLocaleString('nl-NL')}</b></span>`).join('')}
+    <span>Casino<b style="color:${casino>=0?'var(--green)':'var(--red)'}">${casino>=0?'+':'−'}${fmt(Math.abs(casino))}</b></span></div></div>`)
+ }).catch(()=>pvOpen('<div class="pv-load">Geen verbinding. Probeer het zo nog eens.</div>'))}
+function pvSetPublic(on){if(!window.__TOKEN__)return;fetch('/api/profile/privacy',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+window.__TOKEN__},body:JSON.stringify({public:!!on})})
+ .then(r=>r.json()).then(j=>{if(j.error){toast(j.error,'bad');return}window.__PUB__=!!j.public;toast(j.public?'Je profiel is nu openbaar':'Je profiel is nu privé','ok');if(page==='profiel'||page==='rank')render()}).catch(()=>toast('Geen verbinding','bad'))}

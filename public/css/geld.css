@@ -1,0 +1,217 @@
+/* geld.css: Bezit, Bank en Training. Laadt na style.css en overschrijft daar waar nodig. */
+
+/* ================= Bezit ================= */
+.bz-hero{grid-template-columns:minmax(0,1fr) minmax(250px,330px);align-items:start;gap:16px 22px}
+.bz-hero>.bz-stats,.bz-hero>.bz-bonus{grid-column:1/-1}
+.bz-hero-t .sub{font-size:14px;line-height:1.5;max-width:60ch}
+/* de kas */
+.bz-till{display:flex;flex-direction:column;gap:9px;padding:14px 16px 13px;background:var(--bg2);border:1px solid color-mix(in srgb,var(--green) 28%,var(--line));box-shadow:inset 3px 0 0 var(--green);min-width:0}
+.bz-till-t{display:flex;align-items:baseline;justify-content:space-between;gap:4px 12px;flex-wrap:wrap}
+.bz-till-t b{font-family:var(--f-mono);font-size:26px;font-weight:600;line-height:1.05;color:var(--green);font-variant-numeric:tabular-nums}
+.bz-till-bar{position:relative;height:6px;background:var(--line)}
+.bz-till-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--green);box-shadow:0 0 10px rgba(63,227,149,.45);transition:width 1s linear}
+.bz-till-bar::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(25% - 2px),var(--bg2) calc(25% - 2px) 25%)}
+.bz-till-m{display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;font-family:var(--f-mono);font-size:11.5px;color:var(--mute)}
+.bz-till-m b{color:var(--fg);font-weight:500}
+.bz-stat em{line-height:1.35}
+
+/* kaarten */
+.bz-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,272px),1fr))}
+.bz-card{gap:12px;padding:15px 15px 14px}
+.bz-top{display:flex;gap:12px;align-items:flex-start}
+.bz-name{display:block}
+.bz-name span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bz-kv{display:flex;flex-direction:column;border-top:1px dashed var(--line2);margin-top:auto;min-width:0}
+.bz-slots+.bz-kv{margin-top:0}
+.bz-kv-r{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:1px 12px;padding:6px 0;border-bottom:1px solid var(--line);min-width:0}
+.bz-kv-r:last-child{border-bottom:0;padding-bottom:2px}
+.bz-kv-r .label{white-space:nowrap}
+.bz-kv-r b{margin-left:auto;font-family:var(--f-mono);font-size:14px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere}
+.bz-kv-r b small{font-size:.74em;color:var(--mute);font-weight:400}
+.bz-kv-r b.g{color:var(--green);font-size:15.5px}
+/* vestigingen als tien plekken, de vulling is het level */
+.bz-slots{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px;height:24px;margin-top:auto}
+.bz-slots i{display:block;border:1px dashed var(--line2)}
+.bz-slots i.on{border:1px solid color-mix(in srgb,var(--bc) 50%,transparent);
+ background:linear-gradient(to top,color-mix(in srgb,var(--bc) 85%,transparent) calc(var(--l)*20%),color-mix(in srgb,var(--bc) 9%,var(--bg2)) calc(var(--l)*20%))}
+.bz-slots i.max{box-shadow:0 0 9px -2px var(--bc)}
+.bz-foot{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.bz-short{font-family:var(--f-mono);font-size:11px;color:var(--faint);margin-left:auto;white-space:nowrap}
+.bz-badge{white-space:nowrap}
+.bz-card.lock .bz-kv-r b{color:var(--mute)}
+.bz-card.lock .bz-slots{display:none}
+
+/* detail: vestigingen */
+.bz-u-id .bz-num{font-family:var(--f-mono);font-size:12px;color:var(--faint);width:26px;height:26px;flex:0 0 26px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line2)}
+.bz-unit.max .bz-num{border-color:color-mix(in srgb,var(--bc) 55%,transparent);color:var(--bc)}
+.bz-done{display:block;margin-top:4px;font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bz-u-btn{display:grid;gap:1px;align-content:center;text-align:left;padding:9px 13px;min-height:48px;background:var(--panel2);color:var(--mute);
+ border:1px solid var(--line2);border-left:3px solid var(--line2);transition:border-color .12s,background .12s,transform .08s}
+.bz-u-btn span{font-family:var(--f-head);font-weight:800;font-size:14px;letter-spacing:.05em;text-transform:uppercase;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bz-u-btn b{font-family:var(--f-mono);font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bz-u-btn em{font-style:normal;font-family:var(--f-mono);font-size:10.5px;color:var(--faint)}
+.bz-u-btn.ok{border-left-color:var(--bc);color:var(--fg);background:color-mix(in srgb,var(--bc) 7%,var(--panel2))}
+.bz-u-btn.ok b{color:var(--green)}
+.bz-u-btn.ok:hover{border-color:color-mix(in srgb,var(--bc) 60%,transparent);border-left-color:var(--bc);background:color-mix(in srgb,var(--bc) 13%,var(--panel2));transform:translateY(-1px)}
+.bz-u-btn:disabled{cursor:not-allowed}
+.bz-u-btn:disabled span{color:var(--mute)}
+.bz-u-btn:focus-visible{outline:2px solid var(--bc);outline-offset:2px}
+
+@container (max-width:760px){
+ .bz-hero{grid-template-columns:minmax(0,1fr) minmax(230px,280px)}
+ .bz-hero .bz-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .bz-hero .bz-stat.main{grid-column:1/-1}
+ .bz-upall{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.bz-upall .btn{grid-column:1/-1}
+ .bz-card{padding:13px}
+}
+@container (max-width:620px){
+ .bz-hero{grid-template-columns:1fr}
+ .bz-hero .bz-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .bz-hero .bz-stat:last-child{grid-column:1/-1}
+ .bz-upall{grid-template-columns:1fr}
+ .bz-till-t b{font-size:22px}
+}
+
+/* ================= Bank ================= */
+.bk-hero{grid-template-columns:minmax(220px,1fr) minmax(0,2fr);align-items:center}
+.bk-h-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+.bk-k{--kc:var(--ice);display:flex;flex-direction:column;gap:3px;text-align:left;padding:12px 14px 11px;border-left:1px solid var(--line);position:relative;min-width:0;transition:background .12s}
+.bk-k:first-child{border-left:0}
+.bk-k::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--kc);opacity:.3;transition:opacity .12s}
+.bk-k.dp{--kc:var(--violet)}.bk-k.iv{--kc:var(--acc)}
+.bk-k .label{color:var(--kc)}
+.bk-k b{font-family:var(--f-mono);font-size:18px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.bk-k em{font-style:normal;font-size:11.5px;color:var(--mute);line-height:1.35}
+.bk-k em .up{color:var(--green)}.bk-k em .dn{color:var(--red)}
+.bk-k:hover{background:var(--panel2)}.bk-k:hover::before,.bk-k.on::before{opacity:1}
+.bk-k.on{background:color-mix(in srgb,var(--kc) 6%,var(--bg2))}
+.bk-k:focus-visible{outline:2px solid var(--kc);outline-offset:-2px}
+.bk-cash{grid-column:1/-1;display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap;padding:11px 14px;border:1px solid color-mix(in srgb,var(--acc) 32%,var(--line));background:color-mix(in srgb,var(--acc) 5%,var(--bg2))}
+.bk-cash>div{display:flex;align-items:baseline;gap:4px 14px;flex-wrap:wrap;flex:1 1 260px;min-width:0}
+.bk-cash b{font-family:var(--f-mono);font-size:18px;font-weight:600;color:var(--acc);font-variant-numeric:tabular-nums}
+.bk-cash em{font-style:normal;font-size:12.5px;color:var(--mute)}
+.bk-cash .btn{flex:0 0 auto}
+.bk-cash.none{border-color:var(--line);background:var(--bg2)}.bk-cash.none b{color:var(--mute)}
+
+/* rekening */
+.bk-flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;margin:0 0 14px}
+.bk-flow>div{padding:10px 12px;background:var(--bg2);border:1px solid var(--line);min-width:0}
+.bk-flow b{display:block;font-family:var(--f-mono);font-size:16px;font-weight:600;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bk-flow b.acc{color:var(--acc)}
+.bk-flow svg{width:20px;height:20px;color:var(--faint)}
+
+/* betalen van: naam boven, bedrag eronder, zodat niets buiten de kaart valt */
+.bk-seg button{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;min-width:0}
+.bk-seg button span{font-size:11px;letter-spacing:.04em}
+.bk-seg button b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+
+/* deposito's */
+.bk-sec{display:flex;align-items:center;gap:8px 10px;margin:4px 0 10px;flex-wrap:wrap}
+.bk-sec h2{font-family:var(--f-head);font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--fg)}
+.bk-sec>span{font-family:var(--f-mono);font-size:11px;color:var(--mute);padding:1px 7px;border:1px solid var(--line2)}
+.bk-sec>em{font-style:normal;font-size:12px;color:var(--acc2)}
+.bk-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,232px),1fr));gap:10px;margin-bottom:16px}
+.bk-slot{display:flex;flex-direction:column;gap:8px;padding:14px;background:var(--panel);border:1px solid var(--line);border-top:2px solid var(--violet);min-width:0;text-align:left}
+.bk-slot-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.bk-slot-h b{font-family:var(--f-head);font-weight:800;font-size:18px;letter-spacing:.04em;text-transform:uppercase}
+.bk-slot-h span{font-family:var(--f-mono);font-size:12px;color:var(--violet);white-space:nowrap}
+.bk-slot-v b{display:block;font-family:var(--f-mono);font-size:22px;font-weight:600;color:var(--green);line-height:1.15;margin-top:2px;font-variant-numeric:tabular-nums}
+.bk-slot-v em{font-style:normal;font-size:12px;color:var(--mute)}
+.bk-slot-p{height:5px;background:var(--line);position:relative}
+.bk-slot-p i{position:absolute;left:0;top:0;bottom:0;background:var(--violet);box-shadow:0 0 8px rgba(184,161,255,.5);transition:width 1s linear}
+.bk-slot-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;color:var(--mute)}
+.bk-slot-t b{font-family:var(--f-mono);font-weight:500;color:var(--fg);white-space:nowrap}
+.bk-slot .bk-link{align-self:flex-start;margin-top:0}
+.bk-slot .bk-brk{margin-top:0}
+.bk-slot.free{justify-content:center;gap:3px;min-height:150px;background:transparent;border:1px dashed var(--line2);border-top:2px dashed var(--line2);transition:border-color .12s,background .12s}
+.bk-slot.free b{font-family:var(--f-head);font-weight:800;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+.bk-slot.free em{font-style:normal;font-size:12px;color:var(--faint)}
+.bk-slot.free:hover{border-color:color-mix(in srgb,var(--violet) 70%,transparent);background:rgba(184,161,255,.05)}
+.bk-slot.free:hover b{color:var(--violet)}
+.bk-new-g{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px 24px;align-items:start}
+.bk-lab{display:block;margin-bottom:6px}
+.bk-new .bk-terms{grid-template-columns:repeat(2,minmax(0,1fr))}
+.bk-term{min-width:0}.bk-term em{white-space:nowrap}
+.bk-rcpt{border:1px solid var(--line);background:var(--bg2);margin:0 0 12px}
+.bk-rcpt>p{margin:0;padding:7px 12px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);border-bottom:1px solid var(--line)}
+.bk-rcpt>div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 12px;border-bottom:1px solid var(--line);font-size:13.5px}
+.bk-rcpt>div:last-child{border-bottom:0}
+.bk-rcpt span{color:var(--mute)}
+.bk-rcpt b{font-family:var(--f-mono);font-weight:500;text-align:right;white-space:nowrap}
+.bk-rcpt .tot{background:rgba(63,227,149,.05)}.bk-rcpt .tot span{color:var(--fg)}.bk-rcpt .tot b{color:var(--green);font-size:16px;font-weight:600}
+.bk-new .bk-mini{margin-top:10px}
+
+@container (max-width:900px){
+ .bk-funds{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .bk-inv{grid-template-columns:1fr}
+}
+@container (max-width:820px){
+ .bk-grid,.bk-new-g{grid-template-columns:1fr}
+}
+@container (max-width:760px){
+ .bk-hero{grid-template-columns:1fr}
+ .bk-h-kpis{grid-template-columns:1fr}
+ .bk-k{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;border-left:0;border-top:1px solid var(--line)}
+ .bk-k:first-child{border-top:0}
+ .bk-k::before{top:0;bottom:0;right:auto;width:2px;height:auto}
+ .bk-k .label{grid-column:1}.bk-k em{grid-column:1}.bk-k b{grid-column:2;grid-row:1/3}
+ .bk-slot.free{min-height:0;padding:12px 14px}
+}
+@container (max-width:620px){
+ .bk-cash .btn{width:100%}
+}
+
+/* ================= Training: tegels die meteen trainen of kopen ================= */
+.tr-tip{margin-top:6px!important;font-size:12px!important;color:var(--faint)!important}
+.tr-tiles{grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:8px;align-items:stretch}
+.tq{--c:var(--acc);position:relative;display:flex;min-width:0}
+.tq-go{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;width:100%;min-width:0;padding:12px 8px 10px;text-align:center;
+ background:var(--bg2);border:1px solid var(--line);transition:border-color .12s,transform .12s,background .12s,box-shadow .15s}
+.tq-r{position:relative;width:46px;height:46px;flex:none;margin-bottom:4px}
+.tq-r .tr-ring{width:100%;height:100%}
+.tq-r b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-mono);font-size:14px;font-weight:600}
+.tq-ic{display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 12%,var(--bg2));clip-path:var(--cut-s)}
+.tq-ic svg{width:22px;height:22px}
+.tq-n{font-size:12.5px;font-weight:600;line-height:1.2;color:var(--fg);max-width:100%;overflow-wrap:break-word;text-wrap:balance}
+.tq-e{font-size:11px;line-height:1.25;color:var(--mute);max-width:100%}
+.tq-e i{font-style:normal;color:var(--faint)}
+.tq-h{font-family:var(--f-mono);font-size:10px;line-height:1.3;color:var(--faint)}
+.tq-p{margin-top:auto;padding-top:5px;font-family:var(--f-mono);font-size:13px;font-weight:600;color:var(--fg);font-variant-numeric:tabular-nums;line-height:1.2}
+/* klaar: kleur van de plek, opstijgen bij hover */
+.tq.s-ready .tq-go{cursor:pointer;border-color:color-mix(in srgb,var(--c) 50%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--c) 11%,transparent),transparent 75%),var(--bg2)}
+.tq.s-ready .tq-p{color:var(--fg);font-size:14px}
+.tq.s-ready .tq-h{color:var(--green)}
+.tq.s-ready .tq-go:hover{transform:translateY(-2px);border-color:var(--c);box-shadow:0 12px 26px -16px var(--c)}
+.tq.s-ready .tq-go:active{transform:translateY(0)}
+.tq-go:focus-visible{outline:2px solid var(--c);outline-offset:2px}
+/* niet klaar */
+.tq-go:disabled{cursor:default}
+.tq.s-poor .tq-p{color:var(--red)}
+.tq.s-poor .tq-h{color:var(--mute)}
+.tq.s-cd .tq-p,.tq.s-wait .tq-p{color:var(--mute)}
+.tq.s-cd .tq-r,.tq.s-wait .tq-r{opacity:.7}
+.tq.s-max .tq-p{color:var(--green);font-size:11px;letter-spacing:.04em}
+.tq.s-lock{opacity:.5}.tq.s-lock .tq-p{font-size:11px;font-weight:500;color:var(--faint)}.tq.s-lock .tq-ic{filter:grayscale(1)}
+/* wachttijd als dunne balk onderaan die leegloopt */
+.tq-cd{position:absolute;left:1px;bottom:1px;height:2px;background:var(--c);opacity:.85;pointer-events:none;transition:width 1s linear}
+/* pijltje naar de uitleg */
+.tq-i{position:absolute;top:3px;right:3px;width:24px;height:24px;display:grid;place-items:center;color:var(--faint);border:1px solid transparent;transition:color .12s,border-color .12s,background .12s}
+.tq-i svg{width:14px;height:14px}
+.tq-i:hover{color:var(--fg);border-color:var(--line2);background:var(--panel)}
+/* even oplichten als het gelukt is */
+.tq.fx .tq-go{animation:tqfx .6s ease-out}
+@keyframes tqfx{0%{box-shadow:inset 0 0 0 60px color-mix(in srgb,var(--c) 32%,transparent),0 0 0 0 color-mix(in srgb,var(--c) 70%,transparent)}100%{box-shadow:inset 0 0 0 60px transparent,0 0 0 9px transparent}}
+/* uitlegkaart even markeren als je via het pijltje komt */
+.tr-card.tr-hl{animation:trhl 1.4s ease-out}
+@keyframes trhl{0%,30%{box-shadow:0 0 0 2px var(--c),0 0 30px -6px var(--c)}100%{box-shadow:0 0 0 0 transparent}}
+
+@container (max-width:880px){.tr-hero{grid-template-columns:1fr}}
+@container (max-width:620px){
+ .tr-tiles{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .tq-go{padding:10px 4px 8px}
+ .tq-r{width:40px;height:40px}
+ .tq-n{font-size:11.5px}
+ .tq-e{font-size:10.5px}
+ .tq-p{font-size:12px}
+ .tq-i{width:26px;height:26px;top:1px;right:1px}
+}

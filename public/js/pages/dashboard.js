@@ -11,7 +11,7 @@ V.dash=()=>{
   const meter=(label,val,max,col,sub)=>`<div class="card kpi"><div class="label">${label}</div><div class="big" style="color:${col}">${val}</div>
     <div class="bar"><i style="width:${Math.max(0,Math.min(100,max))}%;background:${col}"></i></div><div class="kpi-sub">${sub}</div></div>`;
   return `
-  ${S.wanted?`<div class="card alert"><b>▲ Je staat op de gezochtlijst</b><span>Je bent ontsnapt. Bij elke actie kan de politie een controle doen en je herkennen. Je straf wordt dan langer.</span></div>`:''}
+  ${S.wanted?`<div class="card alert"><b>▲ Je staat op de gezochtlijst</b><span>${S.wanted.lv&&typeof WANT_LV!=='undefined'?`${WANT_LV[S.wanted.lv].n} na de huurmoord op ${esc(S.wanted.t||'je doelwit')}, nog ${fmtClock(S.wanted.until-now())}. Bij elke actie kan de politie een controle doen. <a href="#verblijf">Onderduiken</a> laat het drie keer zo snel zakken.`:'Je bent ontsnapt. Bij elke actie kan de politie een controle doen en je herkennen. Je straf wordt dan langer.'}</span></div>`:''}
   <div class="dash">
    <section class="card hud d-hero">
     <div class="label">${greet}, ${esc(S.name)}</div>
@@ -25,7 +25,7 @@ V.dash=()=>{
     ${nextC?`<div class="d-next">Volgende rang opent: <b>${nextC.n}</b></div>`:''}
    </section>
    <section class="card d-money">
-    <div class="label">Totaal vermogen</div><div class="d-big">${fmt(net)}</div>
+    <div class="label">Totaal vermogen</div><div class="d-big" style="--n:${fmt(net).length}">${fmt(net)}</div>
     <div class="row"><span>Contant</span><b style="color:var(--acc)">${fmt(S.cash)}</b></div>
     <div class="row"><span>Bank</span><b>${fmt(bankNet())}</b></div>
     <div class="row"><span>Auto's (${S.cars.length})</span><b>${fmt(carsV)}</b></div>

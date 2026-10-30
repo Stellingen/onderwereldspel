@@ -16,6 +16,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Big+Shoulders+Text:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/look.css">
+<link rel="stylesheet" href="css/cars.css">
+<link rel="stylesheet" href="css/bajes.css">
+<link rel="stylesheet" href="css/families.css">
+<link rel="stylesheet" href="css/hits.css">
+<link rel="stylesheet" href="css/crimes.css">
+<link rel="stylesheet" href="css/woning.css">
+<link rel="stylesheet" href="css/geld.css">
 </head>
 <body>
 <script src="/js/notap.js"></script>
@@ -23,7 +32,6 @@
 <div class="app">
   <nav class="side" id="nav"></nav>
   <main>
-    <div class="ticker" id="ticker"></div>
     <div class="topbar" id="topbar"></div>
     <section id="view"></section>
   </main>
@@ -48,7 +56,7 @@
         document.getElementById('boot').innerHTML='<div class="ban"><span>ONDERWERELD</span><b>Dit profiel is verbannen</b><p></p><a class="ban-new" href="/?register=1&amp;banned=1">Maak een nieuw profiel</a><a href="/">Terug naar de voorpagina</a></div>';document.querySelector('#boot p').textContent=(j.reason?'Reden: '+j.reason+'. ':'')+'Met dit profiel kun je niet meer spelen. Je kunt wel een nieuw profiel aanmaken en opnieuw beginnen.';return}
       if(me.ok){
         window.__TOKEN__=token;const mj=await me.json();window.__USER__=mj.username;window.__SINCE__=mj.since||null;window.__REDEEMED__=mj.redeemed||[];
-        window.__TIER__=mj.tier!=null?+mj.tier:null;window.__ADMIN__=!!mj.admin;
+        window.__TIER__=mj.tier!=null?+mj.tier:null;window.__ADMIN__=!!mj.admin;window.__PUB__=!!mj.pub;
         // dit apparaat wordt het actieve: andere apparaten mogen daarna niet meer opslaan
         const sid=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');window.__SID__=sid;
         const st=await fetch('/api/state?sid='+sid,{headers:h});
@@ -56,10 +64,10 @@
       }
     }catch(e){/* server onbereikbaar: offline verder */}
   }
-  const files=['js/slot.js','js/vis.js','js/market.js','js/data.js','js/state.js','js/ui.js','js/flee.js','js/carheist.js',
+  const files=['js/slot.js','js/vis.js','js/market.js','js/data.js','js/lore.js','js/state.js','js/ui.js','js/flee.js','js/carheist.js',
     'js/pages/dashboard.js','js/pages/misdaden.js','js/pages/hits.js','js/pages/casino.js','js/pages/skills.js',
     'js/pages/wapens.js','js/pages/bajes.js','js/pages/ranglijst.js','js/pages/profiel.js',
-    'js/actions.js','js/sfx.js','js/icons.js','js/pages/kluiskraker.js','js/pages/visdief.js','js/pages/tafels.js','js/pages/roulette.js','js/pages/munt.js','js/pages/mines.js','js/pages/vlucht.js','js/pages/bezit.js','js/pages/bank.js','js/pages/families.js','js/pages/verblijf.js','js/pages/autos.js','js/pages/carjack.js','js/pages/feud.js','js/main.js'];
+    'js/actions.js','js/pages/look.js','js/pages/jailjobs.js','js/sfx.js','js/icons.js','js/pages/kluiskraker.js','js/pages/visdief.js','js/pages/tafels.js','js/pages/roulette.js','js/pages/munt.js','js/pages/mines.js','js/pages/vlucht.js','js/pages/bezit.js','js/pages/bank.js','js/pages/families.js','js/pages/famwar.js','js/pages/verblijf.js','js/pages/inrichting.js','js/pages/autos.js','js/pages/carjack.js','js/pages/feud.js','js/main.js'];
   for(const f of files){await new Promise(res=>{const s=document.createElement('script');s.src=f;s.onload=res;s.onerror=res;document.body.appendChild(s)})}
   // Eerste keer inloggen met bestaande browser-voortgang: meteen naar de database sturen.
   if(window.__TOKEN__&&!window.__SERVER_STATE__&&typeof pushState==='function')pushState();

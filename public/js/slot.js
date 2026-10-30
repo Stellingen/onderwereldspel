@@ -22,19 +22,20 @@ const COLS=10, ROWS=10, MIN_CLUSTER=5;let MAX_SPOT=4096,MAX_WIN=5000;
 // Uitbetaling (x inzet) per clustergrootte 5 … 20+ (10x10: grote clusters komen vaker voor)
 const CURVE=[1,1.4,1.9,2.6,3.5,5,6.5,9,12,16,21,27,34,42,52,65];const MAX_SIZE=MIN_CLUSTER+CURVE.length-1;
 const SYMS=[
- {id:'kaart',  n:'Speelkaart', w:215, b:0.06},
- {id:'sigaar', n:'Sigaar',     w:210, b:0.08},
- {id:'munt',   n:'Munt',       w:205, b:0.10},
- {id:'dobbel', n:'Dobbelsteen',w:190, b:0.13},
+ {id:'kaart',  n:'Speelkaart', w:223, b:0.06},
+ {id:'sigaar', n:'Sigaar',     w:210, b:0.0818},
+ {id:'munt',   n:'Munt',       w:205, b:0.1222},
+ {id:'dobbel', n:'Dobbelsteen',w:190, b:0.1423},
  {id:'fiche',  n:'Fiche',      w:172, b:0.17},
- {id:'horloge',n:'Horloge',    w:150, b:0.24},
- {id:'ring',   n:'Ring',       w:128, b:0.34},
+ {id:'horloge',n:'Horloge',    w:150, b:0.2432},
+ {id:'ring',   n:'Ring',       w:128, b:0.4047},
  {id:'diamant',n:'Diamant',    w:104, b:0.55},
- {id:'goud',   n:'Goudstaaf',  w:82,  b:1.00}];
+ {id:'goud',   n:'Goudstaaf',  w:74,  b:1.617}];
 let PAYK=1;
 const setPay=k=>{PAYK=k;SYMS.forEach(s=>{s.pay=CURVE.map(c=>+(s.b*c*PAYK).toFixed(2))})};setPay(3.5);
-const WILD={id:'sleutel',n:'Loper',w:22,fsW:70,superW:105};
-const SCATTER={id:'kluis',n:'Kluis',w:4.86,fsW:6,superW:7.5};
+// basisspel: loper iets zeldzamer (17,55) sinds de hogere uitbetalingen; de kluis is daarop aangepast zodat de bonus even vaak valt
+const WILD={id:'sleutel',n:'Loper',w:17.55,fsW:70,superW:105};
+const SCATTER={id:'kluis',n:'Kluis',w:4.8448,fsW:6,superW:7.5};
 // Lidmaatschap (t): 0 = gewoon, 1 = VIP, 2 = High roller. Per lidmaatschap: kluiskans in het basisspel (SC_T), kluiskans
 // bij een gekochte bonus (BUY_T), basisspel-uitbetaling (VIP_KT, lager zodat het onder 100% blijft) en kans op Gouden baren.
 let SC_T=[1,1.05,1.13],BUY_T=[1,1.04,1.07],VIP_KT=[1,.99,.89],BAR_T=[1,1.02,1.05];
@@ -44,10 +45,10 @@ let SC_T=[1,1.05,1.13],BUY_T=[1,1.04,1.07],VIP_KT=[1,.99,.89],BAR_T=[1,1.02,1.05
 // begonnen), vipK = VIP iets meer kans. Superbonus: één baar is direct de max win (w).
 const BAR={id:'baar',n:'Gouden baar',w:.012,fsW:.13,t3:.055,t4:.058,t5:.061,need:3};let BAR_NOW=null;
 // Uitbetalingsfactor: basisspel (BASE_K) en bonus/superbonus (FS_K)
-let BASE_K=1.43,FS_K=.92;
+let BASE_K=1.43,FS_K=.775;
 // gekochte bonus: eigen uitbetalingsfactor per lidmaatschap (BUY_KT, zodat bonus kopen ±95 / 95,5 / 96,5% geeft) en een paar vakjes die al x2 zijn bij de start (BUY_SPOTS)
 // vangnet: een gekochte bonus geeft altijd minstens BUY_FLOOR × je inzet terug
-let BUY_KT=[.6686,.6651,.6684],BUY_SPOTS=8,BUY_FLOOR=20,FS_MUL=1;
+let BUY_KT=[.6728,.6693,.6722],BUY_SPOTS=8,BUY_FLOOR=20,FS_MUL=1;
 // Doortumbelen: vermenigvuldiger op de kluiskans bij het bijvullen, per aantal kluizen dat al ligt (0..5). n = normaal, v = VIP.
 // Bij 0-2 kluizen is VIP iets hoger (makkelijker de bonus in), vanaf 3 valt een volgende kluis makkelijker in, elke volgende lastiger.
 let TUMBLE_SC={n:[1,1,1,20,19,17.5],t:[[1,1,1,20,19,17.5],[1,1,1,20.4,19.4,17.9],[1,1,1,21.4,20.3,18.7]],buy:1.3}; // buy = extra bij een gekochte bonus (vanaf 3 kluizen)
@@ -180,7 +181,7 @@ function seedHash(str){let h1=1779033703,h2=3144134277,h3=1013904242,h4=27734807
   h1^=(h2^h3^h4);h2^=h1;h3^=h1;h4^=h1;return [h1>>>0,h2>>>0,h3>>>0,h4>>>0]}
 function seedRng(str){let [a,b,c,d]=seedHash(str);const r=()=>{a|=0;b|=0;c|=0;d|=0;const t=(a+b|0)+d|0;d=d+1|0;a=b^b>>>9;b=c+(c<<3)|0;c=c<<21|c>>>11;c=c+t|0;return (t>>>0)/4294967296};
   for(let i=0;i<15;i++)r();return r}
-const tune=o=>{if(o.payk!=null)setPay(o.payk);if(o.wild!=null)WILD.w=o.wild;if(o.wildFs!=null)WILD.fsW=o.wildFs;if(o.wildSuper!=null)WILD.superW=o.wildSuper;if(o.sc!=null)SCATTER.w=o.sc;if(o.scFs!=null)SCATTER.fsW=o.scFs;if(o.scSuper!=null)SCATTER.superW=o.scSuper;if(o.barFs!=null)BAR.fsW=o.barFs;if(o.scT)SC_T=o.scT;if(o.buyT)BUY_T=o.buyT;if(o.vipKT)VIP_KT=o.vipKT;if(o.barT)BAR_T=o.barT;if(o.tsT)TUMBLE_SC.t=o.tsT;if(o.bar!=null)BAR.w=o.bar;if(o.baseK!=null)BASE_K=o.baseK;if(o.buyCost!=null)BUY_COST=o.buyCost;if(o.buyExtra!=null)BUY_EXTRA=o.buyExtra;if(o.buyExtraSup!=null)BUY_EXTRA_SUP=o.buyExtraSup;if(o.fsK!=null)FS_K=o.fsK;['t3','t4','t5'].forEach(k=>{if(o[k]!=null)BAR[k]=o[k]});if(o.ts)TUMBLE_SC.n=o.ts;if(o.tsBuy!=null)TUMBLE_SC.buy=o.tsBuy;if(o.tsv)TUMBLE_SC.v=o.tsv;if(o.maxWin!=null)MAX_WIN=o.maxWin;if(o.maxSpot!=null)MAX_SPOT=o.maxSpot;if(o.buyKT)BUY_KT=o.buyKT;if(o.buySpots!=null)BUY_SPOTS=o.buySpots;if(o.buyFloor!=null)BUY_FLOOR=o.buyFloor;if(o.barW!=null)BAR.w=o.barW};
+const tune=o=>{if(o.payk!=null)setPay(o.payk);if(o.wild!=null)WILD.w=o.wild;if(o.wildFs!=null)WILD.fsW=o.wildFs;if(o.wildSuper!=null)WILD.superW=o.wildSuper;if(o.sc!=null)SCATTER.w=o.sc;if(o.scFs!=null)SCATTER.fsW=o.scFs;if(o.scSuper!=null)SCATTER.superW=o.scSuper;if(o.barFs!=null)BAR.fsW=o.barFs;if(o.scT)SC_T=o.scT;if(o.buyT)BUY_T=o.buyT;if(o.vipKT)VIP_KT=o.vipKT;if(o.barT)BAR_T=o.barT;if(o.tsT)TUMBLE_SC.t=o.tsT;if(o.bar!=null)BAR.w=o.bar;if(o.baseK!=null)BASE_K=o.baseK;if(o.buyCost!=null)BUY_COST=o.buyCost;if(o.buyExtra!=null)BUY_EXTRA=o.buyExtra;if(o.buyExtraSup!=null)BUY_EXTRA_SUP=o.buyExtraSup;if(o.fsK!=null)FS_K=o.fsK;['t3','t4','t5'].forEach(k=>{if(o[k]!=null)BAR[k]=o[k]});if(o.ts)TUMBLE_SC.n=o.ts;if(o.tsBuy!=null)TUMBLE_SC.buy=o.tsBuy;if(o.tsv)TUMBLE_SC.v=o.tsv;if(o.maxWin!=null)MAX_WIN=o.maxWin;if(o.maxSpot!=null)MAX_SPOT=o.maxSpot;if(o.buyKT)BUY_KT=o.buyKT;if(o.buySpots!=null)BUY_SPOTS=o.buySpots;if(o.buyFloor!=null)BUY_FLOOR=o.buyFloor;if(o.barW!=null)BAR.w=o.barW;if(o.symW)o.symW.forEach((w,i)=>{SYMS[i].w=w});if(o.symB){o.symB.forEach((b,i)=>{SYMS[i].b=b});setPay(PAYK)}};
 const API={MAX_SIZE,tune,get TUMBLE_SC(){return TUMBLE_SC},SC_COL,get BASE_K(){return BASE_K},get FS_K(){return FS_K},get VIP_KT(){return VIP_KT},FS_RETRIG,COLS,ROWS,MIN_CLUSTER,MAX_SPOT,SYMS,WILD,SCATTER,BAR,SUPER_SC,SUPER_SPINS,SCATTER_PAY,FS_BY_SC,FS_START,FS_RETRIGGER,get BUY_COST(){return BUY_COST},get BUY_EXTRA(){return BUY_EXTRA},get BUY_EXTRA_SUP(){return BUY_EXTRA_SUP},get MAX_WIN(){return MAX_WIN},get BUY_KT(){return BUY_KT},get BUY_SPOTS(){return BUY_SPOTS},get BUY_FLOOR(){return BUY_FLOOR},CURVE,spin,freeSpins,playRound,clusters,newSpots,seedHash,seedRng};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.SLOT=API;
 })(typeof window!=='undefined'?window:globalThis);

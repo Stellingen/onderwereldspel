@@ -102,7 +102,8 @@ const FAMILIES=[
  {id:'erven',n:'De Erven Morano',m:'EM',d:'De oudste familie van Europa. Twaalf stoelen, en er komt er zelden één vrij.',r:11,cred:4500,hits:25,chance:15,loot:60,jail:60,col:'#ff5fa2',
   perk:{n:'Twaalf stoelen',d:'meer XP en inkomen, kortere wachttijd',fx:{xp:.15,inc:.1,cd:.15}}}];
 // Familielevels: eer verdien je met klussen, auto's voor de familie en de dagelijkse missies. Grotere families vragen meer eer.
-const FAM_RANKS=[['Aspirant',0],['Lid',150],['Vertrouweling',450],['Luitenant',1000],['Rechterhand',2000],['Erelid',3500]];
+// De laatste twee (derde waarde = leiding) krijg je niet vanzelf: Onderbaas vraagt ook 3 gewonnen oorlogsslagen, Baas een gewonnen overname.
+const FAM_RANKS=[['Aspirant',0],['Lid',150],['Vertrouweling',450],['Luitenant',1000],['Rechterhand',2000],['Erelid',3500],['Onderbaas',5500,1],['Baas',8000,2]];
 // Grote klus van de dag (één per familie, zwaarder naarmate de familie groter is). need = dit item of beter in die soort.
 const FAM_HEISTS=[
  {n:'Overval een avondwinkel',d:'Kassa leeg, camera kapot, binnen een minuut weer buiten.',vk:1,need:[],en:25,jail:90,loot:[6000,14000]},
@@ -120,26 +121,26 @@ const FAM_HEISTS=[
 const PLACES={dash:'op straat',crimes:'tijdens een klus',hits:'op een dak',cars:'bij een parkeergarage',casino:'in het casino',biz:'bij je bedrijf',shop:'bij de wapenhandelaar',bank:'bij de bank',fam:'bij het familiehuis',rank:'in een café'};
 // Auto's: d = moeilijkheid (1-5), b = carrosserie, lo/hi = straatwaarde, y = bouwjaren, w = hoe vaak hij op straat staat, leg = mythisch
 const CARS=[
- {id:'panda',n:'Fiat Panda',b:'hatch',lo:300,hi:1100,y:[2008,2019],d:1,w:26},{id:'corsa',n:'Opel Corsa',b:'hatch',lo:400,hi:1500,y:[2009,2020],d:1,w:26},
- {id:'yaris',n:'Toyota Yaris',b:'hatch',lo:500,hi:1700,y:[2010,2020],d:1,w:24},{id:'clio',n:'Renault Clio',b:'hatch',lo:500,hi:1800,y:[2010,2021],d:1,w:24},
- {id:'p208',n:'Peugeot 208',b:'hatch',lo:600,hi:2000,y:[2013,2021],d:1,w:22},{id:'picanto',n:'Kia Picanto',b:'hatch',lo:400,hi:1300,y:[2012,2021],d:1,w:22},
- {id:'polo',n:'Volkswagen Polo',b:'hatch',lo:600,hi:2100,y:[2011,2021],d:1,w:22},{id:'c3',n:'Citroën C3',b:'hatch',lo:500,hi:1600,y:[2012,2021],d:1,w:20},
- {id:'golf',n:'Volkswagen Golf GTI',b:'hatch',lo:1500,hi:4500,y:[2014,2022],d:2,w:12},{id:'focus',n:'Ford Focus ST',b:'hatch',lo:1400,hi:4000,y:[2013,2021],d:2,w:11},
- {id:'leon',n:'Cupra Leon',b:'hatch',lo:1800,hi:5000,y:[2016,2023],d:2,w:10},{id:'a3',n:'Audi S3',b:'sedan',lo:2200,hi:5800,y:[2015,2023],d:2,w:10},
- {id:'octavia',n:'Škoda Octavia RS',b:'estate',lo:1800,hi:4800,y:[2015,2023],d:2,w:10},{id:'mini',n:'Mini Cooper S',b:'hatch',lo:1600,hi:4200,y:[2014,2023],d:2,w:10},
- {id:'v60',n:'Volvo V60',b:'estate',lo:2000,hi:5200,y:[2016,2023],d:2,w:9},{id:'gr86',n:'Toyota GR86',b:'coupe',lo:3000,hi:6500,y:[2021,2024],d:2,w:6},
- {id:'m3',n:'BMW M3',b:'sedan',lo:5000,hi:12000,y:[2015,2024],d:3,w:5},{id:'c63',n:'Mercedes-AMG C63',b:'sedan',lo:5500,hi:12500,y:[2015,2023],d:3,w:4.5},
- {id:'tesla',n:'Tesla Model S Plaid',b:'sedan',lo:7000,hi:14000,y:[2021,2024],d:3,w:4},{id:'rs6',n:'Audi RS6 Avant',b:'estate',lo:8000,hi:16000,y:[2018,2024],d:3,w:4},
- {id:'rr',n:'Range Rover Sport',b:'suv',lo:8000,hi:17000,y:[2016,2024],d:3,w:4},{id:'macan',n:'Porsche Macan GTS',b:'suv',lo:7000,hi:15000,y:[2017,2024],d:3,w:4},
- {id:'x5m',n:'BMW X5 M',b:'suv',lo:8500,hi:16500,y:[2018,2024],d:3,w:3.5},
- {id:'911',n:'Porsche 911 Carrera',b:'coupe',lo:15000,hi:30000,y:[2016,2024],d:4,w:2.2},{id:'r8',n:'Audi R8',b:'super',lo:18000,hi:34000,y:[2015,2023],d:4,w:1.8},
- {id:'taycan',n:'Porsche Taycan Turbo S',b:'sedan',lo:16000,hi:30000,y:[2020,2024],d:4,w:1.8},{id:'g63',n:'Mercedes-AMG G63',b:'offroad',lo:20000,hi:38000,y:[2018,2024],d:4,w:1.8},
- {id:'mase',n:'Maserati GranTurismo',b:'coupe',lo:17000,hi:32000,y:[2018,2024],d:4,w:1.5},{id:'bent',n:'Bentley Continental GT',b:'luxury',lo:22000,hi:42000,y:[2018,2024],d:4,w:1.4},
- {id:'db12',n:'Aston Martin DB12',b:'coupe',lo:26000,hi:46000,y:[2023,2024],d:4,w:1},
- {id:'hura',n:'Lamborghini Huracán',b:'super',lo:45000,hi:85000,y:[2017,2024],d:5,w:.6},{id:'urus',n:'Lamborghini Urus',b:'suv',lo:40000,hi:75000,y:[2019,2024],d:5,w:.7},
- {id:'f8',n:'Ferrari F8 Tributo',b:'super',lo:50000,hi:90000,y:[2020,2023],d:5,w:.5},{id:'mc720',n:'McLaren 720S',b:'super',lo:55000,hi:95000,y:[2018,2023],d:5,w:.45},
- {id:'cull',n:'Rolls-Royce Cullinan',b:'luxury',lo:60000,hi:110000,y:[2019,2024],d:5,w:.4},{id:'sf90',n:'Ferrari SF90 Stradale',b:'super',lo:90000,hi:150000,y:[2020,2024],d:5,w:.22},
- {id:'chiron',n:'Bugatti Chiron',b:'super',lo:180000,hi:320000,y:[2017,2023],d:5,w:.07,leg:1},{id:'jesko',n:'Koenigsegg Jesko',b:'super',lo:220000,hi:380000,y:[2022,2024],d:5,w:.05,leg:1}];
+ {id:'panda',n:'Fiat Panda',b:'city2',lo:300,hi:1100,y:[2008,2019],d:1,w:26},{id:'corsa',n:'Opel Corsa',b:'hatch',lo:400,hi:1500,y:[2009,2020],d:1,w:26},
+ {id:'yaris',n:'Toyota Yaris',b:'hatch3',lo:500,hi:1700,y:[2010,2020],d:1,w:24},{id:'clio',n:'Renault Clio',b:'hatch2',lo:500,hi:1800,y:[2010,2021],d:1,w:24},
+ {id:'p208',n:'Peugeot 208',b:'hatch4',lo:600,hi:2000,y:[2013,2021],d:1,w:22},{id:'picanto',n:'Kia Picanto',b:'city',lo:400,hi:1300,y:[2012,2021],d:1,w:22},
+ {id:'polo',n:'Volkswagen Polo',b:'hatch5',lo:600,hi:2100,y:[2011,2021],d:1,w:22},{id:'c3',n:'Citroën C3',b:'city3',lo:500,hi:1600,y:[2012,2021],d:1,w:20},
+ {id:'golf',n:'Volkswagen Golf GTI',b:'hot',lo:1500,hi:4500,y:[2014,2022],d:2,w:12},{id:'focus',n:'Ford Focus ST',b:'hot2',lo:1400,hi:4000,y:[2013,2021],d:2,w:11},
+ {id:'leon',n:'Cupra Leon',b:'hot3',lo:1800,hi:5000,y:[2016,2023],d:2,w:10},{id:'a3',n:'Audi S3',b:'sedan',lo:2200,hi:5800,y:[2015,2023],d:2,w:10},
+ {id:'octavia',n:'Škoda Octavia RS',b:'estate',lo:1800,hi:4800,y:[2015,2023],d:2,w:10},{id:'mini',n:'Mini Cooper S',b:'hot4',lo:1600,hi:4200,y:[2014,2023],d:2,w:10},
+ {id:'v60',n:'Volvo V60',b:'estate2',lo:2000,hi:5200,y:[2016,2023],d:2,w:9},{id:'gr86',n:'Toyota GR86',b:'coupe',lo:3000,hi:6500,y:[2021,2024],d:2,w:6},
+ {id:'m3',n:'BMW M3',b:'sedan2',lo:5000,hi:12000,y:[2015,2024],d:3,w:5},{id:'c63',n:'Mercedes-AMG C63',b:'sedan3',lo:5500,hi:12500,y:[2015,2023],d:3,w:4.5},
+ {id:'tesla',n:'Tesla Model S Plaid',b:'liftback',lo:7000,hi:14000,y:[2021,2024],d:3,w:4},{id:'rs6',n:'Audi RS6 Avant',b:'estate3',lo:8000,hi:16000,y:[2018,2024],d:3,w:4},
+ {id:'rr',n:'Range Rover Sport',b:'suv',lo:8000,hi:17000,y:[2016,2024],d:3,w:4},{id:'macan',n:'Porsche Macan GTS',b:'cross',lo:7000,hi:15000,y:[2017,2024],d:3,w:4},
+ {id:'x5m',n:'BMW X5 M',b:'suv2',lo:8500,hi:16500,y:[2018,2024],d:3,w:3.5},
+ {id:'911',n:'Porsche 911 Carrera',b:'sport',lo:15000,hi:30000,y:[2016,2024],d:4,w:2.2},{id:'r8',n:'Audi R8',b:'super',lo:18000,hi:34000,y:[2015,2023],d:4,w:1.8},
+ {id:'taycan',n:'Porsche Taycan Turbo S',b:'liftback2',lo:16000,hi:30000,y:[2020,2024],d:4,w:1.8},{id:'g63',n:'Mercedes-AMG G63',b:'offroad',lo:20000,hi:38000,y:[2018,2024],d:4,w:1.8},
+ {id:'mase',n:'Maserati GranTurismo',b:'gt',lo:17000,hi:32000,y:[2018,2024],d:4,w:1.5},{id:'bent',n:'Bentley Continental GT',b:'gt2',lo:22000,hi:42000,y:[2018,2024],d:4,w:1.4},
+ {id:'db12',n:'Aston Martin DB12',b:'gt3',lo:26000,hi:46000,y:[2023,2024],d:4,w:1},
+ {id:'hura',n:'Lamborghini Huracán',b:'super2',lo:45000,hi:85000,y:[2017,2024],d:5,w:.6},{id:'urus',n:'Lamborghini Urus',b:'supersuv',lo:40000,hi:75000,y:[2019,2024],d:5,w:.7},
+ {id:'f8',n:'Ferrari F8 Tributo',b:'super3',lo:50000,hi:90000,y:[2020,2023],d:5,w:.5},{id:'mc720',n:'McLaren 720S',b:'super4',lo:55000,hi:95000,y:[2018,2023],d:5,w:.45},
+ {id:'cull',n:'Rolls-Royce Cullinan',b:'luxsuv',lo:60000,hi:110000,y:[2019,2024],d:5,w:.4},{id:'sf90',n:'Ferrari SF90 Stradale',b:'super5',lo:90000,hi:150000,y:[2020,2024],d:5,w:.22},
+ {id:'chiron',n:'Bugatti Chiron',b:'hyper',lo:180000,hi:320000,y:[2017,2023],d:5,w:.07,leg:1},{id:'jesko',n:'Koenigsegg Jesko',b:'hyper2',lo:220000,hi:380000,y:[2022,2024],d:5,w:.05,leg:1}];
 const CAR_LEVEL=['','makkelijk','redelijk','lastig','moeilijk','extreem'];
 const CAR_RARITY=[null,['Gewoon','#9aa1ab'],['Ongewoon','#3fe395'],['Zeldzaam','#4d9dff'],['Episch','#b8a1ff'],['Legendarisch','#ffad6b']];
 const CAR_MYTH=['Mythisch','#ff3d52'];
@@ -183,7 +184,8 @@ const GEAR_CATS=[
  {id:'wapen',n:'Wapens',d:'Meer kans dat een klus lukt. Zware familiemissies vragen om vuurkracht.',ic:'gun',col:'#ff6b6b'},
  {id:'pantser',n:'Bescherming',d:'Je durft meer en zit korter vast als het toch misgaat.',ic:'vest',col:'#a9dcff'},
  {id:'tools',n:'Gereedschap',d:'Je weet beter waar het geld ligt en krijgt auto\'s sneller open.',ic:'tool',col:'#ffd166'},
- {id:'comm',n:'Communicatie',d:'Je hoort de politie eerder aankomen: minder hitte na elke klus.',ic:'radio',col:'#b8a1ff'}];
+ {id:'comm',n:'Communicatie',d:'Je hoort de politie eerder aankomen: minder hitte na elke klus.',ic:'radio',col:'#b8a1ff'},
+ {id:'vervoer',n:'Vervoer',d:'Iets om mee weg te komen. Als het misgaat, ben je sneller weg.',ic:'cars',col:'#7fd1c7'}];
 const GEAR=[
  {id:'mes',cat:'wapen',n:'Vlindermes',d:'Klein, snel en makkelijk weg te gooien.',p:800,r:0,kans:3,vk:1,ic:'knife'},
  {id:'pistool',cat:'wapen',n:'Glock 17',d:'Het standaardwerk. Betrouwbaar en niet te zwaar.',p:6000,r:2,kans:6,vk:3,ic:'gun'},
@@ -203,7 +205,12 @@ const GEAR=[
  {id:'prepaid',cat:'comm',n:'Prepaid telefoon',d:'Op naam van niemand.',p:300,r:0,heat:10,ic:'phone'},
  {id:'scanner',cat:'comm',n:'Politiescanner',d:'Je hoort de meldkamer mee.',p:12000,r:2,heat:25,ic:'radio'},
  {id:'crypto',cat:'comm',n:'Versleutelde telefoon',d:'Berichten die niemand kan lezen.',p:85000,r:5,heat:40,ic:'phone'},
- {id:'mol',cat:'comm',n:'Mol bij de politie',d:'Een agent die je op tijd belt.',p:600000,r:8,heat:55,ic:'ear'}];
+ {id:'mol',cat:'comm',n:'Mol bij de politie',d:'Een agent die je op tijd belt.',p:600000,r:8,heat:55,ic:'ear'},
+ {id:'scooter',cat:'vervoer',n:'Opgevoerde scooter',d:'Haalt zeventig in de binnenstad en past door elke steeg.',p:1200,r:0,flee:6,ic:'moto'},
+ {id:'cross',cat:'vervoer',n:'Crossmotor',d:'Over stoepen, door parken en dwars door het Vondelpark.',p:9500,r:2,flee:10,ic:'moto'},
+ {id:'sedan',cat:'vervoer',n:'Grijze sedan met valse platen',d:'Niemand kijkt om, maar onder de motorkap zit een beest.',p:48000,r:4,flee:14,heat:5,ic:'cars'},
+ {id:'speedboot',cat:'vervoer',n:'Speedboot in de haven',d:'Via de grachten naar het IJ, en dan ben je weg.',p:210000,r:6,flee:18,heat:5,ic:'yacht'},
+ {id:'heli',cat:'vervoer',n:'Helikopter op afroep',d:'Een piloot die geen vragen stelt, twintig minuten van elke plek.',p:1800000,r:9,flee:25,heat:8,ic:'heli'}];
 const NPC_NAMES=['Vito "De Haai"','Ricardo B.','Mo Taxi','Sjaak de Kraker','Lola V.','Don Petrov','Kleine Johnny','Yasmina R.','Big Dre','De Belg','Nico Stilletto','Frenkie Fluit'];
 
 // Vluchtspel: hoe besloten de plek, hoe moeilijker het is om weg te komen
@@ -229,13 +236,13 @@ const TRAIN_MILES=[10,20,30,40,50];
 const TRAININGS=[
  {id:'conditie',place:'Sportschool',n:'Conditie',col:'#3fe395',ic:'gym',base:60,cd:12,
   d:'Krachttraining en cardio. Je hebt meer energie en houdt het langer vol als je moet vluchten.',
-  eff:l=>[['Max. energie','+'+Math.round(SK.conditie.en*l)],['Groter groen gat bij vluchten',pctTxt(SK.conditie.zone*100*l,'+')]]},
+  eff:l=>[['Max. energie','+'+Math.round(SK.conditie.en*l)],['Meer ruimte bij vluchten',pctTxt(SK.conditie.zone*100*l,'+')]]},
  {id:'steal',place:'Albert Cuypmarkt',n:'Vingervlugheid',col:'#a9dcff',ic:'hand',base:80,cd:15,
   d:'Oefenen tussen de kraampjes. Je handen worden sneller dan hun ogen.',
   eff:l=>[['Slaagkans alle klussen',pctTxt(SK.steal.all*l,'+')],['Bij zakkenrollen',pctTxt(SK.steal.zakken*l,'+')]]},
  {id:'speed',place:'Atletiekbaan',n:'Snelheid',col:'#b8a1ff',ic:'run',base:100,cd:15,
   d:'Sprinten en intervallen. Je bent sneller klaar en sneller weg.',
-  eff:l=>[['Kortere wachttijd',pctTxt(SK.speed.cd*100*l,'-')],['Tragere vluchtwijzer',pctTxt(SK.speed.mark*100*l,'-')]]},
+  eff:l=>[['Kortere wachttijd',pctTxt(SK.speed.cd*100*l,'-')],['Trager tempo bij vluchten',pctTxt(SK.speed.mark*100*l,'-')]]},
  {id:'cars',place:'Circuit Zandvoort',n:'Rijvaardigheid',col:'#ffad6b',ic:'wheel',base:120,cd:20,
   d:'Rondjes op het circuit. Je hebt meer tijd bij het contact maken en weet beter wat een wagen waard is.',
   eff:l=>[['Meer tijd bij contact maken',pctTxt(SK.cars.time*100*l,'+')],['Verkoopwaarde gestolen auto',pctTxt(SK.cars.price*100*l,'+')]]},
@@ -294,28 +301,41 @@ const LIVE_CODES={lotto:1500,welkom:500,casino:5000,vip:20000,spinnetje:25000,ja
 
 // Verblijf: je begint onder de brug. Rusten vult je energie in `rest` seconden, maar alleen zolang je blijft.
 const HOMES=[
- // rest = seconden rusten, cd = wachttijd tussen rustbeurten (s), en = extra max. energie, hp = gezondheid per rustbeurt, heat = minder hitte per rustbeurt
- {id:'brug',n:'Onder de brug',place:'Berlagebrug',d:'Een vochtig matras, een slaapzak en het geraas van de tram. Het is niet veel, maar je kunt er even je ogen dicht doen.',p:0,r:0,rest:10,cd:300,en:0,hp:20,heat:0},
- {id:'kraak',n:'Kraakpand',place:'Amsterdam-West',d:'Een leegstaand kantoor met een kapotte lift. Je hebt een deur die op slot kan.',p:2500,r:2,rest:9,cd:270,en:10,hp:25,heat:0},
- {id:'kamer',n:'Huurkamer',place:'De Pijp',d:'Zestien vierkante meter, een eigen douche en een huisbaas die geen vragen stelt.',p:15000,r:4,rest:8,cd:240,en:20,hp:30,heat:0},
- {id:'gracht',n:'Grachtenappartement',place:'Keizersgracht',d:'Hoge plafonds, uitzicht op het water. Niemand verwacht hier een crimineel.',p:80000,r:6,rest:7,cd:210,en:30,hp:40,heat:5},
- {id:'penthouse',n:'Penthouse',place:'Zuidas',d:'Bovenste verdieping, eigen lift, bewaking in de lobby.',p:400000,r:8,rest:6,cd:180,en:40,hp:55,heat:10},
- {id:'villa',n:'Villa',place:'Wassenaar',d:'Een hek, camera\'s, een zwembad en personeel. Zo slaapt een peetvader.',p:1500000,r:10,rest:5,cd:150,en:50,hp:70,heat:20}];
-// Inrichting: spullen voor je woning (vanaf de huurkamer). Ze verhuizen mee en geven een blijvend voordeel.
-// h = vanaf welke woning (index in HOMES). fx: hpRegen/enRegen/heat = sneller herstel, focus = % slaagkans, en = max. energie,
-// restHp = extra gezondheid per rustbeurt, restCd = kortere wachttijd rusten, zone = groter groen gat bij vluchten, safe = minder verlies bij mislukken
+ // rest = seconden rusten, cd = wachttijd tussen rustbeurten (s), en = extra max. energie, hp = gezondheid per rustbeurt, heat = minder hitte per rustbeurt,
+ // slots = hoeveel spullen er staan (zie FURN)
+ {id:'brug',n:'Onder de brug',place:'Berlagebrug',d:'Een vochtig matras, een vuurton en het geraas van de tram boven je hoofd. Het is niet veel, maar je kunt er even je ogen dicht doen.',p:0,r:0,rest:10,cd:300,en:0,hp:20,heat:0,slots:1},
+ {id:'kraak',n:'Kraakpand',place:'Amsterdam-West',d:'Een leegstaand kantoor met een kapotte lift. Je hebt een deur die op slot kan.',p:2500,r:2,rest:9,cd:270,en:10,hp:25,heat:0,slots:2},
+ {id:'kamer',n:'Huurkamer',place:'De Pijp',d:'Zestien vierkante meter, een eigen douche en een huisbaas die geen vragen stelt.',p:15000,r:4,rest:8,cd:240,en:20,hp:30,heat:0,slots:4},
+ {id:'gracht',n:'Grachtenappartement',place:'Keizersgracht',d:'Hoge plafonds, uitzicht op het water. Niemand verwacht hier een crimineel.',p:80000,r:6,rest:7,cd:210,en:30,hp:40,heat:5,slots:6},
+ {id:'penthouse',n:'Penthouse',place:'Zuidas',d:'Bovenste verdieping, eigen lift, bewaking in de lobby.',p:400000,r:8,rest:6,cd:180,en:40,hp:55,heat:10,slots:9},
+ {id:'villa',n:'Villa',place:'Wassenaar',d:'Een hek, camera\'s, een zwembad en personeel. Zo slaapt een peetvader.',p:1500000,r:10,rest:5,cd:150,en:50,hp:70,heat:20,slots:13}];
+// Inrichting: spullen voor je woning. Elke woning heeft een aantal plekken (HOMES.slots); wat neerstaat (S.furn) geeft een blijvend voordeel,
+// wat in de opslag staat (S.furnStore) niet. h = vanaf welke woning (index in HOMES), hmax = tot en met welke woning (spullen van de straat neem je niet mee).
+// fx: hpRegen/enRegen/heat = sneller herstel, focus = % slaagkans, en = max. energie, restHp = extra gezondheid per rustbeurt, restCd = kortere wachttijd rusten,
+// zone = meer ruimte bij vluchten, safe = minder verlies bij mislukken, docHp/docCd = dokter, hideRate = sneller onderduiken, hideRisk = minder kans herkend te worden
 const FURN=[
+ {id:'slaapzak',n:'Legerslaapzak',h:0,hmax:1,p:150,col:'#9bb06a',d:'Van de dumpzaak. Warm, droog en het ruikt een beetje naar diesel.',fx:{restHp:5}},
+ {id:'kar',n:'Winkelwagen',h:0,hmax:1,p:90,col:'#a9b4c2',d:'Je spullen onder een stapel lege flessen. Niemand kijkt erin.',fx:{safe:.1}},
+ {id:'hond',n:'Zwerfhond',h:0,p:350,col:'#d9a066',d:'Hij liep je achterna en bleef. Met een hond aan de lijn kijkt niemand twee keer.',fx:{hideRisk:.3}},
+ {id:'kaarsen',n:'Kaarsen en wierook',h:1,p:350,col:'#ffd166',d:'Licht dat niet van een zwaailicht komt.',fx:{focus:1}},
+ {id:'sloten',n:'Extra sloten',h:1,p:1200,col:'#9aa3ad',d:'Drie sloten, een ketting en een stalen plaat op de deur.',fx:{hideRate:.2}},
  {id:'plant',n:'Planten',h:2,p:1500,col:'#3fe395',d:'Een hoek vol groen. Frisse lucht en een rustig hoofd.',fx:{hpRegen:.25,focus:2}},
  {id:'espresso',n:'Espressomachine',h:2,p:2500,col:'#ffad6b',d:'Elke ochtend een dubbele. Je gaat langer door.',fx:{en:10}},
+ {id:'ehbo',n:'EHBO-kist',h:2,p:3000,col:'#ff5c6c',d:'Verband, hechtpleisters en pijnstillers. Scheelt een ritje naar de huisartsenpost.',fx:{docHp:5,docCd:.2}},
  {id:'bed',n:'Goed bed',h:2,p:4000,col:'#a9dcff',d:'Pocketvering en een dekbed van ganzendons.',fx:{restHp:10,restCd:.15}},
  {id:'bokszak',n:'Bokszak',h:2,p:6000,col:'#ff7a1a',d:'Elke dag tien rondes. Je benen blijven sterk.',fx:{zone:.06}},
  {id:'aquarium',n:'Aquarium',h:3,p:15000,col:'#4d9dff',d:'Tropische vissen en een zacht blauw licht.',fx:{hpRegen:.25,focus:3}},
  {id:'camera',n:'Camera\'s',h:3,p:25000,col:'#b8a1ff',d:'Je ziet wie er aanbelt voordat zij jou zien.',fx:{heat:.5}},
+ {id:'wapenkast',n:'Wapenkast',h:3,p:35000,col:'#d07a52',d:'Achter een vals paneel. Alles ligt klaar en niemand ziet het.',fx:{focus:3}},
  {id:'kluis',n:'Kluis in de muur',h:4,p:60000,col:'#c9a227',d:'Contant geld dat niet op straat ligt, raak je ook niet kwijt.',fx:{safe:.5}},
  {id:'bios',n:'Thuisbioscoop',h:4,p:90000,col:'#ff7fb3',d:'Leren stoelen en een scherm van drie meter.',fx:{enRegen:.15}},
+ {id:'fitness',n:'Fitnesshoek',h:4,p:120000,col:'#5ce1c4',d:'Loopband, halters en een bank. Je houdt het langer vol.',fx:{en:10,zone:.05}},
  {id:'sauna',n:'Eigen sauna',h:5,p:250000,col:'#ff3d52',d:'Een cederhouten sauna met uitzicht op de tuin.',fx:{hpRegen:.5,restCd:.15}},
- {id:'zen',n:'Meditatieruimte',h:5,p:400000,col:'#e6e1d6',d:'Stilte, een gong en een Japanse tuin.',fx:{focus:5}}];
+ {id:'zen',n:'Japanse tuin',h:5,p:400000,col:'#e6e1d6',d:'Geharkt grind, drie stenen en een esdoorn. Stilte.',fx:{focus:5}},
+ {id:'hek',n:'Hek met bewaking',h:5,p:600000,col:'#7fb8ff',d:'Een man in een hokje, twee honden en schijnwerpers. Je slaapt.',fx:{hideRate:.3,heat:.25}}];
 const FURN_FX={hpRegen:['Gezondheid herstelt',v=>'+'+Math.round(v*100)+'% sneller'],enRegen:['Energie laadt op',v=>'+'+Math.round(v*100)+'% sneller'],heat:['Hitte zakt',v=>'+'+Math.round(v*100)+'% sneller'],
  focus:['Rust in je hoofd',v=>'+'+v+'% slaagkans'],en:['Max. energie',v=>'+'+v],restHp:['Per rustbeurt',v=>'+'+v+'% gezondheid'],restCd:['Wachttijd rusten',v=>'-'+Math.round(v*100)+'%'],
- zone:['Groen gat bij vluchten',v=>'+'+Math.round(v*100)+'%'],safe:['Verlies bij mislukken',v=>'-'+Math.round(v*100)+'%']};
+ zone:['Groen gat bij vluchten',v=>'+'+Math.round(v*100)+'%'],safe:['Verlies bij mislukken',v=>'-'+Math.round(v*100)+'%'],
+ docHp:['Bij de dokter',v=>'+'+v+'% gezondheid'],docCd:['Wachttijd dokter',v=>'-'+Math.round(v*100)+'%'],
+ hideRate:['Onderduiken',v=>'+'+Math.round(v*100)+'% sneller'],hideRisk:['Kans herkend te worden',v=>'-'+Math.round(v*100)+'%']};
 const DOC={dur:10,cd:600,hp:20};

@@ -98,16 +98,22 @@ const gearBest=cat=>{let b=null;GEAR.forEach(g=>{if(g.cat===cat&&S.gear&&S.gear[
 const gearSum=k=>GEAR_CATS.reduce((a,c)=>{const g=gearBest(c.id);return a+((g&&g[k])||0)},0);
 const gearBonus=()=>gearSum('kans');
 const gearFx=k=>gearSum(k)/100;
+// outfit (kleding en sieraden, zie pages/look.js): voordelen per stuk plus setbonus
+const fitFx=k=>typeof outfitFx==='function'?outfitFx(k):0;
 const gearVk=()=>gearSum('vk');
 // hitte erbij, minder met communicatiemiddelen (kansrekening voor de rest, zodat kleine getallen ook tellen)
-function addHeat(h){h*=(1-gearFx('heat'))*(1-famPerk('heat'));S.heat=Math.min(100,S.heat+Math.floor(h)+(Math.random()<h%1?1:0))}
+function addHeat(h){h*=(1-gearFx('heat'))*(1-famPerk('heat'))*(1-fitFx('heat'));S.heat=Math.min(100,S.heat+Math.floor(h)+(Math.random()<h%1?1:0))}
 // Familie: je begint onderaan (Aspirant) en klimt met eer. Familiebonus en eigen voordeel groeien van 50% naar 100%.
 const famBase=()=>FAMILIES.find(f=>f.id===S.family)||null;
 const famTier=()=>{const f=famBase();return f?FAMILIES.indexOf(f):0};
 const famNeed=(i,t)=>Math.round(FAM_RANKS[i][1]*(1+(t==null?famTier():t)*.5));
 const famEer=()=>(S.family&&S.fr&&S.fr.id===S.family)?S.fr.eer:0;
-const famRankIdx=()=>{if(!S.family)return 0;let r=0;FAM_RANKS.forEach((x,i)=>{if(famEer()>=famNeed(i))r=i});return r};
-const famScale=()=>.5+.1*famRankIdx();
+// Boven Erelid (FAM_TOP) alleen met een titel: S.fr.lead 1 = Onderbaas, 2 = Baas. Zakt je eer onder Erelid, dan vervalt die.
+const FAM_TOP=Math.max(0,FAM_RANKS.findIndex(r=>r[2])-1);
+const famLead=()=>(S.family&&S.fr&&S.fr.id===S.family&&S.fr.lead)||0;
+const famRankEer=()=>{if(!S.family)return 0;let r=0;FAM_RANKS.forEach((x,i)=>{if(!x[2]&&famEer()>=famNeed(i))r=i});return r};
+const famRankIdx=()=>{const r=famRankEer();return r>=FAM_TOP&&famLead()?Math.min(FAM_RANKS.length-1,FAM_TOP+famLead()):r};
+const famScale=()=>{const i=famRankIdx();return i>FAM_TOP+1?1.25:.5+.1*i};
 const fam=()=>{const f=famBase();if(!f)return {chance:0,loot:0,jail:0};const k=famScale();
  return Object.assign({},f,{chance:Math.round(f.chance*k*10)/10,loot:Math.round(f.loot*k*10)/10,jail:Math.round(f.jail*k*10)/10})};
 const famPerk=k=>{const f=famBase();return f&&f.perk.fx[k]?f.perk.fx[k]*famScale():0};
@@ -116,7 +122,7 @@ const buffFocus=()=>(S.buffs&&S.buffs.focus&&S.buffs.focus.until>now())?S.buffs.
 const buffLoot=()=>(S.buffs&&S.buffs.loot&&S.buffs.loot.until>now())?S.buffs.loot.pct:0;
 const sk=id=>(S.skills&&S.skills[id])||0;
 // buit-vermenigvuldiger bij klussen: familie × (rang + rang-level + hacken + buit-buff + uitrusting) × lidmaatschap
-const lootMult=()=>(1+fam().loot/100)*(1+rankIdx(S.xp)*RANK_LOOT+rankLvlBonus()+sk('hack')*SK.hack.loot/100+buffLoot()/100+gearFx('buit'))*(1+tierLoot());
+const lootMult=()=>(1+fam().loot/100)*(1+rankIdx(S.xp)*RANK_LOOT+rankLvlBonus()+sk('hack')*SK.hack.loot/100+buffLoot()/100+gearFx('buit')+fitFx('buit'))*(1+tierLoot());
 const focusPct=()=>buffFocus()+furnFx('focus');
 // slaagkans: alle bonussen opgeteld, daarna × lidmaatschap (VIP ×1,15, High roller ×1,4), altijd tussen 5% en 95%
 // Vakmanschap per klus: hoe vaker een klus lukt, hoe beter je erin wordt (Brons 10, Zilver 30, Goud 75, Meester 150 keer).
@@ -125,13 +131,14 @@ const MAST=[[0,'Nieuw'],[10,'Brons'],[30,'Zilver'],[75,'Goud'],[150,'Meester']];
 const mastN=id=>(S.mast&&S.mast[id])||0;
 const mastLv=id=>{const n=mastN(id);let l=0;MAST.forEach((m,i)=>{if(n>=m[0])l=i});return l};
 const mastLoot=id=>1+mastLv(id)*.05;
-const chanceRaw=c=>mastLv(c.id)*2+c.base+rankIdx(S.xp)*2+gearBonus()+fam().chance+S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)+(c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0)+focusPct()-Math.floor(S.heat/4);
+const chanceRaw=c=>mastLv(c.id)*2+c.base+rankIdx(S.xp)*2+gearBonus()+fitFx('kans')+fam().chance+S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)+(c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0)+focusPct()-Math.floor(S.heat/4);
 const chance=c=>Math.max(5,Math.min(95,Math.round(chanceRaw(c)*(1+tierK()))));
-const jailSec=sec=>Math.max(30,Math.min(600,Math.round(sec*(1-fam().jail/100)*(1-sk('rechten')*SK.rechten.jail/100)*(1-gearFx('jail')))));
-function sendToJail(sec){sec=jailSec(sec);S.lastSentence=sec;S.jailUntil=now()+sec*1000;return sec}
+// straf 30 s – 10 min, plus 30–60 s (hoe langer de straf, hoe meer) omdat je in de bajes kunt werken: 1 – 11 minuten
+const jailSec=sec=>{const b=Math.max(30,Math.min(600,Math.round(sec*(1-fam().jail/100)*(1-sk('rechten')*SK.rechten.jail/100)*(1-gearFx('jail')))));return b+Math.round(30+30*(b-30)/570)};
+function sendToJail(sec){sec=jailSec(sec);S.lastSentence=sec;S.jailUntil=now()+sec*1000;if(typeof celNew==='function')celNew(sec);return sec}
 // Borg groeit met je rang: als Dief kost 2 minuten zo'n €900, als Peetvader 10 minuten zo'n €150.000. Charisma geeft korting.
 const bailRate=()=>2*Math.pow(1.55,rankIdx(S.xp));
-function bailCost(){const left=Math.max(0,Math.ceil((S.jailUntil-now())/1000));if(!left)return 0;return Math.max(50,Math.round(left*bailRate()*(1-S.skills.charisma*SK.charisma.bail)*(1-sk('rechten')*SK.rechten.bail/100)*(1-famPerk('bail'))/10)*10)}
+function bailCost(){const left=Math.max(0,Math.ceil((S.jailUntil-now())/1000));if(!left)return 0;return Math.max(50,Math.round(left*bailRate()*(1-S.skills.charisma*SK.charisma.bail)*(1-sk('rechten')*SK.rechten.bail/100)*(1-famPerk('bail'))*(1-fitFx('bail'))/10)*10)}
 const talkChance=()=>Math.min(45,Math.round(S.skills.charisma*SK.charisma.talk));
 // Arrestatie met de keuze om je eruit te praten (charisma)
 // Arrestatie: vluchten (vluchtspel), je eruit praten (charisma) of je overgeven.
@@ -154,6 +161,7 @@ function arrest(sec,title,msg,opts){
   if(opts.flee){const L=FLEE_LEVELS[opts.flee];
     btns.push({l:'Vluchten · '+L.label,c:'',f:()=>{pa.fleeing=true;S.pendingArrest=pa;save();pushState();closeModal();fleeGame(opts.flee).then(ok=>{
       if(ok){S.pendingArrest=null;S.stats.fled=(S.stats.fled||0)+1;S.cred+=1;S.heat=Math.min(100,S.heat+5);addXp(3);
+        if(opts.wanted&&!raid&&typeof setWanted==='function')setWanted(opts.wanted.lv,opts.wanted.t,opts.wanted.sec); // na een huurmoord: ontkomen, wel gezocht
         log(raid?'Politiecontrole ontvlucht. Je staat nog op de gezochtlijst':'Gevlucht en de politie kwijtgeraakt','ok');save();pushState();render();
         toast(raid?'Ontglipt! Maar je wordt nog steeds gezocht.':'Ontkomen! De politie is je kwijt.')}
       else goJail(1.2,'Vluchtpoging mislukt (+20% straf)')})}});
@@ -178,7 +186,7 @@ function policeRaid(){
   if(!S.wanted||inJail()||!$('#modal').hidden||window.__chase)return false;
   S.heat=Math.min(100,S.heat+20);
   if(window.bj&&!bj.done){bj.done=true;bj.msg='Spel afgebroken door de politie';S.stats.lost+=bj.bet}
-  arrest(S.lastSentence+120,'Politiecontrole!','Agenten doen een controle '+(PLACES[page]||'op straat')+' en herkennen je van de gezochtlijst.',{mult:0.5,raid:true,flee:3});return true}
+  arrest((S.wanted&&S.wanted.sec)||S.lastSentence+120,'Politiecontrole!','Agenten doen een controle '+(PLACES[page]||'op straat')+' en herkennen je van de gezochtlijst.',{mult:0.5,raid:true,flee:S.wanted&&S.wanted.lv>=3?4:3});return true}
 const fmtClock=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
 const fmtTime=s=>{s=Math.round(s);return s>=60?Math.floor(s/60)+'m '+String(s%60).padStart(2,'0')+'s':s+'s'};
 function showModal(t,m,btns){$('#modal').hidden=false;$('#modalT').textContent=t;$('#modalM').textContent=m;
@@ -204,7 +212,7 @@ const gearCredK=()=>GEAR_CATS.reduce((a,c)=>{const g=gearBest(c.id);return a+(g?
 const credMult=q=>(1+gearCredK())*(1+tierK())*(q==='perfect'?1.5:q==='netjes'?1.2:1);
 const credGain=(base,q)=>{const v=base*credMult(q);return Math.floor(v)+(Math.random()<v%1?1:0)};
 // ontsnappen uit de bajes: 35% basis × lidmaatschap, plus het familievoordeel
-const escChance=()=>.35*(1+tierK())+famPerk('esc');
+const escChance=()=>.35*(1+tierK())+famPerk('esc')+fitFx('esc');
 // tags in lijsten: echte spelers krijgen 'Speler', plus VIP of High roller (t = lidmaatschap 0/1/2)
 const lidTag=t=>+t>=2?'<i class="vipt hr" title="High roller">HIGH ROLLER</i>':+t>=1?'<i class="vipt" title="VIP-lid">VIP</i>':'';
 const playerTags=t=>'<i class="spt" title="Echte speler">SPELER</i>'+lidTag(t);
@@ -214,7 +222,7 @@ const vipTag=short=>isHR()?`<i class="vipt hr" title="High roller">${short?'HR':
 function casinoRound(stake,pay,game){if(typeof pushSoon==='function')setTimeout(pushSoon,0);if(!isVip())return;const r=(CB_RATE[game]||0)*(TIER_CB[tier()]||0);if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
   const el=document.getElementById('cbAmt');if(el)el.textContent=fmt(cbAvail());const bt=document.getElementById('cbBtn');if(bt){bt.disabled=cbAvail()<1;bt.textContent=cbAvail()>=1?'Claimen':'Nog niks te claimen'}}
 const cbAvail=()=>isVip()&&S.cb?Math.floor(S.cb.acc||0):0;
-const crimeCd=c=>c.cd*1000*(1-S.skills.speed*SK.speed.cd)*(1-famPerk('cd'))*waitK();
+const crimeCd=c=>c.cd*1000*(1-S.skills.speed*SK.speed.cd)*(1-famPerk('cd'))*(1-fitFx('cd'))*waitK();
 const carCd=()=>30000*(1-S.skills.speed*SK.speed.cd)*waitK();
 const RL_ORDER=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
 const REDS=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
@@ -223,7 +231,7 @@ window.rl={bets:{},angle:0,spinning:false,hist:[],chip:100,res:null,net:0};
 // Inkomen per speldag (4 uur): per vestiging het inkomen van zijn level
 const bizUnits=id=>(S.biz2&&S.biz2[id])||[];
 function bizMult(){let u=0,up=0;BIZ.forEach(b=>bizUnits(b.id).forEach(l=>{u++;up+=l-1}));const imp=Math.min(BIZ_IMP_MAX,u*BIZ_IMP_UNIT+up*BIZ_IMP_UP),rk=rankIdx(S.xp)*BIZ_RANK+(rankLevel(S.xp)-1)*.005;
- return {units:u,ups:up,imp,rk,total:BIZ_BOOST*(1+imp)*(1+rk)*(1+sk('handel')*SK.handel.inc/100)*(1+famPerk('inc'))}}
+ return {units:u,ups:up,imp,rk,total:BIZ_BOOST*(1+imp)*(1+rk)*(1+sk('handel')*SK.handel.inc/100)*(1+famPerk('inc'))*(1+fitFx('inc'))}}
 const bizIncome=id=>{const b=BIZ.find(x=>x.id===id);return bizUnits(id).reduce((a,l)=>a+bizInc(b,l),0)};
 const income=()=>BIZ.reduce((a,b)=>a+bizIncome(b.id),0); // per speldag (4 uur)
 // Speldag: 4 uur, vaste tijden (00:00, 04:00, 08:00 ... op je eigen klok). Bedrijven sparen in de kas en betalen aan het eind uit.
@@ -236,7 +244,7 @@ function toast(msg,cls='ok'){const t=document.createElement('div');t.className='
 // delay: de regel blijft verborgen tot de animatie klaar is (casino), zodat het logboek de uitslag niet verraadt
 function log(msg,cls='info',delay){const e={m:msg,c:cls,t:now()};if(delay)e.r=now()+delay;S.log.unshift(e);S.log=S.log.slice(0,40);return e}
 const logShown=()=>S.log.filter(l=>!(l.r>now()));
-function addXp(x){x*=1+famPerk('xp');const before=rankIdx(S.xp),bl=rankLevel(S.xp);S.xp+=x;const after=rankIdx(S.xp),al=rankLevel(S.xp);if(after>before){toast('Promotie: je bent nu '+RANKS[after][0]+'! Claim je beloning op je profiel.','lvl');log('Gepromoveerd tot '+RANKS[after][0],'ok')}
+function addXp(x){x*=(1+famPerk('xp'))*(1+fitFx('xp'));const before=rankIdx(S.xp),bl=rankLevel(S.xp);S.xp+=x;const after=rankIdx(S.xp),al=rankLevel(S.xp);if(after>before){toast('Promotie: je bent nu '+RANKS[after][0]+'! Claim je beloning op je profiel.','lvl');log('Gepromoveerd tot '+RANKS[after][0],'ok')}
   else if(al>bl){toast(RANKS[after][0]+' level '+al+': +'+Math.round(RANK_SUB_LOOT*100)+'% extra buit','lvl');log(RANKS[after][0]+' level '+al+' bereikt','ok')}}
 
 const EN_BASE=100,EN_REGEN_S=18; // 1 energie per 18 seconden

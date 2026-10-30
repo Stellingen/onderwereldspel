@@ -39,7 +39,10 @@ module.exports = function mountAdmin(app, { auth, db, need, rankOf }) {
       heat: +st.heat || 0, energy: +st.energy || 0, hp: +st.hp || 0, family: st.family || null, famEer: st.fr && st.fr.id === st.family ? +st.fr.eer || 0 : 0,
       jailUntil: +st.jailUntil || 0, wanted: !!st.wanted, home: st.home || null, skills: st.skills || {}, units, dep,
       gear: Object.keys(st.gear || {}).length, cars: Array.isArray(st.cars) ? st.cars.length : 0, kas: +st.kas || 0,
-      stats: st.stats || {}, savedAt: +st.savedAt || 0
+      stats: st.stats || {}, savedAt: +st.savedAt || 0,
+      // wat de speler zelf deed (zijn logboek in het spel) en wat hij draagt; beheer ziet dit ook bij een privé profiel
+      log: Array.isArray(st.log) ? st.log.slice(0, 40).map(l => ({ m: String((l && l.m) || '').replace(/<[^>]*>/g, '').slice(0, 240), c: String((l && l.c) || 'info').slice(0, 10), t: +(l && l.t) || 0 })) : [],
+      wear: st.fit && st.fit.wear && typeof st.fit.wear === 'object' ? st.fit.wear : {}
     };
   }
 
@@ -86,7 +89,7 @@ module.exports = function mountAdmin(app, { auth, db, need, rankOf }) {
     const id = +req.params.id;
     if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Ongeldig id' });
     try {
-      const [u] = await db.q(`SELECT u.id, u.display, u.username, u.created_at, u.banned, u.ban_reason, u.is_admin, u.tier AS tier_raw, ${TIER_SQL} AS tier FROM users u WHERE u.id=?`, [id]);
+      const [u] = await db.q(`SELECT u.id, u.display, u.username, u.created_at, u.banned, u.ban_reason, u.is_admin, u.public_profile, u.tier AS tier_raw, ${TIER_SQL} AS tier FROM users u WHERE u.id=?`, [id]);
       if (!u.length) return res.status(404).json({ error: 'Speler niet gevonden' });
       const [g] = await db.q('SELECT state, xp, networth, rankname, updated_at, TIMESTAMPDIFF(SECOND, updated_at, NOW()) AS seen_s, rev, sid FROM game_state WHERE user_id=?', [id]);
       const [red] = await db.q('SELECT code, amount, created_at FROM redemptions WHERE user_id=? ORDER BY created_at DESC', [id]);

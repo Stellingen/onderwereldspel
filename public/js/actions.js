@@ -60,7 +60,7 @@ const act={
  bribe(){const c=bribeCost();if(S.cash<c){toast('Niet genoeg geld om om te kopen','bad');return}S.cash-=c;S.heat=0;toast('De politie kijkt even de andere kant op');save();render()},
  bail(){const c=bailCost();if(S.cash+S.bank<c)return;const fromCash=Math.min(S.cash,c);S.cash-=fromCash;S.bank-=c-fromCash;S.jailUntil=0;S.wanted=false;toast('Borg betaald. Je bent netjes vrij');log('Borg betaald: '+fmt(c),'info');save();render()},
  escape(){if(!inJail())return;if(Math.random()<escChance()){S.jailUntil=0;S.wanted=true;S.heat=Math.min(100,S.heat+15);addXp(15);toast('Ontsnapt! Je staat nu op de gezochtlijst','bad');log('Ontsnapt uit de bajes. Je bent gezocht','bad')}
-  else{const left=Math.ceil((S.jailUntil-now())/1000);const nl=Math.min(600,left+30);S.jailUntil=now()+nl*1000;S.lastSentence=Math.max(S.lastSentence,nl);toast('Betrapt bij het hek. +30s straf','bad');log('Ontsnapping mislukt','bad')}save();render()},
+  else{const left=Math.ceil((S.jailUntil-now())/1000);const nl=Math.max(left,Math.min(660,left+30));S.jailUntil=now()+nl*1000;S.lastSentence=Math.max(S.lastSentence,nl);toast('Betrapt bij het hek. +30s straf','bad');log('Ontsnapping mislukt','bad')}save();render()},
  bjDeal(){const b=act.getBet();if(!b)return;const deck=[];['♠','♥','♦','♣'].forEach(s=>['A','2','3','4','5','6','7','8','9','10','J','Q','K'].forEach(v=>deck.push({s,v})));
   for(let i=deck.length-1;i>0;i--){const j=rnd(0,i);[deck[i],deck[j]]=[deck[j],deck[i]]}
   S.cash-=b;window.bj={deck,bet:b,p:[deck.pop(),deck.pop()],d:[deck.pop(),Object.assign(deck.pop(),{hidden:true})],done:false};
@@ -78,5 +78,5 @@ const act={
 // Politiecontroles: elke actie kan een controle opleveren als je gezocht bent
 (()=>{const skip=['redeem','claimCb','bail','escape','getBet','win','bjEnd','leave','bjHit','bjStand','bjDouble','rlBet','rlClear'];let depth=0;
  Object.keys(act).forEach(k=>{if(skip.includes(k))return;const fn=act[k];act[k]=function(...a){
-  if(depth===0&&S.wanted&&!inJail()&&Math.random()<(page==='casino'?0.2:0.12)*(S.hide?.4:1)){policeRaid();return}
+  if(depth===0&&S.wanted&&!inJail()&&Math.random()<(page==='casino'?0.2:0.12)*(S.hide?.4:1)*(typeof wantedK==='function'?wantedK():1)){policeRaid();return}
   depth++;try{return fn.apply(this,a)}finally{depth--}}})})();

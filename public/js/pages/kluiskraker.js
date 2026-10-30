@@ -40,7 +40,7 @@ function kkInfo(){const fs=kk.fs;const pend=window.slotPending||0;
 // Gouden baren in de gewone bonus: ze blijven staan, bij 3 is het de max win
 const kkBarsHtml=n=>`<span class="kk-bars" aria-label="${n} van ${SLOT.BAR.need} Gouden baren">${Array.from({length:SLOT.BAR.need},(_,i)=>`<i class="${i<n?'on':''}">${kkSvg('baar')}</i>`).join('')}</span>`;
 // doorgerekend per lidmaatschap (sim9.js en simbuy4.js): bonus 1 op …, superbonus 1 op …, RTP spinnen en bonus kopen
-const KK_TIER=[{b:200,sup:'20.000',rtp:'92',buy:'95'},{b:175,sup:'13.500',rtp:'95',buy:'95,5'},{b:143,sup:'9.500',rtp:'96',buy:'96,5'}];
+const KK_TIER=[{b:195,sup:'21.000',rtp:'92',buy:'95'},{b:175,sup:'16.000',rtp:'95',buy:'95,5'},{b:145,sup:'9.000',rtp:'96',buy:'96,5'}];
 const kkTierTag=()=>isHR()?'<span class="vip hr">HIGH ROLLER</span>':isVip()?'<span class="vip gold">VIP</span>':'';
 function kkSubHtml(){const fs=kk.fs;return fs?(fs.kind==='super'?`<span class="vip gold">Superbonus</span><span class="kk-subtxt"> Meer lopers. Eén Gouden baar = max win</span>`:`<span class="vip">Bonus</span>${kkBarsHtml(fs.bars||0)}<span class="kk-subtxt"> 3 Gouden baren = max win</span>`)
   :`${kkTierTag()}<span class="kk-subtxt">${(I=>` bonus ±1 op ${I.b} · superbonus ±1 op ${I.sup} · RTP ±${I.rtp}% · bonus kopen ±${I.buy}%`)(KK_TIER[tier()])} · max ${SLOT.MAX_WIN.toLocaleString('nl-NL')}× je inzet</span>`}

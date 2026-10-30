@@ -73,7 +73,7 @@ app.get('/api/me', auth, async (req, res) => {
   const out = { username: req.user.u };
   if (db.state.ready) {
     try {
-      const [rows] = await db.q('SELECT created_at, username, tier, is_admin, banned, ban_reason FROM users WHERE id=?', [req.user.id]);
+      const [rows] = await db.q('SELECT created_at, username, tier, is_admin, banned, ban_reason, public_profile FROM users WHERE id=?', [req.user.id]);
       if (!rows.length) return res.status(401).json({ error: 'Account bestaat niet meer' });
       if (rows[0].banned) return res.status(403).json({ error: 'Dit profiel is verbannen' + (rows[0].ban_reason ? ' (' + rows[0].ban_reason + ')' : '') + '. Maak een nieuw profiel aan.', code: 'banned', reason: rows[0].ban_reason || '' });
       out.since = rows[0].created_at;
@@ -83,6 +83,7 @@ app.get('/api/me', auth, async (req, res) => {
       // lidmaatschap: 0 gewoon, 1 VIP, 2 High roller (door de beheerder); zonder keuze telt de oude VIP-code
       out.tier = rows[0].tier != null ? +rows[0].tier : (out.redeemed.includes('vip') ? 1 : 0);
       out.admin = !!rows[0].is_admin || admin.ADMIN_USERS().includes(rows[0].username);
+      out.pub = !!rows[0].public_profile;
     } catch (e) { console.error(e); }
   }
   res.json(out);
@@ -232,7 +233,7 @@ app.get('/api/leaderboard', async (req, res) => {
   if (!db.state.ready) return res.json({ players: [] });
   try {
     const [rows] = await db.q(
-      `SELECT u.display AS name, g.xp, g.networth, g.rankname, g.day,
+      `SELECT u.display AS name, g.xp, g.networth, g.rankname, g.day, u.public_profile AS pub,
          COALESCE(u.tier, EXISTS(SELECT 1 FROM redemptions r WHERE r.user_id=u.id AND r.code='vip')) AS vip
        FROM game_state g JOIN users u ON u.id=g.user_id
        WHERE u.banned=0
@@ -240,6 +241,48 @@ app.get('/api/leaderboard', async (req, res) => {
     );
     res.json({ players: rows });
   } catch (e) { console.error(e); res.json({ players: [] }); }
+});
+
+// Profielen: standaard privé. De speler kan zijn profiel openbaar zetten; dan zien anderen zijn vermogen, familie, outfit en
+// prestaties. Een beheerder ziet elk profiel (ook privé), net als de speler zelf.
+app.post('/api/profile/privacy', auth, async (req, res) => {
+  if (!db.state.ready) return need(res);
+  const pub = req.body && req.body.public ? 1 : 0;
+  try { await db.q('UPDATE users SET public_profile=? WHERE id=?', [pub, req.user.id]); res.json({ ok: true, public: !!pub }); }
+  catch (e) { console.error(e); res.status(500).json({ error: 'Kon de instelling niet opslaan' }); }
+});
+function profileOf(st) {
+  if (!st || typeof st !== 'object' || st.__reset) return null;
+  const n = v => Math.max(0, Math.floor(+v || 0)), stats = st.stats || {};
+  let units = 0; Object.values(st.biz2 || {}).forEach(a => { if (Array.isArray(a)) units += a.length; });
+  const wear = {}; if (st.fit && st.fit.wear && typeof st.fit.wear === 'object') for (const [k, v] of Object.entries(st.fit.wear)) if (/^[a-z]{2,12}$/.test(k) && /^[a-z]{2,16}$/.test(String(v))) wear[k] = String(v);
+  return {
+    cash: n(st.cash), bank: n(st.bank) + n(st.bankExtra), cred: n(st.cred), family: typeof st.family === 'string' ? st.family.slice(0, 20) : null,
+    famEer: st.fr && st.fr.id === st.family ? n(st.fr.eer) : 0, famLead: st.fr && st.fr.id === st.family ? Math.min(2, n(st.fr.lead)) : 0, home: typeof st.home === 'string' ? st.home.slice(0, 20) : null,
+    cars: Array.isArray(st.cars) ? st.cars.length : 0, units, wear,
+    skills: Object.values(st.skills || {}).reduce((a, v) => a + n(v), 0),
+    stats: { crimes: n(stats.crimes), fails: n(stats.fails), cars: n(stats.cars), hits: n(stats.hits), jacks: n(stats.jacks), won: n(stats.won), lost: n(stats.lost) },
+    jail: n(st.jailUntil) > Date.now(), wanted: !!st.wanted
+  };
+}
+app.get('/api/profile/:name', async (req, res) => {
+  if (!db.state.ready) return res.status(503).json({ error: 'Even geen verbinding met de database' });
+  const name = String(req.params.name || '').toLowerCase();
+  if (!validName(name)) return res.status(400).json({ error: 'Onbekende speler' });
+  let viewer = null; const t = (req.headers.authorization || '').replace('Bearer ', '');
+  if (t) { try { viewer = jwt.verify(t, SECRET); } catch (e) { viewer = null; } }
+  try {
+    const [rows] = await db.q(`SELECT u.id, u.display, u.created_at, u.public_profile, u.banned,
+        COALESCE(u.tier, EXISTS(SELECT 1 FROM redemptions r WHERE r.user_id=u.id AND r.code='vip')) AS tier,
+        g.state, g.xp, g.networth, TIMESTAMPDIFF(SECOND, g.updated_at, NOW()) AS seen_s
+      FROM users u LEFT JOIN game_state g ON g.user_id=u.id WHERE u.username=?`, [name]);
+    if (!rows.length || rows[0].banned) return res.status(404).json({ error: 'Deze speler bestaat niet (meer)' });
+    const r = rows[0], own = !!viewer && viewer.id === r.id, isAdm = !!viewer && !own && await admin.isAdmin(viewer.id).catch(() => false);
+    const base = { name: r.display, xp: +r.xp || 0, tier: +r.tier || 0, public: !!r.public_profile, own, admin: isAdm };
+    if (!r.public_profile && !own && !isAdm) return res.json(Object.assign(base, { private: true }));
+    let st = null; try { st = r.state ? JSON.parse(r.state) : null; } catch (e) { st = null; }
+    res.json(Object.assign(base, { since: r.created_at, networth: +r.networth || 0, seen_s: r.seen_s == null ? null : +r.seen_s, p: profileOf(st) }));
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Kon het profiel niet laden' }); }
 });
 
 // Beheer (dashboard op /admin)

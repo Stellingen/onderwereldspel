@@ -73,7 +73,8 @@ async function init() {
   // lidmaatschap (tier: NULL = oude VIP-code telt, 0 gewoon, 1 VIP, 2 High roller), beheerder en blokkade per account
   for (const sql of ['ALTER TABLE game_state ADD COLUMN rev INT NOT NULL DEFAULT 0', 'ALTER TABLE game_state ADD COLUMN sid VARCHAR(40) NULL',
     'ALTER TABLE users ADD COLUMN tier TINYINT NULL', 'ALTER TABLE users ADD COLUMN is_admin TINYINT NOT NULL DEFAULT 0',
-    'ALTER TABLE users ADD COLUMN banned TINYINT NOT NULL DEFAULT 0', 'ALTER TABLE users ADD COLUMN ban_reason VARCHAR(200) NULL']) {
+    'ALTER TABLE users ADD COLUMN banned TINYINT NOT NULL DEFAULT 0', 'ALTER TABLE users ADD COLUMN ban_reason VARCHAR(200) NULL',
+    'ALTER TABLE users ADD COLUMN public_profile TINYINT NOT NULL DEFAULT 0']) {
     try { await pool.query(sql); } catch (e) { if (e.code !== 'ER_DUP_FIELDNAME' && e.errno !== 1060) console.warn('Kolom toevoegen mislukt:', e.message); }
   }
 
