@@ -241,8 +241,10 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   contant geld dat zwart is). Gewoon uitgeven (wapens, kleding, training, ontspannen, inrichting) gaat eerst van zwart. De bank
   (storten, deposito's, beleggen), zaken kopen en verbouwen en verhuizen kan alleen met wit geld. Witwassen kan op drie
   manieren: **via je zaken** (een werkdag aan de kassa: druk op een zwarte bon vlak nadat een echte klant afrekent, niet als de
-  inspecteur meekijkt; 10% kosten als niemand iets merkt, anders 12%, te opvallend = 30% in beslag en hitte; per speldag tot
-  2,5× je inkomen), **via Ome Kees** (meteen, 35%, maximum per speldag groeit met je rang) en **via het casino** (wat je wint
+  inspecteur meekijkt; te opvallend = 30% in beslag en hitte; per speldag tot 2,5× je inkomen). Hoe beter je bezit, hoe minder
+  het kost: basis 26%, tot −18% door je imperium (vestigingen en upgrades) en tot −5% door het niveau van de zaak die je
+  gebruikt, minimaal 5%, en nog 2% minder als niemand iets merkt. Een beter uitgebouwde zaak heeft meer klanten en minder bonnen
+  nodig (12 tot 8), dus het gaat ook sneller. **Via Ome Kees** (meteen, 30%, de normale prijs; maximum per speldag groeit met je rang) en **via het casino** (wat je wint
   is wit; elke inzet met zwart geld laat de verdenking oplopen, 3% per minuut omlaag, en geeft kans op een controle: dan nemen
   ze je zwarte geld en de helft van wat je net zwart inzette in beslag en word je aangehouden). Bezit, bank, casinowinst,
   codes, rangbeloningen en werk in de bajes leveren wit geld op. Oude saves: al je contant geld telt als wit.

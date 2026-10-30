@@ -90,3 +90,16 @@
 .chud>.ch-main{flex:0 0 auto}
 .ch-bank{min-width:140px}
 @media (max-width:1499px){.chud .ch-r{display:none}.ch-luck .dm-ic{display:none}}
+.ww-fee{border:1px solid var(--line);background:var(--bg2);padding:10px 12px}
+.ww-fee>div{display:grid;grid-template-columns:1fr auto;gap:0 10px;align-items:baseline}
+.ww-fee>div b{font-family:var(--f-display);font-weight:900;font-size:30px;line-height:1;color:var(--green)}
+.ww-fee>div small{grid-column:1/-1;font-family:var(--f-mono);font-size:10px;color:var(--faint)}
+.ww-fee ul{list-style:none;margin:8px 0 0;padding:6px 0 0;border-top:1px solid var(--line)}
+.ww-fee li{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--mute);padding:2px 0}
+.ww-fee li em{font-style:normal;font-family:var(--f-mono);color:var(--fg)}
+.ww-fee li.k{color:var(--faint)}.ww-fee li.k em{color:var(--violet)}
+
+.dm-v{display:flex;flex-direction:column;align-items:flex-end;min-width:0}
+.dm-v small.zw{font-family:var(--f-mono);font-size:9.5px;color:#aab0b9;white-space:nowrap}
+.dm-t{overflow:hidden}
+.dos-money .dm{grid-template-columns:34px minmax(56px,1fr) auto}

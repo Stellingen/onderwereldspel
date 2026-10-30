@@ -1,11 +1,18 @@
 // Tab: Witwassen. Zwart geld (klussen, huurmoorden, auto's, familie) wordt hier wit, zodat je het op de bank kunt zetten
 // en er zaken en woningen mee kunt kopen. Drie manieren:
-// - Via je zaken: een werkdag aan de kassa (minigame). Goedkoop (12%, 10% als niemand iets merkt), maar per speldag
-//   maximaal 2,5× wat je zaken op een speldag verdienen. Te opvallend = controle: alles van die dag in beslag (30%) en hitte.
-// - Via Ome Kees: meteen klaar, 35% voor hem, met een maximum per speldag dat met je rang meegroeit.
+// - Via je zaken: een werkdag aan de kassa (minigame). Hoe beter je bezit, hoe minder het kost: basis 26%, tot 18% minder
+//   door je imperium (vestigingen en upgrades, zelfde maat als de inkomensbonus) en tot 5% minder door het niveau van de zaak
+//   waar je het doorheen haalt (minimaal 5%, nog 2% minder als niemand iets merkt). Een beter uitgebouwde zaak heeft meer
+//   klanten en minder bonnen nodig, dus het gaat ook sneller. Per speldag maximaal 2,5× wat je zaken verdienen.
+//   Te opvallend = controle: 30% van die dag in beslag en hitte.
+// - Via Ome Kees: meteen klaar, 30% voor hem (de normale prijs), met een maximum per speldag dat met je rang meegroeit.
 // - Via het casino: speel met zwart geld, wat je wint is wit. Hoe meer zwart je inzet, hoe groter de kans op een controle;
 //   word je gecontroleerd met zwart geld op zak, dan nemen ze het in beslag en volgt een arrestatie (zie casinoRound/czControl).
-const WW_FEE=.12,WW_FEE_TOP=.10,WW_KEES=.35,WW_BUST=.3,WW_CHUNKS=12;
+const WW_BASE=.26,WW_IMP=.18,WW_LVL=.05,WW_MIN=.05,WW_TOP=.02,WW_KEES=.30,WW_BUST=.3,WW_CHUNKS=12;
+// kosten via een zaak: basis min imperium (0..1 van de maximale bonus) min het gemiddelde niveau van die zaak
+function wwFee(B){const M=bizMult(),q=Math.min(1,M.imp/(typeof BIZ_IMP_MAX!=='undefined'?BIZ_IMP_MAX:.5)),u=B?bizUnits(B.id):[],f=u.length?u.reduce((a,l)=>a+l,0)/u.length/5:0;
+ const imp=WW_IMP*q,lvl=WW_LVL*f;return {fee:Math.max(WW_MIN,WW_BASE-imp-lvl),imp,lvl,f}}
+const wwChunks=B=>Math.max(8,WW_CHUNKS-Math.round(4*wwFee(B).f));
 const wwS=()=>{const d=dayStart(now());if(!S.ww||S.ww.day!==d)S.ww={day:d,zaak:0,kees:0,hist:(S.ww&&S.ww.hist)||[]};return S.ww};
 const wwZaakCap=()=>Math.round(2.5*(typeof income==='function'?income():0)/100)*100;
 const wwKeesCap=()=>Math.round(25000*Math.pow(1.7,rankIdx(S.xp))/100)*100;
@@ -30,8 +37,10 @@ V.wit=()=>{const z=zwart(),w=wit(),W=wwS(),fr=wwFronts(),zl=wwZaakLeft(),kl=wwKe
   <div class="ww-split" aria-hidden="true"><i style="width:${z/tot*100}%"></i></div>
  </section>
  <div class="ww-grid">
-  <section class="card ww-m ww-zaak"><header><span class="ww-tag">Goedkoopst</span><h3>Via je zaken</h3><p>Een werkdag aan de kassa. Je laat zwarte bonnen meelopen met echte klanten. Ziet niemand iets, dan kost het je ${Math.round(WW_FEE_TOP*100)}%, anders ${Math.round(WW_FEE*100)}%. Te opvallend? Dan nemen ze ${Math.round(WW_BUST*100)}% in beslag.</p></header>
+  <section class="card ww-m ww-zaak"><header><span class="ww-tag">Goedkoopst</span><h3>Via je zaken</h3><p>Een werkdag aan de kassa. Je laat zwarte bonnen meelopen met echte klanten. Hoe beter je bezit, hoe minder het kost en hoe sneller het gaat. Te opvallend? Dan nemen ze ${Math.round(WW_BUST*100)}% in beslag.</p></header>
    ${fr.length?`<div class="ww-fronts">${fr.map(b=>`<button class="${b.id===ww.front?'on':''}" onclick="ww.front='${b.id}';render()" style="--c:${b.col||'var(--green)'}">${esc(b.n)}<small>${bizUnits(b.id).length}×</small></button>`).join('')}</div>
+    ${(()=>{const f=wwFee(F),pc=v=>(Math.round(v*1000)/10).toLocaleString('nl-NL');return `<div class="ww-fee"><div><span class="label">Kosten via je ${esc(F?F.n.toLowerCase():'zaak')}</span><b>${pc(f.fee)}%</b><small>${Math.max(WW_MIN,f.fee-WW_TOP)===f.fee?'':'of '+pc(Math.max(WW_MIN,f.fee-WW_TOP))+'% als niemand iets merkt'}</small></div>
+     <ul><li><span>Basis</span><em>${pc(WW_BASE)}%</em></li><li><span>Je imperium (vestigingen en upgrades)</span><em>−${pc(f.imp)}%</em></li><li><span>Niveau van deze zaak</span><em>−${pc(f.lvl)}%</em></li><li class="k"><span>Ome Kees ter vergelijking</span><em>${pc(WW_KEES)}%</em></li></ul></div>`})()}
     <div class="ww-cap"><span>Vandaag nog door de boeken</span><b>${fmt(zl)}</b><small>van ${fmt(wwZaakCap())} (2,5× je inkomen per speldag)</small></div>
     ${wwAmtRow('zaak',zMax)}
     <button class="btn xl act-btn" style="--c:var(--green)" onclick="act.wwZaak()" ${zMax>=WW_CHUNKS&&!inJail()?'':'disabled'}>${inJail()?'Je zit vast':!z?'Geen zwart geld':!zl?'Vandaag zit het vol':'Werkdag in je '+esc(F?F.n.toLowerCase():'zaak')}</button>`
@@ -54,20 +63,20 @@ V.wit=()=>{const z=zwart(),w=wit(),W=wwS(),fr=wwFronts(),zl=wwZaakLeft(),kl=wwKe
 // Echte klanten lopen binnen en rekenen af. Vlak na een echte klant valt een zwarte bon niet op (dekking, max 2 per klant).
 // Zonder klant valt het op, en kijkt de inspecteur mee (rood), dan gaat de verdenking hard omhoog. Op 100% is het mis.
 function wwGame(amount,B){return new Promise(resolve=>{
- const tier=Math.max(0,BIZ.indexOf(B)),T=24,gap=[1.05,1.9].map(x=>x*Math.max(.62,1-tier*.035));
+ const tier=Math.max(0,BIZ.indexOf(B)),T=24,N=wwChunks(B),lv=wwFee(B).f,gap=[1.05,1.9].map(x=>x*Math.max(.5,1-tier*.03-lv*.2));
  const ov=document.createElement('div');ov.className='chase-ov ww-ov';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
  ov.innerHTML=`<div class="chase-box ww-box">
   <div class="ww-gh"><div><span class="label">Werkdag · ${esc(B.n)}</span><h2 id="wwT">Laat het meelopen</h2></div><b id="wwClock">0:${T}</b></div>
   <p class="chase-p" id="wwP">Druk op <b>spatie</b> of <b>Zwarte bon</b> vlak nadat een echte klant afrekent. Kijkt de inspecteur mee, dan wacht je.</p>
   <div class="ww-shop" id="wwShop"><div class="ww-door"></div><div class="ww-till" id="wwTill"><i></i></div><div class="ww-insp" id="wwInsp"><svg viewBox="0 0 40 24"><path d="M2 12 Q20 -4 38 12 Q20 28 2 12Z" fill="#1b1d22" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="12" r="6" fill="currentColor"/><circle cx="20" cy="12" r="2.5" fill="#0b0b0d"/></svg><span>Inspecteur</span></div></div>
-  <div class="ww-bars"><div><span class="label">Verdenking</span><i class="ww-sus"><i id="wwSus"></i></i></div><div><span class="label">Door de boeken</span><i class="ww-prog" id="wwProg">${Array.from({length:WW_CHUNKS},()=>'<i></i>').join('')}</i><b id="wwAmt">${fmt(0)} van ${fmt(amount)}</b></div></div>
+  <div class="ww-bars"><div><span class="label">Verdenking</span><i class="ww-sus"><i id="wwSus"></i></i></div><div><span class="label">Door de boeken</span><i class="ww-prog" id="wwProg" style="grid-template-columns:repeat(${N},1fr)">${Array.from({length:N},()=>'<i></i>').join('')}</i><b id="wwAmt">${fmt(0)} van ${fmt(amount)}</b></div></div>
   <button class="btn xl ww-go" id="wwGo">Zwarte bon</button></div>`;
  document.body.appendChild(ov);window.__chase=true;
  const q=s=>ov.querySelector(s),shop=q('#wwShop');let t0=0,raf=0,done=false,k=0,sus=0,maxSus=0,last=0;
  const cust=[];let nextC=.6,cover=-9,coverN=0,insp={on:false,warn:-1,a:4+Math.random()*2,b:0};
  const say=(m,c)=>{const p=q('#wwP');p.textContent=m;p.className='chase-p '+(c||'')};
  const draw=()=>{q('#wwSus').style.width=Math.min(100,sus)+'%';q('#wwSus').parentNode.classList.toggle('hot',sus>=70);
-  q('#wwProg').querySelectorAll('i').forEach((e,i)=>e.className=i<k?'f':'');q('#wwAmt').textContent=fmt(Math.floor(amount*k/WW_CHUNKS))+' van '+fmt(amount)};
+  q('#wwProg').querySelectorAll('i').forEach((e,i)=>e.className=i<k?'f':'');q('#wwAmt').textContent=fmt(Math.floor(amount*k/N))+' van '+fmt(amount)};
  const spawn=t=>{const el=document.createElement('i');el.className='ww-c';el.style.setProperty('--h',Math.floor(Math.random()*360));shop.appendChild(el);cust.push({el,t0:t})};
  const loop=now_=>{if(done)return;const t=(now_-t0)/1000,dt=Math.min(.1,(now_-last)/1000);last=now_;
   q('#wwClock').textContent='0:'+String(Math.max(0,Math.ceil(T-t))).padStart(2,'0');
@@ -80,19 +89,19 @@ function wwGame(amount,B){return new Promise(resolve=>{
   if(!insp.on&&t>=insp.a){insp.on=true;insp.b=t+1.3+Math.random()*1;q('#wwInsp').className='ww-insp on'}
   if(insp.on&&t>=insp.b){insp.on=false;insp.warn=-1;insp.a=t+3.2+Math.random()*3;q('#wwInsp').className='ww-insp'}
   sus=Math.max(0,sus-4*dt);draw();
-  if(sus>=100)return finish(true);if(t>=T||k>=WW_CHUNKS)return finish(false);
+  if(sus>=100)return finish(true);if(t>=T||k>=N)return finish(false);
   raf=requestAnimationFrame(loop)};
  const press=()=>{if(done||!t0)return;const t=(performance.now()-t0)/1000;k++;
   if(insp.on){sus+=35;say('De inspecteur kijkt mee! Dat viel op.','bad')}
   else if(t-cover<.85&&coverN<2){coverN++;sus+=3;say('Mooi meegelopen met een echte klant.','ok')}
   else{sus+=17;say('Een bon zonder klant valt op.','warn')}
-  maxSus=Math.max(maxSus,sus);try{SFX.chip()}catch(e){}draw();if(sus>=100)finish(true);else if(k>=WW_CHUNKS)finish(false)};
+  maxSus=Math.max(maxSus,sus);try{SFX.chip()}catch(e){}draw();if(sus>=100)finish(true);else if(k>=N)finish(false)};
  const key=e=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();if(!e.repeat)press()}};
  document.addEventListener('keydown',key);q('#wwGo').addEventListener('pointerdown',e=>{e.preventDefault();press()});
  function finish(bust){done=true;cancelAnimationFrame(raf);document.removeEventListener('keydown',key);q('#wwGo').disabled=true;
-  const box=q('.ww-box');box.classList.add(bust?'lost':'won');q('#wwT').textContent=bust?'Controle!':k>=WW_CHUNKS?'Klaar':'Einde van de dag';
-  say(bust?'De boeken kloppen niet. Een controleur neemt geld in beslag.':k?`${k} van ${WW_CHUNKS} bonnen door de boeken.`:'Er is niets door de boeken gegaan.',bust?'bad':'ok');
-  setTimeout(()=>{ov.classList.add('out');setTimeout(()=>{ov.remove();window.__chase=false;resolve({k,bust,maxSus})},220)},1500)}
+  const box=q('.ww-box');box.classList.add(bust?'lost':'won');q('#wwT').textContent=bust?'Controle!':k>=N?'Klaar':'Einde van de dag';
+  say(bust?'De boeken kloppen niet. Een controleur neemt geld in beslag.':k?`${k} van ${N} bonnen door de boeken.`:'Er is niets door de boeken gegaan.',bust?'bad':'ok');
+  setTimeout(()=>{ov.classList.add('out');setTimeout(()=>{ov.remove();window.__chase=false;resolve({k,n:N,bust,maxSus})},220)},1500)}
  draw();setTimeout(()=>{t0=last=performance.now();raf=requestAnimationFrame(loop)},700);
 })}
 
@@ -112,8 +121,8 @@ Object.assign(act,{
   ww.busy=true;const r=await wwGame(a,B);ww.busy=false;const W=wwS();
   if(r.bust){const conf=Math.min(zwart(),Math.round(a*WW_BUST));S.cash-=conf;addHeat(20);W.zaak+=a;wwHist('bust',conf,0,B.n);
    toast(`Controle bij je ${B.n.toLowerCase()}: ${fmt(conf)} in beslag genomen`,'bad');log(`Witwassen mislukt bij ${B.n}: ${fmt(conf)} in beslag`,'bad')}
-  else if(r.k){const part=Math.floor(a*r.k/WW_CHUNKS),fee=r.maxSus<50?WW_FEE_TOP:WW_FEE,got=wwClean(part,fee);W.zaak+=part;wwHist('zaak',part,got,B.n);
-   toast(`${fmt(part)} witgewassen via je ${B.n.toLowerCase()}: ${fmt(got)} wit (${Math.round(fee*100)}% kosten)`,'ok');log(`Witgewassen via ${B.n}: ${fmt(part)} → ${fmt(got)} wit`,'ok')}
+  else if(r.k){const part=Math.floor(a*r.k/r.n),f0=wwFee(B).fee,fee=r.maxSus<50?Math.max(WW_MIN,f0-WW_TOP):f0,got=wwClean(part,fee);W.zaak+=part;wwHist('zaak',part,got,B.n);
+   toast(`${fmt(part)} witgewassen via je ${B.n.toLowerCase()}: ${fmt(got)} wit (${(Math.round(fee*1000)/10).toLocaleString('nl-NL')}% kosten)`,'ok');log(`Witgewassen via ${B.n}: ${fmt(part)} → ${fmt(got)} wit`,'ok')}
   ww.amt.zaak=0;save();render()},
  wwKees(){if(inJail())return;const a=wwPick('kees',Math.min(zwart(),wwKeesLeft()));if(a<1)return;const got=wwClean(a,WW_KEES);wwS().kees+=a;wwHist('kees',a,got);
   try{SFX.chip()}catch(e){}toast(`Ome Kees: ${fmt(a)} zwart → ${fmt(got)} wit`,'ok');log(`Witgewassen via Ome Kees: ${fmt(a)} → ${fmt(got)} wit`,'ok');ww.amt.kees=0;save();render()}});
