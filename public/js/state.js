@@ -44,10 +44,10 @@ function deviceLock(code){if(window.__LOCKED__)return;window.__LOCKED__=true;cle
  deviceLockShow(code)}
 function deviceLockShow(code){
  const T={admin_update:['Je account is bijgewerkt','Een beheerder heeft je account aangepast. Laad het spel opnieuw om de nieuwe stand te zien. Wat je hier in de laatste seconden deed, telt niet mee.','Opnieuw laden'],
-  banned:['Account geblokkeerd','Dit account is geblokkeerd door een beheerder. Je kunt niet verder spelen.','Naar de voorpagina'],
+  banned:['Dit profiel is verbannen','Een beheerder heeft dit profiel verbannen. Je kunt er niet meer mee spelen, maar je kunt wel een nieuw profiel aanmaken.','Nieuw profiel maken'],
   other_device:['Je speelt op een ander apparaat','Je account is ergens anders geopend. Om te voorkomen dat je voortgang dubbel of verkeerd wordt opgeslagen, kun je maar op één apparaat tegelijk spelen. Wat je hier sinds de vorige opslag deed, telt niet mee.','Hier verder spelen']}[code==='admin'?'admin_update':code]||null;
  const t=T||['Je speelt op een ander apparaat','Je account is ergens anders geopend. Om te voorkomen dat je voortgang dubbel of verkeerd wordt opgeslagen, kun je maar op één apparaat tegelijk spelen. Wat je hier sinds de vorige opslag deed, telt niet mee.','Hier verder spelen'];
- const d=document.createElement('div');d.id='devLock';d.innerHTML=`<div class="dl-card"><span class="label">Account</span><b>${t[0]}</b><p>${t[1]}</p><button class="btn" onclick="${code==='banned'?"try{localStorage.removeItem('ow_token')}catch(e){};location.replace('/')":'location.reload()'}">${t[2]}</button></div>`;document.body.appendChild(d)}
+ const d=document.createElement('div');d.id='devLock';d.innerHTML=`<div class="dl-card"><span class="label">Account</span><b>${t[0]}</b><p>${t[1]}</p><button class="btn" onclick="${code==='banned'?"try{localStorage.removeItem('ow_token')}catch(e){};location.replace('/?register=1&banned=1')":'location.reload()'}">${t[2]}</button></div>`;document.body.appendChild(d)}
 // terug naar dit tabblad: meteen kijken of we nog het actieve apparaat zijn
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'||!window.__TOKEN__||!window.__SID__||window.__LOCKED__)return;
  fetch('/api/session?sid='+window.__SID__,{headers:{Authorization:'Bearer '+window.__TOKEN__}}).then(r=>r.ok?r.json():r.status===403?{active:false,reason:'banned'}:null).then(j=>{if(j&&j.active===false)deviceLock(j.reason)}).catch(()=>{})});

@@ -77,6 +77,19 @@ async function init() {
     try { await pool.query(sql); } catch (e) { if (e.code !== 'ER_DUP_FIELDNAME' && e.errno !== 1060) console.warn('Kolom toevoegen mislukt:', e.message); }
   }
 
+  // signalen van mogelijk misbruik (autoclicker, onverklaarde sprongen): één regel per speler per soort
+  await pool.query(`CREATE TABLE IF NOT EXISTS player_flags (
+    user_id INT NOT NULL,
+    kind VARCHAR(30) NOT NULL,
+    detail VARCHAR(300) NULL,
+    count INT NOT NULL DEFAULT 1,
+    first_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resolved TINYINT NOT NULL DEFAULT 0,
+    PRIMARY KEY (user_id, kind),
+    CONSTRAINT fk_flag_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+
   // logboek van alles wat een beheerder aanpast
   await pool.query(`CREATE TABLE IF NOT EXISTS admin_log (
     id INT AUTO_INCREMENT PRIMARY KEY,

@@ -48,6 +48,7 @@ module.exports = function mountAdmin(app, { auth, db, need, rankOf }) {
     try {
       const [[c]] = await db.q(`SELECT COUNT(*) AS users,
           SUM(u.banned) AS banned,
+          SUM(EXISTS(SELECT 1 FROM player_flags f WHERE f.user_id=u.id AND f.resolved=0)) AS flagged,
           SUM(${TIER_SQL}=1) AS vip, SUM(${TIER_SQL}=2) AS hr,
           SUM(u.created_at > NOW() - INTERVAL 1 DAY) AS new24
         FROM users u`);
@@ -62,17 +63,21 @@ module.exports = function mountAdmin(app, { auth, db, need, rankOf }) {
   // Spelers zoeken: op naam, met filter en sortering
   app.get('/api/admin/players', auth, adminOnly, async (req, res) => {
     const q = String(req.query.q || '').trim().toLowerCase().slice(0, 32);
+    const like = '%' + String(req.query.q || '').trim().toLowerCase().slice(0, 32).replace(/[%_\\]/g, '\\$&') + '%';
     const sort = { xp: 'g.xp DESC', geld: 'g.networth DESC', nieuw: 'u.created_at DESC', actief: 'g.updated_at DESC', naam: 'u.username ASC' }[req.query.sort] || 'g.updated_at DESC';
-    const filter = { vip: `${TIER_SQL}=1`, hr: `${TIER_SQL}=2`, banned: 'u.banned=1', admin: 'u.is_admin=1' }[req.query.f] || '1=1';
+    const FLAGS = `(SELECT COUNT(*) FROM player_flags f WHERE f.user_id=u.id AND f.resolved=0)`;
+    const filter = { vip: `${TIER_SQL}=1`, hr: `${TIER_SQL}=2`, banned: 'u.banned=1', admin: 'u.is_admin=1', flag: `${FLAGS}>0`, online: 'g.updated_at > NOW() - INTERVAL 5 MINUTE' }[req.query.f] || '1=1';
+    const off = Math.max(0, Math.min(100000, parseInt(req.query.off, 10) || 0)), lim = 100;
     try {
       const [rows] = await db.q(
-        `SELECT u.id, u.display, u.username, u.created_at, u.banned, u.is_admin, u.tier AS tier_raw, ${TIER_SQL} AS tier,
+        `SELECT u.id, u.display, u.username, u.created_at, u.banned, u.is_admin, u.tier AS tier_raw, ${TIER_SQL} AS tier, ${FLAGS} AS flags,
            g.xp, g.networth, g.rankname, g.updated_at, TIMESTAMPDIFF(SECOND, g.updated_at, NOW()) AS seen_s
          FROM users u LEFT JOIN game_state g ON g.user_id=u.id
          WHERE u.username LIKE ? AND ${filter}
-         ORDER BY ${sort.replace(/g\.(\w+) DESC/, 'g.$1 IS NULL, g.$1 DESC')} LIMIT 60`, ['%' + q.replace(/[%_\\]/g, '\\$&') + '%']);
+         ORDER BY ${sort.replace(/g\.(\w+) DESC/, 'g.$1 IS NULL, g.$1 DESC')} LIMIT ${lim} OFFSET ${off}`, [like]);
+      const [[{ total }]] = await db.q(`SELECT COUNT(*) AS total FROM users u LEFT JOIN game_state g ON g.user_id=u.id WHERE u.username LIKE ? AND ${filter}`, [like]);
       const admins = ADMIN_USERS();
-      res.json({ players: rows.map(r => Object.assign(r, { tier: +r.tier || 0, admin: !!r.is_admin || admins.includes(r.username) })) });
+      res.json({ total: +total, off, players: rows.map(r => Object.assign(r, { tier: +r.tier || 0, flags: +r.flags || 0, admin: !!r.is_admin || admins.includes(r.username) })) });
     } catch (e) { console.error(e); res.status(500).json({ error: 'Kon spelers niet laden' }); }
   });
 
@@ -86,12 +91,13 @@ module.exports = function mountAdmin(app, { auth, db, need, rankOf }) {
       const [g] = await db.q('SELECT state, xp, networth, rankname, updated_at, TIMESTAMPDIFF(SECOND, updated_at, NOW()) AS seen_s, rev, sid FROM game_state WHERE user_id=?', [id]);
       const [red] = await db.q('SELECT code, amount, created_at FROM redemptions WHERE user_id=? ORDER BY created_at DESC', [id]);
       const [lg] = await db.q(`SELECT l.action, l.detail, l.created_at, a.display AS admin FROM admin_log l LEFT JOIN users a ON a.id=l.admin_id WHERE l.target_id=? ORDER BY l.id DESC LIMIT 40`, [id]);
+      const [fl] = await db.q(`SELECT kind, detail, count, first_at, last_at, resolved, TIMESTAMPDIFF(SECOND, last_at, NOW()) AS ago_s FROM player_flags WHERE user_id=? ORDER BY resolved, last_at DESC`, [id]);
       let st = null; try { st = g.length && g[0].state ? JSON.parse(g[0].state) : null; } catch (e) { st = null; }
       const p = u[0];
       res.json({
         player: Object.assign(p, { tier: +p.tier || 0, admin: !!p.is_admin || ADMIN_USERS().includes(p.username), envAdmin: ADMIN_USERS().includes(p.username) }),
         game: g.length ? { xp: g[0].xp, networth: g[0].networth, rankname: g[0].rankname, updated_at: g[0].updated_at, seen_s: g[0].seen_s, rev: g[0].rev, reset: !!(st && st.__reset), kicked: String(g[0].sid || '').startsWith('adm') } : null,
-        s: summary(st), codes: red, log: lg
+        s: summary(st), codes: red, log: lg, flags: fl
       });
     } catch (e) { console.error(e); res.status(500).json({ error: 'Kon de speler niet laden' }); }
   });
@@ -182,7 +188,7 @@ module.exports = function mountAdmin(app, { auth, db, need, rankOf }) {
         if (id === req.user.id) return res.status(400).json({ error: 'Je kunt jezelf niet blokkeren' });
         await db.q('UPDATE users SET banned=?, ban_reason=? WHERE id=?', [on ? 1 : 0, on ? reason || null : null, id]);
         await kick(id);
-        detail = on ? 'geblokkeerd' + (reason ? ': ' + reason : '') : 'blokkade opgeheven';
+        detail = on ? 'verbannen' + (reason ? ': ' + reason : '') : 'verbanning opgeheven';
       } else if (type === 'admin') {
         if (id === req.user.id) return res.status(400).json({ error: 'Je kunt je eigen beheerrechten niet aanpassen' });
         if (ADMIN_USERS().includes(u[0].username)) return res.status(400).json({ error: 'Deze beheerder staat vast in ADMIN_USERS (Railway)' });
@@ -195,6 +201,16 @@ module.exports = function mountAdmin(app, { auth, db, need, rankOf }) {
         if (g.length) await db.q("UPDATE game_state SET state=?, xp=0, networth=0, rankname='Rookie', day=1, rev=rev+1, sid=?, updated_at=updated_at WHERE user_id=?", [st, kickSid(), id]);
         if (b.codes) await db.q('DELETE FROM redemptions WHERE user_id=?', [id]);
         detail = 'account gereset' + (b.codes ? ', codes vrijgegeven' : '');
+      } else if (type === 'flags') {
+        // signalen afhandelen (blijven bewaard als 'afgehandeld'); een nieuwe melding opent ze weer
+        await db.q('UPDATE player_flags SET resolved=1 WHERE user_id=? AND resolved=0', [id]);
+        detail = 'signalen afgehandeld' + (b.note ? ': ' + String(b.note).slice(0, 200) : '');
+      } else if (type === 'note') {
+        const text = String(b.text || '').trim().slice(0, 300);
+        if (!text) return res.status(400).json({ error: 'Schrijf wat je hebt gezien' });
+        await db.q(`INSERT INTO player_flags(user_id,kind,detail,count,first_at,last_at,resolved) VALUES(?,?,?,1,NOW(),NOW(),0)
+          ON DUPLICATE KEY UPDATE count=IF(resolved=1,1,count+1), first_at=IF(resolved=1,NOW(),first_at), detail=VALUES(detail), last_at=NOW(), resolved=0`, [id, 'notitie', text + ' (' + (req.user.u || 'beheer') + ')']);
+        detail = 'signaal toegevoegd: ' + text;
       } else if (type === 'kick') {
         await kick(id); detail = 'uitgelogd op zijn apparaat';
       } else return res.status(400).json({ error: 'Onbekende actie' });

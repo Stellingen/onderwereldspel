@@ -176,7 +176,17 @@ Wat kan het: spelers zoeken en filteren (VIP, High roller, geblokkeerd, beheerde
 per speler contant geld of spaarrekening bijschrijven, afschrijven of op een bedrag zetten (typ `250k`, `1,5m` of `2.000.000`);
 rang en level zetten of XP erbij; lidmaatschap Gewoon / VIP / High roller; straatcredit; uit de cel, energie vol, hitte 0;
 spel herladen, beheerder maken, blokkeren (met reden) en het account resetten (met bevestiging, optioneel codes vrijgeven).
-Elke aanpassing staat in het logboek. Het spel van de speler stopt meteen met opslaan, toont "Je account is bijgewerkt"
+Elke aanpassing staat in het logboek.
+**Zelfverklarend**: een welkomstbalk bij het eerste bezoek, een **?**-knop met uitleg, een korte uitleg op elke kaart, klikbare
+tegels bovenaan (online, verdacht, VIP, High roller, verbannen) en de hele spelerslijst met "Meer spelers laden".
+**Verbannen**: de speler wordt uitgelogd en ziet bij openen of inloggen "Dit profiel is verbannen" met de knop
+"Maak een nieuw profiel" (de voorpagina opent dan meteen het formulier voor een nieuw account).
+**Mogelijk misbruik** (alleen voor beheerders): een oranje driehoek bij de speler in de lijst en een grote driehoek op zijn profiel.
+Klik erop voor de details. Signalen: *Autoclicker* (gemeten in het spel: 80+ klikken in 10 seconden of 30 klikken met een
+machinaal vast ritme), *Onverklaarde geldsprong* (vermogen stijgt in één opslag meer dan €75 mln. én 3× zo veel als het was, zonder dat casino, bedrijven of codes het verklaren),
+*XP-sprong* (meer dan 8.000 XP in één opslag), *Energie boven het maximum*, *Klussen te snel* (30+ klussen in minder dan 20 s)
+en *Oud apparaat blijft opslaan* (25 keer in 10 minuten). Beheerders kunnen ook zelf een signaal noteren. "Afgehandeld" sluit
+de signalen (ze blijven zichtbaar als afgehandeld); "Verbannen" verbant meteen met de signalen als reden. Het spel van de speler stopt meteen met opslaan, toont "Je account is bijgewerkt"
 en laadt de nieuwe stand; de speler ziet een melding met wat er is aangepast. Code: `admin.js` (server), `public/admin.html`,
 `public/js/admin.js`.
 

@@ -2071,3 +2071,4 @@ body.hg-open{overflow:hidden}
 .fi-card.ok .btn,.fi-card.bad .btn{width:auto;min-width:200px}
 /* tag voor echte spelers (naast VIP / High roller) */
 .spt{display:inline-block;margin-left:6px;vertical-align:middle;font-style:normal;font-family:var(--f-head);font-weight:800;font-size:9.5px;letter-spacing:.12em;line-height:1;padding:3px 5px 2px;color:var(--green);box-shadow:inset 0 0 0 1px rgba(63,227,149,.6);background:rgba(63,227,149,.08)}
+.boot .ban .ban-new{display:inline-block;padding:12px 20px;background:var(--acc);color:#140800;font-family:var(--f-head);font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none}

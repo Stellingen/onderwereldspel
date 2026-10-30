@@ -45,7 +45,7 @@
       const me=await fetch('/api/me',{headers:h});
       if(me.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/?login=1');return}
       if(me.status===403){const j=await me.json().catch(()=>({}));try{localStorage.removeItem('ow_token')}catch(e){}
-        document.getElementById('boot').innerHTML='<div class="ban"><span>ONDERWERELD</span><b>Account geblokkeerd</b><p></p><a href="/">Terug naar de voorpagina</a></div>';document.querySelector('#boot p').textContent=j.error||'Dit account is geblokkeerd.';return}
+        document.getElementById('boot').innerHTML='<div class="ban"><span>ONDERWERELD</span><b>Dit profiel is verbannen</b><p></p><a class="ban-new" href="/?register=1&amp;banned=1">Maak een nieuw profiel</a><a href="/">Terug naar de voorpagina</a></div>';document.querySelector('#boot p').textContent=(j.reason?'Reden: '+j.reason+'. ':'')+'Met dit profiel kun je niet meer spelen. Je kunt wel een nieuw profiel aanmaken en opnieuw beginnen.';return}
       if(me.ok){
         window.__TOKEN__=token;const mj=await me.json();window.__USER__=mj.username;window.__SINCE__=mj.since||null;window.__REDEEMED__=mj.redeemed||[];
         window.__TIER__=mj.tier!=null?+mj.tier:null;window.__ADMIN__=!!mj.admin;

@@ -20,6 +20,13 @@ function tick(){
 }
 // aanpassingen door een beheerder: meldingen tonen, energie bijvullen
 if(S._admin){const A=S._admin;if(A.refill){S.energy=Math.max(S.energy,EN_MAX);S.hp=100}(A.notes||[]).forEach((t,i)=>{setTimeout(()=>toast(t,'lvl'),600+i*400);log(t,'ok')});delete S._admin;save()}
+// Autoclicker-signaal voor beheerders: sneller of regelmatiger klikken dan een mens kan. Alleen echte klikken tellen (geen toetsen).
+(function(){const T=[];let last=0;const send=d=>{if(!window.__TOKEN__||Date.now()-last<120000)return;last=Date.now();
+  fetch('/api/flag',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+window.__TOKEN__},body:JSON.stringify({kind:'autoclick',detail:d})}).catch(()=>{})};
+ document.addEventListener('pointerdown',e=>{if(!e.isTrusted)return;const t=performance.now();T.push(t);while(T.length&&t-T[0]>10000)T.shift();
+  if(T.length>=80){send(`${T.length} klikken in 10 seconden (${(T.length/10).toLocaleString('nl-NL')} per seconde, lang volgehouden)`);T.length=0;return}
+  if(T.length>=30){const iv=[];for(let i=T.length-30+1;i<T.length;i++)iv.push(T[i]-T[i-1]);const m=iv.reduce((a,b)=>a+b,0)/iv.length,sd=Math.sqrt(iv.reduce((a,b)=>a+(b-m)*(b-m),0)/iv.length);
+   if(m<600&&sd<4){send(`30 klikken met een machinaal vast ritme: elke ${Math.round(m)} ms (afwijking ±${sd.toFixed(1)} ms)`);T.length=0}}},true)})();
 // een bonus die nog liep (verversen of ander apparaat): het geld staat al op je saldo, het spel biedt aan om hem verder af te spelen
 if(S.slotRun){const n=S.slotRun.g==='vis'?'Visdief':'Kluiskraker';setTimeout(()=>toast('Je bonus in '+n+' loopt nog. Het geld staat al op je saldo; open '+n+' om hem verder af te spelen.','lvl'),900)}
 if(S._gearBack){toast('Uitrusting vernieuwd: per soort telt nu je beste item. Je krijgt '+fmt(S._gearBack)+' terug voor overbodige spullen.','lvl');log('Uitrusting: '+fmt(S._gearBack)+' terug voor overbodige spullen','ok');delete S._gearBack}

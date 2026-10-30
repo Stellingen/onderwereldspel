@@ -187,17 +187,20 @@ form.addEventListener('submit',async e=>{
   try{
     const r=await fetch('/api/'+(mode==='register'?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
     let j={};try{j=await r.json()}catch(x){}
-    if(!r.ok)throw new Error(j.error||'Er ging iets mis. Probeer het opnieuw.');
+    if(!r.ok){const er=new Error(j.error||'Er ging iets mis. Probeer het opnieuw.');er.banned=j.code==='banned';throw er}
     setToken(j.token);
     q('.placard').classList.add('ok');q('#plStatus').textContent='Toegang';q('#plName').textContent=String(j.username||username).toUpperCase();
     btn.textContent=mode==='register'?'Welkom in de onderwereld':'Welkom terug';
     setTimeout(()=>location.href='/game.html',700);
   }catch(x){
+    // verbannen profiel: meteen naar 'nieuw profiel maken', met de uitleg erbij
+    if(x.banned){setMode('register');q('#authUser').value='';q('#authPass').value=''}
     fail(x.message==='Failed to fetch'?'De server is niet bereikbaar. Controleer je verbinding en probeer het opnieuw.':x.message);
     btn.disabled=false;btn.textContent=label;
   }
 });
 
 setMode('login');
-checkSession().then(()=>{if(/[?&]login=1/.test(location.search)&&!loggedIn)openAuth('login')});
+checkSession().then(()=>{if(/[?&]register=1/.test(location.search)&&!loggedIn){openAuth('register');if(/[?&]banned=1/.test(location.search)){err.textContent='Je vorige profiel is verbannen. Maak hier een nieuw profiel aan en begin opnieuw.';err.hidden=false}}
+ else if(/[?&]login=1/.test(location.search)&&!loggedIn)openAuth('login')});
 })();

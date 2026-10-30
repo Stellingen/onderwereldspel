@@ -64,7 +64,7 @@ app.post('/api/login', limit, async (req, res) => {
     if (!rows.length) return res.status(401).json({ error: 'Onbekende gebruiker of verkeerd wachtwoord' });
     const ok = await bcrypt.compare(password, rows[0].password_hash);
     if (!ok) return res.status(401).json({ error: 'Onbekende gebruiker of verkeerd wachtwoord' });
-    if (rows[0].banned) return res.status(403).json({ error: 'Dit account is geblokkeerd' + (rows[0].ban_reason ? ': ' + rows[0].ban_reason : '') + '.', code: 'banned' });
+    if (rows[0].banned) return res.status(403).json({ error: 'Dit profiel is verbannen' + (rows[0].ban_reason ? ' (' + rows[0].ban_reason + ')' : '') + '. Maak een nieuw profiel aan.', code: 'banned' });
     res.json({ token: sign(rows[0]), username: rows[0].display });
   } catch (e) { console.error(e); res.status(500).json({ error: 'Serverfout bij inloggen' }); }
 });
@@ -75,7 +75,7 @@ app.get('/api/me', auth, async (req, res) => {
     try {
       const [rows] = await db.q('SELECT created_at, username, tier, is_admin, banned, ban_reason FROM users WHERE id=?', [req.user.id]);
       if (!rows.length) return res.status(401).json({ error: 'Account bestaat niet meer' });
-      if (rows[0].banned) return res.status(403).json({ error: 'Dit account is geblokkeerd' + (rows[0].ban_reason ? ': ' + rows[0].ban_reason : '') + '.', code: 'banned' });
+      if (rows[0].banned) return res.status(403).json({ error: 'Dit profiel is verbannen' + (rows[0].ban_reason ? ' (' + rows[0].ban_reason + ')' : '') + '. Maak een nieuw profiel aan.', code: 'banned', reason: rows[0].ban_reason || '' });
       out.since = rows[0].created_at;
       const [red] = await db.q('SELECT code FROM redemptions WHERE user_id=?', [req.user.id]);
       // alleen codes die nog bestaan (verwijderde codes zoals broke en tester verdwijnen uit 'gebruikte codes')
@@ -128,7 +128,40 @@ app.post('/api/redeem', auth, limit, async (req, res) => {
 // zodat twee apparaten elkaars voortgang niet kunnen overschrijven of geld dubbel kunnen uitgeven.
 const okSid = s => typeof s === 'string' && /^[a-f0-9]{16,40}$/.test(s);
 async function isBanned(id) { const [r] = await db.q('SELECT banned FROM users WHERE id=?', [id]); return !r.length || !!r[0].banned; }
-const banned = res => res.status(403).json({ error: 'Dit account is geblokkeerd.', code: 'banned' });
+const banned = res => res.status(403).json({ error: 'Dit profiel is verbannen. Maak een nieuw profiel aan.', code: 'banned' });
+
+// Signalen van mogelijk misbruik (alleen zichtbaar voor beheerders). Eén regel per speler per soort; nieuwe meldingen tellen op.
+async function flag(uid, kind, detail) {
+  try {
+    await db.q(`INSERT INTO player_flags(user_id,kind,detail,count,first_at,last_at,resolved) VALUES(?,?,?,1,NOW(),NOW(),0)
+      ON DUPLICATE KEY UPDATE count=IF(resolved=1,1,count+1), first_at=IF(resolved=1,NOW(),first_at), detail=VALUES(detail), last_at=NOW(), resolved=0`,
+      [uid, kind, String(detail || '').slice(0, 300)]);
+  } catch (e) { console.error('flag', e.message); }
+}
+const fmtE = v => '€' + Math.round(v).toLocaleString('nl-NL');
+// opslaan vanaf een oud apparaat: vaak proberen kan op dubbel geld mikken
+const staleSaves = new Map();
+function noteStale(uid) {
+  const t = Date.now(), a = (staleSaves.get(uid) || []).filter(x => t - x < 600000); a.push(t); staleSaves.set(uid, a);
+  if (a.length === 25) flag(uid, 'apparaten', `${a.length} keer geprobeerd op te slaan vanaf een apparaat dat niet meer actief was (10 minuten)`);
+}
+// vergelijk de nieuwe opslag met de vorige: sprongen die het spel niet kan verklaren
+function checkJump(uid, prev, s, dt) {
+  try {
+    const ps = prev.state ? JSON.parse(prev.state) : null; if (!ps || ps.__reset) return;
+    const st = s.stats || {}, pst = ps.stats || {};
+    const net = (+s.cash || 0) + (+s.bank || 0) + Math.max(0, +s.bankExtra || 0), pnet = +prev.networth || 0;
+    const won = Math.max(0, (+st.won || 0) - (+pst.won || 0)), kas = Math.max(0, (+ps.kas || 0) - (+s.kas || 0));
+    const unexplained = net - pnet - won - kas;
+    if (unexplained > Math.max(75e6, pnet * 3) && !prev.recentCode)
+      flag(uid, 'geld', `Vermogen ${fmtE(pnet)} → ${fmtE(net)} in ${dt} s; casino ${fmtE(won)} en bedrijven ${fmtE(kas)} verklaren daar ${fmtE(unexplained)} niet van`);
+    const dxp = (+s.xp || 0) - (+prev.xp || 0);
+    if (dxp > 8000) flag(uid, 'xp', `+${Math.round(dxp).toLocaleString('nl-NL')} XP in ${dt} s (één klus geeft hooguit ±2.300)`);
+    if ((+s.energy || 0) > 600) flag(uid, 'energie', `Energie ${Math.round(+s.energy)} (normaal maximaal ±250)`);
+    const dcr = (+st.crimes || 0) - (+pst.crimes || 0);
+    if (dcr > 30 && dt < 20) flag(uid, 'klussen', `${dcr} klussen in ${dt} s`);
+  } catch (e) { /* kapotte oude opslag: niets doen */ }
+}
 app.get('/api/state', auth, async (req, res) => {
   if (!db.state.ready) return need(res);
   try {
@@ -155,12 +188,16 @@ app.post('/api/state', auth, async (req, res) => {
   if (!s || typeof s !== 'object') return res.status(400).json({ error: 'Geen status meegegeven' });
   try {
     if (await isBanned(req.user.id)) return banned(res);
-    const [cur] = await db.q('SELECT sid, rev FROM game_state WHERE user_id=?', [req.user.id]);
+    const [cur] = await db.q(`SELECT sid, rev, state, xp, networth, GREATEST(1,TIMESTAMPDIFF(SECOND, updated_at, NOW())) AS dt,
+      EXISTS(SELECT 1 FROM redemptions r WHERE r.user_id=? AND r.created_at > NOW() - INTERVAL 3 MINUTE) AS recentCode
+      FROM game_state WHERE user_id=?`, [req.user.id, req.user.id]);
+    if (cur.length && cur[0].sid && cur[0].sid !== sid && !String(cur[0].sid).startsWith('adm')) noteStale(req.user.id);
     if (cur.length && cur[0].sid && cur[0].sid !== sid)
       return String(cur[0].sid).startsWith('adm')
         ? res.status(409).json({ error: 'Je account is bijgewerkt door een beheerder.', code: 'admin_update' })
         : res.status(409).json({ error: 'Je speelt op een ander apparaat verder.', code: 'other_device' });
     const rev = (cur.length ? cur[0].rev : 0) + 1;
+    if (cur.length) checkJump(req.user.id, cur[0], s, +cur[0].dt || 1);
     const json = JSON.stringify(s);
     const xp = +s.xp || 0;
     const networth = Math.floor((+s.cash || 0) + (+s.bank || 0) + Math.max(0, +s.bankExtra || 0)); // bankExtra = deposito's + beleggingen
@@ -173,6 +210,17 @@ app.post('/api/state', auth, async (req, res) => {
     );
     res.json({ ok: true, rev });
   } catch (e) { console.error(e); res.status(500).json({ error: 'Kon voortgang niet opslaan' }); }
+});
+
+// meldingen die alleen het spel zelf kan zien (zoals een autoclicker); hooguit één per soort per 2 minuten
+const flagHits = new Map();
+app.post('/api/flag', auth, async (req, res) => {
+  if (!db.state.ready) return res.json({ ok: true });
+  const kind = String((req.body && req.body.kind) || ''), detail = String((req.body && req.body.detail) || '').slice(0, 200);
+  if (!['autoclick'].includes(kind)) return res.status(400).json({ error: 'Onbekend' });
+  const k = req.user.id + ':' + kind, t = Date.now();
+  if (t - (flagHits.get(k) || 0) < 120000) return res.json({ ok: true });
+  flagHits.set(k, t); await flag(req.user.id, kind, detail); res.json({ ok: true });
 });
 
 app.get('/api/leaderboard', async (req, res) => {
