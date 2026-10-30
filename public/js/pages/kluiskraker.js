@@ -326,22 +326,24 @@ Object.assign(act,{
   const round=SLOT.playRound(rng,{buy:isBuy,vip:tier()});
   if(isBuy)sd.buys++;else{sd.spins++;if(round.kind)sd.bon++;if(round.kind==='super')sd.sup++}
   const pay=Math.floor(round.total*bet*100)/100;
+  // geluksdobbelsteen actief (outfit): een percentage extra op je winst, apart getoond na de ronde
+  const lk=typeof luckPct==='function'&&pay>0?Math.floor(pay*luckPct()*100)/100:0;
   // Uitkomst staat vast en wordt meteen verrekend; de animatie laat alleen zien wat er gebeurde.
-  S.cash+=pay-cost;window.slotPending=pay;
-  if(pay>cost)S.stats.won+=pay-cost;else S.stats.lost+=cost-pay;
+  S.cash+=pay+lk-cost;window.slotPending=pay+lk;
+  if(pay+lk>cost)S.stats.won+=pay+lk-cost;else S.stats.lost+=cost-pay-lk;
   // een bonus duurt even: bewaar hem, zodat hij na verversen of op een ander apparaat verder kan (zonder opnieuw te betalen)
   // laatste rondes, sessie en de bonusteller van de seed pas bijwerken als de animatie klaar is (anders verklappen ze de uitslag)
   kk.sdPend={bon:!isBuy&&round.kind?1:0,sup:!isBuy&&round.kind==='super'?1:0};
-  const hrec={t:now(),bet,cost,pay,x:Math.round(round.total*100)/100,buy:isBuy?1:0,bonus:round.fs?1:0,sup:round.kind==='super'?1:0,max:round.total>=SLOT.MAX_WIN?1:0,floor:round.floor?1:0,p:1};
+  const hrec={t:now(),bet,cost,pay:pay+lk,lk,x:Math.round(round.total*100)/100,buy:isBuy?1:0,bonus:round.fs?1:0,sup:round.kind==='super'?1:0,max:round.total>=SLOT.MAX_WIN?1:0,floor:round.floor?1:0,p:1};
   S.kkHist=[hrec].concat(S.kkHist||[]).slice(0,40);
   if(round.fs)S.slotRun={g:'kluis',seed:seedStr,buy:!!isBuy,t:tier(),bet,cost,pay,tot:round.total,at:0,ts:now()};
-  casinoRound(cost,pay,'kluis');
+  casinoRound(cost,pay+lk,'kluis');
   save();renderTop();kkRefreshUI();
   try{await kkPlay(round,bet,isBuy)}catch(e){console.error(e)}
-  window.slotPending=0;kk.busy=false;kk.inBonus=false;kk.paused=false;kk.lastWin=pay;kk.stepWin=0;kk.sdPend=null;if(S.slotRun&&S.slotRun.g==='kluis')delete S.slotRun;
+  window.slotPending=0;kk.busy=false;kk.inBonus=false;kk.paused=false;kk.lastWin=pay+lk;kk.stepWin=0;kk.sdPend=null;if(S.slotRun&&S.slotRun.g==='kluis')delete S.slotRun;
   delete hrec.p;
   kk.sess=kk.sess||{n:0,bet:0,won:0,best:0,bon:0};kk.sess.n++;kk.sess.bet+=cost;kk.sess.won+=pay;kk.sess.best=Math.max(kk.sess.best,pay);if(round.fs)kk.sess.bon++;
-  kk.msg=pay>0?(Math.round(round.total*100)/100).toLocaleString('nl-NL')+'× inzet':'Geen winst';
+  kk.msg=pay>0?(Math.round(round.total*100)/100).toLocaleString('nl-NL')+'× inzet'+(lk?' + geluk '+fmt(lk):''):'Geen winst';if(lk)toast('Geluksdobbelsteen: +'+fmt(lk)+' extra','lvl');
   if(pay>=bet*20||isBuy)log('Kluiskraker: '+fmt(pay)+' gewonnen ('+(isBuy?'gekochte bonus, ':'')+'inzet '+fmt(cost)+')',pay>=cost?'ok':'bad');
   if(pay>=bet*50)toast('Grote winst: '+fmt(pay)+'!','lvl');
   save();renderTop();kkRefreshUI();

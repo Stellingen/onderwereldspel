@@ -135,6 +135,15 @@ const todoHtml=(o,max)=>o.slice(0,max||99).map(x=>`<a class="todo" href="#${x.h}
 // Rechterkolom op brede schermen: alles over jou op één plek (rang, geld, energie, gezondheid, hitte, familie),
 // daaronder wat er klaarstaat, een snelle klus, het logboek en de top 5. Energie, gezondheid en hitte openen een paneel
 // met wat je er nu aan kunt doen (ontspannen, rusten, onderduiken).
+// Iconen voor contant (bundel biljetten met een bandje) en bank (gebouw met zuilen)
+const ICO_CASH=`<svg viewBox="0 0 40 40" aria-hidden="true"><g transform="rotate(-9 20 20)"><rect x="5" y="11" width="30" height="16" rx="1.6" fill="#1b5c3c"/><rect x="7.2" y="13.2" width="25.6" height="11.6" rx=".8" fill="none" stroke="#3fe395" stroke-opacity=".35"/></g>
+ <rect x="5" y="15" width="30" height="16" rx="1.6" fill="#2a8f5c"/><rect x="5" y="15" width="30" height="5" rx="1.6" fill="#36a96d" opacity=".55"/>
+ <rect x="7.4" y="17.4" width="25.2" height="11.2" rx=".8" fill="none" stroke="#b6f5d2" stroke-opacity=".55"/><circle cx="12.5" cy="23" r="2.6" fill="none" stroke="#b6f5d2" stroke-opacity=".6"/>
+ <rect x="19" y="14" width="6.5" height="18" rx=".6" fill="#f2c230"/><rect x="19" y="14" width="6.5" height="3" fill="#ffe08a" opacity=".7"/><path d="M28.5 21h3.5M28.5 24h3.5" stroke="#b6f5d2" stroke-opacity=".6" stroke-width="1.2"/></svg>`;
+const ICO_BANK=`<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M5 15.5L20 7l15 8.5z" fill="#8fb7d9"/><path d="M20 7l15 8.5H20z" fill="#6f93b3"/><circle cx="20" cy="12.6" r="1.7" fill="#f2c230"/>
+ <rect x="6.5" y="15.5" width="27" height="3" fill="#5d7f9c"/><g fill="#a9dcff"><rect x="9" y="18.5" width="3.6" height="11"/><rect x="15" y="18.5" width="3.6" height="11"/><rect x="21.4" y="18.5" width="3.6" height="11"/><rect x="27.4" y="18.5" width="3.6" height="11"/></g>
+ <g fill="#7fa9cc"><rect x="11.3" y="18.5" width="1.3" height="11"/><rect x="17.3" y="18.5" width="1.3" height="11"/><rect x="23.7" y="18.5" width="1.3" height="11"/><rect x="29.7" y="18.5" width="1.3" height="11"/></g>
+ <rect x="6" y="29.5" width="28" height="2.6" fill="#5d7f9c"/><rect x="4" y="32.1" width="32" height="2.6" fill="#47647d"/></svg>`;
 let _rpop=null;
 function rPop(k){_rpop=_rpop===k?null:k;const el=$('#rail');if(el)el._h=null;renderRail()}
 document.addEventListener('pointerdown',e=>{if(_rpop&&!e.target.closest('.dos'))rPop(null)},true);
@@ -165,14 +174,15 @@ function renderRail(){
     <div class="dos-top"><a class="dos-name" href="#profiel">${esc(S.name)}${vipTag()}</a>${statusTag()}</div>
     <div class="dos-rank"><b>${RANKS[ri][0]}</b><span>lv ${rankLevel(S.xp)}</span><em>${nxt?Math.floor(S.xp).toLocaleString('nl-NL')+' / '+nxt[1].toLocaleString('nl-NL')+' XP':'Top bereikt'}</em></div>
     <div class="bar"><i style="width:${pct}%;background:var(--acc)"></i></div>
-    <div class="dos-money"><a href="#bank"><span class="label">Contant</span><b class="cash">${fmt(S.cash-pend)}</b></a><a href="#bank"><span class="label">Bank</span><b>${fmt(typeof bankNet==='function'?bankNet():S.bank)}</b></a></div>
+    <div class="dos-money"><a class="dm cash" href="#bank" title="Contant geld heb je op zak. Word je gepakt, dan kun je een deel kwijtraken."><i class="dm-ic">${ICO_CASH}</i><span class="dm-t"><span class="label">Contant</span><small>op zak</small></span><b>${fmt(S.cash-pend)}</b></a>
+     <a class="dm bank" href="#bank" title="Op de bank staat je geld veilig: spaarrekening, deposito's en beleggingen."><i class="dm-ic">${ICO_BANK}</i><span class="dm-t"><span class="label">Bank</span><small>veilig</small></span><b>${fmt(typeof bankNet==='function'?bankNet():S.bank)}</b></a></div>
     <div class="dos-vit">
      <button class="rs ${_rpop==='en'?'on':''}" onclick="rPop('en')" aria-expanded="${_rpop==='en'}" title="Wat je nu aan je energie kunt doen"><span class="label">Energie</span><b style="color:var(--ice)">${Math.floor(S.energy)}<small>/${EN_MAX}</small></b><i class="mini"><i style="width:${Math.min(100,S.energy/EN_MAX*100)}%;background:var(--ice)"></i></i><small>${full?'vol over '+full+' min':'vol'}</small></button>
      <button class="rs ${_rpop==='hp'?'on':''}" onclick="rPop('hp')" aria-expanded="${_rpop==='hp'}" title="Wat je nu aan je gezondheid kunt doen"><span class="label">Gezondheid</span><b style="color:${pc}">${S.hp}%</b><i class="mini"><i style="width:${S.hp}%;background:${pc}"></i></i><small>${S.hp>=100?'fit':S.hp>50?'gaat wel':'oppassen'}</small></button>
      <button class="rs ${_rpop==='heat'?'on':''}" onclick="rPop('heat')" aria-expanded="${_rpop==='heat'}" title="Wat je nu aan je hitte kunt doen"><span class="label">Hitte</span><b style="color:${S.heat>30?hc:'var(--fg)'}">${S.heat}%</b><i class="mini"><i style="width:${S.heat}%;background:${hc}"></i></i><small>${S.heat>60?'politie let op':S.heat>30?'lauw':'koel'}</small></button>
      <a class="rs" href="#fam"><span class="label">Familie</span><b style="color:${F?F.col:'var(--faint)'}">${F?F.m:'—'}</b><small>${F?esc(F.n)+(fr?' · '+fr[0]:''):'geen familie'}</small></a>
     </div>
-    <div class="dos-foot"><span>Cred <b style="color:var(--violet)">${S.cred}</b></span>${bl?`<span>Buit <b style="color:var(--green)">+${bl}%</b> ${fmtClock(S.buffs.loot.until-now())}</span>`:''}${fp?`<span>Focus <b style="color:#ff6b7c">+${fp}%</b>${buffFocus()?' '+fmtClock(S.buffs.focus.until-now()):''}</span>`:''}</div>
+    <div class="dos-foot"><span>Cred <b style="color:var(--violet)">${S.cred}</b></span>${bl?`<span>Buit <b style="color:var(--green)">+${bl}%</b> ${fmtClock(S.buffs.loot.until-now())}</span>`:''}${fp?`<span>Focus <b style="color:#ff6b7c">+${fp}%</b>${buffFocus()?' '+fmtClock(S.buffs.focus.until-now()):''}</span>`:''}${typeof luckPct==='function'&&luckPct()?`<a href="#casino">Geluk <b style="color:#f2c230">+${Math.round(luckPct()*100)}%</b> ${fmtClock(luckLeft())}</a>`:''}</div>
     ${rPopHtml()}
    </section>
    ${td.length?`<section class="rcard"><div class="label">Klaar voor je · ${td.length}</div><div class="todos">${todoHtml(td,4)}</div>${td.length>4?`<a class="todo-more" href="#dash">Nog ${td.length-4} op het dashboard ›</a>`:''}</section>`:''}
@@ -187,12 +197,13 @@ function renderRail(){
 // Statusbalk bovenaan: op de telefoon en op smallere schermen (zonder rechterkolom). In het casino: saldo en lidmaatschap.
 function casHudHtml(){const pend=window.slotPending||0,b=typeof bankNet==='function'?bankNet():S.bank,t=typeof tier==='function'?tier():0;
  const lid=['Gewoon','VIP','High roller'][t]||'Gewoon',cb=typeof cbAvail==='function'?cbAvail():0;
+ const luck=typeof luckState==='function'?luckState():null;
  return `<div class="chud">
-  <div class="ch-main"><span class="label">Saldo</span><b id="casBal">${fmt(S.cash-pend)}</b></div>
-  <a class="ch-cell" href="#bank"><span class="label">Bank</span><b>${fmt(b)}</b></a>
-  <div class="ch-cell"><span class="label">Lidmaatschap</span><b class="${t?'gold':''}">${lid}</b></div>
-  ${t?`<div class="ch-cell ch-cb" title="${typeof CB_RATE!=='undefined'?'Cashback op elke inzet: '+Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*(TIER_CB[t]||1)*100).toLocaleString('nl-NL',{maximumFractionDigits:3})+'%').join(' · '):''}"><span class="label">Cashback</span><div class="ch-cbrow"><b id="cbAmt">${fmt(cb)}</b><button class="btn gold sm" id="cbBtn" onclick="act.claimCb()" ${cb<1?'disabled':''}>${cb>=1?'Claimen':'Nog niks te claimen'}</button></div></div>`:`<a class="ch-cell ch-up" href="#profiel"><span class="label">Lid worden</span><b>VIP: cashback en vaker bonus</b></a>`}
-  <div class="ch-cell ch-r"><span class="label">${RANKS[rankIdx(S.xp)][0]} · lv ${rankLevel(S.xp)}</span>${statusTag()}</div></div>`}
+  <div class="ch-main"><i class="dm-ic">${ICO_CASH}</i><div><span class="label">Saldo · contant</span><b id="casBal">${fmt(S.cash-pend)}</b></div></div>
+  <a class="ch-cell ch-bank" href="#bank"><i class="dm-ic">${ICO_BANK}</i><div><span class="label">Bank</span><b>${fmt(b)}</b></div></a>
+  ${t?`<div class="ch-cell ch-cb" title="${typeof CB_RATE!=='undefined'?'Cashback op elke inzet: '+Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*(TIER_CB[t]||1)*100).toLocaleString('nl-NL',{maximumFractionDigits:3})+'%').join(' · '):''}"><div><span class="label">${lid} · cashback</span><b id="cbAmt">${fmt(cb)}</b></div><button class="btn gold sm" id="cbBtn" onclick="act.claimCb()" ${cb<1?'disabled':''}>${cb>=1?'Claimen':'Nog niks te claimen'}</button></div>`:`<a class="ch-cell ch-up" href="#profiel"><span class="label">Gewoon lid</span><b>VIP: cashback en vaker bonus</b></a>`}
+  ${luck&&luck.o&&luck.o.luck?`<div class="ch-cell ch-luck ${luck.L?'on':''}"><i class="dm-ic">${diceSvg(luck.o)}</i><div><span class="label">Geluk +${Math.round(luck.o.luck*100)}% · slots</span><b>${luck.L?'Nog '+fmtClock(luck.L):luck.W?'Rust '+bkDurL(luck.W):'Klaar'}</b></div>${luck.ready?`<button class="btn gold sm" onclick="act.luckUse()">Gebruiken</button>`:''}</div>`:''}
+  <div class="ch-cell ch-r">${statusTag()}</div></div>`}
 let _casPrev=null;
 function renderTop(){
   if(page==='casino'){const v=S.cash-(window.slotPending||0),el=$('#topbar');if(setHTML(el,casHudHtml())&&_casPrev!=null&&v!==_casPrev){const b=el.querySelector('#casBal');if(b)b.classList.add(v>_casPrev?'up':'dn')}_casPrev=v;return}
@@ -201,8 +212,8 @@ function renderTop(){
   const nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
   setHTML($('#topbar'),`
    <div class="chip rank"><small>Rang · lv ${rankLevel(S.xp)}</small><b>${RANKS[ri][0]}${vipTag(1)}</b><div class="mini"><i style="width:${pct}%;background:var(--acc)"></i></div></div>
-   <div class="chip cash"><small>Contant</small><b>${fmt(S.cash-pend)}</b></div>
-   <div class="chip"><small>Bank</small><b>${fmt(S.bank)}</b></div>
+   <div class="chip cash"><small><i class="ci">${ICO_CASH}</i>Contant</small><b>${fmt(S.cash-pend)}</b></div>
+   <div class="chip bankc"><small><i class="ci">${ICO_BANK}</i>Bank</small><b>${fmt(typeof bankNet==='function'?bankNet():S.bank)}</b></div>
    <div class="chip"><small>Energie</small><b style="color:var(--ice)">${Math.floor(S.energy)}/${EN_MAX}</b><div class="mini"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div></div>
    <div class="chip"><small>Cred</small><b style="color:var(--violet)">${S.cred}</b></div>
    <div class="chip"><small>Gezondheid</small><b style="color:${S.hp>50?'var(--green)':'var(--red)'}">${S.hp}%</b></div>

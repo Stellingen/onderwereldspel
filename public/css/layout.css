@@ -48,10 +48,17 @@
 .dos-rank em{margin-left:auto;font-style:normal;font-family:var(--f-mono);font-size:10px;color:var(--faint);white-space:nowrap}
 .dos .bar{margin-top:-4px;height:4px}
 .dos-money{display:grid;grid-template-columns:1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
-.dos-money a{display:flex;align-items:baseline;justify-content:space-between;gap:10px;background:var(--bg2);padding:8px 12px;text-decoration:none;color:inherit;min-width:0;transition:background .15s}
-.dos-money a:hover{background:var(--panel2)}
-.dos-money b{font-family:var(--f-mono);font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.dos-money b.cash{font-size:18px;color:var(--fg)}
+.dos-money .dm{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px;background:var(--bg2);padding:8px 12px 8px 9px;text-decoration:none;color:inherit;min-width:0;transition:background .15s;position:relative}
+.dos-money .dm::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px}
+.dos-money .dm.cash::before{background:var(--green)}.dos-money .dm.bank::before{background:var(--ice)}
+.dos-money .dm:hover{background:var(--panel2)}
+.dm-ic{display:block;width:34px;height:34px}.dm-ic svg{width:100%;height:100%;display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+.dm-t{display:flex;flex-direction:column;min-width:0}
+.dm-t .label{color:var(--mute)}
+.dm-t small{font-family:var(--f-mono);font-size:9.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dos-money .dm b{font-family:var(--f-mono);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.dos-money .dm.cash b{font-size:17px;color:var(--green)}
+.dos-money .dm.bank b{color:var(--ice)}
 .dos-vit{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
 .dos-vit .rs{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:var(--bg2);padding:9px 11px 8px;text-align:left;text-decoration:none;color:inherit;min-width:0;position:relative;transition:background .15s}
 .dos-vit .rs:hover,.dos-vit .rs.on{background:var(--panel2)}
@@ -86,7 +93,9 @@
 /* ---------- Casino: saldobalk bovenaan ---------- */
 body.wide-page .topbar{display:block;background:none;border:0;box-shadow:none;padding:0;margin-bottom:14px}
 .chud{display:flex;align-items:stretch;gap:1px;background:var(--line);border:1px solid var(--line);border-top:2px solid var(--sec,var(--green))}
-.chud>*{background:var(--panel);padding:10px 16px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0;text-decoration:none;color:inherit}
+.chud>*{background:var(--panel);padding:10px 16px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0;text-decoration:none;color:inherit;overflow:hidden}
+.chud>*>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.chud b,.chud .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chud .label{white-space:nowrap}
 .ch-main{flex:0 0 auto;min-width:220px;padding:10px 22px;background:linear-gradient(90deg,rgba(63,227,149,.07),transparent 70%),var(--panel)}
 .ch-main b{font-family:var(--f-display);font-weight:900;font-size:34px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:.01em;white-space:nowrap}
@@ -96,14 +105,14 @@ body.wide-page .topbar{display:block;background:none;border:0;box-shadow:none;pa
 .ch-cell b{font-family:var(--f-mono);font-weight:700;font-size:15px;white-space:nowrap;font-variant-numeric:tabular-nums}
 .ch-cell b.gold{color:#f2c230}
 a.ch-cell:hover{background:var(--panel2)}
-.ch-cbrow{display:flex;align-items:center;gap:12px}
+.ch-cb{flex-direction:row!important;align-items:center;gap:12px}
 .ch-cb b{color:#f2c230;font-size:16px}
 .ch-cb .btn{width:auto;padding:5px 10px;font-size:11.5px}
 .ch-up b{font-family:var(--f-body);font-weight:500;font-size:12.5px;color:var(--mute)}
 .ch-up:hover b{color:var(--fg)}
-.ch-r{flex:1 1 auto;flex-direction:row;align-items:center;justify-content:flex-end;gap:12px}
+.ch-r{flex:1 1 auto;flex-direction:row!important;align-items:center;justify-content:flex-end;gap:12px}
 .ch-r .label{color:var(--mute)}
-@media (max-width:1100px){.ch-r>.label{display:none}}
+@media (max-width:1360px){.ch-bank .dm-ic{display:none}}
 @media (max-width:900px){
   body.wide-page .topbar{margin:0 0 12px}
   .chud{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
@@ -179,3 +188,17 @@ a.ch-cell:hover{background:var(--panel2)}
 .pf-priv .pv-switch{max-width:640px}
 @media (max-width:900px){.pf-priv{grid-column:1/-1}.pf-priv .btn{width:100%}}
 .rtop .lb-name{text-decoration:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}.rtop .lb-name:hover{text-decoration:underline}
+
+/* contant/bank-iconen in de casinobalk en de statusbalk */
+.ch-main{flex-direction:row!important;align-items:center;gap:14px}
+.ch-main .dm-ic{width:40px;height:40px}
+.ch-bank{flex-direction:row!important;align-items:center;gap:10px}
+.ch-bank .dm-ic{width:28px;height:28px}
+.ch-bank b{color:var(--ice)}
+.chip small .ci{display:inline-block;width:15px;height:15px;vertical-align:-3px;margin-right:5px}
+.chip small .ci svg{width:100%;height:100%;display:block}
+.chip.cash b{color:var(--green)}.chip.bankc b{color:var(--ice)}
+@media (max-width:900px){.ch-main .dm-ic{width:30px;height:30px}.ch-bank .dm-ic{display:none}}
+.dos-rank span{white-space:nowrap;flex:none}
+.dos-rank b{flex:none}
+.dos-rank em{min-width:0;overflow:hidden;text-overflow:ellipsis}

@@ -105,7 +105,9 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   celstraf. Gereedschap: buit en meer tijd bij auto stelen. Communicatie: minder hitte na elke klus (−10% tot −55%).
   Vervoer: makkelijker vluchten (opgevoerde scooter +6% tot helikopter op afroep +25%), de duurdere ook wat minder hitte.
   Oude saves: vroeger telde alles bij elkaar op; overbodige oude items worden terugbetaald.
-- **Bank** (`public/js/pages/bank.js`, koersen in `public/js/market.js`). Alles bij de bank ben je niet kwijt als je gepakt wordt.
+- **Bank** (`public/js/pages/bank.js`, koersen in `public/js/market.js`). Per lidmaatschap: spaarrente 0,10% / 0,12% / 0,15% per uur
+  (gewoon / VIP / High roller, deposito's met dezelfde verhouding), 2 / 5 / 10 depositoplekken en in totaal €10.000 / €30.000 /
+  €100.000 beleggen. Lopende deposito's en beleggingen boven die grens blijven gewoon staan. Alles bij de bank ben je niet kwijt als je gepakt wordt.
   - *Spaarrekening*: 0,10% rente per uur (VIP 0,12%), vrij opneembaar, ook offline tot 12 uur. (Was 1% per 10 minuten:
     dat is ruim 300% per dag en maakte beleggen zinloos.)
   - *Deposito*: geld vast voor 1 uur (0,15%), 6 uur (1,2%), 24 uur (4,5%) of 3 dagen (15%). Kan niet zakken; na afloop gaat alles
@@ -115,7 +117,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
     lopen door als je offline bent (vaste functie van de tijd, Brownse brug, dus geen server nodig). Kosten 0,25% tot 1% bij kopen
     en verkopen (VIP de helft). Kans op verlies na 24 uur: 0% / 13% / 30% / 37%, na 7 dagen 0% / 0% / 1% / 9%.
   - Max per deposito en per fonds: €250.000 × 2 per rang (Capo €64 mln., Peetvader €512 mln.).
-- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000), `spinnetje` (€25.000), `jackpot` (€1.000.000) `trainwreck` (€3.000.000; daarna kun je in Kluiskraker inzetten tot €500.000 per spin) en `m1` tot en met `m9` (elk €5.000.000; opnieuw uitgegeven, intern `m1v4` enz., dus ook wie een eerdere versie had gebruikt kan ze weer inwisselen), plus een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
+- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000), `spinnetje` (€25.000), `jackpot` (€1.000.000) `trainwreck` (€3.000.000; daarna kun je in Kluiskraker inzetten tot €500.000 per spin) en `highroller` (€50.000; ook te typen als "High Roller", spaties en streepjes tellen niet mee). De oude codes `m1` tot en met `m9` zijn weg en verdwijnen ook uit 'gebruikte codes'. Daarnaast is er een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
 - **Kluiskraker**: cluster-slot op **10×10** met 9 symbolen (5+ aangrenzende gelijke symbolen, uitbetaling per clustergrootte
   tot 20+), Loper als wild, vakjes die bij elke winst x2, x4 … tot **x4096** worden. **3 kluizen = 10 free spins, 4 = 12, 5 = 14,
   6+ = superbonus.** Extra kluizen **tumbelen erin**: zolang er winst valt vallen er nieuwe symbolen in, en liggen er al 3 kluizen,
@@ -222,12 +224,18 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   links toont kleine standen (#plek op de ranglijst, auto's in de garage, cel- en wachttijd). In het casino is er geen
   rechterkolom maar een saldobalk bovenaan: saldo (knippert groen of rood bij een verandering), bank, lidmaatschap en cashback
   om te claimen. Smallere schermen en de telefoon houden de statusbalk bovenaan.
-- **Outfit** (`public/js/pages/look.js`): kleding en sieraden op vijf plekken (hoofd, kleding, schoenen, sieraden, pols), 26
-  stukken. Elk stuk geeft een voordeel en soms een nadeel: onopvallend (minder hitte, meer kans), sportief (makkelijker vluchten,
-  sneller energie), patser (meer buit en inkomen, maar meer hitte) of zakelijk (meer inkomen, lagere borg, XP). Drie of vijf
-  stukken in dezelfde stijl geven een setbonus (Grijze muis, Atleet, Patser, Zakenman). Een etalagepop laat zien wat je draagt;
-  met de muis over een stuk pas je het. Wat je koopt blijft in je kast, omkleden is gratis. De effecten lopen via `fitFx` in
-  `state.js` (slaagkans, buit, hitte, inkomen bedrijven, borg, wachttijd, XP, energie, autowaarde, ontsnappen, vluchten).
+- **Outfit** (`public/js/pages/look.js`): kleding en sieraden op zes plekken (hoofd, kleding, schoenen, ketting, pols,
+  ring), 55 stukken. Vaak zijn er stukken van dezelfde prijs met een ander voordeel, zodat je kiest wat voor figuur je wordt:
+  onopvallend (minder hitte, meer kans), sportief (makkelijker vluchten, sneller energie), patser (meer buit en inkomen, maar
+  meer hitte) of zakelijk (meer inkomen, lagere borg, XP). Drie of vijf stukken in dezelfde stijl geven een setbonus (Grijze
+  muis, Atleet, Patser, Zakenman). Een etalagepop laat zien wat je draagt; met de muis over een stuk pas je het. Wat je koopt
+  blijft in je kast, omkleden is gratis. De effecten lopen via `fitFx` in `state.js`; onopvallende kleding maakt ook gezocht
+  worden minder waarschijnlijk (`wantMod`).
+  **Geluksdobbelsteen** (zevende plek, Geluk): gebruik je hem, dan krijg je 10 minuten een percentage extra op je winst in
+  Kluiskraker en Visdief, daarna 5 uur rust. Gebroken +1% (€2.500), hout +2% (€20.000, Loopjongen), been +5% (€150.000, Boef),
+  zilver +8% (€750.000, Soldaat) en goud +15% (€5 mln., alleen High roller). Het extra geld wordt na de ronde apart getoond;
+  roulette, blackjack, poker, mines, hoogvlieger en de munt houden de echte kansen. Gebruiken kan op Outfit en in de saldobalk
+  van het casino.
 - **Profielen**: standaard privé. Op Profiel → Zichtbaarheid zet je het openbaar; dan zien anderen via de ranglijst je
   vermogen, familie, woning, outfit en prestaties. Bij een privé profiel zien ze alleen naam en rang. Beheerders zien elk
   profiel, en in het beheerdashboard staat per speler of zijn profiel openbaar is en wat hij deed (zijn logboek uit het spel).

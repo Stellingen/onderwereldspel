@@ -245,15 +245,15 @@ Object.assign(act,{
   if(S.slotRun&&S.slotRun.g==='vis')delete S.slotRun;
   const sd=vdSeed(),seedStr='vis:'+sd.s+':'+sd.c+':'+sd.n,rng=SLOT.seedRng(seedStr);sd.n++;
   const round=VISD.playRound(rng,{buy:isBuy,vip:tier()});if(!isBuy){sd.spins++;if(round.fs)sd.bon++}
-  const pay=Math.floor(round.total*bet*100)/100;
-  S.cash+=pay-cost;window.slotPending=pay;if(pay>cost)S.stats.won+=pay-cost;else S.stats.lost+=cost-pay;
+  const pay=Math.floor(round.total*bet*100)/100,lk=typeof luckPct==='function'&&pay>0?Math.floor(pay*luckPct()*100)/100:0;
+  S.cash+=pay+lk-cost;window.slotPending=pay+lk;if(pay+lk>cost)S.stats.won+=pay+lk-cost;else S.stats.lost+=cost-pay-lk;
   vd.sdPend=!isBuy&&round.fs?1:0;
   if(round.fs)S.slotRun={g:'vis',seed:seedStr,buy:!!isBuy,t:tier(),bet,cost,pay,tot:round.total,at:0,ts:now()};
-  casinoRound(cost,pay,'vis');
+  casinoRound(cost,pay+lk,'vis');
   save();renderTop();vdRefresh();
   try{await vdPlay(round,bet,isBuy)}catch(e){console.error(e)}
-  window.slotPending=0;vd.busy=false;vd.shown=0;vd.fs=null;vd.lastWin=pay;vd.stepWin=0;vd.sdPend=0;if(S.slotRun&&S.slotRun.g==='vis')delete S.slotRun;
-  vd.msg=pay>0?(Math.round(round.total*100)/100).toLocaleString('nl-NL')+'× inzet':'Geen winst';
+  window.slotPending=0;vd.busy=false;vd.shown=0;vd.fs=null;vd.lastWin=pay+lk;vd.stepWin=0;vd.sdPend=0;if(S.slotRun&&S.slotRun.g==='vis')delete S.slotRun;
+  vd.msg=pay>0?(Math.round(round.total*100)/100).toLocaleString('nl-NL')+'× inzet'+(lk?' + geluk '+fmt(lk):''):'Geen winst';if(lk)toast('Geluksdobbelsteen: +'+fmt(lk)+' extra','lvl');
   if(pay>=bet*20||isBuy||round.fs)log('Visdief: '+fmt(pay)+' gewonnen ('+(isBuy?'gekochte bonus, ':round.fs?'bonus, ':'')+'inzet '+fmt(cost)+')',pay>=cost?'ok':'bad');
   if(pay>=bet*50)toast('Grote vangst: '+fmt(pay)+'!','lvl');
   save();renderTop();vdRefresh()}});

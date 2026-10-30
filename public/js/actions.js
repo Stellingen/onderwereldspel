@@ -19,7 +19,7 @@ const act={
   S.cash-=cost;S.cd['tr_'+id]=now()+t.cd*60000*waitK();S.skills[id]=l+1;addXp(3+Math.floor(l*1.5));if(typeof famEv==='function')famEv('train');const a=t.eff(l),b=t.eff(l+1);
   toast(t.n+' level '+(l+1)+': '+a[0][0].toLowerCase()+' '+a[0][1]+' → '+b[0][1],TRAIN_MILES.includes(l+1)?'lvl':'ok');log(t.n+' naar level '+(l+1)+' ('+t.place+', '+fmt(cost)+')','ok');
   save();pushState();render()},
- async redeem(raw){let code=String(raw||'').trim().toLowerCase();code=CODE_ALIAS[code]||code;const btn=document.getElementById('codeBtn');
+ async redeem(raw){let code=String(raw||'').trim().toLowerCase().replace(/[\s_-]+/g,'');code=CODE_ALIAS[code]||code;const btn=document.getElementById('codeBtn');
   if(!code){redeemMsg={ok:false,t:'Vul eerst een code in.'};render();return}
   S.redeemed=S.redeemed||[];
   if(S.redeemed.includes(code)){redeemMsg={ok:false,t:'Je hebt deze code al gebruikt.'};render();return}
