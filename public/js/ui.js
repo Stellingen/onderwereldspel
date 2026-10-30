@@ -85,7 +85,7 @@ const MBAR=['dash','crimes','cars','casino'];
 const MSHORT={dash:'Start',crimes:'Misdaden',cars:"Auto's",casino:'Casino'};
 // Klein getal rechts in het menu (computer): waar je staat, wat er loopt
 function navStat(){const o={};try{const [p]=myPos();o.rank='#'+p;if(inJail())o.jail=fmtClock(S.jailUntil-now());const h=cdLeft('hit');if(h&&rankIdx(S.xp)>=7)o.hits=fmtClock(h);
- if(typeof GARAGE_MAX!=='undefined')o.cars=S.cars.length+'/'+GARAGE_MAX;if(S.family)o.fam=fam().m}catch(e){}return o}
+ if(typeof garageCap==='function')o.cars=S.cars.length+'/'+garageCap();if(S.family)o.fam=fam().m}catch(e){}return o}
 function navBadges(){const b={};if(inJail())b.jail='!';if(!inJail()&&S.energy>=EN_MAX)b.crimes='●';
  if(typeof RANK_CODES!=='undefined'&&RANKS.slice(1,rankIdx(S.xp)+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase())))b.profiel='€';
  if(typeof isVip==='function'&&isVip()&&typeof cbAvail==='function'&&cbAvail()>=1)b.casino='€';return b}
@@ -189,7 +189,7 @@ function todoItems(){const o=[],ri=rankIdx(S.xp);
  if(S.family&&S.fm&&S.fm.fam===S.family){const d=S.fm.list.filter(m=>m.done).length;if(d<5)o.push({ic:'fam',t:'Familiemissies '+d+'/5',s:d<3?'Minimaal 3 vandaag':'Nog '+(5-d)+' voor de bonus',h:'fam',c:'var(--violet)'})}
  else if(!S.family){const can=FAMILIES.filter(f=>ri>=f.r&&S.cred>=f.cred).length;if(can)o.push({ic:'fam',t:'Sluit je aan bij een familie',s:can+' famil'+(can>1?'ies laten':'ie laat')+' je toe',h:'fam',c:'var(--violet)'})}
  if(typeof bzPlan==='function'){const ids=BIZ.filter(b=>bizUnits(b.id).length).map(b=>b.id);if(ids.length){const p=bzPlan(ids,wit());if(p.k)o.push({ic:'biz',t:p.k+' upgrade'+(p.k>1?'s':'')+' betaalbaar',s:fmt(p.cost)+' · +'+fmt(p.gain)+'/dag',h:'biz',c:'var(--green)'})}}
- if(!inJail()&&!cdLeft('car')&&typeof GARAGE_MAX!=='undefined'&&S.cars.length<GARAGE_MAX&&S.energy>=2)o.push({ic:'cars',t:'Auto zoeken',s:'Je kunt weer de straat op',h:'cars',c:'var(--acc2)'});
+ if(!inJail()&&!cdLeft('car')&&typeof garageCap==='function'&&S.cars.length<garageCap()&&S.energy>=2)o.push({ic:'cars',t:'Auto zoeken',s:'Je kunt weer de straat op',h:'cars',c:'var(--acc2)'});
  if(typeof fwTodo==='function'&&!inJail()){const w=fwTodo();if(w)o.unshift(w)}
  if(S.feud)o.unshift({ic:'hits',t:'Bendegevecht',s:'De mensen van '+S.feud.t+' zoeken je',h:'hits',c:'var(--red)'});
  if(typeof carOrders==='function'&&S.cars.length){const O=carOrders(),n=O.list.filter(x=>!x.done&&S.cars.some(c=>c.id===x.id)).length;if(n)o.push({ic:'cars',t:'Bestelling voor de heler',s:n+' auto'+(n>1?"'s":'')+' uit je garage gevraagd',h:'cars',c:'var(--acc2)'})}

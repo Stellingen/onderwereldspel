@@ -2474,3 +2474,41 @@ body.hg-open{overflow:hidden}
 .fit-streets .bzb.small .bzb-t{max-width:64%}
 .fit-streets .bzb.small .bzb-art{width:96px;right:12px}
 @media (max-width:900px){.fit>.fit-right{order:-1}}
+/* ================= Auto's: lobby, garage met kopers, autokerkhof ================= */
+.car-b .bzb-art{display:flex;align-items:center;justify-content:center}
+.ca-sc{position:relative;display:flex;align-items:flex-end;justify-content:center;width:100%;height:100%;padding-bottom:18%}
+.ca-sc .carsvg{width:72%;height:auto;position:relative;z-index:1;filter:drop-shadow(0 10px 14px rgba(0,0,0,.6))}
+.ca-sc::before{content:"";position:absolute;left:0;right:0;bottom:10%;height:2px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.25) 0 18px,transparent 18px 34px)}
+.ca-sc.street::after{content:"";position:absolute;left:14%;top:6%;width:4px;height:62%;background:#2a2f37;box-shadow:0 0 0 0 transparent}
+.ca-sc.street{background:radial-gradient(50% 45% at 20% 18%,rgba(255,214,140,.35),transparent 70%)}
+.ca-sc.light{background:radial-gradient(40% 40% at 82% 22%,rgba(255,61,82,.35),transparent 70%)}
+.ca-sc .tl{position:absolute;right:12%;top:8%;display:flex;flex-direction:column;gap:4px;padding:5px;border-radius:6px;background:#111317;box-shadow:inset 0 0 0 1px #2a2f37}
+.ca-sc .tl i{width:12px;height:12px;border-radius:50%;background:#2a2f37}.ca-sc .tl i:first-child{background:#ff3d52;box-shadow:0 0 12px #ff3d52}
+.ca-sc.yard{background:radial-gradient(50% 50% at 50% 30%,rgba(201,162,39,.22),transparent 70%)}
+.ca-sc .stack{position:absolute;left:10%;bottom:16%;display:flex;flex-direction:column;gap:2px}
+.ca-sc .stack i{display:block;width:80px;height:16px;border-radius:3px;background:linear-gradient(180deg,#6b5a3a,#3d3424);transform:rotate(-3deg)}.ca-sc .stack i:nth-child(2){background:linear-gradient(180deg,#4a5866,#2b333c);transform:rotate(4deg)}.ca-sc .stack i:nth-child(3){background:linear-gradient(180deg,#7a3a3a,#432020);transform:rotate(-1deg)}
+.ca-sc.yard .carsvg{width:56%;margin-left:30%}
+.ca-sc.van{background:radial-gradient(50% 50% at 50% 30%,rgba(184,161,255,.22),transparent 70%)}
+.car-b .bzb-f em.dn{color:var(--red)}.car-b .bzb-f em.dn b{color:var(--red)}
+.gar-up{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 12px}
+.gar-up .btn{width:auto}.gar-up small{font-size:12.5px;color:var(--mute)}.gar-max{font-size:13px;color:var(--green)}
+.gar-slots{display:flex;gap:4px;margin:6px 0}.gar-slots i{width:22px;height:12px;border-radius:3px;background:var(--bg2);box-shadow:inset 0 0 0 1px var(--line2)}
+.gar-slots i.o{background:rgba(255,173,107,.12);box-shadow:inset 0 0 0 1px rgba(255,173,107,.5)}.gar-slots i.f{background:#ffad6b}
+.g-rep{font-style:normal;margin-left:6px;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border:1px solid var(--violet);color:var(--violet);vertical-align:middle}
+.g-note{grid-column:1/-1;font-size:12px;color:var(--mute);padding-top:4px}
+.garage.g2 .gcar.open{grid-column:1/-1;border-color:var(--acc)}
+.cs-panel{grid-column:1/-1;display:grid;gap:10px;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
+.cs-prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cs-prices>div{padding:8px 10px;background:var(--bg2);border:1px solid var(--line)}.cs-prices b{display:block;font-family:var(--f-mono);font-size:15px}
+.cs-offer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line2);background:linear-gradient(90deg,rgba(255,255,255,.03),transparent)}
+.cs-offer.hi{border-color:rgba(63,227,149,.5)}.cs-offer.lo{border-color:rgba(255,61,82,.45)}
+.cs-who b{display:block;font-family:var(--f-head);font-weight:800;font-size:17px}.cs-who small{font-size:12px;color:var(--mute)}
+.cs-amt{text-align:right}.cs-amt b{display:block;font-family:var(--f-display);font-weight:900;font-size:30px;line-height:1}.cs-amt em{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--mute)}
+.cs-offer.hi .cs-amt em{color:var(--green)}.cs-offer.lo .cs-amt em{color:var(--red)}
+.cs-btns{display:flex;gap:8px;flex-wrap:wrap}.cs-btns .btn{width:auto;flex:1}
+.cs-note{margin:0;font-size:12px;color:var(--faint)}
+.sl-buy{display:grid;grid-template-columns:minmax(200px,320px) minmax(0,1fr);gap:16px;align-items:center}.sl-buy .btn{width:auto}
+.sl-art{height:180px;background:#0d0f12;border:1px solid var(--line)}
+.sl-list{display:grid;gap:8px}.sl-row{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 12px;background:var(--panel);border:1px solid var(--line)}
+.sl-row small{display:block;font-size:11.5px;color:var(--mute);line-height:1.4}.sl-row .btn{width:auto}
+@container (max-width:760px){.sl-buy{grid-template-columns:1fr}.sl-row{grid-template-columns:80px minmax(0,1fr)}.sl-row .btn{grid-column:1/-1}.cs-prices{grid-template-columns:1fr 1fr}}

@@ -6,7 +6,7 @@
 const JACK_R=4,JACK_EN=12,JACK_CD=4,JACK_HOT=.85,JACK_STEPS=['Portier open','Bestuurder eruit','Gas erop'];
 const JACK_TIER={1:.45,2:.32,3:.16,4:.07};
 const JACK_SPOTS=['Stoplicht op de Wibautstraat','Kruispunt bij het Museumplein','Afrit van de A10 bij de RAI','Stoplicht op de Coolsingel','Kruising bij het Malieveld','Rotonde in Amstelveen'];
-let carMode='zoek';
+let carMode=null;
 const jackCd=()=>JACK_CD*60000*waitK();
 function jackPick(){let r=Math.random(),t=1;for(const k of [1,2,3,4]){r-=JACK_TIER[k];if(r<=0){t=k;break}}
  const pool=CARS.filter(m=>carTier(m)===t);let w=Math.random()*pool.reduce((a,m)=>a+m.w,0);for(const m of pool){w-=m.w;if(w<=0)return m}return pool[0]}
@@ -15,7 +15,7 @@ function jackParams(m){const N=carNerve(),d=carTier(m),wp=jackWeapon();
  const zone=Math.max(.1,Math.min(.32,.2-d*.015+N.lv*.06+sk('conditie')*.0015+sk('cars')*.0015+(wp>=2?.02:0)));
  return {zone,speed:.55+d*.12,time:6500,d,nv:N}}
 
-function jackSection(){const ri=rankIdx(S.xp),left=cdLeft('jack'),full=S.cars.length>=GARAGE_MAX,wp=jackWeapon()>=0,lock=ri<JACK_R,N=carNerve();
+function jackSection(){const ri=rankIdx(S.xp),left=cdLeft('jack'),full=S.cars.length>=garageCap(),wp=jackWeapon()>=0,lock=ri<JACK_R,N=carNerve();
  const ok=!lock&&!left&&!full&&wp&&!inJail()&&S.energy>=JACK_EN;
  const label=lock?'Vanaf '+RANKS[JACK_R][0]:inJail()?'Je zit vast':!wp?'Eerst een wapen':full?'Garage vol, verkoop eerst':left?'Even afkoelen · <span id="jackCd">'+fmtClock(left)+'</span>':S.energy<JACK_EN?'Te moe · '+JACK_EN+' energie':'Op de loer bij het stoplicht · '+JACK_EN+' energie';
  const z=Math.round(jackParams({d:2,w:1}).zone*100);
@@ -65,11 +65,11 @@ function jackGame(m,car){return new Promise(resolve=>{
 
 Object.assign(act,{
  async jackCar(){if(window.__chase||inJail()||cdLeft('jack')||rankIdx(S.xp)<JACK_R||jackWeapon()<0)return;
-  if(S.cars.length>=GARAGE_MAX){toast('Garage vol, verkoop eerst iets','bad');return}if(S.energy<JACK_EN){toast('Te moe','bad');return}
+  if(S.cars.length>=garageCap()){toast('Garage vol, verkoop eerst iets','bad');return}if(S.energy<JACK_EN){toast('Te moe','bad');return}
   S.energy-=JACK_EN;S.cd.jack=now()+jackCd();const m=jackPick(),spot=JACK_SPOTS[Math.floor(Math.random()*JACK_SPOTS.length)],car=spawnCar(m,spot);
   S.pendingJack={id:m.id};save();pushState();
   const r=await jackGame(m,car);S.pendingJack=null;S.stats.jackTries=(S.stats.jackTries||0)+1;S.carDex=S.carDex||{};
-  if(r===true){const v=Math.round(carSell(car.v)*JACK_HOT/10)*10;S.cars.push({id:m.id,n:m.n,v,b:m.b,c:car.c,year:car.year,km:car.km,staat:car.staat,hot:1});S.stats.cars++;S.stats.jacks=(S.stats.jacks||0)+1;
+  if(r===true){const v=Math.round(carSell(car.v)*JACK_HOT/10)*10;S.cars.push({id:m.id,n:m.n,v,b:m.b,c:car.c,year:car.year,km:car.km,staat:car.staat,hot:1,rep:1});S.stats.cars++;S.stats.jacks=(S.stats.jacks||0)+1;
    S.cred+=carTier(m)>=3?2:1;addHeat(6+m.d*2);addXp(8+m.d*m.d*4);if(typeof famEv==='function')famEv('car',{v});const d=S.carDex[m.id]||[0,0];d[0]++;d[1]++;S.carDex[m.id]=d;
    toast(`${m.n} gejat bij het stoplicht! Waarde ${fmt(v)} (heet)`,'ok');log(`Carjacking: ${m.n} (${fmt(v)})`,'ok')}
   else if(r==='fight'){const h=rnd(8,18);S.hp=Math.max(5,S.hp-h);addHeat(3);toast(`De bestuurder van de ${m.n} vecht terug. −${h}% gezondheid`,'bad');log(`Carjacking mislukt: de bestuurder vocht terug (−${h}% gezondheid)`,'bad')}
