@@ -2588,3 +2588,27 @@ body.hg-open{overflow:hidden}
 }
 .kk-small{flex-wrap:wrap}.kk-small .spd{flex:1 1 100%}
 @container (min-width:1100px) and (max-width:1359px){.kk3:not(.vd) .kk-right .kk-small{flex-wrap:wrap}.kk3:not(.vd) .kk-right .kk-small>.spd{flex:1 1 100%}}
+/* Auto's: de heler zoekt deze auto, en de collectie als grote kaarten */
+.hs-order{position:absolute;left:12px;right:12px;top:44px;z-index:3;display:flex;flex-direction:column;gap:1px;padding:8px 12px;border-radius:10px;background:rgba(184,161,255,.16);box-shadow:inset 0 0 0 1.5px #b8a1ff,0 0 24px -8px #b8a1ff;backdrop-filter:blur(4px)}
+.hs-order b{font-family:var(--f-head);font-weight:800;font-size:15px;text-transform:uppercase;letter-spacing:.04em;color:#d9ccff}.hs-order span{font-size:12.5px;color:#e9e2ff}
+.chase-box .hs-order{position:static;margin:6px 0 4px}
+.dex-bn{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin:12px 0 0;padding:16px 18px;text-align:left;border-radius:14px;color:var(--fg);font-family:var(--f-body);text-transform:none;letter-spacing:0;background:radial-gradient(120% 160% at 100% 0%,rgba(90,209,255,.14),#0f1114 70%);box-shadow:inset 0 0 0 1px var(--line2)}
+.dex-bn>span{display:flex;flex-direction:column;gap:3px}.dex-bn b{font-family:var(--f-display);font-weight:900;font-size:24px;text-transform:uppercase}.dex-bn small{font-size:12.5px;color:var(--mute)}.dex-bn i{font-style:normal;font-size:28px;color:var(--ice)}
+.dex-bn:hover{box-shadow:inset 0 0 0 1.5px var(--ice)}
+.dex-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center;padding:14px 18px;margin:0 0 16px;background:var(--panel);border:1px solid var(--line2);border-radius:12px}
+.dex-top b{display:block;font-family:var(--f-display);font-weight:900;font-size:28px}
+.dex-bar{height:8px;border-radius:99px;background:var(--bg2);overflow:hidden}.dex-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ice),var(--green))}
+.dex-tier{margin:0 0 18px}
+.dex-th{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 10px;padding-left:10px;border-left:3px solid var(--rc)}
+#view .dex-th h3{margin:0;font-size:22px;text-transform:uppercase;color:var(--rc)}.dex-th span{font-family:var(--f-mono);font-size:11.5px;color:var(--mute)}
+.dex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.dex-card{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:12px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);border-top:3px solid color-mix(in srgb,var(--rc) 40%,transparent)}
+.dex-card.got{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--rc) 45%,transparent);border-top-color:var(--rc)}
+.dex-card.now{box-shadow:inset 0 0 0 2px var(--acc)}
+.dex-car{height:74px;display:flex;align-items:center;justify-content:center}.dex-car .carsvg{width:88%;height:auto;max-height:74px}
+.dex-card:not(.got) .dex-car{opacity:.55}
+.dex-t b{display:block;font-family:var(--f-head);font-weight:800;font-size:16px}.dex-t span{font-family:var(--f-mono);font-size:12.5px;color:var(--acc2)}
+.dex-f{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.dex-f em{font-style:normal;font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--fg);padding:2px 8px;border-radius:99px;background:var(--bg2)}
+.dex-f i{font-style:normal;font-size:11.5px;color:var(--faint)}.dex-f i.ok{color:var(--green)}.dex-f i.hl{color:#b8a1ff}
+@container (max-width:760px){.dex-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dex-top{grid-template-columns:1fr 1fr}.dex-bar{grid-column:1/-1;order:3}.dex-t b{font-size:14px}}

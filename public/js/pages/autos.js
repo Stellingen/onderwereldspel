@@ -27,13 +27,16 @@ const carSell=v=>Math.round(v*(1+((S.skills&&S.skills.cars)||0)*SK.cars.price)*(
 let carSearch=null,oddsOpen=false;
 const findM=x=>CARS.find(k=>k.id===x.id)||CARS[0];
 function carExpire(quiet){const x=S.carFind;if(x&&x.until&&!x.res&&x.until<now()){S.carFind={...x,res:'gone'};if(!quiet)toast('De eigenaar komt terug. De '+findM(x).n+' rijdt weg.','bad');save();return true}return false}
+// Zoekt de heler dit model vandaag? Dan laten we dat meteen zien bij een vondst of bij het stoplicht.
+const helerWants=id=>{try{const o=carOrders().list.find(o=>o.id===id&&!o.done);return o||null}catch(e){return null}};
+const helerBadge=id=>{const o=helerWants(id);return o?`<div class="hs-order"><b>De heler zoekt deze auto</b><span>Steel hem en lever hem af voor ×${o.k.toLocaleString('nl-NL')} de waarde</span></div>`:''};
 function huntScene(){const x=S.carFind;
  if(carSearch)return `<div class="hunt-scene searching"><div class="beam"></div><div class="hs-msg"><span class="label">Aan het zoeken</span><b>${carSearch.spot}</b><div class="hs-prog"><i style="animation-duration:${SEARCH_MS}ms"></i></div></div></div>`;
  if(!x)return `<div class="hunt-scene idle"><div class="hs-ghost">${carSvg('sedan','#1c2029')}</div><div class="hs-msg"><span class="label">Nog niks gezien</span><b>Loop de straat af</b><p>Elke zoektocht kost ${SEARCH_EN} energie. Je weet nooit wat er om de hoek staat.</p></div></div>`;
  if(x.none)return `<div class="hunt-scene none"><div class="hs-loc"><i></i>${x.spot}</div><div class="hs-ghost">${carSvg('hatch','#1c2029')}</div><div class="hs-msg"><span class="label">Niks gevonden</span><b>${x.msg}</b></div></div>`;
  const m=findM(x),R=carRarity(m),t=carTier(m);
  return `<div class="hunt-scene car t${t} ${x.res||''}" style="--rc:${R[1]}"><div class="hs-loc"><i></i>${x.spot}</div>
-  <div class="hs-car">${carSvg(m.b,x.c,{reflect:1,hl:1})}</div><span class="plate">${x.plate}</span>
+  ${helerBadge(m.id)}<div class="hs-car">${carSvg(m.b,x.c,{reflect:1,hl:1})}</div><span class="plate">${x.plate}</span>
   ${x.res==='ok'?'<span class="hs-stamp ok">Gestolen</span>':x.res==='fail'?'<span class="hs-stamp bad">Alarm</span>':x.res==='gone'?'<span class="hs-stamp">Weggereden</span>':x.res==='fled'?'<span class="hs-stamp bad">Gevlucht</span>':''}
   ${x.res?'':`<div class="hs-left"><span class="label">Staat er nog</span><b id="hsLeft">${fmtClock(x.until-now())}</b></div>`}</div>`}
 function huntInfo(){const x=S.carFind;if(carSearch||!x||x.none)return `<div class="hunt-tip"><h3>Hoe werkt het?</h3><ul>
@@ -57,11 +60,13 @@ function huntBtns(){const x=S.carFind,left=cdLeft('car'),full=S.cars.length>=gar
  const sl=carSearch?'Zoeken…':jail?'Je zit vast':left?'Even afkoelen · <span id="huntCd">'+fmtClock(left)+'</span>':full?'Garage vol, verkoop eerst':S.energy<SEARCH_EN?'Te moe om te zoeken':(live?'Laat staan, verder zoeken':'Zoek een auto')+' · '+SEARCH_EN+' energie';
  return `<div class="hunt-btns">${steal}<button class="btn ${live?'ghost':'xl'}" onclick="act.searchCar()" ${sOk?'':'disabled'}>${sl}</button></div>`}
 function oddsList(){const dex=S.carDex||{},got=CARS.filter(m=>(dex[m.id]||[0,0])[1]>0).length,cur=S.carFind&&!S.carFind.res&&S.carFind.id;
- return `<details class="odds" ${oddsOpen?'open':''} ontoggle="oddsOpen=this.open"><summary><h2>Kans per zoektocht</h2><span>${got}/${CARS.length} verzameld</span></summary>
-  <div class="od-list"><div class="od-none"><span>Niks gevonden</span><b>${oddTxt(FIND_TIER[0])}</b></div>
-  ${[1,2,3,4,5,6].map(t=>{const R=tierName(t),ms=CARS.filter(m=>carTier(m)===t).sort((a,b)=>CAR_ODDS[b.id]-CAR_ODDS[a.id]);
-   return `<div class="od-tier" style="--rc:${R[1]}"><div class="od-th"><b>${R[0]}</b><span>${oddTxt(FIND_TIER[t])}</span></div>
-   ${ms.map(m=>{const d=dex[m.id]||[0,0];return `<div class="od-row ${d[1]?'got':''} ${cur===m.id?'now':''}"><span class="od-n">${m.n}</span><span class="od-v">${kTxt(m.lo)}–${kTxt(m.hi)}</span><b>${oddTxt(CAR_ODDS[m.id])}</b><i title="${d[1]?d[1]+'× gestolen':'Nog niet gestolen'}">${d[1]?'✓':''}</i></div>`}).join('')}</div>`}).join('')}</div></details>`}
+ return `<div class="dex-top"><div><span class="label">Verzameld</span><b>${got} / ${CARS.length}</b></div><div class="dex-bar"><i style="width:${got/CARS.length*100}%"></i></div><div><span class="label">Niks gevonden</span><b>${oddTxt(FIND_TIER[0])}</b></div></div>
+  ${[1,2,3,4,5,6].map(t=>{const R=tierName(t),ms=CARS.filter(m=>carTier(m)===t).sort((a,b)=>CAR_ODDS[b.id]-CAR_ODDS[a.id]),gt=ms.filter(m=>(dex[m.id]||[0,0])[1]>0).length;
+   return `<section class="dex-tier" style="--rc:${R[1]}"><div class="dex-th"><h3>${R[0]}</h3><span>${oddTxt(FIND_TIER[t])} per zoektocht · ${gt}/${ms.length} verzameld</span></div>
+   <div class="dex-grid">${ms.map(m=>{const d=dex[m.id]||[0,0],o=helerWants(m.id);return `<div class="dex-card ${d[1]?'got':''} ${cur===m.id?'now':''}">
+    <div class="dex-car">${carSvg(m.b,d[1]?(CAR_COLORS[m.d]||['#8a929c'])[0]:'#2a2f38')}</div>
+    <div class="dex-t"><b>${m.n}</b><span>${kTxt(m.lo)} – ${kTxt(m.hi)}</span></div>
+    <div class="dex-f"><em>${oddTxt(CAR_ODDS[m.id])}</em>${d[1]?`<i class="ok">✓ ${d[1]}× gestolen</i>`:d[0]?`<i>${d[0]}× gezien</i>`:'<i>nog niet gezien</i>'}${o?'<i class="hl">heler zoekt hem</i>':''}</div></div>`}).join('')}</div></section>`}).join('')}`}
 // Bestellingen van de heler: elke speldag (4 uur) vraagt hij 3 modellen. Lever je zo'n auto af uit je garage,
 // dan krijg je ×1,4 tot ×1,9 de waarde en wat straatcredit. Geeft een doel aan het verzamelen.
 const ORD_TIER={1:.34,2:.34,3:.22,4:.1};
@@ -109,7 +114,7 @@ function carLobby(){const ri=rankIdx(S.xp),cap=garageCap(),gv=S.cars.reduce((a,c
   ${b('sloop','#c9a227','Onderdelen · zwart geld','Het Autokerkhof',S.sloop?'Je eigen sloperij. Hier gaat elke auto weg, ook als hij als gestolen is gemeld.':`Koop een sloperij en verkoop auto's als onderdelen. Ook gemelde auto's raak je hier kwijt.`,S.sloop?`<em><b>${Math.round(SLOOP_K*100)}%</b> van de waarde</em><em>zwart geld</em>`:`<em>${ri<SLOOP_R?'vanaf '+RANKS[SLOOP_R][0]:fmt(SLOOP_P)}</em>`,S.sloop?'Openen ›':'Bekijken ›',caArt('yard','<i class="stack"><i></i><i></i><i></i></i>'+carSvg('van','#4a4f57')))}
   ${b('heler','#b8a1ff','Op bestelling','De heler',`Elke speldag vraagt hij drie modellen, en betaalt er ×1,4 tot ×1,9 voor.`,`<em><b>${O.list.filter(o=>!o.done).length}</b> open</em>${od?`<em class="up"><b>${od}</b> in je garage</em>`:''}`,'Bekijken ›',caArt('van',carSvg('van','#2f3640')))}
  </div>
- <div class="cars-odds">${oddsList()}</div>`}
+ <button class="dex-bn" onclick="carMode='dex';render();window.scrollTo({top:0,behavior:'smooth'})"><span><span class="label">Collectie en kansen</span><b>${CARS.filter(m=>((S.carDex||{})[m.id]||[0,0])[1]>0).length} van de ${CARS.length} modellen gestolen</b><small>Bekijk per model hoe groot de kans is en wat hij waard is</small></span><i>›</i></button>`}
 function carBack(t){return `<div class="vb-bar"><button class="vb-back" onclick="carMode=null;carSaleIdx=null;render()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Auto's</span></button><h2>${t}</h2></div>`}
 function garageView(){const L=garageLvl(),cap=garageCap(),nx=GARAGE_CAPS[L+1],gv=S.cars.reduce((a,c)=>a+c.v,0);
  return `${carBack('Garage')}
@@ -133,6 +138,7 @@ V.cars=()=>{if(S.street)delete S.street;S.carDex=S.carDex||{};carExpire(true);
  if(carMode==='garage')return garageView();
  if(carMode==='sloop')return sloopView();
  if(carMode==='heler')return `${carBack('De heler')}${ordersHtml()}`;
+ if(carMode==='dex')return `${carBack('Collectie en kansen')}${oddsList()}`;
  return carLobby()};
 // Eigen klok: aftellen zonder alles opnieuw te tekenen
 let _carSig='';

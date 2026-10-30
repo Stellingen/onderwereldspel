@@ -37,6 +37,7 @@ function jackGame(m,car){return new Promise(resolve=>{
  ov.innerHTML=`<div class="chase-box heist jk-box t${carTier(m)}" style="--rc:${R[1]}">
   <div class="hx-car">${carSvg(m.b,car.c,{hl:1})}<span class="plate">${car.plate}</span><div class="jk-light sm"><i class="r on"></i><i class="a"></i><i class="g"></i></div></div>
   <div class="heist-top"><span class="rar" style="--rc:${R[1]}">${R[0]}</span><span class="label">${esc(m.n)} · ${esc(car.spot)}</span></div>
+  ${typeof helerBadge==='function'?helerBadge(m.id):''}
   <div class="hx-head"><h2 id="jkT">Carjacken</h2><div class="jk-steps" id="jkSteps">${JACK_STEPS.map(s=>`<span>${s}</span>`).join('')}</div></div>
   <p class="chase-p" id="jkP">Druk op <b>spatie</b> of <b>Nu!</b> als de streep in het groene stuk staat.</p>
   <div class="jk-bar" id="jkBar"><i class="jk-zone" id="jkZone"></i><i class="jk-mk" id="jkMk"></i></div>
