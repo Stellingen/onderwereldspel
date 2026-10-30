@@ -20,7 +20,7 @@ function kkPlan(g){const T=KK_T(),step=kkFast()?260:640,slow=kkFast()?1.3:1.7;le
  return P}
 function kkCell(x,c,r,anim){
   const T=KK_T();let f=0,delay=0,dur=0;
-  if(anim==='all'){const pl=kk.plan&&kk.plan[c];f=SLOT.ROWS;delay=(pl?pl.delay:c*T.col)+(SLOT.ROWS-1-r)*8;dur=(T.base+f*T.per)*(pl?pl.slow:1)}
+  if(anim==='all'&&!x.stuck){const pl=kk.plan&&kk.plan[c];f=SLOT.ROWS;delay=(pl?pl.delay:c*T.col)+(SLOT.ROWS-1-r)*8;dur=(T.base+f*T.per)*(pl?pl.slow:1)}
   else if(anim==='tumble'&&x.fall){f=x.fall;delay=c*Math.round(T.col/2);dur=T.base+f*T.per}
   const st=f?`style="--f:${f};--d:${Math.round(delay)}ms;--t:${Math.round(dur)}ms"`:'';
   const cls='kk-cell'+(f?' fall':'')+(x.sc?' sc':'')+(x.w?' wild':'')+(x.bar?' gbar':'')+(x.fresh?' fresh':'');
@@ -204,19 +204,30 @@ function kkFallTime(g,anim){const T=KK_T();
  let m=0;g.forEach((col,c)=>col.forEach((x,r)=>{const f=x.fall||0;if(f)m=Math.max(m,c*Math.round(T.col/2)+T.base+f*T.per)}));return m}
 function kkLandSounds(g,anim){const T=KK_T();
  if(anim==='all'){const P=kk.plan||kkPlan(g);let n=0;
-  for(let c=0;c<SLOT.COLS;c++){const p=P[c],land=p.delay+(T.base+SLOT.ROWS*T.per)*p.slow,scs=g[c].filter(x=>x.sc).length,from=n;n+=scs;
+  for(let c=0;c<SLOT.COLS;c++){const p=P[c],land=p.delay+(T.base+SLOT.ROWS*T.per)*p.slow*.7,scs=g[c].filter(x=>x.sc).length,from=n;n+=scs;
    const col=on=>{const sp=document.querySelectorAll('#kkSpots .kk-spot');for(let r=0;r<SLOT.ROWS;r++){const el=sp[r*SLOT.COLS+c];if(el)el.classList.toggle('tease',on)}};
    if(p.tease)setTimeout(()=>{if(!kkOn())return;col(true);SFX.tease(p.cnt,(land-p.delay)/1000)},Math.max(0,p.delay-30));
    setTimeout(()=>{if(!kkOn())return;SFX.land(c);for(let k=0;k<scs;k++)setTimeout(()=>SFX.scatter(from+k),k*90);
      if(p.tease)col(false)},land-20)}
   kkScSeen=n;return}
- for(let c=0;c<SLOT.COLS;c++){if(!g[c].some(x=>x.fall))continue;const d=c*Math.round(T.col/2)+T.base+Math.max(...g[c].map(x=>x.fall||0))*T.per;
+ for(let c=0;c<SLOT.COLS;c++){if(!g[c].some(x=>x.fall))continue;const d=c*Math.round(T.col/2)+(T.base+Math.max(...g[c].map(x=>x.fall||0))*T.per)*.7;
   setTimeout(()=>{if(kkOn())SFX.land(c)},d-20)}}
 let kkScSeen=0;
+// Nieuwe spin: het bord draait als een rol. De oude symbolen schuiven kolom voor kolom naar beneden uit beeld,
+// precies gelijk met de nieuwe die van boven invallen (dezelfde snelheid), zodat het één doorlopende strook lijkt.
+// Gouden baren die blijven liggen (sticky) bewegen niet mee.
+function kkDropOut(next){const cells=kkEl('kkCells');if(!cells||!kkOn()||!cells.children.length)return;
+ const T=KK_T(),dur=Math.round((T.base+SLOT.ROWS*T.per)*.7);const old=cells.cloneNode(true);old.removeAttribute('id');old.classList.add('kk-old');
+ old.querySelectorAll('.kk-cell').forEach(el=>{const k=+el.dataset.k,c=Math.floor(k/SLOT.ROWS),r=k%SLOT.ROWS;
+  el.className=el.className.replace(/\b(fall|win|dim|pop|barwin|fresh)\b/g,'');el.removeAttribute('style');
+  if(next&&next[c]&&next[c][r]&&next[c][r].stuck){el.style.visibility='hidden';return}
+  el.style.setProperty('--od',(c*T.col)+'ms');el.style.setProperty('--ot',dur+'ms');el.classList.add('out')});
+ cells.parentNode.insertBefore(old,cells);setTimeout(()=>old.remove(),SLOT.COLS*T.col+SLOT.ROWS*8+dur+80)}
 async function kkAnimateSpin(sp,bet,inFs,runTotal){
  let sofar=0;
  for(let i=0;i<sp.steps.length;i++){
   const T=KK_T(),st=sp.steps[i],anim=i===0?'all':'tumble';
+  if(i===0)kkDropOut(st.grid);
   if(i===0&&!inFs)kkShowSpots(st.spots);
   kkShow(st.grid,anim);kkLandSounds(st.grid,anim);
   await kkWait(kkFallTime(st.grid,anim)+60);
