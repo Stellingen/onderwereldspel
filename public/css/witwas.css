@@ -143,3 +143,10 @@
 }
 .kk-ls{display:none}
 @media (max-width:400px){.kk3 .kk-sub .kk-ls{display:inline}}
+/* Witwassen: illustratie bovenaan elke route */
+.ww-m{position:relative;overflow:hidden}
+.ww-art{height:150px;margin:-16px -16px 12px;border-bottom:1px solid var(--line);background:radial-gradient(120% 140% at 50% 0%,rgba(255,255,255,.04),transparent 70%),#0d0f12;display:flex;justify-content:center;overflow:hidden}
+.ww-art svg{height:100%;width:auto;max-width:100%}
+.ww-zaak .ww-art{background:radial-gradient(120% 140% at 50% 100%,rgba(63,227,149,.12),transparent 70%),#0d0f12}
+.ww-kees .ww-art{background:radial-gradient(120% 140% at 50% 100%,rgba(184,161,255,.12),transparent 70%),#0d0f12}
+.ww-cas .ww-art{background:radial-gradient(120% 140% at 50% 100%,rgba(255,61,82,.12),transparent 70%),#0d0f12}

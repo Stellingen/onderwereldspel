@@ -48,6 +48,14 @@ const wwPick=(kind,max)=>{const a=ww.amt[kind]||0;return Math.max(0,Math.min(a||
 function wwAmtRow(kind,max){const cur=wwPick(kind,max);return `<div class="ww-amt"><span class="label">Bedrag</span><b>${fmt(cur)}</b>
   <div class="ww-q">${[[.1,'10%'],[.25,'25%'],[.5,'50%'],[1,'Max']].map(([f,l])=>`<button class="${Math.abs(cur-Math.floor(max*f))<1&&max>0?'on':''}" onclick="ww.amt.${kind}=${Math.floor(max*f)};render()" ${max<1?'disabled':''}>${l}</button>`).join('')}</div></div>`}
 function czBar(){const v=Math.round(czVal());return `<div class="ww-meter ${v>=70?'hot':v>=35?'warm':''}"><div><span class="label">Verdenking in het casino</span><b>${v}%</b></div><i><i style="width:${v}%"></i></i><small>${v?'Zakt 3% per minuut. Op 100% volgt zeker een controle.':'Niemand let op je.'}</small></div>`}
+// Illustraties bovenaan de drie routes
+const WW_ART={kees:`<svg viewBox="0 0 320 220"><defs><radialGradient id="wwkl" cx="45%" cy="40%" r="60%"><stop offset="0" stop-color="#ffd27a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient></defs>
+  <rect x="0" y="0" width="320" height="220" fill="url(#wwkl)"/><path d="M30 150h260v12H30z" fill="#4a2f1d"/><path d="M40 162h10v48H40zM270 162h10v48h-10z" fill="#33200f"/>
+  <g transform="translate(70 70)"><path d="M0 80L20 0" stroke="#9aa1ab" stroke-width="5"/><path d="M8 -6l40 -8 4 14-40 10z" fill="#c9a227"/><circle cx="50" cy="8" r="14" fill="#ffd27a" opacity=".35"/></g>
+  <g transform="translate(118 104) rotate(-6)"><rect width="74" height="46" fill="#efe9dc"/><path d="M8 10h50M8 18h40M8 26h56M8 34h30" stroke="#9a907d" stroke-width="2"/></g>
+  <g transform="translate(150 96) rotate(8)"><rect width="74" height="46" fill="#f6f1e6"/><path d="M8 10h50M8 18h44M8 26h30" stroke="#9a907d" stroke-width="2"/><circle cx="56" cy="32" r="10" fill="none" stroke="#c8102e" stroke-width="2.5"/><path d="M51 32h10" stroke="#c8102e" stroke-width="2"/></g>
+  <g transform="translate(240 96)"><rect x="-10" y="34" width="34" height="10" rx="2" fill="#7a1424"/><rect x="0" y="6" width="14" height="30" rx="3" fill="#2a1a10"/><circle cx="7" cy="4" r="8" fill="#3a2414"/></g>
+  <g transform="translate(250 40)" fill="#b8a1ff"><circle r="16" opacity=".14"/><text y="6" text-anchor="middle" font-family="Big Shoulders Display,Impact,sans-serif" font-weight="900" font-size="18">30%</text></g></svg>`};
 V.wit=()=>{const z=zwart(),w=wit(),W=wwS(),fr=wwFronts(),zl=wwZaakLeft(),kl=wwKeesLeft(),zMax=Math.min(z,zl),kMax=Math.min(z,kl);
  if(!ww.front||!fr.find(b=>b.id===ww.front))ww.front=fr.length?fr[fr.length-1].id:null;const F=fr.find(b=>b.id===ww.front);
  const tot=Math.max(1,S.cash);
@@ -58,7 +66,7 @@ V.wit=()=>{const z=zwart(),w=wit(),W=wwS(),fr=wwFronts(),zl=wwZaakLeft(),kl=wwKe
   <div class="ww-split" aria-hidden="true"><i style="width:${z/tot*100}%"></i></div>
  </section>
  <div class="ww-grid">
-  <section class="card ww-m ww-zaak"><header><span class="ww-tag">Goedkoopst</span><h3>Via je zaken</h3><p>Een werkdag aan de kassa. Je laat zwarte bonnen meelopen met echte klanten, daarna gaat het door de boeken en dat kost tijd. Hoe beter je bezit, hoe minder het kost en hoe sneller het gaat. Te opvallend? Dan nemen ze ${Math.round(WW_BUST*100)}% in beslag.</p></header>
+  <section class="card ww-m ww-zaak"><div class="ww-art" aria-hidden="true">${typeof bzArt==='function'?bzArt(F||BIZ[0],'ww'+(F||BIZ[0]).id):''}</div><header><span class="ww-tag">Goedkoopst</span><h3>Via je zaken</h3><p>Een werkdag aan de kassa. Je laat zwarte bonnen meelopen met echte klanten, daarna gaat het door de boeken en dat kost tijd. Hoe beter je bezit, hoe minder het kost en hoe sneller het gaat. Te opvallend? Dan nemen ze ${Math.round(WW_BUST*100)}% in beslag.</p></header>
    ${fr.length?`<div class="ww-fronts">${fr.map(b=>`<button class="${b.id===ww.front?'on':''} ${wwJob(b.id)?'busy':''}" onclick="ww.front='${b.id}';render()" style="--c:${b.col||'var(--green)'}">${esc(b.n)}<small>${wwJob(b.id)?'bezig':wwGT(wwDur(b)).split(' · ')[0]}</small></button>`).join('')}</div>
     ${fr.filter(b=>wwJob(b.id)).map(b=>wwJobHtml(b.id,b)).join('')}
     ${(()=>{const f=wwFee(F),pc=v=>(Math.round(v*1000)/10).toLocaleString('nl-NL');return `<div class="ww-fee"><div><span class="label">Kosten via je ${esc(F?F.n.toLowerCase():'zaak')}</span><b>${pc(f.fee)}%</b><small>${Math.max(WW_MIN,f.fee-WW_TOP)===f.fee?'':'of '+pc(Math.max(WW_MIN,f.fee-WW_TOP))+'% als niemand iets merkt'}</small></div>
@@ -69,13 +77,13 @@ V.wit=()=>{const z=zwart(),w=wit(),W=wwS(),fr=wwFronts(),zl=wwZaakLeft(),kl=wwKe
     <button class="btn xl act-btn" style="--c:var(--green)" onclick="act.wwZaak()" ${zMax>=WW_CHUNKS&&!inJail()&&!wwJob(F.id)?'':'disabled'}>${inJail()?'Je zit vast':wwJob(F.id)?'Je '+esc(F.n.toLowerCase())+' is nog bezig':!z?'Geen zwart geld':!zl?'Vandaag zit het vol':'Werkdag in je '+esc(F?F.n.toLowerCase():'zaak')}</button>`
    :`<div class="ww-none">Je hebt nog geen zaak. Een zaak koop je met wit geld: begin via Ome Kees of het casino, en koop dan bijvoorbeeld een wasserette.<a href="#biz">Naar Bezit ›</a></div>`}
   </section>
-  <section class="card ww-m ww-kees"><header><span class="ww-tag">Meteen</span><h3>Via Ome Kees</h3><p>Een oude boekhouder met een stempel voor alles. Hij regelt het meteen, zonder vragen. Hij houdt wel ${Math.round(WW_KEES*100)}% voor zichzelf.</p></header>
+  <section class="card ww-m ww-kees"><div class="ww-art" aria-hidden="true">${WW_ART.kees}</div><header><span class="ww-tag">Meteen</span><h3>Via Ome Kees</h3><p>Een oude boekhouder met een stempel voor alles. Hij regelt het meteen, zonder vragen. Hij houdt wel ${Math.round(WW_KEES*100)}% voor zichzelf.</p></header>
    <div class="ww-cap"><span>Vandaag kan Kees nog</span><b>${fmt(kl)}</b><small>van ${fmt(wwKeesCap())} (groeit met je rang)</small></div>
    ${wwAmtRow('kees',kMax)}
    <div class="ww-calc">${kMax?`Je geeft ${fmt(wwPick('kees',kMax))} zwart en krijgt ${fmt(wwPick('kees',kMax)-Math.round(wwPick('kees',kMax)*WW_KEES))} wit terug.`:''}</div>
    <button class="btn xl act-btn" style="--c:var(--violet)" onclick="act.wwKees()" ${kMax>=1&&!inJail()?'':'disabled'}>${inJail()?'Je zit vast':!z?'Geen zwart geld':!kl?'Kees doet vandaag niks meer':'Laat Kees het doen'}</button>
   </section>
-  <section class="card ww-m ww-cas"><header><span class="ww-tag">Riskant</span><h3>Via het casino</h3><p>Zet je zwarte geld in. Wat je wint, is wit. Maar hoe meer zwart je inzet, hoe groter de kans dat de beveiliging je controleert. Heb je dan zwart geld op zak, of zien ze dat je net veel zwart hebt ingezet, dan nemen ze het in beslag en word je aangehouden.</p></header>
+  <section class="card ww-m ww-cas"><div class="ww-art" aria-hidden="true">${window.COV?COV.coverSvg('roulette','wwc'):''}</div><header><span class="ww-tag">Riskant</span><h3>Via het casino</h3><p>Zet je zwarte geld in. Wat je wint, is wit. Maar hoe meer zwart je inzet, hoe groter de kans dat de beveiliging je controleert. Heb je dan zwart geld op zak, of zien ze dat je net veel zwart hebt ingezet, dan nemen ze het in beslag en word je aangehouden.</p></header>
    ${czBar()}
    <a class="btn xl ghost" href="#casino">Naar het casino</a>
   </section>
