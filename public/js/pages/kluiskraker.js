@@ -161,18 +161,6 @@ function kkRefreshUI(){const root=document.querySelector('.kk3');if(!root)return
 // Snelheid mag ook tijdens een spin of bonus om: de volgende val/tumble gebruikt meteen het nieuwe tempo.
 function kkTurbo(){kk.turbo=!kk.turbo;SFX.click();document.querySelectorAll('.kk-turbo').forEach(b=>{b.textContent=kk.turbo?'Snel: aan':'Snel: uit';b.classList.toggle('on',kk.turbo);b.setAttribute('aria-pressed',kk.turbo)})}
 // Kluisdeur kraakt bij 3 tot 5 kluizen: per ronde kunnen er kluizen bijkomen; komt er een bij, dan kraakt hij opnieuw
-async function kkCrack(rs){const board=kkEl('kkBoard');kk.inBonus=true;if(!rs.rounds||!rs.rounds.length)return;
- const start=rs.rounds[0].sc-rs.rounds[0].cells.length;
- SFX.bonus();await kkBanner(start+' kluizen','De kluisdeur kraakt… komt er nog een kluis bij?',1500,'fsin');
- for(let i=0;i<rs.rounds.length;i++){const R=rs.rounds[i];
-  if(board)board.classList.add('crack');await kkWait(kkFast()?350:900);
-  kkShow(R.grid,'none');const cells=kkEl('kkCells');
-  if(cells)cells.querySelectorAll('.kk-cell').forEach(el=>{if(!el.classList.contains('sc'))el.classList.add('dim')});
-  R.cells.forEach((cr,j)=>setTimeout(()=>SFX.scatter(Math.min(6,R.sc-R.cells.length+j)),j*200));
-  await kkWait(kkFast()?450:1000);if(board)board.classList.remove('crack');
-  if(R.cells.length&&R.sc<SLOT.SUPER_SC&&i<rs.rounds.length-1)await kkBanner(R.sc+' kluizen!','De deur kraakt opnieuw…',1100,'fsin')}
- const fin=rs.rounds[rs.rounds.length-1].sc;
- if(fin<SLOT.SUPER_SC)await kkBanner(fin+' kluizen',SLOT.FS_BY_SC[Math.min(5,fin)]+' free spins',1300,'')}
 // Spatiebalk = draaien (ingedrukt houden = doordraaien); tijdens een pauze speelt spatie de bonus verder af
 document.addEventListener('keydown',e=>{if(e.code!=='Space'||page!=='casino'||casinoTab!=='kluis'||window.__chase)return;
  const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;if(!$('#modal').hidden)return;
@@ -260,7 +248,7 @@ async function kkAnimateSpin(sp,bet,inFs,runTotal){
 async function kkPlay(round,bet,isBuy,from){
  kk.stepWin=0;kkText('kkStep',fmt(0));kkScSeen=0;const resume=from!=null&&!!round.fs;
  if(resume){kkText('kkMsg','Bonus gaat verder');kkShowSpots(SLOT.newSpots());const st=round.base.steps;kkShow(st[st.length-1].grid,'none')}
- else if(!isBuy){kkText('kkMsg','Draait…');kkShowSpots(SLOT.newSpots());await kkAnimateSpin(round.base,bet,false,null);if(round.base.respin)await kkCrack(round.base.respin)}
+ else if(!isBuy){kkText('kkMsg','Draait…');kkShowSpots(SLOT.newSpots());await kkAnimateSpin(round.base,bet,false,null)}
  else{kkText('kkMsg','Bonus gekocht');kkShowSpots(SLOT.newSpots());await kkAnimateSpin(round.base,bet,false,null)}
  const baseWin=round.base.win*bet;
  if(baseWin>0){kk.lastWin=baseWin;kkText('kkLast',fmt(baseWin))}

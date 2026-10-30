@@ -60,7 +60,17 @@ const CRIMES=[
  {id:'kartelvrede',n:'Vrede tussen twee kartels',d:'Jij zit aan het hoofd van de tafel. Iedereen betaalt.',min:120000,max:260000,xp:1100,base:24,cd:560,jail:600,r:11,cr:20,en:44,flee:3},
  {id:'tanker',n:'Een olietanker kapen',d:'Een schip vol olie dat nooit in de haven aankomt.',min:150000,max:320000,xp:1250,base:22,cd:590,jail:600,r:11,cr:22,en:46,flee:5},
  {id:'rotterdam',n:'De haven van Rotterdam',d:'Elke kraan, elke douanier en elke loods: van jou.',min:180000,max:380000,xp:1400,base:21,cd:620,jail:600,r:11,cr:24,en:48,flee:3},
- {id:'kroon',n:'De kroonjuwelen',d:'De klus waar ze over honderd jaar nog over praten.',min:250000,max:500000,xp:1800,base:18,cd:720,jail:600,r:11,cr:30,en:50,flee:5}];
+ {id:'kroon',n:'De kroonjuwelen',d:'De klus waar ze over honderd jaar nog over praten.',min:250000,max:500000,xp:1800,base:18,cd:720,jail:600,r:11,cr:30,en:50,flee:5},
+ // nieuw: een vijfde klus voor elke rang vanaf Dief
+ {id:'webshop',n:'Nepwebshop met sneakers',d:'Een mooie site, een advertentie op Instagram en nul pakketjes.',min:550,max:1700,xp:47,base:59,cd:47,jail:145,r:3,cr:3,en:14,flee:1},
+ {id:'garagebox',n:'Garageboxen leeghalen in Almere',d:'Tweehonderd boxen en één sleutel die op allemaal past.',min:1300,max:3400,xp:71,base:57,cd:72,jail:182,r:4,cr:4,en:17,flee:2},
+ {id:'bouwfraude',n:'Zwartwerk op een bouwproject',d:'Veertig man op de loonlijst die nooit hebben bestaan.',min:2600,max:6200,xp:97,base:50,cd:97,jail:225,r:5,cr:5,en:20,flee:1},
+ {id:'matchfix',n:'Een voetbalwedstrijd kopen',d:'Een keeper met schulden en een opvallende 0-3.',min:5800,max:12500,xp:160,base:45,cd:150,jail:290,r:6,cr:6,en:24,flee:1},
+ {id:'kasteel',n:'Een kasteel in de Ardennen',d:'Familiezilver, oude meesters en een butler die alles vergeet.',min:10000,max:24000,xp:230,base:39,cd:200,jail:390,r:7,cr:8,en:29,flee:4},
+ {id:'datalek',n:'Losgeld van een verzekeraar',d:'Twee miljoen dossiers en een directie die stilletjes betaalt.',min:21000,max:46000,xp:360,base:36,cd:285,jail:490,r:8,cr:10,en:32,flee:1},
+ {id:'renbaan',n:'Een paardenrace beslissen',d:'Elf jockeys, en de winnaar staat al vast.',min:38000,max:88000,xp:540,base:31,cd:380,jail:600,r:9,cr:12,en:36,flee:2},
+ {id:'rechter',n:'Een rechter in je zak',d:'Een vrijspraak hier, een kwijtgeraakt dossier daar.',min:75000,max:170000,xp:850,base:26,cd:500,jail:600,r:10,cr:16,en:41,flee:1},
+ {id:'goudreserve',n:'De goudreserve van een land',d:'Een land dat zijn eigen goud nooit meer terugziet.',min:200000,max:420000,xp:1550,base:20,cd:650,jail:600,r:11,cr:26,en:49,flee:5}];
 // Rangbonus op elke buit: +6% per rang (Peetvader +66%)
 const RANK_LOOT=.06;
 // Families. r = vanaf rang, cred = straatcredit om binnen te komen. chance/loot/jail = familiebonus op het hoogste familielevel
