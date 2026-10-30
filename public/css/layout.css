@@ -294,3 +294,15 @@ a.chip:hover{background:var(--panel2)}
   .ch-main{padding:10px 16px}
   .ch-cb{gap:8px}
 }
+
+/* Telefoon: de statusbalk scrolt gewoon mee weg (niet meer vastgeplakt bovenaan), en niets komt onder de klok,
+   batterij of het eiland van de iPhone: bovenaan een vaste strook in de achtergrondkleur, zo hoog als die balk */
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);z-index:95;background:var(--bg);pointer-events:none}
+@media (max-width:900px){
+  .topbar,body.wide-page .topbar{position:static;backdrop-filter:none;-webkit-backdrop-filter:none}
+  main{padding-top:calc(14px + env(safe-area-inset-top,0px))}
+  #modal,.chase-ov{padding-top:max(16px,calc(env(safe-area-inset-top,0px) + 8px))}
+  .fl-box{padding-top:max(16px,calc(env(safe-area-inset-top,0px) + 10px))}
+  .ms-panel{max-height:min(90svh,calc(100svh - env(safe-area-inset-top,0px) - 12px))}
+  .msheet.ms-q .ms-panel{min-height:min(90svh,calc(100svh - env(safe-area-inset-top,0px) - 12px))}
+}

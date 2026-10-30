@@ -61,7 +61,8 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   De statusbalk heeft twee rijen zonder zijwaarts vegen: boven wit geld, zwart geld en bank, onder rang, energie, cred,
   gezondheid en hitte (tik op energie, gezondheid of hitte om er iets aan te doen). In het casino: saldo groot met daaronder
   wit en zwart apart, bank rechts, en een rij knoppen voor cashback claimen, de geluksdobbelsteen en de verdenking.
-  De statusbalk blijft bovenaan staan, de nieuwsband en
+  De statusbalk staat bovenaan de pagina en scrolt gewoon mee weg; bovenin houdt een strook in de achtergrondkleur alles
+  vrij van de klok, batterij en het eiland van de iPhone (ook in pop-ups en het vluchtspel). De nieuwsband en
   het kruimelpad vallen weg, en de casinospellen staan als 2 rijen knoppen. Hertekenen houdt je scrollpositie vast; in de slots
   worden alleen de onderdelen bijgewerkt die veranderen. Op de computer is niets veranderd.
 - **App-icoon**: hoed voor een straatlantaarn (`public/icons/`), met `manifest.webmanifest`, apple-touch-icon en favicon.
