@@ -2512,3 +2512,37 @@ body.hg-open{overflow:hidden}
 .sl-list{display:grid;gap:8px}.sl-row{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 12px;background:var(--panel);border:1px solid var(--line)}
 .sl-row small{display:block;font-size:11.5px;color:var(--mute);line-height:1.4}.sl-row .btn{width:auto}
 @container (max-width:760px){.sl-buy{grid-template-columns:1fr}.sl-row{grid-template-columns:80px minmax(0,1fr)}.sl-row .btn{grid-column:1/-1}.cs-prices{grid-template-columns:1fr 1fr}}
+/* Huurmoorden: niveaus als banners */
+.ht-banners{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 14px}
+.ht-bn{min-height:260px;flex-direction:column;justify-content:flex-end}
+.ht-bn::after{background:linear-gradient(0deg,#0c0d10 0%,rgba(12,13,16,.94) 46%,rgba(12,13,16,.25) 75%,rgba(12,13,16,0) 100%)}
+.ht-bn .bzb-art{top:0;right:0;left:0;width:100%;height:58%;transform:none;aspect-ratio:auto;display:flex;align-items:center;justify-content:center}
+.ht-bn:hover .bzb-art{transform:scale(1.03)}
+.ht-bn-scope{position:absolute;width:150px;height:150px;color:var(--c);opacity:.35}
+.ht-bn-scope svg{width:100%;height:100%}
+.ht-bn-ph{position:relative;display:flex;gap:6px}
+.ht-bn-ph>*{width:58px!important;height:72px!important;flex:none;box-shadow:0 8px 18px rgba(0,0,0,.6);transform:rotate(-4deg)}
+.ht-bn-ph>*:nth-child(2){transform:rotate(3deg) translateY(-6px)}.ht-bn-ph>*:nth-child(3){transform:rotate(-2deg) translateY(4px)}
+.ht-bn .bzb-t{max-width:100%}
+.ht-bn.lock{filter:saturate(.4)}.ht-bn .bzb-f em.dn{color:var(--red)}
+@container (max-width:1000px){.ht-banners{grid-template-columns:1fr}.ht-bn{min-height:190px;flex-direction:row;justify-content:flex-start}.ht-bn .bzb-art{left:auto;width:52%;height:100%}.ht-bn .bzb-t{max-width:56%}.ht-bn::after{background:linear-gradient(90deg,#0c0d10 0%,rgba(12,13,16,.94) 48%,rgba(12,13,16,.3) 72%,rgba(12,13,16,0) 100%)}}
+/* Ranglijst: podium voor de top 3 en gekleurde rangen */
+.lb-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end;margin:6px 0 14px}
+.lb-pod{--m:#c9ced6;position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 10px 0;text-align:center;border-radius:14px 14px 0 0;cursor:pointer;
+ background:radial-gradient(120% 90% at 50% 0%,color-mix(in srgb,var(--m) 22%,#14161a),#0f1114 75%);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--m) 45%,transparent);min-width:0}
+.lb-pod.p1{--m:#f2c230;padding-top:22px}.lb-pod.p2{--m:#c9ced6}.lb-pod.p3{--m:#d08a52}
+.lb-pod.me{box-shadow:inset 0 0 0 2px var(--acc)}
+.lb-medal{position:absolute;top:-12px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:900;font-size:16px;color:#0b0c0e;background:var(--m);box-shadow:0 0 0 3px #0f1114,0 6px 16px -4px var(--m)}
+.lb-av{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:900;font-size:22px;color:var(--m);background:color-mix(in srgb,var(--m) 14%,#0b0c0e);box-shadow:inset 0 0 0 2px var(--m)}
+.lb-pod.p1 .lb-av{width:68px;height:68px;font-size:26px}
+.lb-pn{font-family:var(--f-head);font-weight:800;font-size:15px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-pn .vipt,.lb-pn .vip{display:none}
+.lb-pr{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+.lb-pv{font-family:var(--f-mono);font-size:13px;color:var(--m);margin-bottom:8px}
+.lb-step{display:block;width:calc(100% + 20px);margin:0 -10px;height:34px;background:linear-gradient(180deg,color-mix(in srgb,var(--m) 30%,#15171b),#0f1114);border-top:1px solid color-mix(in srgb,var(--m) 50%,transparent)}
+.lb-pod.p1 .lb-step{height:58px}.lb-pod.p2 .lb-step{height:40px}.lb-pod.p3 .lb-step{height:26px}
+.lb-mine{margin:0 0 10px;padding:10px 14px;border:1px solid rgba(255,122,26,.4);background:rgba(255,122,26,.07);font-size:13.5px}.lb-mine b{color:var(--acc)}
+.lb-rk{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:700;color:var(--rc);background:color-mix(in srgb,var(--rc) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--rc) 40%,transparent)}
+.lb2 tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
+.lb-card{overflow-x:auto}
+@container (max-width:520px){.lb-av{width:44px;height:44px;font-size:17px}.lb-pod.p1 .lb-av{width:52px;height:52px}.lb-pn{font-size:13px}.lb-pv{font-size:11.5px}}

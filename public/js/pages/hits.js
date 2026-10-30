@@ -34,7 +34,7 @@ const HIT_M={
  ongeluk:{n:'Ongeluk',k:'Geen wapen',d:'Een lading van de bouwkraan die net verkeerd valt. Lijkt het een ongeluk, dan stelt niemand vragen.',pay:1.12,cr:.85,want:.05,feud:.45,need:()=>rankIdx(S.xp)>=8,why:'Vanaf '+RANKS[8][0]}};
 const HIT_MORDER=['mes','pistool','geweer','ongeluk'];
 const HIT_REP=[['Nieuweling',0],['Huurling',50],['Vakman',150],['Specialist',350],['Schim',700],['Legende',1300]];
-const ht={tier:null,sel:{},how:false};
+const ht={tier:null,sel:{},how:false,open:false};
 const hitK=v=>typeof fmtK==='function'?fmtK(v):fmt(v);
 // reputatie als huurmoordenaar (oude saves: geschat uit het aantal geslaagde klussen)
 const hm=()=>{if(!S.hm||typeof S.hm!=='object'){const st=S.stats||{};S.hm={rep:(st.hits||0)*30+(st.hitsPerfect||0)*10,n:{},bh:0}}if(!S.hm.n)S.hm.n={};return S.hm};
@@ -64,7 +64,7 @@ const hitJail=H=>180+H.d*70;
 // standaardkeuze: de wens van de klant als dat kan, anders de eerste methode die je hebt
 const hitSel=H=>{let m=ht.sel[H.id];const ls=S.hm&&S.hm.last;if(!m||!H.m.includes(m))m=H.m.find(x=>x===H.pref&&HIT_M[x].need())||(ls&&H.m.includes(ls)&&HIT_M[ls].need()?ls:0)||H.m.find(x=>HIT_M[x].need())||H.pref||H.m[0];return m};
 function hitPick(id,m){ht.sel[id]=m;try{SFX.click()}catch(e){}render()}
-function hitTab(t){ht.tier=t;try{SFX.click()}catch(e){}render()}
+function hitTab(t){ht.tier=t;ht.open=true;try{SFX.click()}catch(e){}render();window.scrollTo({top:0,behavior:'smooth'})}
 function hitHowToggle(){ht.how=!ht.how;render()}
 
 // ---------- gezocht ----------
@@ -185,10 +185,15 @@ V.hits=()=>{const ri=rankIdx(S.xp);
   <div class="ht-h-k ht-ars"><span class="label">Methodes</span><div class="ht-ars-i">${HIT_MORDER.map(m=>`<i class="${HIT_M[m].need()?'on':''}" title="${esc(HIT_M[m].n+(HIT_M[m].need()?'':': '+HIT_M[m].why))}">${hitMIc(m)}</i>`).join('')}</div><em>${own} van 4 · ${gb?esc(gb.n):'<a href="#shop">geen wapen</a>'}</em></div>
   <div class="ht-h-k"><span class="label">Volgende contract</span><b>${left?fmtClock(left):'Nu'}</b><em>${Math.floor(S.energy)}/${EN_MAX} energie${tierK()?` · ${lidName()}: ${Math.round(tierK()*100)}% meer tijd`:''}</em></div>
  </section>
- <div class="ht-bar"><div class="ht-tiers" role="tablist" aria-label="Niveau">${HIT_TIERS.map(tierBtn).join('')}</div><button type="button" class="ht-howb ${ht.how?'on':''}" onclick="hitHowToggle()" aria-expanded="${ht.how}">Zo werkt het</button></div>
+ ${ht.open?`<div class="vb-bar"><button class="vb-back" onclick="ht.open=false;render()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Alle contracten</span></button><h2 style="color:${T.col}">${T.n}</h2><button type="button" class="ht-howb ${ht.how?'on':''}" onclick="hitHowToggle()" aria-expanded="${ht.how}" style="margin-left:auto">Zo werkt het</button></div>
  ${ht.how?hitHowHtml():''}
  <p class="ht-tier-d" style="--tc:${T.col}"><b>${T.n}.</b> ${T.d}${need?` <span class="bad">Op slot: je hebt ${need} nodig.</span>`:''}</p>
- <div class="ht-grid">${HITS.filter(h=>h.tier===T.id).map(card).join('')}</div>`};
+ <div class="ht-grid">${HITS.filter(h=>h.tier===T.id).map(card).join('')}</div>`
+ :`<div class="bz-sec"><h2>Contracten</h2><span>kies een niveau</span><button type="button" class="ht-howb ${ht.how?'on':''}" onclick="hitHowToggle()" aria-expanded="${ht.how}" style="margin-left:auto">Zo werkt het</button></div>${ht.how?hitHowHtml():''}
+ <div class="ht-banners">${HIT_TIERS.map(X=>{const o=hitTierOpen(X),L=HITS.filter(h=>h.tier===X.id),pay=L.reduce((a,h)=>Math.max(a,hitPay(h)[1]),0),why=[rl<X.rep?HIT_REP[X.rep][0]+' reputatie':'',ri<X.r?RANKS[X.r][0]:''].filter(Boolean).join(' + ');
+   return `<button class="bzb ht-bn ${o?'':'lock'}" style="--c:${X.col}" onclick="hitTab('${X.id}')">
+    <span class="bzb-art ht-bn-art" aria-hidden="true"><span class="ht-bn-scope">${hitScopeSvg()}</span><span class="ht-bn-ph">${L.map(h=>hitPhoto(h)).join('')}</span></span>
+    <span class="bzb-t"><span class="bzb-k">${L.length} contracten</span><b>${X.n}</b><span class="bzb-d">${X.d}</span><span class="bzb-f"><em>tot <b>${hitK(pay)}</b></em>${o?'':`<em class="dn">op slot: ${why}</em>`}</span><span class="bzb-go">${o?'Bekijken ›':'Bekijken'}</span></span></button>`}).join('')}</div>`}`};
 
 // ---------- contract starten en afronden ----------
 function hitStart(id){const H=HITS.find(h=>h.id===id);if(!H||window.__hitG||window.__chase)return;const m=hitSel(H),T=HIT_TIERS.find(t=>t.id===H.tier);

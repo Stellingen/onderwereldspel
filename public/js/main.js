@@ -44,6 +44,7 @@ window.addEventListener('hashchange',()=>{let p=location.hash.slice(1);if(p==='o
   if(p==='shop'&&page!=='shop'&&window.gsel)gsel.shop=null;
   if(p==='look'&&page!=='look'&&typeof fitUI!=='undefined')fitUI.street=null;
   if(p==='cars'&&page!=='cars'&&typeof carMode!=='undefined'){carMode=null;carSaleIdx=null}
+  if(p==='hits'&&page!=='hits'&&typeof ht!=='undefined')ht.open=false;
   page=p;render();window.scrollTo(0,0)}});
 let wasJail=inJail();
 setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderRail();

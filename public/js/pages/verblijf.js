@@ -141,7 +141,10 @@ const FURN_IC={hp:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0
  run:'<circle cx="14" cy="4.5" r="1.8"/><path d="M8 21l3-6 3 2v5M7 12l3-4 4 2 3 3M10 8l-3 1"/>',time:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',heat:'<path d="M12 21a6 6 0 0 0 6-6c0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-3-2 2-3 4-3 7a6 6 0 0 0 6 6z"/>'};
 const furnIc=f=>{const k=Object.keys(f.fx)[0],m={restHp:'hp',hpRegen:'hp',docHp:'hp',en:'en',enRegen:'en',hideRate:'hide',hideRisk:'hide',focus:'focus',safe:'safe',zone:'run',restCd:'time',docCd:'time',heat:'heat'}[k]||'focus';
  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${FURN_IC[m]}</svg>`};
-function vbShopHtml(){const hi=furnHi(),h=home(),used=furnPlaced().length,free=furnFree(),bank=vb.pay==='bank',have=bank?S.bank:S.cash;
+// winkel: filter op wat een spul doet
+const FURN_CAT=[['all','Alles'],['hp','Gezondheid en rust'],['en','Energie'],['hide','Onderduiken en hitte'],['safe','Veiligheid'],['focus','Focus en vluchten']];
+const furnCat=f=>{const k=Object.keys(f.fx);return k.some(x=>['restHp','hpRegen','docHp','restCd','docCd'].includes(x))?'hp':k.some(x=>['en','enRegen'].includes(x))?'en':k.some(x=>['hideRate','hideRisk','heat'].includes(x))?'hide':k.includes('safe')?'safe':'focus'};
+function vbShopHtml(){const hi=furnHi(),h=home(),used=furnPlaced().length,free=furnFree(),bank=vb.pay==='bank',have=bank?S.bank:S.cash,cf=vb.cat||'all',fc=L=>cf==='all'?L:L.filter(f=>furnCat(f)===cf);
  const placed=furnPlaced(),stored=FURN.filter(f=>S.furnStore&&S.furnStore[f.id]),buy=FURN.filter(f=>!S.furn[f.id]&&!(S.furnStore&&S.furnStore[f.id])&&furnFits(f,hi)),later=FURN.filter(f=>!S.furn[f.id]&&!(S.furnStore&&S.furnStore[f.id])&&hi<f.h);
  const card=(f,kind)=>{const why=furnWhy(f);let btn='';
   if(kind==='buy')btn=`<button class="btn sm" onclick="act.buyFurn('${f.id}','${bank?'bank':'cash'}')" ${have>=f.p&&free?'':'disabled'}>${!free?'Geen plek vrij':have<f.p?(bank?'Te weinig op de bank':'Te weinig contant'):'Kopen'}</button>`;
@@ -151,10 +154,11 @@ function vbShopHtml(){const hi=furnHi(),h=home(),used=furnPlaced().length,free=f
    <div class="fs-ic">${furnIc(f)}</div><div class="fs-b"><div class="fs-h"><b>${f.n}</b>${kind==='later'?`<span class="fs-lock">${HOMES[f.h].n}</span>`:kind==='in'?'<span class="fs-in">In huis</span>':kind==='store'?'<span class="fs-st">Opslag</span>':''}</div>
     <p>${f.d}</p><div class="fs-fx">${furnFxList(f)}</div>
     <div class="fs-f"><span class="fs-p">${kind==='in'||kind==='store'?'':fmt(f.p)}</span>${kind==='later'?`<span class="fs-why">Vanaf ${HOMES[f.h].n.toLowerCase()}</span>`:`<span class="fs-btn">${btn}</span>`}</div></div></article>`};
- const sec=(t,sub,list,kind)=>list.length?`<section class="fs-sec"><div class="fs-sh"><h3>${t}</h3><span>${sub}</span></div><div class="fs-grid">${list.map(f=>card(f,kind)).join('')}</div></section>`:'';
+ const sec=(t,sub,list0,kind)=>{const list=fc(list0);return list.length?`<section class="fs-sec"><div class="fs-sh"><h3>${t}</h3><span>${sub}</span></div><div class="fs-grid">${list.map(f=>card(f,kind)).join('')}</div></section>`:''};
  const byHome=HOMES.map((x,i)=>[x,later.filter(f=>f.h===i)]).filter(([,L])=>L.length);
  return `${vbBackHtml('Winkel')}
   <div class="fs-top"><div class="fs-slots"><span class="label">${h.n} · plekken</span><div class="vh-slots">${Array.from({length:h.slots},(_,i)=>`<i class="${i<used?'on':''}"></i>`).join('')}<span>${used}/${h.slots}</span></div><small>Hoe beter je woning, hoe meer plek en hoe grotere spullen.</small></div>${vbPayHtml('cash')}</div>
+  <div class="fit-tabs2 fs-cats">${FURN_CAT.map(([k,n])=>{const c=k==='all'?FURN.length:FURN.filter(f=>furnCat(f)===k).length;return `<button class="${cf===k?'on':''}" onclick="vb.cat='${k}';render()">${n} <small>${c}</small></button>`}).join('')}</div>
   <section class="vh-stage is-edit fs-stage" id="vbStage"><div class="vh-scene">${(()=>{const nw=window._vbNew;window._vbNew=null;let sc=vhScene(h.id,{furn:S.furn,ghosts:true,key:'s'});if(nw)sc=sc.replace(`class="vh-it" data-it="${nw}"`,`class="vh-it new" data-it="${nw}"`);return sc})()}</div></section>
   ${sec('Te koop','past in je '+h.n.toLowerCase(),buy,'buy')}${sec('In huis','wat neerstaat, werkt',placed,'in')}${sec('In de opslag','bewaard voor later',stored,'store')}
   ${byHome.map(([x,L])=>sec('Bij een '+x.n.toLowerCase(),'nog op slot · '+(x.slots)+' plekken',L,'later')).join('')}`}

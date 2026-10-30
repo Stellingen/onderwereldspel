@@ -306,3 +306,7 @@
  .fs-grid{grid-template-columns:1fr}
  .fs-stage .vh-scene{height:230px}
 }
+.fs-cats{margin:0 0 12px}.fs-cats small{font-family:var(--f-mono);font-size:10px;opacity:.7;margin-left:3px}
+/* winkel: compacter en beter te scannen */
+.fs-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.fs-card .fs-p{font-size:16px;color:var(--fg)}
