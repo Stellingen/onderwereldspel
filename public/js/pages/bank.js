@@ -80,8 +80,8 @@ const riskPips=r=>`<span class="bk-risk" title="Risico ${r} van 5">${[1,2,3,4,5]
 
 function bkRek(){const max=Math.max(S.cash,S.bank),a=bkAmt(),r=savRate();
  return `<div class="bk-grid">
-  <section class="card bk-box"><h3>Geld verplaatsen</h3><p class="sub">Contant geld kun je kwijtraken als je gepakt wordt. Op de bank staat het veilig.</p>
-   <div class="bk-flow"><div><span class="label">Contant</span><b class="acc">${fmt(S.cash)}</b></div>${BK_ARROWS}<div><span class="label">Spaarrekening</span><b>${fmt(S.bank)}</b></div></div>
+  <section class="card bk-box"><h3>Geld verplaatsen</h3><p class="sub">Alleen wit geld kan de bank op. Op zak kun je het kwijtraken als je gepakt wordt; op de bank staat het veilig.</p>
+   <div class="bk-flow"><div><span class="label">Wit geld op zak</span><b style="color:var(--wit)">${fmt(wit())}</b>${zwart()>=1?`<small class="bk-zw">+ ${fmt(zwart())} zwart, eerst <a href="#wit">witwassen</a></small>`:''}</div>${BK_ARROWS}<div><span class="label">Spaarrekening</span><b>${fmt(S.bank)}</b></div></div>
    ${bkInput(max)}
    <div class="bk-two"><button class="btn" data-bk-btn onclick="act.bkDep()" ${a&&wit()>=1?'':'disabled'}>Storten${a?' '+fmt(Math.min(a,wit())):''}</button>
     <button class="btn ghost" data-bk-btn onclick="act.bkWd()" ${a&&S.bank>=1?'':'disabled'}>Opnemen${a?' '+fmt(Math.min(a,S.bank)):''}</button></div></section>
@@ -164,7 +164,7 @@ V.bank=()=>{if(!S.dep)S.dep=[];if(!S.inv)S.inv={};const sv=S.bank,dp=depTotal(),
    ${k('inv','iv','Beleggingen',fmt(iv),tc?`<span class="${pl>=0?'up':'dn'}">${pl>=0?'+':'−'}${fmt(Math.abs(pl))}</span> sinds aankoop`:'nog niets belegd')}
   </div>
   <div class="bk-dist" aria-hidden="true"><i style="width:${sv/tot*100}%;background:var(--ice)"></i><i style="width:${dp/tot*100}%;background:var(--violet)"></i><i style="width:${iv/tot*100}%;background:var(--acc)"></i></div>
-  <div class="bk-cash ${cash>=1?'':'none'}"><div><span class="label">Contant op zak</span><b>${fmt(cash)}</b><em>${cash<1?'Je hebt niets contant op zak.':zwart()>=1?`Waarvan ${fmt(zwart())} zwart: dat neemt de bank niet aan. <a href="#wit">Witwassen ›</a>`:'Dit ben je kwijt als je gepakt wordt.'}</em></div>
+  <div class="bk-cash ${cash>=1?'':'none'}"><div><span class="label">Op zak</span><b><span style="color:var(--wit)">${fmt(wit())} wit</span>${zwart()>=1?` <span style="color:var(--zw)">· ${fmt(zwart())} zwart</span>`:''}</b><em>${cash<1?'Je hebt niets contant op zak.':zwart()>=1?`Waarvan ${fmt(zwart())} zwart: dat neemt de bank niet aan. <a href="#wit">Witwassen ›</a>`:'Dit ben je kwijt als je gepakt wordt.'}</em></div>
    <button class="btn sm" onclick="act.bkAll()" ${wit()>=1?'':'disabled'}>${wit()>=1?'Stort '+fmt(wit())+' wit':cash>=1?'Alleen zwart geld':'Niets te storten'}</button></div>
  </section>
  <div class="tabs bk-tabs">${[['rek','Rekening'],['dep',`Deposito's${S.dep.length?' · '+S.dep.length:''}`],['inv','Beleggen']].map(([k,l])=>`<button class="${bk.tab===k?'on':''}" onclick="act.bkTab('${k}')">${l}</button>`).join('')}</div>

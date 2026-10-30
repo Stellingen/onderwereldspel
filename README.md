@@ -18,8 +18,12 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   topbalk, op het dashboard en op je profiel.
 - **Vluchtspel** (`flee.js`): gaat een klus mis, dan ren je weg door een steeg of een gebouw (2.5D): wissel van baan met
   pijltjes/A-D, vegen of tikken, spring met omhoog of spatie, ontwijk obstakels en agenten. Op straat is dat makkelijk, in een
-  afgesloten gebouw bijna onmogelijk. Conditie, vervoer, outfit, familie en woning maken het makkelijker. Lukt het: vrij en
-  niet gezocht. Mislukt het: cel met 20% extra straf.
+  afgesloten gebouw bijna onmogelijk. Elke achtervolging loopt op van makkelijk naar moeilijk: eerst losse obstakels met
+  ruimte ertussen, dan hekken, auto's en mensen of honden die oversteken, en na de rode streep op de route de **eindsprint**:
+  rijen vlak na elkaar (slalom), overstekers en bewakers die met je meeschuiven. Ongeveer 35% meer rijen en meer obstakels per rij, in ongeveer dezelfde tijd, met
+  nieuwe soorten (container, vuilniszakken, dranghek, natte-vloerbord, printer, bureaustoel, schoonmaker, hond). De tijd tussen
+  twee rijen zakt van ±1,05× naar ±0,6× het tempo van het niveau, nooit onder een halve seconde. Conditie, vervoer, outfit,
+  familie en woning maken het makkelijker. Lukt het: vrij en niet gezocht. Mislukt het: cel met 20% extra straf.
 - **Misdaden** (`misdaden.js`): elke klus heeft een eigen icoon en een balk met kans, opbrengst (plus XP en cred) en wat er
   gebeurt als het misgaat (straf en hoe moeilijk vluchten is). Bovenaan de drie beste klussen voor jou, met opbrengst per energie.
 - **Training** met tijdsloten: elke sessie is één level, tot level 50. Elk level is duurder (conditie: €60 voor level 1,
@@ -51,7 +55,13 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Borg** groeit met je rang: als Dief kost 2 minuten zo'n €900, als Peetvader 10 minuten zo'n €150.000. Charisma geeft korting.
 - **Telefoon**: onderbalk met Start, Misdaden, Auto's, Casino en **Meer**. Meer opent een menu met alle pagina's per groep
   (Straat, Geld, Macht, Overig), met per pagina wat er speelt (energie, cel-tijd, inkomen per speldag, codes om te claimen).
-  Staat je pagina niet in de balk, dan toont de vijfde knop die pagina. De statusbalk blijft bovenaan staan, de nieuwsband en
+  De vijfde knop heet altijd **Meer** (oplichtend als je op een pagina uit het menu zit), zodat je het menu nooit kwijtraakt.
+  Bovenin het menu een zoekveld dat pagina's én wat je erop kunt doen vindt (kliniek, onderduiken, trainen, roulette,
+  codes, witwassen...; Enter opent het eerste resultaat, een casinospel opent meteen dat spel), en je laatst bezochte pagina's.
+  De statusbalk heeft twee rijen zonder zijwaarts vegen: boven wit geld, zwart geld en bank, onder rang, energie, cred,
+  gezondheid en hitte (tik op energie, gezondheid of hitte om er iets aan te doen). In het casino: saldo groot met daaronder
+  wit en zwart apart, bank rechts, en een rij knoppen voor cashback claimen, de geluksdobbelsteen en de verdenking.
+  De statusbalk blijft bovenaan staan, de nieuwsband en
   het kruimelpad vallen weg, en de casinospellen staan als 2 rijen knoppen. Hertekenen houdt je scrollpositie vast; in de slots
   worden alleen de onderdelen bijgewerkt die veranderen. Op de computer is niets veranderd.
 - **App-icoon**: hoed voor een straatlantaarn (`public/icons/`), met `manifest.webmanifest`, apple-touch-icon en favicon.
@@ -218,11 +228,12 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   eronder, even breed als het bord. Doorgerekend (`visim2.js`, 3 mln. spins per lidmaatschap, `vbuy2.js`): gewoon bonus ±1 op 200,
   RTP ±91,5%; VIP ±1 op 172, RTP ±94%; High roller ±1 op 143, RTP ±96,5%; bonus kopen ±97%.
 - **Indeling (computer)**: vanaf 1280px breed staat alles over jou in de rechterkolom: naam, status (vrij, gezocht, cel,
-  ondergedoken), rang en level met XP-balk, contant en bank, energie, gezondheid, hitte en familie, daaronder wat er klaarstaat,
+  ondergedoken), rang en level met XP-balk, wit geld, zwart geld en bank (drie aparte regels met eigen kleur en icoon), energie, gezondheid, hitte en familie, daaronder wat er klaarstaat,
   een snelle klus, het logboek en de top 5 (met jouw plek als je er niet in staat). Klik op energie, gezondheid of hitte voor
   een paneel met wat je er nu aan kunt doen (ontspannen, kliniek, omkopen, rusten, onderduiken). De nieuwsband is weg. Het menu
   links toont kleine standen (#plek op de ranglijst, auto's in de garage, cel- en wachttijd). In het casino is er geen
-  rechterkolom maar een saldobalk bovenaan: saldo (knippert groen of rood bij een verandering), bank, lidmaatschap en cashback
+  rechterkolom maar een saldobalk bovenaan: saldo om mee te spelen (knippert groen of rood bij een verandering) met wit en zwart
+  apart eronder, bank, lidmaatschap en cashback
   om te claimen. Smallere schermen en de telefoon houden de statusbalk bovenaan.
 - **Outfit** (`public/js/pages/look.js`): kleding en sieraden op zes plekken (hoofd, kleding, schoenen, ketting, pols,
   ring), 55 stukken. Vaak zijn er stukken van dezelfde prijs met een ander voordeel, zodat je kiest wat voor figuur je wordt:
@@ -232,8 +243,8 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   blijft in je kast, omkleden is gratis. De effecten lopen via `fitFx` in `state.js`; onopvallende kleding maakt ook gezocht
   worden minder waarschijnlijk (`wantMod`).
   **Geluksdobbelsteen** (zevende plek, Geluk): gebruik je hem, dan krijg je 10 minuten een percentage extra op je winst in
-  Kluiskraker en Visdief, daarna 5 uur rust. Gebroken +1% (€2.500), hout +2% (€20.000, Loopjongen), been +5% (€150.000, Boef),
-  zilver +8% (€750.000, Soldaat) en goud +15% (€5 mln., alleen High roller). Het extra geld wordt na de ronde apart getoond;
+  Kluiskraker en Visdief, daarna 5 uur rust. Gebroken +4% (€2.500), hout +5% (€20.000, Loopjongen), been +8% (€150.000, Boef),
+  zilver +11% (€750.000, Soldaat) en goud +18% (€5 mln., alleen High roller). Het extra geld wordt na de ronde apart getoond;
   roulette, blackjack, poker, mines, hoogvlieger en de munt houden de echte kansen. Gebruiken kan op Outfit en in de saldobalk
   van het casino.
 - **Zwart geld en witwassen** (`public/js/pages/witwas.js`, kern in `state.js`): geld uit klussen, huurmoorden, auto's

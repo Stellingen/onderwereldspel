@@ -103,3 +103,43 @@
 .dm-v small.zw{font-family:var(--f-mono);font-size:9.5px;color:#aab0b9;white-space:nowrap}
 .dm-t{overflow:hidden}
 .dos-money .dm{grid-template-columns:34px minmax(56px,1fr) auto}
+
+/* Casinobalk op de telefoon: saldo groot links, bank rechts, daaronder knoppen die altijd passen */
+.ch-chips{display:none}
+@media (max-width:900px){
+  .chud{display:grid;grid-template-columns:minmax(0,1fr) auto;overflow:visible}
+  .chud>*{padding:9px 14px}
+  .chud>.ch-cb,.chud>.ch-luck,.chud>.ch-sus,.chud>.ch-up,.chud>.ch-r{display:none}
+  .ch-main{min-width:0;gap:11px;padding:9px 14px}
+  .ch-main b{font-size:27px}
+  .ch-bank{min-width:0;align-items:flex-end!important;text-align:right}
+  .ch-bank>div{align-items:flex-end}
+  .ch-bank b{font-size:15px}
+  .ch-bank .label::after{content:' ›';color:var(--faint)}
+  .chud>.ch-chips{grid-column:1/-1;display:flex;flex-direction:row;gap:6px;padding:7px 8px;background:var(--panel)}
+  .cc{flex:1 1 0;min-width:0;height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 6px;
+    background:var(--bg2);box-shadow:inset 0 0 0 1px var(--line2);color:var(--fg);text-decoration:none;font:inherit;position:relative;overflow:hidden;
+    -webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:transform .1s}
+  .cc:active:not(:disabled){transform:scale(.97)}
+  .cc span{display:inline-flex;align-items:center;gap:4px;max-width:100%;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);white-space:nowrap;overflow:hidden}
+  .cc b{max-width:100%;overflow:hidden;text-overflow:ellipsis;font-family:var(--f-mono);font-weight:700;font-size:13.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .cc i{display:block;width:13px;height:13px;flex:none}.cc i svg{width:100%;height:100%;display:block}
+  .cc:disabled{opacity:1;cursor:default}
+  .cc-cb b{color:#f2c230}
+  .cc-cb:disabled b{color:var(--mute)}
+  .cc.can{background:#f2c230;box-shadow:none;color:#140f02;animation:ccPulse 2.4s ease-in-out infinite}
+  .cc.can span,.cc.can b{color:#140f02}
+  .cc-luck.on{box-shadow:inset 0 0 0 1px var(--green)}.cc-luck.on b{color:var(--green)}
+  .cc-up b{color:#f2c230}
+  .cc-sus::after{content:'';position:absolute;left:0;bottom:0;height:3px;width:var(--v);background:var(--acc)}
+  .cc-sus.warm b{color:var(--acc)}.cc-sus.hot b{color:var(--red)}.cc-sus.hot::after{background:var(--red)}
+  @keyframes ccPulse{0%,100%{box-shadow:0 0 0 0 rgba(242,194,48,0)}50%{box-shadow:0 0 0 3px rgba(242,194,48,.22)}}
+}
+@media (max-width:900px) and (prefers-reduced-motion:reduce){.cc.can{animation:none}}
+/* Kluiskraker-kop op smalle telefoons: alles op één regel, High roller als HR */
+@media (max-width:400px){
+  .kk3 .kk-sub{flex-wrap:nowrap;min-width:0}
+  .kk3 .kk-sub .kk-lf{display:none}
+}
+.kk-ls{display:none}
+@media (max-width:400px){.kk3 .kk-sub .kk-ls{display:inline}}

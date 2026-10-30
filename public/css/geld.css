@@ -223,3 +223,6 @@
 .bk-tiers em{font-style:normal;font-family:var(--f-mono);font-size:9.5px;color:var(--faint)}
 .bk-tiers span.on{background:var(--panel2);box-shadow:inset 0 2px 0 var(--green)}
 .bk-tiers span.on i{color:var(--green)}.bk-tiers span.on b{color:var(--fg)}
+.bk-flow .bk-zw{display:block;font-family:var(--f-mono);font-size:10.5px;color:var(--zw);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bk-flow .bk-zw a{color:var(--acc)}
+.bk-cash b span{white-space:nowrap}

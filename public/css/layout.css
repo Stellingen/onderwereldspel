@@ -202,3 +202,95 @@ a.ch-cell:hover{background:var(--panel2)}
 .dos-rank span{white-space:nowrap;flex:none}
 .dos-rank b{flex:none}
 .dos-rank em{min-width:0;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- Telefoon: Meer-menu met zoeken, laatst bezocht en compacte tegels ---------- */
+@media (max-width:900px){
+  .msheet [hidden]{display:none!important}
+  .ms-panel{max-height:90svh}
+  .ms-head b{font-size:19px}.ms-head span{font-size:12.5px}
+  .ms-x{width:38px;height:38px}
+  .ms-search{position:sticky;top:-8px;z-index:2;display:flex;align-items:center;gap:10px;margin:12px -4px 0;padding:0 6px 0 14px;height:46px;
+    background:#181b20;box-shadow:inset 0 0 0 1px var(--line2),0 8px 14px -8px #101216;border-radius:12px;cursor:text}
+  .ms-search:focus-within{box-shadow:inset 0 0 0 1.5px var(--acc),0 8px 14px -8px #101216}
+  .ms-search>svg{width:18px;height:18px;flex:none;color:var(--mute)}
+  .ms-search input{flex:1;min-width:0;height:100%;background:none;border:0;outline:0;color:var(--fg);font:500 16px var(--f-body);padding:0;-webkit-appearance:none;appearance:none}
+  .ms-search input::placeholder{color:var(--faint)}
+  .ms-search input::-webkit-search-cancel-button{display:none}
+  .ms-clear{width:34px;height:34px;flex:none;border-radius:50%;background:var(--panel2);color:var(--mute);font-size:13px;visibility:hidden}
+  .ms-search:has(input:not(:placeholder-shown)) .ms-clear{visibility:visible}
+  .ms-recent{display:flex;align-items:center;gap:6px;margin-top:10px;overflow:hidden}
+  .ms-recent>span{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);flex:none;margin-right:2px}
+  .ms-recent a{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 11px 0 9px;border-radius:999px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line2);
+    color:var(--fg);text-decoration:none;font-family:var(--f-head);font-weight:700;font-size:13.5px;white-space:nowrap;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .ms-recent a svg{width:15px;height:15px;color:var(--g);flex:none}
+  .ms-group{margin-top:14px}.ms-group h3{margin:0 0 7px;font-size:13px}
+  .ms-grid{gap:7px}
+  .ms-tile{min-height:0;padding:10px 10px 9px;border-radius:12px}
+  .ms-tile svg{width:21px;height:21px;margin-bottom:5px}
+  .ms-tile b{font-size:15px}
+  .ms-tile small{font-size:11px}
+  .ms-tile.on small{color:var(--g)}
+  .ms-opts{margin-top:14px}
+  .ms-opts h3{margin:0 0 7px;font-family:var(--f-head);font-size:13px;font-weight:800;letter-spacing:.04em;color:var(--mute)}
+  .ms-opt{display:flex;align-items:center;gap:12px;padding:11px 12px;margin-bottom:6px;border-radius:12px;background:var(--panel2);color:var(--fg);text-decoration:none;box-shadow:inset 0 0 0 1px var(--line)}
+  .ms-opt:active{transform:scale(.98)}
+  .ms-opt svg{width:21px;height:21px;flex:none;color:var(--g)}
+  .ms-opt div{flex:1;min-width:0}
+  .ms-opt b{display:block;font-family:var(--f-head);font-weight:800;font-size:15.5px;line-height:1.15}
+  .ms-opt small{display:block;font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ms-opt em{font-style:normal;color:var(--faint);font-size:20px}
+  .ms-none{margin:18px 4px 4px;color:var(--mute);font-size:14px;line-height:1.45}.ms-none b{color:var(--fg)}
+  .msheet.ms-q .ms-out{display:none}
+  .msheet.ms-q .ms-panel{min-height:90svh}
+}
+
+/* ---------- Wit geld, zwart geld en bank: drie aparte bedragen met eigen kleur en icoon ---------- */
+:root{--wit:#3fe395;--zw:#c3c8d0;--zw-bar:#5b6069}
+.dos-money .dm.zw::before{background:var(--zw-bar)}
+.dos-money .dm.zw b{color:var(--zw)}
+.dos-money .dm.cash b{color:var(--wit)}
+.dos-money .dm.zw.nul b{color:var(--faint)}
+.dos-money .dm.zw .dm-t small{color:#9aa1ab}
+.dos-money .dm.zw.nul .dm-t small{color:var(--faint)}
+a.chip{text-decoration:none;color:inherit}
+a.chip:hover{background:var(--panel2)}
+.chip.cash b{color:var(--wit)}.chip.zwc b{color:var(--zw)}.chip.zwc.nul b{color:var(--faint)}
+.chip .ti{display:none}
+.ch-split{display:flex;flex-wrap:wrap;gap:2px 12px;margin-top:4px;font-family:var(--f-mono);font-size:11px;white-space:nowrap}
+.ch-split>span{display:inline-flex;align-items:center;gap:6px}
+.ch-split i{width:8px;height:8px;border-radius:50%;flex:none}
+.ch-split .w{color:var(--wit)}.ch-split .w i{background:var(--wit)}
+.ch-split .z{color:var(--zw)}.ch-split .z i{background:#2c2f35;box-shadow:0 0 0 1.5px var(--zw-bar)}
+.ch-split .z.nul{color:var(--faint)}
+.ms-money em{font-style:normal}.ms-money em.w{color:var(--wit)}.ms-money em.z{color:var(--zw)}
+
+/* Telefoon: statusbalk in twee rijen zonder zijwaarts vegen. Boven: wit, zwart, bank. Onder: rang, energie, gezondheid, hitte, cred */
+@media (max-width:900px){
+  body:not(.wide-page) .topbar{flex-wrap:wrap;overflow:visible}
+  body:not(.wide-page) .topbar>.chip{flex:1 1 auto;padding:6px 7px;justify-content:center;align-items:center}
+  body:not(.wide-page) .topbar>.chip.cash,body:not(.wide-page) .topbar>.chip.zwc,body:not(.wide-page) .topbar>.chip.bankc{order:1;flex:1 1 30%;padding:8px 11px}
+  .topbar>.chip.cash small,.topbar>.chip.zwc small,.topbar>.chip.bankc small{display:flex;align-items:center;white-space:nowrap}
+  .topbar .chip .ci{width:14px;height:14px;margin-right:5px;flex:none}
+  body:not(.wide-page) .topbar>.chip.rank{order:2;flex:1 1 auto;min-width:0;align-items:stretch}
+  .topbar>.chip.rank small{display:none}
+  .topbar>.chip.rank b{font-size:12px;display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .topbar>.chip.rank .vipt{display:none}
+  .topbar>.chip.rank .mini{width:100%}
+  .topbar .emax{display:none}
+  body:not(.wide-page) .topbar>.chip.buff{display:none}
+  .topbar>.chip.rank .mini{min-width:0;margin-top:2px}
+  body:not(.wide-page) .topbar>.chip.sm{order:3}
+  .topbar>.chip.sm small{display:none}
+  .topbar>.chip.sm b{display:inline-flex;align-items:center;gap:4px;font-size:12.5px}
+  .topbar>.chip.sm .ti{display:block;width:13px;height:13px;flex:none;opacity:.9}
+  .topbar>.chip.sm .ti svg{width:100%;height:100%;display:block}
+  .topbar>.chip.sm .mini{min-width:0;width:100%;margin-top:2px}
+  .topbar>.chip.buff b{font-size:11.5px}
+  body:not(.wide-page) .topbar>.status{order:4;flex:1 1 auto;justify-content:center;padding:0 10px;font-size:10.5px}
+  body:not(.wide-page) .topbar>.status.free{display:none}
+}
+@media (min-width:901px) and (max-width:1360px){
+  .ch-split{flex-direction:column;gap:1px}
+  .ch-main{padding:10px 16px}
+  .ch-cb{gap:8px}
+}

@@ -75,11 +75,11 @@ const OUTFITS=[
  {id:'famring',slot:'ring',st:'zaken',n:'Familiering',d:'Zwaar goud met een donkerrode steen. Oude families kussen hem.',p:45000,r:5,fx:{xp:.03,inc:.04,bail:.06}},
  {id:'zwartdiamant',slot:'ring',st:'patser',n:'Ring met zwarte diamant',d:'Platina, met een steen zo zwart als je reputatie.',p:300000,r:8,fx:{buit:.06,inc:.08,heat:-.05}},
  // geluk: gebruik je, niet dragen voor een setbonus. luck = extra op je winst in de slots, 10 minuten, daarna 5 uur rust.
- {id:'dob1',slot:'geluk',st:'geluk',n:'Gebroken dobbelsteen',d:'Een hoekje eraf en een barst erdoor. Een heel klein beetje geluk.',p:2500,r:0,luck:.01,dc:['#8a8f98','#5d626b','#454950']},
- {id:'dob2',slot:'geluk',st:'geluk',n:'Houten dobbelsteen',d:'Met de hand gesneden door een oude man in de Jordaan.',p:20000,r:2,luck:.02,dc:['#a8743f','#86582d','#6b4523']},
- {id:'dob5',slot:'geluk',st:'geluk',n:'Benen dobbelsteen',d:'Uit een speelhol in Marseille. Hij heeft vaker gewonnen dan verloren.',p:150000,r:4,luck:.05,dc:['#e8dcc2','#c9bb9b','#ab9e80']},
- {id:'dob8',slot:'geluk',st:'geluk',n:'Zilveren dobbelsteen',d:'Massief zilver, gewogen tot op de milligram.',p:750000,r:6,luck:.08,dc:['#dfe3e8','#b4bac3','#8f969f']},
- {id:'dob15',slot:'geluk',st:'geluk',n:'Gouden dobbelsteen',d:'Alleen voor High rollers. Het casino ziet hem liever niet.',p:5000000,r:0,hr:1,luck:.15,dc:['#f2c230','#d9a520','#b8890f']}];
+ {id:'dob1',slot:'geluk',st:'geluk',n:'Gebroken dobbelsteen',d:'Een hoekje eraf en een barst erdoor. Een heel klein beetje geluk.',p:2500,r:0,luck:.04,dc:['#8a8f98','#5d626b','#454950']},
+ {id:'dob2',slot:'geluk',st:'geluk',n:'Houten dobbelsteen',d:'Met de hand gesneden door een oude man in de Jordaan.',p:20000,r:2,luck:.05,dc:['#a8743f','#86582d','#6b4523']},
+ {id:'dob5',slot:'geluk',st:'geluk',n:'Benen dobbelsteen',d:'Uit een speelhol in Marseille. Hij heeft vaker gewonnen dan verloren.',p:150000,r:4,luck:.08,dc:['#e8dcc2','#c9bb9b','#ab9e80']},
+ {id:'dob8',slot:'geluk',st:'geluk',n:'Zilveren dobbelsteen',d:'Massief zilver, gewogen tot op de milligram.',p:750000,r:6,luck:.11,dc:['#dfe3e8','#b4bac3','#8f969f']},
+ {id:'dob15',slot:'geluk',st:'geluk',n:'Gouden dobbelsteen',d:'Alleen voor High rollers. Het casino ziet hem liever niet.',p:5000000,r:0,hr:1,luck:.18,dc:['#f2c230','#d9a520','#b8890f']}];
 const LUCK_MIN=10,LUCK_CD=5*60; // minuten actief, minuten rust
 const luckPct=()=>S.luck&&S.luck.until>now()?(+S.luck.pct||0):0;
 const luckLeft=()=>S.luck?Math.max(0,S.luck.until-now()):0;

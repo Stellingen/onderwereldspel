@@ -95,18 +95,82 @@ function navHint(k){const jt=Math.ceil((S.jailUntil-now())/1000);
   fam:S.family?fam().n:'Geen familie',jail:inJail()?'Vast, '+fmtTime(jt):'Vrij',rank:'Spelers',profiel:'Codes en account',look:'Kleding en sieraden',wit:typeof zwart==='function'&&zwart()>=1?fmt(zwart())+' zwart':'Zwart geld wit maken'}[k]||''}
 function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('nav');bar.id='mbar';bar.className='mbar';bar.setAttribute('aria-label','Menu');document.body.appendChild(bar)}
  let sh=$('#msheet');if(!sh){sh=document.createElement('div');sh.id='msheet';sh.className='msheet';sh.setAttribute('aria-hidden','true');document.body.appendChild(sh);
-  sh.addEventListener('click',e=>{if(e.target===sh||e.target.closest('[data-close]'))mSheet(false)})}
+  sh.addEventListener('click',e=>{const c=e.target.closest('[data-cas]');
+   // zoekresultaat voor een casinospel: meteen het goede spel openen
+   if(c){const k=c.dataset.cas;if(page==='casino'&&typeof casinoGo==='function')casinoGo(k);else if(typeof casinoTab!=='undefined')casinoTab=k}
+   if(e.target===sh||e.target.closest('[data-close]'))mSheet(false)})}
  const bd=navBadges(),name=k=>PAGES.find(p=>p[0]===k)[1],inMain=MBAR.includes(page),more=Object.keys(bd).some(k=>!MBAR.includes(k));
  setHTML(bar,MBAR.map(k=>`<a class="mb ${k===page?'on':''}" href="#${k}" style="--g:${groupOf(k)[2]}">${svg(k)}<span>${MSHORT[k]}</span>${bd[k]?`<em class="${bd[k]==='●'?'ok':''}">${bd[k]}</em>`:''}</a>`).join('')
-  +`<button class="mb more ${inMain?'':'on'}" onclick="mSheet(true)" aria-haspopup="dialog" style="--g:${inMain?'#8a8f98':groupOf(page)[2]}">${inMain?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>':svg(page)}<span>${inMain?'Meer':name(page)}</span>${more?'<em>•</em>':''}</button>`);
+  // de vijfde knop blijft altijd "Meer": zo raak je het menu nooit kwijt, ook niet op een pagina als Verblijf
+  +`<button class="mb more ${inMain?'':'on'}" onclick="mSheet(true)" aria-haspopup="dialog" aria-label="Meer: alle pagina's en zoeken" style="--g:${inMain?'#8a8f98':groupOf(page)[2]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Meer</span>${more?'<em>•</em>':''}</button>`);
+ msTrack();
  const ri=rankIdx(S.xp);
- // het open menu niet hertekenen terwijl je erin scrollt; bij openen wordt het vernieuwd
+ // het open menu niet hertekenen terwijl je erin scrollt of zoekt; bij openen wordt het vernieuwd
  if(sh.classList.contains('open')&&!sh._fresh)return;sh._fresh=false;
+ const tile=k=>`<a class="ms-tile ${k===page?'on':''}" href="#${k}" data-close data-k="${msKey(name(k)+' '+navHint(k)+' '+(MS_PAGE_K[k]||''))}">${svg(k)}<b>${name(k)}</b><small>${k===page?'Je bent hier':navHint(k)}</small>${bd[k]?`<em class="${bd[k]==='●'?'ok':''}">${bd[k]==='●'?'vol':bd[k]}</em>`:''}</a>`;
+ const rec=msRecent().filter(k=>k!==page&&PAGES.some(p=>p[0]===k)).slice(0,4);
  setHTML(sh,`<div class="ms-panel" role="dialog" aria-label="Alle pagina's"><div class="ms-grab"></div>
-  <div class="ms-head"><div><b>${esc(S.name)}${vipTag()}</b><span>${RANKS[ri][0]}, ${fmt(S.cash)} contant</span></div><button class="ms-x" data-close aria-label="Sluiten">✕</button></div>
-  ${NAV_GROUPS.map(([g,ks,col])=>`<div class="ms-group" style="--g:${col}"><h3>${g}</h3><div class="ms-grid">${ks.map(k=>`<a class="ms-tile ${k===page?'on':''}" href="#${k}" data-close>${svg(k)}<b>${name(k)}</b><small>${navHint(k)}</small>${bd[k]?`<em class="${bd[k]==='●'?'ok':''}">${bd[k]==='●'?'vol':bd[k]}</em>`:''}</a>`).join('')}</div></div>`).join('')}
+  <div class="ms-head"><div><b>${esc(S.name)}${vipTag()}</b><span class="ms-money">${RANKS[ri][0]} · <em class="w">${fmt(witNu())} wit</em>${zwart()>=1?` · <em class="z">${fmt(zwart())} zwart</em>`:''}</span></div><button class="ms-x" data-close aria-label="Sluiten">✕</button></div>
+  <label class="ms-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+   <input type="search" id="msQ" placeholder="Zoek: kliniek, trainen, roulette…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" aria-label="Zoek in het menu" oninput="msFilter(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();msFirst()}">
+   <button type="button" class="ms-clear" aria-label="Zoekveld leegmaken" onclick="const i=$('#msQ');i.value='';msFilter('');i.focus()">✕</button></label>
+  ${rec.length?`<div class="ms-recent"><span>Laatst</span>${rec.map(k=>`<a href="#${k}" data-close style="--g:${groupOf(k)[2]}">${svg(k)}${name(k)}</a>`).join('')}</div>`:''}
+  <div class="ms-opts" hidden><h3>Gevonden</h3>${MS_FIND.map(([t,s,h,kw])=>{const [pg,cas]=h.split(':');return `<a class="ms-opt" hidden href="#${pg}" data-close ${cas?`data-cas="${cas}"`:''} data-k="${msKey(t+' '+s+' '+kw)}" style="--g:${groupOf(pg==='trainen'||pg==='ontspannen'?'skills':pg)[2]}">${svg(pg==='trainen'||pg==='ontspannen'?'skills':pg)}<div><b>${t}</b><small>${s}</small></div><em>›</em></a>`}).join('')}</div>
+  <p class="ms-none" hidden>Niets gevonden voor “<b></b>”. Probeer een ander woord, zoals geld, auto of energie.</p>
+  ${NAV_GROUPS.map(([g,ks,col])=>`<div class="ms-group" style="--g:${col}"><h3>${g}</h3><div class="ms-grid">${ks.map(tile).join('')}</div></div>`).join('')}
   ${window.__ADMIN__?`<a class="btn ghost ms-out ms-admin" href="/admin">${svg('beheer')} Beheerdashboard</a>`:''}${window.__TOKEN__?`<button class="btn ghost ms-out" onclick="logout()">Uitloggen</button>`:''}</div>`)}
+// Zoeken in het menu: pagina's én wat je erop kunt doen (kliniek, roulette, codes...)
+const MS_PAGE_K={dash:'start overzicht home',verblijf:'woning huis rusten dokter kliniek onderduiken slapen',crimes:'klussen misdaad roven energie',hits:'huurmoord moord doelwit gezocht',
+ cars:'auto garage stelen heler',casino:'gokken spellen slot',biz:'zaken bedrijven inkomen vestiging geld verdienen',bank:'sparen rente beleggen deposito geld storten opnemen wit',wit:'zwart geld witwassen',
+ shop:'wapens vervoer kopen',look:'kleding outfit sieraden dobbelsteen',skills:'trainen ontspannen energie',fam:'familie maffia oorlog missies',jail:'bajes cel gevangenis borg',
+ rank:'ranglijst spelers top',profiel:'account codes privacy'};
+const MS_FIND=[
+ ['Kliniek','Meteen weer 100% gezondheid','verblijf','dokter genezen gezondheid ziekenhuis gewond'],
+ ['Rusten en slapen','Gezondheid en energie terug','verblijf','rust slapen bed energie'],
+ ['Onderduiken','Hitte laten zakken','verblijf','hitte politie verstoppen ondergedoken'],
+ ['Woning inrichten of verhuizen','Meubels, extra plek, betere woning','verblijf','huis meubels inrichting verhuizen appartement villa'],
+ ['Omkopen','Hitte meteen naar 0%','dash','hitte politie omkopen smeergeld'],
+ ['Trainen','Blijvend beter worden','trainen','skills training conditie snelheid kracht sportschool'],
+ ['Ontspannen','Energie en gezondheid bijvullen','ontspannen','relax energie sauna massage spa'],
+ ['Kluiskraker','Gokkast','casino:kluis','slot gokkast kluis loper bonus'],
+ ['Visdief','Gokkast','casino:vis','slot gokkast vis vissen'],
+ ['Roulette','Tafelspel','casino:roulette','rood zwart tafel'],
+ ['Blackjack','Kaartspel','casino:bj','21 kaarten eenentwintig'],
+ ['Three Card Poker','Kaartspel','casino:tcp','poker kaarten'],
+ ['Mines','Mijnenveld','casino:mines','mijnen bom'],
+ ['Hoogvlieger','Uitbetalen voor hij neerstort','casino:avia','vliegtuig crash'],
+ ['Dubbel of niks','Munt opgooien','casino:coin','munt kop munt'],
+ ['VIP-cashback','Claim je cashback in het casino','casino','vip cashback terug high roller'],
+ ['Sparen en beleggen','Rente, deposito en beleggingen','bank','rente spaar deposito beleggen investeren storten opnemen geld wit bank'],
+ ['Zwart geld wit maken','Via je zaak, Ome Kees of het casino','wit','ome kees zwart kassa witwassen'],
+ ['Zaken kopen en upgraden','Meer inkomen per dag','biz','zaak bedrijf vestiging inkomen upgrade kopen'],
+ ['Garage en heler','Auto’s verkopen en bestellingen','cars','garage heler verkopen bestelling stelen'],
+ ['Kleding en sieraden','Outfit met voordelen','look','kleren ketting ring horloge schoenen pet zonnebril'],
+ ['Geluksdobbelsteen','Tien minuten extra geluk op de gokkasten','look','geluk dobbelsteen luck'],
+ ['Vervoer om te vluchten','Scooter tot helikopter','shop','scooter helikopter boot vluchten motor'],
+ ['Bendeoorlog','Strijd om de stad','fam','oorlog gang war gebied'],
+ ['Familiemissies','Dagelijks voor je familie','fam','missie opdracht baas onderbaas'],
+ ['Werken in de cel','Geld verdienen en eerder vrij','jail','borg ontsnappen werk cel gevangenis'],
+ ['Codes inwisselen','Bonusgeld','profiel','code bonus inwisselen'],
+ ['Rangbeloning claimen','Per nieuwe rang','profiel','rang beloning'],
+ ['Profiel openbaar of privé','Wie je profiel kan zien','profiel','privacy prive openbaar'],
+ ['Spelers bekijken','Top en profielen','rank','top spelers profiel']];
+const msKey=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/<[^>]*>/g,' ').replace(/"/g,'');
+function msFilter(q){const sh=$('#msheet');if(!sh)return;const w=msKey(q).trim().split(/\s+/).filter(Boolean),on=w.length>0,hit=el=>w.every(x=>(el.dataset.k||'').includes(x));let any=0;
+ sh.classList.toggle('ms-q',on);
+ sh.querySelectorAll('.ms-tile').forEach(t=>{const h=!on||hit(t);t.hidden=!h;if(on&&h)any++});
+ sh.querySelectorAll('.ms-group').forEach(g=>{g.hidden=on&&!g.querySelector('.ms-tile:not([hidden])')});
+ sh.querySelectorAll('.ms-opt').forEach(o=>{const h=on&&hit(o);o.hidden=!h;if(h)any++});
+ const os=sh.querySelector('.ms-opts');if(os)os.hidden=!on||!os.querySelector('.ms-opt:not([hidden])');
+ const no=sh.querySelector('.ms-none');if(no){no.hidden=!on||any>0;no.querySelector('b').textContent=q.trim()}
+ const rc=sh.querySelector('.ms-recent');if(rc)rc.hidden=on}
+function msFirst(){const sh=$('#msheet'),a=sh&&sh.querySelector('.ms-opt:not([hidden]),.ms-group:not([hidden]) .ms-tile:not([hidden])');if(a)a.click()}
+// Laatst bezochte pagina's (alleen in deze browser, als snelle knoppen bovenin het menu)
+let _msLast=null;
+function msRecent(){try{return JSON.parse(localStorage.getItem('ow_recent')||'[]')}catch(e){return []}}
+function msTrack(){if(_msLast===page)return;_msLast=page;if(page==='dash')return;try{const r=msRecent().filter(k=>k!==page);r.unshift(page);localStorage.setItem('ow_recent',JSON.stringify(r.slice(0,6)))}catch(e){}}
 function mSheet(open){const sh=$('#msheet');if(!sh)return;if(open&&!sh.classList.contains('open')){sh._fresh=true;renderMbar();const p=sh.querySelector('.ms-panel');if(p)p.scrollTop=0}sh.classList.toggle('open',open);sh.setAttribute('aria-hidden',open?'false':'true');document.body.classList.toggle('ms-lock',open);
+ if(!open){const i=sh.querySelector('#msQ');if(i&&i.value){i.value='';msFilter('')}if(document.activeElement&&sh.contains(document.activeElement))document.activeElement.blur()}
  if(open){if(typeof SFX!=='undefined')SFX.click();setTimeout(()=>{const t=sh.querySelector('.ms-tile.on')||sh.querySelector('.ms-x');t&&t.focus({preventScroll:true})},60)}}
 window.addEventListener('hashchange',()=>mSheet(false));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('ms-lock'))mSheet(false)});
@@ -142,6 +206,12 @@ const ICO_CASH=`<svg viewBox="0 0 40 40" aria-hidden="true"><g transform="rotate
  <rect x="5" y="15" width="30" height="16" rx="1.6" fill="#2a8f5c"/><rect x="5" y="15" width="30" height="5" rx="1.6" fill="#36a96d" opacity=".55"/>
  <rect x="7.4" y="17.4" width="25.2" height="11.2" rx=".8" fill="none" stroke="#b6f5d2" stroke-opacity=".55"/><circle cx="12.5" cy="23" r="2.6" fill="none" stroke="#b6f5d2" stroke-opacity=".6"/>
  <rect x="19" y="14" width="6.5" height="18" rx=".6" fill="#f2c230"/><rect x="19" y="14" width="6.5" height="3" fill="#ffe08a" opacity=".7"/><path d="M28.5 21h3.5M28.5 24h3.5" stroke="#b6f5d2" stroke-opacity=".6" stroke-width="1.2"/></svg>`;
+// Zwart geld: een donkere stapel briefjes met een elastiekje; duidelijk anders dan het groene witte geld
+const ICO_ZWART=`<svg viewBox="0 0 40 40" aria-hidden="true"><g transform="rotate(-9 20 20)"><rect x="5" y="11" width="30" height="16" rx="1.6" fill="#1c1e22"/><rect x="7.2" y="13.2" width="25.6" height="11.6" rx=".8" fill="none" stroke="#8a9099" stroke-opacity=".3"/></g>
+ <rect x="5" y="15" width="30" height="16" rx="1.6" fill="#2c2f35"/><rect x="5" y="15" width="30" height="5" rx="1.6" fill="#3d4148" opacity=".6"/>
+ <rect x="7.4" y="17.4" width="25.2" height="11.2" rx=".8" fill="none" stroke="#9aa1ab" stroke-opacity=".45"/><circle cx="12.5" cy="23" r="2.6" fill="none" stroke="#9aa1ab" stroke-opacity=".5"/>
+ <rect x="19" y="14" width="6.5" height="18" rx=".6" fill="#8b2f3a"/><rect x="19" y="14" width="6.5" height="3" fill="#b9505c" opacity=".7"/><path d="M28.5 21h3.5M28.5 24h3.5" stroke="#9aa1ab" stroke-opacity=".5" stroke-width="1.2"/>
+ <path d="M9 30.5c2-1 3.5.6 5.5-.2" stroke="#000" stroke-opacity=".35" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>`;
 const ICO_BANK=`<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M5 15.5L20 7l15 8.5z" fill="#8fb7d9"/><path d="M20 7l15 8.5H20z" fill="#6f93b3"/><circle cx="20" cy="12.6" r="1.7" fill="#f2c230"/>
  <rect x="6.5" y="15.5" width="27" height="3" fill="#5d7f9c"/><g fill="#a9dcff"><rect x="9" y="18.5" width="3.6" height="11"/><rect x="15" y="18.5" width="3.6" height="11"/><rect x="21.4" y="18.5" width="3.6" height="11"/><rect x="27.4" y="18.5" width="3.6" height="11"/></g>
  <g fill="#7fa9cc"><rect x="11.3" y="18.5" width="1.3" height="11"/><rect x="17.3" y="18.5" width="1.3" height="11"/><rect x="23.7" y="18.5" width="1.3" height="11"/><rect x="29.7" y="18.5" width="1.3" height="11"/></g>
@@ -176,8 +246,7 @@ function renderRail(){
     <div class="dos-top"><a class="dos-name" href="#profiel">${esc(S.name)}${vipTag()}</a>${statusTag()}</div>
     <div class="dos-rank"><b>${RANKS[ri][0]}</b><span>lv ${rankLevel(S.xp)}</span><em>${nxt?Math.floor(S.xp).toLocaleString('nl-NL')+' / '+nxt[1].toLocaleString('nl-NL')+' XP':'Top bereikt'}</em></div>
     <div class="bar"><i style="width:${pct}%;background:var(--acc)"></i></div>
-    <div class="dos-money"><a class="dm cash" href="#bank" title="Contant geld heb je op zak. Word je gepakt, dan kun je een deel kwijtraken."><i class="dm-ic">${ICO_CASH}</i><span class="dm-t"><span class="label">Contant</span><small>op zak</small></span><span class="dm-v"><b>${fmt(S.cash-pend)}</b>${zwart()>=1?`<small class="zw">${fmt(zwart())} zwart</small>`:''}</span></a>
-     <a class="dm bank" href="#bank" title="Op de bank staat je geld veilig: spaarrekening, deposito's en beleggingen."><i class="dm-ic">${ICO_BANK}</i><span class="dm-t"><span class="label">Bank</span><small>veilig</small></span><b>${fmt(typeof bankNet==='function'?bankNet():S.bank)}</b></a></div>
+    <div class="dos-money">${moneyRows(pend)}</div>
     <div class="dos-vit">
      <button class="rs ${_rpop==='en'?'on':''}" onclick="rPop('en')" aria-expanded="${_rpop==='en'}" title="Wat je nu aan je energie kunt doen"><span class="label">Energie</span><b style="color:var(--ice)">${Math.floor(S.energy)}<small>/${EN_MAX}</small></b><i class="mini"><i style="width:${Math.min(100,S.energy/EN_MAX*100)}%;background:var(--ice)"></i></i><small>${full?'vol over '+full+' min':'vol'}</small></button>
      <button class="rs ${_rpop==='hp'?'on':''}" onclick="rPop('hp')" aria-expanded="${_rpop==='hp'}" title="Wat je nu aan je gezondheid kunt doen"><span class="label">Gezondheid</span><b style="color:${pc}">${S.hp}%</b><i class="mini"><i style="width:${S.hp}%;background:${pc}"></i></i><small>${S.hp>=100?'fit':S.hp>50?'gaat wel':'oppassen'}</small></button>
@@ -196,17 +265,36 @@ function renderRail(){
     <ol class="rtop">${top.map((p,i)=>`<li class="${p.me?'me':''}"><span>${i+1}</span><b><button class="lb-name" onclick="${p.me?(window.__USER__?`pvShow('${window.__USER__}')`:''):p.u?`pvShow('${p.u}')`:`pvNpc(${p.npc})`}">${p.n}</button></b><em>${RANKS[rankIdx(p.xp)][0]}</em></li>`).join('')}${pos>5?`<li class="me gap"><span>${pos}</span><b>${all[pos-1].n}</b><em>${RANKS[ri][0]}</em></li>`:''}</ol></section>`);
 }
 
+// Drie soorten geld, altijd apart: wit (schoon, op zak), zwart (uit klussen, eerst witwassen) en de bank (veilig)
+const witNu=(pend)=>Math.max(0,S.cash-(pend||0)-zwart());
+function moneyRows(pend){const zw=zwart(),bk=typeof bankNet==='function'?bankNet():S.bank;
+ return `<a class="dm cash" href="#bank" title="Wit geld: schoon, je kunt het overal aan uitgeven en op de bank zetten. Het zit wel op zak: word je gepakt, dan kun je een deel kwijtraken."><i class="dm-ic">${ICO_CASH}</i><span class="dm-t"><span class="label">Wit geld</span><small>schoon</small></span><b>${fmt(witNu(pend))}</b></a>
+  <a class="dm zw ${zw<1?'nul':''}" href="#wit" title="Zwart geld: verdiend met klussen, auto's, huurmoorden en de familie. De bank en je zaken nemen het niet aan; eerst witwassen. In het casino en voor kleine uitgaven kun je het wel gebruiken."><i class="dm-ic">${ICO_ZWART}</i><span class="dm-t"><span class="label">Zwart geld</span><small>${zw>=1?'eerst witwassen ›':'niets op zak'}</small></span><b>${fmt(zw)}</b></a>
+  <a class="dm bank" href="#bank" title="Op de bank staat je geld veilig: spaarrekening, deposito's en beleggingen."><i class="dm-ic">${ICO_BANK}</i><span class="dm-t"><span class="label">Bank</span><small>veilig</small></span><b>${fmt(bk)}</b></a>`}
 // Statusbalk bovenaan: op de telefoon en op smallere schermen (zonder rechterkolom). In het casino: saldo en lidmaatschap.
 function casHudHtml(){const pend=window.slotPending||0,b=typeof bankNet==='function'?bankNet():S.bank,t=typeof tier==='function'?tier():0;
  const lid=['Gewoon','VIP','High roller'][t]||'Gewoon',cb=typeof cbAvail==='function'?cbAvail():0;
- const luck=typeof luckState==='function'?luckState():null;
+ const luck=typeof luckState==='function'?luckState():null,zw=zwart(),hasLuck=!!(luck&&luck.o&&luck.o.luck);
+ const sus=zw>=1||czVal()>=1?Math.round(czVal()):null,susC=sus>=70?'hot':sus>=35?'warm':'';
+ // Telefoon: onder saldo en bank een rij knoppen die altijd passen (cashback, geluk, verdenking); geen zijwaarts scrollen
+ const chips=[
+  t?`<button class="cc cc-cb ${cb>=1?'can':''}" onclick="act.claimCb()" ${cb<1?'disabled':''} aria-label="Cashback claimen"><span>${cb>=1?'Claim':'Cashback'}</span><b>${fmt(cb)}</b></button>`
+   :`<a class="cc cc-up" href="#profiel"><span>Gewoon lid</span><b>VIP ›</b></a>`,
+  hasLuck?(luck.ready?`<button class="cc cc-luck can" onclick="act.luckUse()"><span><i>${diceSvg(luck.o)}</i>Geluk +${Math.round(luck.o.luck*100)}%</span><b>Gebruik</b></button>`
+   :`<a class="cc cc-luck ${luck.L?'on':''}" href="#look"><span><i>${diceSvg(luck.o)}</i>Geluk +${Math.round(luck.o.luck*100)}%</span><b>${luck.L?fmtClock(luck.L):bkDurL(luck.W)}</b></a>`):'',
+  sus!=null?`<a class="cc cc-sus ${susC}" href="#wit" style="--v:${sus}%"><span>Verdenking</span><b>${sus}%</b></a>`:''].join('');
  return `<div class="chud">
-  <div class="ch-main"><i class="dm-ic">${ICO_CASH}</i><div><span class="label">Saldo · contant${zwart()>=1?' · <em class="zw">'+fmt(zwart())+' zwart</em>':''}</span><b id="casBal">${fmt(S.cash-pend)}</b></div></div>
+  <div class="ch-main"><i class="dm-ic">${ICO_CASH}</i><div><span class="label">Saldo om mee te spelen</span><b id="casBal">${fmt(S.cash-pend)}</b><span class="ch-split"><span class="w"><i></i>${fmt(witNu(pend))} wit</span><span class="z ${zw<1?'nul':''}"><i></i>${fmt(zw)} zwart</span></span></div></div>
   <a class="ch-cell ch-bank" href="#bank"><i class="dm-ic">${ICO_BANK}</i><div><span class="label">Bank</span><b>${fmt(b)}</b></div></a>
   ${t?`<div class="ch-cell ch-cb" title="${typeof CB_RATE!=='undefined'?'Cashback op elke inzet: '+Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*(TIER_CB[t]||1)*100).toLocaleString('nl-NL',{maximumFractionDigits:3})+'%').join(' · '):''}"><div><span class="label">Cashback</span><b id="cbAmt">${fmt(cb)}</b></div><button class="btn gold sm" id="cbBtn" onclick="act.claimCb()" ${cb<1?'disabled':''}>${cb>=1?'Claimen':'Nog niks te claimen'}</button></div>`:`<a class="ch-cell ch-up" href="#profiel"><span class="label">Gewoon lid</span><b>VIP: cashback en vaker bonus</b></a>`}
   ${luck&&luck.o&&luck.o.luck?`<div class="ch-cell ch-luck ${luck.L?'on':''}"><i class="dm-ic">${diceSvg(luck.o)}</i><div><span class="label">Geluk +${Math.round(luck.o.luck*100)}%</span><b>${luck.L?'Nog '+fmtClock(luck.L):luck.W?bkDurL(luck.W):'Klaar'}</b></div>${luck.ready?`<button class="btn gold sm" onclick="act.luckUse()">Gebruiken</button>`:''}</div>`:''}
   ${zwart()>=1||czVal()>=1?(()=>{const v=Math.round(czVal());return `<a class="ch-cell ch-sus ${v>=70?'hot':v>=35?'warm':''}" href="#wit" title="Speel je met zwart geld, dan loopt de verdenking op. Op 100% volgt een controle; heb je dan zwart geld, dan nemen ze het in beslag en word je aangehouden."><div><span class="label">Verdenking</span><b>${v}%</b></div><i class="mini"><i style="width:${v}%"></i></i></a>`})():''}
-  <div class="ch-cell ch-r">${statusTag()}</div></div>`}
+  <div class="ch-cell ch-r">${statusTag()}</div>${chips?`<div class="ch-chips">${chips}</div>`:''}</div>`}
+// Kleine iconen voor de statusbalk op de telefoon (energie, gezondheid, hitte, cred)
+const TI={en:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2L4 13.5h6.5L9.5 22 20 9.5h-6.5z"/></svg>',
+ hp:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.3-9.6C1.5 8 3.6 4.5 7.1 4.5c2.1 0 3.6 1.1 4.9 2.8 1.3-1.7 2.8-2.8 4.9-2.8 3.5 0 5.6 3.5 4.4 6.9C19.5 16.4 12 21 12 21z"/></svg>',
+ heat:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.5 2c.6 3.6-1.8 5.3-3.4 7.4C7.6 11.3 6.5 13 6.5 15.3 6.5 19 9 22 12.3 22c3.5 0 5.9-2.7 5.9-6.4 0-2.6-1.3-4.4-2.6-5.6.1 1.6-.4 2.9-1.7 3.4.5-4-.3-8.2-1.4-11.4z"/></svg>',
+ cred:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.1l-5.9 3.2 1.3-6.5L2.5 9.3l6.6-.8z"/></svg>'};
 let _casPrev=null;
 function renderTop(){
   if(page==='casino'){const v=S.cash-(window.slotPending||0),el=$('#topbar');if(setHTML(el,casHudHtml())&&_casPrev!=null&&v!==_casPrev){const b=el.querySelector('#casBal');if(b)b.classList.add(v>_casPrev?'up':'dn')}_casPrev=v;return}
@@ -215,14 +303,15 @@ function renderTop(){
   const nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
   setHTML($('#topbar'),`
    <div class="chip rank"><small>Rang · lv ${rankLevel(S.xp)}</small><b>${RANKS[ri][0]}${vipTag(1)}</b><div class="mini"><i style="width:${pct}%;background:var(--acc)"></i></div></div>
-   <div class="chip cash"><small><i class="ci">${ICO_CASH}</i>Contant</small><b>${fmt(S.cash-pend)}</b></div>
-   <div class="chip bankc"><small><i class="ci">${ICO_BANK}</i>Bank</small><b>${fmt(typeof bankNet==='function'?bankNet():S.bank)}</b></div>
-   <div class="chip"><small>Energie</small><b style="color:var(--ice)">${Math.floor(S.energy)}/${EN_MAX}</b><div class="mini"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div></div>
-   <div class="chip"><small>Cred</small><b style="color:var(--violet)">${S.cred}</b></div>
-   <div class="chip"><small>Gezondheid</small><b style="color:${S.hp>50?'var(--green)':'var(--red)'}">${S.hp}%</b></div>
-   ${buffLoot()?`<div class="chip"><small>Buit</small><b style="color:var(--green)">+${buffLoot()}% · ${fmtClock(S.buffs.loot.until-now())}</b></div>`:''}
-   ${focusPct()?`<div class="chip"><small>Focus</small><b style="color:#ff6b7c">+${focusPct()}%${buffFocus()?' · '+fmtClock(S.buffs.focus.until-now()):''}</b></div>`:''}
-   <div class="chip"><small>Hitte</small><b style="color:${S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--fg)'}">${S.heat}%</b></div>
+   <a class="chip cash" href="#bank" title="Wit geld: schoon, overal aan uit te geven"><small><i class="ci">${ICO_CASH}</i>Wit geld</small><b>${fmt(witNu(pend))}</b></a>
+   <a class="chip zwc ${zwart()<1?'nul':''}" href="#wit" title="Zwart geld: eerst witwassen voor de bank of een zaak"><small><i class="ci">${ICO_ZWART}</i>Zwart geld</small><b>${fmt(zwart())}</b></a>
+   <a class="chip bankc" href="#bank" title="Op de bank staat je geld veilig"><small><i class="ci">${ICO_BANK}</i>Bank</small><b>${fmt(typeof bankNet==='function'?bankNet():S.bank)}</b></a>
+   <a class="chip sm en" href="#ontspannen" title="Energie bijvullen"><small>Energie</small><b style="color:var(--ice)"><i class="ti">${TI.en}</i>${Math.floor(S.energy)}<span class="emax">/${EN_MAX}</span></b><div class="mini"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div></a>
+   <div class="chip sm cred"><small>Cred</small><b style="color:var(--violet)"><i class="ti">${TI.cred}</i>${S.cred}</b></div>
+   <a class="chip sm hp" href="#verblijf" title="Dokter of rusten"><small>Gezondheid</small><b style="color:${S.hp>50?'var(--green)':'var(--red)'}"><i class="ti">${TI.hp}</i>${S.hp}%</b></a>
+   ${buffLoot()?`<div class="chip sm buff"><small>Buit</small><b style="color:var(--green)">+${buffLoot()}% · ${fmtClock(S.buffs.loot.until-now())}</b></div>`:''}
+   ${focusPct()?`<div class="chip sm buff"><small>Focus</small><b style="color:#ff6b7c">+${focusPct()}%${buffFocus()?' · '+fmtClock(S.buffs.focus.until-now()):''}</b></div>`:''}
+   <a class="chip sm heat" href="#verblijf" title="Onderduiken laat je hitte sneller zakken"><small>Hitte</small><b style="color:${S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--fg)'}"><i class="ti">${TI.heat}</i>${S.heat}%</b></a>
    <div class="status ${inJail()?'jail':S.hide?'hide':S.wanted?'wanted':'free'}">${inJail()?'■ CEL · '+fmtTime(jt):S.hide?(page==='verblijf'?'◐ ONDERGEDOKEN':'◐ VERMOMD'):S.wanted?(typeof wantedLabel==='function'?wantedLabel():'▲ GEZOCHT'):'● VRIJ'}</div>`);
 }
 

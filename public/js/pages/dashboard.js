@@ -26,7 +26,8 @@ V.dash=()=>{
    </section>
    <section class="card d-money">
     <div class="label">Totaal vermogen</div><div class="d-big" style="--n:${fmt(net).length}">${fmt(net)}</div>
-    <div class="row"><span>Contant</span><b style="color:var(--acc)">${fmt(S.cash)}</b></div>
+    <div class="row"><span>Wit geld <small>op zak</small></span><b style="color:var(--wit)">${fmt(wit())}</b></div>
+    <div class="row"><span>Zwart geld ${zwart()>=1?'<a href="#wit" style="color:var(--acc);font-size:12px">witwassen ›</a>':''}</span><b style="color:${zwart()>=1?'var(--zw)':'var(--faint)'}">${fmt(zwart())}</b></div>
     <div class="row"><span>Bank</span><b>${fmt(bankNet())}</b></div>
     <div class="row"><span>Auto's (${S.cars.length})</span><b>${fmt(carsV)}</b></div>
     <div class="row"><span>Bedrijven</span><b style="color:var(--green)">${fmt(income())}/dag</b></div>

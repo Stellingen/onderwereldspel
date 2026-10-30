@@ -8,6 +8,8 @@
 //   shrink/accel = per voorbijgerend obstakel krapper en sneller · drift = bewakers die met je mee schuiven
 //   where  = de plek: buiten in een steeg, in de drukte, binnen in een gang, of alles op slot
 // Conditie, Snelheid, je familie, je woning, je vervoer, je outfit en je lidmaatschap maken het makkelijker (via fleeParams).
+// Elke achtervolging loopt op van makkelijk naar moeilijk: eerst losse obstakels met ruimte ertussen, dan het gewone werk
+// (hekken, auto's, mensen die oversteken), en in de eindsprint dicht op elkaar: slalom door twee rijen, overstekers en bewakers.
 // fleeGame(level) geeft een Promise met true (ontkomen) of false (gepakt).
 function fleeParams(level){
   const L=FLEE_LEVELS[level]||FLEE_LEVELS[2],k=(S.skills&&S.skills.conditie)||0,sp=(S.skills&&S.skills.speed)||0;
@@ -17,50 +19,69 @@ function fleeParams(level){
 // Van de vluchtparameters naar de achtervolging
 function fleeRun(P){
   const len=Math.max(0,Math.min(1,(P.zone-.08)/.34)),gap=Math.max(.62,Math.min(1.05,1.02-(P.speed-.9)*.32));
-  return {len,gap,v:10+P.speed*3,rows:Math.max(6,Math.round((P.time-1.5)/gap)+(P.hits-3)),
+  return {len,gap,v:10+P.speed*3,level:P.level,rows:Math.max(9,Math.round(((P.time-1.5)/gap+(P.hits-3))*1.35)),
     p2:Math.max(.06,Math.min(.5,.56-len*.5)),hit:.95-len*.3,jump:.3+(1-len)*.28,lowP:.22+len*.15,
     miss:P.miss,drift:P.drift,accel:Math.pow(P.accel||1,1/3),shrink:Math.pow(P.shrink||1,1/3),fences:P.level<=3?2:1};
 }
 // De plek per moeilijkheid: buiten (1-2) of binnen (3-5)
 const FL_SCENE={
- 1:{out:1,exit:'Steeg',tall:['kliko','fiets','agent','kliko'],low:['pallet'],fence:'hek',run:'Ren de steeg uit!',
+ 1:{out:1,exit:'Steeg',tall:['kliko','fiets','agent','kliko','container'],low:['pallet','zakken'],cross:['hond'],fence:'hek',run:'Ren de steeg uit!',
     win:'Je schiet de steeg in. Weg ben je.',lose:'De agent grijpt je bij je jas.'},
- 2:{out:1,busy:1,exit:'Zijstraat',tall:['mens','mens','scooter','agent'],low:['kratten'],fence:'hek',run:'Door de drukte!',
+ 2:{out:1,busy:1,exit:'Zijstraat',tall:['mens','mens','scooter','agent','container'],low:['kratten','afzetting','zakken'],cross:['mens','hond','mens'],fence:'hek',run:'Door de drukte!',
     win:'Je duikt een zijstraat in en verdwijnt tussen de mensen.',lose:'Een agent tackelt je tussen de mensen.'},
- 3:{out:0,exit:'Uitgang',tall:['dozen','agent','kast'],low:['kar','pallet'],fence:'lint',run:'Naar de uitgang!',
+ 3:{out:0,exit:'Uitgang',tall:['dozen','agent','kast'],low:['kar','pallet','bord'],cross:['schoonmaker'],fence:'lint',run:'Naar de uitgang!',
     win:'Door de achterdeur naar buiten. Weg ben je.',lose:'Twee agenten klemmen je in de gang.'},
- 4:{out:0,office:1,door:1,exit:'Deur',tall:['kast','agent','dozen'],low:['bureau','kar'],fence:'lint',run:'Langs de agent!',
+ 4:{out:0,office:1,door:1,exit:'Deur',tall:['kast','agent','dozen','printer'],low:['bureau','kar','stoel','bord'],cross:['mens','schoonmaker'],dr:'agent',fence:'lint',run:'Langs de agent!',
     win:'Je glipt langs de agent de deur uit.',lose:'De agent bij de deur heeft je.'},
- 5:{out:0,alarm:1,exit:'Nooduitgang',tall:['bewaker','kast','dozen'],low:['kar'],fence:'lint',run:'Zoek de nooduitgang!',
+ 5:{out:0,alarm:1,exit:'Nooduitgang',tall:['bewaker','kast','dozen','printer'],low:['kar','bord','stoel'],cross:['bewaker'],fence:'lint',run:'Zoek de nooduitgang!',
     win:'Door de nooduitgang en weg. Niemand snapt hoe.',lose:'De beveiliging drukt je tegen de grond.'}};
 // w = breedte in banen (voor de botsing), h = hoogte in meters, low = je kunt erover springen
 const FL_OBS={kliko:{w:.5,h:1.15},fiets:{w:.62,h:1.05},agent:{w:.46,h:1.86},mens:{w:.44,h:1.76},scooter:{w:.52,h:1.18},
  dozen:{w:.62,h:1.62},kast:{w:.56,h:1.96},bewaker:{w:.46,h:1.9},auto:{w:1.78,h:1.5},
  pallet:{w:.78,h:.48,low:1},kratten:{w:.8,h:.62,low:1},kar:{w:.62,h:.56,low:1},bureau:{w:.9,h:.76,low:1},
- hek:{w:3.4,h:.82,low:1},lint:{w:3.4,h:.9,low:1}};
+ hek:{w:3.4,h:.82,low:1},lint:{w:3.4,h:.9,low:1},
+ container:{w:.86,h:1.45},printer:{w:.62,h:1.2},schoonmaker:{w:.5,h:1.8},
+ zakken:{w:.72,h:.5,low:1},afzetting:{w:.82,h:.85,low:1},bord:{w:.44,h:.66,low:1},stoel:{w:.52,h:.95,low:1},hond:{w:.5,h:.55,low:1}};
 const FL_LANE=1.5,FL_HALF=2.75,FL_FAR=74,FL_PW=.42,FL_JUMP=.6,FL_REVEAL=46;
 // De route: rijen obstakels op afstand z (meter); er blijft altijd een baan vrij of je kunt erover springen
 // De route: rijen obstakels op afstand z (meter). Welke baan dicht is, wordt pas bepaald als een rij uit de mist komt,
 // op basis van waar jij dan loopt: stilstaan helpt dus niet, maar je ziet het altijd ruim op tijd aankomen.
+// Drie fases: opwarmen (losse obstakels, veel ruimte), het gewone werk, en de eindsprint (dicht op elkaar, slalom, overstekers).
+// De tijd tussen twee rijen gaat van ±1,05× naar ±0,6× het tempo van het niveau, maar nooit onder een halve seconde.
 function fleeCourse(R,SC){
-  const rows=[];let z=R.v*1.15+3,fence=0;const pick=a=>a[Math.floor(Math.random()*a.length)];
-  for(let i=0;i<R.rows;i++){const last=i===R.rows-1,r=Math.random();let k;
+  const rows=[],N=R.rows;let z=R.v*1.15+3,fence=0,vi=R.v,sprint=-1;
+  const push=(k,ph,gt)=>{const r={z,k,ph,obs:[],passed:0,set:0,low:Math.random()<R.lowP,extra:Math.random()<.45,prev:rows[rows.length-1]||null};rows.push(r);
+    vi*=R.accel;z+=vi*gt*(.9+Math.random()*.2);return r};
+  const wpick=W=>{let t=0;for(const k in W)t+=W[k];let x=Math.random()*t;for(const k in W){x-=W[k];if(x<=0&&W[k]>0)return k}return 'one'};
+  for(let i=0;i<N;i++){const d=N>1?i/(N-1):0,ph=d<.3?0:d<.68?1:2,last=i===N-1,gt=Math.max(.5,R.gap*(1.05-.43*d));let k;
+    if(ph===2&&sprint<0)sprint=rows.length;
     if(SC.door&&last)k='door';
-    else if(i>1&&fence<R.fences&&r<.2){k='fence';fence++}
-    else if(R.drift&&i>0&&r<.5)k='drift';
-    else if(i>0&&r<R.p2+.16)k=SC.out&&Math.random()<.32?'auto':'two';
-    else k='one';
-    rows.push({z,k,obs:[],passed:0,set:0,low:Math.random()<R.lowP,extra:Math.random()<.45});z+=R.v*R.gap*(.86+Math.random()*.28)}
-  return {rows,len:z+R.v*.4+6}}
+    else if(ph===0)k=i>0&&Math.random()<R.p2*.5?'two':'one';
+    else if(ph===1)k=wpick({one:.34,two:R.p2+.16,fence:i>1&&fence<R.fences?.14:0,cross:.14,drift:R.drift?.3:0});
+    else k=wpick({one:.14,two:.3+R.p2,sl:i<N-2?.26:0,cross:.16,drift:R.drift||R.level>=4?.22:0,fence:fence<R.fences?.08:0});
+    if(k==='fence')fence++;
+    if(k==='two'&&SC.out&&Math.random()<.32)k='auto';
+    // slalom: twee rijen vlak na elkaar, het gat schuift één baan op
+    if(k==='sl'){push('two',ph,Math.max(.55,R.gap*.72));push('sl',ph,gt);continue}
+    push(k,ph,gt)}
+  return {rows,len:z+R.v*.4+6,sprintZ:sprint>=0?rows[sprint].z:0}}
 // rij invullen ten opzichte van de baan van de speler (altijd een baan vrij, of eroverheen springen)
 function fleeFill(r,R,SC,lane){const lanes=[-1,0,1],pick=a=>a[Math.floor(Math.random()*a.length)],other=lanes.filter(l=>l!==lane);
   const mk=(t,x,o)=>Object.assign({t,x,x0:x,hit:0,done:0},FL_OBS[t],o||{});let obs;
   if(r.k==='door'){const side=lane!==0?lane:pick([-1,1]);obs=[mk('agent',side,{door:1}),mk(pick(SC.low),0)]}
   else if(r.k==='fence')obs=[mk(SC.fence,0)];
-  else if(r.k==='drift'){obs=[mk('bewaker',lane,{dr:1})];if(r.extra)obs.push(mk(pick(SC.low),pick(other)))}
+  else if(r.k==='drift'){obs=[mk(SC.dr||'bewaker',lane,{dr:1})];if(r.extra)obs.push(mk(pick(SC.low),pick(other)))}
+  // overstekers: lopen van de zijkant naar jouw baan; waar ze uitkomen zie je ruim op tijd
+  else if(r.k==='cross'){const from=lane>0?-1.75:lane<0?1.75:pick([-1.75,1.75]),zr=Math.max(8,r.z-(r._d||0));
+    obs=[mk(pick(SC.cross||['mens']),from,{cr:1,from,to:lane,zr,dir:Math.sign(lane-from)||1})];
+    if(r.ph===2&&r.extra)obs.push(mk(pick(SC.low),pick(other)))}
+  else if(r.k==='sl'&&r.prev&&r.prev.free!=null){const pf=r.prev.free,free=pf===0?pick([-1,1]):0;r.free=free;
+    obs=lanes.filter(l=>l!==free).map(l=>mk(Math.random()<R.lowP*.5?pick(SC.low):pick(SC.tall),l))}
   else if(r.k==='auto'){const a=lane===0?pick([-.5,.5]):lane*.5;obs=[mk('auto',a)]}
-  else if(r.k==='two'){const free=pick(other);obs=lanes.filter(l=>l!==free).map(l=>mk(Math.random()<R.lowP*.7?pick(SC.low):pick(SC.tall),l))}
-  else obs=[mk(r.low?pick(SC.low):pick(SC.tall),lane)];
+  else if(r.k==='two'||r.k==='sl'){const free=pick(other);r.free=free;obs=lanes.filter(l=>l!==free).map(l=>mk(Math.random()<R.lowP*.7?pick(SC.low):pick(SC.tall),l))}
+  else{obs=[mk(r.low?pick(SC.low):pick(SC.tall),lane)];
+    // later in de route: vaak nog iets laags in een andere baan (eroverheen springen of de derde baan nemen)
+    if(r.ph>=1&&r.extra)obs.push(mk(pick(SC.low),pick(other)))}
   obs.forEach(o=>{if(o.t==='mens')o.c=pick(['#3b4a5c','#5a3a3a','#4a4f3a','#2f3640','#6b5a44','#3a3150']);if(o.t==='kratten')o.c=pick(['#2f6b4a','#8a3b2c','#2c4f8a'])});
   r.obs=obs;r.set=1}
 
@@ -74,7 +95,7 @@ function fleeGame(level){
     ov.innerHTML=`<div class="fl-box lv${level}"><div class="siren"></div>
       <div class="fl-top"><div class="fl-tt"><h2 id="chT">Rennen!</h2><p class="fl-where" id="flWhere">${L.where}</p></div><span class="tag lvl${level}">Vluchten: ${P.label}</span></div>
       <div class="fl-stage" id="flStage"><canvas id="flCv" aria-label="Achtervolging: ontwijk wat op je pad komt"></canvas>
-        <div class="fl-track" aria-hidden="true"><span class="fl-rail"><i class="fl-done" id="flDone"></i><i class="fl-cop" id="flCop"></i><i class="fl-you" id="flYou"></i></span><b>${SC.exit}</b></div>
+        <div class="fl-track" aria-hidden="true"><span class="fl-rail"><i class="fl-done" id="flDone"></i>${course.sprintZ?`<i class="fl-sp" style="left:${Math.min(96,course.sprintZ/(course.len-6)*100)}%"></i>`:''}<i class="fl-cop" id="flCop"></i><i class="fl-you" id="flYou"></i></span><b>${SC.exit}</b></div>
         <div class="fl-big" id="flBig">${SC.run}</div></div>
       <div class="fl-info"><span id="flMiss"></span><span class="fl-keys"><kbd>←</kbd><kbd>→</kbd> wisselen · <kbd>↑</kbd> of <kbd>spatie</kbd> springen</span><span class="fl-tap">Tik links of rechts · midden: springen</span></div>
       <div class="fl-ctl"><button class="fl-b" data-a="-1" aria-label="Naar links">${arrow(-1)}</button><button class="fl-b fl-j" data-a="j">Spring</button><button class="fl-b" data-a="1" aria-label="Naar rechts">${arrow(1)}</button></div></div>`;
@@ -205,6 +226,25 @@ function fleeGame(level){
       hek(o){for(let x=-2.55;x<2.5;x+=1.7){ctx.strokeStyle='#8b929c';ctx.lineWidth=.045;ctx.beginPath();ctx.moveTo(x,-.12);ctx.lineTo(x,-.8);ctx.lineTo(x+1.55,-.8);ctx.lineTo(x+1.55,-.12);ctx.lineTo(x,-.12);
           for(let k=1;k<9;k++){ctx.moveTo(x+k*.172,-.12);ctx.lineTo(x+k*.172,-.8)}ctx.stroke();rect(x-.1,0,.3,.04,'#6b7078');rect(x+1.35,0,.3,.04,'#6b7078')}},
       lint(o){rect(-2.7,0,.08,.98,'#c9d1da');rect(2.62,0,.08,.98,'#c9d1da');for(let i=0;i<14;i++)rect(-2.62+i*.38,.82,.38,.1,i%2?'#f4f4f4':'#e0313f')},
+      container(o){rect(-.42,.1,.84,1.1,'#3d5a44');rect(.2,.1,.22,1.1,'#2f4736');rect(-.46,1.2,.92,.14,'#4c6f55');rect(-.46,1.32,.92,.05,'#5e8467');
+        circ(-.3,.08,.08,'#0b0b0b');circ(.3,.08,.08,'#0b0b0b');rect(-.3,.55,.6,.2,'rgba(255,255,255,.07)');rect(-.12,.62,.24,.07,'#e9e6df');rect(-.38,.95,.76,.03,'rgba(0,0,0,.3)')},
+      zakken(o){[[-.33,.27,.29,'#16181b'],[.1,.3,.32,'#1b1d21'],[-.1,.62,.24,'#22252a']].forEach(([x,cy,r,c])=>{ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,-cy,r,r*.92,0,0,7);ctx.fill();
+          ctx.fillStyle='rgba(255,255,255,.09)';ctx.beginPath();ctx.ellipse(x-r*.38,-cy-r*.4,r*.24,r*.13,-.5,0,7);ctx.fill()});rect(-.14,.82,.07,.1,'#2a2c30');rect(.06,.58,.07,.09,'#2a2c30')},
+      afzetting(o){rect(-.48,0,.07,.84,'#c9d1da');rect(.41,0,.07,.84,'#c9d1da');for(let i=0;i<6;i++)rect(-.48+i*.16,.52,.16,.22,i%2?'#f4f4f4':'#e0313f');
+        rect(-.56,0,.22,.04,'#555a62');rect(.34,0,.22,.04,'#555a62');circ(-.445,.86,.05,'#ffb020');circ(.445,.86,.05,'#ffb020')},
+      bord(o){poly([[-.22,0],[.22,0],[.08,.66],[-.08,.66]],'#f2c230');poly([[.22,0],[.26,0],[.1,.66],[.08,.66]],'#c99a12');
+        poly([[-.15,.12],[.15,.12],[.07,.5],[-.07,.5]],'#e0a800');rect(-.025,.24,.05,.16,'#1b1d22');circ(0,.18,.03,'#1b1d22')},
+      printer(o){rect(-.32,0,.64,.8,'#c9ccd1');rect(.18,0,.14,.8,'#a9adb4');rect(-.34,.8,.68,.3,'#dfe2e6');rect(-.3,1.1,.6,.1,'#b9bdc3');
+        rect(-.22,.42,.44,.06,'#3a3f47');rect(-.22,.22,.44,.06,'#3a3f47');rect(.13,.93,.13,.08,'#4ade80');rect(-.26,1.2,.4,.04,'#f4f4f4')},
+      stoel(o){rect(-.04,.08,.08,.36,'#2b2f36');rect(-.3,0,.6,.06,'#2b2f36');circ(-.28,.03,.04,'#111');circ(.28,.03,.04,'#111');circ(0,.03,.04,'#111');
+        rect(-.27,.42,.54,.12,'#1f2937');rect(-.24,.54,.48,.4,'#273244');rect(-.19,.6,.38,.28,'#2f3c52')},
+      schoonmaker(o){person(o,'#2d5f86','#24435c',3)},
+      hond(o){const d=o.dir||1,ph=t*16;ctx.save();ctx.scale(d,1);
+        const leg=(x,p)=>{const k=Math.sin(ph+p)*.05;rect(x+k,0,.06,.24,'#3b2a1e')};leg(-.24,0);leg(-.13,2.2);leg(.12,1.1);leg(.22,3.3);
+        rect(-.3,.22,.58,.2,'#7a5432');rect(-.3,.36,.58,.06,'#8d6440');rect(.22,.34,.2,.17,'#7a5432');rect(.38,.36,.11,.09,'#5a3d25');rect(.48,.4,.03,.04,'#111');
+        circ(.3,.46,.022,'#000');poly([[.24,.5],[.31,.5],[.27,.6]],'#4a321f');
+        ctx.strokeStyle='#7a5432';ctx.lineWidth=.055;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-.3,-.38);ctx.quadraticCurveTo(-.44,-.46+Math.sin(ph*.7)*.05,-.46,-.58);ctx.stroke();
+        rect(-.02,.4,.2,.03,'#c0262f');ctx.restore()},
       auto(o){const sx=o.x>0?1:-1;rect(-1.05,.18,2.1,.66,'#e9ecef');poly([[-.86,.84],[.86,.84],[.66,1.32],[-.66,1.32]],'#dfe3e8');poly([[-.74,.88],[.74,.88],[.58,1.26],[-.58,1.26]],'#1a2230');
         for(let i=0;i<10;i++)rect(-1.05+i*.21,.36,.21,.16,i%2?'#1f4fbf':'#e8571f');rect(-.98,.62,.3,.12,'#c0262f');rect(.68,.62,.3,.12,'#c0262f');rect(-1.0,.06,.42,.2,'#0b0b0b');rect(.58,.06,.42,.2,'#0b0b0b');
         const on=Math.floor(t*6)%2;rect(-.5,1.32,1,.12,'#20242a');rect(-.46,1.34,.44,.09,on?'#4d7dff':'#1d2c5a');rect(.02,1.34,.44,.09,on?'#1d2c5a':'#4d7dff');o.flash=on}};
@@ -215,6 +255,7 @@ function fleeGame(level){
       if(kind===1){rect(-.27,1.12,.54,.08,'#cfd8e6');rect(-.27,1.3,.54,.05,'#cfd8e6')}
       if(kind===2){rect(-.06,1.2,.12,.36,'#e6e6e6');rect(-.03,1.22,.06,.32,'#111')}
       if(kind===0){rect(.14,.82,.22,.3,'#25282e')}
+      if(kind===3){rect(-.27,1.05,.54,.07,'#f2c230');rect(.4,0,.04,1.45,'#c9a227');rect(.3,0,.25,.09,'#e9e6df');rect(-.42,.6,.22,.24,'#3b82f6')}
       circ(0,1.72,.13,'#c99b7a');
       if(kind===1){rect(-.17,1.79,.34,.1,'#16233f');rect(-.2,1.78,.4,.04,'#0e1830');rect(-.17,1.84,.34,.03,'#e6e6e6')}
       else rect(-.14,1.8,.28,.07,kind===2?'#0a0a0a':'#2a2522');
@@ -259,6 +300,9 @@ function fleeGame(level){
       overlays()}
     // ---------- spelverloop ----------
     const big=q('flBig');setTimeout(()=>{if(!done)big.classList.add('gone')},900);
+    // aankondiging van de eindsprint, vlak voor de drukste rijen
+    let spShown=!course.sprintZ;const sprintCheck=()=>{if(spShown||done||dist<course.sprintZ-R.v*1.7)return;spShown=true;
+      big.textContent='Eindsprint!';big.className='fl-big sp';try{SFX.tick()}catch(e){}setTimeout(()=>{if(!done)big.classList.add('gone')},950)};
     let missH='';
     const drawHud=()=>{const p=done&&res===true?1:Math.min(1,dist/(course.len-6)),gap=done&&res===false?0:Math.max(.012,.15*(1-misses/(R.miss+1)));
       q('flYou').style.left=(p*100)+'%';q('flDone').style.width=(p*100)+'%';q('flCop').style.left=Math.max(0,(p-gap)*100)+'%';
@@ -274,15 +318,17 @@ function fleeGame(level){
       if(jumpT>=0){jumpT+=dt;if(jumpT>FL_JUMP)jumpT=-1}
       if(stumT>=0){stumT+=dt;if(stumT>.6)stumT=-1}
       shake=Math.max(0,shake-dt*1.6);
-      for(const r of course.rows){const z0=r.z-prev,z1=r.z-dist;if(!r.set&&z1<FL_REVEAL)fleeFill(r,R,SC,lane);
+      for(const r of course.rows){const z0=r.z-prev,z1=r.z-dist;if(!r.set&&z1<FL_REVEAL){r._d=dist;fleeFill(r,R,SC,lane)}
         for(const o of r.obs){
           // bewakers schuiven met je mee tot ze dichtbij zijn
           if(o.dr&&z1>9+R.len*4&&z1<26){const d=px-o.x,m=.9*dt;o.x+=Math.abs(d)<=m?d:Math.sign(d)*m}
+          // overstekers lopen gelijkmatig door: precies op jouw hoogte staan ze in hun eindbaan
+          if(o.cr)o.x=o.to+(o.from-o.to)*Math.max(-1.6,Math.min(1,z1/o.zr));
           if(o.done||o.hit)continue;
           if(z0>0&&z1<=0){o.done=1;const over=Math.abs(px-o.x)<(FL_PW+o.w)/2*hitK;
             if(over&&!(o.low&&jumpH()>R.jump)){stumble(o);if(done)return}}}
         if(!r.passed&&z1<0){r.passed=1;passed++;v*=R.accel;hitK=Math.min(1.08,hitK/R.shrink)}}
-      if(dist>=course.len-6)finish(true)}
+      sprintCheck();if(dist>=course.len-6)finish(true)}
     // vaste kleine stapjes: ook bij een trage telefoon loopt de achtervolging op het juiste tempo
     let ft=0;
     function frame(now){if(closed)return;let acc=Math.min(.25,Math.max(0,(now-last)/1000));last=now;while(acc>1e-4){const h=Math.min(1/60,acc);step(h);acc-=h}
