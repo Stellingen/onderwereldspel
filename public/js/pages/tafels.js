@@ -64,14 +64,14 @@ function bjTable(){
      ${b.last?`<button class="btn ghost" onclick="act.tbRebet('bj')">Zelfde inzet</button>`:''}
      <button class="btn" onclick="act.btDeal()" ${b.bets.main>=TB.MAIN_MIN&&!inJail()?'':'disabled'}>Delen · ${fmt(b.bets.main+b.bets.pp+b.bets.t21)}</button></div>`
    :b.phase==='play'?`<div class="tb-act play">${(()=>{const hd=h[b.active],c=hd.cards,can2=c.length===2&&!hd.splitAce;
-     const pair=bjv(c[0])===bjv(c[1]),money=S.cash>=hd.bet;
+     const pair=bjv(c[0])===bjv(c[1]),money=casCash()>=hd.bet;
      const canSplit=can2&&h.length===1&&pair&&money,canDbl=can2&&money;
      // Kan het niet, dan duidelijk rood met de reden eronder
      const whyDbl=!can2?'alleen bij 2 kaarten':!money?'te weinig saldo':'',whySpl=!can2||h.length>1?'alleen bij je eerste 2 kaarten':!pair?'geen paar':!money?'te weinig saldo':'';
      const ab=(fn,lab,en,ok,why)=>`<button class="btn bj-a ${ok?'ghost':'no'}" onclick="${fn}" ${ok?'':'disabled aria-disabled="true"'}><span>${lab}</span><small>${ok?en:why}</small></button>`;
      return ab('act.btHit()','Kaart','hit',1).replace('bj-a ghost','bj-a')+ab('act.btStand()','Passen','stand',1).replace('bj-a ghost','bj-a')
       +ab('act.btDouble()','Verdubbelen','double · '+fmt(hd.bet)+' erbij',canDbl,whyDbl)+ab('act.btSplit()','Splitsen','split · '+fmt(hd.bet)+' erbij',canSplit,whySpl)})()}</div>`
-   :`<div class="tb-act"><button class="btn" onclick="act.btNew()">Nieuwe ronde</button><button class="btn ghost" onclick="act.tbRebet('bj');act.btDeal()" ${b.last&&S.cash>=b.last.main+b.last.pp+b.last.t21?'':'disabled'}>Zelfde inzet en delen</button></div>`}
+   :`<div class="tb-act"><button class="btn" onclick="act.btNew()">Nieuwe ronde</button><button class="btn ghost" onclick="act.tbRebet('bj');act.btDeal()" ${b.last&&casCash()>=b.last.main+b.last.pp+b.last.t21?'':'disabled'}>Zelfde inzet en delen</button></div>`}
   </div>
   <div class="paytabs">
    <div class="card"><h3>Perfect Pairs</h3><p class="sub">Je eerste twee kaarten vormen een paar.</p>${tbPayRow([['Perfect pair (zelfde kleur en teken)','27 : 1'],['Gekleurd paar (zelfde kleur)','12 : 1'],['Gemengd paar','6 : 1']])}</div>
@@ -155,8 +155,8 @@ function tpTable(){
      ${t.last?`<button class="btn ghost" onclick="act.tbRebet('tp')">Zelfde inzet</button>`:''}
      <button class="btn" onclick="act.tpDeal()" ${(t.bets.ante>=TB.MAIN_MIN||t.bets.pp||t.bets.six)&&!inJail()?'':'disabled'}>Delen · ${fmt(t.bets.ante+t.bets.pp+t.bets.six)}</button></div>`
    :rv?`<div class="tb-act"><button class="btn" disabled>De dealer draait zijn kaarten om…</button></div>`
-   :dec?`<div class="tb-act play"><button class="btn" onclick="act.tpPlay()" ${S.cash>=t.bets.ante?'':'disabled'}>Spelen · ${fmt(t.bets.ante)}</button><button class="btn red" onclick="act.tpFold()">Passen (ante kwijt)</button></div>`
-   :`<div class="tb-act"><button class="btn" onclick="act.tpNew()">Nieuwe ronde</button><button class="btn ghost" onclick="act.tbRebet('tp');act.tpDeal()" ${t.last&&S.cash>=t.last.ante*2+t.last.pp+t.last.six?'':'disabled'}>Zelfde inzet en delen</button></div>`}
+   :dec?`<div class="tb-act play"><button class="btn" onclick="act.tpPlay()" ${casCash()>=t.bets.ante?'':'disabled'}>Spelen · ${fmt(t.bets.ante)}</button><button class="btn red" onclick="act.tpFold()">Passen (ante kwijt)</button></div>`
+   :`<div class="tb-act"><button class="btn" onclick="act.tpNew()">Nieuwe ronde</button><button class="btn ghost" onclick="act.tbRebet('tp');act.tpDeal()" ${t.last&&casCash()>=t.last.ante*2+t.last.pp+t.last.six?'':'disabled'}>Zelfde inzet en delen</button></div>`}
   </div>
   <div class="paytabs three">
    <div class="card"><h3>Ante en Play</h3><p class="sub">Versla de dealer. Speelt de dealer niet (lager dan vrouw-hoog), dan krijg je 1:1 op je ante en je play-inzet terug.</p>${tbPayRow([['Ante-bonus: straight flush','5 : 1'],['Drie gelijke','4 : 1'],['Straat','1 : 1']])}</div>
@@ -209,13 +209,13 @@ Object.assign(act,{
   const cur=T.bets[key],tot=Object.values(T.bets).reduce((a,b)=>a+b,0);
   let add=Math.min(tbChip,cap-cur);if(add<=0){toast(side?'Side bets gaan bij jouw rang tot €'+TB.SIDE_MAX+' (+€500 per rang)':'Maximale inzet bereikt','bad');return}
   if(side&&cur+add<TB.SIDE_MIN)add=TB.SIDE_MIN-cur;
-  if(tot+add>S.cash){toast('Niet genoeg contant geld','bad');return}
+  if(tot+add>casCash()){toast(casShort(),'bad');return}
   T.bets[key]=cur+add;SFX.chip();render()},
  tbClear(game){const T=tbT(game);if(T.phase!=='bet')return;Object.keys(T.bets).forEach(k=>T.bets[k]=0);render()},
  tbRebet(game){const T=tbT(game);if(!T.last)return;if(T.phase==='done')tbNew(game);T.bets=Object.assign({},T.last);render()},
  btNew(){Object.assign(bt,{bets:{main:0,pp:0,t21:0},lines:null,phase:'bet',hands:[],dealer:[],active:0,side:{},msg:'',net:0});render()},
  async btDeal(){const b=bt;if(b.phase!=='bet'||inJail())return;const tot=b.bets.main+b.bets.pp+b.bets.t21;
-  if(b.bets.main<TB.MAIN_MIN){toast('Minimale inzet is €'+TB.MAIN_MIN,'bad');return}if(tot>S.cash){toast('Niet genoeg contant geld','bad');return}
+  if(b.bets.main<TB.MAIN_MIN){toast('Minimale inzet is €'+TB.MAIN_MIN,'bad');return}if(tot>casCash()){toast(casShort(),'bad');return}
   S.cash-=tot;b.last=Object.assign({},b.bets);b.msg='';b.net=0;b.side={};
   b.hands=[{cards:[],bet:b.bets.main}];b.dealer=[];b.active=0;b.phase='dealing';
   for(const who of ['p','d','p','d']){if(who==='p')b.hands[0].cards.push(bjDraw());else b.dealer.push(bjDraw());SFX.card();render();await tbWait(260)}
@@ -226,18 +226,18 @@ Object.assign(act,{
   save();render()},
  btHit(){const b=bt;if(b.phase!=='play')return;const hd=b.hands[b.active];hd.cards.push(bjDraw());SFX.card();if(bjTotal(hd.cards).t>=21)hd.done=true;btNext()},
  btStand(){const b=bt;if(b.phase!=='play')return;b.hands[b.active].done=true;b.active++;btNext()},
- btDouble(){const b=bt;if(b.phase!=='play')return;const hd=b.hands[b.active];if(hd.cards.length!==2||S.cash<hd.bet)return;
+ btDouble(){const b=bt;if(b.phase!=='play')return;const hd=b.hands[b.active];if(hd.cards.length!==2||casCash()<hd.bet)return;
   S.cash-=hd.bet;hd.bet*=2;hd.dbl=1;hd.cards.push(bjDraw());SFX.chip();SFX.card();hd.done=true;b.active++;btNext()},
- btSplit(){const b=bt;if(b.phase!=='play'||b.hands.length>1)return;const hd=b.hands[0];if(hd.cards.length!==2||bjv(hd.cards[0])!==bjv(hd.cards[1])||S.cash<hd.bet)return;
+ btSplit(){const b=bt;if(b.phase!=='play'||b.hands.length>1)return;const hd=b.hands[0];if(hd.cards.length!==2||bjv(hd.cards[0])!==bjv(hd.cards[1])||casCash()<hd.bet)return;
   S.cash-=hd.bet;const ace=hd.cards[0].r===14;const h2={cards:[hd.cards.pop(),bjDraw()],bet:hd.bet,splitAce:ace};hd.cards.push(bjDraw());hd.splitAce=ace;b.hands.push(h2);SFX.chip();SFX.card();btNext()},
  tpNew(){Object.assign(tp,{bets:{ante:0,pp:0,six:0},lines:null,phase:'bet',p:[],d:[],res:null,msg:'',net:0,play:0});render()},
  async tpDeal(){const t=tp;if(t.phase!=='bet'||inJail())return;const tot=t.bets.ante+t.bets.pp+t.bets.six;
   if(t.bets.ante&&t.bets.ante<TB.MAIN_MIN){toast('Minimale ante is €'+TB.MAIN_MIN,'bad');return}
-  if(!tot){toast('Zet eerst een inzet','bad');return}if(tot>S.cash){toast('Niet genoeg contant geld','bad');return}
+  if(!tot){toast('Zet eerst een inzet','bad');return}if(tot>casCash()){toast(casShort(),'bad');return}
   S.cash-=tot;t.last=Object.assign({},t.bets);t.shoe=newShoe(1);t.p=[];t.d=[];t.res=null;t.msg='';t.play=0;t.phase='dealing';
   for(let i=0;i<3;i++){t.p.push(tpDraw());t.d.push(tpDraw());SFX.card();render();await tbWait(220)}
   if(!t.bets.ante){tpSettle(false);return}
   t.phase='decide';save();render()},
- tpPlay(){const t=tp;if(t.phase!=='decide'||S.cash<t.bets.ante)return;S.cash-=t.bets.ante;t.play=t.bets.ante;SFX.chip();tpReveal(false)},
+ tpPlay(){const t=tp;if(t.phase!=='decide'||casCash()<t.bets.ante)return;S.cash-=t.bets.ante;t.play=t.bets.ante;SFX.chip();tpReveal(false)},
  tpFold(){const t=tp;if(t.phase!=='decide')return;tpReveal(true)}
 });

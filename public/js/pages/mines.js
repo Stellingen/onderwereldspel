@@ -24,14 +24,14 @@ function minesView(){const g=S.mines,play=!!(g&&g.st==='play'),m=g?g.m:mn.m,k=g?
   if(over&&mine)return `<div class="mn-t mine ${g.hit===i?'hit':''}">${MN_BOMB}</div>`;
   if(over)return `<div class="mn-t shut">${MN_GEM}</div>`;
   return `<button class="mn-t" onclick="act.mnPick(${i})" ${play?'':'disabled'} aria-label="Vakje ${i+1}"></button>`}).join('');
- const again=`<button class="btn gold mn-again" onclick="act.mnStart()" ${inJail()||S.cash<bet?'disabled':''}>${S.cash<bet?'Te weinig geld':'Nog een keer · '+fmt(bet)}</button>`;
+ const again=`<button class="btn gold mn-again" onclick="act.mnStart()" ${inJail()||casCash()<bet?'disabled':''}>${casCash()<bet?'Te weinig geld':'Nog een keer · '+fmt(bet)}</button>`;
  const res=g&&g.st!=='play'?(g.st==='cash'?`<div class="mn-res w"><b>${mnX(g.mult)}</b><span>Je pakt ${fmt(g.pay)}</span>${again}</div>`:`<div class="mn-res l"><b>Boem!</b><span>${fmt(g.bet)} kwijt${k?' na '+k+' veilige vakjes':''}</span>${again}</div>`):'';
  // Telefoon: alles wat je nodig hebt direct onder het veld (inzet, bommen, start / cash out), zonder te scrollen
  const quick=play?`<div class="mn-quick play"><div class="mq-m"><b>${mnX(cur)}</b><small>volgende ${mnX(next)}, ${Math.round(safe*100)}% veilig</small></div>
    <button class="btn mn-cash mq-go" onclick="act.mnCash()" ${k?'':'disabled'}>${k?'Cash out<small>'+fmt(Math.floor(g.bet*cur))+'</small>':'Kies een vakje'}</button></div>`
   :`<div class="mn-quick"><div class="mq-step"><span>Inzet</span><div><button onclick="mnStepBet(-1)" aria-label="Lagere inzet">−</button><b>${fmt(bet)}</b><button onclick="mnStepBet(1)" aria-label="Hogere inzet">+</button></div></div>
    <div class="mq-step"><span>Bommen</span><div><button onclick="mnSetM(mn.m-1)" aria-label="Minder bommen">−</button><b>${mn.m}</b><button onclick="mnSetM(mn.m+1)" aria-label="Meer bommen">+</button></div></div>
-   <button class="btn gold mq-go" onclick="act.mnStart()" ${inJail()||S.cash<bet?'disabled':''}>${S.cash<bet?'Te weinig geld':(g?'Nog een keer':'Start')+'<small>'+fmt(bet)+' · '+mnX(mnMult(mn.m,1))+' per 1e vakje</small>'}</button></div>`;
+   <button class="btn gold mq-go" onclick="act.mnStart()" ${inJail()||casCash()<bet?'disabled':''}>${casCash()<bet?'Te weinig geld':(g?'Nog een keer':'Start')+'<small>'+fmt(bet)+' · '+mnX(mnMult(mn.m,1))+' per 1e vakje</small>'}</button></div>`;
  const ladder=Array.from({length:Math.min(6,MN_N-m-(play?k:0))},(_,j)=>{const n=(play?k:0)+j+1;return `<div class="${j===0?'next':''}"><span>${n}</span><b>${mnX(mnMult(m,n))}</b></div>`}).join('');
  return `<div class="mnx">
  <section class="mn-stage card ${g&&g.st==='boom'?'boom':''} ${g&&g.st==='cash'?'won':''}"><div class="mn-grid">${tiles}</div>${res}</section>
@@ -46,13 +46,13 @@ function minesView(){const g=S.mines,play=!!(g&&g.st==='play'),m=g?g.m:mn.m,k=g?
    <div class="cf-quick">${mnBets().map((v,i)=>`<button class="${mn.bi===i?'on':''}" onclick="mn.bi=${i};SFX.chip();render()">${v>=1000?v/1000+'K':v}</button>`).join('')}</div>
    <div class="mn-bh"><span class="label">Moeilijkheid</span><div class="kk-bet mn-bc"><button onclick="mnSetM(mn.m-1)" aria-label="Minder bommen">−</button><b>${mn.m} ${mn.m===1?'bom':'bommen'}</b><button onclick="mnSetM(mn.m+1)" aria-label="Meer bommen">+</button></div></div>
    <div class="mn-lv">${MN_LEVELS.map(([n,b])=>`<button class="${mn.m===b?'on':''}" onclick="mnSetM(${b})"><b>${n}</b><small>${b} bommen · 1e vakje ${mnX(mnMult(b,1))}</small></button>`).join('')}</div>
-   <button class="btn gold xl mn-go" onclick="act.mnStart()" ${inJail()||S.cash<bet?'disabled':''}>${S.cash<bet?'Te weinig geld':(g?'Opnieuw':'Start')+' · '+fmt(bet)}</button>`}
+   <button class="btn gold xl mn-go" onclick="act.mnStart()" ${inJail()||casCash()<bet?'disabled':''}>${casCash()<bet?'Te weinig geld':(g?'Opnieuw':'Start')+' · '+fmt(bet)}</button>`}
   <div class="label" style="margin-top:6px">Multipliers</div><div class="mn-ladder">${ladder}</div>
   <p class="cf-fine">Hoe meer bommen en hoe meer vakjes je opent, hoe beter de uitbetaling: RTP van 95,5% tot 99,2% (nu ${(mnRtp(m,(play?k:0)+1)*100).toFixed(1).replace('.',',')}% voor het volgende vakje). Kies 1 tot 24 bommen. Hoe meer bommen, hoe sneller hij stijgt. Max ${MN_MAX.toLocaleString('nl-NL')}× je inzet. De bommen liggen vast zodra je start.</p>
  </section></div>`}
 function mnRand(n){return crypto.getRandomValues(new Uint32Array(1))[0]%n}
 Object.assign(act,{
- mnStart(){if(inJail())return;const g=S.mines;if(g&&g.st==='play')return;const bet=mnBet(),m=mn.m;if(S.cash<bet){toast('Niet genoeg contant geld','bad');return}
+ mnStart(){if(inJail())return;const g=S.mines;if(g&&g.st==='play')return;const bet=mnBet(),m=mn.m;if(casCash()<bet){toast(casShort(),'bad');return}
   const pool=[...Array(MN_N).keys()];for(let i=pool.length-1;i>0;i--){const j=mnRand(i+1);[pool[i],pool[j]]=[pool[j],pool[i]]}
   S.cash-=bet;S.mines={bet,m,mines:pool.slice(0,m),open:[],st:'play',hit:null,mult:1,pay:0};mn.fx=null;SFX.spin();save();render()},
  mnPick(i){const g=S.mines;if(!g||g.st!=='play'||g.open.includes(i))return;

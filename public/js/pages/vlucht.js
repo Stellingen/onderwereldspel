@@ -56,7 +56,7 @@ function aviaView(){const h=(av.flying&&av.prevHist?av.prevHist:S.avHist)||[],be
   <div class="label">Inzet</div>
   <div class="kk-bet"><button onclick="av.bi=Math.max(0,av.bi-1);SFX.chip();render()" ${f?'disabled':''} aria-label="Lagere inzet">−</button><b>${fmt(bet)}</b><button onclick="av.bi=Math.min(avBets().length-1,av.bi+1);SFX.chip();render()" ${f?'disabled':''} aria-label="Hogere inzet">+</button></div>
   <div class="cf-quick">${avBets().map((v,i)=>`<button class="${av.bi===i?'on':''}" onclick="av.bi=${i};SFX.chip();render()" ${f?'disabled':''}>${v>=1000?v/1000+'K':v}</button>`).join('')}</div>
-  <button class="btn gold xl av-go" onclick="act.avFly()" ${f||inJail()||S.cash<bet?'disabled':''}>${f?'Vliegt…':S.cash<bet?'Te weinig geld':'Opstijgen · '+fmt(bet)}</button>
+  <button class="btn gold xl av-go" onclick="act.avFly()" ${f||inJail()||casCash()<bet?'disabled':''}>${f?'Vliegt…':casCash()<bet?'Te weinig geld':'Opstijgen · '+fmt(bet)}</button>
   <button class="btn ghost sm av-fast ${av.fast?'on':''}" onclick="av.fast=!av.fast;SFX.click();this.classList.toggle('on',av.fast);this.textContent=av.fast?'Sneller vliegen: aan':'Sneller vliegen: uit'" aria-pressed="${!!av.fast}">${av.fast?'Sneller vliegen: aan':'Sneller vliegen: uit'}</button>
   <div class="av-legend">
    <div><i class="add">+1</i><span>+1 tot +10 · duwt hem omhoog</span></div><div><i class="mul">×2</i><span>×2 tot ×5 · houdt hem even op hoogte</span></div>
@@ -142,7 +142,7 @@ function avMount(){if(av.flying)return;const P=av.plan&&av.res?av.plan:null;
  if(P){const endX=av.res.endX!=null?av.res.endX:P.touch;avDraw(P,endX,av.res.endAlt!=null?av.res.endAlt:0,av.res.endAng||0)}else avDraw(null,-110,null,0)}
 window.addEventListener('resize',()=>{if(page==='casino'&&casinoTab==='avia'&&!av.flying)avMount()});
 Object.assign(act,{
- avFly(){if(av.flying||inJail())return;const bet=avBet();if(S.cash<bet){toast('Niet genoeg contant geld','bad');return}
+ avFly(){if(av.flying||inJail())return;const bet=avBet();if(casCash()<bet){toast(casShort(),'bad');return}
   const P=avPlan(tier()),pay=P.ok?Math.floor(bet*P.m):0;
   // uitkomst staat vast en wordt meteen verrekend
   S.cash+=pay-bet;window.slotPending=pay;if(pay>bet)S.stats.won+=pay-bet;else S.stats.lost+=bet-pay;casinoRound(bet,pay,'avia');

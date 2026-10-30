@@ -70,10 +70,10 @@ function thTable(){
      ${t.last?`<button class="btn ghost" onclick="act.tbRebet('th')">Zelfde inzet</button>`:''}
      <button class="btn" onclick="act.thDeal()" ${t.bets.ante>=TB.MAIN_MIN&&!inJail()?'':'disabled'}>Delen · ${fmt(t.bets.ante+t.bets.aa)}</button></div>`
    :rv||t.phase==='dealing'?`<div class="tb-act"><button class="btn" disabled>${rv?'De dealer legt de rest neer…':'Delen…'}</button></div>`
-   :dec?`<div class="tb-act play">${(()=>{const need=t.bets.ante*2,ok=S.cash>=need;
+   :dec?`<div class="tb-act play">${(()=>{const need=t.bets.ante*2,ok=casCash()>=need;
      return `<button class="btn bj-a ${ok?'':'no'}" onclick="act.thCall()" ${ok?'':'disabled'}><span>Meespelen · ${fmt(need)}</span><small>${ok?'call · 2× je ante':'te weinig saldo'}</small></button>
       <button class="btn bj-a red" onclick="act.thFold()"><span>Passen</span><small>fold · ante kwijt</small></button>`})()}</div>`
-   :`<div class="tb-act"><button class="btn" onclick="act.thNew()">Nieuwe ronde</button><button class="btn ghost" onclick="act.tbRebet('th');act.thDeal()" ${t.last&&S.cash>=t.last.ante*3+t.last.aa?'':'disabled'}>Zelfde inzet en delen</button></div>`}
+   :`<div class="tb-act"><button class="btn" onclick="act.thNew()">Nieuwe ronde</button><button class="btn ghost" onclick="act.tbRebet('th');act.thDeal()" ${t.last&&casCash()>=t.last.ante*3+t.last.aa?'':'disabled'}>Zelfde inzet en delen</button></div>`}
   </div>
   <div class="paytabs three">
    <div class="card"><h3>Ante</h3><p class="sub">Win je van de dealer, of speelt hij niet (lager dan een paar vieren), dan betaalt je ante volgens deze tabel. Je call betaalt 1:1, of je krijgt hem terug als de dealer niet speelt.</p>${tbPayRow([['Royal flush','100 : 1'],['Straight flush','20 : 1'],['Carré','10 : 1'],['Full house','3 : 1'],['Flush','2 : 1'],['Straat of lager','1 : 1']])}</div>
@@ -104,12 +104,12 @@ function thFinish(folded){const t=th;t.phase='done';
 Object.assign(act,{
  thNew(){Object.assign(th,{bets:{ante:0,aa:0},lines:null,phase:'bet',p:[],d:[],b:[],res:null,msg:'',net:0,call:0,rv:0});render()},
  async thDeal(){const t=th;if(t.phase!=='bet'||inJail())return;const tot=t.bets.ante+t.bets.aa;
-  if(t.bets.ante<TB.MAIN_MIN){toast('Minimale ante is €'+TB.MAIN_MIN,'bad');return}if(tot>S.cash){toast('Niet genoeg contant geld','bad');return}
+  if(t.bets.ante<TB.MAIN_MIN){toast('Minimale ante is €'+TB.MAIN_MIN,'bad');return}if(tot>casCash()){toast(casShort(),'bad');return}
   S.cash-=tot;t.last=Object.assign({},t.bets);t.shoe=newShoe(1);t.p=[];t.d=[];t.b=[];t.res=null;t.msg='';t.call=0;t.rv=0;t.phase='dealing';
   for(let i=0;i<2;i++){t.p.push(thDraw());SFX.card();render();await tbWait(220);t.d.push(thDraw());SFX.card();render();await tbWait(220)}
   for(let i=0;i<3;i++){t.b.push(thDraw());SFX.card();render();await tbWait(240)}
   t.phase='decide';save();render()},
- thCall(){const t=th;if(t.phase!=='decide')return;const need=t.bets.ante*2;if(S.cash<need){toast('Niet genoeg contant geld','bad');return}
+ thCall(){const t=th;if(t.phase!=='decide')return;const need=t.bets.ante*2;if(casCash()<need){toast(casShort(),'bad');return}
   S.cash-=need;t.call=need;SFX.chip();thReveal(false)},
  thFold(){const t=th;if(t.phase!=='decide')return;SFX.click();thReveal(true)}});
 }

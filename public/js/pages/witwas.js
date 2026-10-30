@@ -9,8 +9,8 @@
 //   klanten en minder bonnen nodig, dus het gaat ook sneller. Per speldag maximaal 2,5× wat je zaken verdienen.
 //   Te opvallend = controle: 30% van die dag in beslag en hitte.
 // - Via Ome Kees: meteen klaar, 30% voor hem (de normale prijs), met een maximum per speldag dat met je rang meegroeit.
-// - Via het casino: speel met zwart geld, wat je wint is wit. Hoe meer zwart je inzet, hoe groter de kans op een controle;
-//   word je gecontroleerd met zwart geld op zak, dan nemen ze het in beslag en volgt een arrestatie (zie casinoRound/czControl).
+// - Via het casino: kies 'zwart' in de casinobalk en speel; wat je wint is wit. De verdenking loopt op (zie zwCasinoRound in
+//   state.js); op 100% word je verbannen uit het casino.
 const WW_BASE=.26,WW_IMP=.18,WW_LVL=.05,WW_MIN=.05,WW_TOP=.02,WW_KEES=.30,WW_BUST=.3,WW_CHUNKS=12;
 // kosten via een zaak: basis min imperium (0..1 van de maximale bonus) min het gemiddelde niveau van die zaak
 function wwFee(B){const M=bizMult(),q=Math.min(1,M.imp/(typeof BIZ_IMP_MAX!=='undefined'?BIZ_IMP_MAX:.5)),u=B?bizUnits(B.id):[],f=u.length?u.reduce((a,l)=>a+l,0)/u.length/5:0;
@@ -47,7 +47,7 @@ function wwClean(a,fee){a=Math.min(a,zwart());if(a<=0)return 0;S.zwart=zwart()-a
 const wwPick=(kind,max)=>{const a=ww.amt[kind]||0;return Math.max(0,Math.min(a||max,max))};
 function wwAmtRow(kind,max){const cur=wwPick(kind,max);return `<div class="ww-amt"><span class="label">Bedrag</span><b>${fmt(cur)}</b>
   <div class="ww-q">${[[.1,'10%'],[.25,'25%'],[.5,'50%'],[1,'Max']].map(([f,l])=>`<button class="${Math.abs(cur-Math.floor(max*f))<1&&max>0?'on':''}" onclick="ww.amt.${kind}=${Math.floor(max*f)};render()" ${max<1?'disabled':''}>${l}</button>`).join('')}</div></div>`}
-function czBar(){const v=Math.round(czVal());return `<div class="ww-meter ${v>=70?'hot':v>=35?'warm':''}"><div><span class="label">Verdenking in het casino</span><b>${v}%</b></div><i><i style="width:${v}%"></i></i><small>${v?'Zakt 3% per minuut. Op 100% volgt zeker een controle.':'Niemand let op je.'}</small></div>`}
+function czBar(){const v=Math.round(czVal());return `<div class="ww-meter ${v>=70?'hot':v>=35?'warm':''}"><div><span class="label">Verdenking in het casino</span><b>${v}%</b></div><i><i style="width:${v}%"></i></i><small>${czBanLeft()?'Je bent verbannen: nog '+fmtClock(czBanLeft()):v?'Zakt 3% per minuut in het casino, 6% als je weg bent. Op 100% word je verbannen.':'Niemand let op je.'}</small></div>`}
 // Illustraties bovenaan de drie routes
 const WW_ART={kees:`<svg viewBox="0 0 320 220"><defs><radialGradient id="wwkl" cx="45%" cy="40%" r="60%"><stop offset="0" stop-color="#ffd27a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient></defs>
   <rect x="0" y="0" width="320" height="220" fill="url(#wwkl)"/><path d="M30 150h260v12H30z" fill="#4a2f1d"/><path d="M40 162h10v48H40zM270 162h10v48h-10z" fill="#33200f"/>
@@ -83,7 +83,7 @@ V.wit=()=>{const z=zwart(),w=wit(),W=wwS(),fr=wwFronts(),zl=wwZaakLeft(),kl=wwKe
    <div class="ww-calc">${kMax?`Je geeft ${fmt(wwPick('kees',kMax))} zwart en krijgt ${fmt(wwPick('kees',kMax)-Math.round(wwPick('kees',kMax)*WW_KEES))} wit terug.`:''}</div>
    <button class="btn xl act-btn" style="--c:var(--violet)" onclick="act.wwKees()" ${kMax>=1&&!inJail()?'':'disabled'}>${inJail()?'Je zit vast':!z?'Geen zwart geld':!kl?'Kees doet vandaag niks meer':'Laat Kees het doen'}</button>
   </section>
-  <section class="card ww-m ww-cas"><div class="ww-art" aria-hidden="true">${window.COV?COV.coverSvg('roulette','wwc'):''}</div><header><span class="ww-tag">Riskant</span><h3>Via het casino</h3><p>Zet je zwarte geld in. Wat je wint, is wit. Maar hoe meer zwart je inzet, hoe groter de kans dat de beveiliging je controleert. Heb je dan zwart geld op zak, of zien ze dat je net veel zwart hebt ingezet, dan nemen ze het in beslag en word je aangehouden.</p></header>
+  <section class="card ww-m ww-cas"><div class="ww-art" aria-hidden="true">${window.COV?COV.coverSvg('roulette','wwc'):''}</div><header><span class="ww-tag">Riskant</span><h3>Via het casino</h3><p>Kies in de casinobalk <b>zwart</b> en speel. Wat je wint, is wit. Maar de beveiliging kijkt mee: met zwart geld en grote inzetten loopt de verdenking snel op, vooral bij de slots en als ze naar jouw tafel kijken. Op 100% word je verbannen (30 minuten, VIP 20, High roller 10).</p></header>
    ${czBar()}
    <a class="btn xl ghost" href="#casino">Naar het casino</a>
   </section>
@@ -144,7 +144,12 @@ function czControl(){window.__czCheck=false;const C=S.cz||(S.cz={s:0,t:now(),g:0
  const sec=Math.min(600,Math.round(60+25*Math.log2(1+conf/5000)));
  log(`Casinocontrole: ${fmt(conf)} zwart geld in beslag genomen`,'bad');save();render();
  arrest(sec,'Controle in het casino',`De beveiliging en de recherche controleren je. Ze vinden zwart geld en nemen ${fmt(conf)} in beslag.`,{flee:4})}
-setInterval(()=>{if(window.__czCheck&&!casBusy()&&!window.__chase&&!S.pendingArrest&&!inJail()&&typeof arrest==='function')czControl()},1000);
+// Verdenking op 100%: verbannen uit het casino (gewoon 30, VIP 20, High roller 10 minuten). Daarna staat de verdenking op 0%.
+function czBanStart(){window.__czBan=false;const t=typeof tier==='function'?tier():0,min=CZ_BAN[t]||30;S.czBan=now()+min*60000;const C=S.cz||(S.cz={s:0,t:now(),g:0});C.s=0;C.g=0;C.t=now();
+ try{SFX.lose()}catch(e){}toast(`Verbannen uit het casino: ${min} minuten. De beveiliging heeft je te vaak gezien.`,'bad');log(`Verbannen uit het casino (${min} min, verdenking 100%)`,'bad');save();if(page==='casino')render();else renderTop()}
+setInterval(()=>{if(window.__czBan&&!casBusy()&&!window.__chase)czBanStart();
+ const bt=document.getElementById('casBanT');if(bt)bt.textContent=fmtClock(czBanLeft());
+ if(S.czBan&&!czBanLeft()){delete S.czBan;const C=S.cz;if(C){C.s=0;C.t=now()}toast('Je mag het casino weer in.','ok');save();if(page==='casino')render()}},1000);
 
 Object.assign(act,{
  async wwZaak(){if(ww.busy||inJail()||window.__chase)return;const fr=wwFronts(),B=fr.find(b=>b.id===ww.front)||fr[fr.length-1];if(!B)return;if(wwJob(B.id)){toast('Via je '+B.n.toLowerCase()+' loopt al een witwasronde','bad');return}

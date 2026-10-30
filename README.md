@@ -143,6 +143,13 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   vanzelf valt en kunt doortumbelen tot de superbonus; +2 free spins (superbonus +1). **8 vakjes beginnen op x2** en er is een
   **vangnet**: altijd minstens 20× je inzet terug. Verdeling (gewoon): mediaan ±52×, 25% van de keren 100× of meer, 9% 200× of meer.
   **Inzet kiezen** gaat via een pop-up (ook bij Visdief).
+  **Snelheid** 1× (rustig), 2× (sneller) en 3× (snelst, het oude 'snel'), voor Kluiskraker en Visdief, bewaard bij je account.
+  Op brede schermen staat rechts: saldo, de inzetkeuze die de ruimte vult, een rij met − / snelheid / +, bonus kopen en Draaien.
+  **Spelen met wit of zwart** kies je in de casinobalk. Wit (legaal) laat de verdenking nauwelijks oplopen; met zwart wordt wat je
+  wint wit, maar de verdenking loopt op: per ronde (inzet/limiet van je rang ×90 + 0,1) × spel (slots 1,4, roulette 1, kaarten 0,85,
+  dubbel of niks 0,8, Mines en Hoogvlieger 0,55) × lidmaatschap (gewoon 1, VIP 0,65, High roller 0,35) × de **ogen** van de
+  beveiliging (dicht 0,35, open 1, rood op jouw tafel 2,3; per 40 seconden wisselend). Zakt 3%/min in het casino, 6%/min als je weg
+  bent. Op 100%: **verbannen** (30 / 20 / 10 minuten), het casino wordt rood; daarna staat de verdenking weer op 0%.
   **Teller in de bonus**: extra spins (2+ kluizen) komen pas bij de teller als de spin helemaal is uitgetumbeld (eerst
   "+2 spins", dan bijv. 3 / 14); vooraf verraadt de teller niets. Op de telefoon staan de free spins rechts in het saldovak en
   staat het saldovak (ook bij gewone spins, dan met je inzet rechts) direct onder het bord, de knoppen daaronder, met "Bonus: X× inzet" tot nu toe (Visdief net zo, ook op de computer).

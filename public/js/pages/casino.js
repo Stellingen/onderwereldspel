@@ -1,5 +1,11 @@
 // Tab: Casino (blackjack, gokkast, dubbel of niks, roulette)
-V.casino=()=>casinoTab&&CAS_NAMES[casinoTab]?casGameView():casLobby();
+V.casino=()=>czBanLeft()&&!casSwitchBusy()?casBanView():casinoTab&&CAS_NAMES[casinoTab]?casGameView():casLobby();
+// Verbannen: de hele pagina rood, met hoe lang nog. Daarna staat de verdenking weer op 0%.
+function casBanView(){const L=czBanLeft(),t=typeof tier==='function'?tier():0;
+ return `<section class="cas-ban"><div class="cas-ban-in">${czEyesSvg(2)}<span class="label">Casino</span><h1>U bent verbannen</h1><p>De beveiliging heeft u te vaak gezien. U bent hier voorlopig niet meer welkom.</p>
+  <div class="cas-ban-t"><span>Nog</span><b id="casBanT">${fmtClock(L)}</b></div>
+  <small>${['Gewone spelers 30 minuten','VIP 20 minuten','High roller 10 minuten'][t]}. Daarna mag je terug en staat je verdenking weer op 0%. Speel met wit geld en lagere inzetten als je niet wilt opvallen.</small>
+  <div class="cas-ban-b"><a class="btn ghost" href="#wit">Naar witwassen</a><a class="btn ghost" href="#dash">Naar je dashboard</a></div></div></section>`}
 const CAS_LIST=[['kluis','Kluiskraker'],['vis','Visdief'],['mines','Mines'],['avia','Hoogvlieger'],['bj','Blackjack'],['tcp','Three Card Poker','Poker'],['th',"Texas Hold'em","Hold'em"],['roulette','Roulette'],['coin','Dubbel of niks','Dubbel']];
 const CAS_NAMES=Object.fromEntries(CAS_LIST.map(([k,n])=>[k,n]));
 const CAS_ICO_BACK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>';
@@ -38,4 +44,4 @@ function bjView(){const b=window.bj;
 
 // Is er een spel bezig? Dan niet wisselen (een slotbonus mag wel op de achtergrond doorlopen).
 const casSwitchBusy=()=>(kk.busy&&!kk.inBonus)||(window.vd&&vd.busy)||(window.cf&&cf.flipping)||(window.av&&av.flying)||(window.rl&&rl.spinning)||['dealing','dealer'].includes(bt.phase)||tp.phase==='dealing'||tp.phase==='reveal'||(window.th&&['dealing','reveal'].includes(th.phase));
-function casinoGo(k){if(casSwitchBusy()){toast('Wacht tot het spel klaar is','bad');return}casinoTab=k;render();window.scrollTo(0,0)}
+function casinoGo(k){if(czBanLeft()){render();return}if(casSwitchBusy()){toast('Wacht tot het spel klaar is','bad');return}casinoTab=k;render();window.scrollTo(0,0)}

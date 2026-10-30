@@ -50,6 +50,7 @@ const act={
  sell(i){const c=S.cars.splice(i,1)[0];S.cash+=c.v;addZwart(c.v);toast(c.n+' verkocht: +'+fmt(c.v));save();render()},
  sellAll(){const t=S.cars.reduce((a,c)=>a+c.v,0);S.cash+=t;addZwart(t);S.cars=[];toast('Alles verkocht: +'+fmt(t));save();render()},
  getBet(){if(inJail()){toast('Je zit vast, geen gokken','bad');return 0}const b=Math.floor(+($('#bet').value||0));if(b<10){toast('Minimale inzet is €10','bad');return 0}if(b>S.cash){toast('Niet genoeg contant geld','bad');return 0}return b},
+ casPay(m){S.casPay=m==='zwart'?'zwart':'wit';try{SFX.click()}catch(e){}if(m==='zwart'&&zwart()<1)toast('Je hebt geen zwart geld op zak','bad');save();renderTop();if(page==='casino')render()},
  claimCb(){const a=cbAvail();if(a<1)return;S.cash+=a;S.cb.acc=(S.cb.acc||0)-a;SFX.big();toast('VIP-cashback: +'+fmt(a),'lvl');log('VIP-cashback ontvangen: '+fmt(a),'ok');save();pushState();render()},
  win(b,m,label){casinoRound(b,m>0?b*m:0,'coin');if(m>0){S.cash+=b*m-b;S.stats.won+=b*m-b;toast(label+' Gewonnen: +'+fmt(b*m-b));log('Casino: +'+fmt(b*m-b),'ok')}else{S.cash-=b;S.stats.lost+=b;toast(label+' Verloren: -'+fmt(b),'bad');log('Casino: -'+fmt(b),'bad')}save()},
  coin(k){const b=act.getBet();if(!b)return;const r=Math.random()<.5?'kop':'munt';act.win(b,r===k?2:0,'Het werd '+r+'.');render()},

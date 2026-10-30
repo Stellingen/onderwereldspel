@@ -8,14 +8,20 @@ const isHighRoller=()=>isHR()||!!(S&&S.redeemed&&S.redeemed.includes('trainwreck
 const kkBets=()=>isHighRoller()?KK_BETS_STD.concat(KK_HIGH):KK_BETS_STD;
 window.kk={bi:4,busy:false,turbo:false,confirm:false,grid:null,spots:null,msg:'Kies je inzet en draai',stepWin:0,fs:null,lastWin:0,shown:0};
 const kkBet=()=>{const B=kkBets();if(kk.bi>=B.length)kk.bi=B.length-1;return B[kk.bi]};
-const kkFast=()=>kk.turbo||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
-const KK_T=()=>kkFast()?{base:140,per:12,col:16,hold:380,pop:180}:{base:230,per:26,col:32,hold:640,pop:250};
+// Snelheid 1× (rustig), 2× (sneller) en 3× (snelst, het oude 'snel'). Geldt voor Kluiskraker en Visdief; bewaard bij je account.
+const slotReduce=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+const slotSpd=()=>slotReduce()?3:Math.max(1,Math.min(3,+(S.slotSpd||1)));
+const slotSp=(slow,fast)=>{const v=slotSpd();return v===3?fast:v===2?(slow+fast)/2:slow};
+const kkFast=()=>slotSpd()===3;
+const slotSpdHtml=(cls)=>`<div class="spd ${cls||''}" role="group" aria-label="Snelheid"><span>Snelheid</span>${[1,2,3].map(n=>`<button class="${slotSpd()===n?'on':''}" onclick="slotSetSpd(${n})" aria-pressed="${slotSpd()===n}" title="${['Rustig','Sneller','Snelst'][n-1]}">${n}×</button>`).join('')}</div>`;
+function slotSetSpd(n){S.slotSpd=n;try{SFX.click()}catch(e){}document.querySelectorAll('.spd button').forEach((b,i)=>{const on=(i%3)+1===n;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});save()}
+const KK_T=()=>({base:slotSp(230,140),per:slotSp(26,12),col:slotSp(32,16),hold:slotSp(640,380),pop:slotSp(250,180)});
 // voorbeeldbord: vaste, rustige mix zonder clusters (buren nooit hetzelfde symbool)
 function kkDemoGrid(){let x=20261030;const R=()=>(x=(x*1103515245+12345)%2147483648)/2147483648;const N=SLOT.SYMS.length,g=[];
  for(let c=0;c<SLOT.COLS;c++){g.push([]);for(let r=0;r<SLOT.ROWS;r++){let s;do{s=Math.floor(R()*N)}while((c&&g[c-1][r].s===s)||(r&&g[c][r-1].s===s));g[c].push({s})}}return g}
 // anim: 'none' (statisch), 'all' (nieuwe spin: alles valt), 'tumble' (alleen cellen met fall>0)
 // Spanning: liggen er na een kolom 2+ kluizen, dan vallen de volgende kolommen trager en lichten ze op (3, dan 4, dan 5 …)
-function kkPlan(g){const T=KK_T(),step=kkFast()?260:640,slow=kkFast()?1.3:1.7;let cnt=0,extra=0;const P=[];
+function kkPlan(g){const T=KK_T(),step=slotSp(640,260),slow=slotSp(1.7,1.3);let cnt=0,extra=0;const P=[];
  for(let c=0;c<SLOT.COLS;c++){const tease=cnt>=2;if(tease)extra+=step;P.push({delay:c*T.col+extra,slow:tease?slow:1,tease,cnt});cnt+=g[c].filter(x=>x.sc).length}
  return P}
 function kkCell(x,c,r,anim){
@@ -114,23 +120,23 @@ function slotBetPop(game){const B=kkBets(),cur=game==='kk'?kk.bi:vd.bi,cost=game
   <div class="sp-h"><div><span class="label">${game==='kk'?'Kluiskraker':'Visdief'}</span><b>Kies je inzet</b></div><button class="sp-x" onclick="slotPopClose()" aria-label="Sluiten">✕</button></div>
   <div class="sp-now"><span>Contant <b>${fmt(S.cash)}</b></span><span>Nu <b>${fmt(B[cur])}</b>${buy?` · bonus ${fmt(B[cur]*cost)}`:''}</span></div>
   ${groups.map(([n,f])=>{const ix=B.map((v,i)=>[v,i]).filter(([v])=>f(v));if(!ix.length)return '';
-   return `<div class="sp-g"><span class="label">${n}${n==='High roller'?' <i class="vipt">HIGH ROLLER</i>':''}</span><div class="sp-grid">${ix.map(([v,i])=>`<button class="${i===cur?'on':''} ${S.cash<(buy?v*cost:v)?'no':''}" onclick="${pick}(${i});slotPopClose()"><b>${fmt(v)}</b><small>bonus ${fmt(v*cost)}</small></button>`).join('')}</div></div>`}).join('')}
-  <div class="sp-q"><button class="btn ghost sm" onclick="${pick}(0);slotPopClose()">Min · ${fmt(B[0])}</button><button class="btn ghost sm" onclick="${pick}(${B.map((v,i)=>[v,i]).filter(([v])=>v<=S.cash).pop()?.[1]??0});slotPopClose()">Wat ik kan · ${fmt((B.filter(v=>v<=S.cash).pop())||B[0])}</button><button class="btn sm" onclick="${pick}(${B.length-1});slotPopClose()">Max · ${fmt(B[B.length-1])}</button></div>
+   return `<div class="sp-g"><span class="label">${n}${n==='High roller'?' <i class="vipt">HIGH ROLLER</i>':''}</span><div class="sp-grid">${ix.map(([v,i])=>`<button class="${i===cur?'on':''} ${casCash()<(buy?v*cost:v)?'no':''}" onclick="${pick}(${i});slotPopClose()"><b>${fmt(v)}</b><small>bonus ${fmt(v*cost)}</small></button>`).join('')}</div></div>`}).join('')}
+  <div class="sp-q"><button class="btn ghost sm" onclick="${pick}(0);slotPopClose()">Min · ${fmt(B[0])}</button><button class="btn ghost sm" onclick="${pick}(${B.map((v,i)=>[v,i]).filter(([v])=>v<=casCash()).pop()?.[1]??0});slotPopClose()">Wat ik kan · ${fmt((B.filter(v=>v<=casCash()).pop())||B[0])}</button><button class="btn sm" onclick="${pick}(${B.length-1});slotPopClose()">Max · ${fmt(B[B.length-1])}</button></div>
  </div>`;requestAnimationFrame(()=>el.classList.add('on'))}
 function slotPopClose(){const el=document.getElementById('slotPop');if(el)el.remove()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')slotPopClose()});
 window.addEventListener('hashchange',slotPopClose);
 // Inzet kiezen: klik op het bedrag en kies direct, van €10 tot max €50.000
 function kkPickHtml(){return `<div class="kk-pick"><div class="kk-pick-h"><b>Kies je inzet${isHighRoller()?' <i class="vipt" style="margin-left:6px">HIGH ROLLER</i>':''}</b><button class="btn ghost sm" onclick="kk.pick=false;kkRefreshUI()">Sluiten</button></div>
-  <div class="kk-pick-g">${kkBets().map((v,i)=>`<button class="${i===kk.bi?'on':''} ${S.cash<v?'no':''}" onclick="kkSetBet(${i})">${fmt(v)}</button>`).join('')}</div>
+  <div class="kk-pick-g">${kkBets().map((v,i)=>`<button class="${i===kk.bi?'on':''} ${casCash()<v?'no':''}" onclick="kkSetBet(${i})">${fmt(v)}</button>`).join('')}</div>
   <div class="kk-pick-q"><button class="btn ghost sm" onclick="kkSetBet(0)">Min · ${fmt(kkBets()[0])}</button><button class="btn sm" onclick="kkSetBet(kkBets().length-1)">Max · ${fmt(kkBets()[kkBets().length-1])}</button></div></div>`}
 function kkSetBet(i){if(kk.busy)return;kk.bi=Math.max(0,Math.min(kkBets().length-1,i));kk.pick=false;kk.confirm=false;SFX.chip();kkRefreshUI()}
 function kkControls(){const b=kkBet();return `<div class="kk-betbox"><span class="label">Inzet · klik om te kiezen</span>
    <div class="kk-bet"><button onclick="kkStepBet(-1)" ${kk.busy?'disabled':''} aria-label="Lagere inzet">−</button><button class="kk-betv" onclick="slotBetPop('kk')" ${kk.busy?'disabled':''} aria-label="Inzet kiezen" title="Klik om je inzet te kiezen">${fmt(b)}</button><button onclick="kkStepBet(1)" ${kk.busy?'disabled':''} aria-label="Hogere inzet">+</button></div></div>
-   ${kk.buyMode?`<button class="btn kk-go buy" onclick="act.kkSpin(true)" ${kk.busy||inJail()||S.cash<b*SLOT.BUY_COST?'disabled':''}><span class="kk-buy-l">${kk.busy?'Bezig…':S.cash<b*SLOT.BUY_COST?'Te weinig geld':'Bonus kopen'}</span><b class="kk-buy-p">${fmt(b*SLOT.BUY_COST)}</b><small>${SLOT.BUY_COST}× je inzet van ${fmt(b)}</small></button>`
+   ${kk.buyMode?`<button class="btn kk-go buy" onclick="act.kkSpin(true)" ${kk.busy||inJail()||casCash()<b*SLOT.BUY_COST?'disabled':''}><span class="kk-buy-l">${kk.busy?'Bezig…':casCash()<b*SLOT.BUY_COST?'Te weinig geld':'Bonus kopen'}</span><b class="kk-buy-p">${fmt(b*SLOT.BUY_COST)}</b><small>${SLOT.BUY_COST}× je inzet van ${fmt(b)}</small></button>`
     :`<button class="btn kk-go" onclick="act.kkSpin(false)" ${kk.busy||inJail()?'disabled':''}>${kk.busy?'Bezig…':'Draaien'}<small>spatie</small></button>`}
    <div class="kk-small">
-    <button class="btn ghost sm kk-turbo ${kk.turbo?'on':''}" onclick="kkTurbo()" aria-pressed="${kk.turbo}">${kk.turbo?'Snel: aan':'Snel: uit'}</button>
+    ${slotSpdHtml()}
     <button class="kk-buyt ${kk.buyMode?'on':''}" onclick="kk.buyMode=!kk.buyMode;SFX.click();kkRefreshUI()" ${kk.busy?'disabled':''} aria-pressed="${!!kk.buyMode}"><i></i><span>Bonus kopen</span><small>${kk.buyMode?'aan':'uit'}</small></button>
    </div>`}
 // Brede schermen: links je inzet kiezen (fiches per groep, bonus kopen, snel), rechts saldo, draaien en een sessie-overzicht
@@ -140,10 +146,10 @@ const KK_GROUPS=[['Klein',v=>v<300],['Middel',v=>v>=300&&v<5000],['Groot',v=>v>=
 function kkBetRHtml(){const B=kkBets(),b=kkBet(),buy=!!kk.buyMode,cost=SLOT.BUY_COST,dis=kk.busy?'disabled':'';
  const gs=KK_GROUPS.filter(([n,f])=>B.some(f));let gi=kk.betG!=null?kk.betG:gs.findIndex(([n,f])=>f(b));if(gi<0||gi>=gs.length)gi=0;
  const ix=B.map((v,i)=>[v,i]).filter(([v])=>gs[gi][1](v));
- return `<div class="kr-bet"><div class="kr-bet-h"><div><span class="label">Inzet per spin</span><b>${fmt(b)}</b></div>
-   <div class="kl-step"><button class="kk-turbo kr-snel ${kk.turbo?'on':''}" onclick="kkTurbo()" aria-pressed="${kk.turbo}" title="Sneller draaien">${kk.turbo?'Snel: aan':'Snel: uit'}</button><button onclick="kkStepBet(-1)" ${dis} aria-label="Lagere inzet">−</button><button onclick="kkStepBet(1)" ${dis} aria-label="Hogere inzet">+</button></div></div>
-  <div class="kr-tabs">${gs.map(([n],k)=>`<button class="${k===gi?'on':''}" onclick="kk.betG=${k};kkRefreshUI()">${n}</button>`).join('')}</div>
-  <div class="kl-grid">${ix.map(([v,i])=>`<button class="${i===kk.bi?'on':''} ${S.cash<(buy?v*cost:v)?'no':''}" onclick="kk.betG=null;kkSetBet(${i})" ${dis} title="${fmt(v)}${buy?' · bonus '+fmt(v*cost):''}">${kkShortBet(v)}</button>`).join('')}</div></div>
+ return `<div class="kr-bet"><div class="kr-bet-h"><span class="label">Inzet per spin</span><b>${fmt(b)}</b>${buy?`<em>bonus ${fmt(b*cost)}</em>`:''}</div>
+  <div class="kr-tabs" role="tablist">${gs.map(([n],k)=>`<button role="tab" class="${k===gi?'on':''}" aria-selected="${k===gi}" onclick="kk.betG=${k};kkRefreshUI()">${n}</button>`).join('')}</div>
+  <div class="kl-grid">${ix.map(([v,i])=>`<button class="${i===kk.bi?'on':''} ${casCash()<(buy?v*cost:v)?'no':''}" onclick="kk.betG=null;kkSetBet(${i})" ${dis} title="${fmt(v)}${buy?' · bonus '+fmt(v*cost):''}">${kkShortBet(v)}</button>`).join('')}</div></div>
+ <div class="kr-row"><button class="kr-step" onclick="kkStepBet(-1)" ${dis} aria-label="Lagere inzet">−</button>${slotSpdHtml('kr-spd')}<button class="kr-step" onclick="kkStepBet(1)" ${dis} aria-label="Hogere inzet">+</button></div>
  <button class="kr-buy ${buy?'on':''}" onclick="kk.buyMode=!kk.buyMode;SFX.click();kkRefreshUI()" ${dis} aria-pressed="${buy}" title="Zet bonus kopen aan of uit">
   <span class="kr-buy-ic">${kkSvg('kluis')}</span><span class="kr-buy-t"><b>Bonus kopen</b><small>${buy?'Aan: de grote knop koopt':`3+ kluizen · ${SLOT.BUY_SPOTS} vakjes op x2 · min. ${SLOT.BUY_FLOOR}×`}</small></span>
   <span class="kr-buy-p">${fmt(b*cost)}</span><span class="kr-sw"><i></i></span></button>`}
@@ -173,7 +179,7 @@ function kkRefreshUI(){const root=document.querySelector('.kk3');if(!root)return
 function kkTurbo(){kk.turbo=!kk.turbo;SFX.click();document.querySelectorAll('.kk-turbo').forEach(b=>{b.textContent=kk.turbo?'Snel: aan':'Snel: uit';b.classList.toggle('on',kk.turbo);b.setAttribute('aria-pressed',kk.turbo)})}
 // Kluisdeur kraakt bij 3 tot 5 kluizen: per ronde kunnen er kluizen bijkomen; komt er een bij, dan kraakt hij opnieuw
 // Spatiebalk = draaien (ingedrukt houden = doordraaien); tijdens een pauze speelt spatie de bonus verder af
-document.addEventListener('keydown',e=>{if(e.code!=='Space'||page!=='casino'||casinoTab!=='kluis'||window.__chase)return;
+document.addEventListener('keydown',e=>{if(e.code!=='Space'||page!=='casino'||casinoTab!=='kluis'||window.__chase||czBanLeft())return;
  const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;if(!$('#modal').hidden)return;
  e.preventDefault();if(document.activeElement&&document.activeElement.tagName==='BUTTON')document.activeElement.blur();
  if(kk.paused){kkResume();return}if(kk.busy)return;if(S.slotRun&&S.slotRun.g==='kluis'){kkResumeRun();return}if(kk.buyMode){if(!e.repeat)act.kkSpin(true);return}act.kkSpin(false)});
@@ -237,7 +243,7 @@ async function kkAnimateSpin(sp,bet,inFs,runTotal){
   // kluizen die erbij zijn gekomen laten horen
   let sc=0;st.grid.forEach(col=>col.forEach(x=>{if(x.sc)sc++}));const scPrev=kkScSeen;for(let k=kkScSeen;k<sc;k++)SFX.scatter(k);kkScSeen=Math.max(kkScSeen,sc);
   // een kluis die erin tumbelt terwijl er al 3 of meer liggen: even laten zien
-  if(!inFs&&i>0&&sc>scPrev&&sc>=4)await kkBanner(sc+' kluizen!',sc>=SLOT.SUPER_SC?'Superbonus!':'Er tumbelde een kluis bij',kkFast()?600:1000,sc>=SLOT.SUPER_SC?'fsin super':'fsin');
+  if(!inFs&&i>0&&sc>scPrev&&sc>=4)await kkBanner(sc+' kluizen!',sc>=SLOT.SUPER_SC?'Superbonus!':'Er tumbelde een kluis bij',slotSp(1000,600),sc>=SLOT.SUPER_SC?'fsin super':'fsin');
   if(!st.wins.length)break;
   const cells=kkEl('kkCells');
   // Gouden baren tellen mee als loper maar blijven liggen: ze lichten op, maar verdwijnen niet
@@ -289,7 +295,7 @@ async function kkPlay(round,bet,isBuy,from){
    if(s.barMax){const cells=kkEl('kkCells');if(cells)cells.querySelectorAll('.kk-cell.gbar').forEach(el=>el.classList.add('win'));SFX.big();await kkBanner(kk.fs.kind==='super'?'Gouden baar':'3 Gouden baren','Max win · '+SLOT.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3200,'big gold');break}
    if(round.fs.maxHit&&s.total>=SLOT.MAX_WIN){SFX.big();await kkBanner('Max win',SLOT.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3000,'big gold');break}
    if(s.extra){SFX.bonus();of+=s.extra;kk.fs.of=Math.max(of,kk.fs.at);slotFsSet(kk.fs.at,kk.fs.of,s.extra);await kkBanner('+'+s.extra+' spins',s.scatters+' kluizen tijdens de bonus',1400,'fsin')}
-   await kkWait(kkFast()?120:280);
+   await kkWait(slotSp(280,120));
   }
   const x=round.total;
   if(x>=20)SFX.big();
@@ -330,7 +336,7 @@ Object.assign(act,{
  kkNewSeed(){if(kk.busy)return;const o=kkSeed();S.kkSeed=kkNewSd({id:kkSeedId(o),spins:o.spins,bon:o.bon,sup:o.sup});SFX.chip();save();kkRefreshUI();toast('Nieuwe seed: '+kkSeedId(S.kkSeed))},
  async kkSpin(isBuy){
   if(kk.busy||inJail())return;const bet=kkBet(),cost=isBuy?bet*SLOT.BUY_COST:bet;
-  if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
+  if(casCash()<cost){toast(casShort(),'bad');return}
   kk.busy=true;kk.confirm=false;kk.pick=false;kk.inBonus=!!isBuy;kk.paused=false;SFX.spin();
   if(S.slotRun&&S.slotRun.g==='kluis')delete S.slotRun;
   const sd=kkSeed(),seedStr=sd.s+':'+sd.c+':'+sd.n,rng=SLOT.seedRng(seedStr);sd.n++;

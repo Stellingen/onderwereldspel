@@ -273,23 +273,32 @@ function moneyRows(pend){const zw=zwart(),bk=typeof bankNet==='function'?bankNet
   <a class="dm zw ${zw<1?'nul':''}" href="#wit" title="Zwart geld: verdiend met klussen, auto's, huurmoorden en de familie. De bank en je zaken nemen het niet aan; eerst witwassen. In het casino en voor kleine uitgaven kun je het wel gebruiken."><i class="dm-ic">${ICO_ZWART}</i><span class="dm-t"><span class="label">Zwart geld</span><small>${zw>=1?'eerst witwassen ›':'niets op zak'}</small></span><b>${fmt(zw)}</b></a>
   <a class="dm bank" href="#bank" title="Op de bank staat je geld veilig: spaarrekening, deposito's en beleggingen."><i class="dm-ic">${ICO_BANK}</i><span class="dm-t"><span class="label">Bank</span><small>veilig</small></span><b>${fmt(bk)}</b></a>`}
 // Statusbalk bovenaan: op de telefoon en op smallere schermen (zonder rechterkolom). In het casino: saldo en lidmaatschap.
+// Ogen van de beveiliging: dicht (ze zien je niet), open (ze kijken rond) of rood (ze kijken naar jouw tafel)
+const CZ_EYE_TXT=['Ogen dicht · ze zien je niet','Ze kijken rond','Ze kijken naar jouw tafel'];
+function czEyesSvg(e){const one=x=>e===0?`<path d="M${x-9} 12 Q${x} 18 ${x+9} 12" stroke="#6b717b" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M${x-6} 15.5l-1.5 2.5M${x} 16.6v2.8M${x+6} 15.5l1.5 2.5" stroke="#6b717b" stroke-width="1.5" stroke-linecap="round"/>`
+  :`<path d="M${x-10} 12 Q${x} 3 ${x+10} 12 Q${x} 21 ${x-10} 12Z" fill="#0d0e11" stroke="${e===2?'#ff3d52':'#c9ced6'}" stroke-width="1.6"/><circle cx="${x}" cy="12" r="4.2" fill="${e===2?'#ff3d52':'#9aa3ad'}"/><circle cx="${x}" cy="12" r="1.8" fill="#0d0e11"/><circle cx="${x+1.4}" cy="10.6" r=".9" fill="#fff" opacity=".8"/>`;
+ return `<svg class="cz-eyes e${e}" viewBox="0 0 48 24" aria-hidden="true">${one(12)}${one(36)}</svg>`}
 function casHudHtml(){const pend=window.slotPending||0,b=typeof bankNet==='function'?bankNet():S.bank,t=typeof tier==='function'?tier():0;
- const lid=['Gewoon','VIP','High roller'][t]||'Gewoon',cb=typeof cbAvail==='function'?cbAvail():0;
+ const cb=typeof cbAvail==='function'?cbAvail():0;
  const luck=typeof luckState==='function'?luckState():null,zw=zwart(),hasLuck=!!(luck&&luck.o&&luck.o.luck);
- const sus=zw>=1||czVal()>=1?Math.round(czVal()):null,susC=sus>=70?'hot':sus>=35?'warm':'';
- // Telefoon: onder saldo en bank een rij knoppen die altijd passen (cashback, geluk, verdenking); geen zijwaarts scrollen
+ const sus=Math.round(czVal()),susC=sus>=70?'hot':sus>=35?'warm':'',e=czEyes(),pm=casPayMode(),wn=witNu(pend);
+ const lid=['Gewoon',`VIP`,`High roller`][t];
+ // Telefoon: een rij knoppen onder saldo en bank (spelen met, cashback, geluk, verdenking)
  const chips=[
+  `<button class="cc cc-pay ${pm}" onclick="act.casPay('${pm==='wit'?'zwart':'wit'}')" aria-label="Wissel tussen wit en zwart geld"><span>Spelen met</span><b><i></i>${pm==='wit'?'Wit':'Zwart'} ⇄</b></button>`,
   t?`<button class="cc cc-cb ${cb>=1?'can':''}" onclick="act.claimCb()" ${cb<1?'disabled':''} aria-label="Cashback claimen"><span>${cb>=1?'Claim':'Cashback'}</span><b>${fmt(cb)}</b></button>`
    :`<a class="cc cc-up" href="#profiel"><span>Gewoon lid</span><b>VIP ›</b></a>`,
   hasLuck?(luck.ready?`<button class="cc cc-luck can" onclick="act.luckUse()"><span><i>${diceSvg(luck.o)}</i>Geluk +${Math.round(luck.o.luck*100)}%</span><b>Gebruik</b></button>`
    :`<a class="cc cc-luck ${luck.L?'on':''}" href="#look"><span><i>${diceSvg(luck.o)}</i>Geluk +${Math.round(luck.o.luck*100)}%</span><b>${luck.L?fmtClock(luck.L):bkDurL(luck.W)}</b></a>`):'',
-  sus!=null?`<a class="cc cc-sus ${susC}" href="#wit" style="--v:${sus}%"><span>Verdenking</span><b>${sus}%</b></a>`:''].join('');
- return `<div class="chud">
-  <div class="ch-main"><i class="dm-ic">${ICO_CASH}</i><div><span class="label">Saldo om mee te spelen</span><b id="casBal">${fmt(S.cash-pend)}</b><span class="ch-split"><span class="w"><i></i>${fmt(witNu(pend))} wit</span><span class="z ${zw<1?'nul':''}"><i></i>${fmt(zw)} zwart</span></span></div></div>
+  `<a class="cc cc-sus ${susC} e${e}" href="#wit" style="--v:${sus}%" title="${CZ_EYE_TXT[e]}"><span>${czEyesSvg(e)}</span><b>${sus}%</b></a>`].join('');
+ return `<div class="chud v2">
+  <div class="ch-main"><i class="dm-ic">${ICO_CASH}</i><div><span class="label">Saldo om mee te spelen</span><b id="casBal">${fmt(S.cash-pend)}</b></div></div>
+  <div class="ch-pay" role="group" aria-label="Spelen met"><span class="label">Spelen met</span>
+   <div class="ch-seg"><button class="w ${pm==='wit'?'on':''}" onclick="act.casPay('wit')" aria-pressed="${pm==='wit'}"><small>Wit · legaal</small><b>${fmt(wn)}</b></button><button class="z ${pm==='zwart'?'on':''}" onclick="act.casPay('zwart')" aria-pressed="${pm==='zwart'}"><small>Zwart · riskant</small><b>${fmt(zw)}</b></button></div></div>
   <a class="ch-cell ch-bank" href="#bank"><i class="dm-ic">${ICO_BANK}</i><div><span class="label">Bank</span><b>${fmt(b)}</b></div></a>
-  ${t?`<div class="ch-cell ch-cb" title="${typeof CB_RATE!=='undefined'?'Cashback op elke inzet: '+Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*(TIER_CB[t]||1)*100).toLocaleString('nl-NL',{maximumFractionDigits:3})+'%').join(' · '):''}"><div><span class="label">Cashback</span><b id="cbAmt">${fmt(cb)}</b></div><button class="btn gold sm" id="cbBtn" onclick="act.claimCb()" ${cb<1?'disabled':''}>${cb>=1?'Claimen':'Nog niks te claimen'}</button></div>`:`<a class="ch-cell ch-up" href="#profiel"><span class="label">Gewoon lid</span><b>VIP: cashback en vaker bonus</b></a>`}
-  ${luck&&luck.o&&luck.o.luck?`<div class="ch-cell ch-luck ${luck.L?'on':''}"><i class="dm-ic">${diceSvg(luck.o)}</i><div><span class="label">Geluk +${Math.round(luck.o.luck*100)}%</span><b>${luck.L?'Nog '+fmtClock(luck.L):luck.W?bkDurL(luck.W):'Klaar'}</b></div>${luck.ready?`<button class="btn gold sm" onclick="act.luckUse()">Gebruiken</button>`:''}</div>`:''}
-  ${zwart()>=1||czVal()>=1?(()=>{const v=Math.round(czVal());return `<a class="ch-cell ch-sus ${v>=70?'hot':v>=35?'warm':''}" href="#wit" title="Speel je met zwart geld, dan loopt de verdenking op. Op 100% volgt een controle; heb je dan zwart geld, dan nemen ze het in beslag en word je aangehouden."><div><span class="label">Verdenking</span><b>${v}%</b></div><i class="mini"><i style="width:${v}%"></i></i></a>`})():''}
+  ${t?`<div class="ch-cell ch-cb" title="${typeof CB_RATE!=='undefined'?'Cashback op elke inzet: '+Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*(TIER_CB[t]||1)*100).toLocaleString('nl-NL',{maximumFractionDigits:3})+'%').join(' · '):''}"><div><span class="label">Cashback · ${lid}</span><b id="cbAmt">${fmt(cb)}</b></div><button class="btn gold sm" id="cbBtn" onclick="act.claimCb()" ${cb<1?'disabled':''}>${cb>=1?'Claimen':'Nog niks'}</button></div>`:`<a class="ch-cell ch-up" href="#profiel"><span class="label">Gewoon lid</span><b>VIP: cashback en vaker bonus</b></a>`}
+  ${hasLuck?`<div class="ch-cell ch-luck ${luck.L?'on':''}"><i class="dm-ic">${diceSvg(luck.o)}</i><div><span class="label">Geluk +${Math.round(luck.o.luck*100)}%</span><b>${luck.L?'Nog '+fmtClock(luck.L):luck.W?bkDurL(luck.W):'Klaar'}</b></div>${luck.ready?`<button class="btn gold sm" onclick="act.luckUse()">Gebruiken</button>`:''}</div>`:''}
+  <a class="ch-cell ch-sus ${susC} e${e}" href="#wit" title="Met zwart geld en grote inzetten loopt de verdenking op, het snelst bij de slots en als ze naar jouw tafel kijken. Op 100% word je verbannen.">${czEyesSvg(e)}<div class="ch-sus-t"><span class="label">Verdenking · ${CZ_EYE_TXT[e]}</span><div class="ch-sus-r"><b>${sus}%</b><i class="mini"><i style="width:${sus}%"></i></i></div></div></a>
   <div class="ch-cell ch-r">${statusTag()}</div>${chips?`<div class="ch-chips">${chips}</div>`:''}</div>`}
 // Kleine iconen voor de statusbalk op de telefoon (energie, gezondheid, hitte, cred)
 const TI={en:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2L4 13.5h6.5L9.5 22 20 9.5h-6.5z"/></svg>',

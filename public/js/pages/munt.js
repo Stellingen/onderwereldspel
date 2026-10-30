@@ -38,7 +38,7 @@ function coinView(){const flip=cf.flipping,sh=flip&&cf.show,c=sh?sh.coin:S.coin,
    <div class="kk-bet"><button onclick="cf.bi=Math.max(0,cf.bi-1);cf.msg=null;SFX.chip();render()" ${flip?'disabled':''} aria-label="Lagere inzet">−</button><b>${fmt(bet)}</b><button onclick="cf.bi=Math.min(CF_BETS.length-1,cf.bi+1);cf.msg=null;SFX.chip();render()" ${flip?'disabled':''} aria-label="Hogere inzet">+</button></div>
    <div class="cf-quick">${CF_BETS.map((v,i)=>`<button class="${cf.bi===i?'on':''}" onclick="cf.bi=${i};SFX.chip();render()" ${flip?'disabled':''}>${v>=1000?v/1000+'K':v}</button>`).join('')}</div>
    <div class="label" style="margin:14px 0 6px">Jouw kant</div>${sideBtns}
-   <button class="btn gold xl cf-go" onclick="act.cfFlip()" ${flip||inJail()||S.cash<bet?'disabled':''}>${S.cash<bet?'Te weinig geld':'Gooien · '+fmt(bet)}</button>
+   <button class="btn gold xl cf-go" onclick="act.cfFlip()" ${flip||inJail()||casCash()<bet?'disabled':''}>${casCash()<bet?'Te weinig geld':'Gooien · '+fmt(bet)}</button>
    ${ladder}`}
   <div class="cf-stats"><div><span>Kop</span><b>${tot?Math.round(st.k/tot*100):0}%</b></div><div><span>Munt</span><b>${tot?Math.round(st.m/tot*100):0}%</b></div><div><span>Worpen</span><b>${tot}</b></div><div><span>Langste reeks</span><b>${st.best}×</b></div></div>
   <p class="cf-fine">Eerlijk: elke worp is precies 50% kop en 50% munt, los van de vorige. Geen huisvoordeel. Je kunt maximaal ${CF_MAX} keer achter elkaar verdubbelen (×${2**CF_MAX}).</p>
@@ -46,7 +46,7 @@ function coinView(){const flip=cf.flipping,sh=flip&&cf.show,c=sh?sh.coin:S.coin,
 const cfReduce=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 Object.assign(act,{
  async cfFlip(){if(cf.flipping||inJail())return;let c=S.coin;const side=cf.side;
-  if(!c){const bet=cfBet();if(S.cash<bet){toast('Niet genoeg contant geld','bad');return}}else if(c.step>=CF_MAX)return;
+  if(!c){const bet=cfBet();if(casCash()<bet){toast(casShort(),'bad');return}}else if(c.step>=CF_MAX)return;
   cf.show={coin:c?{...c}:null,st:{...(S.cfStats||{k:0,m:0,best:0})}};
   if(!c){const bet=cfBet();S.cash-=bet;c={stake:bet,pot:bet,step:0}}
   // uitkomst: precies 50/50 en meteen vastgelegd

@@ -125,22 +125,22 @@ window.addEventListener('resize',()=>{clearTimeout(rlResizeT);rlResizeT=setTimeo
 Object.assign(act,{
  rlBet(k){const r=rl;if(r.spinning)return;if(r.erase){act.rlRemove(k);return}
   const cur=r.bets[k]||0,add=Math.min(r.chip,rlMax(k)-cur);if(add<=0){toast('Maximaal '+fmt(rlMax(k))+' op '+rlLabel(k).toLowerCase(),'bad');return}
-  if(rlTotal()+add>S.cash){toast('Niet genoeg contant geld voor deze fiche','bad');return}
+  if(rlTotal()+add>casCash()){toast('Niet genoeg contant geld voor deze fiche','bad');return}
   r.bets[k]=cur+add;r.undo.push([[k,add]]);SFX.chip();rlPaint([k])},
  rlRemove(k){const r=rl;if(r.spinning||!r.bets[k])return;const v=r.bets[k];delete r.bets[k];r.undo.push([[k,-v]]);SFX.click();rlPaint([k])},
  rlGroup(id){const r=rl,g=RL_GROUPS.find(x=>x.id===id);if(r.spinning||!g)return;
-  const cost=g.bets.length*r.chip;if(rlTotal()+cost>S.cash){toast('Niet genoeg contant geld voor '+g.n.toLowerCase(),'bad');return}
+  const cost=g.bets.length*r.chip;if(rlTotal()+cost>casCash()){toast('Niet genoeg contant geld voor '+g.n.toLowerCase(),'bad');return}
   const step=[];g.bets.forEach(ns=>{const k=rlKey(ns),cur=r.bets[k]||0,add=Math.min(r.chip,rlMax(k)-cur);if(add>0){r.bets[k]=cur+add;step.push([k,add])}});
   if(step.length)r.undo.push(step);SFX.chip();rlPaint(step.map(x=>x[0]))},
  rlUndo(){const r=rl;if(r.spinning||!r.undo.length)return;const step=r.undo.pop();step.forEach(([k,v])=>{r.bets[k]=(r.bets[k]||0)-v;if(r.bets[k]<=0)delete r.bets[k]});SFX.click();rlPaint(step.map(x=>x[0]))},
  rlClear(){const r=rl;if(r.spinning)return;const keys=Object.keys(r.bets),step=Object.entries(r.bets).map(([k,v])=>[k,-v]);if(step.length)r.undo.push(step);r.bets={};r.erase=false;rlPaint(keys)},
  rlDouble(){const r=rl;if(r.spinning)return;const src=rlTotal()?r.bets:r.last;if(!src)return;const tot=Object.values(src).reduce((a,b)=>a+b,0)*2;
-  if(tot>S.cash){toast('Niet genoeg contant geld om te verdubbelen','bad');return}
+  if(tot>casCash()){toast('Niet genoeg contant geld om te verdubbelen','bad');return}
   const keys=[...Object.keys(r.bets),...Object.keys(src)],step=[],nb={};Object.entries(src).forEach(([k,v])=>{const nv=Math.min(rlMax(k),v*2);nb[k]=nv;step.push([k,nv-(r.bets[k]||0)])});
   r.bets=nb;r.undo.push(step);SFX.chip();rlPaint(keys)},
- rlRepeat(){const r=rl;if(r.spinning||!r.last||rlTotal())return;const tot=Object.values(r.last).reduce((a,b)=>a+b,0);if(tot>S.cash){toast('Niet genoeg contant geld','bad');return}
+ rlRepeat(){const r=rl;if(r.spinning||!r.last||rlTotal())return;const tot=Object.values(r.last).reduce((a,b)=>a+b,0);if(tot>casCash()){toast(casShort(),'bad');return}
   r.bets=Object.assign({},r.last);r.undo.push(Object.entries(r.bets).map(([k,v])=>[k,v]));SFX.chip();rlPaint(Object.keys(r.bets))},
- rlSpin(){const r=rl;if(r.spinning||inJail())return;const tot=rlTotal();if(!tot)return;if(tot>S.cash){toast('Niet genoeg contant geld','bad');return}
+ rlSpin(){const r=rl;if(r.spinning||inJail())return;const tot=rlTotal();if(!tot)return;if(tot>casCash()){toast(casShort(),'bad');return}
   // uitkomst staat meteen vast en wordt meteen verrekend (verversen verandert niets)
   const n=crypto.getRandomValues(new Uint32Array(1))[0]%37;
   const lines=Object.entries(r.bets).map(([k,v])=>{const ns=rlNums(k);return {k,label:rlLabel(k),note:ns.length>1&&ns.length<=6?(36/ns.length-1)+':1':'',stake:v,back:ns.includes(n)?v*36/ns.length:0}});

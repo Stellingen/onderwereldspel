@@ -331,3 +331,58 @@ body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area
   .fl-ov .fl-stage{height:clamp(520px,58vh,900px)}
   .fl-ov .fl-top h2{font-size:60px}
 }
+
+/* ================= Casinobalk v2: compact, met kiezen tussen wit en zwart en de ogen van de beveiliging ================= */
+.ch-pay .ch-seg{display:flex;gap:4px}
+.ch-seg button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:6px 12px;border-radius:9px;background:var(--bg2);box-shadow:inset 0 0 0 1px var(--line2);color:var(--mute);font-family:var(--f-body);text-transform:none;letter-spacing:0;min-width:0;transition:background .15s,box-shadow .15s,color .15s}
+.ch-seg button small{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.ch-seg button b{font-family:var(--f-mono);font-size:14px;font-weight:700;white-space:nowrap}
+.ch-seg button.w.on{background:rgba(63,227,149,.14);box-shadow:inset 0 0 0 2px var(--wit);color:var(--wit)}
+.ch-seg button.z.on{background:rgba(195,200,208,.12);box-shadow:inset 0 0 0 2px var(--zw);color:#e6e9ee}
+.ch-seg button.z.on small{color:#ff8a95}
+.cz-eyes{width:52px;height:26px;flex:none;display:block}
+.cz-eyes.e1{filter:drop-shadow(0 0 4px rgba(201,206,214,.35))}
+.cz-eyes.e2{filter:drop-shadow(0 0 8px rgba(255,61,82,.8));animation:czRed 1s ease-in-out infinite}
+@keyframes czRed{50%{filter:drop-shadow(0 0 2px rgba(255,61,82,.4))}}
+.ch-sus{flex-direction:row!important;align-items:center;gap:12px}
+.ch-sus-t{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.ch-sus-r{display:flex!important;flex-direction:row!important;align-items:center;gap:8px}
+.ch-sus-r b{font-family:var(--f-mono);font-size:16px;min-width:44px}
+.ch-sus-r .mini{flex:1;height:5px;background:var(--bg2);border-radius:99px;overflow:hidden;display:block}.ch-sus-r .mini i{display:block;height:100%;background:var(--acc)}
+.ch-sus.warm .ch-sus-r b{color:var(--acc)}.ch-sus.hot .ch-sus-r b{color:var(--red)}.ch-sus.hot .mini i{background:var(--red)}
+.ch-sus.e2 .label{color:#ff8a95}
+@media (min-width:901px){
+ .chud.v2>*{flex:0 0 auto;padding:8px 16px}
+ .chud.v2>.ch-main{padding:8px 18px}
+ .chud.v2>.ch-sus{flex:1 1 260px;min-width:240px}
+ .chud.v2>.ch-pay{display:flex;flex-direction:column;gap:4px}
+ .chud.v2>.ch-r{justify-content:center}
+}
+@media (max-width:900px){
+ .chud.v2>.ch-pay,.chud.v2>.ch-sus{display:none}
+ .cc-pay b{display:inline-flex;align-items:center;gap:5px}.cc-pay b i{width:8px;height:8px;border-radius:2px;background:var(--wit)}
+ .cc-pay.zwart{box-shadow:inset 0 0 0 1.5px var(--zw)}.cc-pay.zwart b i{background:#2c2f35;box-shadow:0 0 0 1.5px var(--zw-bar)}
+ .cc-pay.wit{box-shadow:inset 0 0 0 1.5px var(--wit)}
+ .cc-sus span .cz-eyes{width:40px;height:20px}
+ .cc-sus.e2{box-shadow:inset 0 0 0 1.5px var(--red)}
+}
+/* verbannen uit het casino */
+.cas-ban{display:grid;place-items:center;min-height:min(70vh,640px);padding:30px 16px;background:radial-gradient(80% 70% at 50% 30%,rgba(255,61,82,.28),rgba(80,8,16,.6) 60%,#1a0508 100%);border:1px solid rgba(255,61,82,.6);border-radius:16px;box-shadow:inset 0 0 120px rgba(255,61,82,.25)}
+.cas-ban-in{max-width:560px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.cas-ban-in .cz-eyes{width:120px;height:60px}
+.cas-ban-in .label{color:#ff8a95}
+#view .cas-ban h1{margin:0;font-size:clamp(40px,6vw,72px);color:#ff5c6c;line-height:.95}
+.cas-ban p{margin:0;color:#ffd0d5;font-size:16px}
+.cas-ban-t{display:flex;flex-direction:column;align-items:center;padding:10px 26px;border-radius:12px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px rgba(255,61,82,.5)}
+.cas-ban-t span{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#ff8a95}.cas-ban-t b{font-family:var(--f-display);font-weight:900;font-size:44px;color:#fff}
+.cas-ban small{color:#e7a9b0;font-size:13px;line-height:1.5}
+.cas-ban-b{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.cas-ban-b .btn{width:auto}
+.chud .ch-pay>.ch-seg{flex-direction:row}
+@media (min-width:901px){.chud.v2{flex-wrap:wrap}.chud.v2>.ch-sus{min-width:200px}}
+@media (min-width:901px) and (max-width:1499px){
+ .chud.v2>*{padding:7px 12px}
+ .chud.v2 .ch-main b{font-size:28px}
+ .chud.v2 .ch-seg button{padding:5px 9px}.chud.v2 .ch-seg button b{font-size:13px}
+ .chud.v2 .ch-cb .label{max-width:90px}
+}
+@media (min-width:901px){.chud.v2>*{flex-grow:1}.chud.v2>.ch-main{flex-grow:0}}
