@@ -325,7 +325,7 @@ function page(file, m) {
   const ld = m.ld ? `<script type="application/ld+json">${JSON.stringify(m.ld).replace(/</g, '\\u003c')}</script>` : '';
   const map = { BRAND: escH(BRAND.name), BRAND_UP: escH(BRAND.name.toUpperCase()), BRAND_INITIAL: escH(BRAND.name.charAt(0).toUpperCase()), BRAND_SHORT: escH(BRAND.short),
     TAGLINE: escH(BRAND.tagline), GENRE: escH(BRAND.genre), SITE: escH(SITE), TITLE: escH(title), DESC: escH(desc), CANONICAL: escH(canon),
-    ROBOTS: m.noindex ? 'noindex,nofollow' : 'index,follow', BRAND_JSON: brandJs, LD_JSON: ld };
+    ROBOTS: m.noindex ? 'noindex,nofollow' : 'index,follow', BRAND_JSON: brandJs, LD_JSON: ld, VER: APP_VER };
   return tplFile(file).replace(/\{\{([A-Z_]+)\}\}/g, (all, k) => (k in map ? map[k] : all));
 }
 function sendPage(res, file, m, status) { res.status(status || 200).set('Cache-Control', 'no-cache').type('html').send(page(file, m)); }

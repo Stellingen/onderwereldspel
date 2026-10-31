@@ -429,7 +429,7 @@ route(/^\/misdaden$/,crimesPage);
 function crimeRow(c){const k=kansIn(c);
  return `<article class="cr" id="cr-${c.id}" data-id="${c.id}"><div class="cr-main"><span class="cr-rank">${rk(c.r)}${c.r>=heavyR?' · zwaar':''}</span><h3>${esc(c.n)}</h3><p>${esc(c.d)}</p></div>
   <dl class="cr-kv"><div class="w"><dt>Buit</dt><dd>${eur(c.min)} – ${eur(c.max)}</dd></div>
-   <div class="w" title="Kans op ${rk(c.r)}: basiskans ${c.base}% plus ${c.r*2} rangbonus, zonder training, spullen of familie"><dt>Kans op rang</dt><dd><b>${k}%</b><span class="cr-m"><i style="width:${k}%"></i></span><small class="cr-base">basis ${c.base}%</small></dd></div>
+   <div class="w" title="Kans op ${rk(c.r)}: basiskans ${c.base}% plus ${c.r*2} rangbonus, zonder training, spullen of familie"><dt>Kans op rang</dt><dd><b>${k}%</b><span class="cr-m"><i style="width:${k}%"></i></span>${k!==c.base?`<small class="cr-base">basis ${c.base}% + ${k-c.base}% rangbonus</small>`:''}</dd></div>
    <div><dt>Energie</dt><dd>${c.en}</dd></div><div><dt>XP</dt><dd>${c.xp}</dd></div><div><dt>Cred</dt><dd>${c.cr}</dd></div>
    <div><dt>Wachttijd</dt><dd>${dur(c.cd)}</dd></div><div><dt>Celstraf</dt><dd>${dur(c.jail)}</dd></div><div title="${esc(fleeWhere(c))}"><dt>Vluchten</dt><dd>${fleeTxt(c)}</dd></div></dl></article>`}
 function initCrimes(){const list=q('#cxList'),svg=q('#cxSvg'),plot=q('#cxPlot'),tip=q('#cxTip'),sortSel=q('#cxSort');
@@ -577,9 +577,9 @@ route(/^\/casino\/([a-z0-9-]+)$/,gamePage);
 function demoHtml(id){
  if(id==='kluis')return `<div class="demo"><div class="demo-h"><b>Zo valt het</b><span>Een voorbeeld op een kleiner veld.</span></div><div class="minislot" id="minislot" aria-hidden="true"></div></div>
   <div class="demo"><div class="demo-h"><b>Uitbetaling per cluster</b><span>Basisspel, gewoon lidmaatschap. In de bonus blijven de vakjes staan.</span></div>
-   <div class="seg-s" id="kkBet" role="group" aria-label="Inzet">${[10,100,1000].map((b,i)=>`<button data-b="${b}" class="${i?'':'on'}">${eur(b)} inzet</button>`).join('')}</div><div id="kkPay" class="pt-w"><p class="muted">Tabel laden…</p></div></div>`;
+   <div class="seg-s" id="kkBet" role="group" aria-label="Inzet">${[10,100,1000].map((b,i)=>`<button data-b="${b}" class="${i?'':'on'}">${eur(b)} inzet</button>`).join('')}</div><div id="kkPay" class="pt-w"><p class="muted">Tabel laden…</p></div><p class="pt-hint">Veeg opzij voor grotere clusters →</p></div>`;
  if(id==='vis')return `<div class="demo"><div class="demo-h"><b>Lijnwinst</b><span>Per lijn, bij de gekozen inzet. Gewoon lidmaatschap.</span></div>
-  <div class="seg-s" id="vdBet" role="group" aria-label="Inzet">${[10,100,1000].map((b,i)=>`<button data-b="${b}" class="${i?'':'on'}">${eur(b)} inzet</button>`).join('')}</div><div id="vdPay" class="pt-w"><p class="muted">Tabel laden…</p></div>
+  <div class="seg-s" id="vdBet" role="group" aria-label="Inzet">${[10,100,1000].map((b,i)=>`<button data-b="${b}" class="${i?'':'on'}">${eur(b)} inzet</button>`).join('')}</div><div id="vdPay" class="pt-w"><p class="muted">Tabel laden…</p></div><p class="pt-hint">Veeg opzij voor 4 en 5 op een lijn →</p>
   <div class="vd-fish" id="vdFish"></div></div>`;
  if(id==='mines')return `<div class="demo"><div class="demo-h"><b>Oefenen</b><span>Zonder geld. Kies je bommen en klik een vakje open.</span></div>
   <div class="seg-s" id="mnM" role="group" aria-label="Aantal bommen">${[3,5,10,20].map(m=>`<button data-m="${m}" class="${m===5?'on':''}">${m} bommen</button>`).join('')}</div>
