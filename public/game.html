@@ -11,8 +11,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Onderwereld">
-<title>Onderwereld</title>
+<meta name="apple-mobile-web-app-title" content="{{BRAND_SHORT}}">
+<title>{{TITLE}}</title>
+<meta name="robots" content="{{ROBOTS}}">
+<script>try{window.BRAND=JSON.parse('{{BRAND_JSON}}')}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Big+Shoulders+Text:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="css/style.css">
@@ -32,7 +34,7 @@
 </head>
 <body>
 <script src="/js/notap.js"></script>
-<div class="boot" id="boot"><span>ONDERWERELD</span></div>
+<div class="boot" id="boot"><span>{{BRAND_UP}}</span></div>
 <div class="app">
   <nav class="side" id="nav"></nav>
   <main>
@@ -57,7 +59,7 @@
       const me=await fetch('/api/me',{headers:h});
       if(me.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/?login=1');return}
       if(me.status===403){const j=await me.json().catch(()=>({}));try{localStorage.removeItem('ow_token')}catch(e){}
-        document.getElementById('boot').innerHTML='<div class="ban"><span>ONDERWERELD</span><b>Dit profiel is verbannen</b><p></p><a class="ban-new" href="/?register=1&amp;banned=1">Maak een nieuw profiel</a><a href="/">Terug naar de voorpagina</a></div>';document.querySelector('#boot p').textContent=(j.reason?'Reden: '+j.reason+'. ':'')+'Met dit profiel kun je niet meer spelen. Je kunt wel een nieuw profiel aanmaken en opnieuw beginnen.';return}
+        document.getElementById('boot').innerHTML='<div class="ban"><span>'+((window.BRAND&&window.BRAND.name)||'Onderwereld').toUpperCase()+'</span><b>Dit profiel is verbannen</b><p></p><a class="ban-new" href="/?register=1&amp;banned=1">Maak een nieuw profiel</a><a href="/">Terug naar de voorpagina</a></div>';document.querySelector('#boot p').textContent=(j.reason?'Reden: '+j.reason+'. ':'')+'Met dit profiel kun je niet meer spelen. Je kunt wel een nieuw profiel aanmaken en opnieuw beginnen.';return}
       if(me.ok){
         window.__TOKEN__=token;const mj=await me.json();window.__USER__=mj.username;window.__SINCE__=mj.since||null;window.__REDEEMED__=mj.redeemed||[];
         window.__TIER__=mj.tier!=null?+mj.tier:null;window.__ADMIN__=!!mj.admin;window.__PUB__=!!mj.pub;

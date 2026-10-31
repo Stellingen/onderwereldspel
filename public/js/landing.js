@@ -1,6 +1,6 @@
 // Website van Onderwereld. Eén pagina met een eigen adres per onderwerp (History API):
 //   /  ·  /misdaden  ·  /casino  ·  /casino/<spel>  ·  /families  ·  /families/<id>  ·  /rangen  ·  /training
-// De server stuurt onbekende adressen naar index.html, dus elke link werkt ook direct of na verversen.
+// De server stuurt de bekende adressen (/, /misdaden, /casino/<spel> enz.) naar index.html met de juiste titel; onbekende adressen krijgen een 404 met dezelfde pagina ("Doodlopende steeg").
 // Alle cijfers komen uit de echte speldata: RANKS, CRIMES, FAMILIES, FAM_RANKS, FAM_HEISTS, BIZ, TRAININGS, RELAX, GEAR, HOMES
 // (data.js), FAM_LORE en RANK_LORE (lore.js) en de slotsymbolen (icons.js). slot.js en vis.js laden pas op de casinopagina's.
 (function(){
@@ -16,6 +16,8 @@ const pct=n=>nl(n,1)+'%';
 const dur=s=>{s=Math.round(s);if(s<60)return s+' s';const m=Math.floor(s/60),r=s%60;return r?m+' min '+r+' s':m+' min'};
 const mins=m=>m<60?m+' min':m%60?Math.floor(m/60)+' u '+(m%60)+' min':(m/60)+' uur';
 const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a, pick=a=>a[Math.floor(Math.random()*a.length)];
+// merknaam en genre uit brand.json (de server zet ze in window.BRAND)
+const BR=(window.BRAND&&window.BRAND.name)||'Onderwereld',GENRE=(window.BRAND&&window.BRAND.genre)||'Nederlandstalige maffia-browsergame';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const getToken=()=>{try{return localStorage.getItem('ow_token')}catch(e){return null}};
 const setToken=t=>{try{t?localStorage.setItem('ow_token',t):localStorage.removeItem('ow_token')}catch(e){}};
@@ -118,8 +120,12 @@ function render(path,opt){opt=opt||{};renderId++;curPath=path;
   let out=null;for(const [re,fn] of ROUTES){const m=path.match(re);if(m){out=fn(...m.slice(1));if(out)break}}
   if(!out)out=notFound();
   app.className='app '+(out.cls||'');app.innerHTML=out.html;
-  document.title=out.title||'Onderwereld';
+  document.title=out.title||BR;
   const md=q('meta[name="description"]');if(md&&out.desc)md.setAttribute('content',out.desc);
+  {const site=((window.BRAND&&window.BRAND.url)||location.origin).replace(/\/+$/,''),url=site+(path==='/'?'/':path),set=(sel,v)=>{const m=q(sel);if(m&&v)m.setAttribute(sel.startsWith('link')?'href':'content',v)};
+   set('link[rel="canonical"]',url);set('meta[property="og:url"]',url);set('meta[property="og:title"]',document.title);set('meta[name="twitter:title"]',document.title);
+   if(out.desc){set('meta[property="og:description"]',out.desc);set('meta[name="twitter:description"]',out.desc)}
+   const rb=q('meta[name="robots"]');if(rb)rb.setAttribute('content',out.cls==='pg-404'?'noindex,nofollow':'index,follow')}
   setActive(path);onScroll();
   if(opt.pop)scrollTo(0,opt.y||0);else if(!opt.keep)scrollTo(0,0);
   if(out.after)out.after();
@@ -140,7 +146,7 @@ document.addEventListener('click',e=>{const h=e.target.closest('a[href^="#"]');i
   e.preventDefault();go(a.getAttribute('href'))});
 addEventListener('popstate',e=>{const p=cleanPath(location.pathname);if(p===curPath)return;menu(false);render(p,{pop:true,y:(e.state&&e.state.y)||0})});
 
-function notFound(){return{title:'Niet gevonden · Onderwereld',cls:'pg-404',html:`<section class="ph"><div class="wrap"><div class="kick"><span class="dot"></span>Doodlopende steeg</div>
+function notFound(){return{title:'Niet gevonden · '+BR,cls:'pg-404',html:`<section class="ph"><div class="wrap"><div class="kick"><span class="dot"></span>Doodlopende steeg</div>
   <h1 class="ph-t">Hier is<br><em>niks.</em></h1><p class="ph-lede">Deze straat staat op geen enkele kaart. Misschien een typfout, misschien heeft iemand het bord weggehaald.</p>
   <div class="hero-cta"><a class="btn xl" href="/" data-link>Terug naar de stad</a></div></div></section>`}}
 
@@ -167,12 +173,13 @@ function heroHtml(){const L=loggedIn;
   <canvas id="city" aria-hidden="true"></canvas>
   <div class="hero-grid wrap">
    <div class="hero-copy">
-    <div class="kick" id="kick"><span class="dot"></span>${L?'Welkom terug, '+esc(userName):'Meldkamer · live'}</div>
+    <div class="kick" id="kick"><span class="dot"></span>${L?'Welkom terug, '+esc(userName):esc(GENRE)}</div>
     <h1 class="mega" id="mega">${L?'<span>De stad</span><span><em>wacht op je.</em></span>':'<span>Van rookie</span><span>tot <em>peetvader</em>.</span>'}</h1>
     <p class="lede" id="lede">${L?'Je imperium staat precies waar je het hebt achtergelaten. Je zaken hebben doorgedraaid en je rivalen hebben niet stilgezeten.':'Je begint met €250 en een open rugzak op de Dam. Hoe ver je komt, hangt af van je lef, je familie en hoe vaak je de politie te slim af bent.'}</p>
     <div class="hero-cta" id="heroCta">${L?'<a class="btn xl" href="/game.html">Ga naar mijn dashboard</a><a class="btn ghost xl" href="#loopbaan">Wat er nog te halen valt</a>':'<button class="btn xl" data-auth="register">Begin je carrière</button><button class="btn ghost xl" data-auth="login">Inloggen</button>'}</div>
+    ${L?'':'<ul class="hero-facts" aria-label="In het kort"><li>Gratis</li><li>Speel in je browser of als app</li><li>Alleen virtueel spelgeld</li></ul>'}
    </div>
-   <aside class="feed" aria-label="Meldingen uit de stad"><div class="feed-head"><span>Meldkamer</span><span id="clock">00:00:00</span></div><ol id="feed"></ol></aside>
+   <aside class="feed" aria-label="Meldkamer: sfeerimpressie, geen echte meldingen"><div class="feed-head"><span>Meldkamer <small>· sfeer</small></span><span id="clock">00:00:00</span></div><ol id="feed" aria-hidden="true"></ol><p class="feed-note">Sfeerimpressie van de stad, geen echte meldingen of spelers.</p></aside>
   </div>
   <nav class="stats wrap" aria-label="Onderdelen van het spel">
    <a href="/rangen" data-link><b data-count="${RANKS.length}">${RANKS.length}</b><span>rangen</span>${ic('arrow')}</a>
@@ -331,8 +338,8 @@ function boardHtml(ri){
    <div class="b-seg" aria-hidden="true">${RN.map((_,i)=>`<i class="${i<=ri?'on':''}"></i>`).join('')}</div>
    <dl class="b-kv"><div><dt>XP nodig</dt><dd>${nl(RANKS[ri][1])}</dd></div><div><dt>Buitbonus</dt><dd>+${Math.round((k-1)*100)}%</dd></div><div><dt>Beloning</dt><dd>${rew?eurS(rew):'—'}</dd></div></dl></article>
   <article class="bx b-best"><div class="label">Beste klus op deze rang</div><h4>${esc(best.n)}</h4><p>${esc(best.d)}</p>
-   <dl class="b-kv"><div><dt>Buit</dt><dd>${eurS(best.min*k)} – ${eurS(best.max*k)}</dd></div><div><dt>Basiskans</dt><dd>${best.base}%</dd></div><div><dt>Energie</dt><dd>${best.en}</dd></div></dl>
-   <div class="b-meter"><i style="width:${best.base}%"></i></div></article>
+   <dl class="b-kv"><div><dt>Buit</dt><dd>${eurS(best.min*k)} – ${eurS(best.max*k)}</dd></div><div><dt>Kans</dt><dd>${kansAt(best,ri)}%</dd></div><div><dt>Energie</dt><dd>${best.en}</dd></div></dl>
+   <div class="b-meter"><i style="width:${kansAt(best,ri)}%"></i></div><small class="b-kans">Kans op deze rang: basiskans ${best.base}% + ${ri*2} rangbonus. Training, spullen en je familie geven in het spel nog meer.</small></article>
   <article class="bx b-home"><div class="label">Hier slaap je</div>${home?`<h4>${esc(home.n)}</h4><span class="b-place">${esc(home.place||'')}</span><p>${esc(home.d||'')}</p>`:'<h4>Op straat</h4>'}</article>
   <article class="bx b-loot"><div class="label">Buit per klus</div><div class="b-big">${eurS(lo)} <span>tot</span> ${eurS(hi)}</div>
    <div class="b-bars" role="img" aria-label="Hoogste buit per rang, van ${eurS(maxs[0])} tot ${eurS(maxs[maxs.length-1])}">${maxs.map((m,i)=>`<i class="${i<=ri?'on':''}${i===ri?' cur':''}" style="height:${(14+(Math.log10(m)-l0)/(l1-l0)*86).toFixed(1)}%" title="${RN[i]}: tot ${eurS(m)}"></i>`).join('')}</div>
@@ -373,23 +380,39 @@ function chainHtml(){const F=chainSorted(),n=F.length;
    <p>Van de jonge honden uit West tot de oudste familie van Europa. Hoe hoger, hoe zwaarder de deur. Tik op een familie voor haar verhaal. <a class="more-a" href="/families" data-link>Alle families ${ic('arrow')}</a></p></div>
   <div class="wrap rv"><div class="chain">${F.map((f,i)=>`<a class="ch" href="/families/${f.id}" data-link style="--fc:${f.col};--h:${(20+i/(n-1)*80).toFixed(1)}%;--i:${i}"><span class="ch-col"><span class="ch-top">${crest(f)}</span></span><b>${esc(f.n)}</b><small>${rk(f.r)}</small></a>`).join('')}</div></div></section>`}
 
-function home(){return {title:'Onderwereld · Van rookie tot peetvader',cls:'pg-home',desc:'Begin als Rookie en werk je op tot Peetvader. '+CRIMES.length+' misdaden, '+FAMILIES.length+' families, een eigen casino en een echte ranglijst.',
+/* ---------- Veelgestelde vragen: alleen wat echt zo werkt in het spel ---------- */
+const FAQ=()=>[
+ ['Wat is '+BR+'?',`Een ${esc(GENRE)}. Je begint als Rookie met €250 spelgeld en werkt je via ${RANKS.length} rangen op tot Peetvader: ${CRIMES.length} misdaden, auto's stelen, ${FAMILIES.length} families, eigen zaken, een woning, training en een casino. Alles is verzonnen.`],
+ ['Kost het iets?','Nee. Spelen is gratis en er is niets te koop met echt geld. Codes en lidmaatschappen in het spel kosten geen echt geld.'],
+ ['Moet ik iets downloaden?',`Nee. Je speelt in je browser, op de computer en op je telefoon. Op je telefoon kun je ${esc(BR)} ook op je beginscherm zetten, dan opent hij als een app.<span data-faq-app></span>`],
+ ['Speel ik met echt geld?','Nee. Alle bedragen zijn virtueel spelgeld. Je kunt geen echt geld inzetten, winnen of uitbetalen, ook niet in het casino.'],
+ ['Vanaf welke leeftijd?','Het casino is bedoeld voor spelers van 18 jaar en ouder. Het spel gaat over misdaad; alle namen, families en verhalen zijn verzonnen.'],
+ ['Wordt mijn voortgang bewaard?','Ja. Je voortgang staat op de server bij je account, dus je kunt op een ander apparaat inloggen en verder spelen. Je speelt op één apparaat tegelijk: open je het spel ergens anders, dan gaat het daar verder.'],
+ ['Wachtwoord vergeten?','Je geeft geen e-mailadres op, dus wachtwoordherstel bestaat nu nog niet. Kies een wachtwoord dat je onthoudt, of laat je browser het bewaren.'],
+ ['Wie staan er op de ranglijst?','Echte spelers, tussen rivalen die het spel zelf laat meespelen. Echte spelers hebben in de ranglijst het label SPELER.'],
+ ['Is de meldkamer bovenaan echt?','Nee, dat is een sfeerimpressie van de stad. Er komen geen echte meldingen of spelers in voor.']];
+function faqHtml(){return `<section class="blk faq" id="faq"><div class="sec-head wrap rv"><div><div class="kick"><span class="dot"></span>Vragen</div><h2>Goed om te weten.<br><em>Voor je begint.</em></h2></div>
+   <p>De korte antwoorden op wat nieuwe spelers het vaakst willen weten.</p></div>
+  <div class="wrap rv"><div class="faq-list">${FAQ().map((f,i)=>`<details class="faq-q"${i===0?' open':''}><summary><span class="faq-n">${String(i+1).padStart(2,'0')}</span><b>${esc(f[0])}</b><i class="faq-x" aria-hidden="true"></i></summary><div class="faq-a"><p>${f[1]}</p></div></details>`).join('')}</div></div></section>`}
+function initFaq(){if(!window.owInstall){addEventListener('load',initFaq,{once:true});return}const s=q('[data-faq-app]');if(s&&window.owInstall&&owInstall.phone&&!owInstall.standalone()){s.innerHTML=' <button class="tlink" type="button" data-faq-install>Zo zet je hem op je beginscherm</button>';q('[data-faq-install]').onclick=()=>owInstall.open()}}
+function home(){return {title:BR+' · '+GENRE,cls:'pg-home',desc:'Gratis maffia-browsergame in het Nederlands. Begin als Rookie en werk je op tot Peetvader: '+CRIMES.length+' misdaden, '+FAMILIES.length+' families, een casino met spelgeld en een ranglijst. Speel in je browser of als app.',
  html:heroHtml()+careerHtml()+`<section class="blk cas-strip"><div class="sec-head wrap rv"><div><div class="kick"><span class="dot"></span>Casino</div><h2>Negen spellen.<br><em>Het huis wint.</em></h2></div>
-   <p>Echte regels en doorgerekende kansen. Twee eigen slots, een vliegtuigje boven zee en de klassiekers aan tafel. <a class="more-a" href="/casino" data-link>Naar het casino ${ic('arrow')}</a></p></div>
+   <p>Echte regels en doorgerekende kansen. Twee eigen slots, een vliegtuigje boven zee en de klassiekers aan tafel. <a class="more-a" href="/casino" data-link>Naar het casino ${ic('arrow')}</a><small class="play-money">18+ · Alleen virtueel spelgeld, geen echt geld</small></p></div>
   <div class="wrap"><div class="covers">${GAMES.map((g,i)=>coverCard(g,i)).join('')}</div></div></section>`+chainHtml()
-  +(loggedIn?ctaHtml('Terug aan','het werk.','Je dashboard staat klaar met alles wat er is gebeurd terwijl je weg was.'):ctaHtml('De stad','wacht niet.','Terwijl jij twijfelt, klimt een rivaal een rang hoger.')),
- after(){initCity();initCareer();initTilt()}}}
+  +faqHtml()+(loggedIn?ctaHtml('Terug aan','het werk.','Je dashboard staat klaar met alles wat er is gebeurd terwijl je weg was.'):ctaHtml('De stad','wacht niet.','Terwijl jij twijfelt, klimt een rivaal een rang hoger.')),
+ after(){initCity();initCareer();initTilt();initFaq()}}}
 route(/^\/$/,home);
 
 /* ================= Misdaden: alle klussen, met een kaart van kans tegen buit ================= */
 const kansIn=c=>Math.min(95,Math.max(5,c.base+c.r*2));   // kans op de rang waarop de klus opengaat, zonder spullen of training
+const kansAt=(c,ri)=>Math.min(95,Math.max(5,c.base+ri*2)); // zelfde rekensom op een gekozen rang (in het spel: chanceRaw in state.js)
 const avgLoot=c=>(c.min+c.max)/2;
 const fleeTxt=c=>{const f=typeof FLEE_LEVELS!=='undefined'&&FLEE_LEVELS[c.flee];return f?f.label:'—'};
 const fleeWhere=c=>{const f=typeof FLEE_LEVELS!=='undefined'&&FLEE_LEVELS[c.flee];return f?f.where:''};
 const CX_SORT=[['rang','Op rang'],['buit','Meeste buit'],['kans','Hoogste kans'],['xp','Meeste XP per energie'],['straf','Kortste straf']];
 function crimesPage(){
  const maxL=Math.max(...CRIMES.map(c=>c.max)),maxJ=Math.max(...CRIMES.map(c=>c.jail)),heavy=CRIMES.filter(c=>c.r>=heavyR).length;
- return {title:'Misdaden · Onderwereld',cls:'pg-crimes',desc:'Alle '+CRIMES.length+' klussen van Onderwereld: buit, kans, energie en straf per rang.',
+ return {title:'Misdaden · '+BR,cls:'pg-crimes',desc:'Alle '+CRIMES.length+' klussen van '+BR+': buit, kans, energie en straf per rang.',
  html:pageHead({kick:'Misdaden',title:`${CRIMES.length} klussen.<br><em>Kies je risico.</em>`,
    lede:'Van een bekertje bij Centraal tot de goudreserve van een land. Elke klus kost energie en heeft een slaagkans. Gaat het mis, dan kun je nog vluchten: op straat lukt dat makkelijker dan in een afgesloten gebouw.',
    stats:[['Klussen',CRIMES.length],['Zwaar',heavy+' vanaf '+rk(heavyR)],['Hoogste buit',eurS(maxL)],['Langste straf',dur(maxJ)]]})
@@ -406,7 +429,7 @@ route(/^\/misdaden$/,crimesPage);
 function crimeRow(c){const k=kansIn(c);
  return `<article class="cr" id="cr-${c.id}" data-id="${c.id}"><div class="cr-main"><span class="cr-rank">${rk(c.r)}${c.r>=heavyR?' · zwaar':''}</span><h3>${esc(c.n)}</h3><p>${esc(c.d)}</p></div>
   <dl class="cr-kv"><div class="w"><dt>Buit</dt><dd>${eur(c.min)} – ${eur(c.max)}</dd></div>
-   <div class="w"><dt>Kans</dt><dd><b>${k}%</b><span class="cr-m"><i style="width:${k}%"></i></span></dd></div>
+   <div class="w" title="Kans op ${rk(c.r)}: basiskans ${c.base}% plus ${c.r*2} rangbonus, zonder training, spullen of familie"><dt>Kans op rang</dt><dd><b>${k}%</b><span class="cr-m"><i style="width:${k}%"></i></span><small class="cr-base">basis ${c.base}%</small></dd></div>
    <div><dt>Energie</dt><dd>${c.en}</dd></div><div><dt>XP</dt><dd>${c.xp}</dd></div><div><dt>Cred</dt><dd>${c.cr}</dd></div>
    <div><dt>Wachttijd</dt><dd>${dur(c.cd)}</dd></div><div><dt>Celstraf</dt><dd>${dur(c.jail)}</dd></div><div title="${esc(fleeWhere(c))}"><dt>Vluchten</dt><dd>${fleeTxt(c)}</dd></div></dl></article>`}
 function initCrimes(){const list=q('#cxList'),svg=q('#cxSvg'),plot=q('#cxPlot'),tip=q('#cxTip'),sortSel=q('#cxSort');
@@ -457,13 +480,14 @@ const flo=v=>'€'+Math.floor(v).toLocaleString('nl-NL');   // zelfde afronding 
 const rules=a=>`<ul class="rules">${a.map(r=>`<li>${r}</li>`).join('')}</ul>`;
 const payRows=(t,rows)=>`<div class="pay"><h3>${t}</h3><dl>${rows.map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('')}</dl></div>`;
 function casinoPage(){
- return {title:'Casino · Onderwereld',cls:'pg-casino',desc:"Kluiskraker, Visdief, Mines, Hoogvlieger, Blackjack, Three Card Poker, Texas Hold'em, Roulette en Dubbel of niks.",
+ return {title:'Casino · '+BR,cls:'pg-casino',desc:"Kluiskraker, Visdief, Mines, Hoogvlieger, Blackjack, Three Card Poker, Texas Hold'em, Roulette en Dubbel of niks.",
  html:pageHead({kick:'Casino',title:'Negen spellen.<br><em>Eén huis.</em>',lede:'Twee eigen slots, een vliegtuigje boven zee, een veld vol bommen en de klassiekers aan tafel. Echte regels, doorgerekende kansen. Het huis heeft een klein voordeel, net als in elk casino.',
    stats:[['Spellen',GAMES.length],['Eigen slots',2],['Hoogste win','10.000×'],['Uitkomst','vast bij je klik']]})
  +`<section class="wrap"><div class="covers big">${GAMES.map((g,i)=>coverCard(g,i,'p')).join('')}</div></section>
   <section class="wrap facts-blk rv"><div class="facts"><div><h3>Geen voorproefje</h3><p>De uitkomst ligt vast op het moment dat je klikt en staat in je opslag. Verversen of weggaan verandert niets, en het spel laat niets zien voordat de animatie klaar is.</p></div>
    <div><h3>Doorgerekend</h3><p>Elke slot is miljoenen keren gesimuleerd. De terugbetaling blijft onder de 100%, dus op lange termijn wint het huis. Dubbel of niks is de enige zonder huisvoordeel.</p></div>
-   <div><h3>VIP en High roller</h3><p>Met een lidmaatschap kom je vaker in de bonus en krijg je cashback op elke inzet. Het basisspel betaalt dan net iets minder, zodat het eerlijk blijft.</p></div></div></section>`
+   <div><h3>VIP en High roller</h3><p>Met een lidmaatschap kom je vaker in de bonus en krijg je cashback op elke inzet. Het basisspel betaalt dan net iets minder, zodat het eerlijk blijft.</p></div>
+   <div><h3>Alleen spelgeld · 18+</h3><p>Je speelt met virtueel geld uit het spel. Je kunt geen echt geld inzetten, winnen of uitbetalen. Het casino is bedoeld voor spelers van 18 jaar en ouder.</p></div></div></section>`
  +moreHtml('casino')+ctaHtml('Fiches','klaar?','Je eerste inzet staat al op tafel.'),
  after(){initTilt()}}}
 route(/^\/casino$/,casinoPage);
@@ -533,7 +557,7 @@ const GD={
 
 function gamePage(slug){const g=gameBy(slug);if(!g)return null;const D=GD[g.id],i=GAMES.indexOf(g),prev=GAMES[(i+GAMES.length-1)%GAMES.length],next=GAMES[(i+1)%GAMES.length];
  const play=loggedIn?'<a class="btn xl" href="/game.html">Speel in het casino</a>':'<button class="btn xl" data-auth="register">Maak een account en speel</button>';
- return {title:g.n+' · Casino · Onderwereld',cls:'pg-game',desc:g.n+': '+g.short,
+ return {title:g.n+' · Casino · '+BR,cls:'pg-game',desc:g.n+': '+g.short,
  html:`<section class="gh" style="--c:${g.col}"><div class="wrap gh-in">
    <div class="gh-copy"><a class="ph-back" href="/casino" data-link>${ic('back')}Casino</a><div class="kick"><span class="dot"></span>${g.kind}</div>
     <h1 class="ph-t">${g.n}</h1><p class="ph-lede">${g.short}</p>
@@ -653,7 +677,7 @@ const famPromo=(i,T)=>Math.round(5000*Math.pow(2,T)*i);
 const gearName=id=>{const g=GEAR.find(x=>x.id===id);return g?g.n:id};
 const bonusTxt=(f,k)=>[f.chance?'kans +'+nl(f.chance*k,1)+'%':'',f.loot?'buit +'+nl(f.loot*k,1)+'%':'',f.jail?'straf −'+nl(f.jail*k,1)+'%':''].filter(Boolean).join(' · ');
 function famsPage(){const F=chainSorted(),top=F.slice().reverse(),rs=FAMILIES.map(f=>f.r);
- return {title:'Families · Onderwereld',cls:'pg-fams',desc:'De '+FAMILIES.length+' families van Onderwereld: wie ze zijn, wie ze binnenlaten en hoe je bij ze opklimt.',
+ return {title:'Families · '+BR,cls:'pg-fams',desc:'De '+FAMILIES.length+' families van '+BR+': wie ze zijn, wie ze binnenlaten en hoe je bij ze opklimt.',
  html:pageHead({kick:'Families',title:`${FAMILIES.length} families.<br><em>De voedselketen.</em>`,
    lede:'Je hoort bij één familie tegelijk. Elke familie heeft een eigen voordeel, een eigen grote klus en een ladder waarop je klimt, van aspirant tot de mensen die aan het hoofd van de tafel zitten.',
    stats:[['Families',FAMILIES.length],['Eerste deur',rk(Math.min(...rs))],['Zwaarste deur',rk(Math.max(...rs))],['Rangen per familie',FAM_RANKS.length]]})
@@ -687,7 +711,7 @@ function famPage(id){const f=FAMILIES.find(x=>x.id===id);if(!f)return null;
  const FT=FAM_RANKS.findIndex(r=>r[2])>0?FAM_RANKS.findIndex(r=>r[2])-1:FAM_RANKS.length-1;
  const ladder=FAM_RANKS.map((r,i)=>({n:r[0],need:famNeedFor(i,T),pay:i?famPromo(Math.min(i,FT+1),T):0,lore:famRankLore(r[0]),ch:r[2]||0}));
  const topR=FAM_RANKS[FAM_RANKS.length-1][0],hasLead=FT<FAM_RANKS.length-1;
- return {title:f.n+' · Families · Onderwereld',cls:'pg-fam',desc:f.n+': '+f.d,
+ return {title:f.n+' · Families · '+BR,cls:'pg-fam',desc:f.n+': '+f.d,
  html:`<section class="fh" style="--fc:${f.col}"><div class="wrap fh-in">
    <div class="fh-copy"><a class="ph-back" href="/families" data-link>${ic('back')}Families</a><div class="kick"><span class="dot"></span>${esc(L.wijk||'Familie')}</div>
     <h1 class="ph-t">${esc(f.n)}</h1>${L.motto?`<p class="fh-motto">${esc(L.motto)}</p>`:''}
@@ -726,7 +750,7 @@ function rankInfo(i){const name=rk(i),k=lootK(i),rew=RANK_REWARD(i);
   <dl class="ri-kv"><div><dt>XP nodig</dt><dd>${nl(RANKS[i][1])}</dd></div><div><dt>Buitbonus</dt><dd>+${Math.round((k-1)*100)}%</dd></div><div><dt>Kansbonus</dt><dd>+${i*2}%</dd></div><div><dt>Beloning</dt><dd>${rew?eurS(rew):'—'}</dd></div></dl>
   ${body||'<p class="ri-none">Hier ga je met lege handen in. Je begint met €250, 100 energie en een stad vol kansen.</p>'}`}
 function ranksPage(){const top=RANKS[RANKS.length-1][1];
- return {title:'Rangen · Onderwereld',cls:'pg-ranks',desc:'De '+RANKS.length+' rangen van Onderwereld, van Rookie tot Peetvader, en wat elke rang opent.',
+ return {title:'Rangen · '+BR,cls:'pg-ranks',desc:'De '+RANKS.length+' rangen van '+BR+', van Rookie tot Peetvader, en wat elke rang opent.',
  html:pageHead({kick:'Rangen',title:`${RANKS.length} rangen.<br><em>Iedereen begint onderaan.</em>`,lede:'Je klimt met XP. Elke rang opent nieuwe klussen, families, zaken en plekken om te trainen, en geeft je buit en je kans een zetje.',
    stats:[['Start','0 XP'],['Top',nl(top)+' XP'],['Buitbonus top','+'+Math.round((lootK(RANKS.length-1)-1)*100)+'%'],['Kansbonus top','+'+(RANKS.length-1)*2+'%']]})
  +`<section class="wrap rk"><div class="rk-wall rv" id="rkWall" role="listbox" aria-label="Rangen" tabindex="0">
@@ -756,7 +780,7 @@ function rxCard(x){const ri=x.r||0,price=typeof relaxCost==='function'?relaxCost
   <ul class="rc-fx">${rxFx(x).map(v=>`<li>${v}</li>`).join('')}</ul></div>
   <div class="rc-side"><b>${eur(price)}</b><span>${ri?'vanaf '+rk(ri):'meteen'}</span><span>${mins(x.cd)} wachten</span></div></article>`}
 function trainPage(){const L0=10;
- return {title:'Training · Onderwereld',cls:'pg-train',desc:'Negen plekken om te trainen en negen manieren om bij te komen in Onderwereld.',
+ return {title:'Training · '+BR,cls:'pg-train',desc:'Negen plekken om te trainen en negen manieren om bij te komen in '+BR+'.',
  html:pageHead({kick:'Training',title:'Word blijvend<br><em>beter.</em>',lede:'Van de sportschool tot een avondstudie rechten. Elke sessie maakt je voor altijd sterker, maar elke plek heeft een tijdslot. Ontspannen geeft je tijdelijk extra.',
    stats:[['Plekken',TRAININGS.length],['Max niveau',TRAIN_MAX],['Mijlpalen',(typeof TRAIN_MILES!=='undefined'?TRAIN_MILES:[]).join(' · ')||'—'],['Ontspannen',RELAX.length+' manieren']]})
  +`<section class="wrap tr"><div class="tr-ctl rv"><label for="trLv"><span class="label">Niveau</span><b id="trLvV">${L0}</b></label>
@@ -798,7 +822,7 @@ q('#plNo').textContent='Nr. '+String(R(100000,999999));
 function setMode(m){mode=m;const reg=m==='register';
  q('#tabLogin').classList.toggle('on',!reg);q('#tabReg').classList.toggle('on',reg);q('#tabLogin').setAttribute('aria-selected',!reg);q('#tabReg').setAttribute('aria-selected',reg);
  q('#authTitle').textContent=reg?'Nieuw dossier':'Welkom terug';
- q('#authHint').textContent=reg?'Kies een naam die de straat zal onthouden. Een e-mailadres is niet nodig.':'Log in en ga verder waar je gebleven was.';
+ q('#authHint').textContent=reg?'Kies een naam die de straat zal onthouden. Een e-mailadres is niet nodig, dus onthoud je wachtwoord goed: herstellen kan nu nog niet.':'Log in en ga verder waar je gebleven was.';
  q('#authSubmit').textContent=reg?'Account aanmaken':'Inloggen';q('#pass2wrap').hidden=!reg;q('#meter').hidden=!reg;q('#userHint').hidden=!reg;
  q('#authPass').autocomplete=reg?'new-password':'current-password';q('#plStatus').textContent=reg?'Nieuw dossier':'Bekende';q('#plRank').textContent=reg?'Rookie':'?';
  q('#authSwap').innerHTML=reg?'Al een account? <button type="button" data-mode="login">Log in</button>':'Nog geen account? <button type="button" data-mode="register">Maak er een aan</button>';

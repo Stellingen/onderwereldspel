@@ -11,9 +11,27 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Onderwereld">
-<title>Onderwereld · Van rookie tot peetvader</title>
-<meta name="description" content="Begin als Rookie en werk je op tot Peetvader. 60 misdaden, 12 families, een eigen casino en een echte ranglijst.">
+<meta name="apple-mobile-web-app-title" content="{{BRAND_SHORT}}">
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESC}}">
+<meta name="robots" content="{{ROBOTS}}">
+<link rel="canonical" href="{{CANONICAL}}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{BRAND}}">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:url" content="{{CANONICAL}}">
+<meta property="og:image" content="{{SITE}}/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="De voorpagina van {{BRAND}}: een stad bij nacht met de tekst Van rookie tot peetvader">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{TITLE}}">
+<meta name="twitter:description" content="{{DESC}}">
+<meta name="twitter:image" content="{{SITE}}/og.jpg">
+<script>try{window.BRAND=JSON.parse('{{BRAND_JSON}}')}catch(e){}</script>
+{{LD_JSON}}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Big+Shoulders+Text:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="/css/landing.css">
@@ -23,7 +41,7 @@
 <a class="skip" href="#app">Naar de inhoud</a>
 
 <header class="mast" id="top">
-  <a class="logo" href="/" data-link aria-label="Onderwereld, voorpagina"><span class="mark">O</span><span class="word">Onderwereld</span></a>
+  <a class="logo" href="/" data-link aria-label="{{BRAND}}, voorpagina"><span class="mark">{{BRAND_INITIAL}}</span><span class="word">{{BRAND}}</span></a>
   <nav class="toplinks" aria-label="Hoofdmenu">
     <a href="/misdaden" data-link data-nav="misdaden">Misdaden</a>
     <a href="/casino" data-link data-nav="casino">Casino</a>
@@ -39,14 +57,15 @@
   <div class="mnav-auth" id="mnavAuth"></div>
 </div>
 
-<main class="app" id="app" tabindex="-1"><noscript><p style="padding:120px 24px">Onderwereld heeft JavaScript nodig.</p></noscript></main>
+<main class="app" id="app" tabindex="-1"><noscript><p style="padding:120px 24px">{{BRAND}} heeft JavaScript nodig.</p></noscript></main>
 
 <footer class="foot">
   <div class="foot-in">
-    <a class="logo" href="/" data-link><span class="mark">O</span><span class="word">Onderwereld</span></a>
-    <nav class="foot-links" aria-label="Onderdelen"><a href="/misdaden" data-link>Misdaden</a><a href="/casino" data-link>Casino</a><a href="/families" data-link>Families</a><a href="/rangen" data-link>Rangen</a><a href="/training" data-link>Training</a><a href="/game.html">Spelen</a></nav>
+    <a class="logo" href="/" data-link><span class="mark">{{BRAND_INITIAL}}</span><span class="word">{{BRAND}}</span></a>
+    <nav class="foot-links" aria-label="Onderdelen"><a href="/misdaden" data-link>Misdaden</a><a href="/casino" data-link>Casino</a><a href="/families" data-link>Families</a><a href="/rangen" data-link>Rangen</a><a href="/training" data-link>Training</a><a href="/#faq" data-link>Vragen</a><a href="/game.html">Spelen</a></nav>
   </div>
   <p>Een fictief spel. Alle namen, families en buit zijn verzonnen.</p>
+  <p class="foot-legal"><span>18+ voor het casino</span><span>Alleen virtueel spelgeld, geen echt geld</span><span>Niets te winnen of uit te betalen</span></p>
 </footer>
 
 <div class="auth" id="auth" hidden>

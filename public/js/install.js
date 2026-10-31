@@ -3,7 +3,7 @@
 // - Android/Chrome: vangt 'beforeinstallprompt' op, dan kan het met één tik ("Installeren").
 // - Kruisje = 5 dagen niet tonen, "Niet meer laten zien" = nooit meer. Opnieuw openen kan altijd met owInstall.open().
 (function(){
-const ua=navigator.userAgent||'',KEY='ow_pwa_hide';
+const ua=navigator.userAgent||'',KEY='ow_pwa_hide',OWB=()=>(window.BRAND&&window.BRAND.short)||'Onderwereld';
 const ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
 const android=/Android/i.test(ua);
 const standalone=()=>{try{return matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true}catch(e){return false}};
@@ -29,16 +29,16 @@ function steps(t){
           :`Tik onderaan op ${K('share')} (delen). Zie je die niet, tik dan eerst op ${K('dots')} en daarna op ${K('share','Deel')}.`,
   `Scroll een stukje naar beneden en tik op ${K('plus','Zet op beginscherm')}. Staat hij er niet tussen? Tik dan op <b>Meer</b> of <b>Wijzig acties</b>.`,
   `Laat <b>Open als webapp</b> aan staan (als je die ziet) en tik rechtsboven op <b>Voeg toe</b>.`,
-  `Open Onderwereld vanaf je beginscherm en log één keer in. Daarna blijf je ingelogd.`];
+  `Open ${OWB()} vanaf je beginscherm en log één keer in. Daarna blijf je ingelogd.`];
  return samsung?[
   `Tik onderaan op ${K('menu')} (menu).`,
   `Tik op <b>Pagina toevoegen aan</b> en kies <b>Startscherm</b>.`,
   `Tik op <b>Toevoegen</b>.`,
-  `Open Onderwereld vanaf je startscherm. Je blijft ingelogd.`]:[
+  `Open ${OWB()} vanaf je startscherm. Je blijft ingelogd.`]:[
   `Tik rechtsboven op ${K('kebab')} (de drie puntjes).`,
   `Tik op <b>App installeren</b> of <b>Toevoegen aan startscherm</b>.`,
   `Kies <b>Installeren</b> en bevestig.`,
-  `Open Onderwereld vanaf je startscherm. Je blijft ingelogd.`];
+  `Open ${OWB()} vanaf je startscherm. Je blijft ingelogd.`];
 }
 
 const CSS=`
@@ -80,7 +80,7 @@ function bar(){if(shown||standalone()||hidden()||document.getElementById('owiBar
  if(document.querySelector('.owi-bg,#modal:not([hidden])'))return void setTimeout(bar,8000);
  shown=true;css();const d=document.createElement('div');d.className='owi-bar';d.id='owiBar';d.setAttribute('role','region');d.setAttribute('aria-label','Speel als app');
  d.style.bottom=bottom();
- d.innerHTML=`<span class="owi-ic">${IC.phone}</span><span class="owi-t"><b>Speel Onderwereld als app</b><span>Op je beginscherm, schermvullend.</span></span>
+ d.innerHTML=`<span class="owi-ic">${IC.phone}</span><span class="owi-t"><b>Speel ${OWB()} als app</b><span>Op je beginscherm, schermvullend.</span></span>
   <button class="owi-go" type="button">${deferred?'Installeren':'Zo doe je dat'}</button><button class="owi-x" type="button" aria-label="Later">${IC.x}</button>`;
  d.querySelector('.owi-go').onclick=()=>{if(deferred)install();else{close();open()}};
  d.querySelector('.owi-x').onclick=()=>{set(String(Date.now()+5*864e5));close()};
@@ -88,7 +88,7 @@ function bar(){if(shown||standalone()||hidden()||document.getElementById('owiBar
 function close(){const d=document.getElementById('owiBar');if(d)d.remove()}
 
 function sheet(){const s=document.querySelector('.owi-sh');if(!s)return;
- s.innerHTML=`<div class="owi-hd"><div><h3>Zet hem op je beginscherm</h3><p>Dan open je Onderwereld met één tik, net als een app: schermvullend, zonder adresbalk.</p></div><button class="owi-x" type="button" aria-label="Sluiten">${IC.x}</button></div>
+ s.innerHTML=`<div class="owi-hd"><div><h3>Zet hem op je beginscherm</h3><p>Dan open je ${OWB()} met één tik, net als een app: schermvullend, zonder adresbalk.</p></div><button class="owi-x" type="button" aria-label="Sluiten">${IC.x}</button></div>
   <div class="owi-pros"><div><b>Eén tik</b>Direct vanaf je beginscherm</div><div><b>Meer ruimte</b>Geen adresbalk of tabbladen</div><div><b>Gratis</b>Geen app store nodig</div></div>
   ${deferred&&tab==='android'?'<button class="owi-now" type="button">Installeren</button>':''}
   <div class="owi-tabs" role="tablist"><button type="button" role="tab" data-t="ios" class="${tab==='ios'?'on':''}" aria-selected="${tab==='ios'}">iPhone / iPad</button><button type="button" role="tab" data-t="android" class="${tab==='android'?'on':''}" aria-selected="${tab==='android'}">Android</button></div>
