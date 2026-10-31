@@ -138,6 +138,11 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   **Gouden baar**: valt hij in de gewone bonus, dan blijft hij de hele bonus vast op zijn vakje liggen (ook bij tumbles en nieuwe
   spins) en telt hij als **loper**, dus hij helpt clusters maken. Heb je er 3, dan win je de max win (heel zeldzaam).
   **Superbonus**: 8 spins met veel meer lopers; daar is één Gouden baar al de max win.
+  **Balans zoals Pragmatic Play** (Sugar Rush, Gates of Olympus): winst ±1 op 2,7 spins (1 op 5 spins minstens je inzet terug),
+  bonus 1 op ±400 / 350 / 300 (gewoon / VIP / High roller) maar gemiddeld ±105× je inzet (mediaan ±55×, 1 op 10 onder 20×,
+  3 op 10 boven 100×). Clusters van 5 betalen 0,35× (Speelkaart) tot 4,5× (Goudstaaf), van 10 stuks 3× tot 40×; grote clusters zijn
+  op 10×10 met 9 symbolen zeldzaam (12+ ±1 op 6.000 spins). Een gekochte bonus betaalt 40–42% van de tabel (je begint met 8 vakjes op
+  x2 en 2 extra spins), mediaan ±50×. Doorgerekend met `sim9.js`, `simbuy4.js`, `kkm.js` (verdeling) en `kkb.js` (basisspel).
   **Max win**: 5.000× je inzet per ronde, ook bij een gekochte bonus (de inzet telt, niet de prijs van de bonus); ±1 op 1.000 gekochte bonussen.
   **Bonus kopen** (100× de inzet) zet je aan met een schakelaar naast de draaiknop; je krijgt altijd 3 kluizen bovenop wat er
   vanzelf valt en kunt doortumbelen tot de superbonus; +2 free spins (superbonus +1). **8 vakjes beginnen op x2** en er is een
@@ -187,8 +192,8 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   | Casino-cashback (Kluiskraker, Visdief, Mines, Hoogvlieger 0,5%, roulette 1%, poker 0,75%, blackjack 0,25%) | ×1 | ×1,5 |
   | Huurmoorden: rustiger vizier / meer tijd | −7,5% / +15% | −20% / +40% |
   | Hoge inzetten in de slots | – | ja (ook met code `trainwreck`) |
-  Casino, doorgerekend (gewoon / VIP / High roller): Kluiskraker (10×10, max 5.000×) bonus 1 op 200 / 175 / 143, RTP 92% / 95% / 96%, bonus kopen
-  ±95% / 95,5% / 96,5%; Visdief bonus 1 op 200 / 172 / 143, RTP 91,5% / 94% / 96,5%, kopen ±97%; Hoogvlieger landt 17% / 18% / 19%,
+  Casino, doorgerekend (gewoon / VIP / High roller): Kluiskraker (10×10, max 5.000×) bonus 1 op 400 / 350 / 300, RTP 92,5% / 94% / 95,5%, bonus kopen
+  ±93% / 94,5% / 96%; Visdief bonus 1 op 200 / 172 / 143, RTP 91,5% / 94% / 96,5%, kopen ±97%; Hoogvlieger landt 17% / 18% / 19%,
   RTP 86% / 92% / 96%. Alles blijft onder 100%, ook met cashback.
 - **Huurmoorden** (`hits.js`): de drie niveaus (Straat, Professioneel, Elite) staan als banners met de doelwitten in het vizier; tik op een niveau voor de contracten. 9 contracten in drie niveaus (Straat, Professioneel vanaf Capo, Elite vanaf Onderbaas) en een
   reputatie in 6 niveaus (+3% beloning per niveau). Per contract kies je de methode: **mes** (sluipen, stilstaan als hij omkijkt,

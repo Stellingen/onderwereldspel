@@ -2,7 +2,7 @@
 // Alles zit in COV, zodat namen als RL_ORDER niet botsen met die in het spel.
 window.COV=(()=>{
 const GAMES=[
- {id:'kluis',slug:'kluiskraker',n:'Kluiskraker',col:'#ff7a1a',kind:'Cluster-slot · 10 × 10',short:'Vijf gelijke symbolen die elkaar raken, ontploffen. Op dezelfde plek weer winst? Dan wordt dat vakje x2, x4, x8.',tags:['Max 5.000×','RTP ±92%']},
+ {id:'kluis',slug:'kluiskraker',n:'Kluiskraker',col:'#ff7a1a',kind:'Cluster-slot · 10 × 10',short:'Vijf gelijke symbolen die elkaar raken, ontploffen. Op dezelfde plek weer winst? Dan wordt dat vakje x2, x4, x8.',tags:['Max 5.000×','RTP ±92,5%']},
  {id:'vis',slug:'visdief',n:'Visdief',col:'#5ad1ff',kind:'Video-slot · 5 × 4',short:'Elke vis heeft een prijskaartje. Valt de Visdief erbij, dan pakt hij ze allemaal.',tags:['Max 10.000×','RTP ±92%']},
  {id:'mines',slug:'mines',n:'Mines',col:'#3fe395',kind:'Durfspel · 5 × 5',short:'Vijfentwintig vakjes en jij kiest hoeveel bommen. Elk veilig vakje is meer waard. Stop op tijd.',tags:['Max 10.000×','RTP tot 99,2%']},
  {id:'avia',slug:'hoogvlieger',n:'Hoogvlieger',col:'#a9dcff',kind:'Vluchtspel',short:'Een vliegtuigje boven zee. Pluspunten duwen hem omhoog, bommen halen hem neer. Land op het dek.',tags:['Vlucht ligt vast','RTP ±87%']},

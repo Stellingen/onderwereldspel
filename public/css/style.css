@@ -2799,3 +2799,8 @@ button.bz-cat-h:hover{border-color:color-mix(in srgb,var(--c) 60%,var(--line))}
 .bz-cat-go{font-family:var(--f-head);font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--c)}
 @container (max-width:760px){.bz-cat-ics>span small{font-size:11.5px}.bz-cat-m{width:100%}.bz-cat-go{margin-left:auto}}
 button.bz-cat-h .bz-cat-m{width:100%}
+/* Menu op de telefoon: "Speel als app" (uitleg beginscherm, zie install.js) */
+.ms-app{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--acc2)}
+.ms-app svg{width:18px;height:18px}
+.ms-app+.ms-out,.ms-admin+.ms-app{margin-top:10px}
+.btn.ms-app{color:var(--acc2);box-shadow:inset 0 0 0 1px rgba(255,122,26,.45)}

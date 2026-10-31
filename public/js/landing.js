@@ -469,7 +469,7 @@ function casinoPage(){
 route(/^\/casino$/,casinoPage);
 
 const GD={
- kluis:{stats:S=>[['Raster','10 × 10'],['Max win',nl(S?S.MAX_WIN:5000)+'×'],['RTP','±92%'],['Bonus kopen',(S?S.BUY_COST:100)+'×']],
+ kluis:{stats:S=>[['Raster','10 × 10'],['Max win',nl(S?S.MAX_WIN:5000)+'×'],['RTP','±92,5%'],['Bonus kopen',(S?S.BUY_COST:100)+'×']],
   rules:S=>{const fs=(S&&S.FS_BY_SC)||{3:10,4:12,5:14},sup=(S&&S.SUPER_SC)||6,ss=(S&&S.SUPER_SPINS)||8,mx=(S&&S.MAX_SPOT)||4096,need=(S&&S.BAR&&S.BAR.need)||3;
    return [`Vijf of meer gelijke symbolen die horizontaal of verticaal aan elkaar grenzen, vormen een cluster en betalen uit.`,
    `De winnende symbolen ontploffen en er vallen nieuwe in. Zolang er winst valt, tumbelt het door.`,
