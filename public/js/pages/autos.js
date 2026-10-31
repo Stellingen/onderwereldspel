@@ -4,6 +4,20 @@ const GARAGE_CAPS=[2,4,6,8,10],GARAGE_UP=[0,25000,90000,300000,900000],GARAGE_MA
 const garageLvl=()=>{if(S.garage==null){let l=0;while(l<GARAGE_CAPS.length-1&&GARAGE_CAPS[l]<S.cars.length)l++;S.garage=l}return S.garage};
 const garageCap=()=>GARAGE_CAPS[garageLvl()];
 const SEARCH_EN=2,SEARCH_MS=1700,FIND_MS=60000;
+// Zoeken maakt moe: elke zoektocht in een reeks kost meer energie (SRCH_COST). Na SRCH_MAX zoektochten (gewoon / VIP / High roller)
+// moet je SRCH_CD minuten uitrusten; daarna begin je weer bij 2. Zoek je zo lang niet, dan ben je ook weer uitgerust.
+const SRCH_MAX=[6,10,15],SRCH_CD=[8,6,4],SRCH_COST=[2,3,4,5,6,8,10,12,14,17,20,23,26,30,34];
+const srchMax=()=>SRCH_MAX[tier()]||SRCH_MAX[0],srchCdMs=()=>(SRCH_CD[tier()]||SRCH_CD[0])*60000;
+function srch(){const h=S.carHunt||(S.carHunt={n:0,last:0,until:0}),t=now();
+ if(h.n>=srchMax()&&!h.until)h.until=h.last+srchCdMs();
+ if(h.until&&t>=h.until){h.n=0;h.until=0}else if(!h.until&&h.n&&t-h.last>=srchCdMs())h.n=0;
+ return h}
+const srchCost=()=>SRCH_COST[Math.min(srch().n,SRCH_COST.length-1)];
+const srchLeft=()=>{const h=srch();return h.until?Math.max(0,h.until-now()):0};
+function srchStam(){const h=srch(),mx=srchMax(),left=srchLeft(),cd=SRCH_CD[tier()]||SRCH_CD[0];
+ return `<div class="hunt-stam${left?' rest':''}"><div class="hst-h"><span class="label">Conditie</span><span class="hst-t">${left?'Uitrusten · <b id="srchCd">'+fmtClock(left)+'</b>':h.n?`Nog <b>${mx-h.n}</b> van ${mx} · daarna ${cd} min rust`:`<b>${mx}</b> zoektochten, daarna ${cd} min rust`}</span></div>
+  <div class="hst-pips" style="--n:${mx}">${Array.from({length:mx},(_,i)=>`<i class="${i<h.n?'used':''}${i===h.n&&!left?' next':''}"><em>${SRCH_COST[i]}</em></i>`).join('')}</div>
+  <p>${left?'Je bent moe gelopen. Even zitten, dan kun je weer.':h.n?`Volgende zoektocht kost <b>${srchCost()} energie</b>. Hoe vaker je achter elkaar zoekt, hoe moeier je wordt. Zoek je ${cd} minuten niet, dan begin je weer bij 2.`:'De eerste zoektocht kost 2 energie. Elke volgende kost meer, want je wordt moe.'}</p></div>`}
 const carEn=m=>4+m.d*2+(m.leg?4:0);
 // Kans per zoektocht per zeldzaamheid (0 = niks gevonden, 6 = mythisch). Binnen een groep telt het gewicht (w) van het model.
 const FIND_TIER={0:.15,1:.4425,2:.24,3:.10,4:.045,5:.02,6:.0025};
@@ -32,7 +46,7 @@ const helerWants=id=>{try{const o=carOrders().list.find(o=>o.id===id&&!o.done);r
 const helerBadge=id=>{const o=helerWants(id);return o?`<div class="hs-order"><b>De heler zoekt deze auto</b><span>Steel hem en lever hem af voor ×${o.k.toLocaleString('nl-NL')} de waarde</span></div>`:''};
 function huntScene(){const x=S.carFind;
  if(carSearch)return `<div class="hunt-scene searching"><div class="beam"></div><div class="hs-msg"><span class="label">Aan het zoeken</span><b>${carSearch.spot}</b><div class="hs-prog"><i style="animation-duration:${SEARCH_MS}ms"></i></div></div></div>`;
- if(!x)return `<div class="hunt-scene idle"><div class="hs-ghost">${carSvg('sedan','#1c2029')}</div><div class="hs-msg"><span class="label">Nog niks gezien</span><b>Loop de straat af</b><p>Elke zoektocht kost ${SEARCH_EN} energie. Je weet nooit wat er om de hoek staat.</p></div></div>`;
+ if(!x)return `<div class="hunt-scene idle"><div class="hs-ghost">${carSvg('sedan','#1c2029')}</div><div class="hs-msg"><span class="label">Nog niks gezien</span><b>Loop de straat af</b><p>De eerste zoektocht kost ${SRCH_COST[0]} energie, daarna steeds meer. Je weet nooit wat er om de hoek staat.</p></div></div>`;
  if(x.none)return `<div class="hunt-scene none"><div class="hs-loc"><i></i>${x.spot}</div><div class="hs-ghost">${carSvg('hatch','#1c2029')}</div><div class="hs-msg"><span class="label">Niks gevonden</span><b>${x.msg}</b></div></div>`;
  const m=findM(x),R=carRarity(m),t=carTier(m);
  return `<div class="hunt-scene car t${t} ${x.res||''}" style="--rc:${R[1]}"><div class="hs-loc"><i></i>${x.spot}</div>
@@ -56,9 +70,9 @@ function huntInfo(){const x=S.carFind;if(carSearch||!x||x.none)return `<div clas
 function huntBtns(){const x=S.carFind,left=cdLeft('car'),full=S.cars.length>=garageCap(),jail=inJail(),live=x&&!x.none&&!x.res;let steal='';
  if(live){const m=findM(x),en=carEn(m),ok=!left&&!jail&&!full&&S.energy>=en;
   steal=`<button class="btn xl" onclick="act.stealCar()" ${ok?'':'disabled'}>${jail?'Je zit vast':full?'Garage vol, verkoop eerst':S.energy<en?'Te moe · '+en+' energie':'Stelen · '+en+' energie'}</button>`}
- const sOk=!carSearch&&!left&&!jail&&!full&&S.energy>=SEARCH_EN;
- const sl=carSearch?'Zoeken…':jail?'Je zit vast':left?'Even afkoelen · <span id="huntCd">'+fmtClock(left)+'</span>':full?'Garage vol, verkoop eerst':S.energy<SEARCH_EN?'Te moe om te zoeken':(live?'Laat staan, verder zoeken':'Zoek een auto')+' · '+SEARCH_EN+' energie';
- return `<div class="hunt-btns">${steal}<button class="btn ${live?'ghost':'xl'}" onclick="act.searchCar()" ${sOk?'':'disabled'}>${sl}</button></div>`}
+ const rest=srchLeft(),en=srchCost(),sOk=!carSearch&&!left&&!rest&&!jail&&!full&&S.energy>=en;
+ const sl=carSearch?'Zoeken…':jail?'Je zit vast':rest?'Uitrusten · <span id="huntRest">'+fmtClock(rest)+'</span>':left?'Even afkoelen · <span id="huntCd">'+fmtClock(left)+'</span>':full?'Garage vol, verkoop eerst':S.energy<en?'Te moe · '+en+' energie nodig':(live?'Laat staan, verder zoeken':'Zoek een auto')+' · '+en+' energie';
+ return `<div class="hunt-btns">${steal}<button class="btn ${live?'ghost':'xl'}" onclick="act.searchCar()" ${sOk?'':'disabled'}>${sl}</button></div>${srchStam()}`}
 function oddsList(){const dex=S.carDex||{},got=CARS.filter(m=>(dex[m.id]||[0,0])[1]>0).length,cur=S.carFind&&!S.carFind.res&&S.carFind.id;
  return `<div class="dex-top"><div><span class="label">Verzameld</span><b>${got} / ${CARS.length}</b></div><div class="dex-bar"><i style="width:${got/CARS.length*100}%"></i></div><div><span class="label">Niks gevonden</span><b>${oddTxt(FIND_TIER[0])}</b></div></div>
   ${[1,2,3,4,5,6].map(t=>{const R=tierName(t),ms=CARS.filter(m=>carTier(m)===t).sort((a,b)=>CAR_ODDS[b.id]-CAR_ODDS[a.id]),gt=ms.filter(m=>(dex[m.id]||[0,0])[1]>0).length;
@@ -129,7 +143,7 @@ function carLobby(){const ri=rankIdx(S.xp),cap=garageCap(),gv=S.cars.reduce((a,c
  <div class="bzb-grid">
   ${(()=>{const show=S.cars.slice().sort((x,y)=>y.v-x.v).slice(0,3),art=show.length?`<span class="gar-line n${show.length}">${show.map(c=>{const m=CARS.find(k=>k.id===c.id)||{b:c.b||'hatch'};return carSvg(m.b||c.b,c.c||'#8a929c')}).join('')}</span>`:(typeof bzArt==='function'?bzArt({id:'cg',col:'#ffad6b',icp:ICONS.cars,kind:'garage'},'cag'):'');
    return b('garage','#ffad6b','Jouw gestolen auto\'s','Garage',S.cars.length?`Hier staan de auto's die je gestolen hebt. Verkoop ze aan kopers, sloop ze of lever ze af bij de heler of je familie.`:`Hier komen de auto's die je steelt. ${cap} plekken${cap<10?', uit te breiden tot 10':''}.`,`<em><b>${S.cars.length}</b>/${cap} plekken</em><em><b>${fmt(gv)}</b> waarde</em>${rep?`<em class="dn"><b>${rep}</b> gemeld als gestolen</em>`:''}${od?`<em class="up"><b>${od}</b> voor de heler</em>`:''}`,S.cars.length?'Bekijk je auto\'s ›':'Openen ›',art).replace('class="bzb car-b"','class="bzb car-b gar-b"')})()}
-  ${b('zoek','#7fd1c7','Stelen','Straat afzoeken','Kijk wat er geparkeerd staat. Een Polo vind je zo, een Lamborghini bijna nooit.',`<em>${cdLeft('car')?'nog '+fmtClock(cdLeft('car')):'klaar'}</em><em><b>${SEARCH_EN}</b> energie</em>`,'Op pad ›',caArt('street','<i class="lamp"></i>'+carSvg('hatch','#5a6270')))}
+  ${b('zoek','#7fd1c7','Stelen','Straat afzoeken','Kijk wat er geparkeerd staat. Een Polo vind je zo, een Lamborghini bijna nooit.',(srchLeft()?`<em class="dn">uitrusten nog ${fmtClock(srchLeft())}</em>`:`<em>${cdLeft('car')?'nog '+fmtClock(cdLeft('car')):'klaar'}</em><em><b>${srchCost()}</b> energie · ${srchMax()-srch().n}/${srchMax()} over</em>`),'Op pad ›',caArt('street','<i class="lamp"></i>'+carSvg('hatch','#5a6270')))}
   ${b('jack','#ff5c6c','Stelen','Carjacken','Bij het stoplicht, portier open en gas erop. Snel, maar heet.',ri<JACK_R?`<em>vanaf ${RANKS[JACK_R][0]}</em>`:`<em>${cdLeft('jack')?'nog '+fmtClock(cdLeft('jack')):'klaar'}</em><em><b>${JACK_EN}</b> energie</em>`,'Naar het stoplicht ›',caArt('light',carSvg('sedan','#7a1424')+'<i class="tl"><i></i><i></i><i></i></i>'))}
   ${b('sloop','#c9a227','Onderdelen · zwart geld','Het Autokerkhof',S.sloop?'Je eigen sloperij. Hier gaat elke auto weg, ook als hij als gestolen is gemeld.':`Koop een sloperij en verkoop auto's als onderdelen. Ook gemelde auto's raak je hier kwijt.`,S.sloop?`<em><b>${Math.round(SLOOP_K*100)}%</b> van de waarde</em><em>zwart geld</em>`:`<em>${ri<SLOOP_R?'vanaf '+RANKS[SLOOP_R][0]:fmt(SLOOP_P)}</em>`,S.sloop?'Openen ›':'Bekijken ›',caArt('yard',yardSvg()))}
   ${b('heler','#b8a1ff','Op bestelling','De heler',`Elke speldag vraagt hij drie modellen, en betaalt er ×1,4 tot ×1,9 voor.`,`<em><b>${O.list.filter(o=>!o.done).length}</b> open</em>${od?`<em class="up"><b>${od}</b> in je garage</em>`:''}`,'Bekijken ›',caArt('van',carSvg('van','#2f3640')))}
@@ -167,10 +181,10 @@ V.cars=()=>{if(S.street)delete S.street;S.carDex=S.carDex||{};carExpire(true);
 // Eigen klok: aftellen zonder alles opnieuw te tekenen
 let _carSig='';
 setInterval(()=>{if(page!=='cars'||window.__chase||carSearch)return;if(carExpire()){render();return}const x=S.carFind;
- const sig=[cdLeft('jack')>0,carMode,typeof saleLeft==='function'?saleLeft():0,cdLeft('car')>0,inJail(),S.cars.length>=garageCap(),S.energy>=SEARCH_EN,x&&x.id&&!x.res?S.energy>=carEn(findM(x)):0].join();
+ const sig=[cdLeft('jack')>0,carMode,typeof saleLeft==='function'?saleLeft():0,cdLeft('car')>0,inJail(),S.cars.length>=garageCap(),srchLeft()>0,srch().n,S.energy>=srchCost(),x&&x.id&&!x.res?S.energy>=carEn(findM(x)):0].join();
  if(_carSig&&sig!==_carSig){_carSig=sig;render();return}_carSig=sig;
  const a=document.getElementById('hsLeft');if(a&&x&&x.until)a.textContent=fmtClock(x.until-now());
- const c=document.getElementById('huntCd');if(c)c.textContent=fmtClock(cdLeft('car'));const j=document.getElementById('jackCd');if(j)j.textContent=fmtClock(cdLeft('jack'))},1000);
+ const c=document.getElementById('huntCd');if(c)c.textContent=fmtClock(cdLeft('car'));const rl=fmtClock(srchLeft());['huntRest','srchCd'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=rl});const j=document.getElementById('jackCd');if(j)j.textContent=fmtClock(cdLeft('jack'))},1000);
 Object.assign(act,{
  garageUp(){const L=garageLvl();if(L>=GARAGE_CAPS.length-1)return;const c=GARAGE_UP[L+1];if(wit()<c){toast('Je garage uitbouwen betaal je met wit geld','bad');return}spendWit(c);S.garage=L+1;SFX.win(3);toast('Garage uitgebouwd: '+GARAGE_CAPS[L+1]+' plekken','lvl');log('Garage uitgebouwd naar '+GARAGE_CAPS[L+1]+' plekken ('+fmt(c)+')','info');save();render()},
  carOffer(i){const c=S.cars[i];if(!c||carRep(c))return;if(!saleLeft()){toast('Wacht op nieuwe kopers','bad');return}newOffer(c);SFX.click();save();render()},
@@ -184,8 +198,10 @@ Object.assign(act,{
   const pay=Math.round(c.v*o.k/10)*10,cr=2+Math.floor(carTier(CARS.find(m=>m.id===o.id)||{d:1})/2);o.done=1;S.cash+=pay;addZwart(pay);S.cred+=cr;S.stats.orders=(S.stats.orders||0)+1;
   toast(`${c.n} afgeleverd bij de heler: +${fmt(pay)} · +${cr} cred`,'lvl');log(`Bestelling: ${c.n} afgeleverd (+${fmt(pay)})`,'ok');save();render()},
  async searchCar(){if(carSearch||window.__chase||inJail()||cdLeft('car'))return;if(S.cars.length>=garageCap()){toast('Garage vol, verkoop eerst iets','bad');return}
-  if(S.energy<SEARCH_EN){toast('Te moe om te zoeken','bad');return}
-  S.energy-=SEARCH_EN;S.carFind=null;const spot=CAR_SPOTS[Math.floor(Math.random()*CAR_SPOTS.length)];carSearch={spot};S.stats.searches=(S.stats.searches||0)+1;
+  if(srchLeft()){toast('Je bent moe gelopen. Uitrusten: nog '+fmtClock(srchLeft()),'bad');return}
+  const en=srchCost();if(S.energy<en){toast('Te moe: deze zoektocht kost '+en+' energie','bad');return}
+  const h=srch();S.energy-=en;h.n++;h.last=now();if(h.n>=srchMax()){h.until=now()+srchCdMs();toast('Dat was je laatste zoektocht. Even uitrusten: '+(SRCH_CD[tier()]||SRCH_CD[0])+' minuten')}
+  S.carFind=null;const spot=CAR_SPOTS[Math.floor(Math.random()*CAR_SPOTS.length)];carSearch={spot};S.stats.searches=(S.stats.searches||0)+1;
   save();SFX.click();if(page==='cars')render();
   await new Promise(r=>setTimeout(r,SEARCH_MS));
   const m=rollCar();carSearch=null;S.carDex=S.carDex||{};
