@@ -55,9 +55,19 @@ function pb3d(){const win=(n,cls)=>Array.from({length:n},(_,i)=>`<i class="${cls
     <div class="pb-mast"><i class="pb-flag"></i></div>
     <div class="pb-beacon"><i></i></div>
    </div>
-   <div class="pb-car"><i class="pb-car-b"></i><i class="pb-car-t"></i><i class="pb-car-l"></i></div>
+   <div class="pb-car">${pbCar()}</div>
    <div class="pb-post l"><i></i></div><div class="pb-post r"><i></i></div>
   </div></div>`}
+// een blok in 3D (CSS): zes vlakken rond het midden; y0 = onderkant (negatief is boven de grond)
+function pbBox(cls,w,d,h,y0,x,z){const T=(fw,fh,tr,top,left)=>`style="width:${fw}px;height:${fh}px;left:${left}px;top:${top}px;transform:${tr}"`;
+ return `<div class="pbx ${cls}" style="transform:translate3d(${x||0}px,0,${z||0}px)">
+  <i class="fz" ${T(w,h,`translateZ(${d/2}px)`,y0-h,-w/2)}></i><i class="bz" ${T(w,h,`rotateY(180deg) translateZ(${d/2}px)`,y0-h,-w/2)}></i>
+  <i class="fx" ${T(d,h,`rotateY(90deg) translateZ(${w/2}px)`,y0-h,-d/2)}></i><i class="bx" ${T(d,h,`rotateY(-90deg) translateZ(${w/2}px)`,y0-h,-d/2)}></i>
+  <i class="tp" ${T(w,d,`translateY(${y0-h}px) rotateX(90deg)`,-d/2,-w/2)}></i></div>`}
+// politieauto: wit met een blauwe band en blauw-wit blokpatroon, blauwe lichtbalk, vier wielen
+function pbCar(){const wheel=(x,z)=>`<div class="pbw" style="transform:translate3d(${x}px,-9px,${z}px)"><i></i></div>`;
+ return pbBox('car-body',104,48,18,-8)+pbBox('car-cab',58,42,15,-26,-6)+pbBox('car-bar',30,20,4,-41,-6)
+  +wheel(-34,25)+wheel(34,25)+wheel(-34,-25)+wheel(34,-25)}
 // draaien met slepen (muis of vinger); vanzelf zachtjes heen en weer
 let pbRot={y:-28,x:-16,drag:null,raf:0,t0:0};
 function pb3dBind(){const el=document.getElementById('pb3d'),w=document.getElementById('pbWorld');if(!el||!w||el._b)return;el._b=1;
