@@ -54,7 +54,7 @@ const BAR={id:'baar',n:'Gouden baar',w:.012,fsW:.13,t3:.055,t4:.058,t5:.061,need
 let BASE_K=1,FS_K=.846;
 // gekochte bonus: eigen uitbetalingsfactor per lidmaatschap (BUY_KT, zodat bonus kopen ±95 / 95,5 / 96,5% geeft) en een paar vakjes die al x2 zijn bij de start (BUY_SPOTS)
 // vangnet: een gekochte bonus geeft altijd minstens BUY_FLOOR × je inzet terug
-let BUY_KT=[.3765,.3772,.3822],BUY_SPOTS=8,BUY_FLOOR=20,FS_MUL=1;
+let BUY_KT=[.3746,.3762,.3808],BUY_SPOTS=8,BUY_FLOOR=20,FS_MUL=1;
 // Doortumbelen: vermenigvuldiger op de kluiskans bij het bijvullen, per aantal kluizen dat al ligt (0..5). n = normaal, v = VIP.
 // Bij 0-2 kluizen is VIP iets hoger (makkelijker de bonus in), vanaf 3 valt een volgende kluis makkelijker in, elke volgende lastiger.
 let TUMBLE_SC={n:[1,1,1,20,19,17.5],t:[[1,1,1,30,60,150],[1,1,1,30,60,150],[1,1,1,30,60,150]],buy:1.3}; // buy = extra bij een gekochte bonus (vanaf 3 kluizen)
