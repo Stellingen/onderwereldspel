@@ -238,4 +238,4 @@ Object.assign(act,{
     log(`Mislukt: ${m.n}. ${w?'Een omstander belde 112, maar je bent op tijd weggekomen':'Het alarm ging af, maar je was weg voordat er iemand kwam'}`,'bad');save();render();
     toast(w?'Mislukt. Een omstander belde 112, maar je bent op tijd weggekomen.':'Mislukt. Het alarm gaat af, maar je bent weg voordat er iemand komt.','bad')}
   else{addHeat(4+m.d*2);log('Mislukte poging: '+m.n,'bad');save();render();
-    arrest(30+m.d*20,'Alarm!','Het alarm van de '+m.n+' gaat af. '+FLEE_LEVELS[Math.min(5,m.d)].where,{flee:Math.min(5,Math.max(1,m.d))})}}});
+    arrest(30+m.d*20,'Alarm!','Het alarm van de '+m.n+' gaat af. Spring erin en rijd weg, of geef je over.',{flee:Math.min(5,Math.max(1,m.d)),chase:{b:m.b,c:x.c,n:m.n}})}}});
