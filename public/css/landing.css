@@ -694,3 +694,38 @@ html,body{touch-action:manipulation}
 a,button,input,select,textarea,label,summary,canvas,[role="button"],.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 button,.btn,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 @media (max-width:900px){input,select,textarea{font-size:16px}}
+
+/* ===== UX-update: korte feiten, eerlijke labels, veelgestelde vragen en de kleine lettertjes ===== */
+.hero-facts{list-style:none;display:flex;flex-wrap:wrap;gap:6px 18px;margin:18px 0 0;padding:0;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.hero-facts li{display:inline-flex;align-items:center;gap:8px}
+.hero-facts li::before{content:"";width:6px;height:6px;background:var(--acc);box-shadow:0 0 8px var(--acc-glow)}
+.feed-head small{font-size:inherit;color:var(--faint);letter-spacing:inherit}
+.feed-note{margin:0;padding:8px 14px 10px;color:var(--faint);font-size:10.5px;line-height:1.4;border-top:1px solid var(--line)}
+.b-kans{display:block;margin-top:8px;font-family:var(--f-mono);font-size:10.5px;line-height:1.45;color:var(--faint)}
+.cr-base{display:block;margin-top:3px;font-size:10px;color:var(--faint);overflow:hidden;text-overflow:ellipsis}
+.play-money{display:block;margin-top:10px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+/* veelgestelde vragen: dossierregels die openklappen */
+.faq-list{border-top:1px solid var(--line2);max-width:980px}
+.faq-q{border-bottom:1px solid var(--line2)}
+.faq-q summary{display:grid;grid-template-columns:44px minmax(0,1fr) 22px;align-items:center;gap:12px;padding:20px 0;cursor:pointer;list-style:none}
+.faq-q summary::-webkit-details-marker{display:none}
+.faq-q summary:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
+.faq-n{font-family:var(--f-mono);font-size:12px;color:var(--acc);letter-spacing:.08em}
+.faq-q summary b{font-family:var(--f-head);font-weight:800;font-size:clamp(19px,2vw,24px);letter-spacing:.02em;text-transform:uppercase;line-height:1.15}
+.faq-x{position:relative;width:18px;height:18px}
+.faq-x::before,.faq-x::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:var(--acc);transition:transform .2s}
+.faq-x::after{transform:rotate(90deg)}
+.faq-q[open] .faq-x::after{transform:rotate(0)}
+.faq-q summary:hover b{color:var(--acc2)}
+.faq-a{padding:0 0 22px 56px}
+.faq-a p{margin:0;max-width:70ch;color:var(--soft);font-size:16px;line-height:1.6}
+.faq-a .tlink{margin-left:4px;font-size:13px;color:var(--acc);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.foot-legal{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:6px!important;font-family:var(--f-mono);font-size:10.5px!important;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.foot-legal span+span::before{content:"· ";color:var(--line2)}
+@media (max-width:760px){
+  .hero-facts{gap:6px 14px;font-size:10.5px}
+  .faq-q summary{grid-template-columns:30px minmax(0,1fr) 18px;gap:10px;padding:16px 0}
+  .faq-a{padding:0 0 18px 40px}.faq-a p{font-size:15px}
+}
+/* beste klus: de buit (twee bedragen) krijgt de breedste kolom, zodat hij niet tegen de kans aan loopt */
+.b-best .b-kv{grid-template-columns:minmax(0,1.7fr) minmax(0,.75fr) minmax(0,.75fr)}

@@ -2,13 +2,28 @@
 
 Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op tot Peetvader.
 
-- **Website** (`/`, `public/js/landing.js`): elk onderwerp heeft een eigen pagina en adres (History API, de server geeft voor
-  onbekende paden `index.html`): `/misdaden` (alle 60 klussen in een kans-tegen-buit grafiek, filter per rang en sorteren),
+- **Website** (`/`, `public/js/landing.js`): elk onderwerp heeft een eigen pagina en adres (History API; de server geeft
+  bekende paden `index.html` met de juiste titel, onbekende paden een 404 met dezelfde pagina "Doodlopende steeg"): `/misdaden` (alle 60 klussen in een kans-tegen-buit grafiek, filter per rang en sorteren),
   `/casino` en `/casino/<spel>` (elk spel een eigen illustratie, regels en uitbetalingen; de tabellen van Kluiskraker en Visdief
   komen live uit `slot.js` en `vis.js`; oefendemo's van Mines, roulette en de munt), `/families` en `/families/<id>` (verhaal uit
   `lore.js`, plek in de voedselketen, de machtsverhoudingen van nu uit `famwar.js`, doorgroeien tot Onderbaas en Baas), `/rangen`
   en `/training`. De voorpagina heeft een 3D-stadskaart met een meldkamer en een loopbaanlijn van Rookie tot Peetvader die je
   kunt slepen. Inloggen en account aanmaken werken zoals voorheen (`?login=1`, `?register=1`).
+  Bovenaan staat het genre en kort "gratis · in je browser of als app · alleen virtueel spelgeld"; de meldkamer is gelabeld als
+  sfeerimpressie (de meldingen zijn verzonnen, geen echte gebeurtenissen of spelers). Kansen op de voorpagina tonen de kans op de
+  rang zelf (basiskans + 2 per rang, net als `chanceRaw` in het spel) met de basiskans erbij, zodat ze kloppen met wat je in het
+  spel ziet (zonder training, spullen of familie). Onderaan **veelgestelde vragen** (`#faq`, uitklapbaar, ook met het toetsenbord):
+  gratis, downloaden/als app, echt geld (nee), leeftijd (casino 18+), voortgang, wachtwoord vergeten (geen herstel: er is geen
+  e-mailadres), ranglijst en meldkamer. In de footer klein: 18+ voor het casino, alleen virtueel spelgeld, niets uit te betalen.
+- **Merknaam** staat op één plek: `brand.json` (`name`, `short`, `genre`, `tagline`, `url`). De server vult hem in `index.html`,
+  `game.html` en `admin.html` in (`{{BRAND}}`, `{{TITLE}}`, `{{DESC}}`, `{{CANONICAL}}`, …), in het manifest, de sitemap en de
+  deelgegevens, en geeft hem als `window.BRAND` aan de scripts (landing, installatie-uitleg). Tijdelijk overschrijven kan met
+  de omgevingsvariabele `BRAND_NAME`; `SITE_URL` overschrijft het adres. Het gewone woord "onderwereld" in verhalen blijft staan.
+- **Vindbaarheid**: elke publieke pagina heeft een eigen titel, beschrijving en canonical (server én browser), OG/Twitter-tags
+  met `public/og.jpg` (echte screenshot van de voorpagina, 1200×630), JSON-LD `VideoGame` op de voorpagina (alleen feiten: naam,
+  taal, gratis), `/robots.txt` (geen `/api/`, `/admin`, `/game`) en `/sitemap.xml` (voorpagina, onderwerpen, spellen en families).
+  `/game` en `/admin` zijn `noindex`. `/index.html` stuurt door naar `/`. Wat alleen met Search Console te controleren is
+  (indexering, rich results, previews op sociale media) is nog niet gedaan.
 - **Spel** (`/game.html`) alleen voor ingelogde spelers; voortgang wordt opgeslagen in MySQL
 - **Ranglijst** met echte spelers en rivalen uit de stad
 - **60 misdaden** over 12 rangen (vijf per rang), met energie (1 punt per 12 s, ook in het casino of de cel; uit de cel kom je met minstens +4% van je max per minuut, dus 5 minuten = +20%) zodat je niet alles kunt speedrunnen.
@@ -397,7 +412,8 @@ Zonder database start de site ook, maar dan werkt inloggen niet. Open je `public
 ## Structuur
 
 ```
-server.js            Express: API (registreren, inloggen, opslaan, ranglijst) + statische bestanden
+server.js            Express: API (registreren, inloggen, opslaan, ranglijst), pagina's met merknaam/titels, robots, sitemap, 404
+brand.json           merknaam, genre, tagline en adres (één plek om de naam te wijzigen)
 db.js                MySQL-verbinding en tabellen
 public/index.html    landingspagina
 public/game.html     spel (controleert login, laadt voortgang uit de database)

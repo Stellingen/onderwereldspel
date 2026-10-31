@@ -293,9 +293,91 @@ app.get('/api/profile/:name', async (req, res) => {
 const rankOf = xp => { let n = 'Rookie'; for (const [k, [needXp]] of Object.entries(RANK_CODES)) if (xp >= needXp) n = k[0].toUpperCase() + k.slice(1); return n; };
 const admin = mountAdmin(app, { auth, db, need, rankOf });
 
-// Frontend
-app.use(express.static(PUBLIC, { extensions: ['html'] }));
-app.get('*', (req, res) => res.sendFile(path.join(PUBLIC, 'index.html')));
+// ================= Frontend =================
+// Merknaam staat op één plek: brand.json (naam, korte naam, genre, tagline, adres). De server vult hem in de HTML in
+// ({{BRAND}}, {{TITLE}} enz.), in het manifest, de sitemap en de deelgegevens, en geeft hem als window.BRAND aan de scripts.
+const fs = require('fs');
+const vm = require('vm');
+const BRAND = (() => {
+  const def = { name: 'Onderwereld', short: 'Onderwereld', genre: 'Nederlandstalige maffia-browsergame', tagline: 'Van rookie tot peetvader', url: 'https://mob.lunxa.com' };
+  try { return Object.assign(def, JSON.parse(fs.readFileSync(path.join(__dirname, 'brand.json'), 'utf8'))); } catch (e) { return def; }
+})();
+if (process.env.BRAND_NAME) BRAND.name = BRAND.short = process.env.BRAND_NAME;
+const SITE = String(process.env.SITE_URL || BRAND.url).replace(/\/+$/, '');
+// spelgegevens (zelfde bestanden als de browser) voor titels, de sitemap en welke adressen bestaan
+const GD = (() => {
+  const ctx = { console, Math, Date, JSON }; ctx.window = ctx; vm.createContext(ctx);
+  for (const f of ['js/data.js', 'js/covers.js']) { try { vm.runInContext(fs.readFileSync(path.join(PUBLIC, f), 'utf8'), ctx, { filename: f }); } catch (e) { console.warn('Spelgegevens laden mislukt:', f, e.message); } }
+  try {
+    return vm.runInContext(`({crimes:CRIMES.length,ranks:RANKS.length,trainings:TRAININGS.length,
+      fams:FAMILIES.map(f=>({id:f.id,n:f.n,d:f.d})),games:COV.GAMES.map(g=>({slug:g.slug,n:g.n,d:g.short||''}))})`, ctx);
+  } catch (e) { console.warn('Spelgegevens niet beschikbaar:', e.message); return { crimes: 60, ranks: 12, trainings: 9, fams: [], games: [] }; }
+})();
+const escH = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const TPL = {};
+function tplFile(f) { if (!TPL[f]) TPL[f] = fs.readFileSync(path.join(PUBLIC, f), 'utf8'); return TPL[f]; }
+// pagina invullen: titel, beschrijving, canonical, robots en de merknaam
+function page(file, m) {
+  m = m || {};
+  const title = m.title || `${BRAND.name} · ${BRAND.genre}`, desc = m.desc || '', canon = SITE + (m.path || '/');
+  const brandJs = JSON.stringify({ name: BRAND.name, short: BRAND.short, genre: BRAND.genre, tagline: BRAND.tagline, url: SITE })
+    .replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/</g, '\\u003c');
+  const ld = m.ld ? `<script type="application/ld+json">${JSON.stringify(m.ld).replace(/</g, '\\u003c')}</script>` : '';
+  const map = { BRAND: escH(BRAND.name), BRAND_UP: escH(BRAND.name.toUpperCase()), BRAND_INITIAL: escH(BRAND.name.charAt(0).toUpperCase()), BRAND_SHORT: escH(BRAND.short),
+    TAGLINE: escH(BRAND.tagline), GENRE: escH(BRAND.genre), SITE: escH(SITE), TITLE: escH(title), DESC: escH(desc), CANONICAL: escH(canon),
+    ROBOTS: m.noindex ? 'noindex,nofollow' : 'index,follow', BRAND_JSON: brandJs, LD_JSON: ld };
+  return tplFile(file).replace(/\{\{([A-Z_]+)\}\}/g, (all, k) => (k in map ? map[k] : all));
+}
+function sendPage(res, file, m, status) { res.status(status || 200).set('Cache-Control', 'no-cache').type('html').send(page(file, m)); }
+// publieke adressen van de voorpagina en hun titels (de voorpagina zet dezelfde titels in de browser)
+const famN = GD.fams.length, gameN = GD.games.length;
+const ROUTE_META = {
+  '/': { title: `${BRAND.name} · ${BRAND.genre}`, desc: `Gratis maffia-browsergame in het Nederlands. Begin als Rookie en werk je op tot Peetvader: ${GD.crimes} misdaden, ${famN} families, een casino met spelgeld en een ranglijst. Speel in je browser of als app.` },
+  '/misdaden': { title: `Misdaden · ${BRAND.name}`, desc: `Alle ${GD.crimes} klussen van ${BRAND.name}: buit, kans, energie en straf per rang.` },
+  '/casino': { title: `Casino · ${BRAND.name}`, desc: `${gameN} casinospellen met virtueel spelgeld: ${GD.games.map(x => x.n).join(', ')}. Alleen spelgeld, geen echt geld.` },
+  '/families': { title: `Families · ${BRAND.name}`, desc: `De ${famN} families van ${BRAND.name}: wie ze zijn, wie ze binnenlaten en hoe je bij ze opklimt.` },
+  '/rangen': { title: `Rangen · ${BRAND.name}`, desc: `De ${GD.ranks} rangen van ${BRAND.name}, van Rookie tot Peetvader, en wat elke rang opent.` },
+  '/training': { title: `Training · ${BRAND.name}`, desc: `${GD.trainings} plekken om te trainen en manieren om bij te komen in ${BRAND.name}.` }
+};
+function routeMeta(p) {
+  if (ROUTE_META[p]) return Object.assign({ path: p }, ROUTE_META[p]);
+  let m = p.match(/^\/casino\/([a-z0-9-]+)$/);
+  if (m) { const x = GD.games.find(y => y.slug === m[1]); return x ? { path: p, title: `${x.n} · Casino · ${BRAND.name}`, desc: `${x.n}: ${x.d} Speel met virtueel spelgeld.` } : null; }
+  m = p.match(/^\/families\/([a-z0-9-]+)$/);
+  if (m) { const x = GD.fams.find(y => y.id === m[1]); return x ? { path: p, title: `${x.n} · Families · ${BRAND.name}`, desc: `${x.n}: ${x.d}` } : null; }
+  return null;
+}
+const HOME_LD = { '@context': 'https://schema.org', '@type': 'VideoGame', name: BRAND.name, url: SITE + '/', inLanguage: 'nl', description: ROUTE_META['/'].desc,
+  genre: ['Browsergame', 'Maffiaspel', 'Rollenspel'], gamePlatform: 'Webbrowser', applicationCategory: 'Game', operatingSystem: 'Elke moderne webbrowser',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' } };
+app.get(['/index.html', '/index'], (req, res) => res.redirect(301, '/'));
+app.get(['/game', '/game.html'], (req, res) => sendPage(res, 'game.html', { title: `${BRAND.name} · Spelen`, path: '/game', noindex: true }));
+app.get(['/admin', '/admin.html'], (req, res) => sendPage(res, 'admin.html', { title: `Beheer · ${BRAND.name}`, path: '/admin', noindex: true }));
+app.get('/manifest.webmanifest', (req, res) => {
+  let man = {}; try { man = JSON.parse(tplFile('manifest.webmanifest')); } catch (e) {}
+  man.name = BRAND.name; man.short_name = BRAND.short; man.description = BRAND.tagline + '. ' + BRAND.genre + '.';
+  res.set('Cache-Control', 'no-cache').type('application/manifest+json').send(JSON.stringify(man, null, 2));
+});
+app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /game\n\nSitemap: ${SITE}/sitemap.xml\n`));
+app.get('/sitemap.xml', (req, res) => {
+  const urls = Object.keys(ROUTE_META).concat(GD.games.map(x => '/casino/' + x.slug), GD.fams.map(x => '/families/' + x.id));
+  res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(u => `  <url><loc>${escH(SITE + u)}</loc></url>`).join('\n')}\n</urlset>\n`);
+});
+// de voorpagina en zijn onderwerpen (de browser tekent ze; de server geeft de juiste titel en status mee)
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+  const p = (req.path.replace(/\/+$/, '') || '/').toLowerCase(), m = routeMeta(p);
+  if (!m) return next();
+  if (p === '/') m.ld = HOME_LD;
+  sendPage(res, 'index.html', m);
+});
+app.use(express.static(PUBLIC, { extensions: ['html'], index: false }));
+// onbekend: API geeft JSON, de rest een nette 404-pagina (de voorpagina toont dan "Doodlopende steeg")
+app.use('/api', (req, res) => res.status(404).json({ error: 'Onbekend adres' }));
+app.use((req, res) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return res.status(404).json({ error: 'Onbekend adres' });
+  sendPage(res, 'index.html', { title: `Niet gevonden · ${BRAND.name}`, desc: 'Deze pagina bestaat niet.', path: '/', noindex: true }, 404);
+});
 
 db.init()
   .catch(e => console.error('DB-init mislukt:', e.message))
