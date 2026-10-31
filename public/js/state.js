@@ -188,7 +188,8 @@ const talkChance=()=>Math.min(45,Math.round(S.skills.charisma*SK.charisma.talk))
 // Arrestatie: vluchten (vluchtspel), je eruit praten (charisma) of je overgeven.
 // opts: {mult: factor op praatkans, raid: politiecontrole bij gezochte speler, flee: moeilijkheid 1-5}
 // De arrestatie wordt direct opgeslagen (S.pendingArrest), zodat verversen je er niet uit haalt.
-function jailFor(pa,extra,why){const s=sendToJail(pa.sec*(extra||1));if(pa.opts&&pa.opts.raid){S.wanted=false;S.stats.raids=(S.stats.raids||0)+1}
+function jailFor(pa,extra,why){const s=sendToJail(pa.sec*(extra||1));if(typeof seizeZwart==='function')seizeZwart(pa.title); // zwart geld boven de grens in beslag (politie.js)
+  if(pa.opts&&pa.opts.raid){S.wanted=false;S.stats.raids=(S.stats.raids||0)+1}
   S.pendingArrest=null;log((why||pa.title)+'. '+fmtTime(s)+' de bajes in','bad');save();pushState();closeModal();
   page='jail';try{history.replaceState(null,'','#jail')}catch(e){}render();toast('Opgepakt: '+fmtTime(s),'bad')}
 function arrest(sec,title,msg,opts){

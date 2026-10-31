@@ -123,6 +123,15 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   celstraf. Gereedschap: buit en meer tijd bij auto stelen. Communicatie: minder hitte na elke klus (−10% tot −55%).
   Vervoer: makkelijker vluchten (opgevoerde scooter +6% tot helikopter op afroep +25%), de duurdere ook wat minder hitte.
   Oude saves: vroeger telde alles bij elkaar op; overbodige oude items worden terugbetaald.
+- **Politiebureau** (`public/js/pages/politie.js`, `public/css/politie.css`). Word je opgepakt (jailFor), dan neemt de politie
+  contant **zwart** geld boven de grens in beslag: je houdt €10.000 (gewoon), €15.000 (VIP) of €30.000 (High roller). Per
+  arrestatie een dossier; binnen 24 uur terug te eisen op het bureau, één poging, en alleen met een zaak die het kan verklaren
+  (een zaak om door wit te wassen, geen vastgoed). De balie kiest: een **verhoor** (vragen over je echte zaak en de arrestatie:
+  welke zaak, waar, hoeveel vestigingen, wat ze per speldag verdienen, hoeveel geld, hoe laat; tijd per vraag) of een **bon
+  aanleveren** (de echte kassabon even bekijken, dan namaken uit losse regels met bijna-goede valse regels ertussen, printen,
+  de rechercheur legt hem naast het origineel). Minstens 80% goed: het geld komt wit terug min 21% belasting (net als witwassen
+  via je zaak). Minder, te laat of verversen tijdens een poging: het geld is weg. Hoe groter het bedrag naast je inkomen per
+  speldag, hoe moeilijker. Bovenaan een 3D-model van het bureau (CSS 3D, sleep om te draaien).
 - **Bank** (`public/js/pages/bank.js`, koersen in `public/js/market.js`). Per lidmaatschap: spaarrente 0,10% / 0,12% / 0,15% per uur
   (gewoon / VIP / High roller), 2 / 5 / 10 depositoplekken en in totaal €10.000 / €30.000 /
   €100.000 beleggen. Lopende deposito's en beleggingen boven die grens blijven gewoon staan. Alles bij de bank ben je niet kwijt als je gepakt wordt.

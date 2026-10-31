@@ -43,6 +43,7 @@ const ICONS={
  shop:'<path d="M4 7h16l-1.5 12h-13zM9 7V5a3 3 0 016 0v2"/>',
  bank:'<path d="M3 10h18L12 4zM5 10v8M10 10v8M14 10v8M19 10v8M3 20h18"/>',
  jail:'<path d="M5 3v18M10 3v18M15 3v18M20 3v18M3 3h19M3 21h19"/>',
+ politie:'<path d="M12 2.5l7.5 3v6c0 4.6-3.2 8.4-7.5 10-4.3-1.6-7.5-5.4-7.5-10v-6z"/><path d="M12 8l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z"/>',
  skills:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
  fam:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 2 6 5.5"/>',
  rank:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0zM17 6h3v2a3 3 0 01-3 3M7 6H4v2a3 3 0 003 3"/>',
@@ -50,13 +51,13 @@ const ICONS={
  moto:'<circle cx="5.5" cy="16.5" r="3.5"/><circle cx="18.5" cy="16.5" r="3.5"/><path d="M5.5 16.5L9 10h4.5l2 4h-6.5M13 10l1.5-3.5H17M15.5 14l3 2.5"/>',
  heli:'<path d="M3 4.5h18M12 4.5v3.5"/><path d="M5.5 12.5c0 2.2 2.9 3.5 6.5 3.5s6.5-1.3 6.5-3.5V11a3 3 0 00-3-3h-7a3 3 0 00-3 3z"/><path d="M18.5 11.5h3M9 16l-1 3.5M15 16l1 3.5M6 19.5h12"/>',
  look:'<path d="M9 3.5L12 6l3-2.5 5.5 3.2-2.3 4.3-2.2-1V21H8V10l-2.2 1-2.3-4.3z"/><path d="M12 6v4"/>'};
-const PAGES=[['dash','Dashboard'],['verblijf','Verblijf'],['crimes','Misdaden'],['hits','Huurmoorden'],['cars','Auto\'s'],['casino','Casino'],['biz','Bezit'],['shop','Wapens'],['look','Outfit'],['skills','Training'],['bank','Bank'],['wit','Witwassen'],['fam','Families'],['jail','Bajes'],['rank','Ranglijst'],['profiel','Profiel']];
+const PAGES=[['dash','Dashboard'],['verblijf','Verblijf'],['crimes','Misdaden'],['hits','Huurmoorden'],['cars','Auto\'s'],['casino','Casino'],['biz','Bezit'],['shop','Wapens'],['look','Outfit'],['skills','Training'],['bank','Bank'],['wit','Witwassen'],['fam','Families'],['jail','Bajes'],['politie','Politiebureau'],['rank','Ranglijst'],['profiel','Profiel']];
 const svg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 let page=(location.hash||'#dash').slice(1);if(!PAGES.find(p=>p[0]===page))page='dash';
 let casinoTab='',rankTab='xp',slotState=['7','7','7'],spinning=false;
 
 // Elke sectie heeft een eigen kleur, zodat je ziet waar je bent
-const NAV_GROUPS=[['Straat',['dash','verblijf','crimes','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank','wit'],'#3fe395','63,227,149'],['Macht',['shop','look','skills','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','rank','profiel'],'#a9dcff','169,220,255']];
+const NAV_GROUPS=[['Straat',['dash','verblijf','crimes','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank','wit'],'#3fe395','63,227,149'],['Macht',['shop','look','skills','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','politie','rank','profiel'],'#a9dcff','169,220,255']];
 const groupOf=k=>NAV_GROUPS.find(g=>g[1].includes(k))||NAV_GROUPS[0];
 function applySection(){document.body.classList.toggle('wide-page',page==='casino');const g=groupOf(page),r=document.documentElement.style;r.setProperty('--sec',g[2]);r.setProperty('--sec-rgb',g[3])}
 function crumbHtml(){const g=groupOf(page);return `<div class="crumb"><i></i><span>${g[0]}</span>/ ${PAGES.find(p=>p[0]===page)[1]}</div>`+(typeof feudBar==='function'?feudBar():'')}
@@ -86,13 +87,13 @@ const MSHORT={dash:'Start',crimes:'Misdaden',cars:"Auto's",casino:'Casino'};
 // Klein getal rechts in het menu (computer): waar je staat, wat er loopt
 function navStat(){const o={};try{const [p]=myPos();o.rank='#'+p;if(inJail())o.jail=fmtClock(S.jailUntil-now());const h=cdLeft('hit');if(h&&rankIdx(S.xp)>=7)o.hits=fmtClock(h);
  if(typeof garageCap==='function')o.cars=S.cars.length+'/'+garageCap();if(S.family)o.fam=fam().m}catch(e){}return o}
-function navBadges(){const b={};if(inJail())b.jail='!';if(!inJail()&&S.energy>=EN_MAX)b.crimes='●';
+function navBadges(){const b={};if(inJail())b.jail='!';if(typeof pbOpen==='function'&&pbOpen().length)b.politie=pbOpen().length;if(!inJail()&&S.energy>=EN_MAX)b.crimes='●';
  if(typeof RANK_CODES!=='undefined'&&RANKS.slice(1,rankIdx(S.xp)+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase())))b.profiel='€';
  if(typeof isVip==='function'&&isVip()&&typeof cbAvail==='function'&&cbAvail()>=1)b.casino='€';return b}
 function navHint(k){const jt=Math.ceil((S.jailUntil-now())/1000);
  return {dash:'Overzicht',verblijf:S.hide?'Ondergedoken':'Gezondheid '+S.hp+'%',crimes:Math.floor(S.energy)+' energie',hits:rankIdx(S.xp)<7?'Vanaf '+RANKS[7][0]:cdLeft('hit')?'Over '+fmtClock(cdLeft('hit')):((S.stats&&S.stats.hits)||0)+' gedaan',cars:S.cars.length+(S.cars.length===1?' auto':" auto's"),
   casino:'9 spellen',biz:typeof income==='function'?fmt(income())+'/dag':'Bedrijven',bank:fmt(typeof bankNet==='function'?bankNet():S.bank),shop:'Wapens',skills:'Trainen & ontspannen',
-  fam:S.family?fam().n:'Geen familie',jail:inJail()?'Vast, '+fmtTime(jt):'Vrij',rank:'Spelers',profiel:'Codes en account',look:'Kleding en sieraden',wit:typeof zwart==='function'&&zwart()>=1?fmt(zwart())+' zwart':'Zwart geld wit maken'}[k]||''}
+  fam:S.family?fam().n:'Geen familie',jail:inJail()?'Vast, '+fmtTime(jt):'Vrij',politie:typeof pbOpen==='function'&&pbOpen().length?pbOpen().length+' dossier'+(pbOpen().length>1?'s':'')+' open':'Geld terugeisen',rank:'Spelers',profiel:'Codes en account',look:'Kleding en sieraden',wit:typeof zwart==='function'&&zwart()>=1?fmt(zwart())+' zwart':'Zwart geld wit maken'}[k]||''}
 function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('nav');bar.id='mbar';bar.className='mbar';bar.setAttribute('aria-label','Menu');document.body.appendChild(bar)}
  let sh=$('#msheet');if(!sh){sh=document.createElement('div');sh.id='msheet';sh.className='msheet';sh.setAttribute('aria-hidden','true');document.body.appendChild(sh);
   sh.addEventListener('click',e=>{const c=e.target.closest('[data-cas]');
@@ -122,7 +123,7 @@ function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('na
 // Zoeken in het menu: pagina's én wat je erop kunt doen (kliniek, roulette, codes...)
 const MS_PAGE_K={dash:'start overzicht home',verblijf:'woning huis rusten dokter kliniek onderduiken slapen',crimes:'klussen misdaad roven energie',hits:'huurmoord moord doelwit gezocht',
  cars:'auto garage stelen heler',casino:'gokken spellen slot',biz:'zaken bedrijven inkomen vestiging geld verdienen',bank:'sparen rente beleggen deposito geld storten opnemen wit',wit:'zwart geld witwassen',
- shop:'wapens vervoer kopen',look:'kleding outfit sieraden dobbelsteen',skills:'trainen ontspannen energie',fam:'familie maffia oorlog missies',jail:'bajes cel gevangenis borg',
+ shop:'wapens vervoer kopen',look:'kleding outfit sieraden dobbelsteen',skills:'trainen ontspannen energie',fam:'familie maffia oorlog missies',jail:'bajes cel gevangenis borg',politie:'politie bureau beslag in beslag genomen geld terug dossier verhoor bon',
  rank:'ranglijst spelers top',profiel:'account codes privacy'};
 const MS_FIND=[
  ['Kliniek','Meteen weer 100% gezondheid','verblijf','dokter genezen gezondheid ziekenhuis gewond'],
