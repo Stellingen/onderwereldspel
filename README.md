@@ -150,6 +150,10 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   3 op 10 boven 100×). Clusters van 5 betalen 0,35× (Speelkaart) tot 4,5× (Goudstaaf), van 10 stuks 3× tot 40×; grote clusters zijn
   op 10×10 met 9 symbolen zeldzaam (12+ ±1 op 6.000 spins). Een gekochte bonus betaalt 35–36% van de tabel (je begint met 8 vakjes op
   x2, de kluisvakjes op x2 en 2 extra spins), mediaan ±50×.
+  **Kluizen betalen zelf ook** in de spin die de bonus geeft (gewoon en gekocht, geteld na het doortumbelen): 3 = 5×, 4 = 10×,
+  5 = 25×, 6+ = 100× je inzet (meer dan 5 Goudstaven, want 3+ kluizen is veel zeldzamer). Daarvoor is de bonusfactor FS_K
+  omlaag (0,91 → 0,846) en BUY_KT ook (gekocht valt vaak 4+ kluizen: kluiswinst ±9% van de prijs). Gemeten met `kkm2.js`
+  (6 mln. rondes): RTP 92,5 / 94,5 / 95,7%, waarvan kluiswinst 1,9 / 2,2 / 2,8%; bonus gemiddeld ±102×, mediaan ±53×.
   **Vakjes gaan mee de bonus in**: wat in de spin vóór de bonus gemarkeerd is blijft gemarkeerd (de volgende winst daar is meteen
   x2), x2 en hoger blijft staan, en elk vakje waar een kluis ligt begint op x2 (gemiddeld ±3 op x2 en ±2,5 gemarkeerd). Geldt ook
   voor een gekochte bonus. Doorgerekend met `kkr.js` (basisspins + per trigger 10 bonussen met dezelfde startvakjes). Doorgerekend met `sim9.js`, `simbuy4.js`, `kkm.js` (verdeling) en `kkb.js` (basisspel).
