@@ -16,6 +16,17 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   **Levels binnen je rang**: elke rang heeft 5 levels (★ tot ★★★★★) op basis van je XP in die rang. Elk level geeft +3% buit
   en +1% op je passieve inkomen. Peetvader heeft eigen levels (100k, 150k, 225k, 340k en 500k XP). Je ziet je level in de
   topbalk, op het dashboard en op je profiel.
+- **Wegrijden** (`carchase.js`): word je betrapt bij autodiefstal (straat afzoeken, carjacken, of een afgebroken diefstal na
+  verversen) en kies je vluchten, dan rijd je weg met de auto (arrest() met `opts.chase`, `escapeGame()` kiest het spel). Eerst
+  een kort filmpje: je karakter in je eigen outfit rent naar de auto, de motor brult, zwaailichten erachter. Daarna een
+  achtervolging door de stad 's nachts (2,5D, natte weg met weerspiegelingen): ← → / A-D of vegen = baan wisselen,
+  ↑ / spatie / omhoog vegen = nitro, ↓ / S / REM-knop = remmen. Ontwijk verkeer en politieversperringen; politieauto's komen
+  van achteren naast je en knipperen naar jouw baan voordat ze je klem rijden (wissel weg, rem of geef nitro). Zijstraten
+  (groen bord "Steeg") neem je door in de buitenste baan aan die kant te zitten: +22 m voorsprong en +1 nitro. Je verliest bij
+  te veel klappen ("Motor kapot!") of als de politie je inhaalt ("Klem gereden!"); de spiegel bovenin toont hoe ver ze zijn.
+  Niveau 1-5 (CC_LV): sneller, drukker, meer versperringen en politie, minder voorsprong en nitro. Rijvaardigheid, uitrusting,
+  outfit, familie en lidmaatschap geven meer ruimte en voorsprong. Elke rij is haalbaar: het vrije gat ligt hooguit één baan
+  naast het vorige en er zit altijd tijd tussen om een auto voorbij te gaan. Getest met een speelbot (`ov._cc()` test-hook).
 - **Vluchtspel** (`flee.js`): gaat een klus mis, dan ren je weg door een steeg of een gebouw (2.5D): wissel van baan met
   pijltjes/A-D, vegen of tikken, spring met omhoog of spatie, ontwijk obstakels en agenten. Op straat is dat makkelijk, in een
   afgesloten gebouw bijna onmogelijk. Sinds de ombouw: een korte intro (de agent betrapt je, jij rent weg; tik om over te slaan),
@@ -395,6 +406,7 @@ public/js/landing.js inloggen/registreren, misdaadkaart en interactieve landing
 public/js/update.js  nieuwe versie? (/api/version): scripts laden met ?v=<commit>, balk 'Nieuwe versie' en vanzelf verversen als het kan
 public/js/slot.js    wiskunde van de Kluiskraker (pure functies)
 public/js/flee.js    vluchtspel bij een mislukte klus
+public/js/carchase.js wegrijden met de auto als je bij autodiefstal betrapt wordt
 public/js/icons.js   symbolen van de Kluiskraker
 public/js/*.js       spelmodules; public/js/pages/ bevat één bestand per tabblad
 ```

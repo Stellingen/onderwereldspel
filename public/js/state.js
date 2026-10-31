@@ -202,7 +202,7 @@ function arrest(sec,title,msg,opts){
   const goJail=(extra,why)=>jailFor(pa,extra,why);
   const btns=[];
   if(opts.flee){const L=FLEE_LEVELS[opts.flee];
-    btns.push({l:'Vluchten · '+L.label,c:'',f:()=>{pa.fleeing=true;S.pendingArrest=pa;save();pushState();closeModal();fleeGame(opts.flee).then(ok=>{
+    btns.push({l:(opts.chase?'Wegrijden · ':'Vluchten · ')+L.label,c:'',f:()=>{pa.fleeing=true;S.pendingArrest=pa;save();pushState();closeModal();(typeof escapeGame==='function'?escapeGame(opts.flee,opts):fleeGame(opts.flee)).then(ok=>{
       if(ok){S.pendingArrest=null;S.stats.fled=(S.stats.fled||0)+1;S.cred+=1;S.heat=Math.min(100,S.heat+5);addXp(3);
         if(opts.wanted&&!raid&&typeof setWanted==='function')setWanted(opts.wanted.lv,opts.wanted.t,opts.wanted.sec); // na een huurmoord: ontkomen, wel gezocht
         log(raid?'Politiecontrole ontvlucht. Je staat nog op de gezochtlijst':'Gevlucht en de politie kwijtgeraakt','ok');save();pushState();render();
@@ -218,7 +218,7 @@ function arrest(sec,title,msg,opts){
 function resumePending(){
   if(S.pendingJack){S.pendingJack=null;log('Carjacking afgebroken: de auto reed weg','bad')}
   if(S.pendingHeist){const c=CARS.find(k=>k.id===S.pendingHeist.id)||CARS[0];S.pendingHeist=null;S.heat=Math.min(100,S.heat+4+c.d*2);log('Autodiefstal afgebroken: '+c.n,'bad');
-    arrest(30+c.d*20,'Alarm!','Je liet de '+c.n+' halverwege staan en het alarm ging af.',{flee:Math.min(5,Math.max(1,c.d))});return}
+    arrest(30+c.d*20,'Alarm!','Je liet de '+c.n+' halverwege staan en het alarm ging af.',{flee:Math.min(5,Math.max(1,c.d)),chase:{b:c.b,c:'#8a929c',n:c.n}});return}
   if(S.pendingHit){const H=(typeof HITS!=='undefined'&&HITS.find(h=>h.id===S.pendingHit.id))||{t:'het doelwit',d:3};S.pendingHit=null;addHeat(15);log('Huurmoord afgebroken','bad');
     arrest(typeof hitJail==='function'?hitJail(H):300,'Gezien!','Je liet het contract op '+H.t+' halverwege liggen. Iemand heeft je gezien.',{flee:Math.min(5,H.d)});return}
   const pa=S.pendingArrest;if(!pa)return;

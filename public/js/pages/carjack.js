@@ -76,5 +76,5 @@ Object.assign(act,{
   else if(r==='fight'){const h=rnd(8,18);S.hp=Math.max(5,S.hp-h);addHeat(3);toast(`De bestuurder van de ${m.n} vecht terug. −${h}% gezondheid`,'bad');log(`Carjacking mislukt: de bestuurder vocht terug (−${h}% gezondheid)`,'bad')}
   else if(r==='gone'){addHeat(2);toast(`De ${m.n} rijdt weg. Geen politie, wel energie kwijt.`,'bad');log(`Carjacking mislukt: de ${m.n} reed weg`,'bad')}
   else{addHeat(6+m.d*2);log(`Carjacking mislukt: politie bij de ${m.n}`,'bad');save();render();
-   arrest(40+m.d*25,'Politie!','Een agent zag je bij de '+m.n+' aan het portier trekken.',{flee:Math.min(5,Math.max(1,m.d))});return}
+   arrest(40+m.d*25,'Politie!','Een agent zag je bij de '+m.n+' aan het portier trekken. De motor draait nog.',{flee:Math.min(5,Math.max(1,m.d)),chase:{b:m.b,c:car.c,n:m.n}});return}
   save();render();if(r===true&&typeof carGotShow==='function')carGotShow()}});
