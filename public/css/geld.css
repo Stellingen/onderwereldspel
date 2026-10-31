@@ -260,3 +260,56 @@
 .bk-mi-t em{font-style:normal;font-size:12.5px;color:var(--mute)}.bk-mi-t em .up{color:var(--green)}.bk-mi-t em .dn{color:var(--red)}
 @container (max-width:900px){.bk-atm{grid-template-columns:1fr}}
 @container (max-width:760px){.atm{padding:12px 12px 18px}.atm-keys{grid-template-columns:repeat(2,minmax(0,1fr))}.bk-mi{padding:12px 14px}.bk-mi-ic{width:44px;height:44px}.bk-mi-t b{font-size:22px}}
+/* ---------- Pinautomaat: menu, bedrag, procenten en toetsen ---------- */
+.bk-grid.one{grid-template-columns:1fr}
+.atm-screen{min-height:300px}
+.atm-ask{margin-top:6px;font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#7fb8e0}
+.atm-opts{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.atm-opts button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px 14px;border-radius:8px;cursor:pointer;text-align:left;color:#eaf7ff;font-family:var(--f-body);text-transform:none;letter-spacing:0;
+ background:linear-gradient(180deg,rgba(90,209,255,.16),rgba(90,209,255,.06));box-shadow:inset 0 0 0 1.5px rgba(90,209,255,.45);transition:background .15s,transform .1s}
+.atm-opts button:hover:not(:disabled){background:linear-gradient(180deg,rgba(90,209,255,.28),rgba(90,209,255,.1))}
+.atm-opts button:active:not(:disabled){transform:scale(.98)}
+.atm-opts button:disabled{opacity:.4;cursor:default}
+.atm-opts.big b{font-family:var(--f-display);font-weight:900;font-size:clamp(22px,2vw,28px);text-transform:uppercase;line-height:1}
+.atm-opts small{font-family:var(--f-mono);font-size:11px;color:#a7cbe6}
+.atm-opts .o-st{background:linear-gradient(180deg,rgba(63,227,149,.18),rgba(63,227,149,.06));box-shadow:inset 0 0 0 1.5px rgba(63,227,149,.5)}
+.atm-opts.two button{align-items:center;font-family:var(--f-head);font-size:14px;text-transform:uppercase;letter-spacing:.04em}
+.atm-amt{position:relative;z-index:1;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1.5px rgba(90,209,255,.45);cursor:text}
+.atm-amt i{font-style:normal;font-family:var(--f-display);font-weight:900;font-size:30px;color:#7fb8e0}
+.atm-amt input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#eaf7ff;font-family:var(--f-display);font-weight:900;font-size:clamp(30px,3.2vw,44px);line-height:1.1;padding:0;caret-color:var(--ice)}
+.atm-amt input::placeholder{color:rgba(234,247,255,.25)}
+.atm-amt:focus-within{box-shadow:inset 0 0 0 2px var(--ice),0 0 18px rgba(90,209,255,.25)}
+.atm-amt.bad{box-shadow:inset 0 0 0 2px var(--red)}.atm-amt.bad input{color:#ff9aa5}
+.atm-pct{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.atm-pct button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 4px;border-radius:7px;cursor:pointer;color:#eaf7ff;background:rgba(90,209,255,.1);box-shadow:inset 0 0 0 1px rgba(90,209,255,.35);font-family:var(--f-body);text-transform:none;letter-spacing:0}
+.atm-pct button b{font-family:var(--f-head);font-size:16px}.atm-pct button small{font-family:var(--f-mono);font-size:10px;color:#a7cbe6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.atm-pct button:hover:not(:disabled){background:rgba(90,209,255,.2)}
+.atm-pct button.on{background:var(--ice);color:#04131f;box-shadow:none}.atm-pct button.on small{color:#04131f}
+.atm-pct button:disabled{opacity:.35;cursor:default}
+.atm-msg{position:relative;z-index:1;font-size:12.5px;color:#a7cbe6;min-height:18px}.atm-msg.bad{color:#ff9aa5}
+.atm-ok{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:10px 0}
+.atm-tick{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:rgba(63,227,149,.15);color:var(--green);box-shadow:inset 0 0 0 2px var(--green);animation:atmTick .45s cubic-bezier(.2,1.6,.4,1)}
+.atm-tick svg{width:28px;height:28px}
+@keyframes atmTick{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+.atm-sub{font-size:12.5px;color:#a7cbe6}.atm-sub b{color:#eaf7ff;font-family:var(--f-mono)}
+/* toetsen zoals op een echte automaat */
+.atm-pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,1.25fr);gap:7px;padding:10px;border-radius:10px;background:#101215;box-shadow:inset 0 0 0 1px #2a2e35}
+.atm-p{position:relative;height:46px;border-radius:7px;border:0;cursor:pointer;color:#e9edf2;font-family:var(--f-mono);font-size:19px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;
+ background:linear-gradient(180deg,#bfc4cb,#8e949c);color:#14171b;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 3px 0 #4b5058;transition:transform .06s,box-shadow .06s}
+.atm-p small{font-family:var(--f-mono);font-size:8.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-top:2px;opacity:.8}
+.atm-p:active:not(:disabled){transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 1px 0 #4b5058}
+.atm-p.stop{background:linear-gradient(180deg,#ff5c6c,#c8102e);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 0 #6d0816}
+.atm-p.corr{background:linear-gradient(180deg,#ffd166,#e0a400);color:#2a1c00;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 0 #7a5800}
+.atm-p.okk{background:linear-gradient(180deg,#3fe395,#1f8d5b);color:#04170d;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 3px 0 #0d4a2e}
+.atm-p:disabled{opacity:.4;cursor:default}
+.atm-slot{position:relative;overflow:visible}
+.atm-bills{position:absolute;left:50%;top:6px;width:70%;transform:translateX(-50%);height:0;overflow:hidden;pointer-events:none}
+.atm-bills i{position:absolute;left:0;right:0;height:26px;border-radius:2px;background:linear-gradient(90deg,#3fe395,#a9f5cf 50%,#3fe395);box-shadow:inset 0 0 0 2px rgba(0,0,0,.18)}
+.atm-bills i:nth-child(2){left:4%;right:-4%;top:3px;opacity:.85}.atm-bills i:nth-child(3){left:-3%;right:3%;top:6px;opacity:.7}
+.atm-slot.go.out .atm-bills{animation:atmOut 1.6s ease-out forwards}
+.atm-slot.go.in .atm-bills{animation:atmIn 1.2s ease-in forwards}
+@keyframes atmOut{0%{height:0}35%{height:40px}75%{height:40px}100%{height:0;opacity:0}}
+@keyframes atmIn{0%{height:40px}100%{height:0}}
+@container (max-width:760px){.atm-screen{min-height:0}.atm-pct small{display:none}.atm-p{height:44px}.atm-opts.big{grid-template-columns:1fr}}
+.atm-pad{width:100%;max-width:470px;margin:0 auto}
+.atm-p.okk{grid-row:span 2;height:auto}

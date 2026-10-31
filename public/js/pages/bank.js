@@ -42,6 +42,59 @@ function bankTick(mins){if(!S.dep)S.dep=[];if(!S.inv)S.inv={};
  const done=S.dep.filter(d=>d.t1<=t);
  if(done.length){S.dep=S.dep.filter(d=>d.t1>t);done.forEach(d=>{const pay=Math.round(d.a*(1+d.r));S.bank+=pay;log('Deposito '+d.n+' uitbetaald: '+fmt(pay),'ok');toast('Deposito klaar: '+fmt(pay)+' staat op je spaarrekening','ok')})}}
 
+// ---------- Pinautomaat ----------
+// Menu: Opnemen of Storten. Daarna typ je een bedrag (toetsen op de automaat, je toetsenbord of het veld op het scherm)
+// of kies je 25% / 50% / 75% / Alles. OK = bevestigen, Corr = laatste cijfer weg, Stop = terug. Daarna een bevestiging.
+const atm={mode:null,amt:'',done:null};
+const atmMax=()=>Math.floor(atm.mode==='opnem'?S.bank:wit());
+const atmA=()=>Math.max(0,Math.floor(+atm.amt||0));
+const atmWhy=()=>{const a=atmA(),m=atmMax();return !m?(atm.mode==='opnem'?'Er staat niets op je spaarrekening':zwart()>=1?'Je hebt alleen zwart geld. Was het eerst wit.':'Je hebt geen contant geld'):!a?'Toets een bedrag in':a>m?'Te veel: maximaal '+fmt(m):''};
+const atmPcts=[[.25,'25%'],[.5,'50%'],[.75,'75%'],[1,'Alles']];
+function atmScreen(sv,dp,iv,tot){
+ if(atm.done){const d=atm.done;return `<div class="atm-hi"><span>${d.k==='opnem'?'Opnemen':'Storten'}</span><span>klaar</span></div>
+   <div class="atm-ok"><i class="atm-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>
+    <span class="atm-l">${d.k==='opnem'?'Opgenomen':'Gestort'}</span><b class="atm-tot">${fmt(d.a)}</b>
+    <span class="atm-sub">${d.k==='opnem'?'Neem je geld uit. Het zit nu contant op zak.':'Staat veilig op je spaarrekening.'}</span>
+    <span class="atm-sub">Spaarrekening nu <b>${fmt(S.bank)}</b> · op zak <b>${fmt(wit())}</b> wit</span></div>
+   <div class="atm-opts two"><button onclick="atmGo('${d.k}')">Nog een keer</button><button onclick="atmGo(null)">Terug naar het menu</button></div>`}
+ if(!atm.mode)return `<div class="atm-hi"><span>Welkom, ${esc(S.name)}</span><span>${new Date(now()).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})}</span></div>
+    <span class="atm-l">Totaal bij de bank</span><b class="atm-tot">${fmt(sv+dp+iv)}</b>
+    <div class="bk-dist" aria-hidden="true"><i style="width:${sv/tot*100}%;background:var(--ice)"></i><i style="width:${dp/tot*100}%;background:var(--violet)"></i><i style="width:${iv/tot*100}%;background:var(--acc)"></i></div>
+    <div class="atm-rows"><span><i style="background:var(--ice)"></i>Spaarrekening <b>${fmt(sv)}</b></span><span><i style="background:var(--violet)"></i>Deposito's <b>${fmt(dp)}</b></span><span><i style="background:var(--acc)"></i>Beleggingen <b>${fmt(iv)}</b></span></div>
+    <div class="atm-cash">Op zak: <b style="color:var(--wit)">${fmt(wit())} wit</b>${zwart()>=1?` · <b style="color:var(--zw)">${fmt(zwart())} zwart</b> <a href="#wit">witwassen ›</a>`:''}</div>
+    <span class="atm-ask">Wat wil je doen?</span>
+    <div class="atm-opts big"><button class="o-opn" onclick="atmGo('opnem')" ${S.bank>=1?'':'disabled'}><b>Opnemen</b><small>van je spaarrekening · ${fmt(S.bank)}</small></button>
+     <button class="o-st" onclick="atmGo('stort')" ${wit()>=1?'':'disabled'}><b>Storten</b><small>wit geld op zak · ${fmt(wit())}</small></button></div>`;
+ const op=atm.mode==='opnem',m=atmMax(),a=atmA(),why=atmWhy();
+ return `<div class="atm-hi"><span>${op?'Opnemen':'Storten'}</span><span>${op?'beschikbaar':'wit op zak'} ${fmt(m)}</span></div>
+   <span class="atm-l">${op?'Hoeveel wil je opnemen?':'Hoeveel wil je storten?'}</span>
+   <label class="atm-amt ${a>m?'bad':''}"><i>€</i><input id="atmIn" type="text" inputmode="numeric" autocomplete="off" placeholder="0" value="${a?a.toLocaleString('nl-NL'):''}" oninput="atmType(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();atmOk()}" aria-label="Bedrag"></label>
+   <div class="atm-pct">${atmPcts.map(([f,l])=>{const v=Math.floor(m*f);return `<button class="${a&&a===v?'on':''}" onclick="atmSet(${v})" ${v>=1?'':'disabled'}><b>${l}</b><small>${fmt(v)}</small></button>`}).join('')}</div>
+   <div class="atm-msg ${a>m?'bad':''}" id="atmMsg">${why||(op?`Je spaarrekening wordt ${fmt(S.bank-a)}, op zak ${fmt(wit()+a)}.`:`Je spaarrekening wordt ${fmt(S.bank+a)}, op zak ${fmt(wit()-a)} wit.`)}</div>
+   ${!op&&zwart()>=1?`<div class="atm-cash">De bank neemt geen zwart geld aan: ${fmt(zwart())} zwart, eerst <a href="#wit">witwassen ›</a></div>`:''}`}
+function atmPad(){const on=!!atm.mode&&!atm.done,why=on?atmWhy():'x';
+ const k=(l,fn,c,dis)=>`<button class="atm-p ${c||''}" onclick="${fn}" ${dis?'disabled':''}>${l}</button>`;
+ return `<div class="atm-pad" aria-label="Toetsen">${[1,2,3].map(n=>k(n,`atmKey('${n}')`,'',!on)).join('')}${k('Stop<small>terug</small>','atmGo(null)','stop',!atm.mode&&!atm.done)}
+  ${[4,5,6].map(n=>k(n,`atmKey('${n}')`,'',!on)).join('')}${k('Corr<small>wissen</small>',"atmKey('back')",'corr',!on)}
+  ${[7,8,9].map(n=>k(n,`atmKey('${n}')`,'',!on)).join('')}${k('OK<small>'+(atm.mode==='opnem'?'opnemen':atm.mode==='stort'?'storten':'bevestig')+'</small>','atmOk()','okk',!on||!!why)}
+  ${k('00',"atmKey('00')",'',!on)}${k('0',"atmKey('0')",'',!on)}${k('000',"atmKey('000')",'',!on)}</div>`}
+function atmRedraw(){const sc=document.getElementById('atmScr'),pd=document.getElementById('atmPad');if(!sc||!pd){render();return}
+ const sv=S.bank,dp=depTotal(),iv=invTotal(),tot=sv+dp+iv||1;sc.innerHTML=atmScreen(sv,dp,iv,tot);pd.outerHTML=atmPad();const v=$('#view');if(v)v._h=null}
+function atmGo(m){atm.mode=m;atm.amt='';atm.done=null;try{SFX.chip()}catch(e){}atmRedraw();if(m)setTimeout(()=>{const i=document.getElementById('atmIn');if(i&&matchMedia('(pointer:fine)').matches)i.focus({preventScroll:true})},30)}
+function atmSet(v){atm.amt=String(Math.max(0,Math.floor(v)));try{SFX.tick()}catch(e){}atmRedraw()}
+function atmKey(k){if(!atm.mode||atm.done)return;let t=String(atmA()||'');if(k==='back')t=t.slice(0,-1);else if(t.length<13)t=(t+k).replace(/^0+/,'');atm.amt=t;try{SFX.tick()}catch(e){}atmRedraw()}
+// typen in het veld: alleen de tekst onder het bedrag en de knoppen bijwerken, zodat je cursor blijft staan
+function atmType(el){const d=el.value.replace(/\D/g,'').slice(0,13);atm.amt=d;const a=atmA(),m=atmMax(),why=atmWhy(),op=atm.mode==='opnem';
+ const f=a?a.toLocaleString('nl-NL'):'';if(el.value!==f){el.value=f;try{el.setSelectionRange(f.length,f.length)}catch(e){}}
+ el.parentNode.classList.toggle('bad',a>m);const msg=document.getElementById('atmMsg');if(msg){msg.className='atm-msg'+(a>m?' bad':'');msg.textContent=why||(op?`Je spaarrekening wordt ${fmt(S.bank-a)}, op zak ${fmt(wit()+a)}.`:`Je spaarrekening wordt ${fmt(S.bank+a)}, op zak ${fmt(wit()-a)} wit.`)}
+ document.querySelectorAll('.atm-pct button').forEach((b,i)=>b.classList.toggle('on',!!a&&a===Math.floor(m*atmPcts[i][0])));const ok=document.querySelector('.atm-p.okk');if(ok)ok.disabled=!!why}
+function atmOk(){if(!atm.mode||atm.done||atmWhy())return;const a=atmA(),k=atm.mode;
+ if(k==='opnem'){S.bank-=a;S.cash+=a;log(fmt(a)+' opgenomen bij de pinautomaat','info')}else{spendWit(a);S.bank+=a;log(fmt(a)+' gestort bij de pinautomaat','info')}
+ try{SFX.win(2)}catch(e){}atm.done={k,a};atm.amt='';save();render();const sl=document.querySelector('.atm-slot');if(sl){sl.classList.remove('go');void sl.offsetWidth;sl.classList.add('go',k==='opnem'?'out':'in')}}
+// toetsenbord: cijfers, Backspace, Enter en Escape als de automaat open staat (niet als je in een ander veld typt)
+document.addEventListener('keydown',e=>{if(typeof page==='undefined'||page!=='bank'||!atm.mode||atm.done)return;const t=e.target;if(t&&t.id!=='atmIn'&&/INPUT|TEXTAREA|SELECT/.test(t.tagName))return;if(t&&t.id==='atmIn'&&e.key!=='Escape')return;
+ if(/^[0-9]$/.test(e.key)){e.preventDefault();atmKey(e.key)}else if(e.key==='Backspace'){e.preventDefault();atmKey('back')}else if(e.key==='Enter'){e.preventDefault();atmOk()}else if(e.key==='Escape'){e.preventDefault();atmGo(null)}});
+window.addEventListener('hashchange',()=>{if(location.hash!=='#bank'){atm.mode=null;atm.amt='';atm.done=null}});
 const bk={tab:'rek',amt:'',src:'bank',term:'24u',fund:'coin',rng:'24u',brk:null};
 const bkAmt=()=>Math.max(0,Math.floor(+bk.amt||0));
 const bkSrcBal=()=>Math.floor(bk.src==='bank'?S.bank:wit());
@@ -78,13 +131,8 @@ function bkChart(f){const [span,n,lab]=BK_RNG[bk.rng],t=now(),s=MK.series(f,t,sp
   <div class="bk-xl"><span>${lab} geleden</span><span>nu</span></div></div>`}
 const riskPips=r=>`<span class="bk-risk" title="Risico ${r} van 5">${[1,2,3,4,5].map(i=>`<i class="${i<=r?'on':''}"></i>`).join('')}</span>`;
 
-function bkRek(){const max=Math.max(S.cash,S.bank),a=bkAmt(),r=savRate();
- return `<div class="bk-grid">
-  <section class="card bk-box"><h3>Geld verplaatsen</h3><p class="sub">Alleen wit geld kan de bank op. Op zak kun je het kwijtraken als je gepakt wordt; op de bank staat het veilig.</p>
-   <div class="bk-flow"><div><span class="label">Wit geld op zak</span><b style="color:var(--wit)">${fmt(wit())}</b>${zwart()>=1?`<small class="bk-zw">+ ${fmt(zwart())} zwart, eerst <a href="#wit">witwassen</a></small>`:''}</div>${BK_ARROWS}<div><span class="label">Spaarrekening</span><b>${fmt(S.bank)}</b></div></div>
-   ${bkInput(max)}
-   <div class="bk-two"><button class="btn" data-bk-btn onclick="act.bkDep()" ${a&&wit()>=1?'':'disabled'}>Storten${a?' '+fmt(Math.min(a,wit())):''}</button>
-    <button class="btn ghost" data-bk-btn onclick="act.bkWd()" ${a&&S.bank>=1?'':'disabled'}>Opnemen${a?' '+fmt(Math.min(a,S.bank)):''}</button></div></section>
+function bkRek(){const r=savRate();
+ return `<div class="bk-grid one">
   <section class="card bk-box"><h3>Spaarrekening</h3><p class="sub">Vrij opneembaar, elke minuut rente. Ook offline (tot 12 uur).</p>
    <div class="bk-rate"><b>${nl(r*100,2)}%</b><span>per uur · ±${nl((Math.pow(1+r,24)-1)*100,1)}% per dag${isVip()?' · '+lidName():''}</span></div>
    ${bkTiers(i=>nl(SAV_RATE*BANK_T[i]*100,2)+'%','per uur')}
@@ -155,26 +203,15 @@ function bkInvTab(){const f=fundOf(bk.fund),t=now(),p=invPos(f.id),px=MK.price(f
 V.bank=()=>{if(!S.dep)S.dep=[];if(!S.inv)S.inv={};const sv=S.bank,dp=depTotal(),iv=invTotal(),tot=sv+dp+iv||1,tc=invCost(),pl=iv-tc,nx=S.dep.slice().sort((x,y)=>x.t1-y.t1)[0],cash=Math.floor(S.cash);
  // de drie potjes zijn ook knoppen naar hun tabblad
  const k=(id,cls,lab,val,sub)=>`<button class="bk-k ${cls} ${bk.tab===id?'on':''}" onclick="act.bkTab('${id}')"><span class="label">${lab}</span><b>${val}</b><em>${sub}</em></button>`;
- const wd=[1e4,1e5,1e6].filter(v=>v<=Math.max(1e4,S.bank));
- const MI={rek:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>',dep:'<rect x="3.5" y="4" width="17" height="15" rx="1.5"/><circle cx="12" cy="11.5" r="4"/><path d="M12 9.5v2l1.4 1.2M6 19v2M18 19v2"/>',inv:'<path d="M3 3v18h18"/><path d="M6.5 15.5l4-4.5 3 3L20 6.5"/><path d="M15.5 6.5H20V11"/>'};
+  const MI={rek:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>',dep:'<rect x="3.5" y="4" width="17" height="15" rx="1.5"/><circle cx="12" cy="11.5" r="4"/><path d="M12 9.5v2l1.4 1.2M6 19v2M18 19v2"/>',inv:'<path d="M3 3v18h18"/><path d="M6.5 15.5l4-4.5 3 3L20 6.5"/><path d="M15.5 6.5H20V11"/>'};
  const menu=(id,col,lab,val,sub)=>`<button class="bk-mi ${bk.tab===id?'on':''}" style="--c:${col}" onclick="act.bkTab('${id}')" aria-pressed="${bk.tab===id}"><span class="bk-mi-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${MI[id]}</svg></span><span class="bk-mi-t"><span class="label">${lab}</span><b>${val}</b><em>${sub}</em></span></button>`;
  return `<h1>Bank</h1>
  <section class="bk-atm">
   <div class="atm" aria-label="Pinautomaat">
    <div class="atm-top"><span class="atm-logo">ONDER<b>BANK</b></span><span class="atm-led"></span></div>
-   <div class="atm-screen">
-    <div class="atm-hi"><span>Welkom, ${esc(S.name)}</span><span>${new Date(now()).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})}</span></div>
-    <span class="atm-l">Totaal bij de bank</span><b class="atm-tot">${fmt(sv+dp+iv)}</b>
-    <div class="bk-dist" aria-hidden="true"><i style="width:${sv/tot*100}%;background:var(--ice)"></i><i style="width:${dp/tot*100}%;background:var(--violet)"></i><i style="width:${iv/tot*100}%;background:var(--acc)"></i></div>
-    <div class="atm-rows"><span><i style="background:var(--ice)"></i>Spaarrekening <b>${fmt(sv)}</b></span><span><i style="background:var(--violet)"></i>Deposito's <b>${fmt(dp)}</b></span><span><i style="background:var(--acc)"></i>Beleggingen <b>${fmt(iv)}</b></span></div>
-    <div class="atm-cash">Op zak: <b style="color:var(--wit)">${fmt(wit())} wit</b>${zwart()>=1?` · <b style="color:var(--zw)">${fmt(zwart())} zwart</b> <a href="#wit">witwassen ›</a>`:''}</div>
-   </div>
-   <div class="atm-keys">
-    <button class="atm-k ok" onclick="act.bkAll()" ${wit()>=1?'':'disabled'}><span>Storten</span><b>${wit()>=1?'alles · '+fmt(wit()):'niets wit'}</b></button>
-    ${wd.map(v=>`<button class="atm-k" onclick="act.bkQuick(${v})" ${S.bank>=v?'':'disabled'}><span>Opnemen</span><b>${fmt(v)}</b></button>`).join('')}
-    <button class="atm-k" onclick="act.bkQuick(${Math.floor(S.bank)})" ${S.bank>=1?'':'disabled'}><span>Opnemen</span><b>alles</b></button>
-   </div>
-   <div class="atm-slot" aria-hidden="true"><i></i></div>
+   <div class="atm-screen ${atm.mode&&!atm.done?'in':''}" id="atmScr">${atmScreen(sv,dp,iv,tot)}</div>
+   ${atmPad()}
+   <div class="atm-slot" aria-hidden="true"><i></i><span class="atm-bills"><i></i><i></i><i></i></span></div>
   </div>
   <div class="bk-menu">
    ${menu('rek','#a9dcff','Rekening',fmt(sv),sv>=1?'+'+fmt(sv*savRate())+' rente per uur · storten en opnemen':nl(savRate()*100,2)+'% rente per uur')}
