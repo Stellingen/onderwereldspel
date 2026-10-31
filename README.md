@@ -166,7 +166,9 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   **Snelheid** 1× (rustig), 2× (sneller) en 3× (snelst, het oude 'snel'), voor Kluiskraker en Visdief, bewaard bij je account.
   Links bij **Laatste rondes** zie je minstens je laatste 4 winsten (rondes zonder winst achter elkaar staan als één regel) en een knop naar al je rondes (de laatste 100 worden bewaard).
   Op brede schermen staat rechts het saldo over de volle breedte, daaronder deze spin en gewonnen; in de bonus deze spin naast de spins die nog over zijn, en daaronder de bonuswinst. Dan de inzet met − en + ernaast en alle inzetten van €10 t/m €50K in één raster. High rollers zien onderaan een knop High roller die de inzetten €100K t/m €500K toont (en terug). Daaronder de snelheid 1×/2×/3×, bonus kopen en Draaien.
-  **Spelen met wit of zwart** kies je in de casinobalk. Wit (legaal, te verantwoorden) laat de verdenking niet oplopen; met zwart wordt
+  **Betalen met** kies je in de casinobalk: **Automatisch** (standaard: eerst je zwarte geld, is dat op dan je witte), **Alleen wit** of
+  **Alleen zwart**. De balk laat altijd zien waarmee je speelt ("Eerst €3.000 zwart, dan wit") en staat op de telefoon bovenaan vast,
+  samen met cashback claimen, geluk en de verdenking. Wit (legaal, te verantwoorden) laat de verdenking niet oplopen; met zwart wordt
   wat je wint wit, maar de verdenking loopt op: per ronde (inzet/limiet van je rang ×35 + 0,04) × spel (slots 1,4, roulette 1, kaarten 0,85,
   dubbel of niks 0,8, Mines en Hoogvlieger 0,55) × lidmaatschap (gewoon 1, VIP 0,65, High roller 0,35) × de **ogen** van de
   beveiliging (dicht 0,25, open 1, rood op jouw tafel 2; per 40 seconden wisselend). Zakt 4%/min in het casino, 8%/min als je weg

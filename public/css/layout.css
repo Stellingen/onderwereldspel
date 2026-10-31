@@ -302,17 +302,16 @@ a.chip:hover{background:var(--panel2)}
    batterij of het eiland van de iPhone: bovenaan een vaste strook in de achtergrondkleur, zo hoog als die balk */
 body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);z-index:95;background:var(--bg);pointer-events:none}
 @media (max-width:900px){
-  /* de balk zit bovenaan vast, net als de knoppenbalk onderaan. Sommige iPhones (Safari 26) laten de pagina tijdens het scrollen
-     ook door de strook van de klok en het eiland lopen: daarom loopt de balk naar boven toe dicht (::before), zodat er
-     boven de balk nooit tekst doorheen schuift */
+  /* de balk zit bovenaan vast, net als de knoppenbalk onderaan. iPhones (iOS 26) laten de pagina tijdens het scrollen ook door
+     de strook van de klok en het eiland lopen: daarom loopt de balk altijd naar boven toe dicht (::before, zonder JavaScript,
+     want tijdens het uitrollen na een veeg draait er geen code), zodat er boven de balk nooit tekst doorheen schuift */
   .topbar,body.wide-page .topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;backdrop-filter:none;-webkit-backdrop-filter:none}
-  .topbar.stuck::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:calc(160px + env(safe-area-inset-top,0px));background:var(--bg);pointer-events:none;
+  .topbar::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:calc(160px + env(safe-area-inset-top,0px));background:var(--bg);pointer-events:none;
     box-shadow:0 0 0 40px var(--bg);clip-path:inset(-200px -40px 0 -40px)}
   body.wide-page .topbar{overflow:visible}
   body:not(.wide-page) .topbar{background:var(--bg2);box-shadow:0 10px 24px -14px rgba(0,0,0,.9)}
-  /* casino: de knoppenrij (spelen met, cashback, geluk) staat los erboven en schuift weg; saldo en bank blijven vast staan */
+  /* casino: saldo, bank en de knoppen (betalen met, cashback, geluk, verdenking) blijven samen bovenaan vast staan */
   body.wide-page .chud{box-shadow:0 10px 24px -14px rgba(0,0,0,.9)}
-  body.wide-page .chud{border-top-width:1px}
   main{padding-top:calc(14px + env(safe-area-inset-top,0px))}
   #modal,.chase-ov{padding-top:max(16px,calc(env(safe-area-inset-top,0px) + 8px))}
   .fl-box{padding-top:max(16px,calc(env(safe-area-inset-top,0px) + 10px))}
@@ -390,3 +389,34 @@ body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area
  .chud.v2 .ch-cb .label{max-width:90px}
 }
 @media (min-width:901px){.chud.v2>*{flex-grow:1}.chud.v2>.ch-main{flex-grow:0}}
+
+/* ===== Casino: betalen met Automatisch (zwart eerst) / Alleen wit / Alleen zwart ===== */
+.cp-ic{display:inline-block;width:10px;height:10px;border-radius:3px;flex:none;background:var(--wit)}
+.cp-ic.zwart{background:#2c2f35;box-shadow:0 0 0 1.5px var(--zw-bar,#8a8f98)}
+.cp-ic.auto{background:linear-gradient(135deg,#2c2f35 0 50%,var(--wit) 50% 100%);box-shadow:0 0 0 1.5px var(--zw-bar,#8a8f98)}
+.ch-now{display:block;margin-top:3px;font-size:12px;line-height:1.3;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-now b{font-family:var(--f-mono);font-size:12px!important;font-weight:700}.ch-now b.w{color:var(--wit)}.ch-now b.z{color:#ff8a95}
+.chud.v2.pay-wit{border-top-color:var(--wit)}
+.chud.v2.pay-zwart{border-top-color:#ff5c6c}
+.chud.v2.pay-auto{border-top-color:transparent;border-image:linear-gradient(90deg,#ff5c6c,#8a8f98 45%,var(--wit)) 1}
+.ch-seg button.a.on{background:linear-gradient(135deg,rgba(255,92,108,.14),rgba(63,227,149,.12));box-shadow:inset 0 0 0 2px #c9ced6;color:#e6e9ee}
+.cp-sel{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px!important;background:var(--bg2);border-top:1px solid var(--line);animation:cpIn .16s ease-out}
+@keyframes cpIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.cp-o{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0;padding:9px 10px;border-radius:10px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line2);color:var(--fg);text-align:left;font:inherit;-webkit-tap-highlight-color:transparent}
+.cp-o span{display:flex;flex-direction:column;gap:1px;min-width:0}
+.cp-o b{font-family:var(--f-body);font-size:13.5px;font-weight:700;white-space:nowrap}
+.cp-o small{font-size:10.5px;line-height:1.25;color:var(--mute)}
+.cp-o em{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.cp-o.on.auto{box-shadow:inset 0 0 0 2px #c9ced6;background:linear-gradient(135deg,rgba(255,92,108,.12),rgba(63,227,149,.1))}
+.cp-o.on.wit{box-shadow:inset 0 0 0 2px var(--wit);background:rgba(63,227,149,.1)}.cp-o.on.wit b{color:var(--wit)}
+.cp-o.on.zwart{box-shadow:inset 0 0 0 2px #ff5c6c;background:rgba(255,92,108,.1)}.cp-o.on.zwart b{color:#ff8a95}
+@media (max-width:900px){
+ .cc-pay b{gap:6px}
+ .cc-pay.auto{box-shadow:inset 0 0 0 1.5px #c9ced6}
+ .cc-pay.zwart{box-shadow:inset 0 0 0 1.5px #ff5c6c}.cc-pay.zwart b{color:#ff8a95}
+ .cc-pay.wit b{color:var(--wit)}
+ .cc-pay.open{background:var(--panel2)}
+ .ch-main>div{min-width:0}
+}
+@media (min-width:901px){.cp-sel{display:none}}
+

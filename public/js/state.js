@@ -89,7 +89,7 @@ const zwart=()=>Math.max(0,Math.min(S.cash,S.zwart||0));
 const wit=()=>Math.max(0,S.cash-zwart());
 function addZwart(x){x=+x||0;if(x>0)S.zwart=Math.min(S.cash,(S.zwart||0)+x)}
 function spendWit(x){zwWit=true;try{S.cash-=x}finally{zwWit=false}}
-// Casino: je kiest zelf of je speelt met wit (legaal) of zwart geld (S.casPay). Wat je wint is altijd wit.
+// Casino: standaard speel je eerst met zwart geld en daarna met wit (S.casPay 'auto'); je kunt ook alleen wit of alleen zwart kiezen. Wat je wint is altijd wit.
 // Wit geld kun je verantwoorden: daarmee loopt de verdenking niet op. Alleen zwart geld telt: per ronde
 // (inzet/limiet ×35 + 0,04), het snelst bij de slots (daar was je zwart geld het makkelijkst wit), minder bij kaarten en
 // roulette, het minst bij Mines en Hoogvlieger. VIP ±35% en High roller ±65% minder (het casino verwacht dat zij veel geld
@@ -97,9 +97,10 @@ function spendWit(x){zwWit=true;try{S.cash-=x}finally{zwWit=false}}
 // maar een kwart. Zakt 4% per minuut in het casino, 8% per minuut als je weg bent. Op 100%: verbannen (30 / 20 / 10 minuten), daarna begint het weer op 0%.
 const czLim=()=>20000*Math.pow(1.35,rankIdx(S.xp));
 const CZ_GAME={kluis:1.4,vis:1.4,roulette:1,bj:.85,tcp:.85,th:.85,coin:.8,mines:.55,avia:.55},CZ_TIER=[1,.65,.35],CZ_BAN=[30,20,10],CZ_EYE=[.25,1,2];
-const casPayMode=()=>S.casPay==='zwart'?'zwart':'wit';
-const casCash=()=>casPayMode()==='zwart'?zwart():wit();
-const casShort=()=>casPayMode()==='zwart'?'Niet genoeg zwart geld. Speel met wit geld of was je geld wit.':zwart()>=1?'Niet genoeg wit geld. Kies "zwart" om met je zwarte geld te spelen.':'Niet genoeg contant geld';
+// Betaalwijze (S.casPay): 'auto' (standaard) = eerst je zwarte geld, is dat op dan je witte; 'wit' = alleen wit; 'zwart' = alleen zwart.
+const casPayMode=()=>S.casPay==='zwart'?'zwart':S.casPay==='wit'?'wit':'auto';
+const casCash=()=>{const m=casPayMode();return m==='zwart'?zwart():m==='wit'?wit():S.cash};
+const casShort=()=>{const m=casPayMode();return m==='zwart'?'Niet genoeg zwart geld. Zet "Betalen met" op Automatisch of Wit.':m==='wit'&&zwart()>=1?'Niet genoeg wit geld. Zet "Betalen met" op Automatisch om ook je zwarte geld te gebruiken.':'Niet genoeg contant geld'};
 // ogen van de beveiliging: per periode van 40 s dicht, open of op jouw tafel gericht (voor iedereen hetzelfde ritme per speler)
 function czEyes(t){t=t||now();const P=40000,k=Math.floor(t/P),x=(t%P)/P;let h=2166136261;const sd=String(k)+(S.name||'');for(const c of sd)h=Math.imul(h^c.charCodeAt(0),16777619);const r=((h>>>0)%1000)/1000;
  const closed=.32+r*.2,red=.16+r*.12;return x<closed?0:x<1-red?1:2}
@@ -108,12 +109,14 @@ const czBanLeft=()=>S.czBan?Math.max(0,S.czBan-now()):0;
 function czVal(){const C=S.cz;if(!C)return 0;const m=Math.max(0,(now()-(C.t||now()))/60000),onCas=typeof page!=='undefined'&&page==='casino';C.s=Math.max(0,(C.s||0)-m*(onCas?4:8));C.t=now();if(!C.s)C.g=0;return C.s}
 function zwCasinoRound(stake,game){if(!(stake>0))return;const C=S.cz||(S.cz={s:0,t:now(),g:0});czVal();
  const gw=CZ_GAME[game]||1,tf=CZ_TIER[typeof tier==='function'?tier():0]||1,ew=CZ_EYE[czEyes()];let gain;
- if(casPayMode()==='zwart'){const used=Math.min(zwart(),stake);S.zwart=zwart()-used;C.g=(C.g||0)+used;gain=(used/czLim()*35+.04)*gw*tf*ew}
+ if(casPayMode()!=='wit'){const used=Math.min(zwart(),stake);if(used<=0)return;S.zwart=zwart()-used;C.g=(C.g||0)+used;gain=(used/czLim()*35+.04)*gw*tf*ew}
  else return; // wit geld: aan te tonen, geen verdenking
  C.s=Math.min(100,C.s+gain);if(C.s>=100)window.__czBan=true}
 if(window.__PUSH_LOCAL__)setTimeout(()=>pushState(),1200);
 if(window.__REDEEMED__)window.__REDEEMED__.forEach(c=>{if(!S.redeemed.includes(c))S.redeemed.push(c)});
 S.redeemed=S.redeemed.filter(c=>LIVE_CODES[c]||RANK_CODES[c]);
+// casino: iedereen begint één keer op de nieuwe standaard 'Automatisch' (eerst zwart, dan wit)
+if(S.casPayV!==2){S.casPay='auto';S.casPayV=2}
 
 const rankIdx=xp=>{let i=0;RANKS.forEach((r,j)=>{if(xp>=r[1])i=j});return i};
 // Levels binnen een rang (1-5): hoe meer ervaring in je rang, hoe meer je verdient (+3% buit per level).
