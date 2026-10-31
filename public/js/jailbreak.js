@@ -159,19 +159,23 @@ function jailBreakGame(P){
    const Z=q('jbZone'),N=q('jbNeedle'),NB=q('jbNoise'),GD=q('jbGd'),WN=q('jbWarn'),F=q('jbFile');
    const place=()=>{zc=P.zone/2+.04+Math.random()*(1-P.zone-.08);Z.style.left=((zc-P.zone/2)*100)+'%';Z.style.width=(P.zone*100)+'%'};place();
    const bar=()=>Math.min(2,Math.floor(cut/P.hits));
-   const hit=()=>{if(st.done||st.intro||cool>0)return;cool=.2;stroke=.22;
+   // een tik wordt beoordeeld op wat je zag: het scherm loopt op een telefoon ±50-60 ms achter, dus we kijken iets terug in de tijd
+   // (en een fractie ervoor), met wat extra speling bij touch
+   const pAt=t=>(Math.sin(t*Math.PI*2*P.swing)+1)/2;
+   const inZone=src=>{const touch=src==='touch',lag=touch?.06:.015,g=touch?.025:.008;return [0,.035,.07].some(k=>Math.abs(pAt(st.t-lag-k*(touch?1:.4))-zc)<=P.zone/2+g)};
+   const hit=src=>{if(st.done||st.intro||cool>0)return;cool=.2;stroke=.22;
     if(guard>0){noise+=70;flash=1;sfx('lose');help.innerHTML='<b class="r">De bewaker staat voor je cel!</b> Niet vijlen als hij er is.'}
-    else if(Math.abs(p-zc)<=P.zone/2){cut++;noise=Math.max(0,noise+4);sfx('card');const b=Math.min(2,Math.floor((cut-1)/P.hits));
+    else if(inZone(src)){cut++;noise=Math.max(0,noise+4);sfx('card');const b=Math.min(2,Math.floor((cut-1)/P.hits));
      const el=stage.querySelector(`.jb-bar[data-b="${b}"]`);el.querySelector('.jb-cut').style.setProperty('--c',((cut-b*P.hits)/P.hits).toFixed(3));if(cut%P.hits===0){el.classList.add('done');sfx('pop')}
      place();if(cut>=need){win1();return}}
     else{noise+=P.noiseMiss;flash=.6;sfx('tick');stage.classList.remove('jb-shake');void stage.offsetWidth;stage.classList.add('jb-shake')}
     if(noise>=100)fail('De bewaker hoorde het vijlen.')};
-   q('jbFileBtn').addEventListener('pointerdown',e=>{e.preventDefault();hit()});
-   const tapStage=e=>{if(e.target.closest('.jb-intro'))return;e.preventDefault();hit()};stage.addEventListener('pointerdown',tapStage);
+   q('jbFileBtn').addEventListener('pointerdown',e=>{e.preventDefault();hit(e.pointerType==='mouse'?'mouse':'touch')});
+   const tapStage=e=>{if(e.target.closest('.jb-intro'))return;e.preventDefault();hit(e.pointerType==='mouse'?'mouse':'touch')};stage.addEventListener('pointerdown',tapStage);
    const win1=()=>{stage.removeEventListener('pointerdown',tapStage);loop=null;sfx('win',1);stage.querySelector('.jb-cell').classList.add('open');help.innerHTML='<b class="g">De tralies zijn door.</b> Je wringt je erdoor.';
     later(phase2,reduce?600:1200)};
    intro(1,'De tralies','Vijl drie tralies door met de lepel. Druk alleen als de naald in het groene stuk staat: elke misser maakt lawaai. Hoor je voetstappen, stop dan tot de bewaker weg is. Te veel lawaai en hij hoort je.',()=>{
-    setKeys(e=>{if(e.code==='Space'||e.code==='Enter'||e.code==='ArrowUp'||e.code==='KeyF'){hit();return}return false});
+    setKeys(e=>{if(e.code==='Space'||e.code==='Enter'||e.code==='ArrowUp'||e.code==='KeyF'){hit('key');return}return false});
     run(dt=>{if(st.done)return;p=(Math.sin(st.t*Math.PI*2*P.swing)+1)/2;cool=Math.max(0,cool-dt);stroke=Math.max(0,stroke-dt);flash=Math.max(0,flash-dt*2);
      noise=Math.max(0,noise-P.decay*dt);
      if(guard>0){guard-=dt;if(guard<=0){gNext=P.guardEvery*(.75+Math.random()*.5);GD.classList.remove('on');WN.classList.remove('on')}}

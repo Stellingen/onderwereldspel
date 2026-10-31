@@ -177,7 +177,7 @@ const chanceRaw=c=>mastLv(c.id)*2+c.base+rankIdx(S.xp)*2+crimeUp(c)+gearBonus()+
 const chance=c=>Math.max(5,Math.min(95+Math.min(3,crimeUp(c)),Math.round(chanceRaw(c)*(1+tierK()))));
 // straf 30 s – 10 min, plus 30–60 s (hoe langer de straf, hoe meer) omdat je in de bajes kunt werken: 1 – 11 minuten
 const jailSec=sec=>{const b=Math.max(30,Math.min(600,Math.round(sec*(1-fam().jail/100)*(1-sk('rechten')*SK.rechten.jail/100)*(1-gearFx('jail')))));return b+Math.round(30+30*(b-30)/570)};
-function sendToJail(sec){sec=jailSec(sec);S.lastSentence=sec;S.jailUntil=now()+sec*1000;if(typeof celNew==='function')celNew(sec);return sec}
+function sendToJail(sec){sec=jailSec(sec);S.lastSentence=sec;S.jailUntil=now()+sec*1000;if(!S.jailIn)S.jailIn={t:now(),en:S.energy};if(typeof celNew==='function')celNew(sec);return sec}
 // Borg groeit met je rang: als Dief kost 2 minuten zo'n €900, als Peetvader 10 minuten zo'n €150.000. Charisma geeft korting.
 const bailRate=()=>2*Math.pow(1.55,rankIdx(S.xp));
 function bailCost(){const left=Math.max(0,Math.ceil((S.jailUntil-now())/1000));if(!left)return 0;return Math.max(50,Math.round(left*bailRate()*(1-S.skills.charisma*SK.charisma.bail)*(1-sk('rechten')*SK.rechten.bail/100)*(1-famPerk('bail'))*(1-fitFx('bail'))/10)*10)}
@@ -290,7 +290,9 @@ const logShown=()=>S.log.filter(l=>!(l.r>now()));
 function addXp(x){x*=(1+famPerk('xp'))*(1+fitFx('xp'));const before=rankIdx(S.xp),bl=rankLevel(S.xp);S.xp+=x;const after=rankIdx(S.xp),al=rankLevel(S.xp);if(after>before){toast('Promotie: je bent nu '+RANKS[after][0]+'! Claim je beloning op je profiel.','lvl');log('Gepromoveerd tot '+RANKS[after][0],'ok')}
   else if(al>bl){toast(RANKS[after][0]+' level '+al+': +'+Math.round(RANK_SUB_LOOT*100)+'% extra buit','lvl');log(RANKS[after][0]+' level '+al+' bereikt','ok')}}
 
-const EN_BASE=100,EN_REGEN_S=18; // 1 energie per 18 seconden
+const EN_BASE=100,EN_REGEN_S=12; // 1 energie per 12 seconden (was 18), ook als je niks doet, in het casino zit of vastzit
+// In de cel rust je ook: je komt eruit met minstens 4% van je maximale energie per minuut erbij (5 minuten = +20%), nooit boven vol.
+const EN_JAIL=.04;
 // Maximale energie groeit met Conditie (sportschool): +5 per level
 const home=()=>HOMES.find(h=>h.id===((S&&S.home)||'brug'))||HOMES[0];
 Object.defineProperty(window,'EN_MAX',{get:()=>EN_BASE+Math.round(SK.conditie.en*((S&&S.skills&&S.skills.conditie)||0))+((S&&S.home)?home().en:0)+((S&&S.furn)?furnFx('en'):0),configurable:true});

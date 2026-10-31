@@ -17,6 +17,9 @@ function tick(){
     if(typeof bankTick==='function')bankTick(mins);
     if(typeof famDaily==='function')famDaily();
     S.npcs.forEach((n,i)=>{n.xp+=mins*(4+i*3)*(0.5+Math.random());n.cash+=mins*(30+i*60)*(Math.random()*2-0.3)})}
+  // uit de cel (straf uitgezeten, borg betaald of ontsnapt): de tijd binnen telde als rust
+    if(S.jailIn&&!inJail()){const m=Math.max(0,(t-S.jailIn.t)/60000),want=Math.min(EN_MAX,S.jailIn.en+m*EN_MAX*EN_JAIL);if(want>S.energy)S.energy=Math.floor(want);
+    const d=Math.floor(S.energy-S.jailIn.en);S.jailIn=null;if(d>=1&&typeof toast==='function')toast('Uitgerust in de cel: +'+d+' energie'+(S.energy>=EN_MAX?' (vol)':''),'ok')}
   save();
 }
 // aanpassingen door een beheerder: meldingen tonen, energie bijvullen
