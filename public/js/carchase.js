@@ -15,8 +15,8 @@
 const CC_LV={
  1:{v:22,gap:1.45,p2:.2,block:.08,cop:.12,hits:3,start:48,copK:1.004,nitro:3,time:30,exits:3},
  2:{v:24,gap:1.28,p2:.3,block:.12,cop:.16,hits:2,start:42,copK:1.008,nitro:3,time:32,exits:3},
- 3:{v:26,gap:1.14,p2:.38,block:.16,cop:.2,hits:2,start:36,copK:1.014,nitro:2,time:34,exits:2},
- 4:{v:28,gap:1.06,p2:.44,block:.2,cop:.22,hits:2,start:33,copK:1.025,nitro:2,time:36,exits:3},
+ 3:{v:26,gap:1.14,p2:.38,block:.16,cop:.2,hits:2,start:36,copK:1.014,nitro:2,time:34,exits:3},
+ 4:{v:28,gap:1.06,p2:.44,block:.2,cop:.22,hits:2,start:30,copK:1.025,nitro:2,time:36,exits:2},
  5:{v:30,gap:.96,p2:.52,block:.24,cop:.26,hits:2,start:27,copK:1.04,nitro:2,time:38,exits:2}};
 const CC_LW=3.2,CC_ROAD=5.4,CC_WALK=8,CC_CL=4.4,CC_REVEAL=72,CC_FAR=110;
 function ccParams(level){const L=CC_LV[level]||CC_LV[2],sk=(S.skills&&S.skills.cars)||0,fx=k=>{try{return k()}catch(e){return 0}};
