@@ -61,4 +61,6 @@ setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderR
   if(!focusIn&&!spinning&&['crimes','hits','jail','politie','dash','skills','bank','biz','shop','fam','profiel'].includes(page)&&!window.__chase&&!userBusy()){const y=window.scrollY;if(setHTML($('#view'),crumbHtml()+V[page]())&&y&&Math.abs(window.scrollY-y)>2)window.scrollTo(0,y)}
 },1000);
 render();renderTicker();
+// een ontsnapping die werd afgebroken (verversen, venster dicht) telt als betrapt
+if(S.pendingEsc){if(inJail()&&typeof escFail==='function')escFail('afgebroken, de bewakers vonden je in de gang');else S.pendingEsc=null}
 if(!inJail())setTimeout(resumePending,300);else{S.pendingArrest=null;S.pendingHeist=null;S.pendingHit=null}
