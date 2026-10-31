@@ -359,6 +359,7 @@ public/index.html    landingspagina
 public/game.html     spel (controleert login, laadt voortgang uit de database)
 public/css/          style.css (spel) en landing.css
 public/js/landing.js inloggen/registreren, misdaadkaart en interactieve landing
+public/js/update.js  nieuwe versie? (/api/version): scripts laden met ?v=<commit>, balk 'Nieuwe versie' en vanzelf verversen als het kan
 public/js/slot.js    wiskunde van de Kluiskraker (pure functies)
 public/js/flee.js    vluchtspel bij een mislukte klus
 public/js/icons.js   symbolen van de Kluiskraker

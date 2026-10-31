@@ -69,6 +69,10 @@ app.post('/api/login', limit, async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: 'Serverfout bij inloggen' }); }
 });
 
+// Versie van de code (commit op Railway, anders de opstarttijd): het spel laadt zijn scripts met ?v=<versie> en
+// vraagt dit af en toe op. Is er een nieuwe versie, dan ververst het spel (zo speelt niemand met oude code door).
+const APP_VER = String(process.env.RAILWAY_GIT_COMMIT_SHA || Date.now().toString(36)).slice(0, 12);
+app.get('/api/version', (req, res) => { res.set('Cache-Control', 'no-store'); res.json({ v: APP_VER }); });
 app.get('/api/me', auth, async (req, res) => {
   const out = { username: req.user.u };
   if (db.state.ready) {
