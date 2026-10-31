@@ -117,7 +117,15 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   elk 16 tot 25 seconden met een wachttijd. Ze betalen een klein bedrag dat met je rang meegroeit en goed werk haalt tijd van je
   straf (hooguit 40%). Bij langere straffen komen er gebeurtenissen met een keuze: ruzie op de luchtplaats, een bewaker met een
   deal (Henk wordt een vaste contact: −10% op elke volgende straf), een tip van je celgenoot, een celinspectie of een advocaat.
-  Borg betalen en ontsnappen werken zoals voorheen.
+  Borg betalen werkt zoals voorheen. **Ontsnappen is een spel** (`jailbreak.js`, `jailbreak.css`): na een kort filmpje (de cel bij
+  nacht, je eigen karakter met je outfit, een geslepen lepel) volgen drie fases. 1) De tralies: vijl in het ritme (druk als de
+  naald in het groene stuk staat), mis je dan maak je lawaai, en komt de bewaker langs dan doe je niks. 2) De gang, van bovenaf:
+  stap voor stap naar de deur, bewakers lopen hun ronde en zoeklampen draaien; in het licht = gezien, en voor de celtelling heb je
+  een beperkt aantal stappen. 3) De muur: links en rechts om de beurt klimmen en stilhouden als het zoeklicht op je staat.
+  Moeilijkheid (Makkelijk tot Bijna onmogelijk) komt uit escChance() (lidmaatschap, familie, outfit) en de straf die nog over is:
+  meer kans = bredere groene zone, kortere lichtkegels, meer stappen en een trager zoeklicht. Alle drie de gangen zijn
+  doorgerekend oplosbaar (`jbSolve`). Mislukt: +30s straf (ook bij verversen tijdens een poging, via S.pendingEsc). Gelukt: vrij
+  en op de gezochtlijst.
 - **Wapens & uitrusting** (`public/js/pages/wapens.js`): een **winkelstraat** met vier zaken als banner met gevel: Het Arsenaal (wapens en bescherming), Bouwmarkt Hamer (gereedschap), Belwinkel De Lijn (communicatie) en Motorhuis Snel (vervoer om te vluchten); tik op een zaak om naar binnen te gaan. 24 items in 5 soorten, elk met tiers en een rang-eis. Per soort telt je
   beste item. Wapens: slaagkans en vuurkracht (Vlindermes tot Machinegeweer, +3% tot +18%). Bescherming: slaagkans en kortere
   celstraf. Gereedschap: buit en meer tijd bij auto stelen. Communicatie: minder hitte na elke klus (−10% tot −55%).

@@ -162,6 +162,6 @@ V.jail=()=>{const c=cel(),jail=inJail();queueMicrotask(jjFill);
     <small>${L.cut?'−'+fmtTime(L.cut)+' verdiend':'Nog niks verdiend'} · max −${fmtTime(L.max)}</small></div>
    <div class="jl-exit"><div class="jl-row"><span>Borg <small>contant, daarna bank</small></span><b data-jj="bail"></b></div>
     <div class="jl-btns"><button class="btn gold" onclick="act.bail()" ${canPay?'':'disabled'}>${canPay?'Borg betalen':'Te weinig geld'}</button>
-     <button class="btn red" onclick="act.escape()">Ontsnappen · ${Math.round(escChance()*100)}%</button></div>
-    <p class="jl-note">Mislukt: +30s straf. Gelukt: je staat op de gezochtlijst tot de politie je vindt.</p></div></div></section>
+     <button class="btn red" onclick="act.escape()">Ontsnappen proberen · ${jbParams().label}</button></div>
+    <p class="jl-note">Drie fases: de tralies doorvijlen, door de gang sluipen en over de muur. Lidmaatschap, familie en je outfit maken het makkelijker. Mislukt: +30s straf. Gelukt: je staat op de gezochtlijst tot de politie je vindt.</p></div></div></section>
   ${typeof jjJobsHtml==='function'?jjJobsHtml(L):''}${celRecHtml(c)}`};
