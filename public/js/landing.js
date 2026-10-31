@@ -475,7 +475,7 @@ const GD={
    `De winnende symbolen ontploffen en er vallen nieuwe in. Zolang er winst valt, tumbelt het door.`,
    `Waar een winnend symbool verdwijnt, wordt het vakje gemarkeerd. Valt daar weer een winst, dan wordt het x2, daarna x4, x8, tot x${nl(mx)}. De vakjes in een cluster tellen bij elkaar op.`,
    `De Loper telt mee voor elk symbool en kan twee groepjes aan elkaar knopen.`,
-   `Drie kluizen geven ${fs[3]} free spins, vier ${fs[4]} en vijf ${fs[5]}. In de bonus blijven de vakjes de hele tijd staan. ${sup} kluizen of meer: de superbonus van ${ss} spins.`,
+   `Drie kluizen geven ${fs[3]} free spins, vier ${fs[4]} en vijf ${fs[5]}. De vakjes uit die spin gaan mee de bonus in en waar een kluis ligt begint het vakje op x2. In de bonus blijven de vakjes de hele tijd staan. ${sup} kluizen of meer: de superbonus van ${ss} spins.`,
    `Een Gouden baar blijft de hele bonus op zijn plek liggen en telt als Loper. ${need} baren is meteen de max win.`,
    `Bonus kopen kost ${(S&&S.BUY_COST)||100}× je inzet.${S&&S.BUY_SPOTS?' Er beginnen dan '+S.BUY_SPOTS+' vakjes op x2'+(S.BUY_FLOOR?' en je krijgt minstens '+S.BUY_FLOOR+'× terug':'')+'.':''}`]},
   src:'/js/slot.js'},

@@ -141,8 +141,11 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   **Balans zoals Pragmatic Play** (Sugar Rush, Gates of Olympus): winst ±1 op 2,7 spins (1 op 5 spins minstens je inzet terug),
   bonus 1 op ±400 / 350 / 300 (gewoon / VIP / High roller) maar gemiddeld ±105× je inzet (mediaan ±55×, 1 op 10 onder 20×,
   3 op 10 boven 100×). Clusters van 5 betalen 0,35× (Speelkaart) tot 4,5× (Goudstaaf), van 10 stuks 3× tot 40×; grote clusters zijn
-  op 10×10 met 9 symbolen zeldzaam (12+ ±1 op 6.000 spins). Een gekochte bonus betaalt 40–42% van de tabel (je begint met 8 vakjes op
-  x2 en 2 extra spins), mediaan ±50×. Doorgerekend met `sim9.js`, `simbuy4.js`, `kkm.js` (verdeling) en `kkb.js` (basisspel).
+  op 10×10 met 9 symbolen zeldzaam (12+ ±1 op 6.000 spins). Een gekochte bonus betaalt 35–36% van de tabel (je begint met 8 vakjes op
+  x2, de kluisvakjes op x2 en 2 extra spins), mediaan ±50×.
+  **Vakjes gaan mee de bonus in**: wat in de spin vóór de bonus gemarkeerd is blijft gemarkeerd (de volgende winst daar is meteen
+  x2), x2 en hoger blijft staan, en elk vakje waar een kluis ligt begint op x2 (gemiddeld ±3 op x2 en ±2,5 gemarkeerd). Geldt ook
+  voor een gekochte bonus. Doorgerekend met `kkr.js` (basisspins + per trigger 10 bonussen met dezelfde startvakjes). Doorgerekend met `sim9.js`, `simbuy4.js`, `kkm.js` (verdeling) en `kkb.js` (basisspel).
   **Max win**: 5.000× je inzet per ronde, ook bij een gekochte bonus (de inzet telt, niet de prijs van de bonus); ±1 op 1.000 gekochte bonussen.
   **Bonus kopen** (100× de inzet) zet je aan met een schakelaar naast de draaiknop; je krijgt altijd 3 kluizen bovenop wat er
   vanzelf valt en kunt doortumbelen tot de superbonus; +2 free spins (superbonus +1). **8 vakjes beginnen op x2** en er is een

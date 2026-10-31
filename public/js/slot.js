@@ -4,6 +4,8 @@
 // - Vakjes: waar een winnend symbool verdwijnt, wordt het vakje gemarkeerd. Valt er op een gemarkeerd vakje opnieuw een winst,
 //   dan wordt het x2, daarna x4, x8 ... tot x4096. Alle vakjes in een cluster worden opgeteld en vermenigvuldigen de clusterwinst.
 // - Basisspel: vakjes worden na elke spin gewist. Free spins: vakjes blijven de hele bonus staan.
+// - Start van de bonus: de vakjes uit de spin die hem gaf gaan mee (carry): gemarkeerd blijft gemarkeerd, x2+ blijft,
+//   en elk vakje met een kluis begint op x2. Geldt ook voor een gekochte bonus (bovenop de BUY_SPOTS).
 // - 3 kluizen = 10 free spins, 4 = 12, 5 = 14, 6+ = superbonus (8 spins, meer lopers, één Gouden baar = max win).
 //   Tijdens de bonus geven 2+ kluizen extra spins (2:+2, 3:+4, 4:+6, 5+:+8).
 // - Doortumbelen: zolang er winst valt, vallen er nieuwe symbolen in en kan er een kluis bij komen. Liggen er al 3 of meer,
@@ -47,10 +49,10 @@ let SC_T=[1,1.045,1.11],BUY_T=[1,1.04,1.07],VIP_KT=[1,.966,.89],BAR_T=[1,1.02,1.
 // begonnen), vipK = VIP iets meer kans. Superbonus: één baar is direct de max win (w).
 const BAR={id:'baar',n:'Gouden baar',w:.012,fsW:.13,t3:.055,t4:.058,t5:.061,need:3};let BAR_NOW=null;
 // Uitbetalingsfactor: basisspel (BASE_K) en bonus/superbonus (FS_K)
-let BASE_K=1,FS_K=1.17;
+let BASE_K=1,FS_K=.91;
 // gekochte bonus: eigen uitbetalingsfactor per lidmaatschap (BUY_KT, zodat bonus kopen ±95 / 95,5 / 96,5% geeft) en een paar vakjes die al x2 zijn bij de start (BUY_SPOTS)
 // vangnet: een gekochte bonus geeft altijd minstens BUY_FLOOR × je inzet terug
-let BUY_KT=[.344,.351,.357],BUY_SPOTS=8,BUY_FLOOR=20,FS_MUL=1;
+let BUY_KT=[.382,.388,.393],BUY_SPOTS=8,BUY_FLOOR=20,FS_MUL=1;
 // Doortumbelen: vermenigvuldiger op de kluiskans bij het bijvullen, per aantal kluizen dat al ligt (0..5). n = normaal, v = VIP.
 // Bij 0-2 kluizen is VIP iets hoger (makkelijker de bonus in), vanaf 3 valt een volgende kluis makkelijker in, elke volgende lastiger.
 let TUMBLE_SC={n:[1,1,1,20,19,17.5],t:[[1,1,1,30,60,150],[1,1,1,30,60,150],[1,1,1,30,60,150]],buy:1.3}; // buy = extra bij een gekochte bonus (vanaf 3 kluizen)
@@ -147,12 +149,12 @@ function spin(rng,opts){
 }
 // Bonusronde. kind 'super' = superbonus met meer lopers (één Gouden baar = direct max win).
 // Gewone bonus: elke Gouden baar blijft staan; heb je er 3, dan is het de max win.
-function freeSpins(rng,start,kind,tier,vip,bought){
+function freeSpins(rng,start,kind,tier,vip,bought,init){
   const mode=kind==='super'?'super':'fs';FS_MUL=bought||1;BAR_NOW=mode==='fs'?BAR['t'+Math.max(3,Math.min(5,tier||3))]*(vip==='buy'?1:(BAR_T[+vip||0]||1)):null;
-  let left=start||FS_START,total=0,maxHit=false,bars=0;const spins=[];const spots=newSpots();const sticky=[];
+  let left=start||FS_START,total=0,maxHit=false,bars=0;const spins=[];const spots=init?cloneS(init):newSpots();const sticky=[];
   // gekochte bonus: een paar vakjes beginnen al op x2
   if(bought&&BUY_SPOTS){let n=0;for(let g=0;g<200&&n<BUY_SPOTS;g++){const c=Math.floor(rng()*COLS),r=Math.floor(rng()*ROWS);if(!spots[c][r]){spots[c][r]=2;n++}}}
-  const preSpots=bought&&BUY_SPOTS?cloneS(spots):null;
+  const preSpots=init||(bought&&BUY_SPOTS)?cloneS(spots):null;
   while(left>0&&spins.length<200){left--;const s=spin(rng,{mode,spots,sticky:mode==='fs'?sticky:null});total+=s.win;if(s.extra)left+=s.extra;
     // waar de nieuwe baren liggen (ze blijven de hele bonus op dat vakje liggen)
     if(s.barN){const g=s.steps[s.steps.length-1].grid,pos=[];g.forEach((col,c)=>col.forEach((x,r)=>{if(x.bar&&!x.stuck)pos.push([c,r])}));s.barPos=pos}
@@ -163,16 +165,20 @@ function freeSpins(rng,start,kind,tier,vip,bought){
   BAR_NOW=null;FS_MUL=1;
   return {spins,total:Math.min(total,MAX_WIN),kind:mode,maxHit,bars,preSpots};
 }
+// Vakjes uit de spin die de bonus gaf gaan mee de bonus in: gemarkeerd blijft gemarkeerd (volgende winst daar = meteen x2),
+// x2/x4 … blijft staan, en elk vakje waar een kluis ligt begint op x2.
+function carry(s){const sp=cloneS(s.spots),g=s.steps[s.steps.length-1].grid;
+  g.forEach((col,c)=>col.forEach((x,r)=>{if(x.sc)sp[c][r]=Math.max(2,sp[c][r])}));return sp}
 function playRound(rng,opts){
   opts=opts||{};
   // Gekochte bonus: een spin met altijd 3 kluizen. Valt er winst, dan tumbelt hij door en kunnen er kluizen bij vallen (4, 5 of 6 = superbonus).
   // gekochte bonus (100×): extra free spins bovenop het aantal voor je kluizen
-  if(opts.buy){const s=spin(rng,{forceSc:3,buy:true,vip:opts.vip});const sup=s.kind==='super',n=sup?SUPER_SPINS+BUY_EXTRA_SUP:FS_BY_SC[Math.min(5,s.scatters)]+BUY_EXTRA;const fsr=freeSpins(rng,n,sup?'super':'fs',s.scatters,opts.vip?'buy':false,BUY_KT[opts.vip|0]||BUY_KT[0]);
+  if(opts.buy){const s=spin(rng,{forceSc:3,buy:true,vip:opts.vip});const sup=s.kind==='super',n=sup?SUPER_SPINS+BUY_EXTRA_SUP:FS_BY_SC[Math.min(5,s.scatters)]+BUY_EXTRA;const fsr=freeSpins(rng,n,sup?'super':'fs',s.scatters,opts.vip?'buy':false,BUY_KT[opts.vip|0]||BUY_KT[0],carry(s));
     const raw=Math.min(MAX_WIN,s.win+fsr.total),floor=raw<BUY_FLOOR?BUY_FLOOR:0;
     return {base:s,fs:fsr,fsStart:n,kind:s.kind,total:floor||raw,raw,floor,cost:BUY_COST}}
   const s=spin(rng,{vip:opts.vip});let tot=s.win,fsr=null,n=0;
-  if(s.kind==='super'){n=SUPER_SPINS;fsr=freeSpins(rng,n,'super');tot+=fsr.total}
-  else if(s.kind==='fs'){n=FS_BY_SC[Math.min(5,Math.max(3,s.scatters))];fsr=freeSpins(rng,n,'fs',s.scatters,opts.vip);tot+=fsr.total}
+  if(s.kind==='super'){n=SUPER_SPINS;fsr=freeSpins(rng,n,'super',6,0,0,carry(s));tot+=fsr.total}
+  else if(s.kind==='fs'){n=FS_BY_SC[Math.min(5,Math.max(3,s.scatters))];fsr=freeSpins(rng,n,'fs',s.scatters,opts.vip,0,carry(s));tot+=fsr.total}
   return {base:s,fs:fsr,fsStart:n,kind:s.kind,total:Math.min(MAX_WIN,tot),cost:1};
 }
 // Seed: een vaste reeks uitkomsten uit een tekst (seed + spinnummer). Zelfde seed = zelfde uitkomst, andere seed = andere reeks.
@@ -184,6 +190,6 @@ function seedHash(str){let h1=1779033703,h2=3144134277,h3=1013904242,h4=27734807
 function seedRng(str){let [a,b,c,d]=seedHash(str);const r=()=>{a|=0;b|=0;c|=0;d|=0;const t=(a+b|0)+d|0;d=d+1|0;a=b^b>>>9;b=c+(c<<3)|0;c=c<<21|c>>>11;c=c+t|0;return (t>>>0)/4294967296};
   for(let i=0;i<15;i++)r();return r}
 const tune=o=>{if(o.payk!=null)setPay(o.payk);if(o.wild!=null)WILD.w=o.wild;if(o.wildFs!=null)WILD.fsW=o.wildFs;if(o.wildSuper!=null)WILD.superW=o.wildSuper;if(o.sc!=null)SCATTER.w=o.sc;if(o.scFs!=null)SCATTER.fsW=o.scFs;if(o.scSuper!=null)SCATTER.superW=o.scSuper;if(o.barFs!=null)BAR.fsW=o.barFs;if(o.scT)SC_T=o.scT;if(o.buyT)BUY_T=o.buyT;if(o.vipKT)VIP_KT=o.vipKT;if(o.barT)BAR_T=o.barT;if(o.tsT)TUMBLE_SC.t=o.tsT;if(o.bar!=null)BAR.w=o.bar;if(o.baseK!=null)BASE_K=o.baseK;if(o.buyCost!=null)BUY_COST=o.buyCost;if(o.buyExtra!=null)BUY_EXTRA=o.buyExtra;if(o.buyExtraSup!=null)BUY_EXTRA_SUP=o.buyExtraSup;if(o.fsK!=null)FS_K=o.fsK;['t3','t4','t5'].forEach(k=>{if(o[k]!=null)BAR[k]=o[k]});if(o.ts)TUMBLE_SC.n=o.ts;if(o.tsBuy!=null)TUMBLE_SC.buy=o.tsBuy;if(o.tsv)TUMBLE_SC.v=o.tsv;if(o.maxWin!=null)MAX_WIN=o.maxWin;if(o.maxSpot!=null)MAX_SPOT=o.maxSpot;if(o.buyKT)BUY_KT=o.buyKT;if(o.buySpots!=null)BUY_SPOTS=o.buySpots;if(o.buyFloor!=null)BUY_FLOOR=o.buyFloor;if(o.barW!=null)BAR.w=o.barW;if(o.symW)o.symW.forEach((w,i)=>{SYMS[i].w=w});if(o.curve)CURVE=o.curve;if(o.symB||o.curve||o.payk!=null){if(o.symB)o.symB.forEach((b,i)=>{SYMS[i].b=b});setPay(o.payk!=null?o.payk:PAYK)}if(o.scT)SC_T=o.scT};
-const API={MAX_SIZE,tune,get TUMBLE_SC(){return TUMBLE_SC},SC_COL,get BASE_K(){return BASE_K},get FS_K(){return FS_K},get VIP_KT(){return VIP_KT},FS_RETRIG,COLS,ROWS,MIN_CLUSTER,MAX_SPOT,SYMS,WILD,SCATTER,BAR,SUPER_SC,SUPER_SPINS,SCATTER_PAY,FS_BY_SC,FS_START,FS_RETRIGGER,get BUY_COST(){return BUY_COST},get BUY_EXTRA(){return BUY_EXTRA},get BUY_EXTRA_SUP(){return BUY_EXTRA_SUP},get MAX_WIN(){return MAX_WIN},get BUY_KT(){return BUY_KT},get BUY_SPOTS(){return BUY_SPOTS},get BUY_FLOOR(){return BUY_FLOOR},CURVE,spin,freeSpins,playRound,clusters,newSpots,seedHash,seedRng};
+const API={MAX_SIZE,tune,get TUMBLE_SC(){return TUMBLE_SC},SC_COL,get BASE_K(){return BASE_K},get FS_K(){return FS_K},get VIP_KT(){return VIP_KT},FS_RETRIG,COLS,ROWS,MIN_CLUSTER,MAX_SPOT,SYMS,WILD,SCATTER,BAR,SUPER_SC,SUPER_SPINS,SCATTER_PAY,FS_BY_SC,FS_START,FS_RETRIGGER,get BUY_COST(){return BUY_COST},get BUY_EXTRA(){return BUY_EXTRA},get BUY_EXTRA_SUP(){return BUY_EXTRA_SUP},get MAX_WIN(){return MAX_WIN},get BUY_KT(){return BUY_KT},get BUY_SPOTS(){return BUY_SPOTS},get BUY_FLOOR(){return BUY_FLOOR},CURVE,spin,freeSpins,playRound,carry,clusters,newSpots,seedHash,seedRng};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.SLOT=API;
 })(typeof window!=='undefined'?window:globalThis);
