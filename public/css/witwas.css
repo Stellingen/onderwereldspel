@@ -162,3 +162,6 @@
 .ww-bond li em{font-style:normal;font-family:var(--f-mono);color:var(--fg)}
 .ww-bond small{display:block;margin-top:4px;font-family:var(--f-mono);font-size:10px;color:var(--faint)}
 .ww-kees .ww-job{--c:var(--violet)}
+/* casino: 18+ en spelgeld, klein onderaan */
+.cas-note{margin:22px 0 4px;text-align:center;font-size:11.5px;line-height:1.5;color:var(--faint)}
+.cas-note b{display:inline-block;margin-right:6px;padding:0 5px;border:1px solid var(--line2);border-radius:4px;font-family:var(--f-mono);font-size:10.5px;color:var(--mute)}

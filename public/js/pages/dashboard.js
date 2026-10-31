@@ -1,4 +1,40 @@
 // Tab: Dashboard
+// Beginnersdossier: maximaal vijf stappen voor nieuwe spelers (tot en met de tweede rang), op basis van wat je echt al
+// gedaan hebt. Geen beloningen (dus niets dubbel bij herladen); wegklikken kan, terugvinden via de knop op het dashboard.
+// S.guide = {off, en, wz, mode}: off = verborgen, en/wz = uitleg over energie en wit/zwart geld gelezen, mode = aanrader op geld/xp/risico.
+const gidsS=()=>S.guide||(S.guide={});
+function gidsPick(mode){const ri=rankIdx(S.xp),av=CRIMES.filter(c=>c.r<=ri);if(!av.length)return null;
+ const sc=c=>mode==='geld'?chance(c)/100*(c.min+c.max)/2/c.en:mode==='xp'?chance(c)/100*(c.xp||1)/c.en:chance(c)-c.en*.01;
+ return av.slice().sort((a,b)=>sc(b)-sc(a))[0]}
+function gidsSteps(){const G=gidsS(),ri=rankIdx(S.xp),nxt=RANKS[ri+1],sk=Object.values(S.skills||{}).some(v=>v>0);
+ return [{k:'klus',done:(S.stats&&S.stats.crimes||0)>=1,t:'Doe je eerste klus',href:'#crimes'},
+  {k:'en',done:!!G.en,t:'Snap je energie',ok:1},
+  {k:'train',done:sk,t:'Train één keer',href:'#skills'},
+  {k:'wz',done:!!G.wz,t:'Wit en zwart geld',ok:1,href:'#wit'},
+  {k:'rang',done:ri>=1,t:nxt?'Haal '+RANKS[1][0]:'Volgende rang',href:'#crimes'}]}
+function gidsHtml(){const G=gidsS(),ri=rankIdx(S.xp),st=gidsSteps(),n=st.filter(x=>x.done).length;
+ if(ri>3)return '';
+ if(G.off||n>=st.length)return '';
+ if(ri>1&&!G.forced)return '';
+ const mode=G.mode||'risico',c=gidsPick(mode),cur=st.find(x=>!x.done);
+ const body={klus:c?`<p>Elke klus kost energie en kan mislukken: dan kun je de cel in. Begin met iets dat bij je past.</p>
+   <div class="gd-modes" role="group" aria-label="Aanrader op">${[['risico','Laag risico'],['geld','Meeste geld'],['xp','Meeste XP']].map(([m,l])=>`<button class="${mode===m?'on':''}" aria-pressed="${mode===m}" onclick="gidsMode('${m}')">${l}</button>`).join('')}</div>
+   <div class="gd-pick"><b>${c.n}</b><span>${chance(c)}% kans · ${c.en} energie · ${fmt(c.min*lootMult())}–${fmt(c.max*lootMult())}</span><em>${mode==='geld'?'Levert per energiepunt het meeste geld op.':mode==='xp'?'Levert per energiepunt de meeste ervaring op.':'De hoogste kans van wat je nu kunt doen.'} Mislukt hij, dan kun je opgepakt worden.</em></div>`:'',
+  en:`<p>Klussen kosten energie. Die komt vanzelf terug (1 punt per ${EN_REGEN_S} seconden, ook als je in het casino zit of vastzit). Thuis rusten gaat veel sneller.</p>`,
+  train:`<p>Een training maakt je blijvend beter, bijvoorbeeld meer kans bij klussen of sneller wegrennen. Daarna wacht je even tot de volgende sessie.</p>`,
+  wz:`<p>Klussen leveren <b class="z">zwart</b> geld op. De bank en je zaken nemen alleen <b class="w">wit</b> geld: was het eerst wit. Word je gepakt met meer dan ${fmt(typeof seizeKeep==='function'?seizeKeep():10000)} zwart op zak, dan neemt de politie de rest mee.</p>`,
+  rang:(()=>{const nx=RANKS[ri+1];if(!nx)return '';const p=Math.max(0,Math.min(100,(S.xp-RANKS[ri][1])/(nx[1]-RANKS[ri][1])*100));return `<p>Met ervaring (XP) uit klussen klim je in rang. Een nieuwe rang opent nieuwe klussen en meer buit.</p><div class="bar"><i style="width:${p}%;background:var(--acc)"></i></div><small>${Math.floor(S.xp).toLocaleString('nl-NL')} / ${nx[1].toLocaleString('nl-NL')} XP voor ${nx[0]}</small>`})()};
+ return `<section class="card gids" aria-label="Beginnersdossier">
+  <div class="gd-h"><div><span class="label">Beginnersdossier</span><b>${n} van ${st.length} gedaan</b></div><button class="gd-x" onclick="gidsOff()" aria-label="Beginnersdossier verbergen">Verbergen</button></div>
+  <ol class="gd-steps">${st.map((x,i)=>`<li class="${x.done?'done':''} ${cur&&cur.k===x.k?'cur':''}"><i aria-hidden="true">${x.done?'✓':i+1}</i><span>${x.t}${x.done?'<span class="sr"> (gedaan)</span>':''}</span></li>`).join('')}</ol>
+  ${cur?`<div class="gd-now"><h3>${cur.t}</h3>${body[cur.k]||''}<div class="gd-act">${cur.ok?`<button class="btn sm" onclick="gidsOk('${cur.k}')">Begrepen</button>`:''}${cur.href?`<a class="btn sm ${cur.ok?'ghost':''}" href="${cur.href}">${cur.k==='klus'?'Naar de klussen':cur.k==='train'?'Naar training':cur.k==='wz'?'Naar witwassen':'Verder klussen'} ›</a>`:''}</div></div>`:''}
+ </section>`}
+// terugvinden als je hem verborgen hebt (zolang je nog in de eerste rangen zit)
+const gidsBack=()=>{const G=gidsS();return rankIdx(S.xp)<=3&&G.off&&gidsSteps().some(x=>!x.done)?`<button class="gd-back" onclick="gidsOn()">Beginnersdossier tonen</button>`:''};
+function gidsOk(k){gidsS()[k]=1;save();render()}
+function gidsOff(){gidsS().off=1;save();render();toast('Verborgen. Terughalen kan onderaan het dashboard.')}
+function gidsOn(){const G=gidsS();G.off=0;G.forced=1;save();render();window.scrollTo(0,0)}
+function gidsMode(m){gidsS().mode=m;save();render()}
 V.dash=()=>{
   const ri=rankIdx(S.xp),cur=RANKS[ri][1],nxt=RANKS[ri+1];
   const pct=nxt?((S.xp-cur)/(nxt[1]-cur))*100:100;
@@ -12,6 +48,7 @@ V.dash=()=>{
     <div class="bar"><i style="width:${Math.max(0,Math.min(100,max))}%;background:${col}"></i></div><div class="kpi-sub">${sub}</div></div>`;
   return `
   ${S.wanted?`<div class="card alert"><b>▲ Je staat op de gezochtlijst</b><span>${S.wanted.lv&&typeof WANT_LV!=='undefined'?`${WANT_LV[S.wanted.lv].n} na de huurmoord op ${esc(S.wanted.t||'je doelwit')}, nog ${fmtClock(S.wanted.until-now())}. Bij elke actie kan de politie een controle doen. <a href="#verblijf">Onderduiken</a> laat het drie keer zo snel zakken.`:'Je bent ontsnapt. Bij elke actie kan de politie een controle doen en je herkennen. Je straf wordt dan langer.'}</span></div>`:''}
+  ${gidsHtml()}
   <div class="dash">
    <section class="card hud d-hero">
     <div class="label">${greet}, ${esc(S.name)}</div>
@@ -30,7 +67,7 @@ V.dash=()=>{
     <div class="row"><span>Zwart geld ${zwart()>=1?'<a href="#wit" style="color:var(--acc);font-size:12px">witwassen ›</a>':''}</span><b style="color:${zwart()>=1?'var(--zw)':'var(--faint)'}">${fmt(zwart())}</b></div>
     <div class="row"><span>Bank</span><b>${fmt(bankNet())}</b></div>
     <div class="row"><span>Auto's (${S.cars.length})</span><b>${fmt(carsV)}</b></div>
-    <div class="row"><span>Bedrijven</span><b style="color:var(--green)">${fmt(income())}/dag</b></div>
+    <div class="row"><span>Bedrijven</span><b style="color:var(--green)">${fmt(income())}/speldag</b></div>
     <div class="row"><span>In de kas · uitbetaling ${new Date(nextPayout()).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})}</span><b>${fmt(S.kas||0)}</b></div>
    </section>
    ${meter('Energie',Math.floor(S.energy)+'/'+EN_MAX,S.energy/EN_MAX*100,'var(--ice)',full?`<a class="btn ghost sm" href="#ontspannen">Vol over ${full} min · ontspannen</a>`:'Helemaal vol')}
@@ -52,7 +89,7 @@ V.dash=()=>{
      <div class="row"><span>Casino +/−</span><b style="color:${S.stats.won-S.stats.lost>=0?'var(--green)':'var(--red)'}">${S.stats.won-S.stats.lost>=0?'+':'−'}${fmt(Math.abs(S.stats.won-S.stats.lost))}</b></div>
    </section>
    <section class="card d-log"><h3>Laatste gebeurtenissen</h3><div class="log">${logShown().length?logShown().map(l=>`<div class="${l.c}">${l.m}</div>`).join(''):'<div class="info">Nog niks gebeurd. Begin met een klus hierboven.</div>'}</div></section>
-  </div>`;
+  </div>${gidsBack()}`;
 };
 const healCost=()=>(100-S.hp)*15;
 const bribeCost=()=>S.heat*(40+rankIdx(S.xp)*30);

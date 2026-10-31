@@ -1,6 +1,12 @@
 // Hulpfuncties en spelgegevens: rangen, misdaden, auto's, bedrijven, wapens, families
 const $=s=>document.querySelector(s);
 const fmt=n=>'€'+Math.floor(n).toLocaleString('nl-NL');
+// Kort bedrag voor krappe plekken: €1,7 mln · €37,8 mld · €1,2 bln (biljoen). Onder het miljoen gewoon het hele bedrag.
+const fmtS=n=>{n=+n||0;const a=Math.abs(n),sg=n<0?'−':'',f=(v,u)=>sg+'€'+(v>=100?Math.round(v):Math.floor(v*10)/10).toLocaleString('nl-NL',{maximumFractionDigits:1})+' '+u;
+ return a>=1e12?f(a/1e12,'bln'):a>=1e9?f(a/1e9,'mld'):a>=1e6?f(a/1e6,'mln'):fmt(n)};
+// Het hele bedrag als het past (max tekens), anders kort. fitN(k): hoeveel tekens er op dit scherm passen (k = tekens bij 390 px breed).
+const fmtFit=(n,max)=>{const f=fmt(n);return f.length>max?fmtS(n):f};
+const fitN=k=>innerWidth>900?99:Math.max(8,Math.floor(k*Math.min(1.6,innerWidth/390)));
 const now=()=>Date.now();
 const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 

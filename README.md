@@ -426,3 +426,15 @@ public/js/*.js       spelmodules; public/js/pages/ bevat één bestand per tabbl
 | GET | `/api/health` | status van server en database |
 | GET | `/api/admin/stats`, `/api/admin/players?q=&f=&sort=`, `/api/admin/player/:id`, `/api/admin/log` | beheer (alleen beheerders) |
 | POST | `/api/admin/player/:id/action` | `{type: money/xp/cred/fix/tier/ban/admin/reset/kick, …}` |
+
+## UX-update (november 2026)
+- **Bedragen passend**: `fmtS` (data.js) geeft korte bedragen (€1,7 mln, €37,8 mld, €1,2 bln) en `fmtFit(n,max)` gebruikt het hele
+  bedrag als het past, anders kort. `fitN(k)` rekent uit hoeveel tekens er op dit scherm passen. Gebruikt in de bovenbalk op de
+  telefoon, de casinobalk en het menublad; het volledige bedrag staat in de tooltip en op bank, dashboard, profiel en de rechterkolom.
+  Lange namen worden niet afgekapt: de letter krimpt mee (`nameFs`). Geld staat op de telefoon altijd op een eigen rij (`.tb-br`).
+  Gecontroleerd met een scanner op afgekapte of met … ingekorte bedragen en namen (360, 390, 768, 1440 px, 37,8 miljard, naam van 20 tekens).
+- **Casino**: klein onderaan elk casinoscherm "18+ · spel met virtueel spelgeld; geen echt geld inzetten, winnen of uitbetalen" (`casNote`).
+- **Bedrijven**: inkomen heet overal "per speldag" (4 echte uren).
+- **Beginnersdossier** op het dashboard (dashboard.js, `gidsHtml`): vijf stappen (eerste klus met een aanrader op laag risico, geld
+  of XP; energie; eerste training; wit en zwart geld; volgende rang), op basis van de echte accountstatus, zonder beloningen.
+  Alleen voor de eerste rangen; verbergen kan, terughalen met de knop onderaan het dashboard (`S.guide`).

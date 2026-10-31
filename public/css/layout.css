@@ -420,3 +420,26 @@ body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area
 }
 @media (min-width:901px){.cp-sel{display:none}}
 
+
+/* ===== Lange namen en grote bedragen passend (UX-update) ===== */
+.dos-rank{flex-wrap:wrap;row-gap:2px}
+.dos-rank em{overflow:visible;text-overflow:clip}
+.rtop li b,.rtop .lb-name{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.25}
+.dos-name{white-space:normal}
+/* bovenbalk telefoon: geld altijd op een eigen rij, ook als de bovenste rij krap is; op heel smalle schermen compacter */
+.tb-br{display:none}
+@media (max-width:900px){body:not(.wide-page) .topbar>.tb-br{display:block;order:3;flex:1 1 100%;height:0;padding:0;margin:0;border:0}}
+@media (max-width:380px){
+  body:not(.wide-page) .topbar>.chip.sm{padding:6px 4px}
+  .topbar>.chip.sm b{font-size:11.5px;gap:3px}
+  .topbar>.chip.sm .ti{width:11px;height:11px}
+  body:not(.wide-page) .topbar>.chip.rank{padding:6px 8px}
+  body:not(.wide-page) .topbar>.chip.cash,body:not(.wide-page) .topbar>.chip.zwc,body:not(.wide-page) .topbar>.chip.bankc{padding:7px 8px}
+  .topbar>.chip.cash b{font-size:17px}
+}
+/* menublad: lange titels passen in hun tegel */
+.ms-tile{container-type:inline-size}
+.ms-tile b{font-size:min(17px,9cqi);overflow-wrap:anywhere}
+/* casino op heel smalle schermen: labels van de knoppen kleiner zodat ze heel blijven */
+@media (max-width:380px){.cc span{font-size:8.5px;letter-spacing:.03em}.cc b{font-size:12.5px}}
+@media (max-width:900px){.ch-now{white-space:normal;overflow:visible;text-overflow:clip}}

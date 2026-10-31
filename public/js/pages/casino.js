@@ -1,5 +1,7 @@
 // Tab: Casino (blackjack, gokkast, dubbel of niks, roulette)
-V.casino=()=>czBanLeft()&&!casSwitchBusy()?casBanView():casinoTab&&CAS_NAMES[casinoTab]?casGameView():casLobby();
+// Klein onderaan elk casinoscherm: 18+ en dat het om spelgeld gaat (geen echt geld, niets uit te betalen)
+const casNote=()=>`<p class="cas-note"><b>18+</b> Spel met virtueel spelgeld. Je kunt geen echt geld inzetten, winnen of laten uitbetalen.</p>`;
+V.casino=()=>(czBanLeft()&&!casSwitchBusy()?casBanView():casinoTab&&CAS_NAMES[casinoTab]?casGameView():casLobby())+casNote();
 // Verbannen: de hele pagina rood, met hoe lang nog. Daarna staat de verdenking weer op 0%.
 function casBanView(){const L=czBanLeft(),t=typeof tier==='function'?tier():0;
  return `<section class="cas-ban"><div class="cas-ban-in">${czEyesSvg(2)}<span class="label">Casino</span><h1>U bent verbannen</h1><p>De beveiliging heeft u te vaak gezien. U bent hier voorlopig niet meer welkom.</p>

@@ -330,3 +330,6 @@
 .bk-src .bk-note{margin-top:7px}
 .bk-new .bk-tiers{margin:0 0 14px}
 @media (max-width:420px){.bk-term b{font-size:24px}}
+/* pinautomaat: hoofdwoord en klein woord op de toets niet over elkaar */
+.atm-p{line-height:1.05}
+.atm-p small{display:block;line-height:1.15;margin-top:4px}
