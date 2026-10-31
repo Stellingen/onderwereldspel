@@ -313,3 +313,20 @@
 @container (max-width:760px){.atm-screen{min-height:0}.atm-pct small{display:none}.atm-p{height:44px}.atm-opts.big{grid-template-columns:1fr}}
 .atm-pad{width:100%;max-width:470px;margin:0 auto}
 .atm-p.okk{grid-row:span 2;height:auto}
+
+/* deposito's: 4 looptijden met elk een eigen kleur, VIP/High roller met de gewone rente doorgestreept */
+.bk-term{--tc:var(--violet);position:relative}
+.bk-term.t0{--tc:#a9dcff}.bk-term.t1{--tc:#7fe0c0}.bk-term.t2{--tc:#b8a1ff}.bk-term.t3{--tc:#ffb35c}
+.bk-term::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--tc);opacity:.55}
+.bk-term.on{border-color:var(--tc);background:color-mix(in srgb,var(--tc) 9%,var(--bg2))}.bk-term.on b{color:var(--tc)}.bk-term.on::before{opacity:1}
+.bk-t-tag{font-size:11px;color:var(--faint);margin:-1px 0 3px}
+.bk-term .bk-t-r{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 7px;font-family:inherit;font-size:inherit;text-transform:none;letter-spacing:0;color:inherit}
+.bk-t-r s{font-family:var(--f-mono);font-size:12.5px;color:var(--faint);text-decoration-thickness:1.5px;text-decoration-color:var(--red)}
+.bk-t-lid{font-style:normal;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border:1px solid rgba(var(--sec-rgb),.5);color:var(--sec);align-self:center}
+.bk-t-lid.hr{border-color:rgba(242,194,48,.55);color:#f2c230}
+.bk-rcpt s{color:var(--faint);text-decoration-color:var(--red)}
+.bk-from{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:9px 11px;border:1px solid var(--line2);background:var(--bg2)}
+.bk-from span{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;color:var(--mute)}.bk-from b{font-family:var(--f-mono);font-weight:500;font-size:13px}
+.bk-src .bk-note{margin-top:7px}
+.bk-new .bk-tiers{margin:0 0 14px}
+@media (max-width:420px){.bk-term b{font-size:24px}}

@@ -122,12 +122,16 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   Vervoer: makkelijker vluchten (opgevoerde scooter +6% tot helikopter op afroep +25%), de duurdere ook wat minder hitte.
   Oude saves: vroeger telde alles bij elkaar op; overbodige oude items worden terugbetaald.
 - **Bank** (`public/js/pages/bank.js`, koersen in `public/js/market.js`). Per lidmaatschap: spaarrente 0,10% / 0,12% / 0,15% per uur
-  (gewoon / VIP / High roller, deposito's met dezelfde verhouding), 2 / 5 / 10 depositoplekken en in totaal €10.000 / €30.000 /
+  (gewoon / VIP / High roller), 2 / 5 / 10 depositoplekken en in totaal €10.000 / €30.000 /
   €100.000 beleggen. Lopende deposito's en beleggingen boven die grens blijven gewoon staan. Alles bij de bank ben je niet kwijt als je gepakt wordt.
   - *Spaarrekening*: 0,10% rente per uur (VIP 0,12%), vrij opneembaar, ook offline tot 12 uur. (Was 1% per 10 minuten:
     dat is ruim 300% per dag en maakte beleggen zinloos.)
-  - *Deposito*: geld vast voor 1 uur (0,15%), 6 uur (1,2%), 24 uur (4,5%) of 3 dagen (15%). Kan niet zakken; na afloop gaat alles
-    vanzelf naar je spaarrekening. Eerder opzeggen kost 2% en je krijgt geen rente. 3 tegelijk (VIP 4, met 25% hogere rente).
+  - *Deposito*: geld vast voor 2, 4, 8 of 12 uur. Rente gewoon / VIP / High roller: 2 uur 0,30 / 0,35 / 0,40%, 4 uur
+    0,65 / 0,75 / 0,85%, 8 uur 1,4 / 1,6 / 1,85%, 12 uur 2,2 / 2,5 / 2,9%. Langer vast geeft iets meer per uur, maar twee keer
+    12 uur per dag is ±4,4 / 5 / 5,9% per dag (spaarrekening ±2,4 / 2,9 / 3,7%), dus grinden loont niet. VIP en High roller zien
+    de gewone rente doorgestreept met hun eigen rente ernaast. Alleen te openen met geld van je spaarrekening (niet contant).
+    Kan niet zakken; na afloop gaat alles vanzelf naar je spaarrekening. Eerder opzeggen kost 2% en je krijgt geen rente.
+    Oude deposito's: 3 dagen is omgezet naar 8 uur en 24 uur naar 12 uur, tegen de nieuwe rente (`depFix`).
   - *Beleggen*: Staatsobligaties, Vastgoedfonds Zuidas, Haven Rotterdam NV en OnderCoin. Elk fonds keert per uur uit (rente, huur,
     dividend, staking: ±5% tot ±17% per dag) en heeft een koers die kan stijgen en dalen. De koersen zijn voor alle spelers gelijk en
     lopen door als je offline bent (vaste functie van de tijd, Brownse brug, dus geen server nodig). Kosten 0,25% tot 1% bij kopen

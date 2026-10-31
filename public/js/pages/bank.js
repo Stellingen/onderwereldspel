@@ -5,11 +5,23 @@
 const SAV_RATE=.001; // per uur; rente per lidmaatschap ×BANK_T (gewoon 0,10%, VIP 0,12%, High roller 0,15% per uur), kosten −15% / −40%
 // Per lidmaatschap: aantal depositoplekken (2 / 5 / 10) en hoeveel je in totaal kunt beleggen (€10.000 / €30.000 / €100.000)
 const BANK_T=[1,1.2,1.5],DEP_SLOTS_T=[2,5,10],INV_CAP_T=[10000,30000,100000],LID_N=['Gewoon','VIP','High roller'];
-const DEP_TERMS=[{id:'1u',h:1,r:.0015,n:'1 uur'},{id:'6u',h:6,r:.012,n:'6 uur'},{id:'24u',h:24,r:.045,n:'24 uur'},{id:'3d',h:72,r:.15,n:'3 dagen'}];
+// Deposito's: 2 / 4 / 8 / 12 uur. Rente per looptijd voor gewoon / VIP / High roller (VIP ±15%, High roller ±32% beter).
+// Langer vast = iets meer rente per uur (0,15% tot 0,18% per uur bij gewoon, spaarrekening 0,10%), maar nooit zo veel
+// dat deposito's grinden loont: twee keer 12 uur per dag is gewoon ±4,4% per dag, VIP ±5%, High roller ±5,9%.
+const DEP_TERMS=[
+ {id:'2u',h:2,r:[.003,.0035,.004],n:'2 uur',tag:'Even parkeren'},
+ {id:'4u',h:4,r:[.0065,.0075,.0085],n:'4 uur',tag:'Middagje'},
+ {id:'8u',h:8,r:[.014,.016,.0185],n:'8 uur',tag:'Een nacht'},
+ {id:'12u',h:12,r:[.022,.025,.029],n:'12 uur',tag:'Meeste rente'}];
 const DEP_SLOTS=3,DEP_EARLY=.02,DEP_MIN=1000,INV_MIN=100;
 const bankCap=()=>250000*Math.pow(2,rankIdx(S.xp));
 const savRate=()=>SAV_RATE*(BANK_T[tier()]||1);
-const depRate=t=>t.r*(BANK_T[tier()]||1);
+const depRate=(t,i)=>t.r[i==null?tier():i]||t.r[0];
+// rente netjes: 0,30% · 1,4% · 1,85%
+const pctR=v=>{const p=Math.round(v*1e4)/100;return nl(p,p<1||Math.round(p*10)!==p*10?2:1)+'%'};
+// oude deposito's (1 uur, 6 uur, 24 uur, 3 dagen) omzetten: 3 dagen wordt 8 uur en 24 uur wordt 12 uur, tegen de nieuwe rente
+function depFix(){(S.dep||[]).forEach(d=>{if(d.v===2)return;const nt=d.h===72?'8u':d.h===24?'12u':null;
+ if(nt){const t=DEP_TERMS.find(x=>x.id===nt);d.h=t.h;d.n=t.n;d.r=depRate(t);d.t1=d.t0+t.h*36e5}d.v=2})}
 const depSlots=()=>DEP_SLOTS_T[tier()]||DEP_SLOTS_T[0];
 const invCap=()=>INV_CAP_T[tier()]||INV_CAP_T[0];
 // een rijtje per lidmaatschap, met het jouwe gemarkeerd
@@ -36,7 +48,7 @@ const FUND_RISK={oblig:[0,0],vast:[13,0],haven:[30,1],coin:[37,9]};
 const DAYMS=864e5;
 
 // elke minuut: spaarrente, uitkering op beleggingen en deposito's die klaar zijn
-function bankTick(mins){if(!S.dep)S.dep=[];if(!S.inv)S.inv={};
+function bankTick(mins){if(!S.dep)S.dep=[];if(!S.inv)S.inv={};depFix();
  S.bank*=Math.pow(1+savRate(),mins/60);
  const t=now();MK.FUNDS.forEach(f=>{const p=S.inv[f.id];if(p&&p.u>0){const g=Math.exp(f.y*mins/60)-1;p.paid=(p.paid||0)+p.u*g*MK.price(f,t);p.u*=1+g}});
  const done=S.dep.filter(d=>d.t1<=t);
@@ -95,7 +107,7 @@ function atmOk(){if(!atm.mode||atm.done||atmWhy())return;const a=atmA(),k=atm.mo
 document.addEventListener('keydown',e=>{if(typeof page==='undefined'||page!=='bank'||!atm.mode||atm.done)return;const t=e.target;if(t&&t.id!=='atmIn'&&/INPUT|TEXTAREA|SELECT/.test(t.tagName))return;if(t&&t.id==='atmIn'&&e.key!=='Escape')return;
  if(/^[0-9]$/.test(e.key)){e.preventDefault();atmKey(e.key)}else if(e.key==='Backspace'){e.preventDefault();atmKey('back')}else if(e.key==='Enter'){e.preventDefault();atmOk()}else if(e.key==='Escape'){e.preventDefault();atmGo(null)}});
 window.addEventListener('hashchange',()=>{if(location.hash!=='#bank'){atm.mode=null;atm.amt='';atm.done=null}});
-const bk={tab:'rek',amt:'',src:'bank',term:'24u',fund:'coin',rng:'24u',brk:null};
+const bk={tab:'rek',amt:'',src:'bank',term:'8u',fund:'coin',rng:'24u',brk:null};
 const bkAmt=()=>Math.max(0,Math.floor(+bk.amt||0));
 const bkSrcBal=()=>Math.floor(bk.src==='bank'?S.bank:wit());
 // invoer + snelknoppen. max = wat je hier maximaal kunt gebruiken
@@ -139,33 +151,42 @@ function bkRek(){const r=savRate();
    <div class="bk-rows"><div><span>Nu per uur</span><b class="up">+${fmt(S.bank*r)}</b></div><div><span>Na 24 uur</span><b>${fmt(S.bank*Math.pow(1+r,24))}</b></div></div>
    <div class="bk-cmp"><span class="label">Vergelijk</span>
     <div><span>Spaarrekening</span><em>±${nl((Math.pow(1+r,24)-1)*100,1)}% per dag</em><i>vrij opneembaar</i></div>
-    <div><span>Deposito 24 uur</span><em>${nl(depRate(DEP_TERMS[2])*100,1)}%</em><i>vast, kan niet zakken</i></div>
+    <div><span>Deposito 12 uur</span><em>${pctR(depRate(DEP_TERMS[3]))}</em><i>vast, kan niet zakken</i></div>
     <div><span>Beleggen</span><em>±5% tot 15% per dag</em><i>kan ook flink dalen</i></div></div></section></div>`}
 
 // Deposito's: bovenaan je plekken (lopend of vrij), daaronder een nieuw deposito met een duidelijke afrekening.
-function bkDepTab(){const t=DEP_TERMS.find(x=>x.id===bk.term),a=bkAmt(),src=bkSrcBal(),cap=bankCap(),used=S.dep.length,slots=depSlots(),max=Math.min(src,cap),r=depRate(t);
- const why=used>=slots?`Alle ${slots} plekken zijn bezet`:!a?'Vul een bedrag in':a<DEP_MIN?'Minimaal '+fmt(DEP_MIN):a>cap?'Maximaal '+fmt(cap)+' per deposito':a>src?'Niet genoeg op je '+(bk.src==='bank'?'spaarrekening':'contant'):null;
+// Een deposito open je alleen met geld van je spaarrekening (contant eerst storten bij de pinautomaat).
+function bkDepTab(){depFix();const t=DEP_TERMS.find(x=>x.id===bk.term)||DEP_TERMS[2],a=bkAmt(),src=Math.floor(S.bank),cap=bankCap(),used=S.dep.length,slots=depSlots(),max=Math.min(src,cap),r=depRate(t),ti=tier(),r0=depRate(t,0);
+ const why=used>=slots?`Alle ${slots} plekken zijn bezet`:!a?'Vul een bedrag in':a<DEP_MIN?'Minimaal '+fmt(DEP_MIN):a>cap?'Maximaal '+fmt(cap)+' per deposito':a>src?'Niet genoeg op je spaarrekening':null;
  const run=S.dep.slice().sort((x,y)=>x.t1-y.t1);
  const cards=Array.from({length:Math.max(slots,used)},(_,i)=>{const d=run[i];
   if(!d)return `<button class="bk-slot free" onclick="act.bkNew()"><span class="label">Plek ${i+1}</span><b>Vrij</b><em>Zet geld vast tegen een vaste rente</em></button>`;
   const left=d.t1-now(),pr=Math.min(1,Math.max(0,1-left/(d.t1-d.t0))),pay=Math.round(d.a*(1+d.r)),back=Math.floor(d.a*(1-DEP_EARLY));
   return `<div class="bk-slot">
-   <div class="bk-slot-h"><b>${d.n}</b><span>${nl(d.r*100,2)}% rente</span></div>
+   <div class="bk-slot-h"><b>${d.n}</b><span>${pctR(d.r)} rente</span></div>
    <div class="bk-slot-v"><span class="label">Je krijgt</span><b>${fmt(pay)}</b><em>${fmt(d.a)} inleg + ${fmt(pay-d.a)} rente</em></div>
    <div class="bk-slot-p" aria-hidden="true"><i style="width:${(pr*100).toFixed(1)}%"></i></div>
    <div class="bk-slot-t"><span>${left>0?'Klaar '+bkAt(d.t1):'Wordt uitbetaald'}</span><b>${left>0?bkDur(left):'nu'}</b></div>
    ${bk.brk===d.id?`<div class="bk-brk"><span>Opzeggen kost ${Math.round(DEP_EARLY*100)}% en je krijgt geen rente: je krijgt ${fmt(back)} terug.</span><button class="btn sm" onclick="act.depBreak(${d.id})">Ja, opzeggen</button><button class="btn sm ghost" onclick="bk.brk=null;render()">Laat staan</button></div>`
     :`<button class="bk-link" onclick="bk.brk=${d.id};render()">Eerder opzeggen</button>`}</div>`}).join('');
- const terms=DEP_TERMS.map(x=>{const xr=depRate(x),perDay=Math.pow(1+xr,24/x.h)-1;return `<button class="bk-term ${bk.term===x.id?'on':''}" onclick="bk.term='${x.id}';render()" aria-pressed="${bk.term===x.id}"><span>${x.n}</span><b>${nl(xr*100,x.r<.01?2:1)}%</b><em>±${nl(perDay*100,1)}% per dag</em></button>`}).join('');
+ // per looptijd: bij VIP / High roller de gewone rente doorgestreept met jouw rente ernaast
+ const terms=DEP_TERMS.map((x,i)=>{const xr=depRate(x);return `<button class="bk-term t${i} ${bk.term===x.id?'on':''}" onclick="bk.term='${x.id}';render()" aria-pressed="${bk.term===x.id}">
+   <span>${x.n}</span><small class="bk-t-tag">${x.tag}</small>
+   <span class="bk-t-r">${ti?`<s title="Gewone rente">${pctR(depRate(x,0))}</s>`:''}<b>${pctR(xr)}</b>${ti?`<i class="bk-t-lid ${ti>1?'hr':''}">${ti>1?'High roller':'VIP'}</i>`:''}</span>
+   <em>klaar ${bkAt(now()+x.h*36e5)}</em></button>`}).join('');
  const v=a||100000;
- return `<div class="bk-sec"><h2>Jouw deposito's</h2><span>${used}/${slots} plekken</span><em>Plekken: gewoon 2, VIP 5, High roller 10${isVip()?` · ${lidName()}: ${Math.round((BANK_T[tier()]-1)*100)}% meer rente`:''}</em></div>
+ return `<div class="bk-sec"><h2>Jouw deposito's</h2><span>${used}/${slots} plekken</span><em>Plekken: gewoon 2, VIP 5, High roller 10${ti?` · ${lidName()}: betere rente op elk deposito`:''}</em></div>
  <div class="bk-slots">${cards}</div>
  <section class="card bk-box bk-new" id="bkNew"><h3>Nieuw deposito</h3><p class="sub">Vaste tijd, vaste rente. Het kan niet zakken en gaat daarna vanzelf naar je spaarrekening.</p>
   <div class="bk-new-g">
-   <div><span class="label bk-lab">Looptijd</span><div class="bk-terms">${terms}</div>${bkSrc()}</div>
+   <div><span class="label bk-lab">Looptijd</span><div class="bk-terms">${terms}</div>
+    <span class="label bk-lab">Rente ${t.n} per lidmaatschap</span>${bkTiers(i=>pctR(depRate(t,i)))}
+    <div class="bk-src"><span class="label">Betalen van</span><div class="bk-from"><span>Spaarrekening</span><b>${fmt(S.bank)}</b></div>
+     <p class="bk-note">Een deposito open je met geld van je spaarrekening. Contant? Stort het eerst bij de pinautomaat hierboven.</p></div></div>
    <div>${bkInput(max)}
     <div class="bk-rcpt" data-bk-live>${a?'':`<p>Voorbeeld met ${fmt(v)}</p>`}
-     <div><span>Inleg</span><b>${fmt(v)}</b></div><div><span>Rente ${nl(r*100,t.r<.01?2:1)}%</span><b class="up">+${fmt(Math.round(v*r))}</b></div>
+     <div><span>Inleg</span><b>${fmt(v)}</b></div><div><span>Rente ${ti?`<s>${pctR(r0)}</s> `:''}${pctR(r)}${ti?' '+(ti>1?'High roller':'VIP'):''}</span><b class="up">+${fmt(Math.round(v*r))}</b></div>
+     ${ti?`<div><span>waarvan ${ti>1?'High roller':'VIP'}-voordeel</span><b class="up">+${fmt(Math.round(v*(r-r0)))}</b></div>`:''}
      <div class="tot"><span>Je krijgt terug</span><b>${fmt(Math.round(v*(1+r)))}</b></div><div><span>Klaar</span><b>${bkAt(now()+t.h*36e5)}</b></div></div>
     <button class="btn" data-bk-btn onclick="act.depOpen()" ${why?'disabled':''}>${why||'Zet '+fmt(a)+' vast voor '+t.n}</button>
     <div class="bk-mini"><span>Max per deposito <b>${fmt(cap)}</b> (groeit met je rang)</span></div></div>
@@ -231,9 +252,9 @@ Object.assign(act,{
  bkNew(){const el=document.getElementById('bkNew');if(!el)return;el.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>{const i=el.querySelector('input');if(i)i.focus({preventScroll:true})},380)},
  bkQuick(v){bk.amt=String(Math.floor(v));act.bkWd()},
  bkWd(){const a=Math.min(bkAmt(),Math.floor(S.bank));if(a<=0){toast('Er staat niets op je spaarrekening','bad');return}S.bank-=a;S.cash+=a;toast(fmt(a)+' opgenomen');bk.amt='';save();render()},
- depOpen(){const t=DEP_TERMS.find(x=>x.id===bk.term),a=bkAmt();if(!t||S.dep.length>=depSlots()||a<DEP_MIN||a>bankCap()||a>bkSrcBal())return;
-  if(bk.src==='bank')S.bank-=a;else spendWit(a);const r=depRate(t),id=now();
-  S.dep.push({id,n:t.n,h:t.h,a,r,t0:id,t1:id+t.h*36e5});toast(fmt(a)+' vastgezet voor '+t.n+': je krijgt '+fmt(Math.round(a*(1+r))),'ok');log('Deposito '+t.n+': '+fmt(a)+' tegen '+nl(r*100,2)+'%','info');bk.amt='';save();render()},
+ depOpen(){const t=DEP_TERMS.find(x=>x.id===bk.term),a=bkAmt();if(!t||S.dep.length>=depSlots()||a<DEP_MIN||a>bankCap()||a>Math.floor(S.bank))return;
+  S.bank-=a;const r=depRate(t),id=now();
+  S.dep.push({id,n:t.n,h:t.h,a,r,t0:id,t1:id+t.h*36e5,v:2});toast(fmt(a)+' vastgezet voor '+t.n+': je krijgt '+fmt(Math.round(a*(1+r))),'ok');log('Deposito '+t.n+': '+fmt(a)+' tegen '+pctR(r),'info');bk.amt='';save();render()},
  depBreak(id){const d=S.dep.find(x=>x.id===id);if(!d)return;const back=Math.floor(d.a*(1-DEP_EARLY));S.dep=S.dep.filter(x=>x.id!==id);S.bank+=back;bk.brk=null;
   toast('Deposito opgezegd: '+fmt(back)+' terug op je spaarrekening','bad');log('Deposito opgezegd: '+fmt(back)+' terug','info');save();render()},
  invBuy(){const f=fundOf(bk.fund),a=bkAmt();if(!f)return;const p=S.inv[f.id]||{u:0,c:0,paid:0,bp:0},room=invCap()-invCost();
