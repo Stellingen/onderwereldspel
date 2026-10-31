@@ -71,6 +71,11 @@ function renderNav(){
 // Alleen bijwerken als de inhoud echt veranderd is; scrollpositie binnen het element blijft staan.
 // (Elke seconde alles opnieuw tekenen zette op de telefoon het menu en de statusbalk steeds terug naar het begin.)
 function setHTML(el,h){if(!el||el._h===h)return false;const sl=el.scrollLeft,st=el.scrollTop;el.innerHTML=h;el._h=h;if(sl)el.scrollLeft=sl;if(st)el.scrollTop=st;return true}
+// Zit de balk bovenaan vast (telefoon)? Dan loopt hij naar boven toe dicht (.stuck), zodat er boven de balk geen tekst doorheen
+// schuift (onder de klok en het eiland). Niet als hij nog gewoon in de pagina staat, anders dekt hij de casino-knoppen af.
+function tbStuck(){const el=document.getElementById('topbar');if(!el)return;const top=parseFloat(getComputedStyle(el).top)||0;
+ el.classList.toggle('stuck',window.scrollY>0&&el.getBoundingClientRect().top<=top+.5)}
+window.addEventListener('scroll',tbStuck,{passive:true});window.addEventListener('resize',tbStuck);window.addEventListener('hashchange',()=>setTimeout(tbStuck,60));
 // Is de speler net aan het scrollen of aanraken? Dan wachten we even met hertekenen.
 let _touching=false,_lastScroll=0;
 document.addEventListener('touchstart',()=>{_touching=true},{passive:true,capture:true});
@@ -278,6 +283,7 @@ const CZ_EYE_TXT=['Ogen dicht · ze zien je niet','Ze kijken rond','Ze kijken na
 function czEyesSvg(e){const one=x=>e===0?`<path d="M${x-9} 12 Q${x} 18 ${x+9} 12" stroke="#6b717b" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M${x-6} 15.5l-1.5 2.5M${x} 16.6v2.8M${x+6} 15.5l1.5 2.5" stroke="#6b717b" stroke-width="1.5" stroke-linecap="round"/>`
   :`<path d="M${x-10} 12 Q${x} 3 ${x+10} 12 Q${x} 21 ${x-10} 12Z" fill="#0d0e11" stroke="${e===2?'#ff3d52':'#c9ced6'}" stroke-width="1.6"/><circle cx="${x}" cy="12" r="4.2" fill="${e===2?'#ff3d52':'#9aa3ad'}"/><circle cx="${x}" cy="12" r="1.8" fill="#0d0e11"/><circle cx="${x+1.4}" cy="10.6" r=".9" fill="#fff" opacity=".8"/>`;
  return `<svg class="cz-eyes e${e}" viewBox="0 0 48 24" aria-hidden="true">${one(12)}${one(36)}</svg>`}
+let _casChips='';
 function casHudHtml(){const pend=window.slotPending||0,b=typeof bankNet==='function'?bankNet():S.bank,t=typeof tier==='function'?tier():0;
  const cb=typeof cbAvail==='function'?cbAvail():0;
  const luck=typeof luckState==='function'?luckState():null,zw=zwart(),hasLuck=!!(luck&&luck.o&&luck.o.luck);
@@ -291,6 +297,8 @@ function casHudHtml(){const pend=window.slotPending||0,b=typeof bankNet==='funct
   hasLuck?(luck.ready?`<button class="cc cc-luck can" onclick="act.luckUse()"><span><i>${diceSvg(luck.o)}</i>Geluk +${Math.round(luck.o.luck*100)}%</span><b>Gebruik</b></button>`
    :`<a class="cc cc-luck ${luck.L?'on':''}" href="#look"><span><i>${diceSvg(luck.o)}</i>Geluk +${Math.round(luck.o.luck*100)}%</span><b>${luck.L?fmtClock(luck.L):bkDurL(luck.W)}</b></a>`):'',
   `<a class="cc cc-sus ${susC} e${e}" href="#wit" style="--v:${sus}%" title="${CZ_EYE_TXT[e]}"><span>${czEyesSvg(e)}</span><b>${sus}%</b></a>`].join('');
+ // de knoppenrij staat los boven de balk (telefoon): hij schuift weg, de balk met saldo en bank blijft bovenaan vast
+ _casChips=chips;
  return `<div class="chud v2">
   <div class="ch-main"><i class="dm-ic">${ICO_CASH}</i><div><span class="label">Saldo om mee te spelen</span><b id="casBal">${fmt(S.cash-pend)}</b></div></div>
   <div class="ch-pay" role="group" aria-label="Spelen met"><span class="label">Spelen met</span>
@@ -299,7 +307,7 @@ function casHudHtml(){const pend=window.slotPending||0,b=typeof bankNet==='funct
   ${t?`<div class="ch-cell ch-cb" title="${typeof CB_RATE!=='undefined'?'Cashback op elke inzet: '+Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*(TIER_CB[t]||1)*100).toLocaleString('nl-NL',{maximumFractionDigits:3})+'%').join(' · '):''}"><div><span class="label">Cashback · ${lid}</span><b id="cbAmt">${fmt(cb)}</b></div><button class="btn gold sm" id="cbBtn" onclick="act.claimCb()" ${cb<1?'disabled':''}>${cb>=1?'Claimen':'Nog niks'}</button></div>`:`<a class="ch-cell ch-up" href="#profiel"><span class="label">Gewoon lid</span><b>VIP: cashback en vaker bonus</b></a>`}
   ${hasLuck?`<div class="ch-cell ch-luck ${luck.L?'on':''}"><i class="dm-ic">${diceSvg(luck.o)}</i><div><span class="label">Geluk +${Math.round(luck.o.luck*100)}%</span><b>${luck.L?'Nog '+fmtClock(luck.L):luck.W?bkDurL(luck.W):'Klaar'}</b></div>${luck.ready?`<button class="btn gold sm" onclick="act.luckUse()">Gebruiken</button>`:''}</div>`:''}
   <a class="ch-cell ch-sus ${susC} e${e}" href="#wit" title="Alleen spelen met zwart geld laat de verdenking oplopen (wit geld kun je verantwoorden). Grote inzetten, slots en ogen op jouw tafel tellen het zwaarst. Op 100% word je verbannen.">${czEyesSvg(e)}<div class="ch-sus-t"><span class="label">Verdenking · ${CZ_EYE_TXT[e]}</span><div class="ch-sus-r"><b>${sus}%</b><i class="mini"><i style="width:${sus}%"></i></i></div></div></a>
-  <div class="ch-cell ch-r">${statusTag()}</div>${chips?`<div class="ch-chips">${chips}</div>`:''}</div>`}
+  <div class="ch-cell ch-r">${statusTag()}</div></div>`}
 // Kleine iconen voor de statusbalk op de telefoon (energie, gezondheid, hitte, cred)
 const TI={en:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2L4 13.5h6.5L9.5 22 20 9.5h-6.5z"/></svg>',
  hp:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.3-9.6C1.5 8 3.6 4.5 7.1 4.5c2.1 0 3.6 1.1 4.9 2.8 1.3-1.7 2.8-2.8 4.9-2.8 3.5 0 5.6 3.5 4.4 6.9C19.5 16.4 12 21 12 21z"/></svg>',
@@ -307,8 +315,9 @@ const TI={en:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2L4 13
  cred:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.1l-5.9 3.2 1.3-6.5L2.5 9.3l6.6-.8z"/></svg>'};
 let _casPrev=null;
 function renderTop(){
-  if(page==='casino'){const v=S.cash-(window.slotPending||0),el=$('#topbar');if(setHTML(el,casHudHtml())&&_casPrev!=null&&v!==_casPrev){const b=el.querySelector('#casBal');if(b)b.classList.add(v>_casPrev?'up':'dn')}_casPrev=v;return}
-  _casPrev=null;
+  if(page==='casino'){const v=S.cash-(window.slotPending||0),el=$('#topbar');if(setHTML(el,casHudHtml())&&_casPrev!=null&&v!==_casPrev){const b=el.querySelector('#casBal');if(b)b.classList.add(v>_casPrev?'up':'dn')}_casPrev=v;
+   setHTML($('#topchips'),_casChips?`<div class="ch-chips">${_casChips}</div>`:'');return}
+  _casPrev=null;setHTML($('#topchips'),'');
   const ri=rankIdx(S.xp);const jt=Math.ceil((S.jailUntil-now())/1000);const pend=window.slotPending||0;
   const nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100;
   setHTML($('#topbar'),`

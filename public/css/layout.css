@@ -302,13 +302,17 @@ a.chip:hover{background:var(--panel2)}
    batterij of het eiland van de iPhone: bovenaan een vaste strook in de achtergrondkleur, zo hoog als die balk */
 body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);z-index:95;background:var(--bg);pointer-events:none}
 @media (max-width:900px){
-  /* de balk blijft bovenaan staan als je scrolt, net onder de klok en batterij */
+  /* de balk zit bovenaan vast, net als de knoppenbalk onderaan. Sommige iPhones (Safari 26) laten de pagina tijdens het scrollen
+     ook door de strook van de klok en het eiland lopen: daarom loopt de balk naar boven toe dicht (::before), zodat er
+     boven de balk nooit tekst doorheen schuift */
   .topbar,body.wide-page .topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;backdrop-filter:none;-webkit-backdrop-filter:none}
+  .topbar.stuck::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:calc(160px + env(safe-area-inset-top,0px));background:var(--bg);pointer-events:none;
+    box-shadow:0 0 0 40px var(--bg);clip-path:inset(-200px -40px 0 -40px)}
+  body.wide-page .topbar{overflow:visible}
   body:not(.wide-page) .topbar{background:var(--bg2);box-shadow:0 10px 24px -14px rgba(0,0,0,.9)}
-  /* casino: claim/geluk staan bovenaan en schuiven weg; saldo en bank blijven staan */
-  body.wide-page .topbar{top:calc(env(safe-area-inset-top,0px) - 60px)}
-  body.wide-page .chud>.ch-chips{order:-1;height:60px;box-sizing:border-box}
+  /* casino: de knoppenrij (spelen met, cashback, geluk) staat los erboven en schuift weg; saldo en bank blijven vast staan */
   body.wide-page .chud{box-shadow:0 10px 24px -14px rgba(0,0,0,.9)}
+  body.wide-page .chud{border-top-width:1px}
   main{padding-top:calc(14px + env(safe-area-inset-top,0px))}
   #modal,.chase-ov{padding-top:max(16px,calc(env(safe-area-inset-top,0px) + 8px))}
   .fl-box{padding-top:max(16px,calc(env(safe-area-inset-top,0px) + 10px))}
