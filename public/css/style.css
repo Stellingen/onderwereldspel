@@ -2825,3 +2825,17 @@ button.bz-cat-h .bz-cat-m{width:100%}
 .kk-scpay span{display:flex;flex-direction:column;gap:2px;padding:7px 10px;background:var(--bg2);min-width:0}
 .kk-scpay i{font-style:normal;font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
 .kk-scpay b{font-family:var(--f-mono);font-size:13.5px;color:#f2c230;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Auto's: keuzevak na een geslaagde diefstal (garage, heler of overzicht) */
+.got-box{margin:0 0 12px;padding:14px 16px;border:1px solid rgba(63,227,149,.45);background:linear-gradient(135deg,rgba(63,227,149,.1),rgba(63,227,149,.02));border-radius:12px;animation:gotIn .25s ease-out}
+.got-box.heler{border-color:rgba(184,161,255,.6);background:linear-gradient(135deg,rgba(184,161,255,.14),rgba(63,227,149,.04))}
+@keyframes gotIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.got-h{display:flex;flex-direction:column;gap:2px}
+.got-h .label{color:var(--green)}
+.got-h b{font-family:var(--f-display);font-size:22px;line-height:1.1}
+.got-h em{font-style:normal;font-family:var(--f-mono);font-size:12.5px;color:var(--mute)}
+.got-hl{margin:10px 0 0;font-size:13.5px;color:#d9ceff}.got-hl b{color:var(--violet)}
+.got-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.got-btns .btn{flex:1 1 auto;width:auto}
+.got-btns .got-sell{flex:1 1 100%;background:var(--violet);border-color:var(--violet);color:#140f22}
+.gcar.is-new{box-shadow:0 0 0 2px var(--green),0 0 26px rgba(63,227,149,.3);animation:gotNew 1.4s ease-out 2}
+@keyframes gotNew{50%{box-shadow:0 0 0 2px var(--green),0 0 40px rgba(63,227,149,.55)}}

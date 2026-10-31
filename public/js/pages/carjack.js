@@ -29,7 +29,7 @@ function jackSection(){const ri=rankIdx(S.xp),left=cdLeft('jack'),full=S.cars.le
    <li>Een gejatte auto is <b>heet</b>: hij is ${Math.round((1-JACK_HOT)*100)}% minder waard en je krijgt meer hitte dan bij gewoon stelen.</li>
    <li>Mis je, dan rijdt hij weg, vecht de bestuurder terug (gezondheid) of staat er politie om de hoek.</li></ul></div>
    <div class="sc-nerve n${N.i}"><span class="label">Jouw ervaring</span><b>${N.name}</b><span>Groen stuk ±${z}% van de balk bij een gewone auto · groter met Conditie, Rijvaardigheid en een zwaarder wapen</span></div>
-   <div class="hunt-btns"><button class="btn xl" onclick="act.jackCar()" ${ok?'':'disabled'}>${label}</button></div></div></section>`}
+   ${typeof carGotHtml==='function'?carGotHtml('jack'):''}<div class="hunt-btns"><button class="btn xl" onclick="act.jackCar()" ${ok?'':'disabled'}>${label}</button></div></div></section>`}
 
 function jackGame(m,car){return new Promise(resolve=>{
  const P=jackParams(m),R=carRarity(m);window.__chase=true;
@@ -65,16 +65,16 @@ function jackGame(m,car){return new Promise(resolve=>{
 })}
 
 Object.assign(act,{
- async jackCar(){if(window.__chase||inJail()||cdLeft('jack')||rankIdx(S.xp)<JACK_R||jackWeapon()<0)return;
+ async jackCar(){if(typeof carGot!=='undefined')carGot=null;if(window.__chase||inJail()||cdLeft('jack')||rankIdx(S.xp)<JACK_R||jackWeapon()<0)return;
   if(S.cars.length>=garageCap()){toast('Garage vol, verkoop eerst iets','bad');return}if(S.energy<JACK_EN){toast('Te moe','bad');return}
   S.energy-=JACK_EN;S.cd.jack=now()+jackCd();const m=jackPick(),spot=JACK_SPOTS[Math.floor(Math.random()*JACK_SPOTS.length)],car=spawnCar(m,spot);
   S.pendingJack={id:m.id};save();pushState();
   const r=await jackGame(m,car);S.pendingJack=null;S.stats.jackTries=(S.stats.jackTries||0)+1;S.carDex=S.carDex||{};
-  if(r===true){const v=Math.round(carSell(car.v)*JACK_HOT/10)*10;S.cars.push({id:m.id,n:m.n,v,b:m.b,c:car.c,year:car.year,km:car.km,staat:car.staat,hot:1,rep:1});S.stats.cars++;S.stats.jacks=(S.stats.jacks||0)+1;
+  if(r===true){const v=Math.round(carSell(car.v)*JACK_HOT/10)*10,nc={id:m.id,n:m.n,v,b:m.b,c:car.c,year:car.year,km:car.km,staat:car.staat,hot:1,rep:1};S.cars.push(nc);if(typeof carGot!=='undefined')carGot={car:nc,src:'jack',t:now()};S.stats.cars++;S.stats.jacks=(S.stats.jacks||0)+1;
    S.cred+=carTier(m)>=3?2:1;addHeat(6+m.d*2);addXp(8+m.d*m.d*4);if(typeof famEv==='function')famEv('car',{v});const d=S.carDex[m.id]||[0,0];d[0]++;d[1]++;S.carDex[m.id]=d;
    toast(`${m.n} gejat bij het stoplicht! Waarde ${fmt(v)} (heet)`,'ok');log(`Carjacking: ${m.n} (${fmt(v)})`,'ok')}
   else if(r==='fight'){const h=rnd(8,18);S.hp=Math.max(5,S.hp-h);addHeat(3);toast(`De bestuurder van de ${m.n} vecht terug. −${h}% gezondheid`,'bad');log(`Carjacking mislukt: de bestuurder vocht terug (−${h}% gezondheid)`,'bad')}
   else if(r==='gone'){addHeat(2);toast(`De ${m.n} rijdt weg. Geen politie, wel energie kwijt.`,'bad');log(`Carjacking mislukt: de ${m.n} reed weg`,'bad')}
   else{addHeat(6+m.d*2);log(`Carjacking mislukt: politie bij de ${m.n}`,'bad');save();render();
    arrest(40+m.d*25,'Politie!','Een agent zag je bij de '+m.n+' aan het portier trekken.',{flee:Math.min(5,Math.max(1,m.d))});return}
-  save();render()}});
+  save();render();if(r===true&&typeof carGotShow==='function')carGotShow()}});
