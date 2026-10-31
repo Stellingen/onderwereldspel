@@ -141,6 +141,22 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   - *De familie leiden*: na Erelid volgen **Onderbaas** (genoeg eer en 3 gewonnen slagen) en **Baas** (een duel tegen de baas uit
     het verhaal). Beide krijgen elke speldag een afdracht en een sterkere familiebonus (Onderbaas 110%, Baas 125%).
   - Klik op een familie voor het verhaal (`lore.js`), haar plek in de stad over de laatste 8 periodes, toelating en voordeel.
+- **UX-update: spelfixes, toegankelijkheid en oefenen** (`public/js/practice.js`, `public/css/ux-game.css`):
+  - *Oefenen · telt niet mee*: rennen (misdaden), contact maken en wegrijden (auto's). Alleen de minigame zelf wordt gestart,
+    nooit de actie eromheen: energie, geld, hitte, straf, cred, auto's en statistieken blijven gelijk (getest door S voor en na
+    te vergelijken). Eerst uitleg en niveau, dan Start en een aftelling. Niet in de cel of tijdens een echte achtervolging.
+  - *Verblijf*: de knop "Weer over" telt mee met dezelfde klok als de ring (bleef eerst op de tijd van het tekenen staan).
+  - *Poker* (Three Card en Hold'em): vóór het delen staat wat een hand maximaal kost (ante + side bets nu, play of call straks).
+    Je fiche en laatste inzet worden per spel onthouden in deze browser (`ow_tb_pref`); het bonnetje toont netto én bruto.
+  - *Training*: kleine effecten met passende precisie (+0,4% in plaats van +0%); kans-effecten in %-punt (`pctTxt`).
+  - *Misdaden*: onder je kans staat de basiskans (zoals op de voorpagina); de titel en schermlezertekst geven de hele opbouw
+    (basis + rang + uitrusting … − hitte, × lidmaatschap). Bij de buit staan rang en level apart, met uitleg dat de levelbonus
+    per rang opnieuw begint (daardoor zakt de buit na een promotie even, bijv. ×1,12 naar ×1,06).
+  - *Roulette*: elk vak heeft een eigen toegankelijke naam (kolommen met hun echte nummers), een rustige live-regio voor fiche,
+    inzet, draaien en uitslag, zichtbare focus en "rood"/"zwart" als woord bij de ruitjes.
+  - *Bajes*: de bibliotheek noemt alleen een omgedraaid boek bij naam en kondigt paren aan; bij het werk zie je vooraf hoe lang
+    je nog zit, met een waarschuwing als je straf eerder om is dan het klusje, en een duidelijke melding als je vrijkomt tijdens
+    het werk (loon voor wat af was, geen strafvermindering).
 - **Bajes** (`bajes.js`, werk in `jailjobs.js`): een straf duurt 30 tot 60 seconden langer, zodat je er iets kunt doen. Vier
   klussen in de bajes (wasserij: sorteren, keuken: timing, werkplaats: ritme bij het nummerplaten slaan, bibliotheek: geheugen),
   elk 16 tot 25 seconden met een wachttijd. Ze betalen een klein bedrag dat met je rang meegroeit en goed werk haalt tijd van je

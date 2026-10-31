@@ -43,7 +43,8 @@ const JJ={
     <div class="jj-score" hidden><span><b data-k="ok">0</b><small>goed</small></span><span><b data-k="bad">0</b><small>fout</small></span></div></div>
    <div class="jj-time"><i></i></div>
    <div class="jj-body"><div class="jj-intro"><p>${j.d}</p><div class="jj-how"><span class="label">Zo werkt het</span><p>${j.how}</p></div>
-    <div class="jj-rw"><div><span class="label">Loon</span><b>tot ${fmt(jjPay(j,1))}</b></div><div><span class="label">Straf</span><b>${cut?'tot −'+cut+'s':'gedrag op max'}</b></div><div><span class="label">Duur</span><b>±${j.t}s</b></div></div>
+    <div class="jj-rw"><div><span class="label">Loon</span><b>tot ${fmt(jjPay(j,1))}</b></div><div><span class="label">Straf</span><b>${cut?'tot −'+cut+'s':'gedrag op max'}</b></div><div><span class="label">Duur</span><b>±${j.t}s</b></div><div><span class="label">Je zit nog</span><b data-jj-left>${fmtTime(Math.max(0,Math.ceil((S.jailUntil-now())/1000)))}</b></div></div>
+    ${Math.ceil((S.jailUntil-now())/1000)<j.t+1?`<p class="jj-warn" role="note">Je straf is waarschijnlijk eerder om dan dit klusje. Dan stopt het werk, krijg je loon voor wat je al gedaan hebt en gaat er geen tijd meer van je straf af.</p>`:''}
     <div class="jj-btns"><button class="btn ghost" type="button" data-a="back">Terug</button><button class="btn" type="button" data-a="go">Begin</button></div></div></div></div>`;
   document.body.appendChild(ov);
   const go=await new Promise(res=>{let d=false;const done=v=>{if(d)return;d=true;document.removeEventListener('keydown',k,true);res(v)};
@@ -83,7 +84,7 @@ function jjSettle(j,r,ov){const c=celBase(),s=Math.max(0,Math.min(1,r.s||0)),B=o
  const grade=s<.2?'Rommel':s<.5?'Matig':s<.75?'Netjes':s<.95?'Goed werk':'Perfect';
  const line=j.n+': '+(pay?fmt(pay):'geen loon')+(cut?', '+fmtTime(cut)+' eraf':'');
  log(j.n+' in de bajes: '+(pay?fmt(pay):'geen loon')+(cut?', '+fmtTime(cut)+' eraf':''),pay?'ok':'bad');toast(line,pay?'ok':'bad');save();
- B.innerHTML=`<div class="jj-res ${free?'':s>=.5?'ok':s<.2?'bad':''}"><span class="label">${free?'De bewaker zet je buiten':'Klaar'}</span><h3>${free?'Je straf zit erop':grade}</h3><p>${r.detail||''}${s<.2&&!free?'. De bewaker stuurt je terug naar je cel.':''}</p>
+ B.innerHTML=`<div class="jj-res ${free?'':s>=.5?'ok':s<.2?'bad':''}"><span class="label">${free?'De bewaker zet je buiten':'Klaar'}</span><h3>${free?'Je straf zit erop':grade}</h3><p>${free?`Je straf liep af terwijl je aan het werk was. Je bent vrij. ${pay?'Je krijgt loon voor wat je al gedaan had ('+Math.round(s*100)+'%).':'Je had nog te weinig gedaan voor loon.'} Er gaat geen tijd meer van je straf af.`:(r.detail||'')+(s<.2?'. De bewaker stuurt je terug naar je cel.':'')}</p>
   <div class="jj-rw"><div><span class="label">Loon</span><b>${pay?'+'+fmt(pay):'€0'}</b></div><div><span class="label">Straf</span><b>${cut?'−'+fmtTime(cut):free?'vrij':jjCutLeft()?'—':'gedrag op max'}</b></div><div><span class="label">Score</span><b>${Math.round(s*100)}%</b></div></div>
   <button class="btn" type="button" data-a="close">${free?'Sluiten':'Terug naar je cel'}</button></div>`;
  try{s>=.5?SFX.win(1):SFX.lose()}catch(e){}
@@ -189,12 +190,16 @@ const JB_EM={sleutel:'<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M21
  ster:'<path d="M12 3.5l2.5 5.3 5.8.7-4.3 4 1.1 5.8L12 16.4l-5.1 2.9 1.1-5.8-4.3-4 5.8-.7z"/>',kroon:'<path d="M3.5 8.5l4.3 3.8L12 5.5l4.2 6.8 4.3-3.8-1.8 10H5.3z"/>',
  dobbel:'<rect x="4.5" y="4.5" width="15" height="15" rx="3"/><path d="M9 9h.01M15 9h.01M9 15h.01M15 15h.01M12 12h.01" stroke-width="2.6"/>',roos:'<circle cx="12" cy="9" r="4.5"/><path d="M12 13.5V21M12 17.5c-1.8-1.7-3.8-1.9-5-1M12 18.5c1.8-1.7 3.8-1.9 5-1"/>'};
 const JB_COL=['var(--ice)','var(--acc)','var(--green)','var(--violet)','var(--red)','var(--acc2)'];
+// Voor schermlezers: alleen een omgedraaid boek noemt zijn symbool; een dicht boek zegt alleen "dicht" (geen verborgen info).
+const JB_NAME={sleutel:'sleutel',anker:'anker',ster:'ster',kroon:'kroon',dobbel:'dobbelsteen',roos:'roos'};
 JJ_GAMES.bieb=G=>{const ks=Object.keys(JB_EM),deck=[...ks,...ks].map(k=>({k,o:0,m:0})).sort(()=>Math.random()-.5),code=()=>rnd(100,999)+'.'+rnd(1,9);
- G.body.innerHTML=`<div class="jb">${deck.map((c,i)=>`<button class="jb-c" type="button" data-i="${i}" aria-label="Boek ${i+1}"><span class="jb-in"><span class="jb-back"><i></i><em>${code()}</em></span><span class="jb-face" style="--bc:${JB_COL[ks.indexOf(c.k)]}"><svg viewBox="0 0 24 24" aria-hidden="true">${JB_EM[c.k]}</svg></span></span></button>`).join('')}</div>`;
- let open=[],lock=false,pairs=0,miss=0;const els=[...G.body.querySelectorAll('.jb-c')];
- const flip=i=>{if(lock||G.over||G.now()<0)return;const c=deck[i];if(c.m||c.o)return;c.o=1;els[i].classList.add('up');try{SFX.card()}catch(e){}open.push(i);
-  if(open.length<2)return;const [a,b]=open;open=[];
-  if(deck[a].k===deck[b].k){deck[a].m=deck[b].m=1;pairs++;G.score('ok',pairs);els[a].classList.add('match');els[b].classList.add('match');G.msg(pairs===6?'Alles staat op zijn plek':'Paar gevonden','ok');if(pairs===6)setTimeout(()=>G.end('done'),450)}
-  else{miss++;G.score('bad',miss);lock=true;setTimeout(()=>{deck[a].o=deck[b].o=0;els[a].classList.remove('up');els[b].classList.remove('up');lock=false},700)}};
+ G.body.innerHTML=`<div class="jb">${deck.map((c,i)=>`<button class="jb-c" type="button" data-i="${i}" aria-label="Boek ${i+1}, dicht"><span class="jb-in" aria-hidden="true"><span class="jb-back"><i></i><em>${code()}</em></span><span class="jb-face" style="--bc:${JB_COL[ks.indexOf(c.k)]}"><svg viewBox="0 0 24 24" aria-hidden="true">${JB_EM[c.k]}</svg></span></span></button>`).join('')}</div><div class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-jb-live></div>`;
+ let open=[],lock=false,pairs=0,miss=0;const els=[...G.body.querySelectorAll('.jb-c')],live=G.body.querySelector('[data-jb-live]');
+ const lab=(i,st)=>{const c=deck[i],e=els[i];e.setAttribute('aria-label','Boek '+(i+1)+(st==='dicht'?', dicht':': '+JB_NAME[c.k]+(st==='gevonden'?', gevonden':'')));if(st==='gevonden')e.setAttribute('aria-disabled','true')};
+ const say=t=>{if(live)live.textContent=t};
+ const flip=i=>{if(lock||G.over||G.now()<0)return;const c=deck[i];if(c.m||c.o)return;c.o=1;els[i].classList.add('up');lab(i,'open');try{SFX.card()}catch(e){}open.push(i);
+  if(open.length<2){say('Boek '+(i+1)+': '+JB_NAME[c.k]);return}const [a,b]=open;open=[];
+  if(deck[a].k===deck[b].k){deck[a].m=deck[b].m=1;pairs++;G.score('ok',pairs);els[a].classList.add('match');els[b].classList.add('match');lab(a,'gevonden');lab(b,'gevonden');say('Boek '+(b+1)+': '+JB_NAME[deck[b].k]+'. Paar gevonden, '+pairs+' van de 6.');G.msg(pairs===6?'Alles staat op zijn plek':'Paar gevonden','ok');if(pairs===6)setTimeout(()=>G.end('done'),450)}
+  else{miss++;G.score('bad',miss);lock=true;say('Boek '+(b+1)+': '+JB_NAME[deck[b].k]+'. Geen paar, ze gaan weer dicht.');setTimeout(()=>{deck[a].o=deck[b].o=0;els[a].classList.remove('up');els[b].classList.remove('up');lab(a,'dicht');lab(b,'dicht');lock=false},700)}};
  els.forEach(e=>e.addEventListener('click',()=>flip(+e.dataset.i)));
  return {frame(){},key(){return false},result(){return {s:pairs/6,detail:`${pairs} van de 6 paren, ${miss} keer mis`}}}};

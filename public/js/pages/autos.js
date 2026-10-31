@@ -185,7 +185,7 @@ function sloopView(){const ri=rankIdx(S.xp);
  ${S.cars.length?`<div class="sl-list">${S.cars.map((c,i)=>{const m=CARS.find(k=>k.id===c.id)||{b:'hatch'};return `<div class="sl-row">${carSvg(m.b||c.b,c.c||'#8a929c')}<div><b>${c.n}${carRep(c)?' <i class="g-rep">gemeld</i>':''}</b><small>${parts.map(([n,k])=>n+' '+fmt(Math.round(c.v*k))).join(' · ')}</small></div><button class="btn sm" onclick="act.carSloop(${i})">Slopen · ${fmt(Math.round(c.v*SLOOP_K))}</button></div>`}).join('')}</div>
   <button class="btn ghost" style="width:auto;margin-top:10px" onclick="act.sloopAll()">Alles slopen · ${fmt(Math.round(S.cars.reduce((a,c)=>a+c.v,0)*SLOOP_K))} zwart</button>`:'<div class="card empty">Je garage is leeg.</div>'}`}
 V.cars=()=>{if(S.street)delete S.street;S.carDex=S.carDex||{};carExpire(true);
- if(carMode==='zoek'||carMode==='jack')return `${carBack(carMode==='jack'?'Carjacken':'Straat afzoeken')}<div class="hunt-grid">${carMode==='jack'?jackSection():`<section class="hunt">${huntScene()}<div class="hunt-body">${huntInfo()}${huntBtns()}</div></section>`}</div>`;
+ if(carMode==='zoek'||carMode==='jack')return `${carBack(carMode==='jack'?'Carjacken':'Straat afzoeken')}<div class="hunt-grid">${carMode==='jack'?jackSection():`<section class="hunt">${huntScene()}<div class="hunt-body">${huntInfo()}${huntBtns()}</div></section>`}</div>${typeof prButtons==='function'?prButtons(carMode==='jack'?['chase']:['contact','chase']):''}`;
  if(carMode==='garage')return garageView();
  if(carMode==='sloop')return sloopView();
  if(carMode==='heler')return `${carBack('De heler')}${ordersHtml()}`;

@@ -17,6 +17,19 @@ const rlNums=k=>k.startsWith('i:')?k.slice(2).split(',').map(Number):RL_OUT[k]||
 const rlKey=ns=>'i:'+[...ns].sort((a,b)=>a-b).join(',');
 function rlLabel(k){const ns=rlNums(k);if(!k.startsWith('i:'))return RL_OUT_LABEL[k];
  const t={1:'Nummer',2:'Split',3:ns.includes(0)?'Drie met nul':'Rij',4:ns.includes(0)?'Eerste vier':'Hoek',6:'Zes'}[ns.length];return t+' '+ns.join('/')}
+// Toegankelijke naam per inzetvak: wat je inzet, op welke nummers, wat het betaalt en wat er nu ligt.
+// Kolommen en dozijnen noemen hun echte nummers (de drie 2:1-vakken zijn zo van elkaar te onderscheiden).
+const RL_COLNAME={red:'rood',black:'zwart',green:'groen'};
+const rlRange=ns=>ns.length>4?ns.slice(0,3).join(', ')+' tot en met '+ns[ns.length-1]:ns.join(', ');
+function rlAria(k){const ns=rlNums(k),v=rl.bets[k]||0,pay=36/ns.length-1,on=v?', er ligt '+fmt(v):'';
+ const out={red:'Inzetten op rood, 18 nummers',black:'Inzetten op zwart, 18 nummers',even:'Inzetten op even',odd:'Inzetten op oneven',low:'Inzetten op 1 tot en met 18',high:'Inzetten op 19 tot en met 36',
+  d1:'Inzetten op het eerste twaalftal: 1 tot en met 12',d2:'Inzetten op het tweede twaalftal: 13 tot en met 24',d3:'Inzetten op het derde twaalftal: 25 tot en met 36'};
+ let t;if(out[k])t=out[k];else if(/^c[123]$/.test(k))t='Inzetten op kolom '+k[1]+': '+rlRange(ns);
+ else if(ns.length===1)t='Inzetten op '+ns[0]+', '+RL_COLNAME[numCol(ns[0])];
+ else t='Inzetten op '+rlLabel(k).replace(/^(\S+)/,m=>m.toLowerCase()).replace(/\//g,', ').replace(/, (\d+)$/,' en $1');
+ return t+' ('+pay+' tegen 1)'+on}
+// rustige aankondiging voor schermlezers: samengevoegd en hooguit één keer per 0,4 s, nooit tijdens het draaien van de bal
+let _rlSay=null;function rlSay(txt){clearTimeout(_rlSay);_rlSay=setTimeout(()=>{const el=document.getElementById('rlLive');if(el)el.textContent=txt},400)}
 // Groepen op het wiel (aantal fiches per groep = lengte van de lijst)
 const RL_GROUPS=[
  {id:'voisins',n:'Buren van nul',d:'17 getallen rond de nul (22 t/m 25)',bets:[[0,2,3],[0,2,3],[4,7],[12,15],[18,21],[19,22],[32,35],[25,26,28,29],[25,26,28,29]]},
@@ -33,15 +46,15 @@ function rlZones(){const Z=[];const add=(u,v,ns,cls)=>Z.push({u,v,ns,cls});
  for(let j=0;j<12;j++){add(j+.5,3,[3*j+1,3*j+2,3*j+3],'st');if(j<11)add(j+1,3,[3*j+1,3*j+2,3*j+3,3*j+4,3*j+5,3*j+6],'sl')}
  for(let r=0;r<3;r++)add(0,r+.5,[0,rlN(0,r)],'sp');add(0,1,[0,2,3],'co');add(0,2,[0,1,2],'co');add(0,3,[0,1,2,3],'sl');return Z}
 const RL_ZONES=rlZones();
-function rlChip(v,win){return v?`<i class="rchip c${RL_CHIPS.filter(c=>c<=v).pop()||10} ${win?'win':''}">${rlShort(v)}</i>`:''}
+function rlChip(v,win){return v?`<i aria-hidden="true" class="rchip c${RL_CHIPS.filter(c=>c<=v).pop()||10} ${win?'win':''}">${rlShort(v)}</i>`:''}
 function rlSpot(k,inner,cls,extra){const v=rl.bets[k]||0,won=rl.res!=null&&!rl.spinning&&rl.lines&&rl.lines.some(l=>l.k===k&&l.back>0);
- return `<button class="rs ${cls||''}" data-k="${k}" data-ns="${rlNums(k).join(',')}" ${extra||''} onclick="act.rlBet('${k}')" oncontextmenu="event.preventDefault();act.rlRemove('${k}')" onmouseenter="rlHl(this.dataset.ns)" onmouseleave="rlHl('')" ${rl.spinning?'disabled':''}>${inner}${rlChip(v,won)}</button>`}
+ return `<button class="rs ${cls||''}" data-k="${k}" data-ns="${rlNums(k).join(',')}" aria-label="${rlAria(k)}" ${extra||''} onclick="act.rlBet('${k}')" oncontextmenu="event.preventDefault();act.rlRemove('${k}')" onmouseenter="rlHl(this.dataset.ns)" onmouseleave="rlHl('')" ${rl.spinning?'disabled':''}>${inner}${rlChip(v,won)}</button>`}
 function rlTable(){const vert=rlVert(),hit=!rl.spinning&&rl.res!=null?rl.res:null;
  let nums='';for(let j=0;j<12;j++)for(let r=0;r<3;r++){const n=rlN(j,r),[x,y]=vert?[2-r,j]:[j,r];
   nums+=rlSpot(rlKey([n]),`<b>${n}</b>`,'num '+numCol(n)+(hit===n?' hit':''),`style="grid-column:${x+1};grid-row:${y+1}"`)}
  const zones=RL_ZONES.map(z=>{const [x,y]=rlPos(z.u,z.v,vert),k=rlKey(z.ns),v=rl.bets[k]||0,won=rl.res!=null&&!rl.spinning&&rl.lines&&rl.lines.some(l=>l.k===k&&l.back>0);
-  return `<button class="rz ${z.cls} ${v?'on':''}" style="left:${x}%;top:${y}%" data-k="${k}" data-ns="${z.ns.join(',')}" aria-label="${rlLabel(k)}" title="${rlLabel(k)} · ${36/z.ns.length-1}:1" onclick="act.rlBet('${k}')" oncontextmenu="event.preventDefault();act.rlRemove('${k}')" onmouseenter="rlHl(this.dataset.ns)" onmouseleave="rlHl('')" ${rl.spinning?'disabled':''}>${rlChip(v,won)}</button>`}).join('');
- const red=`<span class="dia red"></span>`,blk=`<span class="dia black"></span>`;
+  return `<button class="rz ${z.cls} ${v?'on':''}" style="left:${x}%;top:${y}%" data-k="${k}" data-ns="${z.ns.join(',')}" aria-label="${rlAria(k)}" title="${rlLabel(k)} · ${36/z.ns.length-1}:1" onclick="act.rlBet('${k}')" oncontextmenu="event.preventDefault();act.rlRemove('${k}')" onmouseenter="rlHl(this.dataset.ns)" onmouseleave="rlHl('')" ${rl.spinning?'disabled':''}>${rlChip(v,won)}</button>`}).join('');
+ const red=`<span class="dia red" aria-hidden="true"></span><b class="rl-cw">Rood</b>`,blk=`<span class="dia black" aria-hidden="true"></span><b class="rl-cw">Zwart</b>`;
  return `<div class="rt ${vert?'v':'h'} ${rl.erase?'erase':''}">
   <div class="rt-zero">${rlSpot(rlKey([0]),'<b>0</b>','num green zero'+(hit===0?' hit':''))}</div>
   <div class="rt-nums">${nums}<div class="rt-zones">${zones}</div></div>
@@ -60,7 +73,9 @@ function rlCtlHtml(){const r=rl,tot=rlTotal();return `
    <button class="btn gold rl-go" onclick="act.rlSpin()" ${r.spinning||!tot||inJail()?'disabled':''}>${r.spinning?'Draait…':'Draaien · '+fmt(tot)}</button>`}
 // Alleen de vakken die veranderden bijwerken (geen hele pagina opnieuw tekenen bij elke fiche)
 function rlPaint(keys){[...new Set(keys)].forEach(k=>document.querySelectorAll(`.rt [data-k="${k}"]`).forEach(el=>{const old=el.querySelector('.rchip');if(old)old.remove();const v=rl.bets[k]||0;
-  if(v)el.insertAdjacentHTML('beforeend',rlChip(v,false));el.classList.toggle('on',!!v)}));rlPaintCtl()}
+  if(v)el.insertAdjacentHTML('beforeend',rlChip(v,false));el.classList.toggle('on',!!v);el.setAttribute('aria-label',rlAria(k))}));rlPaintCtl();
+  const ks=[...new Set(keys)];if(ks.length===1){const v=rl.bets[ks[0]]||0;rlSay((v?fmt(v)+' op ':'Weggehaald: ')+rlLabel(ks[0]).toLowerCase()+'. Totale inzet '+fmt(rlTotal())+'.')}
+  else if(ks.length)rlSay('Inzetten aangepast. Totale inzet '+fmt(rlTotal())+'.')}
 // telefoon: vaste balk onderin met je inzet en de draaiknop, zodat je na het zetten niet terug hoeft te scrollen
 function rlDockHtml(){const r=rl,tot=rlTotal();return `<button class="btn ghost" onclick="act.rlUndo()" ${r.spinning||!r.undo.length?'disabled':''} aria-label="Ongedaan maken">↶</button>
   <div class="rl-dock-t"><span class="label">Inzet</span><b>${fmt(tot)}</b></div>
@@ -69,7 +84,7 @@ function rlPaintCtl(){if(!document.getElementById('rlCtl')){render();return}
  const t=document.getElementById('rlTot');if(t)t.textContent=fmt(rlTotal());document.getElementById('rlCtl').innerHTML=rlCtlHtml();
  const dk=document.getElementById('rlDock');if(dk)dk.innerHTML=rlDockHtml();
  const g=document.getElementById('rlGroups');if(g)g.innerHTML=rlGroupsHtml();
- document.querySelectorAll('.rl-chips .pchip').forEach(b=>b.classList.toggle('on',+b.dataset.v===rl.chip));
+ document.querySelectorAll('.rl-chips .pchip').forEach(b=>{b.classList.toggle('on',+b.dataset.v===rl.chip);b.setAttribute('aria-pressed',+b.dataset.v===rl.chip)});
  const rt=document.querySelector('.rt');if(rt)rt.classList.toggle('erase',!!rl.erase)}
 function rouletteView(){const tot=rlTotal(),r=rl,done=!r.spinning&&r.res!=null,cnt={red:0,black:0,green:0};r.hist.slice(0,50).forEach(n=>cnt[numCol(n)]++);
  const hn=Math.max(1,r.hist.slice(0,50).length);
@@ -89,8 +104,9 @@ function rouletteView(){const tot=rlTotal(),r=rl,done=!r.spinning&&r.res!=null,c
  </section>
  <section class="rl-felt">
   <div class="rl-bar">
-   <div class="rl-chips">${RL_CHIPS.map(v=>`<button class="pchip c${v} ${r.chip===v?'on':''}" data-v="${v}" onclick="rl.chip=${v};rl.erase=false;SFX.chip();rlPaintCtl()" ${r.spinning?'disabled':''} aria-label="Fiche ${fmt(v)}">${rlShort(v)}</button>`).join('')}</div>
+   <div class="rl-chips">${RL_CHIPS.map(v=>`<button class="pchip c${v} ${r.chip===v?'on':''}" data-v="${v}" onclick="rl.chip=${v};rl.erase=false;SFX.chip();rlPaintCtl();rlSay('Fiche ${fmt(v)} gekozen')" ${r.spinning?'disabled':''} aria-pressed="${r.chip===v}" aria-label="Fiche ${fmt(v)}">${rlShort(v)}</button>`).join('')}</div>
    <div class="rl-total"><span class="label">Totale inzet</span><b id="rlTot">${fmt(tot)}</b></div>
+   <div id="rlLive" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
   </div>
   ${rlTable()}
   <div class="rl-groups" id="rlGroups">${rlGroupsHtml()}</div>
@@ -150,7 +166,7 @@ Object.assign(act,{
   r.last=Object.assign({},r.bets);r.undo=[];r.erase=false;
   const i=RL_ORDER.indexOf(n),seg=Math.PI*2/37,TAU=Math.PI*2,reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   const from=r.angle,delta=TAU*(4+Math.random())+Math.random()*TAU,to=from+delta,pocket=-Math.PI/2+i*seg,b0=r.ball||-Math.PI/2;
-  const dur=reduce?400:6500,t0=performance.now();r.spinning=true;r.res=null;r.lines=null;render();SFX.spin();
+  const dur=reduce?400:6500,t0=performance.now();r.spinning=true;r.res=null;r.lines=null;render();SFX.spin();rlSay('De bal rolt. Totale inzet '+fmt(tot)+'.');
   // telefoon: terug naar het wiel als je onderaan bij de tafel stond
   if(rlVert()){const top=document.querySelector('.rl-top');if(top&&top.getBoundingClientRect().bottom<80)top.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'})}
   let lastTick=0;
@@ -165,4 +181,5 @@ Object.assign(act,{
    if(net>0){toast(n+' '+({red:'rood',black:'zwart',green:'nul'})[numCol(n)]+'. Je krijgt '+fmt(pay)+' terug (+'+fmt(net)+')');net>=tot*5?SFX.big():SFX.win(2)}
    else if(pay>0){toast(n+'. Je krijgt '+fmt(pay)+' terug ('+fmt(net)+')','bad');SFX.chip()}
    else{toast(n+' '+({red:'rood',black:'zwart',green:'nul'})[numCol(n)]+'. Verloren: '+fmt(tot),'bad');SFX.lose()}
-   save();if(page==='casino'&&casinoTab==='roulette')render();else{renderTop()}}}});
+   save();if(page==='casino'&&casinoTab==='roulette')render();else{renderTop()}
+   rlSay('Uitslag: '+n+' '+({red:'rood',black:'zwart',green:'groen'})[numCol(n)]+'. '+(pay>0?'Je krijgt '+fmt(pay)+' terug, netto '+(net>=0?'plus ':'min ')+fmt(Math.abs(net)):'Verloren: '+fmt(tot))+'.')}}});

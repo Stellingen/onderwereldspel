@@ -67,8 +67,9 @@ function thTable(){
   </div>
   <div class="table-bar">
    ${bet?`${chipTray('th')}<div class="tb-act"><button class="btn ghost" onclick="act.tbClear('th')" ${t.bets.ante+t.bets.aa?'':'disabled'}>Wissen</button>
-     ${t.last?`<button class="btn ghost" onclick="act.tbRebet('th')">Zelfde inzet</button>`:''}
-     <button class="btn" onclick="act.thDeal()" ${t.bets.ante>=TB.MAIN_MIN&&!inJail()?'':'disabled'}>Delen · ${fmt(t.bets.ante+t.bets.aa)}</button></div>`
+     ${t.last||(typeof tbLastOf==='function'&&tbLastOf('th'))?`<button class="btn ghost" onclick="act.tbRebet('th')">Zelfde inzet</button>`:''}
+     <button class="btn" onclick="act.thDeal()" ${t.bets.ante>=TB.MAIN_MIN&&!inJail()?'':'disabled'}>Delen · ${fmt(t.bets.ante+t.bets.aa)}</button></div>
+     ${t.bets.ante+t.bets.aa&&typeof tbCost==='function'?tbCost(t.bets.ante+t.bets.aa,t.bets.ante*2,'meespelen (2× ante)'):''}`
    :rv||t.phase==='dealing'?`<div class="tb-act"><button class="btn" disabled>${rv?'De dealer legt de rest neer…':'Delen…'}</button></div>`
    :dec?`<div class="tb-act play">${(()=>{const need=t.bets.ante*2,ok=casCash()>=need;
      return `<button class="btn bj-a ${ok?'':'no'}" onclick="act.thCall()" ${ok?'':'disabled'}><span>Meespelen · ${fmt(need)}</span><small>${ok?'call · 2× je ante':'te weinig saldo'}</small></button>
@@ -105,7 +106,7 @@ Object.assign(act,{
  thNew(){Object.assign(th,{bets:{ante:0,aa:0},lines:null,phase:'bet',p:[],d:[],b:[],res:null,msg:'',net:0,call:0,rv:0});render()},
  async thDeal(){const t=th;if(t.phase!=='bet'||inJail())return;const tot=t.bets.ante+t.bets.aa;
   if(t.bets.ante<TB.MAIN_MIN){toast('Minimale ante is €'+TB.MAIN_MIN,'bad');return}if(tot>casCash()){toast(casShort(),'bad');return}
-  S.cash-=tot;t.last=Object.assign({},t.bets);t.shoe=newShoe(1);t.p=[];t.d=[];t.b=[];t.res=null;t.msg='';t.call=0;t.rv=0;t.phase='dealing';
+  S.cash-=tot;t.last=Object.assign({},t.bets);if(typeof tbRemember==='function')tbRemember('th',t.bets);t.shoe=newShoe(1);t.p=[];t.d=[];t.b=[];t.res=null;t.msg='';t.call=0;t.rv=0;t.phase='dealing';
   for(let i=0;i<2;i++){t.p.push(thDraw());SFX.card();render();await tbWait(220);t.d.push(thDraw());SFX.card();render();await tbWait(220)}
   for(let i=0;i<3;i++){t.b.push(thDraw());SFX.card();render();await tbWait(240)}
   t.phase='decide';save();render()},
