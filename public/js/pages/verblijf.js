@@ -63,7 +63,9 @@ function vbLive(){const k=stay.kind;
  const he=document.getElementById('hideEta');if(he&&S.hide)he.textContent=fmtClock(S.heat/hideRate('home')*60000);
  ['rest','doc'].forEach(x=>{const fg=document.getElementById('ring_'+x),tx=document.getElementById('ringT_'+x);if(!fg)return;
   if(x===k){const p=stayP();fg.style.strokeDashoffset=RING*(1-p);tx.textContent=Math.round(p*100)+'%'}
-  else{const c=stayCd(x);if(c){fg.style.strokeDashoffset=RING*(c/STAY[x].cd());tx.textContent=fmtClock(c)}}});
+  else{const c=stayCd(x);if(c){fg.style.strokeDashoffset=RING*(c/STAY[x].cd());tx.textContent=fmtClock(c);
+   // de knop telt met dezelfde klok mee als de ring (anders bleef hij op de tijd van het tekenen staan)
+   const bt=document.getElementById('vbCd_'+x);if(bt)bt.textContent=fmtClock(c)}}});
  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v},bar=(id,p)=>{const e=document.getElementById(id);if(e)e.style.width=Math.max(0,Math.min(100,p))+'%'};
  set('vbE',Math.floor(S.energy));set('vbH',S.hp+'%');set('vbHd',S.hp+'%');set('vbHeat2',S.heat+'%');
  set('vbE2',Math.floor(S.energy)+'/'+EN_MAX);set('vbHs',S.hp+'%');set('vbHeat',S.heat+'%');bar('vbEb',S.energy/EN_MAX*100);bar('vbHb',S.hp);bar('vbTb',S.heat)}
@@ -79,7 +81,7 @@ function vbAct(k){const h=home(),active=stay.kind===k,other=stay.kind&&!active,c
  const sub=active?'bezig':cd?'wachten':'duur';
  const rows=k==='rest'?[['Energie',`<b id="vbE">${Math.floor(S.energy)}</b>`,Math.floor(T.e)],['Gezondheid',`<b id="vbH">${S.hp}%</b>`,T.h+'%'],...(h.heat?[['Hitte',S.heat+'%',T.heat+'%']]:[])]
   :[['Gezondheid',`<b id="vbHd">${S.hp}%</b>`,T.h+'%']];
- const label=active?'Stoppen':other?'Even geduld':inJail()?'Je zit vast':cd?'Weer over '+fmtClock(cd):!useful?(k==='rest'?'Al uitgerust':'Kerngezond'):({rest:'Rusten',doc:'Naar de dokter'})[k];
+ const label=active?'Stoppen':other?'Even geduld':inJail()?'Je zit vast':cd?'Weer over <span id="vbCd_'+k+'">'+fmtClock(cd)+'</span>':!useful?(k==='rest'?'Al uitgerust':'Kerngezond'):({rest:'Rusten',doc:'Naar de dokter'})[k];
  const note=k==='rest'?`Elke ${fmtClock(STAY.rest.cd())} min. Ga je eerder weg, dan houd je wat je had en wacht je naar verhouding.`:`+${docHp()}% gezondheid in ${DOC.dur} s, daarna ${fmtClock(STAY.doc.cd())} min wachten.`;
  return `<article class="va ${active?'on':''}" style="--c:${C[0]}">
   ${vbRing(k,off,center,sub,k==='doc'?'<svg class="ecg" viewBox="0 0 120 30"><path d="M0,15 L34,15 L40,15 L44,4 L50,26 L55,10 L59,15 L120,15"/></svg>':'')}

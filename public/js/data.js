@@ -235,7 +235,10 @@ const FLEE_LEVELS={
 // Training: blijvende skills via sessies met een wachttijd (tijdslot) per plek
 // need(l): aantal sessies om van level l naar l+1 te gaan; kosten per sessie stijgen per level
 const TRAIN_MAX=50;
-const pctTxt=(v,sign)=>v?sign+(+v.toFixed(1)).toLocaleString('nl-NL')+'%':'0%';
+// Percentages met passende precisie: kleine effecten (+0,4% of +0,08%) worden nooit als +0% getoond.
+// pt = procentpunten (iets dat direct bij een kans opgeteld wordt), anders gewoon procent.
+const pctTxt=(v,sign,pt)=>{if(!v)return '0'+(pt?'%-punt':'%');const a=Math.abs(v),d=a>=10?0:a>=1?1:a>=.1?1:2;
+ return sign+a.toLocaleString('nl-NL',{maximumFractionDigits:d,minimumFractionDigits:0})+(pt?'%-punt':'%')};
 // Effect per level (op level 50 haal je het maximum). Eén sessie = één level.
 const SK={conditie:{en:1,zone:.008},steal:{all:.4,zakken:.8},speed:{cd:.01,mark:.006},cars:{time:.01,price:.008},charisma:{talk:.9,bail:.008},
  schiet:{heavy:.5},hack:{loot:.5},handel:{inc:.4,fee:1},rechten:{jail:1,bail:.4}};
@@ -249,7 +252,7 @@ const TRAININGS=[
   eff:l=>[['Max. energie','+'+Math.round(SK.conditie.en*l)],['Meer ruimte bij vluchten',pctTxt(SK.conditie.zone*100*l,'+')]]},
  {id:'steal',place:'Albert Cuypmarkt',n:'Vingervlugheid',col:'#a9dcff',ic:'hand',base:80,cd:15,
   d:'Oefenen tussen de kraampjes. Je handen worden sneller dan hun ogen.',
-  eff:l=>[['Slaagkans alle klussen',pctTxt(SK.steal.all*l,'+')],['Bij zakkenrollen',pctTxt(SK.steal.zakken*l,'+')]]},
+  eff:l=>[['Slaagkans alle klussen',pctTxt(SK.steal.all*l,'+',1)],['Bij zakkenrollen',pctTxt(SK.steal.zakken*l,'+',1)]]},
  {id:'speed',place:'Atletiekbaan',n:'Snelheid',col:'#b8a1ff',ic:'run',base:100,cd:15,
   d:'Sprinten en intervallen. Je bent sneller klaar en sneller weg.',
   eff:l=>[['Kortere wachttijd',pctTxt(SK.speed.cd*100*l,'-')],['Trager tempo bij vluchten',pctTxt(SK.speed.mark*100*l,'-')]]},
@@ -258,11 +261,11 @@ const TRAININGS=[
   eff:l=>[['Meer tijd bij contact maken',pctTxt(SK.cars.time*100*l,'+')],['Verkoopwaarde gestolen auto',pctTxt(SK.cars.price*100*l,'+')]]},
  {id:'charisma',place:'Toneelschool',n:'Charisma',col:'#ff7fb3',ic:'mask',base:150,cd:20,
   d:'Acteerles in de Jordaan. Agenten geloven je verhaal sneller, en bij een familiegesprek praat je je overal doorheen.',
-  eff:l=>[['Kans om je eruit te praten',pctTxt(Math.min(45,SK.charisma.talk*l),'')],['Korting op borg',pctTxt(SK.charisma.bail*100*l,'')],['Familiegesprek',Math.floor(l/15)+' hint'+(Math.floor(l/15)===1?'':'s')+(l>=25?', 1 fout mag':'')]]},
+  eff:l=>[['Kans om je eruit te praten',pctTxt(Math.min(45,SK.charisma.talk*l),'',1)],['Korting op borg',pctTxt(SK.charisma.bail*100*l,'')],['Familiegesprek',Math.floor(l/15)+' hint'+(Math.floor(l/15)===1?'':'s')+(l>=25?', 1 fout mag':'')]]},
  // nieuwe plekken: pas open vanaf een bepaalde rang (r), duurder en met een langer tijdslot
  {id:'schiet',place:'Schietvereniging Ede',n:'Schieten',col:'#ff6b6b',ic:'target',base:180,cd:25,r:3,
   d:'Op de baan tussen jagers en agenten in hun vrije tijd. Zware klussen lukken vaker.',
-  eff:l=>[['Slaagkans zware klussen (vanaf Gangster)',pctTxt(SK.schiet.heavy*l,'+')],['Rustiger vizier bij huurmoorden',pctTxt(Math.min(40,l*.8),'−')],['Vastere hand bij huurmoorden (minder trillen)',pctTxt(Math.min(45,l*45/40),'+')]]},
+  eff:l=>[['Slaagkans zware klussen (vanaf Gangster)',pctTxt(SK.schiet.heavy*l,'+',1)],['Rustiger vizier bij huurmoorden',pctTxt(Math.min(40,l*.8),'−')],['Vastere hand bij huurmoorden (minder trillen)',pctTxt(Math.min(45,l*45/40),'+')]]},
  {id:'hack',place:'Hackerskelder in Delft',n:'Hacken',col:'#5ce1c4',ic:'chip',base:220,cd:25,r:4,
   d:'Alarmcodes, camera\'s en bankapps. Je weet beter waar het geld ligt.',
   eff:l=>[['Buit bij alle klussen',pctTxt(SK.hack.loot*l,'+')]]},

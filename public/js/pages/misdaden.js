@@ -81,6 +81,15 @@ const klSeg=ch=>`<i class="kl-seg" aria-hidden="true"><i style="width:${ch}%"></
 function klState(c){const lock=rankIdx(S.xp)<c.r,left=cdLeft(c.id),tired=S.energy<c.en,jail=inJail();return {lock,left,tired,jail,ok:!lock&&!left&&!tired&&!jail}}
 function klBtn(c,st){const [b,s]=st.lock?['Vanaf '+RANKS[c.r][0],'nog '+Math.ceil(RANKS[c.r][1]-S.xp).toLocaleString('nl-NL')+' XP']:st.jail?['Je zit vast','eerst vrijkomen']:st.left?['Nog '+fmtClock(st.left),'even afkoelen']:st.tired?['Te moe',c.en+' energie nodig']:['Uitvoeren',c.en+' energie'];
  return `<button class="btn kl-go" onclick="act.crime('${c.id}')" ${st.ok?'':'disabled'}><b>${b}</b><small>${s}</small></button>`}
+// kansopbouw in gewone woorden: dezelfde onderdelen als chanceRaw()/chance() in state.js, alleen uitgeschreven.
+// De voorpagina toont de basiskans van een klus; hier zie je wat er bij jou bijkomt.
+function klChParts(c){const ri=rankIdx(S.xp),up=crimeUp(c),fx=k=>typeof fitFx==='function'?fitFx(k):0,heat=Math.floor(S.heat/4*Math.max(.4,1-up*.1));
+ const P=[['rang',ri*2],['lagere klus',up],['vakmanschap',mastLv(c.id)*2],['uitrusting',gearBonus()],['outfit',fx('kans')],['familie',fam().chance],
+  ['vingervlugheid',S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)],['schieten',c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0],['focus',focusPct()]].filter(x=>x[1]>0);
+ const n=v=>(Math.round(v*10)/10).toLocaleString('nl-NL');
+ let t='Basis '+c.base+'%'+P.map(([l,v])=>' + '+l+' '+n(v)).join('')+(heat>0?' − hitte '+heat:'');
+ if(tierK())t+=' · daarna ×'+(1+tierK()).toLocaleString('nl-NL')+' als '+lidName();
+ return {base:c.base,txt:t+' = '+chance(c)+'% (tussen 5% en '+(95+Math.min(3,up))+'%)'}}
 // opbrengst en risico in gewone woorden
 function klVals(c){const m=lootMult()*mastLoot(c.id),ch=chance(c),cr=c.cr?Math.round(c.cr*credMult('')):0,crP=c.cr?Math.round(c.cr*credMult('perfect')):0;
  return {ch,lo:klM(c.min*m),hi:klM(c.max*m),xp:'+'+c.xp+' XP'+(cr?' · +'+cr+' cred':''),crT:cr?`Straatcredit: ${cr}, perfect uitgevoerd ${crP}`:'',jail:fmtTime(jailSec(c.jail))+' cel',fl:FLEE_LEVELS[c.flee]?FLEE_LEVELS[c.flee].label:''}}
@@ -89,7 +98,7 @@ function klRow(c){const st=klState(c),v=klVals(c);
   <div class="kl-ic">${klIc(c)}</div>
   <div class="kl-id"><h3>${c.n}</h3><p>${c.d}</p>${st.lock?'':mastHtml(c)}</div>
   <div class="kl-st">
-   <div class="kl-k kl-kans"><span>Kans</span><b class="${klChCls(v.ch)}">${v.ch}%</b>${klSeg(v.ch)}</div>
+   ${(()=>{const cp=klChParts(c);return `<div class="kl-k kl-kans" title="${cp.txt}"><span>Kans</span><b class="${klChCls(v.ch)}">${v.ch}%</b>${klSeg(v.ch)}<em class="kl-base">basis ${cp.base}%${v.ch!==cp.base?' · '+(v.ch>cp.base?'+':'−')+Math.abs(v.ch-cp.base)+' bonus':''}</em><span class="sr-only">${cp.txt}</span></div>`})()}
    <div class="kl-k"><span>Opbrengst</span><b class="g">${v.lo} – ${v.hi}</b><em title="${v.crT}">${v.xp}</em></div>
    <div class="kl-k"><span>Mislukt</span><b>${v.jail}</b><em class="lv${c.flee}">${klPips(c.flee)}vluchten ${v.fl}</em></div>
   </div>
@@ -99,7 +108,7 @@ function klRow(c){const st=klState(c),v=klVals(c);
 function klBest(c){const st=klState(c),v=klVals(c),ev=crEv(c);
  return `<article class="klb ${st.left?'cool':''} ${st.lock?'locked':''}">
   <header><div class="kl-ic">${klIc(c)}</div><div><h3>${c.n}</h3><p>${c.d}</p></div></header>
-  <div class="klb-ch"><b class="${klChCls(v.ch)}">${v.ch}%</b><span>kans</span>${klSeg(v.ch)}</div>
+  ${(()=>{const cp=klChParts(c);return `<div class="klb-ch" title="${cp.txt}"><b class="${klChCls(v.ch)}">${v.ch}%</b><span>kans</span>${klSeg(v.ch)}<em class="kl-base">basis ${cp.base}%</em><span class="sr-only">${cp.txt}</span></div>`})()}
   <dl class="klb-dl">
    <div><dt>Buit</dt><dd class="g">${v.lo} – ${v.hi}</dd></div>
    <div><dt>Per energie</dt><dd>≈ ${fmtK(ev)}</dd></div>
@@ -134,17 +143,18 @@ V.crimes=()=>{
  const avail=CRIMES.filter(c=>c.r<=ri);
  const isOpen=t=>crimeOpen[t]!=null?crimeOpen[t]:(t>=ri-1);
  const best=avail.slice().sort((a,b)=>crEv(b)-crEv(a)).slice(0,3);
- const bon=[['Rang',ri*RANK_LOOT+rankLvlBonus()],['Familie',fam().loot/100],['Uitrusting',gearFx('buit')],['Outfit',fit('buit')],['Hacken',sk('hack')*SK.hack.loot/100],['Buit-boost',buffLoot()/100],[lidName(),tierLoot()]].filter(x=>x[1]>0);
+ const bon=[['Rang',ri*RANK_LOOT],['Level',rankLvlBonus()],['Familie',fam().loot/100],['Uitrusting',gearFx('buit')],['Outfit',fit('buit')],['Hacken',sk('hack')*SK.hack.loot/100],['Buit-boost',buffLoot()/100],[lidName(),tierLoot()]].filter(x=>x[1]>0);
  const chb=[['Rang',ri*2],['Uitrusting',gearBonus()],['Outfit',fit('kans')],['Familie',fam().chance],['Vingervlugheid',sk('steal')*SK.steal.all],['Focus',focusPct()]].filter(x=>x[1]>0);
  const pct=v=>'+'+Math.round(v*100)+'%';
  return `<div class="kl-page"><h1>Misdaden</h1>
  <section class="card hud kl-hero">
-  <div class="kl-h"><span class="label">Buit</span><b class="g">×${mult.toLocaleString('nl-NL',{maximumFractionDigits:2})}</b><em>${bon.map(([l,v])=>`${l} ${pct(v)}`).join(' · ')||'Nog geen bonus'}</em></div>
+  <div class="kl-h"><span class="label">Buit</span><b class="g">×${mult.toLocaleString('nl-NL',{maximumFractionDigits:2})}</b><em>${bon.map(([l,v])=>`${l} ${pct(v)}`).join(' · ')||'Nog geen bonus'}</em><em class="kl-why">Rang +${Math.round(RANK_LOOT*100)}% per rang. Level +${Math.round(RANK_SUB_LOOT*100)}% per level, maar dat telt per rang opnieuw: na een promotie kan je buit even iets zakken.</em></div>
   <div class="kl-h"><span class="label">Extra slaagkans</span><b class="up">+${Math.round(chb.reduce((a,x)=>a+x[1],0))}%</b><em>${chb.map(([l,v])=>`${l} +${Math.round(v)}%`).join(' · ')||'Nog geen bonus'}${S.heat>=4?` · hitte −${Math.floor(S.heat/4)}%`:''}${tierK()?` · daarna ×${(1+tierK()).toLocaleString('nl-NL')} als ${lidName()}`:''}</em></div>
   <div class="kl-h"><span class="label">Straatcredit</span><b style="color:var(--violet)">×${credMult('').toLocaleString('nl-NL',{maximumFractionDigits:2})}</b><em>Uitrusting +${Math.round(gearCredK()*100)}%${tierK()?` · ${lidName()} +${Math.round(tierK()*100)}%`:''} · perfect ×1,5, netjes ×1,2 · je hebt ${S.cred}</em></div>
   <div class="kl-h"><span class="label">Energie</span><b style="color:var(--ice)">${Math.floor(S.energy)}/${EN_MAX}</b><div class="bar"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div><em>1 punt per ${EN_REGEN_S} s${S.energy<EN_MAX?' · <a href="#ontspannen">bijvullen</a>':''}</em></div>
   <div class="kl-h"><span class="label">Hitte</span><b style="color:${S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--fg)'}">${S.heat}%</b><div class="bar"><i style="width:${S.heat}%;background:${S.heat>60?'var(--red)':'var(--acc)'}"></i></div><em>Elke 4% hitte = −1% kans</em></div>
  </section>
+ ${typeof prButtons==='function'?prButtons(['flee']):''}
  <div class="cr-mast-how"><b>Vakmanschap</b><span>Elke klus die lukt telt mee voor die klus: na 10 keer <em>Brons</em>, 30 <em>Zilver</em>, 75 <em>Goud</em> en 150 <em>Meester</em>. Elk niveau geeft +2% kans en +5% buit op die klus.</span></div>
  ${best.length?`<div class="tierhead kl-besth"><h2>Beste voor jou</h2><span>Meeste buit per energiepunt, met jouw kans</span></div><div class="klb-grid n${best.length}">${best.map(klBest).join('')}</div>`:''}
  <div class="tierhead kl-besth"><h2>Klussen per rang</h2><span>${avail.length} van de ${CRIMES.length} vrijgespeeld · tik op een rang</span></div>

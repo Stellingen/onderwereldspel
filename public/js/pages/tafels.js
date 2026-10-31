@@ -15,14 +15,25 @@ function cardEl(c,i,hidden){
 const ghosts=n=>`<div class="ghosts">${'<div class="tc ghost"></div>'.repeat(n)}</div>`;
 function chipStack(v){if(!v)return '';const cs=[];let left=v;for(const c of [...TB.CHIPS].reverse()){while(left>=c&&cs.length<6){cs.push(c);left-=c}}
   return `<div class="stack">${cs.reverse().map((c,i)=>`<i class="chip c${c}" style="--n:${i}"></i>`).join('')}<b>${fmt(v)}</b></div>`}
-let tbChip=50;
-function chipTray(game){return `<div class="tray">${TB.CHIPS.map(c=>`<button class="tchip c${c} ${tbChip===c?'on':''}" onclick="tbChip=${c};SFX.chip();render()" aria-label="Fiche ${c}">${c>=1000?c/1000+'K':c}</button>`).join('')}
+// Per spel onthouden (alleen in deze browser): je gekozen fiche en je laatste inzet. Zo staat er nooit ongemerkt een hoge
+// standaardinzet klaar; "Zelfde inzet" werkt ook na verversen.
+const TB_PREF_KEY='ow_tb_pref';
+const tbPref=(()=>{try{const v=JSON.parse(localStorage.getItem(TB_PREF_KEY));return v&&typeof v==='object'?v:{}}catch(e){return {}}})();
+const tbSavePref=()=>{try{localStorage.setItem(TB_PREF_KEY,JSON.stringify(tbPref))}catch(e){}};
+const tbChipOf=g=>tbPref.chip&&TB.CHIPS.includes(tbPref.chip[g])?tbPref.chip[g]:50;
+function tbSetChip(g,c){tbPref.chip=Object.assign({},tbPref.chip,{[g]:c});tbSavePref();try{SFX.chip()}catch(e){}render()}
+function tbRemember(g,bets){tbPref.last=Object.assign({},tbPref.last,{[g]:Object.assign({},bets)});tbSavePref()}
+const tbLastOf=g=>{const l=tbPref.last&&tbPref.last[g];return l&&typeof l==='object'?Object.assign({},l):null};
+// wat een hand je in totaal kan kosten: nu (ante + side bets) en straks (play of call)
+function tbCost(now,later,laterTxt){return `<div class="tb-cost" role="note"><span>Nu <b>${fmt(now)}</b></span>${later?`<span>+ straks ${laterTxt} <b>${fmt(later)}</b></span><span class="tb-cost-max">Deze hand kost maximaal <b>${fmt(now+later)}</b></span>`:''}</div>`}
+function chipTray(game){const cur=tbChipOf(game);return `<div class="tray" role="group" aria-label="Kies een fiche">${TB.CHIPS.map(c=>`<button class="tchip c${c} ${cur===c?'on':''}" onclick="tbSetChip('${game}',${c})" aria-pressed="${cur===c}" aria-label="Fiche ${c}">${c>=1000?c/1000+'K':c}</button>`).join('')}
   <span class="tray-l">Kies een fiche en tik op een vak</span></div>`}
 function spot(game,key,label,val,opts){opts=opts||{};return `<button class="spot ${opts.side?'side':''} ${val?'has':''} ${opts.res?'r-'+opts.res:''}" ${opts.dis?'disabled':''} onclick="act.tbBet('${game}','${key}')">
   <span class="spot-l">${label}</span>${chipStack(val)}${opts.sub?`<span class="spot-s">${opts.sub}</span>`:''}${opts.out?`<span class="spot-o">${opts.out}</span>`:''}</button>`}
 // Bonnetje na een ronde: per vak inzet, winst en wat je terugkrijgt
 function receiptHtml(lines,net){if(!lines||!lines.length)return '';const st=lines.reduce((a,l)=>a+l.stake,0),bk=lines.reduce((a,l)=>a+l.back,0);
- return `<div class="receipt ${net>0?'win':net<0?'lose':''}"><div class="rc-head"><span>Uitbetaling</span><b>${net>0?'+'+fmt(net):net<0?'−'+fmt(-net):'Quitte'}</b></div>
+ return `<div class="receipt ${net>0?'win':net<0?'lose':''}"><div class="rc-head"><span>Netto resultaat</span><b>${net>0?'+'+fmt(net):net<0?'−'+fmt(-net):'Quitte'}</b></div>
+  <div class="rc-gross">Ingezet ${fmt(st)} · terug (bruto) ${fmt(bk)}</div>
   <div class="rc-row rc-lab"><span></span><span>Inzet</span><span>Winst</span><span>Terug</span></div>
   ${lines.map(l=>`<div class="rc-row ${l.back>l.stake?'w':l.back===l.stake&&l.stake?'p':'l'}"><span>${l.label}${l.note?`<small>${l.note}</small>`:''}</span><span>${l.stake?fmt(l.stake):'—'}</span><span>${l.back>l.stake?'+'+fmt(l.back-l.stake):l.back===l.stake&&l.stake?'±0':l.stake?'−'+fmt(l.stake):'—'}</span><b>${fmt(l.back)}</b></div>`).join('')}
   <div class="rc-row rc-tot"><span>Totaal</span><span>${fmt(st)}</span><span>${bk-st>=0?'+':'−'}${fmt(Math.abs(bk-st))}</span><b>${fmt(bk)}</b></div></div>`}
@@ -61,7 +72,7 @@ function bjTable(){
   </div>
   <div class="table-bar">
    ${bet?`${chipTray('bj')}<div class="tb-act"><button class="btn ghost" onclick="act.tbClear('bj')" ${b.bets.main+b.bets.pp+b.bets.t21?'':'disabled'}>Wissen</button>
-     ${b.last?`<button class="btn ghost" onclick="act.tbRebet('bj')">Zelfde inzet</button>`:''}
+     ${b.last||tbLastOf('bj')?`<button class="btn ghost" onclick="act.tbRebet('bj')">Zelfde inzet</button>`:''}
      <button class="btn" onclick="act.btDeal()" ${b.bets.main>=TB.MAIN_MIN&&!inJail()?'':'disabled'}>Delen · ${fmt(b.bets.main+b.bets.pp+b.bets.t21)}</button></div>`
    :b.phase==='play'?`<div class="tb-act play">${(()=>{const hd=h[b.active],c=hd.cards,can2=c.length===2&&!hd.splitAce;
      const pair=bjv(c[0])===bjv(c[1]),money=casCash()>=hd.bet;
@@ -152,8 +163,9 @@ function tpTable(){
   </div>
   <div class="table-bar">
    ${bet?`${chipTray('tp')}<div class="tb-act"><button class="btn ghost" onclick="act.tbClear('tp')" ${t.bets.ante+t.bets.pp+t.bets.six?'':'disabled'}>Wissen</button>
-     ${t.last?`<button class="btn ghost" onclick="act.tbRebet('tp')">Zelfde inzet</button>`:''}
-     <button class="btn" onclick="act.tpDeal()" ${(t.bets.ante>=TB.MAIN_MIN||t.bets.pp||t.bets.six)&&!inJail()?'':'disabled'}>Delen · ${fmt(t.bets.ante+t.bets.pp+t.bets.six)}</button></div>`
+     ${t.last||tbLastOf('tp')?`<button class="btn ghost" onclick="act.tbRebet('tp')">Zelfde inzet</button>`:''}
+     <button class="btn" onclick="act.tpDeal()" ${(t.bets.ante>=TB.MAIN_MIN||t.bets.pp||t.bets.six)&&!inJail()?'':'disabled'}>Delen · ${fmt(t.bets.ante+t.bets.pp+t.bets.six)}</button></div>
+     ${t.bets.ante+t.bets.pp+t.bets.six?tbCost(t.bets.ante+t.bets.pp+t.bets.six,t.bets.ante,'Spelen (= ante)'):''}`
    :rv?`<div class="tb-act"><button class="btn" disabled>De dealer draait zijn kaarten om…</button></div>`
    :dec?`<div class="tb-act play"><button class="btn" onclick="act.tpPlay()" ${casCash()>=t.bets.ante?'':'disabled'}>Spelen · ${fmt(t.bets.ante)}</button><button class="btn red" onclick="act.tpFold()">Passen (ante kwijt)</button></div>`
    :`<div class="tb-act"><button class="btn" onclick="act.tpNew()">Nieuwe ronde</button><button class="btn ghost" onclick="act.tbRebet('tp');act.tpDeal()" ${t.last&&casCash()>=t.last.ante*2+t.last.pp+t.last.six?'':'disabled'}>Zelfde inzet en delen</button></div>`}
@@ -207,16 +219,16 @@ Object.assign(act,{
  tbBet(game,key){const T=tbT(game);if(T.phase!=='bet'&&T.phase!=='done')return;if(T.phase==='done')tbNew(game);
   const side=key!=='main'&&key!=='ante',cap=side?TB.SIDE_MAX:TB.MAIN_MAX;
   const cur=T.bets[key],tot=Object.values(T.bets).reduce((a,b)=>a+b,0);
-  let add=Math.min(tbChip,cap-cur);if(add<=0){toast(side?'Side bets gaan bij jouw rang tot €'+TB.SIDE_MAX+' (+€500 per rang)':'Maximale inzet bereikt','bad');return}
+  let add=Math.min(tbChipOf(game),cap-cur);if(add<=0){toast(side?'Side bets gaan bij jouw rang tot €'+TB.SIDE_MAX+' (+€500 per rang)':'Maximale inzet bereikt','bad');return}
   if(side&&cur+add<TB.SIDE_MIN)add=TB.SIDE_MIN-cur;
   if(tot+add>casCash()){toast(casShort(),'bad');return}
   T.bets[key]=cur+add;SFX.chip();render()},
  tbClear(game){const T=tbT(game);if(T.phase!=='bet')return;Object.keys(T.bets).forEach(k=>T.bets[k]=0);render()},
- tbRebet(game){const T=tbT(game);if(!T.last)return;if(T.phase==='done')tbNew(game);T.bets=Object.assign({},T.last);render()},
+ tbRebet(game){const T=tbT(game);if(!T.last)T.last=tbLastOf(game);if(!T.last)return;if(T.phase==='done')tbNew(game);T.bets=Object.assign({},T.last);render()},
  btNew(){Object.assign(bt,{bets:{main:0,pp:0,t21:0},lines:null,phase:'bet',hands:[],dealer:[],active:0,side:{},msg:'',net:0});render()},
  async btDeal(){const b=bt;if(b.phase!=='bet'||inJail())return;const tot=b.bets.main+b.bets.pp+b.bets.t21;
   if(b.bets.main<TB.MAIN_MIN){toast('Minimale inzet is €'+TB.MAIN_MIN,'bad');return}if(tot>casCash()){toast(casShort(),'bad');return}
-  S.cash-=tot;b.last=Object.assign({},b.bets);b.msg='';b.net=0;b.side={};
+  S.cash-=tot;b.last=Object.assign({},b.bets);tbRemember('bj',b.bets);b.msg='';b.net=0;b.side={};
   b.hands=[{cards:[],bet:b.bets.main}];b.dealer=[];b.active=0;b.phase='dealing';
   for(const who of ['p','d','p','d']){if(who==='p')b.hands[0].cards.push(bjDraw());else b.dealer.push(bjDraw());SFX.card();render();await tbWait(260)}
   btSettleSide();b.phase='play';
@@ -234,7 +246,7 @@ Object.assign(act,{
  async tpDeal(){const t=tp;if(t.phase!=='bet'||inJail())return;const tot=t.bets.ante+t.bets.pp+t.bets.six;
   if(t.bets.ante&&t.bets.ante<TB.MAIN_MIN){toast('Minimale ante is €'+TB.MAIN_MIN,'bad');return}
   if(!tot){toast('Zet eerst een inzet','bad');return}if(tot>casCash()){toast(casShort(),'bad');return}
-  S.cash-=tot;t.last=Object.assign({},t.bets);t.shoe=newShoe(1);t.p=[];t.d=[];t.res=null;t.msg='';t.play=0;t.phase='dealing';
+  S.cash-=tot;t.last=Object.assign({},t.bets);tbRemember('tp',t.bets);t.shoe=newShoe(1);t.p=[];t.d=[];t.res=null;t.msg='';t.play=0;t.phase='dealing';
   for(let i=0;i<3;i++){t.p.push(tpDraw());t.d.push(tpDraw());SFX.card();render();await tbWait(220)}
   if(!t.bets.ante){tpSettle(false);return}
   t.phase='decide';save();render()},
