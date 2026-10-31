@@ -18,7 +18,10 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   topbalk, op het dashboard en op je profiel.
 - **Vluchtspel** (`flee.js`): gaat een klus mis, dan ren je weg door een steeg of een gebouw (2.5D): wissel van baan met
   pijltjes/A-D, vegen of tikken, spring met omhoog of spatie, ontwijk obstakels en agenten. Op straat is dat makkelijk, in een
-  afgesloten gebouw bijna onmogelijk. Elke achtervolging loopt op van makkelijk naar moeilijk: eerst losse obstakels met
+  afgesloten gebouw bijna onmogelijk. Sinds de ombouw: een korte intro (de agent betrapt je, jij rent weg; tik om over te slaan),
+  je eigen outfit op de renner, **bukken** onder steigers en rolluiken (↓, S, omlaag vegen of de knop), regen buiten, de zaklamp van
+  de agent die dichterbij komt, en een langere, snellere route (±25% langer, krappere gaten). Getest met een bot (reactie 0,3 s):
+  niveau 1 tot 4 te halen, niveau 5 alleen met snelle reacties. Elke achtervolging loopt op van makkelijk naar moeilijk: eerst losse obstakels met
   ruimte ertussen, dan hekken, auto's en mensen of honden die oversteken, en na de rode streep op de route de **eindsprint**:
   rijen vlak na elkaar (slalom), overstekers en bewakers die met je meeschuiven. Ongeveer 35% meer rijen en meer obstakels per rij, in ongeveer dezelfde tijd, met
   nieuwe soorten (container, vuilniszakken, dranghek, natte-vloerbord, printer, bureaustoel, schoonmaker, hond). De tijd tussen

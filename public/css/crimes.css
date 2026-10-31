@@ -33,7 +33,8 @@
 .fl-keys kbd{font-family:var(--f-mono);font-size:10.5px;border:1px solid var(--line2);padding:1px 5px;color:var(--fg);background:var(--bg2)}
 .fl-tap{display:none}
 @media (pointer:coarse){.fl-keys{display:none}.fl-tap{display:inline}}
-.fl-ctl{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px}
+.fl-ctl{display:grid;grid-template-columns:1fr 1.15fr 1.25fr 1fr;gap:8px}
+.fl-b.fl-d{background:#1d2a44;box-shadow:inset 0 0 0 1px #4d7dff;color:#cfe0ff}
 .fl-b{height:50px;display:flex;align-items:center;justify-content:center;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line2);color:var(--fg);font-family:var(--f-head);font-weight:800;font-size:17px;
   letter-spacing:.1em;text-transform:uppercase;clip-path:var(--cut-s);touch-action:none;user-select:none;-webkit-user-select:none;transition:background .1s,box-shadow .1s}
 .fl-b svg{width:26px;height:26px}
@@ -43,12 +44,36 @@
 .fl-b.fl-j:hover:not(:disabled){background:var(--acc2)}
 .fl-b:disabled{opacity:.35}
 .fl-box .chase-auto{margin-top:-2px}
+/* intro van het vluchtspel: de agent betrapt je, jij draait je om en rent */
+.fl-cut{position:absolute;inset:0;z-index:4;overflow:hidden;cursor:pointer;transition:opacity .3s}
+.fl-cut.gone{opacity:0;pointer-events:none}
+.fl-cut-bg{position:absolute;inset:0;background:radial-gradient(60% 50% at 50% 70%,rgba(255,150,60,.18),transparent 70%),linear-gradient(180deg,#07080b,#16141a 60%,#0d0c0e)}
+.fl-cut.in .fl-cut-bg{background:radial-gradient(60% 50% at 50% 30%,rgba(190,225,255,.16),transparent 70%),linear-gradient(180deg,#0b0d11,#181b21 60%,#0d0e11)}
+.fl-cut.alarm .fl-cut-bg{animation:flCutAl .6s steps(2) infinite}
+@keyframes flCutAl{50%{background-color:rgba(255,40,60,.12)}}
+.fl-cut-bg::after{content:"";position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(180deg,#1b1c20,#0a0a0c)}
+.fl-cut-cop{position:absolute;left:6%;bottom:14%;width:18%;max-width:110px;animation:flCutCop 2.3s ease-out both}
+.fl-cut-cop svg{width:100%;height:auto;display:block}
+.fl-cut-beam{position:absolute;left:85%;top:28%;width:260%;height:70%;background:linear-gradient(90deg,rgba(255,248,215,.55),rgba(255,248,215,0));clip-path:polygon(0 45%,100% 0,100% 100%,0 55%);animation:flBeam 1.2s ease-in-out infinite alternate}
+@keyframes flBeam{to{transform:rotate(6deg)}}
+@keyframes flCutCop{from{transform:translateX(-120%)}30%{transform:none}}
+.fl-cut-me{position:absolute;left:52%;bottom:12%;width:22%;max-width:140px;transform-origin:50% 100%;animation:flCutMe .4s ease-out both}
+.fl-cut-me .doll{width:100%;height:auto;display:block;filter:drop-shadow(0 8px 14px rgba(0,0,0,.7))}
+@keyframes flCutMe{from{opacity:0;transform:translateY(10px)}}
+.fl-cut.run .fl-cut-me{animation:flCutRun 1s cubic-bezier(.5,0,.8,.4) forwards}
+@keyframes flCutRun{0%{transform:scaleX(-1)}20%{transform:scaleX(-1) translateX(-4%) rotate(-4deg)}100%{transform:scaleX(-1) translateX(-260%) rotate(-8deg);filter:blur(3px);opacity:.2}}
+.fl-cut-say{position:absolute;left:8%;top:12%;max-width:70%;padding:10px 14px;border-radius:12px;background:#f4f1ea;color:#16181c;font-family:var(--f-display);font-weight:900;font-size:clamp(18px,4.5vw,28px);text-transform:uppercase;letter-spacing:.02em;animation:flSay .3s .35s cubic-bezier(.2,1.5,.4,1) both;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.fl-cut-say::after{content:"";position:absolute;left:22%;bottom:-9px;border:9px solid transparent;border-top-color:#f4f1ea;border-bottom:0}
+@keyframes flSay{from{transform:scale(.6);opacity:0}}
+.fl-cut.run .fl-cut-say{animation:none;opacity:.25;transition:opacity .3s}
+.fl-cut-skip{position:absolute;right:10px;bottom:8px;font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+@media (prefers-reduced-motion:reduce){.fl-cut *{animation:none!important}}
 @media (max-width:600px){
  .fl-ov{padding:0;place-items:stretch}
  .fl-box{width:100%;height:100%;max-height:none;border:0;padding:16px 12px calc(12px + env(safe-area-inset-bottom,0px));gap:10px}
  .fl-top h2{font-size:32px}.fl-where{font-size:12.5px}
  .fl-stage{flex:1;height:auto;min-height:280px}
- .fl-b{height:62px}
+ .fl-b{height:62px;font-size:14px;letter-spacing:.05em}
  .fl-info{font-size:11px}
 }
 

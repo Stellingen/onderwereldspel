@@ -10,6 +10,9 @@
 // Conditie, Snelheid, je familie, je woning, je vervoer, je outfit en je lidmaatschap maken het makkelijker (via fleeParams).
 // Elke achtervolging loopt op van makkelijk naar moeilijk: eerst losse obstakels met ruimte ertussen, dan het gewone werk
 // (hekken, auto's, mensen die oversteken), en in de eindsprint dicht op elkaar: slalom door twee rijen, overstekers en bewakers.
+// Sinds de ombouw (zwaarder en mooier): een korte intro (de agent betrapt je, jij draait je om en rent), je eigen outfit op de
+// renner (fleeLook), bukken onder steigers en half dichte rolluiken (↓, S, omlaag vegen of de knop), regen buiten, de zaklamp
+// van de agent die dichterbij komt, en een langere, snellere route met krappere gaten.
 // fleeGame(level) geeft een Promise met true (ontkomen) of false (gepakt).
 function fleeParams(level){
   const L=FLEE_LEVELS[level]||FLEE_LEVELS[2],k=(S.skills&&S.skills.conditie)||0,sp=(S.skills&&S.skills.speed)||0;
@@ -18,31 +21,32 @@ function fleeParams(level){
 }
 // Van de vluchtparameters naar de achtervolging
 function fleeRun(P){
-  const len=Math.max(0,Math.min(1,(P.zone-.08)/.34)),gap=Math.max(.62,Math.min(1.05,1.02-(P.speed-.9)*.32));
-  return {len,gap,v:10+P.speed*3,level:P.level,rows:Math.max(9,Math.round(((P.time-1.5)/gap+(P.hits-3))*1.35)),
-    p2:Math.max(.06,Math.min(.5,.56-len*.5)),hit:.95-len*.3,jump:.3+(1-len)*.28,lowP:.22+len*.15,
+  // zwaarder dan voorheen: ±25% langere route, ±8% minder tijd tussen rijen, sneller, vaker twee banen dicht en strakkere botsing
+  const len=Math.max(0,Math.min(1,(P.zone-.08)/.34)),gap=Math.max(.56,Math.min(.98,(1.02-(P.speed-.9)*.32)*.92));
+  return {len,gap,v:11+P.speed*3.3,level:P.level,rows:Math.max(11,Math.round(((P.time-1.5)/gap+(P.hits-3))*1.35*1.25)),
+    p2:Math.max(.08,Math.min(.56,.62-len*.5)),hit:1-len*.28,jump:.34+(1-len)*.28,lowP:.22+len*.15,duck:P.level>=2?.15:.1,
     miss:P.miss,drift:P.drift,accel:Math.pow(P.accel||1,1/3),shrink:Math.pow(P.shrink||1,1/3),fences:P.level<=3?2:1};
 }
 // De plek per moeilijkheid: buiten (1-2) of binnen (3-5)
 const FL_SCENE={
- 1:{out:1,exit:'Steeg',tall:['kliko','fiets','agent','kliko','container'],low:['pallet','zakken'],cross:['hond'],fence:'hek',run:'Ren de steeg uit!',
+ 1:{out:1,duck:'steiger',exit:'Steeg',tall:['kliko','fiets','agent','kliko','container'],low:['pallet','zakken'],cross:['hond'],fence:'hek',run:'Ren de steeg uit!',
     win:'Je schiet de steeg in. Weg ben je.',lose:'De agent grijpt je bij je jas.'},
- 2:{out:1,busy:1,exit:'Zijstraat',tall:['mens','mens','scooter','agent','container'],low:['kratten','afzetting','zakken'],cross:['mens','hond','mens'],fence:'hek',run:'Door de drukte!',
+ 2:{out:1,busy:1,duck:'steiger',exit:'Zijstraat',tall:['mens','mens','scooter','agent','container'],low:['kratten','afzetting','zakken'],cross:['mens','hond','mens'],fence:'hek',run:'Door de drukte!',
     win:'Je duikt een zijstraat in en verdwijnt tussen de mensen.',lose:'Een agent tackelt je tussen de mensen.'},
- 3:{out:0,exit:'Uitgang',tall:['dozen','agent','kast'],low:['kar','pallet','bord'],cross:['schoonmaker'],fence:'lint',run:'Naar de uitgang!',
+ 3:{out:0,duck:'rolluik',exit:'Uitgang',tall:['dozen','agent','kast'],low:['kar','pallet','bord'],cross:['schoonmaker'],fence:'lint',run:'Naar de uitgang!',
     win:'Door de achterdeur naar buiten. Weg ben je.',lose:'Twee agenten klemmen je in de gang.'},
- 4:{out:0,office:1,door:1,exit:'Deur',tall:['kast','agent','dozen','printer'],low:['bureau','kar','stoel','bord'],cross:['mens','schoonmaker'],dr:'agent',fence:'lint',run:'Langs de agent!',
+ 4:{out:0,office:1,door:1,duck:'rolluik',exit:'Deur',tall:['kast','agent','dozen','printer'],low:['bureau','kar','stoel','bord'],cross:['mens','schoonmaker'],dr:'agent',fence:'lint',run:'Langs de agent!',
     win:'Je glipt langs de agent de deur uit.',lose:'De agent bij de deur heeft je.'},
- 5:{out:0,alarm:1,exit:'Nooduitgang',tall:['bewaker','kast','dozen','printer'],low:['kar','bord','stoel'],cross:['bewaker'],fence:'lint',run:'Zoek de nooduitgang!',
+ 5:{out:0,alarm:1,duck:'rolluik',exit:'Nooduitgang',tall:['bewaker','kast','dozen','printer'],low:['kar','bord','stoel'],cross:['bewaker'],fence:'lint',run:'Zoek de nooduitgang!',
     win:'Door de nooduitgang en weg. Niemand snapt hoe.',lose:'De beveiliging drukt je tegen de grond.'}};
 // w = breedte in banen (voor de botsing), h = hoogte in meters, low = je kunt erover springen
 const FL_OBS={kliko:{w:.5,h:1.15},fiets:{w:.62,h:1.05},agent:{w:.46,h:1.86},mens:{w:.44,h:1.76},scooter:{w:.52,h:1.18},
  dozen:{w:.62,h:1.62},kast:{w:.56,h:1.96},bewaker:{w:.46,h:1.9},auto:{w:1.78,h:1.5},
  pallet:{w:.78,h:.48,low:1},kratten:{w:.8,h:.62,low:1},kar:{w:.62,h:.56,low:1},bureau:{w:.9,h:.76,low:1},
- hek:{w:3.4,h:.82,low:1},lint:{w:3.4,h:.9,low:1},
+ hek:{w:3.4,h:.82,low:1},lint:{w:3.4,h:.9,low:1},steiger:{w:3.4,h:2.3,high:1},rolluik:{w:3.4,h:2.5,high:1},
  container:{w:.86,h:1.45},printer:{w:.62,h:1.2},schoonmaker:{w:.5,h:1.8},
  zakken:{w:.72,h:.5,low:1},afzetting:{w:.82,h:.85,low:1},bord:{w:.44,h:.66,low:1},stoel:{w:.52,h:.95,low:1},hond:{w:.5,h:.55,low:1}};
-const FL_LANE=1.5,FL_HALF=2.75,FL_FAR=74,FL_PW=.42,FL_JUMP=.6,FL_REVEAL=46;
+const FL_LANE=1.5,FL_HALF=2.75,FL_FAR=74,FL_PW=.42,FL_JUMP=.6,FL_SLIDE=.62,FL_REVEAL=46;
 // De route: rijen obstakels op afstand z (meter); er blijft altijd een baan vrij of je kunt erover springen
 // De route: rijen obstakels op afstand z (meter). Welke baan dicht is, wordt pas bepaald als een rij uit de mist komt,
 // op basis van waar jij dan loopt: stilstaan helpt dus niet, maar je ziet het altijd ruim op tijd aankomen.
@@ -57,8 +61,8 @@ function fleeCourse(R,SC){
     if(ph===2&&sprint<0)sprint=rows.length;
     if(SC.door&&last)k='door';
     else if(ph===0)k=i>0&&Math.random()<R.p2*.5?'two':'one';
-    else if(ph===1)k=wpick({one:.34,two:R.p2+.16,fence:i>1&&fence<R.fences?.14:0,cross:.14,drift:R.drift?.3:0});
-    else k=wpick({one:.14,two:.3+R.p2,sl:i<N-2?.26:0,cross:.16,drift:R.drift||R.level>=4?.22:0,fence:fence<R.fences?.08:0});
+    else if(ph===1)k=wpick({one:.34,two:R.p2+.16,fence:i>1&&fence<R.fences?.14:0,cross:.14,drift:R.drift?.3:0,duck:i>1&&SC.duck?R.duck:0});
+    else k=wpick({one:.14,two:.3+R.p2,sl:i<N-2?.26:0,cross:.16,drift:R.drift||R.level>=4?.22:0,fence:fence<R.fences?.08:0,duck:SC.duck?R.duck*.8:0});
     if(k==='fence')fence++;
     if(k==='two'&&SC.out&&Math.random()<.32)k='auto';
     // slalom: twee rijen vlak na elkaar, het gat schuift één baan op
@@ -70,6 +74,7 @@ function fleeFill(r,R,SC,lane){const lanes=[-1,0,1],pick=a=>a[Math.floor(Math.ra
   const mk=(t,x,o)=>Object.assign({t,x,x0:x,hit:0,done:0},FL_OBS[t],o||{});let obs;
   if(r.k==='door'){const side=lane!==0?lane:pick([-1,1]);obs=[mk('agent',side,{door:1}),mk(pick(SC.low),0)]}
   else if(r.k==='fence')obs=[mk(SC.fence,0)];
+  else if(r.k==='duck')obs=[mk(SC.duck||'steiger',0)];
   else if(r.k==='drift'){obs=[mk(SC.dr||'bewaker',lane,{dr:1})];if(r.extra)obs.push(mk(pick(SC.low),pick(other)))}
   // overstekers: lopen van de zijkant naar jouw baan; waar ze uitkomen zie je ruim op tijd
   else if(r.k==='cross'){const from=lane>0?-1.75:lane<0?1.75:pick([-1.75,1.75]),zr=Math.max(8,r.z-(r._d||0));
@@ -85,6 +90,14 @@ function fleeFill(r,R,SC,lane){const lanes=[-1,0,1],pick=a=>a[Math.floor(Math.ra
   obs.forEach(o=>{if(o.t==='mens')o.c=pick(['#3b4a5c','#5a3a3a','#4a4f3a','#2f3640','#6b5a44','#3a3150']);if(o.t==='kratten')o.c=pick(['#2f6b4a','#8a3b2c','#2c4f8a'])});
   r.obs=obs;r.set=1}
 
+// je outfit op de renner (van achteren): kleur van je jas of trui, broek, schoenen en wat je op je hoofd hebt
+function fleeLook(){const w=(typeof fitS==='function'&&fitS().wear)||{},k=w.kleding,h=w.hoofd,sh=w.schoenen;
+  const TOP={hoodie:'#4f5560',trainingspak:'#1b2a44',werkjas:'#e98a1c',designer:'#b3243a',jas:'#15171b',pak:'#262b35',velours:'#5e1a33',bomber:'#2f3a2a',leer:'#141518',trench:'#a88d5e',bont:'#6b4a32',smoking:'#121317'};
+  const PANTS={pak:'#262b35',smoking:'#121317',trainingspak:'#1b2a44',velours:'#5e1a33'};
+  const HEAD={pet:'#111316',muts:'#3a3f4a',helm:'#0b0c0e',bivak:'#0d0e10',hoed:'#2a2420',snapback:'#c0262f',pruik:'#5a3a22'};
+  const SHOE={sneakers:'#e9e6df',renners:'#ff7a1a',basket:'#e9e6df',limited:'#ff7a1a',slippers:'#2b4a8a',canvas:'#1c2a4a',werkschoen:'#6b4a2a',laarzen:'#7a6a3a',brogues:'#6b3f22'};
+  return {top:TOP[k]||'#24272e',pants:PANTS[k]||'#1b2638',hat:HEAD[h]||null,hatK:h||'',hood:k==='hoodie',shoe:SHOE[sh]||(sh?'#16171a':'#e9e6df'),
+    stripe:k==='trainingspak'||k==='bomber'?'#ff7a1a':k==='werkjas'?'#e8f0c0':k==='velours'?'#f2c230':null,fur:k==='bont'}}
 function fleeGame(level){
   return new Promise(resolve=>{
     const P=fleeParams(level),R=fleeRun(P),SC=FL_SCENE[level]||FL_SCENE[2],L=FLEE_LEVELS[level]||FLEE_LEVELS[2];window.__chase=true;
@@ -97,35 +110,38 @@ function fleeGame(level){
       <div class="fl-stage" id="flStage"><canvas id="flCv" aria-label="Achtervolging: ontwijk wat op je pad komt"></canvas>
         <div class="fl-track" aria-hidden="true"><span class="fl-rail"><i class="fl-done" id="flDone"></i>${course.sprintZ?`<i class="fl-sp" style="left:${Math.min(96,course.sprintZ/(course.len-6)*100)}%"></i>`:''}<i class="fl-cop" id="flCop"></i><i class="fl-you" id="flYou"></i></span><b>${SC.exit}</b></div>
         <div class="fl-big" id="flBig">${SC.run}</div></div>
-      <div class="fl-info"><span id="flMiss"></span><span class="fl-keys"><kbd>←</kbd><kbd>→</kbd> wisselen · <kbd>↑</kbd> of <kbd>spatie</kbd> springen</span><span class="fl-tap">Tik links of rechts · midden: springen</span></div>
-      <div class="fl-ctl"><button class="fl-b" data-a="-1" aria-label="Naar links">${arrow(-1)}</button><button class="fl-b fl-j" data-a="j">Spring</button><button class="fl-b" data-a="1" aria-label="Naar rechts">${arrow(1)}</button></div></div>`;
+      <div class="fl-info"><span id="flMiss"></span><span class="fl-keys"><kbd>←</kbd><kbd>→</kbd> wisselen · <kbd>↑</kbd>/<kbd>spatie</kbd> springen · <kbd>↓</kbd> bukken</span><span class="fl-tap">Tik links/rechts · midden springen · veeg omlaag bukken</span></div>
+      <div class="fl-ctl"><button class="fl-b" data-a="-1" aria-label="Naar links">${arrow(-1)}</button><button class="fl-b fl-d" data-a="d">Bukken</button><button class="fl-b fl-j" data-a="j">Spring</button><button class="fl-b" data-a="1" aria-label="Naar rechts">${arrow(1)}</button></div></div>`;
     document.body.appendChild(ov);
     const q=id=>ov.querySelector('#'+id),cv=q('flCv'),ctx=cv.getContext('2d'),stage=q('flStage');
     // spelstatus
     let W=0,H=0,F=1,hy=0,cx=0,dpr=1,dist=0,t=0,last=0,raf=0,done=false,res=null,doneT=0,closed=false;
     // camera hoog achter de renner, zodat je over hem heen de steeg in kijkt
     const CB=SC.out?8.2:7.8,CH=SC.out?5:4.4,WALL_H=SC.out?9:6.2,near=-CB+.35;
-    let px=0,lane=0,jumpT=-1,spdF=1,v=R.v,hitK=R.hit,misses=0,stumT=-1,shake=0,passed=0,meZ=0;
+    let px=0,lane=0,jumpT=-1,slideT=-1,spdF=1,v=R.v,hitK=R.hit,misses=0,stumT=-1,shake=0,passed=0,meZ=0,started=false,duckShown=false;const LK=fleeLook();
+    const drops=Array.from({length:SC.out?90:0},()=>({x:Math.random(),y:Math.random(),l:.4+Math.random()*.6,s:.8+Math.random()*.6}));
     const fit=()=>{const r=stage.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);W=Math.max(200,r.width);H=Math.max(180,r.height);
       cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);F=Math.min(H*1.22,W*1.55);hy=Math.max(H*(SC.out?.1:.14),H*.86-CH*F/CB);cx=W/2};
     fit();const ro=window.ResizeObserver?new ResizeObserver(fit):null;if(ro)ro.observe(stage);else window.addEventListener('resize',fit);
     // projectie: X opzij (m), Y omhoog (m), z vooruit vanaf de renner (m)
     const P3=(X,Y,z)=>{const D=Math.max(.3,z+CB),s=F/D;return {x:cx+X*s,y:hy+(CH-Y)*s,s}};
     const jumpH=()=>jumpT<0?0:Math.sin(Math.PI*Math.min(1,jumpT/FL_JUMP));
+    const slideH=()=>{if(slideT<0)return 0;const k=slideT/FL_SLIDE;return k<.15?k/.15:k>.85?Math.max(0,(1-k)/.15):1};
     // ---------- invoer ----------
-    const move=d=>{if(done)return;const n=Math.max(-1,Math.min(1,lane+d));if(n!==lane){lane=n;try{SFX.card()}catch(e){}}};
-    const jump=()=>{if(done||jumpT>=0)return;jumpT=0;try{SFX.tick()}catch(e){}};
+    const move=d=>{if(done||!started)return;const n=Math.max(-1,Math.min(1,lane+d));if(n!==lane){lane=n;try{SFX.card()}catch(e){}}};
+    const jump=()=>{if(done||!started||jumpT>=0)return;jumpT=0;slideT=-1;try{SFX.tick()}catch(e){}};
+    const slide=()=>{if(done||!started||slideT>=0)return;slideT=0;jumpT=-1;try{SFX.card()}catch(e){}};
     const key=e=>{const k=e.code;let hit=true;
       if(k==='ArrowLeft'||k==='KeyA'){if(!e.repeat)move(-1)}else if(k==='ArrowRight'||k==='KeyD'){if(!e.repeat)move(1)}
-      else if(k==='ArrowUp'||k==='KeyW'||k==='Space'){if(!e.repeat)jump()}else if(k==='Enter'&&done){close()}else hit=false;
+      else if(k==='ArrowUp'||k==='KeyW'||k==='Space'){if(!started){skipCut()}else if(!e.repeat)jump()}else if(k==='ArrowDown'||k==='KeyS'){if(!e.repeat)slide()}else if(k==='Enter'&&done){close()}else if(k==='Enter'&&!started){skipCut()}else hit=false;
       if(hit)e.preventDefault()};
     document.addEventListener('keydown',key);
-    ov.querySelectorAll('.fl-b').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();const a=b.dataset.a;if(a==='j')jump();else move(+a)}));
+    ov.querySelectorAll('.fl-b').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();const a=b.dataset.a;if(a==='j')jump();else if(a==='d')slide();else move(+a)}));
     // vegen of tikken op het beeld: links/rechts van baan, midden of omhoog vegen = springen
     let sw=null;
-    cv.addEventListener('pointerdown',e=>{e.preventDefault();if(done){close();return}sw={x:e.clientX,y:e.clientY,t:performance.now(),used:false}});
+    cv.addEventListener('pointerdown',e=>{e.preventDefault();if(done){close();return}if(!started){skipCut();return}sw={x:e.clientX,y:e.clientY,t:performance.now(),used:false}});
     cv.addEventListener('pointermove',e=>{if(!sw||sw.used)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;
-      if(Math.abs(dx)>26&&Math.abs(dx)>Math.abs(dy)){move(dx<0?-1:1);sw.used=true}else if(dy<-26){jump();sw.used=true}});
+      if(Math.abs(dx)>26&&Math.abs(dx)>Math.abs(dy)){move(dx<0?-1:1);sw.used=true}else if(dy<-26){jump();sw.used=true}else if(dy>26){slide();sw.used=true}});
     cv.addEventListener('pointerup',e=>{if(!sw)return;if(!sw.used){const r=cv.getBoundingClientRect(),fx=(e.clientX-r.left)/r.width;if(fx<1/3)move(-1);else if(fx>2/3)move(1);else jump()}sw=null});
     cv.addEventListener('pointercancel',()=>{sw=null});
     // ---------- tekenen ----------
@@ -225,6 +241,15 @@ function fleeGame(level){
       bureau(o){rect(-.68,.68,1.36,.08,'#5b4632');rect(-.64,0,.07,.68,'#2b2f36');rect(.57,0,.07,.68,'#2b2f36');rect(-.6,.3,.5,.36,'#3a3f47');rect(-.22,.76,.3,.24,'#14171c');rect(-.19,.79,.24,.18,'rgba(169,220,255,.35)')},
       hek(o){for(let x=-2.55;x<2.5;x+=1.7){ctx.strokeStyle='#8b929c';ctx.lineWidth=.045;ctx.beginPath();ctx.moveTo(x,-.12);ctx.lineTo(x,-.8);ctx.lineTo(x+1.55,-.8);ctx.lineTo(x+1.55,-.12);ctx.lineTo(x,-.12);
           for(let k=1;k<9;k++){ctx.moveTo(x+k*.172,-.12);ctx.lineTo(x+k*.172,-.8)}ctx.stroke();rect(x-.1,0,.3,.04,'#6b7078');rect(x+1.35,0,.3,.04,'#6b7078')}},
+      // steiger over de hele steeg: buizen, planken en rood-wit lint; alleen bukkend kom je eronder door
+      steiger(o){[-2.68,-.9,.9,2.6].forEach(x=>rect(x,0,.08,2.3,'#8b929c'));rect(-2.75,1.18,5.5,.1,'#9aa1ab');rect(-2.75,2.1,5.5,.08,'#8b929c');
+        rect(-2.75,1.28,5.5,.16,'#7d5c37');rect(-2.75,1.44,5.5,.04,'#5a4126');for(let i=0;i<15;i++)rect(-2.75+i*.367,1.06,.367,.1,i%2?'#f4f4f4':'#e0313f');
+        poly([[-.36,1.02],[.36,1.02],[.3,.72],[-.3,.72]],'#f2c230');rect(-.03,.78,.06,.18,'#1b1d22');circ(0,.75,.03,'#1b1d22');
+        ctx.strokeStyle='rgba(139,146,156,.8)';ctx.lineWidth=.04;ctx.beginPath();ctx.moveTo(-2.68,-.1);ctx.lineTo(-.9,-1.18);ctx.moveTo(.9,-1.18);ctx.lineTo(2.6,-.1);ctx.stroke()},
+      // half dicht rolluik: van het plafond tot op heuphoogte, met geel-zwarte rand
+      rolluik(o){rect(-2.75,1.12,5.5,1.38,'#4a515c');for(let y=1.18;y<2.5;y+=.12)rect(-2.75,y,5.5,.03,'rgba(0,0,0,.35)');
+        for(let i=0;i<14;i++)rect(-2.75+i*.393,1.06,.393,.1,i%2?'#1b1d22':'#f2c230');rect(-2.8,0,.1,2.5,'#2b2f36');rect(2.7,0,.1,2.5,'#2b2f36');
+        const on=Math.floor(t*4)%2;circ(-2.4,2.3,.07,on?'#ff8a1a':'#5a2a10');circ(2.4,2.3,.07,on?'#5a2a10':'#ff8a1a')},
       lint(o){rect(-2.7,0,.08,.98,'#c9d1da');rect(2.62,0,.08,.98,'#c9d1da');for(let i=0;i<14;i++)rect(-2.62+i*.38,.82,.38,.1,i%2?'#f4f4f4':'#e0313f')},
       container(o){rect(-.42,.1,.84,1.1,'#3d5a44');rect(.2,.1,.22,1.1,'#2f4736');rect(-.46,1.2,.92,.14,'#4c6f55');rect(-.46,1.32,.92,.05,'#5e8467');
         circ(-.3,.08,.08,'#0b0b0b');circ(.3,.08,.08,'#0b0b0b');rect(-.3,.55,.6,.2,'rgba(255,255,255,.07)');rect(-.12,.62,.24,.07,'#e9e6df');rect(-.38,.95,.76,.03,'rgba(0,0,0,.3)')},
@@ -269,23 +294,37 @@ function fleeGame(level){
       (DRAW[o.t]||DRAW.kliko)(o);ctx.restore();
       if(o.t==='auto'&&o.flash!=null&&z>0&&z<50){const c=P3(o.x*FL_LANE,1.4,z);ctx.save();ctx.globalCompositeOperation='lighter';glow(c.x,c.y,c.s*1.6,o.flash?'77,125,255':'60,90,200',.35);ctx.restore()}}
     // de renner van achteren, met oranje randlicht van de lantaarns
-    function drawMe(){if(meZ>9)return;const h=jumpH(),s=P3(px*FL_LANE,0,meZ);const ph=dist*1.85,air=jumpT>=0,lean=(lane-px)*.32+(stumT>=0?Math.sin(stumT*30)*.12:0);
-      const hurt=(stumT>=0&&stumT<.45)||(done&&res===false),HD=hurt?'#4a1e26':'#24272e',AR=hurt?'#3e1a21':'#20232a',RIM=hurt?'rgba(255,61,82,.9)':'rgba(255,122,26,.75)';
+    function drawMe(){if(meZ>9)return;const h=jumpH(),sl=slideH(),s=P3(px*FL_LANE,0,meZ);const ph=dist*1.85,air=jumpT>=0,lean=(lane-px)*.32+(stumT>=0?Math.sin(stumT*30)*.12:0);
+      const hurt=(stumT>=0&&stumT<.45)||(done&&res===false),TOP=hurt?'#4a1e26':LK.top,PANT=hurt?'#3a1a20':LK.pants,RIM=hurt?'rgba(255,61,82,.9)':'rgba(255,122,26,.75)';
       ctx.save();ctx.translate(s.x,s.y);ctx.scale(s.s,s.s);
-      ctx.fillStyle=`rgba(0,0,0,${.5-h*.25})`;ctx.beginPath();ctx.ellipse(0,0,.34-h*.12,.08,0,0,7);ctx.fill();
-      ctx.translate(0,-h*1.0-Math.abs(Math.sin(ph))*.05);ctx.rotate(lean);
-      const l1=air?.25:Math.max(0,Math.sin(ph))*.32,l2=air?.25:Math.max(0,-Math.sin(ph))*.32;
-      rect(-.19,l1,.16,.86-l1*.7,'#1b2638');rect(.03,l2,.16,.86-l2*.7,'#1b2638');rect(-.21,l1-.04,.2,.12,'#e9e6df');rect(.01,l2-.04,.2,.12,'#e9e6df');
-      const ar=air?.2:Math.sin(ph)*.16;
-      rect(-.4,.98+ar,.14,.5,AR);rect(.26,.98-ar,.14,.5,AR);
-      rect(-.28,.82,.56,.74,HD);poly([[-.2,1.56],[.2,1.56],[.17,1.92],[-.17,1.92]],HD);circ(0,1.82,.17,HD);
+      ctx.fillStyle=`rgba(0,0,0,${.5-h*.25})`;ctx.beginPath();ctx.ellipse(0,0,.34-h*.12+sl*.08,.08,0,0,7);ctx.fill();
+      ctx.translate(0,-h*1.0-Math.abs(Math.sin(ph))*.05*(1-sl));ctx.rotate(lean);ctx.scale(1,1-sl*.42);
+      const l1=air?.25:Math.max(0,Math.sin(ph))*.32*(1-sl),l2=air?.25:Math.max(0,-Math.sin(ph))*.32*(1-sl);
+      // benen en schoenen
+      rect(-.19,l1,.16,.86-l1*.7,PANT);rect(.03,l2,.16,.86-l2*.7,PANT);rect(-.21,l1-.04,.2,.12,LK.shoe);rect(.01,l2-.04,.2,.12,LK.shoe);
+      if(LK.stripe){rect(-.2,l1+.08,.025,.7-l1*.7,LK.stripe);rect(.165,l2+.08,.025,.7-l2*.7,LK.stripe)}
+      // armen, romp en hoofd
+      const ar=air?.2:sl?-.12:Math.sin(ph)*.16;
+      rect(-.4,.98+ar,.14,.5,TOP);rect(.26,.98-ar,.14,.5,TOP);rect(-.4,.98+ar,.14,.5,'rgba(0,0,0,.18)');rect(.26,.98-ar,.14,.5,'rgba(0,0,0,.18)');
+      rect(-.28,.82,.56,.74,TOP);if(LK.fur){rect(-.3,.82,.6,.12,'#8a6444');rect(-.3,1.42,.6,.16,'#8a6444')}
+      if(LK.stripe){rect(-.28,1.2,.56,.05,LK.stripe)}
+      if(LK.hood){poly([[-.2,1.56],[.2,1.56],[.17,1.92],[-.17,1.92]],TOP);circ(0,1.82,.18,TOP);rect(-.12,1.5,.24,.08,'rgba(0,0,0,.25)')}
+      else{rect(-.07,1.54,.14,.1,'#b8876a');circ(0,1.8,.16,LK.hatK==='pruik'?'#5a3a22':'#2a1e16');
+        if(LK.hat){if(LK.hatK==='hoed'){rect(-.26,1.86,.52,.05,LK.hat);rect(-.15,1.9,.3,.14,LK.hat)}else if(LK.hatK==='helm'){circ(0,1.84,.21,LK.hat);rect(-.2,1.7,.4,.06,'#2a2f38')}
+          else if(LK.hatK!=='pruik')poly([[-.17,1.82],[.17,1.82],[.13,1.98],[-.13,1.98]],LK.hat)}}
+      // oranje randlicht van de lantaarns
       ctx.fillStyle=RIM;ctx.fillRect(-.29,-1.56,.035,.72);ctx.fillRect(.255,-1.56,.035,.72);ctx.fillRect(-.415,-1.48-ar,.025,.48);ctx.fillRect(.39,-1.48+ar,.025,.48);
       ctx.beginPath();ctx.arc(0,-1.82,.17,Math.PI*1.05,Math.PI*1.95);ctx.strokeStyle=RIM;ctx.lineWidth=.035;ctx.stroke();
       rect(-.12,1.0,.24,.1,'rgba(0,0,0,.25)');
       ctx.restore()}
     function overlays(){
+      // regen buiten: schuine strepen die meebewegen met je snelheid
+      if(drops.length&&!reduce){ctx.strokeStyle='rgba(190,205,230,.16)';ctx.lineWidth=1;ctx.beginPath();const sp=(R.v*spdF)/12;
+        drops.forEach(d=>{const y=((d.y+t*d.s*(1.1+sp*.4))%1)*H,x=((d.x+t*.05)%1)*W,l=14*d.l*(1+sp*.3);ctx.moveTo(x,y);ctx.lineTo(x-l*.25,y+l)});ctx.stroke()}
       // zwaailicht van de agent achter je: sterker als hij dichterbij komt
       const close=Math.min(1,misses/(R.miss+1)+(done&&res===false?1:0)),k=.12+.38*close,ph=reduce?0:Math.floor(t*(5+close*4))%2;
+      // zijn zaklamp schijnt van achteren op de grond; hoe dichterbij, hoe feller en breder
+      if(started&&!(done&&res===true)){ctx.save();ctx.globalCompositeOperation='lighter';glow(cx+Math.sin(t*1.7)*W*.08,H*1.02,H*(.32+close*.45),'235,242,255',.07+close*.2);ctx.restore()}
       const r1=ph?'255,61,82':'77,125,255',r2=ph?'77,125,255':'255,61,82';
       glow(0,H,H*(.55+close*.25),r1,k);glow(W,H,H*(.55+close*.25),r2,k);
       if(SC.alarm&&!reduce){ctx.fillStyle=`rgba(255,40,60,${.05+.06*Math.max(0,Math.sin(t*4))})`;ctx.fillRect(0,0,W,H)}
@@ -299,7 +338,20 @@ function fleeGame(level){
       list.sort((a,b)=>b[1]-a[1]);list.filter(x=>x[1]>=0).forEach(x=>drawOb(x[0],x[1]));drawMe();list.filter(x=>x[1]<0).forEach(x=>drawOb(x[0],x[1]));
       overlays()}
     // ---------- spelverloop ----------
-    const big=q('flBig');setTimeout(()=>{if(!done)big.classList.add('gone')},900);
+    const big=q('flBig');big.classList.add('gone');
+    // intro: de agent betrapt je, jij draait je om en rent weg (tik, spatie of Enter slaat hem over)
+    const cut=document.createElement('div');cut.className='fl-cut'+(SC.out?' out':' in')+(SC.alarm?' alarm':'');
+    cut.innerHTML=`<div class="fl-cut-bg"></div><div class="fl-cut-cop"><i class="fl-cut-beam"></i><svg viewBox="0 0 60 120" aria-hidden="true"><circle cx="30" cy="16" r="10" fill="#1d2c4f"/><path d="M19 12h22v-4H19z" fill="#0e1830"/><path d="M16 30h28l3 46H13z" fill="#16233f"/><path d="M16 40h28v3H16zM16 50h28v2H16z" fill="#cfd8e6"/><path d="M16 76h12v40H16zM32 76h12v40H32z" fill="#0f1a30"/><path d="M44 34l12 8-3 4-11-6z" fill="#16233f"/></svg></div>
+      <div class="fl-cut-me">${typeof dollSvg==='function'?dollSvg((typeof fitS==='function'&&fitS().wear)||{},{label:'Jij'}):''}</div>
+      <div class="fl-cut-say">${SC.alarm?'Beveiliging! Blijf staan!':'Politie! Staan blijven!'}</div><span class="fl-cut-skip">tik om over te slaan</span>`;
+    stage.appendChild(cut);
+    let cutT1=0,cutT2=0;
+    function start(){if(started)return;started=true;clearTimeout(cutT1);clearTimeout(cutT2);cut.classList.add('gone');setTimeout(()=>cut.remove(),300);
+      big.textContent=SC.run;big.className='fl-big';try{SFX.tick()}catch(e){}setTimeout(()=>{if(!done)big.classList.add('gone')},900)}
+    function skipCut(){if(!started)start()}
+    cut.addEventListener('pointerdown',e=>{e.preventDefault();skipCut()});
+    cutT1=setTimeout(()=>{cut.classList.add('run');try{SFX.lose()}catch(e){}},reduce?200:1250);
+    cutT2=setTimeout(start,reduce?700:2300);
     // aankondiging van de eindsprint, vlak voor de drukste rijen
     let spShown=!course.sprintZ;const sprintCheck=()=>{if(spShown||done||dist<course.sprintZ-R.v*1.7)return;spShown=true;
       big.textContent='Eindsprint!';big.className='fl-big sp';try{SFX.tick()}catch(e){}setTimeout(()=>{if(!done)big.classList.add('gone')},950)};
@@ -316,9 +368,12 @@ function fleeGame(level){
       const prev=dist;dist+=v*spdF*dt;spdF+=(1-spdF)*Math.min(1,dt*2.4);
       const dx=lane-px,ls=dt/.13;px=Math.abs(dx)<=ls?lane:px+Math.sign(dx)*ls;
       if(jumpT>=0){jumpT+=dt;if(jumpT>FL_JUMP)jumpT=-1}
+      if(slideT>=0){slideT+=dt;if(slideT>FL_SLIDE)slideT=-1}
       if(stumT>=0){stumT+=dt;if(stumT>.6)stumT=-1}
       shake=Math.max(0,shake-dt*1.6);
       for(const r of course.rows){const z0=r.z-prev,z1=r.z-dist;if(!r.set&&z1<FL_REVEAL){r._d=dist;fleeFill(r,R,SC,lane)}
+        // de eerste keer bukken: even laten zien
+        if(r.k==='duck'&&!duckShown&&z1<R.v*1.6&&z1>0){duckShown=true;big.textContent='Bukken! ↓';big.className='fl-big sp';try{SFX.tick()}catch(e){}setTimeout(()=>{if(!done)big.classList.add('gone')},900)}
         for(const o of r.obs){
           // bewakers schuiven met je mee tot ze dichtbij zijn
           if(o.dr&&z1>9+R.len*4&&z1<26){const d=px-o.x,m=.9*dt;o.x+=Math.abs(d)<=m?d:Math.sign(d)*m}
@@ -326,12 +381,12 @@ function fleeGame(level){
           if(o.cr)o.x=o.to+(o.from-o.to)*Math.max(-1.6,Math.min(1,z1/o.zr));
           if(o.done||o.hit)continue;
           if(z0>0&&z1<=0){o.done=1;const over=Math.abs(px-o.x)<(FL_PW+o.w)/2*hitK;
-            if(over&&!(o.low&&jumpH()>R.jump)){stumble(o);if(done)return}}}
+            if(over&&!(o.low&&jumpH()>R.jump)&&!(o.high&&slideH()>.5)){stumble(o);if(done)return}}}
         if(!r.passed&&z1<0){r.passed=1;passed++;v*=R.accel;hitK=Math.min(1.08,hitK/R.shrink)}}
       sprintCheck();if(dist>=course.len-6)finish(true)}
     // vaste kleine stapjes: ook bij een trage telefoon loopt de achtervolging op het juiste tempo
     let ft=0;
-    function frame(now){if(closed)return;let acc=Math.min(.25,Math.max(0,(now-last)/1000));last=now;while(acc>1e-4){const h=Math.min(1/60,acc);step(h);acc-=h}
+    function frame(now){if(closed)return;let acc=Math.min(.25,Math.max(0,(now-last)/1000));last=now;if(!started){t+=acc;acc=0}while(acc>1e-4){const h=Math.min(1/60,acc);step(h);acc-=h}
       const a=performance.now();draw();ft=ft*.9+(performance.now()-a)*.1;drawHud();raf=requestAnimationFrame(frame)}
     function finish(ok){if(done)return;done=true;res=ok;doneT=t;document.removeEventListener('keydown',key);
       const box=ov.querySelector('.fl-box');box.classList.add(ok?'won':'lost');
@@ -344,7 +399,7 @@ function fleeGame(level){
     function close(){if(closed||!done)return;closed=true;cancelAnimationFrame(raf);if(ro)ro.disconnect();else window.removeEventListener('resize',fit);
       ov.classList.add('out');setTimeout(()=>{ov.remove();window.__chase=false;resolve(res===true)},220)}
     ov.addEventListener('click',e=>{if(done&&!e.target.closest('.fl-ctl'))close()});
-    ov._fl=()=>({dist,px,lane,jumpT,misses,v:v*spdF,done,res,R,rows:course.rows,len:course.len,ft});
+    ov._fl=()=>({dist,px,lane,jumpT,slideT,misses,v:v*spdF,done,res,R,rows:course.rows,len:course.len,ft,started,skip:skipCut});
     last=performance.now();draw();raf=requestAnimationFrame(frame);
     setTimeout(()=>{const j=ov.querySelector('.fl-j');j&&j.focus({preventScroll:true})},30);
   });
