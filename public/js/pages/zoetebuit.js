@@ -201,13 +201,13 @@ async function zbPlay(round,bet,isBuy,from){const T=zbT();zb.stepWin=0;zbText('z
   for(let i=st0;i<round.fs.spins.length;i++){const s=round.fs.spins[i];
    if(S.slotRun&&S.slotRun.g==='zoet'&&i>(S.slotRun.at||0)){S.slotRun.at=i;save()}
    zb.fs.at=i+1;zb.fs.of=Math.max(of,i+1);slotFsSet(zb.fs.at,zb.fs.of);zb.stepWin=0;zbText('zbStep',fmt(0));SFX.zb.spin();
-   const before=zb.fs.total;let w=await zbAnimate(s,bet,true,before);
+   try{const before=zb.fs.total;let w=await zbAnimate(s,bet,true,before);
    if(s.mult)w=await zbBombs(s,bet,w,before);
    else if(!w)zbTick(s.bombs.length?'Kauwgomballen, maar geen winst':'Geen winst deze spin');
    zb.fs.total=Math.min(ZOET.MAX_WIN,s.total)*bet;zbText('zbLast',fmt(zb.fs.total));slotXSet(zb.fs.total,bet);
    if(round.fs.maxHit&&s.total>=ZOET.MAX_WIN){SFX.zb.big();await zbBanner('Max win',ZOET.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3000,'big gold');break}
    if(s.extra){SFX.zb.retrig();of+=s.extra;zb.fs.of=Math.max(of,zb.fs.at);slotFsSet(zb.fs.at,zb.fs.of,s.extra);await zbBanner('+'+s.extra+' spins',s.sc+' lolly\'s tijdens de bonus',1500,'fsin')}
-   await zbWait(slotSp(300,120))}
+   await zbWait(slotSp(300,120))}catch(e){console.error(e);zb.fs.total=Math.min(ZOET.MAX_WIN,s.total)*bet;if(round.fs.maxHit&&s.total>=ZOET.MAX_WIN)break}}
   const x=round.fs.total;if(x>=20)SFX.zb.big();
   await zbBanner(fmt(x*bet),(x>=ZOET.MAX_WIN?'Max win · ':x>=200?'Episch · ':x>=100?'Megawinst · ':x>=40?'Zoete winst · ':'Bonus voorbij · ')+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× je inzet',2600,x>=40?'big':'');
   zb.fs=null;zbRefresh();zbTick(`Bonus voorbij: <b>${fmt(x*bet)}</b>`)}

@@ -145,7 +145,9 @@ async function vdIntro(big,small){await vdHold();const fast=slotSpd()===3,dur=fa
   <div class="si-drops">${Array.from({length:16},(_,i)=>{const a=-Math.PI*(.12+.76*i/15),d=22+(i*7)%20;return `<i style="--dx:${(Math.cos(a)*d).toFixed(1)}cqmin;--dy:${(Math.sin(a)*d*1.5).toFixed(1)}cqmin;--s:${(.6+(i%4)*.25).toFixed(2)};--dl:${(i%5)*30}ms"></i>`}).join('')}</div>
   <div class="si-wave"></div><div class="si-txt vd"><b>${big||'Free spins'}</b><span>${small||''}</span></div></div>`;
  return vdWait(dur).then(()=>{const e=vdEl('vdBanner');if(e)e.innerHTML=''})}
-async function vdBanner(big,small,ms,cls){await vdHold();const el=vdEl('vdBanner');if(el)el.innerHTML=`<div class="kk-banner ${cls||''}"><div><b>${big}</b><span>${small||''}</span></div></div>`;
+// reddingsboei voor de banners met extra spins
+const VD_BUOY=`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="25" fill="none" stroke="#f4f1ea" stroke-width="12"/><circle cx="32" cy="32" r="25" fill="none" stroke="#e8423f" stroke-width="12" stroke-dasharray="19.6 19.6" transform="rotate(-22 32 32)"/><circle cx="32" cy="32" r="31" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="1"/><circle cx="32" cy="32" r="19" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="1"/><path d="M8 26c-4 4-4 8 0 12M56 26c4 4 4 8 0 12" stroke="#c9a46a" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`;
+async function vdBanner(big,small,ms,cls,ic){await vdHold();const el=vdEl('vdBanner');if(el)el.innerHTML=`<div class="kk-banner vd-ban ${cls||''}">${/plus/.test(cls||'')?'<i class="ban-rip"></i><i class="ban-rip b"></i>':''}<div>${ic?`<i class="ban-ic">${ic}</i>`:''}<b>${big}</b><span>${small||''}</span></div></div>`;
  return vdWait(ms||1400).then(()=>{const e=vdEl('vdBanner');if(e)e.innerHTML=''})}
 function vdShowBal(add){vd.shown=(vd.shown||0)+add;vdText('vdBal',fmt(S.cash-(window.slotPending||0)+vd.shown))}
 // Rollen draaien: een korte aanloop omhoog, vaart (met bewegingsonscherpte) en een stuiter bij het stoppen.
@@ -221,9 +223,11 @@ async function vdPlay(round,bet,isBuy,from){const T=vdT();vd.stepWin=0;vdText('v
   for(let i=0;i<st0;i++){const s=round.fs.spins[i];if(s.newRound){vd.fs.lvl=s.lvl;wasSec=false;at=0;vd.fs.of=VISD.RETRIG}at++;vd.fs.at=at;vd.fs.of=at+s.left;vd.fs.total=s.total*bet;vd.fs.caught=s.caught;if(s.secured)wasSec=true}
   vdRefresh();if(st0)vdText('vdLast',fmt(vd.fs.total));
   for(let i=st0;i<round.fs.spins.length;i++){const s=round.fs.spins[i];
+   // een fout in de animatie mag de bonus nooit afbreken: dan gaat hij verder met de volgende spin
+   try{
    if(S.slotRun&&S.slotRun.g==='vis'&&i>(S.slotRun.at||0)){S.slotRun.at=i;save()}
    if(s.newRound){vd.fs.lvl=s.lvl;wasSec=false;at=0;const fb=vdEl('vdFs');if(fb)fb.innerHTML=vdFsBar();SFX.vd.big();
-    await vdBanner('Ronde '+s.newRound,VISD.RETRIG+' free spins. Alles telt nu ×'+VISD.MULTS[s.lvl]+'.',2200,s.lvl>=3?'big gold':'fsin');vd.fs.of=VISD.RETRIG}
+    vd.fs.of=VISD.RETRIG;slotFsSet(0,VISD.RETRIG,VISD.RETRIG);await vdBanner('+'+VISD.RETRIG+' spins','Ronde '+s.newRound+' · alles telt nu ×'+VISD.MULTS[s.lvl],2200,s.lvl>=3?'plus gold':'plus',VD_BUOY)}
    at++;vd.fs.at=at;vd.fs.of=at+s.left;slotFsSet(at,vd.fs.of);vd.stepWin=0;vdText('vdStep',fmt(0));SFX.vd.spin();
    await vdSpinReels(s.grid,true,Math.min(VISD.MULTS.length-1,Math.floor((s.caught-s.wilds)/VISD.PER_LEVEL)),s.lvl);let step=0;
    if(s.wins.length)step+=await vdShowWins(s.wins,s.mult,bet,step);
@@ -231,9 +235,10 @@ async function vdPlay(round,bet,isBuy,from){const T=vdT();vd.stepWin=0;vdText('v
    else if(s.wilds){SFX.vd.lose();document.querySelectorAll('#vdReels .vd-cell.wild').forEach(e=>e.classList.add('win'));vdTick(s.wilds>1?s.wilds+' Visdieven, maar geen vis':'Visdief, maar geen vis');await vdWait(T.hold*.5);vdUnmark()}
    else if(!s.wins.length)vdTick(s.fish.length?'Vissen, maar geen Visdief':'Niets gevangen');
    vd.fs.total=s.total*bet;vd.fs.caught=s.caught;vdText('vdLast',fmt(vd.fs.total));slotXSet(vd.fs.total,bet);const fb=vdEl('vdFs');if(fb)fb.innerHTML=vdFsBar();
-   if(s.secured&&!wasSec){wasSec=true;SFX.vd.retrig();vdTick(`<b>Ronde ${s.lvl+2} is binnen</b>: na deze ronde nog ${VISD.RETRIG} spins met ×${VISD.MULTS[s.lvl+1]}`);await vdWait(T.hold*.8)}
+   if(s.secured&&!wasSec){wasSec=true;SFX.vd.retrig();vdTick(`<b>Ronde ${s.lvl+2} is binnen</b>: na deze ronde nog ${VISD.RETRIG} spins met ×${VISD.MULTS[s.lvl+1]}`);await vdBanner('Ronde '+(s.lvl+2)+' binnen','Na deze ronde nog '+VISD.RETRIG+' spins met ×'+VISD.MULTS[s.lvl+1],slotSp(1500,900),'plus sm',VD_BUOY)}
    if(s.total>=VISD.MAX_WIN){SFX.vd.big();await vdBanner('Max win',VISD.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3000,'big gold');break}
-   await vdWait(slotSp(280,100))}
+   await vdWait(slotSp(280,100))
+   }catch(e){console.error(e);try{vdUnmark()}catch(_){}vd.fs.total=s.total*bet;vd.fs.caught=s.caught;if(s.total>=VISD.MAX_WIN)break}}
   const x=round.fs.total;if(x>=20)SFX.vd.big();
   await vdBanner(fmt(x*bet),(x>=VISD.MAX_WIN?'Max win, ':x>=200?'Episch, ':x>=100?'Megawinst, ':x>=40?'Grote vangst, ':'Bonus voorbij, ')+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× je inzet',2600,x>=40?'big':'');
   vd.fs=null;vdRefresh();vdTick(`Bonus voorbij: <b>${fmt(x*bet)}</b>`)}

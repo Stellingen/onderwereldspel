@@ -2,7 +2,9 @@
 const SFX=(()=>{
   let ctx=null,master=null,on=true;try{on=localStorage.getItem('ow_sound')!=='0'}catch(e){}
   const ac=()=>{if(!on)return null;if(!ctx){const A=window.AudioContext||window.webkitAudioContext;if(!A)return null;ctx=new A();master=ctx.createGain();master.gain.value=.35;master.connect(ctx.destination)}if(ctx.state==='suspended')ctx.resume();return ctx};
-  const tone=(f,t,d,type='sine',v=.3,f2)=>{const c=ac();if(!c)return;const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,c.currentTime+t);
+  const tone=(f,t,d,type='sine',v=.3,f2)=>{try{tone0(f,t,d,type,v,f2)}catch(e){}};
+  // geluid mag het spel nooit laten vastlopen: een ongeldige toon wordt gewoon overgeslagen
+  const tone0=(f,t,d,type,v,f2)=>{if(![f,t,d,v].every(Number.isFinite)||(f2!=null&&!Number.isFinite(f2)))return;const c=ac();if(!c)return;const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,c.currentTime+t);
     if(f2)o.frequency.exponentialRampToValueAtTime(f2,c.currentTime+t+d);g.gain.setValueAtTime(0,c.currentTime+t);g.gain.linearRampToValueAtTime(v,c.currentTime+t+.008);
     g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+t+d);o.connect(g);g.connect(master);o.start(c.currentTime+t);o.stop(c.currentTime+t+d+.05)};
   const noise=(t,d,v=.2,hp=800)=>{const c=ac();if(!c)return;const b=c.createBuffer(1,c.sampleRate*d,c.sampleRate),a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=(Math.random()*2-1)*(1-i/a.length);
@@ -52,7 +54,7 @@ const SFX=(()=>{
     spin(){let t=0;for(let i=0;i<14;i++){t+=.022+Math.abs(i-7)*.004;fnoise(t,.018,.1,'bandpass',3200,3200,3)}fnoise(0,.4,.05,'bandpass',300,900,1)},
     land(col){tone(210-col*9,0,.1,'triangle',.18,120);fnoise(0,.05,.06,'lowpass',900,300)},
     tick(){tone(240,0,.07,'triangle',.14,140);fnoise(0,.04,.05,'lowpass',900,300)},
-    win(step){const P=[67,69,71,74,76,79,81,83,86];const b=Math.min(step,5);[0,2,4].forEach((k,i)=>{const f=N(P[b+k]);tone(f,i*.07,.3,'sine',.14);tone(f*4,i*.07,.06,'sine',.03)});tone(500,.25,.12,'sine',.06,1100)},
+    win(step){const P=[67,69,71,74,76,79,81,83,86];const b=Math.max(0,Math.min(step|0,4));[0,2,4].forEach((k,i)=>{const f=N(P[b+k]);tone(f,i*.07,.3,'sine',.14);tone(f*4,i*.07,.06,'sine',.03)});tone(500,.25,.12,'sine',.06,1100)},
     pop(){tone(300,0,.12,'sine',.12,900);fnoise(0,.06,.05,'bandpass',1200,2600,2)},
     mult(v){const n=Math.min(9,Math.log2(v||2));tone(300+n*60,0,.2,'sine',.12,900+n*120);bell(N(79)+n*40,.08,.5,.08,1.4,2)},
     scatter(i){bell(N(76+i*3),0,1.1,.13,1.41,2.2);fnoise(0,.3,.04,'lowpass',600,200)},
@@ -70,7 +72,7 @@ const SFX=(()=>{
   const zb={
     spin(){for(let i=0;i<6;i++)fnoise(i*.05,.04,.08,'highpass',5000,7000);tone(300,0,.35,'sine',.05,900)},
     land(col){tone(560-col*28,0,.13,'sine',.15,250);fnoise(0,.02,.04,'highpass',4000,4000)},
-    win(step){const P=[72,74,76,79,81,84,86,88,91];const b=Math.min(step,5);[0,1,2,4].forEach((k,i)=>bell(N(P[b+k]),i*.06,.5,.08,3.5,.8))},
+    win(step){const P=[72,74,76,79,81,84,86,88,91];const b=Math.max(0,Math.min(step|0,4));[0,1,2,4].forEach((k,i)=>bell(N(P[b+k]),i*.06,.5,.08,3.5,.8))},
     pop(){tone(700,0,.07,'sine',.12,1700);fnoise(0,.03,.06,'highpass',4000,6000)},
     mult(v){const n=Math.min(9,Math.log2(v||2));tone(180+n*20,0,.38,'sine',.16,620+n*90);bell(N(84+Math.min(12,n*2)),.12,.6,.08,3.5,1)},
     scatter(i){[0,4,7].forEach((k,j)=>bell(N(84+i*2+k),j*.05,.7,.07,3.5,.9))},
@@ -83,7 +85,9 @@ const SFX=(()=>{
     retrig(){[0,4,7,12].forEach((k,i)=>bell(N(84+k),i*.06,.6,.08,3.5,.9));tone(500,.25,.12,'sine',.15,1400)},
     big(){for(let i=0;i<16;i++)bell(N(84+(i%8)*2+(i>7?12:0)),i*.05,.5,.06,3.5,.9);[60,64,67,72].forEach((m,i)=>tone(N(m),.1+i*.02,.8,'triangle',.06))},
     lose(){tone(420,0,.25,'sine',.06,300)}};
-  return {kk,vd,zb,
+  // elke geluidsfunctie in een vangnet: een fout in het geluid mag nooit een spin of bonus afbreken
+  const safe=o=>{Object.keys(o).forEach(k=>{const f=o[k];if(typeof f==='function')o[k]=function(){try{return f.apply(this,arguments)}catch(e){}};else if(f&&typeof f==='object')safe(f)});return o};
+  return safe({kk,vd,zb,
 
     get on(){return on},
     toggle(){on=!on;try{localStorage.setItem('ow_sound',on?'1':'0')}catch(e){}if(on)this.click();return on},
@@ -103,5 +107,5 @@ const SFX=(()=>{
     shot(){noise(0,.45,.55,120);tone(110,0,.3,'triangle',.45,38);noise(.03,.9,.08,2400)},
     card(){noise(0,.07,.12,2000)},
     chip(){tone(2200,0,.04,'square',.05);tone(1700,.03,.05,'square',.04)}
-  };
+  });
 })();

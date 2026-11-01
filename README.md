@@ -641,3 +641,8 @@ Backup van de stand ervoor: branch `backup/2026-11-01-avond` (terugzetten = die 
   High roller €1 mln); snel spel tot €100.000, kaartspellen tot €150.000 en roulette tot €250.000 per nummer (€500.000 buiten);
   side bets €50.000 (VIP €75.000, HR €100.000). VIP en HR halen de plafonds op een lagere kaart. **High roller-tafel** bij
   Blackjack, Three Card Poker en Texas Hold'em: alleen voor HR, hoofdinzet tot €500.000 (ook naar kaart). Nieuwe fiches van 25K en 100K.
+- **Bonus loopt altijd uit**: een fout in het geluid (een toon buiten de toonladder bij 5+ winlijnen in Visdief) brak de hele bonus
+  af. Alle geluiden zitten nu in een vangnet (`safe` in sfx.js) en elke free spin in Visdief, Kluiskraker en Suikerbaron heeft zijn
+  eigen vangnet: gaat er iets mis in de animatie, dan speelt de bonus gewoon verder.
+- **Bonusbanners per slot**: Visdief in water en met een reddingsboei (+10 spins bij een nieuwe ronde, "Ronde N binnen"),
+  Kluiskraker in staal met de kluisknop (+N spins), met uitdijende kringen.

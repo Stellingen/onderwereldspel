@@ -3352,3 +3352,34 @@ a.dv:hover{box-shadow:inset 0 0 0 1px var(--line2)}
 .table.hrt .felt{border-color:#c9a24a;box-shadow:inset 0 0 0 2px rgba(242,194,48,.35),0 0 60px -20px rgba(242,194,48,.45)}
 .rl-chips .pchip.c100000,.rchip.c100000{color:#10141a}
 @media (max-width:700px){.tb-hr{margin:0 0 6px;padding:3px;gap:4px}.tb-hr button{flex-direction:row;justify-content:center;gap:6px;padding:6px 6px}.tb-hr button b{font-size:12px}.tb-hr button small{font-size:10px}}
+
+/* ===== Bonusbanners in de stijl van elke slot (Visdief: water en een reddingsboei, Kluiskraker: staal en de kluisknop) ===== */
+.vd-ban{background:radial-gradient(circle,rgba(47,209,197,.34),rgba(4,14,20,.93) 70%)}
+.vd-ban b{color:#e9fbff;text-shadow:0 0 30px rgba(47,209,197,.85),0 4px 0 #063a35}
+.vd-ban span{color:#c8f3ef}
+.vd-ban.fsin{background:radial-gradient(circle,rgba(90,209,255,.4),rgba(4,14,20,.93) 70%)}
+.vd-ban.gold,.vd-ban.big{background:radial-gradient(circle,rgba(245,197,66,.36),rgba(4,14,20,.93) 70%)}
+.vd-ban.gold b,.vd-ban.big b{color:#ffe08a;text-shadow:0 0 36px rgba(245,197,66,.85),0 4px 0 #6b4a00}
+.kk-ban{background:radial-gradient(circle,rgba(255,122,26,.3),rgba(10,11,14,.93) 70%)}
+.kk-ban b{color:#fff3e6;text-shadow:0 0 30px rgba(255,122,26,.85),0 4px 0 #5a2200}
+.kk-ban.fsin{background:radial-gradient(circle,rgba(255,150,60,.42),rgba(10,11,14,.93) 70%)}
+.kk-ban.super,.kk-ban.gold{background:radial-gradient(circle,rgba(242,194,48,.4),rgba(10,11,14,.93) 70%)}
+/* extra spins: icoon dat erin draait, kringen die uitdijen */
+.kk-banner.plus{overflow:hidden}
+.kk-banner.plus>div{position:relative;z-index:1}
+.ban-ic{display:block;width:clamp(70px,12vw,110px);height:clamp(70px,12vw,110px);margin:0 auto 8px;filter:drop-shadow(0 10px 18px rgba(0,0,0,.55));animation:banIc .9s cubic-bezier(.2,1.4,.35,1) both}
+.ban-ic svg{width:100%;height:100%;display:block}
+.kk-banner.plus b{animation:banPlus .7s .15s cubic-bezier(.2,1.6,.4,1) both}
+.kk-banner.plus span{animation:banSub .4s .45s ease-out both}
+.kk-banner.plus.sm b{font-size:clamp(28px,4.4vw,54px)}
+.ban-rip{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:3px solid var(--rip,#3ee6d8);opacity:0;animation:banRip 1.6s ease-out infinite}
+.ban-rip.b{animation-delay:.55s}
+.vd-ban{--rip:#3ee6d8}.vd-ban.gold{--rip:#f5c542}.kk-ban{--rip:#ff9a45}
+@keyframes banIc{0%{transform:translateY(-40px) rotate(-200deg) scale(.4);opacity:0}100%{transform:none;opacity:1}}
+@keyframes banPlus{0%{transform:scale(.3);opacity:0}100%{transform:none;opacity:1}}
+@keyframes banSub{0%{transform:translateY(8px);opacity:0}100%{transform:none;opacity:1}}
+@keyframes banRip{0%{transform:scale(.5);opacity:.9}100%{transform:scale(14);opacity:0}}
+@media (prefers-reduced-motion:reduce){.ban-ic,.kk-banner.plus b,.kk-banner.plus span{animation:none}.ban-rip{display:none}}
+/* "+N spins" bij de teller in de kleuren van de slot */
+.vd .kk-hud .label.plus{color:#3ee6d8}
+.kk3:not(.vd) .kk-hud .label.plus{color:#ffb066}
