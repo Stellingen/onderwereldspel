@@ -2405,7 +2405,9 @@ body.hg-open{overflow:hidden}
 @container (max-width:760px){.cas-back{margin:0;min-height:44px;padding:0 10px}.cas-back span{display:none}.cas-bar .tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
 /* Texas Hold'em: blauw laken, tafelkaarten naast elkaar */
 .th .felt{background:radial-gradient(ellipse at 50% 20%,#17406b 0%,#0f2d4f 55%,#091c33 100%)}
-.th .zone.board .cards{gap:clamp(4px,.8vw,10px)}.th .zone.board .tc{margin-left:0}
+.th .zone.board .cards{--g:clamp(4px,.8vw,10px);gap:var(--g);position:relative;padding-bottom:22px}
+.th .aa-mark{position:absolute;left:0;bottom:0;width:calc((100% - 4*var(--g))*.6 + 2*var(--g));height:14px;border:1.5px solid rgba(243,212,138,.75);border-top:0;border-radius:0 0 8px 8px;pointer-events:none}
+.th .aa-mark span{position:absolute;left:50%;top:100%;transform:translate(-50%,-55%);padding:0 6px;white-space:nowrap;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#f3d48a;background:#123a66;border-radius:4px}.th .zone.board .tc{margin-left:0}
 .th .zone.board .tc.ghost{border:2px dashed rgba(243,212,138,.28);background:rgba(0,0,0,.12)}
 .th .felt::after{display:none}
 .tb-act.play .btn.bj-a.red{background:var(--red);color:#fff}
