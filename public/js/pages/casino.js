@@ -59,5 +59,5 @@ function bjView(){const b=window.bj;
   :`<div class="flex"><button class="btn" onclick="act.bjHit()">Kaart</button><button class="btn gold" onclick="act.bjStand()">Passen</button><button class="btn" onclick="act.bjDouble()" ${b.p.length>2||S.cash<b.bet?'disabled':''}>Verdubbelen</button></div>`}`}
 
 // Is er een spel bezig? Dan niet wisselen (een slotbonus mag wel op de achtergrond doorlopen).
-const casSwitchBusy=()=>(kk.busy&&!kk.inBonus)||(window.vd&&vd.busy)||(window.zb&&zb.busy)||(window.cf&&cf.flipping)||(window.av&&av.flying)||(window.rl&&rl.spinning)||['dealing','dealer'].includes(bt.phase)||tp.phase==='dealing'||tp.phase==='reveal'||(window.th&&['dealing','reveal'].includes(th.phase));
+const casSwitchBusy=()=>(kk.busy&&!kk.inBonus)||(window.vd&&vd.busy&&!vd.inBonus)||(window.zb&&zb.busy&&!zb.inBonus)||(window.cf&&cf.flipping)||(window.av&&av.flying)||(window.rl&&rl.spinning)||['dealing','dealer'].includes(bt.phase)||tp.phase==='dealing'||tp.phase==='reveal'||(window.th&&['dealing','reveal'].includes(th.phase));
 function casinoGo(k){if(czBanLeft()){render();return}if(k&&casLocked(k)){toast(CAS_NAMES[k]+' speel je vanaf '+RANKS[casNeedR(k)][0]+' ('+RANKS[casNeedR(k)][1].toLocaleString('nl-NL')+' XP)','bad');return}if(casSwitchBusy()){toast('Wacht tot het spel klaar is','bad');return}casinoTab=k;render();window.scrollTo(0,0)}

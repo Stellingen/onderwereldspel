@@ -13,8 +13,12 @@ const slotReduce=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: 
 const slotSpd=()=>slotReduce()?3:Math.max(1,Math.min(3,+(S.slotSpd||1)));
 const slotSp=(slow,fast)=>{const v=slotSpd();return v===3?fast:v===2?(slow+fast)/2:slow};
 const kkFast=()=>slotSpd()===3;
-const slotSpdHtml=(cls)=>`<div class="spd ${cls||''}" role="group" aria-label="Snelheid"><span>Snelheid</span>${[1,2,3].map(n=>`<button class="${slotSpd()===n?'on':''}" onclick="slotSetSpd(${n})" aria-pressed="${slotSpd()===n}" title="${['Rustig','Sneller','Snelst'][n-1]}">${n}×</button>`).join('')}</div>`;
-function slotSetSpd(n){S.slotSpd=n;try{SFX.click()}catch(e){}document.querySelectorAll('.spd button').forEach((b,i)=>{const on=(i%3)+1===n;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});save()}
+// Snelheid (gedeeld door alle slots en Hoogvlieger): alleen de animatie, nooit de uitkomst. Schuifje met ▶-pijltjes en een meter die meedraait.
+const SPD_T=['Rustig','Sneller','Snelst'];
+const spdFF=n=>`<svg class="spd-ff" viewBox="0 0 ${n*6+2} 12" aria-hidden="true">${Array.from({length:n},(_,k)=>`<path d="M${k*6} 1.2 L${k*6+7.5} 6 L${k*6} 10.8Z"/>`).join('')}</svg>`;
+const slotSpdHtml=(cls)=>{const v=slotSpd();return `<div class="spd ${cls||''}" role="radiogroup" aria-label="Snelheid" style="--i:${v-1}"><span class="spd-l"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="spd-arc" d="M4.2 17.5a8.6 8.6 0 1 1 15.6 0"/><path class="spd-ndl" d="M12 16.6 12 8.4"/><circle cx="12" cy="16.6" r="1.9"/></svg><em>Snelheid</em></span>
+ <div class="spd-seg"><i class="spd-th" aria-hidden="true"></i>${[1,2,3].map(n=>`<button type="button" role="radio" data-n="${n}" class="${v===n?'on':''}" onclick="slotSetSpd(${n})" aria-checked="${v===n}" title="${SPD_T[n-1]} (${n}×)"><span class="spd-n">${spdFF(n)}<b>${n}×</b></span><small>${SPD_T[n-1]}</small></button>`).join('')}</div></div>`};
+function slotSetSpd(n){S.slotSpd=n;try{SFX.click()}catch(e){}const v=slotSpd();document.querySelectorAll('.spd').forEach(el=>{el.style.setProperty('--i',v-1);el.querySelectorAll('button[data-n]').forEach(b=>{const on=+b.dataset.n===v;b.classList.toggle('on',on);b.setAttribute('aria-checked',on)})});save()}
 const KK_T=()=>({base:slotSp(230,140),per:slotSp(26,12),col:slotSp(32,16),hold:slotSp(640,380),pop:slotSp(250,180)});
 // voorbeeldbord: vaste, rustige mix zonder clusters (buren nooit hetzelfde symbool)
 function kkDemoGrid(){let x=20261030;const R=()=>(x=(x*1103515245+12345)%2147483648)/2147483648;const N=SLOT.SYMS.length,g=[];
@@ -355,14 +359,13 @@ async function kkResumeRun(){const run=S.slotRun;if(!run||run.g!=='kluis'||kk.bu
  kk.busy=true;kk.inBonus=true;kk.paused=false;window.slotPending=0;SFX.click();render();
  try{await kkPlay(round,run.bet,run.buy,run.at||0)}catch(e){console.error(e)}
  kk.busy=false;kk.inBonus=false;kk.lastWin=run.pay;kk.stepWin=0;kk.msg=run.pay>0?'Bonus: '+fmt(run.pay):'Geen winst';delete S.slotRun;save();renderTop();kkRefreshUI()}
-function kkSkipRun(){const run=S.slotRun;if(!run||run.g!=='kluis'||kk.busy)return;delete S.slotRun;save();kk.lastWin=run.pay;kk.msg='Bonus: '+fmt(run.pay);render();toast('Bonus overgeslagen. Hij was al uitbetaald: '+fmt(run.pay))}
 const kkRunHtml=()=>{const run=S.slotRun;if(!run||run.g!=='kluis'||kk.busy)return '';
  return `<div class="kk-banner pause"><div><b>Je bonus loopt nog</b><span>${run.buy?'Gekochte bonus':'Bonus'} bij ${fmt(run.bet)} inzet · free spin ${(run.at||0)+1} · uitbetaald: ${fmt(run.pay)}. Het geld staat al op je saldo.</span>
-  <div class="kk-run-b"><button class="btn kk-go" onclick="kkResumeRun()">Bonus verder afspelen</button><button class="btn ghost sm" onclick="kkSkipRun()">Overslaan</button></div></div></div>`};
+  <div class="kk-run-b"><button class="btn kk-go" onclick="kkResumeRun()">Bonus verder afspelen</button></div></div></div>`};
 Object.assign(act,{
  kkNewSeed(){if(kk.busy)return;const o=kkSeed();S.kkSeed=kkNewSd({id:kkSeedId(o),spins:o.spins,bon:o.bon,sup:o.sup});SFX.chip();save();kkRefreshUI();toast('Nieuwe seed: '+kkSeedId(S.kkSeed))},
  async kkSpin(isBuy){
-  if(kk.busy||inJail())return;const bet=kkBet(),cost=isBuy?bet*SLOT.BUY_COST:bet;
+  if(kk.busy||inJail())return;if(S.slotRun&&S.slotRun.g==='kluis'){kkResumeRun();return}const bet=kkBet(),cost=isBuy?bet*SLOT.BUY_COST:bet;
   if(casCash()<cost){toast(casShort(),'bad');return}
   kk.busy=true;kk.confirm=false;kk.pick=false;kk.inBonus=!!isBuy;kk.paused=false;SFX.kk.spin();
   if(S.slotRun&&S.slotRun.g==='kluis')delete S.slotRun;

@@ -8,7 +8,12 @@ const vdOn=()=>page==='casino'&&casinoTab==='vis'&&!!vdEl('vdBoard')&&!document.
 const vdReduce=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 const vdFast=()=>slotSpd()===3;
 const vdT=()=>({spin:slotSp(820,420),stag:slotSp(170,90),tease:slotSp(1150,600),hold:slotSp(900,560),line:slotSpd()===3?0:slotSp(520,260),collect:slotSp(780,420)});
-const vdWait=ms=>new Promise(r=>setTimeout(r,vdOn()?ms:0));
+// Bonus pauzeert als je wegklikt of het scherm uit staat (zoals Kluiskraker); doorspoelen of overslaan kan niet, alleen de snelheid
+function vdGate(){return new Promise(res=>{vd.paused=true;vd._resume=res;if(vdOn())render()})}
+function vdResume(){if(!vd.paused)return;vd.paused=false;SFX.click();render();const r=vd._resume;vd._resume=null;if(r)setTimeout(r,60)}
+const vdHold=async()=>{if(vd.inBonus&&(!vdOn()||vd.paused))await vdGate()};
+const vdWait=ms=>new Promise(async r=>{await vdHold();setTimeout(r,vdOn()?ms:0)});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&vd.paused&&page==='casino'&&casinoTab==='vis')render()});
 const vdShort=n=>n>=1e6?'€'+(Math.round(n/1e5)/10).toLocaleString('nl-NL')+'M':n>=1e4?'€'+Math.round(n/1e3).toLocaleString('nl-NL')+'K':fmt(n);
 // lijnkleuren (bolders en winlijnen)
 const VD_LC=['#f5c542','#2fd1c5','#7aa7ff','#ff9a3c','#ff7fb3','#b8a1ff','#9be15d','#ffd08a','#5ad1ff','#e6e1d6'];
@@ -110,7 +115,7 @@ function visView(){const g=vd.grid||vdDemo(),fs=vd.fs;
    <div id="vdFs">${vdFsBar()}</div>
    <div class="vd-deck"><div class="vd-reelwrap"><div class="vd-reels" id="vdReels">${vdReelsHtml(g,!!fs)}</div><svg class="vd-lines" id="vdLines" viewBox="0 0 500 ${VISD.ROWS*100}" preserveAspectRatio="none"></svg><div class="vd-fx" id="vdFx"></div></div></div>
    <div class="vd-tick" id="vdTick">${vd.tick||(fs?'De Visdief pakt alles wat op het scherm ligt':'3 boeien geven de bonus. In de bonus pakt de Visdief alle vissen.')}</div>
-   <div id="vdBanner"></div>${vdRunHtml()}</div>
+   <div id="vdBanner"></div>${vdRunHtml()}${vd.paused?`<div class="kk-banner pause"><div><b>Gepauzeerd</b><span>${vd.fs?'Free spin '+vd.fs.at+' van '+vd.fs.of+' · '+fmt(vd.fs.total)+' gewonnen':'Je bonus staat klaar'}</span><button class="btn kk-go" style="margin-top:18px" onclick="vdResume()">Bonus verder afspelen</button></div></div>`:''}</div>
   <div class="kk-bar"><div class="kk-hud" id="vdInfo">${vdInfo()}</div><div class="kk-ctl" id="vdCtl">${vdControls()}</div></div>
   <div id="vdPickBox">${vd.pick&&!vd.busy?vdPickHtml():''}</div>
   <div id="vdConfirmBox">${vd.buyMode&&!vd.busy?vdConfirm():''}</div>
@@ -135,17 +140,17 @@ function vdTick(t){vd.tick=t;const e=vdEl('vdTick');if(e){e.innerHTML=t;e.classL
 function vdCount(id,from,to,ms){const el=vdEl(id);if(!el||!vdOn()){if(el)el.textContent=fmt(to);return Promise.resolve()}
  return new Promise(res=>{const t0=performance.now();const st=t=>{const p=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(to-from)*e);if(p<1)requestAnimationFrame(st);else res()};requestAnimationFrame(st)})}
 // Bonus binnen: een boei valt in het water, plons met spetters en een golf over het scherm.
-function vdIntro(big,small){const fast=slotSpd()===3,dur=fast?2100:3800,el=vdEl('vdBanner');SFX.vd.bonus(fast);
+async function vdIntro(big,small){await vdHold();const fast=slotSpd()===3,dur=fast?2100:3800,el=vdEl('vdBanner');SFX.vd.bonus(fast);
  if(el&&vdOn())el.innerHTML=`<div class="si-splash ${fast?'fast':''}" style="--dur:${dur}ms"><div class="si-buoy"><i></i></div><div class="si-ring2"></div><div class="si-ring2 b"></div>
   <div class="si-drops">${Array.from({length:16},(_,i)=>{const a=-Math.PI*(.12+.76*i/15),d=22+(i*7)%20;return `<i style="--dx:${(Math.cos(a)*d).toFixed(1)}cqmin;--dy:${(Math.sin(a)*d*1.5).toFixed(1)}cqmin;--s:${(.6+(i%4)*.25).toFixed(2)};--dl:${(i%5)*30}ms"></i>`}).join('')}</div>
   <div class="si-wave"></div><div class="si-txt vd"><b>${big||'Free spins'}</b><span>${small||''}</span></div></div>`;
  return vdWait(dur).then(()=>{const e=vdEl('vdBanner');if(e)e.innerHTML=''})}
-function vdBanner(big,small,ms,cls){const el=vdEl('vdBanner');if(el)el.innerHTML=`<div class="kk-banner ${cls||''}"><div><b>${big}</b><span>${small||''}</span></div></div>`;
+async function vdBanner(big,small,ms,cls){await vdHold();const el=vdEl('vdBanner');if(el)el.innerHTML=`<div class="kk-banner ${cls||''}"><div><b>${big}</b><span>${small||''}</span></div></div>`;
  return vdWait(ms||1400).then(()=>{const e=vdEl('vdBanner');if(e)e.innerHTML=''})}
 function vdShowBal(add){vd.shown=(vd.shown||0)+add;vdText('vdBal',fmt(S.cash-(window.slotPending||0)+vd.shown))}
 // Rollen draaien: een korte aanloop omhoog, vaart (met bewegingsonscherpte) en een stuiter bij het stoppen.
 // Liggen er al 2 boeien, dan draaien de volgende rollen langer en lichten ze op.
-async function vdSpinReels(g,fs,lvl,rd){const reels=[...document.querySelectorAll('#vdReels .vd-reel')];const T=vdT();
+async function vdSpinReels(g,fs,lvl,rd){await vdHold();const reels=[...document.querySelectorAll('#vdReels .vd-reel')];const T=vdT();
  if(!reels.length||!vdOn()){vd.grid=g;return}
  const cur=vd.grid||vdDemo();let sc=0,delay=0,maxT=0,heard=0;const anims=[];
  reels.forEach((el,c)=>{const tease=!fs&&sc>=2;if(tease)delay+=T.tease;const R=VISD.ROWS,F=8+c*3+(tease?10:0),n=F+2*R,strip=el.querySelector('.vd-strip');
@@ -164,8 +169,9 @@ async function vdSpinReels(g,fs,lvl,rd){const reels=[...document.querySelectorAl
   setTimeout(()=>{el.classList.remove('tease');el.classList.add('stop');setTimeout(()=>el.classList.remove('stop'),260);SFX.vd.tick();if(scHere){SFX.vd.scatter(heard);heard+=scHere;el.classList.add('scland')}},dur*.93);
   if(tease)setTimeout(()=>SFX.vd.tease(sc,Math.min(1.2,T.tease/1000)),Math.max(0,dur-T.tease));
   sc+=scHere});
- await vdWait(maxT+60);
- reels.forEach((el,c)=>{const strip=el.querySelector('.vd-strip');strip.getAnimations().forEach(a=>a.cancel());strip.style.transform='none';strip.style.setProperty('--n',VISD.ROWS);strip.innerHTML=g[c].map(x=>vdCellHtml(x,fs)).join('');el.classList.remove('scland','tease')});
+ vd.grid=g;await vdWait(maxT+60);
+ // na een pauze is het bord opnieuw opgebouwd: de rollen opnieuw opzoeken, anders staat er een oud bord met nieuwe winlijnen
+ document.querySelectorAll('#vdReels .vd-reel').forEach((el,c)=>{const strip=el.querySelector('.vd-strip');strip.getAnimations().forEach(a=>a.cancel());strip.style.transform='none';strip.style.setProperty('--n',VISD.ROWS);strip.innerHTML=g[c].map(x=>vdCellHtml(x,fs)).join('');el.classList.remove('scland','tease')});
  vd.grid=g}
 function vdLineSvg(w,draw){const L=VISD.LINES[w.line],pts=['0,'+(L[0]*100+50)].concat(L.map((r,c)=>(c*100+50)+','+(r*100+50)),['500,'+(L[4]*100+50)]).join(' ');
  return `<polyline class="glow" points="${pts}" style="--lc:${VD_LC[w.line]}" pathLength="100"/><polyline class="${draw?'draw':''}" points="${pts}" style="--lc:${VD_LC[w.line]}" pathLength="100"/>`}
@@ -173,7 +179,7 @@ const vdSymName=(w)=>{const s=VISD.SYMS[w.sym].n.toLowerCase();return w.n+'× '+
 function vdMark(cells){const R=VISD.ROWS,hit=new Set(cells.map(([c,r])=>c*R+r));for(let c=0;c<VISD.REELS;c++)for(let r=0;r<R;r++){const e=vdCellEl(c,r);if(e){e.classList.toggle('win',hit.has(c*R+r));e.classList.toggle('dim',!hit.has(c*R+r))}}}
 function vdUnmark(){document.querySelectorAll('#vdReels .vd-cell').forEach(e=>e.classList.remove('win','dim','collect','caught'));const s=vdEl('vdLines');if(s)s.innerHTML=''}
 // Winlijnen: eerst alle lijnen tegelijk (getekend als vislijn), daarna een voor een met het bedrag
-async function vdShowWins(wins,mult,bet,stepFrom){if(!wins.length)return 0;const T=vdT();const svg=vdEl('vdLines');
+async function vdShowWins(wins,mult,bet,stepFrom){if(!wins.length)return 0;await vdHold();const T=vdT();const svg=vdEl('vdLines');
  vdMark(wins.flatMap(w=>w.cells));
  if(svg)svg.innerHTML=wins.map(w=>vdLineSvg(w,true)).join('');
  const add=wins.reduce((a,w)=>a+w.pay,0)*mult*bet;SFX.vd.win(Math.min(6,wins.length+1));
@@ -181,10 +187,10 @@ async function vdShowWins(wins,mult,bet,stepFrom){if(!wins.length)return 0;const
  vdCount('vdStep',stepFrom,stepFrom+add,T.hold*.7);vdShowBal(add);
  await vdWait(T.hold);
  if(T.line&&wins.length>1)for(const w of wins.slice(0,5)){if(!vdOn())break;
-  vdMark(w.cells);if(svg)svg.innerHTML=vdLineSvg(w,false);vdTick(`${vdSymName(w)}: <b>${fmt(w.pay*mult*bet)}</b>`);await vdWait(T.line)}
+  vdMark(w.cells);const sv=vdEl('vdLines');if(sv)sv.innerHTML=vdLineSvg(w,false);vdTick(`${vdSymName(w)}: <b>${fmt(w.pay*mult*bet)}</b>`);await vdWait(T.line)}
  vdUnmark();return add}
 // De Visdief pakt alle vissen: de prijskaartjes vliegen naar hem toe
-async function vdCollect(s,bet,stepFrom){const board=vdEl('vdReels');if(!s.wilds||!s.fish.length)return 0;const T=vdT();
+async function vdCollect(s,bet,stepFrom){await vdHold();const board=vdEl('vdReels');if(!s.wilds||!s.fish.length)return 0;const T=vdT();
  const wild=[];s.grid.forEach((col,c)=>col.forEach((x,r)=>{if(x.w)wild.push([c,r])}));
  const add=s.collect*bet;if(!board||!vdOn())return add;
  const fx=vdEl('vdFx'),br=fx.getBoundingClientRect();const ctr=(c,r)=>{const e=vdCellEl(c,r);if(!e)return [0,0];const q=e.getBoundingClientRect();return [q.left-br.left+q.width/2,q.top-br.top+q.height/2]};
@@ -206,7 +212,7 @@ async function vdPlay(round,bet,isBuy,from){const T=vdT();vd.stepWin=0;vdText('v
  else if(!isBuy){vdText('vdMsg','Draait…');vdTick('&nbsp;');await vdSpinReels(round.base.grid,false,0);if(round.base.wins.length){await vdShowWins(round.base.wins,1,bet,0)}else if(!round.fs)vdTick(round.base.sc===2?'Twee boeien, net niet':'Geen winst')}
  else{vdText('vdMsg','Bonus gekocht');vdTick('Bonus gekocht');await vdSpinReels(round.base.grid,false,0)}
  const baseWin=round.base.win*bet;if(!isBuy&&baseWin>0){vd.lastWin=baseWin;vdText('vdLast',fmt(baseWin))}
- if(round.fs){const n=round.base.sc;document.querySelectorAll('#vdReels .vd-cell.sc').forEach(e=>e.classList.add('win'));SFX.vd.scatter(3);vdTick(n+' boeien: bonus!');await vdWait(T.hold*.9);vdUnmark();
+ if(round.fs){vd.inBonus=true;const n=round.base.sc;document.querySelectorAll('#vdReels .vd-cell.sc').forEach(e=>e.classList.add('win'));SFX.vd.scatter(3);vdTick(n+' boeien: bonus!');await vdWait(T.hold*.9);vdUnmark();
   const st0=resume?Math.max(0,Math.min(from,round.fs.spins.length-1)):0;
   if(resume){SFX.vd.bonus(true);await vdBanner('Je bonus gaat verder','Free spin '+(st0+1)+' · het geld staat al op je saldo',2200,'fsin')}
   else await vdIntro(round.fsStart+' free spins',(isBuy?'Gekochte bonus':n+' boeien')+' · de Visdief pakt alle vissen');
@@ -233,21 +239,20 @@ async function vdPlay(round,bet,isBuy,from){const T=vdT();vd.stepWin=0;vdText('v
   vd.fs=null;vdRefresh();vdTick(`Bonus voorbij: <b>${fmt(x*bet)}</b>`)}
  else{const x=round.total;if(x>=20){SFX.vd.big();await vdBanner(fmt(x*bet),(x>=100?'Megawinst':'Grote winst')+', '+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× je inzet',2000,'big')}else if(x===0)SFX.vd.lose()}}
 document.addEventListener('keydown',e=>{if(e.code!=='Space'||page!=='casino'||casinoTab!=='vis'||window.__chase||czBanLeft())return;const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;if(!$('#modal').hidden)return;
- e.preventDefault();if(vd.busy)return;if(S.slotRun&&S.slotRun.g==='vis'){vdResumeRun();return}if(vd.buyMode){if(!e.repeat)act.vdSpin(true);return}act.vdSpin(false)});
+ e.preventDefault();if(vd.paused){vdResume();return}if(vd.busy)return;if(S.slotRun&&S.slotRun.g==='vis'){vdResumeRun();return}if(vd.buyMode){if(!e.repeat)act.vdSpin(true);return}act.vdSpin(false)});
 async function vdResumeRun(){const run=S.slotRun;if(!run||run.g!=='vis'||vd.busy)return;
  let round=null;try{round=VISD.playRound(SLOT.seedRng(run.seed),{buy:run.buy,vip:run.t})}catch(e){}
  if(!round||!round.fs||Math.abs(round.total-run.tot)>1e-6){delete S.slotRun;save();render();toast('Je bonus in Visdief is al uitbetaald: '+fmt(run.pay),'lvl');return}
- vd.busy=true;vd.bet=run.bet;vd.shown=0;window.slotPending=0;SFX.click();render();
+ vd.busy=true;vd.inBonus=true;vd.paused=false;vd.bet=run.bet;vd.shown=0;window.slotPending=0;SFX.click();render();
  try{await vdPlay(round,run.bet,run.buy,run.at||0)}catch(e){console.error(e)}
- vd.busy=false;vd.fs=null;vd.lastWin=run.pay;vd.stepWin=0;vd.msg=run.pay>0?'Bonus: '+fmt(run.pay):'Geen winst';delete S.slotRun;save();renderTop();vdRefresh()}
-function vdSkipRun(){const run=S.slotRun;if(!run||run.g!=='vis'||vd.busy)return;delete S.slotRun;save();vd.lastWin=run.pay;render();toast('Bonus overgeslagen. Hij was al uitbetaald: '+fmt(run.pay))}
+ vd.busy=false;vd.inBonus=false;vd.paused=false;vd.fs=null;vd.lastWin=run.pay;vd.stepWin=0;vd.msg=run.pay>0?'Bonus: '+fmt(run.pay):'Geen winst';delete S.slotRun;save();renderTop();vdRefresh()}
 const vdRunHtml=()=>{const run=S.slotRun;if(!run||run.g!=='vis'||vd.busy)return '';
  return `<div class="kk-banner pause"><div><b>Je bonus loopt nog</b><span>${run.buy?'Gekochte bonus':'Bonus'} bij ${fmt(run.bet)} inzet · free spin ${(run.at||0)+1} · uitbetaald: ${fmt(run.pay)}. Het geld staat al op je saldo.</span>
-  <div class="kk-run-b"><button class="btn kk-go" onclick="vdResumeRun()">Bonus verder afspelen</button><button class="btn ghost sm" onclick="vdSkipRun()">Overslaan</button></div></div></div>`};
+  <div class="kk-run-b"><button class="btn kk-go" onclick="vdResumeRun()">Bonus verder afspelen</button></div></div></div>`};
 Object.assign(act,{
  vdNewSeed(){if(vd.busy)return;const o=vdSeed();S.vdSeed=kkNewSd({id:kkSeedId(o),spins:o.spins,bon:o.bon,sup:0});SFX.chip();save();vdRefresh();toast('Nieuwe seed: '+kkSeedId(S.vdSeed))},
- async vdSpin(isBuy){if(vd.busy||inJail())return;const bet=vdBet(),cost=isBuy?bet*VISD.BUY_COST:bet;if(casCash()<cost){toast(casShort(),'bad');return}
-  vd.busy=true;vd.confirm=false;vd.pick=false;vd.bet=bet;vd.shown=0;SFX.vd.spin();
+ async vdSpin(isBuy){if(vd.busy||inJail())return;if(S.slotRun&&S.slotRun.g==='vis'){vdResumeRun();return}const bet=vdBet(),cost=isBuy?bet*VISD.BUY_COST:bet;if(casCash()<cost){toast(casShort(),'bad');return}
+  vd.busy=true;vd.inBonus=!!isBuy;vd.paused=false;vd.confirm=false;vd.pick=false;vd.bet=bet;vd.shown=0;SFX.vd.spin();
   if(S.slotRun&&S.slotRun.g==='vis')delete S.slotRun;
   const sd=vdSeed(),seedStr='vis:'+sd.s+':'+sd.c+':'+sd.n,rng=SLOT.seedRng(seedStr);sd.n++;
   const round=VISD.playRound(rng,{buy:isBuy,vip:tier()});if(!isBuy){sd.spins++;if(round.fs)sd.bon++}
@@ -258,7 +263,7 @@ Object.assign(act,{
   casinoRound(cost,pay+lk,'vis');
   save();renderTop();vdRefresh();
   try{await vdPlay(round,bet,isBuy)}catch(e){console.error(e)}
-  window.slotPending=0;vd.busy=false;vd.shown=0;vd.fs=null;vd.lastWin=pay+lk;vd.stepWin=0;vd.sdPend=0;if(S.slotRun&&S.slotRun.g==='vis')delete S.slotRun;
+  window.slotPending=0;vd.busy=false;vd.inBonus=false;vd.paused=false;vd.shown=0;vd.fs=null;vd.lastWin=pay+lk;vd.stepWin=0;vd.sdPend=0;if(S.slotRun&&S.slotRun.g==='vis')delete S.slotRun;
   vd.msg=pay>0?(Math.round(round.total*100)/100).toLocaleString('nl-NL')+'× inzet'+(lk?' + geluk '+fmt(lk):''):'Geen winst';if(lk)toast('Geluksdobbelsteen: +'+fmt(lk)+' extra','lvl');
   if(pay>=bet*20||isBuy||round.fs)log('Visdief: '+fmt(pay)+' gewonnen ('+(isBuy?'gekochte bonus, ':round.fs?'bonus, ':'')+'inzet '+fmt(cost)+')',pay>=cost?'ok':'bad');
   if(pay>=bet*50)toast('Grote vangst: '+fmt(pay)+'!','lvl');

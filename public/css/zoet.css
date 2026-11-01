@@ -171,8 +171,7 @@
 .sb-go.buy span{font-size:18px}.sb-go.buy b{font-size:30px}.sb-go.buy small{color:#5a3300}
 .sb-row{display:flex;gap:8px;flex-wrap:wrap}
 .sb-row>*{flex:1 1 150px}
-.sb .spd{background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px var(--sb-rand);border-radius:12px}
-.sb .spd button.on{background:linear-gradient(180deg,#ff8cc6,#e2338c);color:#fff;box-shadow:0 0 14px -4px rgba(255,79,154,.9)}
+.sb .spd{--spd-c:#ff7ab8;--spd-c2:#e2338c;--spd-ink:#fff;--spd-glow:rgba(255,79,154,.9);background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px var(--sb-rand)}
 .sb-buyt{justify-content:center;border-radius:12px;border-color:var(--sb-rand2);background:rgba(255,255,255,.04)}
 .sb-buyt.on{border-color:var(--sb-geel);color:#ffe08a;background:rgba(255,201,58,.1)}
 /* rechts: bonuskaart, sessie en seed */
@@ -258,5 +257,5 @@
 .sb-amt .sb-betv{flex:1 1 auto;width:auto;height:auto;min-width:0;padding:2px 4px;border-radius:0;background:none;box-shadow:none;font-size:26px;text-align:center}
 .sb-amt .sb-betv:hover:not(:disabled){background:none}
 .sb-step .sb-amt{flex:1 1 auto;justify-content:flex-end;min-width:0}
-.sb .spd{flex-wrap:nowrap}.sb .spd button{min-width:0}
-@container (max-width:520px){.sb-row .spd>span{display:none}.sb-row>*{flex:1 1 120px}.sb-buyt{padding:7px 8px}.sb-buyt small{display:none}}
+
+@container (max-width:520px){.sb-row .spd-l em{display:none}.sb-row>*{flex:1 1 120px}.sb-buyt{padding:7px 8px}.sb-buyt small{display:none}}

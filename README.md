@@ -246,7 +246,10 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   vanzelf valt en kunt doortumbelen tot de superbonus; +2 free spins (superbonus +1). **8 vakjes beginnen op x2** en er is een
   **vangnet**: altijd minstens 20× je inzet terug. Verdeling (gewoon): mediaan ±52×, 25% van de keren 100× of meer, 9% 200× of meer.
   **Inzet kiezen** gaat via een pop-up (ook bij Visdief).
-  **Snelheid** 1× (rustig), 2× (sneller) en 3× (snelst, het oude 'snel'), voor Kluiskraker en Visdief, bewaard bij je account.
+  **Snelheid** 1× (rustig), 2× (sneller) en 3× (snelst), voor alle slots en Hoogvlieger, bewaard bij je account. Eén schuifje
+  (`slotSpdHtml` in kluiskraker.js): een meter die meedraait, ▶-pijltjes per stand en een gekleurd blokje dat meeschuift, in de
+  kleur van het spel (groen, turquoise, roze, goud). Smal: alleen 1×/2×/3×; breed: met Rustig/Sneller/Snelst eronder.
+  Het verandert alleen de animatie, nooit de uitkomst.
   Links bij **Laatste rondes** zie je minstens je laatste 4 winsten (rondes zonder winst achter elkaar staan als één regel) en een knop naar al je rondes (de laatste 100 worden bewaard).
   Op brede schermen staat rechts het saldo over de volle breedte, daaronder deze spin en gewonnen; in de bonus deze spin naast de spins die nog over zijn, en daaronder de bonuswinst. Dan de inzet met − en + ernaast en alle inzetten van €10 t/m €50K in één raster. High rollers zien onderaan een knop High roller die de inzetten €100K t/m €500K toont (en terug). Daaronder de snelheid 1×/2×/3×, bonus kopen en Draaien.
   **Betalen met** kies je in de casinobalk: **Automatisch** (standaard: eerst je zwarte geld, is dat op dan je witte), **Alleen wit** of
@@ -270,9 +273,12 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   de tabel (VIP ×0,99, High roller ×0,89), de bonus 77,5%. Sinds de hogere uitbetalingen valt de loper in het basisspel iets
   minder vaak (17,55 in plaats van 22) en is de goudstaaf iets zeldzamer, zodat de RTP gelijk bleef.
 - **Lopende bonus blijft bewaard**: een slotronde wordt bij de start meteen verrekend en opgeslagen (met de seed). Ververs je
-  midden in een bonus van Kluiskraker of Visdief, of open je het spel op een ander apparaat, dan zie je "Je bonus loopt nog":
-  hij speelt verder vanaf de free spin waar je was (zonder dubbel uitbetalen), of je slaat hem over. Wordt het spel ergens
-  anders geopend terwijl een bonus loopt, dan speelt die eerst rustig uit en komt de melding pas daarna.
+  midden in een bonus van een slot, of open je het spel op een ander apparaat, dan zie je "Je bonus loopt nog":
+  hij speelt verder vanaf de free spin waar je was (zonder dubbel uitbetalen). **Overslaan of doorspoelen kan niet**: ook de
+  draaiknop en de spatiebalk spelen eerst de lopende bonus verder. Klik je tijdens een bonus weg (ander spel, andere pagina,
+  telefoon op slot of andere app), dan **pauzeert** hij ("Gepauzeerd", met "Bonus verder afspelen") in alle drie de slots;
+  vroeger speelde Visdief en Suikerbaron dan in een tel uit en bleef er een oud bord met nieuwe winlijnen staan. Wordt het spel
+  ergens anders geopend terwijl een bonus loopt, dan speelt die eerst rustig uit en komt de melding pas daarna.
 - **Roulette** (Europees, één nul, 2,7% huisvoordeel): groot wiel met rollende bal bovenaan, echte inzettafel eronder.
   Nummer, split, rij, hoek, zes, drie met nul, eerste vier, kolom, dozijn en de kansen, plus groepen op het wiel
   (Buren van nul, Overkant, Weesjes, Nulspel). Ongedaan maken, fiches weghalen (ook met rechtsklik), alles wissen,
@@ -294,8 +300,8 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   | Hoge inzetten in de slots | – | ja (ook met code `trainwreck`) |
   Casino, doorgerekend (gewoon / VIP / High roller): Kluiskraker (10×10, max 5.000×) bonus 1 op 400 / 350 / 300, RTP 92,5% / 94% / 95,5%, bonus kopen
   ±93% / 94,5% / 96%; Visdief bonus 1 op 200 / 172 / 143, RTP 91,5% / 94% / 96,5%, kopen ±97%; Suikerbaron (6×5, max 5.000×) bonus
-  1 op 330 / 300 / 250, RTP 94,9% / 95,7% / 96,2%, kopen ±95% / 96% / 97%; Hoogvlieger landt 17% / 18% / 19%,
-  RTP 86% / 92% / 96%. Alles blijft onder 100%, ook met cashback.
+  1 op 330 / 300 / 250, RTP 94,9% / 95,7% / 96,2%, kopen ±95% / 96% / 97%; Hoogvlieger landt 18,7% / 19,5% / 20,5%,
+  RTP 87% / 91% / 96,5%. Alles blijft onder 100%, ook met cashback.
 - **Huurmoorden** (`hits.js`): de drie niveaus (Straat, Professioneel, Elite) staan als banners met de doelwitten in het vizier; tik op een niveau voor de contracten. 9 contracten in drie niveaus (Straat, Professioneel vanaf Capo, Elite vanaf Onderbaas) en een
   reputatie in 6 niveaus (+3% beloning per niveau). Per contract kies je de methode: **mes** (sluipen, stilstaan als hij omkijkt,
   toeslaan op een timingring), **pistool**, **geweer** (vizier met wind) of een **ongeluk** (vanaf Capo, een slingerende lading
@@ -369,6 +375,8 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   wit/zwart geld, misdaden, verblijf, auto's, training, bezit, bank, casino, rang). Het onderdeel licht op, ernaast een kaartje;
   op de telefoon boven of onder in beeld, met een verwijzing naar Meer als het daar zit. Overslaan, Vorige/Volgende en de
   pijltjestoetsen. Terug te vinden op het dashboard (lagere rangen) en via "rondleiding" in het zoekmenu.
+  De CSS-klassen van de tour beginnen met `tg-` (`.tr-card` is van de trainingskaarten; door die botsing stonden de
+  trainingen even over elkaar heen).
 - **Eigen geluid per slot** (`sfx.js`: `SFX.kk`, `SFX.vd`, `SFX.zb`, allemaal opgewekt met Web Audio): Kluiskraker metaal en munten,
   Visdief hout, water en een boeibel, Suikerbaron plopjes en glinsters. Bij het binnenkomen van de bonus (gewonnen of gekocht) een
   eigen deuntje met een korte animatie: Kluiskraker een kluisdeur (cijferslot, grendel, deur zwaait open naar het goud), Visdief een
@@ -423,11 +431,14 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Live bijwerken**: Bezit, Wapens, Families, Profiel, Bank, Training, Huurmoorden en het dashboard verversen elke seconde als
   er iets verandert, zodat knoppen meteen kloppen. In de slots loopt het saldo ook live mee.
 - **Hoogvlieger**: een propellervliegtuigje (met rookspoor) vliegt op eigen kracht over zee, zonder vaste baan. Overal in de lucht
-  hangen willekeurig items; wat hij raakt bepaalt zijn koers: een plusje (+1 tot +10) duwt hem omhoog, ×2 tot ×5 houdt hem even op
-  dezelfde hoogte en een bom (÷2) ontploft en laat hem zakken. Zonder items glijdt hij naar de zee. Op zee liggen vliegdekschepen met
-  water ertussen; blijft hij op het dek staan, dan win je inzet × multiplier (max 250×). De vlucht wordt bij het opstijgen in één
-  keer doorgerekend en ligt dan vast. Doorgerekend (`avsim3.js`, 150.000 vluchten): gewoon landt ±17%, RTP ±86%; VIP (dekken 6,5%
-  langer) ±18%, RTP ±92%; High roller (11% langer) ±19%, RTP ±96%. Code: `public/js/pages/vlucht.js`.
+  hangen willekeurig items (30% minder dan eerst, gemiddeld ±6 raak per vlucht); wat hij raakt bepaalt zijn koers: een plusje
+  (+1 tot +10) schiet hem omhoog, ×2 tot ×5 vermenigvuldigt en geeft een klein zetje, een bom (÷2) ontploft en drukt hem omlaag.
+  Daarnaast trekt hij op willekeurige momenten zelf fel op of duikt hij weg, en de zwaartekracht trekt flink: geen langzaam
+  klimmen, zweven en zakken meer. Op zee liggen vliegdekschepen met water ertussen; blijft hij op het dek staan, dan win je
+  inzet × multiplier (max 250×). De vlucht (items, stoten en schepen) wordt bij het opstijgen in één keer doorgerekend en ligt dan
+  vast; de **snelheid** (1×/2×/3×, ook tijdens de vlucht) verandert alleen hoe snel je hem ziet. Doorgerekend (avsim4.js,
+  3 × 250.000 vluchten per lidmaatschap): vlucht meestal 9 tot 57 s (mediaan ±22 s); gewoon landt ±18,7%, RTP ±87%; VIP (dekken
+  5% langer) ±19,5%, RTP ±91%; High roller (10% langer) ±20,5%, RTP ±96,5%. Code: `public/js/pages/vlucht.js`.
 - **Dubbel of niks**: een munt die echt in 3D wordt opgegooid, precies 50% kans (crypto-random), geen huisvoordeel.
   Win je, dan kies je: je pot pakken of nog een keer gooien voor het dubbele, tot 10 keer (×1024). De pot blijft bewaard bij verversen.
   Code: `public/js/pages/munt.js`.

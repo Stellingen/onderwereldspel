@@ -26,23 +26,23 @@ function tourEl(st){if(!st.el)return null;const sel=st.el[tourMob()?1:0];let e=s
 function tourStart(force){if(tr.on)return;if(!force&&!tourAuto())return;tr.on=true;tr.i=0;tr.steps=TOUR_STEPS();
  if(typeof page!=='undefined'&&page!=='dash')location.hash='dash';
  let ov=document.getElementById('tour');if(!ov){ov=document.createElement('div');ov.id='tour';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-label','Rondleiding');document.body.appendChild(ov)}
- ov.innerHTML='<div class="tr-dim"></div><div class="tr-hole"></div><div class="tr-card" tabindex="-1"></div>';document.body.classList.add('tr-lock');
+ ov.innerHTML='<div class="tg-dim"></div><div class="tg-hole"></div><div class="tg-card" tabindex="-1"></div>';document.body.classList.add('tg-lock');
  requestAnimationFrame(()=>ov.classList.add('on'));setTimeout(()=>tourShow(0),260)}
 function tourShow(i){const S0=tr.steps;tr.i=Math.max(0,Math.min(S0.length-1,i));const st=S0[tr.i],ov=document.getElementById('tour');if(!ov)return;
- const card=ov.querySelector('.tr-card'),n=S0.length,last=tr.i===n-1;
+ const card=ov.querySelector('.tg-card'),n=S0.length,last=tr.i===n-1;
  let el=tourEl(st);if(el&&el.scrollIntoView&&!el.closest('#mbar,#topbar'))el.scrollIntoView({block:'nearest',inline:'nearest'});
  const more=el&&el.matches&&el.matches('#mbar .more');
  const ic={crown:'<path d="M3 18h18l-2-10-5 4-2-6-2 6-5-4z"/><path d="M5 21h14"/>',star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>'}[st.ic];
- card.innerHTML=`<div class="tr-top"><span class="tr-n">${tr.i+1} / ${n}</span><button class="tr-skip" onclick="tourEnd('over')">Overslaan</button></div>
-  ${ic?`<span class="tr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">${ic}</svg></span>`:''}
-  <h3>${st.t}</h3><p>${typeof st.p==='function'?st.p():st.p}${more?' <i class="tr-more">Op de telefoon vind je dit onder Meer.</i>':''}</p>
-  <div class="tr-dots" aria-hidden="true">${S0.map((_,k)=>`<i class="${k===tr.i?'on':k<tr.i?'done':''}"></i>`).join('')}</div>
-  <div class="tr-btns">${tr.i?`<button class="btn ghost" onclick="tourShow(${tr.i-1})">Vorige</button>`:'<span></span>'}
+ card.innerHTML=`<div class="tg-top"><span class="tg-n">${tr.i+1} / ${n}</span><button class="tg-skip" onclick="tourEnd('over')">Overslaan</button></div>
+  ${ic?`<span class="tg-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">${ic}</svg></span>`:''}
+  <h3>${st.t}</h3><p>${typeof st.p==='function'?st.p():st.p}${more?' <i class="tg-more">Op de telefoon vind je dit onder Meer.</i>':''}</p>
+  <div class="tg-dots" aria-hidden="true">${S0.map((_,k)=>`<i class="${k===tr.i?'on':k<tr.i?'done':''}"></i>`).join('')}</div>
+  <div class="tg-btns">${tr.i?`<button class="btn ghost" onclick="tourShow(${tr.i-1})">Vorige</button>`:'<span></span>'}
    ${last?`<button class="btn" onclick="tourEnd('klaar',1)">Doe je eerste klus</button>`:`<button class="btn" onclick="tourShow(${tr.i+1})">${tr.i?'Volgende':'Laat zien'}</button>`}</div>`;
  tr.el=el;ov.classList.toggle('free',!el);tourPlace();card.classList.remove('in');void card.offsetWidth;card.classList.add('in');
  try{card.focus({preventScroll:true})}catch(e){}}
 // gat op het onderdeel en het kaartje ernaast (telefoon: boven of onder, de volle breedte)
-function tourPlace(){const ov=document.getElementById('tour');if(!ov||!tr.on)return;const hole=ov.querySelector('.tr-hole'),card=ov.querySelector('.tr-card'),el=tr.el,W=innerWidth,H=innerHeight,m=12;
+function tourPlace(){const ov=document.getElementById('tour');if(!ov||!tr.on)return;const hole=ov.querySelector('.tg-hole'),card=ov.querySelector('.tg-card'),el=tr.el,W=innerWidth,H=innerHeight,m=12;
  if(!el||!el.isConnected){hole.style.cssText='opacity:0;left:50%;top:50%;width:0;height:0';card.style.cssText=`left:${Math.max(m,(W-Math.min(460,W-2*m))/2)}px;top:${Math.max(m,H/2-card.offsetHeight/2)}px;width:${Math.min(460,W-2*m)}px`;return}
  const r=el.getBoundingClientRect(),pad=6,x=Math.max(2,r.left-pad),y=Math.max(2,r.top-pad),w=Math.min(W-4,r.width+pad*2),h=Math.min(H-4,r.height+pad*2);
  hole.style.cssText=`opacity:1;left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
@@ -54,7 +54,7 @@ function tourPlace(){const ov=document.getElementById('tour');if(!ov||!tr.on)ret
   else if(sp.b>=ch+24){cy=y+h+16;cx=Math.min(W-cw-m,Math.max(m,r.left+r.width/2-cw/2))}
   else{cy=Math.max(m,y-ch-16);cx=Math.min(W-cw-m,Math.max(m,r.left+r.width/2-cw/2))}}
  card.style.left=cx+'px';card.style.top=cy+'px'}
-function tourEnd(k,go){if(!tr.on)return;tr.on=false;S.tour=k||'over';try{save()}catch(e){}const ov=document.getElementById('tour');document.body.classList.remove('tr-lock');
+function tourEnd(k,go){if(!tr.on)return;tr.on=false;S.tour=k||'over';try{save()}catch(e){}const ov=document.getElementById('tour');document.body.classList.remove('tg-lock');
  if(ov){ov.classList.remove('on');setTimeout(()=>{if(!tr.on)ov.remove()},260)}if(go)location.hash='crimes'}
 addEventListener('resize',()=>{if(tr.on)tourPlace()});addEventListener('scroll',()=>{if(tr.on)tourPlace()},true);
 document.addEventListener('keydown',e=>{if(!tr.on)return;if(e.key==='Escape'){e.preventDefault();tourEnd('over')}else if(e.key==='ArrowRight'||e.key==='Enter'){if(e.target&&e.target.tagName==='BUTTON'&&e.key==='Enter')return;e.preventDefault();if(tr.i<tr.steps.length-1)tourShow(tr.i+1)}else if(e.key==='ArrowLeft'){e.preventDefault();if(tr.i)tourShow(tr.i-1)}});
