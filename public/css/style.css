@@ -3432,3 +3432,65 @@ a.dv:hover{box-shadow:inset 0 0 0 1px var(--line2)}
 @container (min-width:900px) and (max-width:1250px){.rl2 .rl-groups .rgrp small{display:none}}
 @media (max-height:980px){@container (min-width:900px){.rl2 .rl-help{display:none}}}
 .rl2 .rl-receipt.side{display:none}
+
+/* ===== Slots: inzet, snelheid en "Bonus kopen" groter en duidelijker (alle slots) ===== */
+/* inzetblok: label, groot bedrag met − en +, en een regel met max win (Visdief en Gouden Draak) */
+.sl-bet{--sl-acc:#ffd35a;display:flex!important;flex-direction:column;gap:8px;padding:10px 12px!important;border-radius:10px}
+.sl-bet-h{display:flex;align-items:center;justify-content:space-between;gap:8px}.sl-bet-h .label{margin:0}
+.sl-bet-all{background:none;border:0;padding:0;font:inherit;font-size:11.5px;color:var(--sl-acc);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.sl-bet-all:disabled{opacity:.5}
+.sl-bet .kk-bet{display:grid!important;grid-template-columns:46px minmax(0,1fr) 46px;gap:6px;align-items:stretch;width:100%}
+.sl-bet .kk-bet>button{min-height:46px;border-radius:8px;font-size:22px}
+.sl-bet .kk-betv{width:100%!important;max-width:none!important;font-family:var(--f-display)!important;font-weight:900;font-size:26px!important;color:var(--sl-acc)!important;border-radius:8px;white-space:nowrap;padding:0 6px}
+.sl-bet-f{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--mute);flex-wrap:wrap}.sl-bet-f b{font-family:var(--f-mono);color:var(--fg)}
+.vd .sl-bet{--sl-acc:#5ae6d6}
+.vd .sl-bet .kk-betv{background:#06121a!important;box-shadow:inset 0 0 0 1px rgba(90,230,214,.35)!important;border:0!important}
+.vd .sl-bet .kk-bet>button{background:#0b161e;color:#e9fbff;box-shadow:inset 0 0 0 1px #24404f;border:0}
+/* snelheid: hoger, met het meter-icoon altijd zichtbaar */
+.spd{min-height:56px;padding:5px 5px 5px 10px;border-radius:12px}
+.spd-l svg{width:24px;height:24px}
+.spd-seg{align-self:stretch}
+.spd-seg button{min-height:42px;font-size:16px}
+@container spd (max-width:200px){.spd-l{display:flex}.spd-l em{display:none}}
+/* Bonus kopen: een echte schakelaar, even hoog als de snelheid */
+.kk-buyt{min-height:56px;border-radius:12px;display:grid!important;grid-template-columns:auto auto;grid-template-areas:"i s" "t t";justify-content:center;align-content:center;align-items:center;gap:5px 8px;padding:6px 12px;font-size:12.5px;letter-spacing:.06em}
+.kk-buyt i{grid-area:i;width:40px!important;height:22px!important;border-radius:11px!important}
+.kk-buyt i::after{top:3px!important;left:3px!important;width:16px!important;height:16px!important}
+.kk-buyt.on i::after{transform:translateX(18px)!important}
+.kk-buyt span{grid-area:t;text-align:center;white-space:nowrap}
+.kk-buyt small{grid-area:s;font-size:10.5px!important;font-weight:700!important;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--line2)}
+.kk-buyt.on small{background:#ffd35a;color:#1a1306!important;box-shadow:none}
+.kk-buyt.on{box-shadow:0 0 18px -6px rgba(255,211,90,.7)}
+/* naast elkaar: snelheid breder dan de schakelaar */
+.kk-small:has(>.spd + .kk-buyt){display:grid!important;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:8px;align-items:stretch}
+.sb-row:has(>.spd + .kk-buyt){display:grid!important;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:8px;align-items:stretch}
+@media (max-width:700px){body.cas-game #zbCtl>.sb-row>*,body.cas-game #kkCtl>.kk-small>*,body.cas-game #vdCtl>.kk-small>*,body.cas-game #drCtl>.kk-small>*{min-height:44px}
+ body.cas-game .kk-buyt{grid-template-columns:auto auto auto;grid-template-areas:"i t s";min-height:44px}
+ body.cas-game .spd{min-height:44px}body.cas-game .spd-seg button{min-height:34px}}
+@media (max-width:700px){body.cas-game .kk-ctl .sl-bet-h,body.cas-game .kk-ctl .sl-bet-f{display:none}
+ body.cas-game .kk-ctl .sl-bet{padding:0!important;background:none!important;box-shadow:none!important;gap:0}
+ body.cas-game .kk-ctl .sl-bet .kk-bet{min-height:52px;grid-template-columns:40px minmax(0,1fr) 40px}
+ body.cas-game .kk-ctl .sl-bet .kk-betv{font-size:20px!important}}
+/* Visdief (breed): inzet en Draaien naast elkaar, daaronder snelheid en Bonus kopen even hoog naast elkaar */
+@container (min-width:1100px){
+ .vd.kk3 .kk-ctl{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px}
+ .vd.kk3 .kk-ctl .kk-small{grid-column:1/-1!important;flex-direction:row}
+ .vd.kk3 .kk-ctl .kk-go{min-height:0}
+ .vd.kk3 .kk-bar{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)!important}
+}
+/* Visdief (breed): net als Kluiskraker en Suikerbaron het bord links en rechts een paneel met saldo, inzet en knoppen */
+@container (min-width:1100px){
+ .vd.kk3 .vd-stage{display:grid!important;grid-template-columns:minmax(0,1fr) clamp(320px,24vw,400px);column-gap:16px;row-gap:10px;align-items:start;
+  --vdw:min(100%,max(480px,calc((100svh - 330px) * 1.3)),1000px)}
+ .vd.kk3.is-fs .vd-stage{--vdw:min(100%,max(480px,calc((100svh - 400px) * 1.3)),1000px)}
+ .vd.kk3 .vd-stage>.vd-board{grid-column:1;grid-row:1/span 4;justify-self:center}
+ .vd.kk3 .vd-stage>:not(.vd-board){grid-column:2}
+ .vd.kk3 .kk-bar{width:auto!important;margin:0!important;display:flex!important;flex-direction:column;gap:10px}
+ .vd.kk3 .kk-hud{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .vd.kk3 .kk-hud .kk-bal{grid-column:1/-1!important}
+ .vd.kk3.is-fs .kk-hud{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .vd.kk3 .kk-hud .kk-bal b{font-size:32px!important}
+ .vd.kk3 .kk-ctl{display:flex!important;flex-direction:column;gap:8px}
+ .vd.kk3 .kk-ctl .kk-go{min-height:72px!important}
+ .vd.kk3 #vdConfirmBox,.vd.kk3 #vdPickBox,.vd.kk3 .kk-seed,.vd.kk3 #vdSeedBox{width:auto!important;margin:0!important}
+}

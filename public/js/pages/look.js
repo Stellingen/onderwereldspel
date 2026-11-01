@@ -148,6 +148,11 @@ const klemPct=()=>S.klem&&S.klem.until>now()?(+S.klem.pct||0):0;
 const klemLeft=()=>S.klem?Math.max(0,S.klem.until-now()):0;
 const klemWait=()=>S.klem?Math.max(0,S.klem.ready-now()):0;
 const luckPct=()=>S.luck&&S.luck.until>now()?(+S.luck.pct||0):0;
+// Geluk is een extraatje, geen geldmachine: telt niet bij bonus kopen en per keer gebruiken maximaal de prijs van de dobbelsteen extra
+const luckCap=id=>{const o=fitItem(id||(S.luck&&S.luck.id));return o?o.p:0};
+const luckRest=()=>S.luck&&S.luck.until>now()?Math.max(0,luckCap()-(S.luck.got||0)):0;
+function luckBonus(pay,isBuy){if(isBuy||!(pay>0))return 0;const pct=luckPct();if(!pct)return 0;
+ const x=Math.min(Math.floor(pay*pct*100)/100,Math.floor(luckRest()*100)/100);if(x>0)S.luck.got=(S.luck.got||0)+x;return x>0?x:0}
 const luckLeft=()=>S.luck?Math.max(0,S.luck.until-now()):0;
 const luckWait=()=>S.luck?Math.max(0,S.luck.ready-now()):0;
 const FIT_FX={kans:['kans',1],buit:['buit',0],inc:['inkomen bedrijven',0],xp:['XP',0],bail:['borg',0,1],cd:['wachttijd klussen',0,1],flee:['makkelijker vluchten',0],
@@ -365,7 +370,7 @@ V.look=()=>{const ri=rankIdx(S.xp),F=fitS(),tab=fitUI.tab,worn=F.wear[tab];
  const tb=slots.find(x=>x.id===tab)?tab:(slots[0]||{}).id;
  const fl=fitUI.own||'all',items=pool.filter(o=>o.slot===tb&&(fl==='all'||(fl==='own'?F.own[o.id]:!F.own[o.id]))).sort((a,b)=>st==='geluk'?a.p-b.p:a.r-b.r||a.p-b.p);
  const card=o=>{const own=!!F.own[o.id],on=F.wear[o.slot]===o.id,hrLock=(o.hr&&tier()<2)||(o.vip&&tier()<1),lock=ri<o.r&&!hrLock,poor=S.cash<fitPrice(o),s=FIT_STYLES[o.st]||(o.inc?{n:klemLab(o.inc),col:o.hr?'#7fd6f5':o.vip?'#f2c230':'#5fe08f'}:{n:'Geluk +'+Math.round((o.luck||0)*100)+'%',col:'#f2c230'}),use=fitIsCharm(o);
-  const fxH=o.luck?`<span class="g">+${Math.round(o.luck*100)}% op je winst in de slots</span><span class="g">${LUCK_MIN} min actief</span><span>${LUCK_CD/60} uur rust</span>`:o.inc?`<span class="g">${o.inc>=.5?'Inkomen '+klemLab(o.inc).replace('Inkomen ','')+' zo snel':'+'+Math.round(o.inc*100)+'% inkomen van je bedrijven'}</span>${o.vip||o.hr?`<span class="g">${o.hr?'High roller':'VIP'}-beloning</span>`:''}<span class="g">${KLEM_MIN/60} uur actief</span><span>${KLEM_CD/60} uur rust</span>`:fitChips(o.fx);
+  const fxH=o.luck?`<span class="g">+${Math.round(o.luck*100)}% op je winst in de slots</span><span class="g">${LUCK_MIN} min actief</span><span>max. ${fmtS(o.p)} extra per keer</span><span>niet bij bonus kopen</span><span>${LUCK_CD/60} uur rust</span>`:o.inc?`<span class="g">${o.inc>=.5?'Inkomen '+klemLab(o.inc).replace('Inkomen ','')+' zo snel':'+'+Math.round(o.inc*100)+'% inkomen van je bedrijven'}</span>${o.vip||o.hr?`<span class="g">${o.hr?'High roller':'VIP'}-beloning</span>`:''}<span class="g">${KLEM_MIN/60} uur actief</span><span>${KLEM_CD/60} uur rust</span>`:fitChips(o.fx);
   const btn=on?`<button class="btn ghost" onclick="act.fitOff('${o.slot}')">${use?'Wegleggen':'Uittrekken'}</button>`:own?`<button class="btn act-btn" onclick="act.fitWear('${o.id}')">${use?'Meenemen':'Aantrekken'}</button>`
    :hrLock?`<button class="btn ghost" disabled>${o.hr?'Alleen High roller':'Alleen VIP en High roller'}</button>`:`<button class="btn ${poor?'ghost':'act-btn'}" onclick="act.fitBuy('${o.id}')" ${poor?'disabled':''}>${poor?'Te duur · ':'Koop · '}${fmt(fitPrice(o))}</button>${lock?`<small class="fit-x">Vanaf ${RANKS[o.r][0]} ${fmt(o.p)} · nu +${fitExtra(o)}%</small>`:''}`;
   return `<article class="fit-item ${on?'on':own?'own':lock||hrLock?'lock':''}" style="--sc:${s.col}" onmouseenter="fitPreview('${o.id}')" onmouseleave="fitPreview(null)" onfocusin="fitPreview('${o.id}')" onfocusout="fitPreview(null)">
@@ -409,7 +414,7 @@ Object.assign(act,{
  luckUse(){const o=fitItem(fitS().wear.geluk);if(!o||!o.luck){toast('Neem eerst een geluksdobbelsteen mee (Outfit, Geluk)','bad');return}
   if(luckLeft()){toast('Je geluk loopt al','bad');return}if(luckWait()){toast('Je dobbelsteen moet nog '+fmtClock(luckWait())+' rusten','bad');return}
   S.luck={pct:o.luck,id:o.id,until:now()+LUCK_MIN*60000,ready:now()+LUCK_CD*60000};try{SFX.win&&SFX.win(2)}catch(e){}
-  toast(`${o.n}: ${LUCK_MIN} minuten +${Math.round(o.luck*100)}% op je winst in de slots`,'lvl');log(`Geluk: ${o.n} gebruikt (+${Math.round(o.luck*100)}% in de slots, ${LUCK_MIN} min)`,'ok');save();render()}});
+  toast(`${o.n}: ${LUCK_MIN} minuten +${Math.round(o.luck*100)}% op je winst in de slots (max. ${fmt(o.p)} extra)`,'lvl');log(`Geluk: ${o.n} gebruikt (+${Math.round(o.luck*100)}% in de slots, ${LUCK_MIN} min)`,'ok');save();render()}});
 // geldklem gebruiken: 2 uur meer inkomen van je bedrijven
 Object.assign(act,{klemUse(){const o=fitItem(fitS().wear.zaken);if(!o||!o.inc){toast('Neem eerst een geldklem mee (Outfit, Gelukspullen)','bad');return}
   if(klemLeft()){toast('Je geldklem werkt al','bad');return}if(klemWait()){toast('Je geldklem moet nog '+bkDurL(klemWait())+' rusten','bad');return}
@@ -424,7 +429,7 @@ function klemPanelHtml(){const {o,L,W,ready}=klemState(),inc=typeof income==='fu
 function charmLobbyHtml(){const l=luckState(),k=klemState();
  const row=(cls,col,svg,kicker,title,what,st,btn,tab)=>`<div class="ch-row ${cls}" style="--c:${col}"><button class="ch-open" onclick="fitUI.street='geluk';fitUI.tab='${tab}';render()"><span class="ch-ic">${svg}</span><span class="ch-tx"><span class="label">${kicker}</span><b>${title}</b><small>${what}</small></span></button><div class="ch-st">${st}${btn}</div></div>`;
  const stx=(s,on)=>`<span class="ch-s ${on?'on':''}">${s}</span>`;
- const lk=l.o?row(l.L?'on':'', '#f2c230',diceSvg(l.o,1),'Casino · op zak',esc(l.o.n),`+${Math.round(l.o.luck*100)}% op je winst in de slots, ${LUCK_MIN} min. Daarna een werkdag (${LUCK_CD/60} uur, 2 speldagen) rust.`,
+ const lk=l.o?row(l.L?'on':'', '#f2c230',diceSvg(l.o,1),'Casino · op zak',esc(l.o.n),`+${Math.round(l.o.luck*100)}% op je winst in de slots (max. ${fmtS(l.o.p)} extra, niet bij bonus kopen), ${LUCK_MIN} min. Daarna een werkdag (${LUCK_CD/60} uur, 2 speldagen) rust.`,
    l.L?stx('Actief · nog '+fmtClock(l.L),1):l.W?stx('Rust · nog '+bkDurL(l.W)):stx('Klaar',1),l.ready?`<button class="btn sm act-btn" onclick="act.luckUse()">Gebruiken</button>`:'','geluk')
   :row('', '#f2c230',diceSvg(fitItem('dob5'),1),'Casino','Dobbelstenen',`Extra winst in de slots, ${LUCK_MIN} minuten per keer. Daarna een werkdag (${LUCK_CD/60} uur, 2 speldagen) rust.`,stx('Nog geen dobbelsteen op zak'),`<button class="btn sm ghost" onclick="fitUI.street='geluk';fitUI.tab='geluk';render()">Bekijken</button>`,'geluk');
  const kl=k.o?row(k.L?'on':'', '#5fe08f',klemSvg(k.o,1),'Bedrijven · op zak',esc(k.o.n),`${k.o.inc>=.5?'Je bedrijven verdienen '+(1+k.o.inc).toLocaleString('nl-NL')+'× zo snel':'+'+Math.round(k.o.inc*100)+'% inkomen van al je bedrijven'}, ${KLEM_MIN/60} uur (een halve speldag). Daarna een werkdag (${KLEM_CD/60} uur, 2 speldagen) rust.`,
@@ -435,6 +440,6 @@ function charmLobbyHtml(){const l=luckState(),k=klemState();
 function luckState(){const o=fitItem(fitS().wear.geluk),L=luckLeft(),W=luckWait();return {o,L,W,ready:!!(o&&o.luck)&&!L&&!W}}
 function luckPanelHtml(){const {o,L,W,ready}=luckState();
  return `<div class="luck-p ${L?'on':''}">${o?diceSvg(o,1):''}<div class="luck-t"><span class="label">Geluksdobbelsteen</span><b>${o?esc(o.n)+' · +'+Math.round(o.luck*100)+'%':'Geen dobbelsteen op zak'}</b>
-  <small>${L?`Actief: nog ${fmtClock(L)} extra winst in de slots`:W?`Rust nog ${bkDurL(W)}`:o?`Klaar. Gebruik hem vlak voor je gaat spelen.`:'Koop er een hieronder en neem hem mee. Roulette, blackjack, poker en de andere spellen houden de echte kansen.'}</small></div>
+  <small>${L?`Actief: nog ${fmtClock(L)} extra winst in de slots · nog ${fmt(luckRest())} van ${fmt(luckCap())} te halen`:W?`Rust nog ${bkDurL(W)}`:o?`Klaar. Gebruik hem vlak voor je gaat spelen. Per keer max. ${fmt(luckCap(o.id))} extra, niet bij bonus kopen.`:'Koop er een hieronder en neem hem mee. Roulette, blackjack, poker en de andere spellen houden de echte kansen.'}</small></div>
   ${o?`<button class="btn ${ready?'act-btn':'ghost'}" onclick="act.luckUse()" ${ready?'':'disabled'}>${L?'Actief':W?'Rust':'Gebruiken'}</button>`:''}</div>`}
 const bkDurL=ms=>{const m=Math.ceil(ms/60000),h=Math.floor(m/60);return h?h+'u '+String(m%60).padStart(2,'0')+'m':m+' min'};

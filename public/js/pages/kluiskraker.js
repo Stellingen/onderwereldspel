@@ -381,7 +381,7 @@ Object.assign(act,{
   if(isBuy)sd.buys++;else{sd.spins++;if(round.kind)sd.bon++;if(round.kind==='super')sd.sup++}
   const pay=Math.floor(round.total*bet*100)/100;
   // geluksdobbelsteen actief (outfit): een percentage extra op je winst, apart getoond na de ronde
-  const lk=typeof luckPct==='function'&&pay>0?Math.floor(pay*luckPct()*100)/100:0;
+  const lk=typeof luckBonus==='function'?luckBonus(pay,!!isBuy):0;
   // Uitkomst staat vast en wordt meteen verrekend; de animatie laat alleen zien wat er gebeurde.
   S.cash+=pay+lk-cost;window.slotPending=pay+lk;
   if(pay+lk>cost)S.stats.won+=pay+lk-cost;else S.stats.lost+=cost-pay-lk;

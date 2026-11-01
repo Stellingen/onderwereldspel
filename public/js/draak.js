@@ -10,7 +10,7 @@
 // - Jackpots: Mini 10×, Minor 25×, Major 100×, Mega (alle 15 vol) 5.000× je inzet (de max win).
 // - Lidmaatschap (0 gewoon, 1 VIP, 2 High roller): vaker gongs en munten; lijnwinst in het basisspel is daarvoor lager (VIP_KT).
 // - Bonus kopen: free spins (FS_BUY×) of de muntenbonus met 6 munten (HS_BUY×).
-// - Doorgerekend (draaksim3.js, 3 mln. spins per lidmaatschap): RTP ±93,5% (VIP ±95,5%, High roller ±97%). Free spins ±1 op 240
+// - Doorgerekend (draaksim3.js, 3 mln. spins per lidmaatschap): RTP ±92% (VIP ±93,5%, High roller ±95%; bonus kopen ±94%; jackpotmunten zeldzaam). Free spins ±1 op 240
 //   (gem. ±55×), muntenbonus ±1 op 260 (gem. ±42×), bord vol ±1 op 1.700 muntenbonussen. Kopen: free spins ±96%, munten ±96%.
 //   VIP en High roller: jackpotmunten 30% / 60% vaker en het laatste vakje voor de Mega 20% / 40% vaker. Kopen is voor iedereen gelijk.
 //   3 spins extra: ±1 op 80 free-spinbonussen.
@@ -28,16 +28,16 @@ const SYMS=[
  {id:'lantaarn',n:'Lantaarn',   w:12,cw:8, pay:[15,60,200]},
  {id:'kat',    n:'Gelukskat',   w:9, cw:6, pay:[20,80,300]},
  {id:'draak',  n:'Draak',       w:6, cw:4, pay:[30,150,600]}];
-let PAYK=3.14,FS_K=.391;          // schaal op lijnwinst in het basisspel en in de free spins
-let VIP_KT=[1,.965,.905];      // lijnwinst basisspel per lidmaatschap
+let PAYK=3.16,FS_K=.36;          // schaal op lijnwinst in het basisspel en in de free spins
+let VIP_KT=[1,.985,.925];      // lijnwinst basisspel per lidmaatschap
 const WILD={w:5,cw:2.2};    // parel op rol 2-4; cw = kans op een reuzenparel in de free spins
 const GONG={cw:3};        // reuzengong in de free spins (alleen dan kan er een retrigger komen)
 const SC={p:.16,t:[.16,.165,.17],fsEnd:.2};      // kans per rol (1, 3, 5) op een gong; fsEnd = in de free spins op rol 1 en 5
 const COIN={q:.115,t:[.115,.117,.12],pk:[.075,.075,.075,.075,.075,.075,.075,.075,.075,.075,.075,.07,.06,.04,.005]};  // q = kans op een munt per vakje (basis); pk[n] = kans per leeg vakje per spin als er n vol zijn
 // munten: waarde × inzet en gewicht. Veel kleine, af en toe een grote, heel soms een jackpot.
 const JP={mini:10,minor:25,major:100};
-const COINS=[[1,300],[2,240],[3,170],[4,120],[5,90],[8,55],[10,40],[15,22],[20,14],[25,9],[50,3],['mini',12],['minor',4],['major',.7]];
-let FS_BUY=57,HS_BUY=43;
+const COINS=[[1,300],[2,240],[3,170],[4,120],[5,90],[8,55],[10,40],[15,22],[20,14],[25,9],[50,2],['mini',7],['minor',2],['major',.3]];
+let FS_BUY=54,HS_BUY=42;
 const coinVal=v=>typeof v==='string'?JP[v]:v;
 // VIP en High roller: jackpotmunten vallen vaker (JPT) en het laatste vakje voor de Mega iets vaker (MEGT)
 let JPT=[1,1.3,1.6],MEGT=[1,1.2,1.4];

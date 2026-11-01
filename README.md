@@ -409,7 +409,9 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   Kluiskraker en Visdief, daarna 5 uur rust. Gebroken +4% (€2.500), hout +5% (€20.000, Loopjongen), been +8% (€150.000, Boef),
   zilver +11% (€750.000, Soldaat) en goud +18% (€5 mln., alleen High roller). Het extra geld wordt na de ronde apart getoond;
   roulette, blackjack, poker, mines, hoogvlieger en de munt houden de echte kansen. Gebruiken kan op Outfit en in de saldobalk
-  van het casino.
+  van het casino. **Grens** (`luckBonus` in `look.js`): geluk telt niet bij bonus kopen, en per keer gebruiken krijg je
+  hoogstens de prijs van de dobbelsteen extra (gebroken €2.500 … goud €5 mln.); het paneel toont hoeveel er nog te halen is.
+  Zonder die grens maakte +25% de slots tijdelijk winstgevend (±117%).
 - **Zwart geld en witwassen** (`public/js/pages/witwas.js`, kern in `state.js`): geld uit klussen, huurmoorden, auto's
   verkopen, de heler, de familie (missies, klussen, oorlog, afdracht) en bendegevechten is zwart (`S.zwart`, het deel van je
   contant geld dat zwart is). Gewoon uitgeven (wapens, kleding, training, ontspannen, inrichting) gaat eerst van zwart. De bank
@@ -660,12 +662,19 @@ jade, waaier, lantaarn, gelukskat, draak; drakenparel = wild (rol 2–4); gong =
 - **Free spins (3 gongs)**: 10 spins met de Reuzendraak: rol 2–4 zijn één groot symbool (telt als drie volle rollen). Gong op
   rol 1 + reuzengong + gong op rol 5 = 3 spins extra (±1 op 80 bonussen).
 - **Muntenbonus (6+ munten)**: op het hele bord (5 × 3 = 15 vakjes), de munten blijven op hun plek, 3 spins; elke nieuwe munt
-  plakt en zet je terug op 3. De lege vakjes rollen zichtbaar door munten en jackpots. Munten 1× tot 50× je inzet, of Mini 10×,
+  plakt en zet je terug op 3. De lege vakjes rollen zichtbaar van boven naar beneden door munten en jackpots. Munten 1× tot 50× je inzet, of Mini 10×,
   Minor 25×, Major 100× (VIP 30% en High roller 60% vaker). Alle 15 vol = **Mega** = max win 5.000× (±1 op 1.700 bonussen).
-- **Indeling**: bord met jackpotbalk links, rechts saldo, deze spin, winst, inzetblok (groot bedrag, −/+, alle bedragen, max
+- **Indeling**: links naast het bord een jackpotladder (Mega bovenaan en het breedst, dan Major, Minor, Mini; ook op telefoon
+  als smalle kolom), rechts saldo, deze spin, winst, inzetblok (groot bedrag, −/+, alle bedragen, max
   win) en de knoppen. Nieuwe draak-tekening (kop, slangenlijf met schubben en rugvinnen, parel) in `covers.js` (`drHead`,
   `drBody`, `drPearl`), gebruikt voor het symbool, de lobby en de website.
-- **Bonus kopen**: free spins 57× of de Muntenbonus met 6 munten 43× (voor iedereen dezelfde kansen).
-- Doorgerekend (3 mln. spins per lidmaatschap): RTP ±93,5% (VIP ±95%, High roller ±96,5%); free spins ±1 op 240, munten ±1 op
-  260; kopen ±96% (free spins 57×, munten 43×). Telt als slot voor de casinokaart, cashback 0,5%, seeds, geluk, pauze
+- **Bonus kopen**: twee tegels in het paneel (Free spins: 3 gongs, Muntenbonus: 6 munten) met een koopknop die je twee keer
+  klikt (bevestigen). Free spins 54×, munten 42× (voor iedereen dezelfde kansen).
+- Doorgerekend (8 × 450.000 rondes per lidmaatschap): RTP ±92% (VIP ±93,5%, High roller ±95%); free spins ±1 op 240, munten
+  ±1 op 260; kopen ±94% (free spins 54×, munten 42×). Jackpotmunten zijn zeldzamer (Mini 7, Minor 2, Major 0,3 op ±1.100
+  muntgewicht) en de 50×-munt ook; een winst van 100× of meer valt ±1 op 2.500 spins (was 1 op 1.900). Telt als slot voor de casinokaart, cashback 0,5%, seeds, geluk, pauze
   bij wegklikken, "bonus loopt nog" na verversen. Ook op de website (`/casino/gouden-draak`, `covers.js`, `landing.js`).
+- **Slots, knoppen** (`style.css`, generiek): het inzetblok (`.sl-bet`: kop "Inzet per spin" + "Alle bedragen", groot bedrag met
+  −/+, onderregel met max win) staat nu ook in Visdief. Snelheid (`.spd`, icoon altijd zichtbaar) en Bonus kopen (`.kk-buyt`,
+  schakelaar met AAN/UIT) staan naast elkaar op dezelfde hoogte (56 px, telefoon 44 px). Visdief heeft op brede schermen net
+  als Kluiskraker en Suikerbaron het bord links en een paneel rechts.

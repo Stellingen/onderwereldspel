@@ -18,7 +18,7 @@ const drShort=n=>n>=1e6?'€'+(Math.round(n/1e5)/10).toLocaleString('nl-NL')+'M'
 const DR_LC=['#ffd35a','#ff5a4e','#ffb347','#f7e08a','#ff8a5c','#e8c66a','#ffcf70','#ff6f61','#f5b041','#ffe7a3'];
 const DR_JP={mini:['Mini','#5fe08f'],minor:['Minor','#5ad1ff'],major:['Major','#b48cff'],mega:['Mega','#ff4f5a']};
 // doorgerekend per lidmaatschap (draaksim2.js)
-const DR_TIER=[{fs:240,hs:260,rtp:'93,5'},{fs:220,hs:240,rtp:'95'},{fs:205,hs:210,rtp:'96,5'}];
+const DR_TIER=[{fs:240,hs:260,rtp:'92'},{fs:220,hs:240,rtp:'93,5'},{fs:205,hs:210,rtp:'95'}];
 
 // ---------- Iconen ----------
 const DR_IC={
@@ -61,17 +61,21 @@ function drInfo(){const fs=dr.fs,hs=dr.hs,pend=window.slotPending||0;
   <div class="dr-c"><span class="label">Deze spin</span><b id="drStep" class="acc" data-fit="13">${fmt(dr.stepWin)}</b></div>
   <div class="dr-c dr-c-win"><span class="label">${fs||hs?'Bonuswinst':'Gewonnen'}</span><b id="drLast" class="grn" data-fit="14">${fmt(fs?fs.total:hs?hs.total||0:dr.lastWin)}</b>${fs?`<small class="kk-xn">${slotX(fs.total,dr.bet)}</small>`:''}</div>`}
 // Jackpots altijd zichtbaar boven het bord (bij je huidige inzet)
+function drLadderHtml(){const b=dr.busy&&dr.bet?dr.bet:drBet();return `<div class="dr-lad-h">Jackpots</div>`+['mega','major','minor','mini'].map((j,i)=>`<div class="dr-lj ${j}" style="--jc:${DR_JP[j][1]};--w:${100-i*7}%"><b>${DR_JP[j][0]}</b><em data-fit="10">${fmt((j==='mega'?DRAAK.MAX_WIN:DRAAK.JP[j])*b)}</em></div>`).join('')+`<small class="dr-lad-f">Mega = alle 15 vakjes vol</small>`}
 function drJpHtml(){const b=dr.busy&&dr.bet?dr.bet:drBet();return ['mini','minor','major','mega'].map(j=>`<div class="dr-jp ${j}" style="--jc:${DR_JP[j][1]}"><b>${DR_JP[j][0]}</b><em data-fit="9">${fmt((j==='mega'?DRAAK.MAX_WIN:DRAAK.JP[j])*b)}</em></div>`).join('')}
 function drSubHtml(){return dr.fs?'<span class="dr-tag">Reuzendraak</span> Rol 2 t/m 4 zijn één groot symbool':dr.hs?'<span class="dr-tag">Muntenbonus</span> Elke nieuwe munt zet je weer op 3 spins':`${vipTag()}Free spins ±1 op ${DR_TIER[tier()].fs} · munten ±1 op ${DR_TIER[tier()].hs} · max ${DRAAK.MAX_WIN.toLocaleString('nl-NL')}×`}
-function drControls(){const b=drBet(),fsC=b*DRAAK.FS_BUY,hsC=b*DRAAK.HS_BUY,dis=dr.busy||inJail();
- return `<div class="kk-betbox dr-bet"><div class="dr-bet-h"><span class="label">Inzet per spin</span><button class="dr-bet-all" onclick="slotBetPop('dr')" ${dr.busy?'disabled':''}>Alle bedragen</button></div>
+function drControls(){const b=drBet(),dis=dr.busy||inJail();
+ return `<div class="kk-betbox sl-bet dr-bet"><div class="sl-bet-h"><span class="label">Inzet per spin</span><button class="sl-bet-all" onclick="slotBetPop('dr')" ${dr.busy?'disabled':''}>Alle bedragen</button></div>
    <div class="kk-bet"><button onclick="drStepBet(-1)" ${dr.busy?'disabled':''} aria-label="Lagere inzet">−</button><button class="kk-betv" onclick="slotBetPop('dr')" ${dr.busy?'disabled':''} aria-label="Inzet kiezen" data-fit="14">${fmt(b)}</button><button onclick="drStepBet(1)" ${dr.busy?'disabled':''} aria-label="Hogere inzet">+</button></div>
-   <div class="dr-bet-f"><span>Max win <b>${b*DRAAK.MAX_WIN>=1e6?fmtS(b*DRAAK.MAX_WIN):fmt(b*DRAAK.MAX_WIN)}</b></span><span>Max inzet <b>${fmtS?fmtS(kkBets().slice(-1)[0]):''}</b></span></div></div>
-   ${dr.buyMode?`<div class="dr-buys"><button class="btn kk-go buy dr-bfs" onclick="act.drSpin('fs')" ${dis||casCash()<fsC?'disabled':''}><span class="kk-buy-l">Free spins</span><b class="kk-buy-p" data-fit="13" title="${fmt(fsC)}">${fsC>=1e6?fmtS(fsC):fmt(fsC)}</b><small>${DRAAK.FS_BUY}× · 10 spins</small></button>
-    <button class="btn kk-go buy dr-bhs" onclick="act.drSpin('hs')" ${dis||casCash()<hsC?'disabled':''}><span class="kk-buy-l">Munten</span><b class="kk-buy-p" data-fit="13" title="${fmt(hsC)}">${hsC>=1e6?fmtS(hsC):fmt(hsC)}</b><small>${DRAAK.HS_BUY}× · 6 munten</small></button></div>`
-    :`<button class="btn kk-go" onclick="act.drSpin(false)" ${dis?'disabled':''}>${dr.busy?'Bezig…':'Draaien'}<small>spatie</small></button>`}
-   <div class="kk-small">${slotSpdHtml()}
-    <button class="kk-buyt ${dr.buyMode?'on':''}" onclick="dr.buyMode=!dr.buyMode;SFX.click();drRefresh()" ${dr.busy?'disabled':''} aria-pressed="${!!dr.buyMode}"><i></i><span>Bonus kopen</span><small>${dr.buyMode?'aan':'uit'}</small></button></div>`}
+   <div class="sl-bet-f"><span>Max win <b>${b*DRAAK.MAX_WIN>=1e6?fmtS(b*DRAAK.MAX_WIN):fmt(b*DRAAK.MAX_WIN)}</b></span><span>Max inzet <b>${fmtS(kkBets().slice(-1)[0])}</b></span></div></div>
+   <button class="btn kk-go" onclick="act.drSpin(false)" ${dis?'disabled':''}>${dr.busy?'Bezig…':'Draaien'}<small>spatie</small></button>
+   <div class="kk-small dr-small">${slotSpdHtml()}</div>`}
+// De twee bonussen als tegels: hoe je erin komt, en meteen kopen (twee keer klikken, zodat je niet per ongeluk koopt)
+function drBonusHtml(){const b=drBet(),dis=dr.busy||inJail(),T=[['fs','gong','Free spins','3 gongs',`${DRAAK.FS_START} spins met de Reuzendraak`,DRAAK.FS_BUY],['hs','munt','Muntenbonus','6 munten','Munten blijven staan · vul het bord voor de Mega',DRAAK.HS_BUY]];
+ return `<div class="dr-bon"><div class="dr-bon-h"><span class="label">Bonussen</span><small>${vipTag()}vaker als VIP en High roller</small></div><div class="dr-bon-g">${T.map(([k,ic,n,how,d,x])=>{const c=b*x,ask=dr.ask===k,poor=casCash()<c;
+  return `<div class="dr-bt ${k} ${ask?'ask':''}"><span class="dr-bt-ic">${drSvg(ic)}</span><b>${n}</b><span class="dr-bt-how">${how}</span><small>${d}</small>
+   <button class="dr-bt-buy" onclick="drBuyAsk('${k}')" ${dis||poor?'disabled':''} title="${fmt(c)} (${x}× je inzet)">${poor?'Te weinig saldo':ask?'Bevestig · ':'Kopen · '}${poor?'':`<em data-fit="10">${c>=1e6?fmtS(c):fmt(c)}</em>`}</button></div>`}).join('')}</div></div>`}
+function drBuyAsk(k){if(dr.busy)return;if(dr.ask===k){dr.ask=null;clearTimeout(dr._askT);act.drSpin(k);return}dr.ask=k;SFX.click();clearTimeout(dr._askT);dr._askT=setTimeout(()=>{dr.ask=null;const e=drEl('drBon');if(e)e.innerHTML=drBonusHtml()},4000);const e=drEl('drBon');if(e){e.innerHTML=drBonusHtml();fitText(e)}}
 function drSeed(){if(!S.drSeed||!S.drSeed.s)S.drSeed=kkNewSd(S.drSeed&&S.drSeed.prev);return S.drSeed}
 function drSeedHtml(){const s0=drSeed(),p=s0.prev,sd={...s0,bon:s0.bon-(dr.busy&&dr.sdPend?1:0)};
  return `<div class="kk-seed"><div class="kk-seed-i"><span class="label">Seed</span><b>${kkSeedId(sd)}</b></div>
@@ -87,8 +91,9 @@ function drPayTab(){const b=drBet(),k=DRAAK.PAYK/DRAAK.LINES.length*(DRAAK.VIP_K
   <div><h3 class="vd-h">Jackpots in de Muntenbonus</h3><div class="dr-jps">${jp}</div>
   <h3 class="vd-h" style="margin-top:18px">Waarde van een munt</h3><div class="vd-fishv dr-coinv">${coins}</div></div></div>`}
 function draakView(){const g=dr.grid||drDemo(),fs=dr.fs,hs=dr.hs;
- return `<div class="kk kk3 dr ${fs?'is-fs':''} ${hs?'is-hs':''} ${dr.buyMode?'is-buy':''}">
+ return `<div class="kk kk3 dr ${fs?'is-fs':''} ${hs?'is-hs':''}">
  <div class="kk-stage dr-stage" id="drStage"><div class="dr-main">
+  <aside class="dr-lad" id="drLad">${drLadderHtml()}</aside>
   <div class="dr-board" id="drBoard">${DR_SKY}<header class="dr-head">${DR_LOGO}<span id="drSub" class="dr-sub">${drSubHtml()}</span><button class="kk-snd dr-snd" onclick="SFX.toggle();this.textContent=SFX.on?'🔊':'🔇'" aria-label="Geluid aan of uit">${SFX.on?'🔊':'🔇'}</button></header>
    <div class="dr-jps-top" id="drJp">${drJpHtml()}</div>
    <div class="dr-deck"><div class="dr-frame"><div class="dr-reels ${fs?'fs':''}" id="drReels">${drReelsHtml(g,!!fs)}</div>${hs?drHsHtml():''}<svg class="dr-lines" id="drLines" viewBox="0 0 500 300" preserveAspectRatio="none"></svg><div class="dr-fx" id="drFx"></div></div></div>
@@ -97,6 +102,7 @@ function draakView(){const g=dr.grid||drDemo(),fs=dr.fs,hs=dr.hs;
   <aside class="dr-side">
    <div class="dr-hud" id="drInfo">${drInfo()}</div>
    <div class="kk-ctl dr-ctl" id="drCtl">${drControls()}</div>
+   <div id="drBon">${drBonusHtml()}</div>
    <div id="drSeedBox">${drSeedHtml()}</div>
   </aside></div>
  </div>
@@ -105,11 +111,11 @@ function draakView(){const g=dr.grid||drDemo(),fs=dr.fs,hs=dr.hs;
    <div><span>${drSvg('gong')}</span><p><b>3 gongs</b> (op rol 1, 3 en 5) geven ${DRAAK.FS_START} free spins met de <b>Reuzendraak</b>: rol 2, 3 en 4 worden één groot blok met één symbool. Dat telt als drie volle rollen van dat symbool, dus één gelijk symbool op rol 1 is al vier op een lijn, en met rol 5 erbij vijf. Een gong op rol 1, een reuzengong en een gong op rol 5 geven ${DRAAK.FS_RETRIG} spins extra.</p></div>
    <div><span>${drSvg('munt')}</span><p><b>${DRAAK.HS_TRIG} of meer gouden munten</b>, waar ook op het scherm, geven de <b>Muntenbonus</b> op het hele bord van 15 vakjes. De munten blijven op hun plek staan en je hebt 3 spins. Valt er een munt bij, dan blijft hij plakken en sta je weer op 3. Valt er niets, dan gaat er een spin af. Munten zijn 1× tot 50× je inzet waard, of een jackpot: Mini ${DRAAK.JP.mini}×, Minor ${DRAAK.JP.minor}×, Major ${DRAAK.JP.major}×. Alle 15 vakjes vol is <b>Mega</b>: ${DRAAK.MAX_WIN.toLocaleString('nl-NL')}× je inzet, de max win.</p></div>
    <div><span>${drSvg('parel')}</span><p><b>De drakenparel</b> is wild op rol 2, 3 en 4. In de free spins kan het hele grote blok een parel zijn: dan telt elke lijn met een symbool op rol 1 als vier op een lijn.</p></div>
-   <div><span class="kk-mini key">␣</span><p><b>Spatiebalk</b> draait. RTP ±${DR_TIER[tier()].rtp}%. Bonus kopen: free spins ${DRAAK.FS_BUY}× of de Muntenbonus met 6 munten ${DRAAK.HS_BUY}× je inzet (±96%).${isVip()?` Als <b>${lidName()}</b> vallen gongs en munten vaker; lijnwinst in het basisspel is daarvoor ${Math.round((1-DRAAK.VIP_KT[tier()])*100)}% lager.`:` <b>VIP</b> en <b>High roller</b> komen vaker in de bonussen.`}</p></div>
+   <div><span class="kk-mini key">␣</span><p><b>Spatiebalk</b> draait. RTP ±${DR_TIER[tier()].rtp}%. Bonus kopen: free spins ${DRAAK.FS_BUY}× of de Muntenbonus met 6 munten ${DRAAK.HS_BUY}× je inzet (±94%).${isVip()?` Als <b>${lidName()}</b> vallen gongs en munten vaker; lijnwinst in het basisspel is daarvoor ${Math.round((1-DRAAK.VIP_KT[tier()])*100)}% lager.`:` <b>VIP</b> en <b>High roller</b> komen vaker in de bonussen.`}</p></div>
   </div></section></div>`}
-function drRefresh(){const root=document.querySelector('.dr');if(!root)return;root.classList.toggle('is-fs',!!dr.fs);root.classList.toggle('is-hs',!!dr.hs);root.classList.toggle('is-buy',!!dr.buyMode);
+function drRefresh(){const root=document.querySelector('.dr');if(!root)return;root.classList.toggle('is-fs',!!dr.fs);root.classList.toggle('is-hs',!!dr.hs);
  const set=(id,h)=>{const e=drEl(id);if(e){e.innerHTML=h;fitText(e)}};
- set('drSub',drSubHtml());set('drInfo',drInfo());set('drJp',drJpHtml());set('drCtl',drControls());set('drSeedBox',drSeedHtml());set('drPayTab',drPayTab())}
+ set('drSub',drSubHtml());set('drInfo',drInfo());set('drJp',drJpHtml());set('drLad',drLadderHtml());set('drBon',drBonusHtml());set('drCtl',drControls());set('drSeedBox',drSeedHtml());set('drPayTab',drPayTab())}
 function drStepBet(d){if(dr.busy)return;dr.bi=Math.max(0,Math.min(kkBets().length-1,dr.bi+d));SFX.chip();drRefresh()}
 function drSetBet(i){if(dr.busy)return;dr.bi=Math.max(0,Math.min(kkBets().length-1,i));SFX.chip();drRefresh()}
 function drText(id,v){const e=drEl(id);if(e)e.textContent=v}
@@ -166,12 +172,13 @@ function drHsSet(i,v,anim){const el=document.querySelector(`#drHs .dr-hc[data-i=
 // Muntenbonus draaien: elk leeg vakje rolt door munten (ook Mini, Minor en Major) en stopt op leeg of op de nieuwe munt
 function drHsTumble(nw){const T=drT(),map=new Map(nw),els=[...document.querySelectorAll('#drHs .dr-hc:not(.on)')];if(!els.length||!drOn())return Promise.resolve();let maxD=0;
  els.forEach(el=>{const i=+el.dataset.i,c=Math.floor(i/3),fin=map.has(i)?map.get(i):null,N=7+c;const it=[];
-  for(let k=0;k<N;k++){const r=Math.random();it.push(r<.42?null:r<.5?['mini','minor','major'][Math.floor(Math.random()*3)]:DRAAK.pickCoin(Math.random))}it.push(fin);
+  it.push(fin);for(let k=0;k<N;k++){const r=Math.random();it.push(r<.42?null:r<.5?['mini','minor','major'][Math.floor(Math.random()*3)]:DRAAK.pickCoin(Math.random))}
   el.innerHTML=`<div class="dr-hstrip" style="--n:${N+1}">${it.map(v=>`<div class="dr-hi">${v!=null?drCoinHtml(v):''}</div>`).join('')}</div>`;
   const strip=el.firstChild,d=T.hs+c*slotSp(110,60)+(r=>r)(0);maxD=Math.max(maxD,d);el.classList.add('roll');
-  strip.animate(drReduce()?[{transform:`translateY(-${N/(N+1)*100}%)`},{transform:`translateY(-${N/(N+1)*100}%)`}]:[
-   {transform:'translateY(0)',filter:'blur(0px)'},{transform:`translateY(-${N*.35/(N+1)*100}%)`,filter:'blur(2px)',offset:.35},
-   {transform:`translateY(-${(N+.12)/(N+1)*100}%)`,filter:'blur(0px)',offset:.88},{transform:`translateY(-${N/(N+1)*100}%)`,filter:'blur(0px)'}],{duration:d,easing:'cubic-bezier(.2,.6,.3,1)',fill:'forwards'});
+  // van boven naar beneden: de strook zakt, de uitkomst (bovenaan) komt als laatste in beeld
+  strip.animate(drReduce()?[{transform:'translateY(0)'},{transform:'translateY(0)'}]:[
+   {transform:`translateY(-${N/(N+1)*100}%)`,filter:'blur(0px)'},{transform:`translateY(-${N*.65/(N+1)*100}%)`,filter:'blur(2px)',offset:.35},
+   {transform:`translateY(${.12/(N+1)*100}%)`,filter:'blur(0px)',offset:.88},{transform:'translateY(0)',filter:'blur(0px)'}],{duration:d,easing:'cubic-bezier(.2,.6,.3,1)',fill:'forwards'});
   setTimeout(()=>{el.classList.remove('roll');if(fin==null){el.innerHTML=''}else{el.innerHTML=drCoinHtml(fin)}},d)});
  return drWait(maxD+40)}
 function drHsBarSet(){const t=drEl('drTick');if(t){t.innerHTML=drHsBar();fitText(t)}}
@@ -186,17 +193,17 @@ async function drPlayHs(hsr,bet,step0){const T=drT();dr.inBonus=true;
  for(const st of hsr.steps){try{await drHold();
   SFX.dr.spin();await drHsTumble(st.nw);
   if(st.nw.length){for(const [i,v] of st.nw){dr.hs.cells[i]=v;dr.hs.sum+=DRAAK.coinVal(v);dr.hs.filled++;drHsSet(i,v,true);
-    if(typeof v==='string'){SFX.dr.jp(['mini','minor','major'].indexOf(v));document.querySelector(`#drJp .dr-jp.${v}`)?.classList.add('hit');await drBanner(DR_JP[v][0],fmt(DRAAK.JP[v]*bet),slotSp(1500,900),'plus',drCoinHtml(v));document.querySelector(`#drJp .dr-jp.${v}`)?.classList.remove('hit')}else SFX.dr.coin(i);
+    if(typeof v==='string'){SFX.dr.jp(['mini','minor','major'].indexOf(v));document.querySelectorAll(`#drJp .dr-jp.${v},#drLad .dr-lj.${v}`).forEach(e=>e.classList.add('hit'));await drBanner(DR_JP[v][0],fmt(DRAAK.JP[v]*bet),slotSp(1500,900),'plus',drCoinHtml(v));document.querySelectorAll(`#drJp .dr-jp.${v},#drLad .dr-lj.${v}`).forEach(e=>e.classList.remove('hit'))}else SFX.dr.coin(i);
     dr.hs.left=DRAAK.HS_SPINS;drHsBarSet();drInfoSet();await drWait(T.drop)}}
   else{SFX.dr.lose();dr.hs.left=st.left;drHsBarSet()}
   dr.hs.left=st.left;drHsBarSet();drInfoSet();
   if(dr.hs.filled>=15){await drWait(300);break}
   await drWait(slotSp(240,100))}catch(e){console.error(e)}}
  const tot=hsr.total*bet;dr.hs.total=tot;
- if(hsr.full){SFX.dr.big();document.querySelector('#drJp .dr-jp.mega')?.classList.add('hit');await drBanner('MEGA',`Alle 15 vakjes vol · ${DRAAK.MAX_WIN.toLocaleString('nl-NL')}× je inzet · ${fmt(tot)}`,4500,'plus gold',drSvg('draak'))}
+ if(hsr.full){SFX.dr.big();document.querySelectorAll('#drJp .dr-jp.mega,#drLad .dr-lj.mega').forEach(e=>e.classList.add('hit'));await drBanner('MEGA',`Alle 15 vakjes vol · ${DRAAK.MAX_WIN.toLocaleString('nl-NL')}× je inzet · ${fmt(tot)}`,4500,'plus gold',drSvg('draak'))}
  else{SFX.dr.retrig();document.querySelectorAll('#drHs .dr-hc.on').forEach(e=>e.classList.add('cash'));await drCount('drHsSum',0,tot,slotSp(900,450));await drBanner(fmt(tot),`Muntenbonus · ${(Math.round(hsr.total*10)/10).toLocaleString('nl-NL')}× je inzet`,2400,hsr.total>=40?'big':'',drSvg('munt'))}
  drCount('drStep',step0,step0+tot,500);drShowBal(tot);
- dr.hs=null;const h=drEl('drHs');if(h)h.remove();if(root)root.classList.remove('is-hs');document.querySelectorAll('#drJp .dr-jp.hit').forEach(e=>e.classList.remove('hit'));drRefresh();return tot}
+ dr.hs=null;const h=drEl('drHs');if(h)h.remove();if(root)root.classList.remove('is-hs');document.querySelectorAll('#drJp .dr-jp.hit,#drLad .dr-lj.hit').forEach(e=>e.classList.remove('hit'));drRefresh();return tot}
 const drInfoSet=()=>{const e=drEl('drInfo');if(e){e.innerHTML=drInfo();fitText(e)}};
 
 // ---------- Ronde afspelen ----------
@@ -225,7 +232,7 @@ async function drPlay(round,bet,buy,resume){const T=drT();dr.stepWin=0;drText('d
  if(!round.fs&&!round.hs){const x=round.total;if(x>=20){SFX.dr.big();await drBanner(fmt(x*bet),(x>=100?'Megawinst':'Grote winst')+' · '+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× je inzet',2000,'big')}else if(x===0)SFX.dr.lose()}
  else drTick(`Bonus voorbij: <b>${fmt(round.total*bet)}</b>`)}
 document.addEventListener('keydown',e=>{if(e.code!=='Space'||page!=='casino'||casinoTab!=='draak'||window.__chase||czBanLeft())return;const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;if(!$('#modal').hidden)return;
- e.preventDefault();if(document.activeElement&&document.activeElement.tagName==='BUTTON')document.activeElement.blur();if(dr.paused){drResume();return}if(dr.busy)return;if(S.slotRun&&S.slotRun.g==='draak'){drResumeRun();return}if(!dr.buyMode)act.drSpin(false)});
+ e.preventDefault();if(document.activeElement&&document.activeElement.tagName==='BUTTON')document.activeElement.blur();if(dr.paused){drResume();return}if(dr.busy)return;if(S.slotRun&&S.slotRun.g==='draak'){drResumeRun();return}act.drSpin(false)});
 async function drResumeRun(){const run=S.slotRun;if(!run||run.g!=='draak'||dr.busy)return;
  let round=null;try{round=DRAAK.playRound(SLOT.seedRng(run.seed),{buy:run.buy||false,vip:run.t})}catch(e){}
  if(!round||!(round.fs||round.hs)||Math.abs(round.total-run.tot)>1e-6){delete S.slotRun;save();render();toast('Je bonus in Gouden Draak is al uitbetaald: '+fmt(run.pay),'lvl');return}
@@ -242,7 +249,7 @@ Object.assign(act,{
   dr.busy=true;dr.inBonus=!!buy;dr.paused=false;dr.bet=bet;dr.shown=0;SFX.dr.spin();
   const sd=drSeed(),seedStr='draak:'+sd.s+':'+sd.c+':'+sd.n,rng=SLOT.seedRng(seedStr);sd.n++;
   const round=DRAAK.playRound(rng,{buy:buy||false,vip:tier()});if(!buy){sd.spins++;if(round.fs||round.hs)sd.bon++}
-  const pay=Math.floor(round.total*bet*100)/100,lk=typeof luckPct==='function'&&pay>0?Math.floor(pay*luckPct()*100)/100:0;
+  const pay=Math.floor(round.total*bet*100)/100,lk=typeof luckBonus==='function'?luckBonus(pay,!!buy):0;
   S.cash+=pay+lk-cost;window.slotPending=pay+lk;if(pay+lk>cost)S.stats.won+=pay+lk-cost;else S.stats.lost+=cost-pay-lk;
   dr.sdPend=!buy&&(round.fs||round.hs)?1:0;
   if(round.fs||round.hs)S.slotRun={g:'draak',seed:seedStr,buy:buy||false,t:tier(),bet,cost,pay,tot:round.total,at:0,ts:now()};

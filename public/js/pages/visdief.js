@@ -84,8 +84,9 @@ function vdFsBar(){const f=vd.fs;if(!f)return '';const P=VISD.PER_LEVEL,top=f.lv
 // doorgerekend per lidmaatschap (visim2.js en vbuy2.js)
 const VD_TIER=[{b:200,rtp:'91,5',buy:'97'},{b:172,rtp:'94',buy:'97'},{b:143,rtp:'96,5',buy:'97,5'}];
 function vdSubHtml(){return vd.fs?'':`${vipTag()}Bonus ±1 op ${VD_TIER[tier()].b}, max ${VISD.MAX_WIN.toLocaleString('nl-NL')}×`}
-function vdControls(){const b=vdBet();return `<div class="kk-betbox"><span class="label">Inzet</span>
-   <div class="kk-bet"><button onclick="vdStepBet(-1)" ${vd.busy?'disabled':''} aria-label="Lagere inzet">−</button><button class="kk-betv" onclick="slotBetPop('vd')" ${vd.busy?'disabled':''} aria-label="Inzet kiezen" title="Klik om je inzet te kiezen">${fmt(b)}</button><button onclick="vdStepBet(1)" ${vd.busy?'disabled':''} aria-label="Hogere inzet">+</button></div></div>
+function vdControls(){const b=vdBet();return `<div class="kk-betbox sl-bet vd-bet"><div class="sl-bet-h"><span class="label">Inzet per spin</span><button class="sl-bet-all" onclick="slotBetPop('vd')" ${vd.busy?'disabled':''}>Alle bedragen</button></div>
+   <div class="kk-bet"><button onclick="vdStepBet(-1)" ${vd.busy?'disabled':''} aria-label="Lagere inzet">−</button><button class="kk-betv" onclick="slotBetPop('vd')" ${vd.busy?'disabled':''} aria-label="Inzet kiezen" title="Klik om je inzet te kiezen" data-fit="14">${fmt(b)}</button><button onclick="vdStepBet(1)" ${vd.busy?'disabled':''} aria-label="Hogere inzet">+</button></div>
+   <div class="sl-bet-f"><span>Max win <b>${b*VISD.MAX_WIN>=1e6?fmtS(b*VISD.MAX_WIN):fmt(b*VISD.MAX_WIN)}</b></span>${vd.buyMode?`<span>Bonus <b>${fmt(b*VISD.BUY_COST)}</b></span>`:''}</div></div>
    ${vd.buyMode?`<button class="btn kk-go buy" onclick="act.vdSpin(true)" ${vd.busy||inJail()||casCash()<b*VISD.BUY_COST?'disabled':''}><span class="kk-buy-l">${vd.busy?'Bezig…':casCash()<b*VISD.BUY_COST?'Te weinig geld':'Bonus kopen'}</span><b class="kk-buy-p">${fmt(b*VISD.BUY_COST)}</b><small>${VISD.BUY_COST}× je inzet van ${fmt(b)}</small></button>`
     :`<button class="btn kk-go" onclick="act.vdSpin(false)" ${vd.busy||inJail()?'disabled':''}>${vd.busy?'Bezig…':'Draaien'}<small>spatie</small></button>`}
    <div class="kk-small">${slotSpdHtml()}
@@ -261,7 +262,7 @@ Object.assign(act,{
   if(S.slotRun&&S.slotRun.g==='vis')delete S.slotRun;
   const sd=vdSeed(),seedStr='vis:'+sd.s+':'+sd.c+':'+sd.n,rng=SLOT.seedRng(seedStr);sd.n++;
   const round=VISD.playRound(rng,{buy:isBuy,vip:tier()});if(!isBuy){sd.spins++;if(round.fs)sd.bon++}
-  const pay=Math.floor(round.total*bet*100)/100,lk=typeof luckPct==='function'&&pay>0?Math.floor(pay*luckPct()*100)/100:0;
+  const pay=Math.floor(round.total*bet*100)/100,lk=typeof luckBonus==='function'?luckBonus(pay,!!isBuy):0;
   S.cash+=pay+lk-cost;window.slotPending=pay+lk;if(pay+lk>cost)S.stats.won+=pay+lk-cost;else S.stats.lost+=cost-pay-lk;
   vd.sdPend=!isBuy&&round.fs?1:0;
   if(round.fs)S.slotRun={g:'vis',seed:seedStr,buy:!!isBuy,t:tier(),bet,cost,pay,tot:round.total,at:0,ts:now()};

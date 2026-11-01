@@ -230,7 +230,7 @@ Object.assign(act,{
   if(S.slotRun&&S.slotRun.g==='zoet')delete S.slotRun;
   const sd=zbSeed(),seedStr='zoet:'+sd.s+':'+sd.c+':'+sd.n,rng=SLOT.seedRng(seedStr);sd.n++;
   const round=ZOET.playRound(rng,{buy:isBuy,vip:tier()});if(!isBuy){sd.spins++;if(round.fs)sd.bon++}
-  const pay=Math.floor(round.total*bet*100)/100,lk=typeof luckPct==='function'&&pay>0?Math.floor(pay*luckPct()*100)/100:0;
+  const pay=Math.floor(round.total*bet*100)/100,lk=typeof luckBonus==='function'?luckBonus(pay,!!isBuy):0;
   S.cash+=pay+lk-cost;window.slotPending=pay+lk;if(pay+lk>cost)S.stats.won+=pay+lk-cost;else S.stats.lost+=cost-pay-lk;
   zb.sdPend=!isBuy&&round.fs?1:0;
   if(round.fs)S.slotRun={g:'zoet',seed:seedStr,buy:!!isBuy,t:tier(),bet,cost,pay,tot:round.total,at:0,ts:now()};
