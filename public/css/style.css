@@ -2930,3 +2930,45 @@ button.bz-cat-h .bz-cat-m{width:100%}
 .dex-card:not(.got) .dex-car{opacity:1;filter:grayscale(.45) brightness(.8)}
 .dex-card:not(.got) .dex-car .carsvg{opacity:.9}
 .dex-t .dex-k{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:-1px 0 2px}
+/* titel van de bonus in de intro, in de stijl van het spel */
+.si-txt{position:absolute;left:0;right:0;z-index:5;display:block!important;text-align:center;padding:0 14px;pointer-events:none}
+.si-txt>b,.si-txt>span{width:auto!important;max-width:none}
+.si-txt b{display:block;font-family:var(--f-display);font-weight:900;line-height:.95;text-transform:uppercase;font-size:clamp(34px,12cqmin,96px)}
+.si-txt span{display:block;margin-top:8px;font-family:var(--f-mono);font-size:clamp(11px,2.4cqmin,15px)}
+.si-txt.kk{top:50%;transform:translateY(-50%);animation:siTxtKk var(--dur) cubic-bezier(.2,.9,.3,1.2) both}
+.si-txt.kk b{color:#ffe08a;text-shadow:0 4px 0 #7a4504,0 0 30px rgba(255,190,60,.9),0 0 70px rgba(255,122,26,.6)}
+.si-txt.kk span{color:#fff2cf;text-shadow:0 1px 2px #000}
+.si-vault.sup .si-txt.kk b{color:#fff6c8}
+@keyframes siTxtKk{0%,60%{opacity:0;transform:translateY(-50%) scale(.4)}70%{opacity:1;transform:translateY(-50%) scale(1.08)}76%{transform:translateY(-50%) scale(1)}93%{opacity:1}100%{opacity:0;transform:translateY(-50%) scale(1.04)}}
+.si-txt.vd{top:16%;animation:siTxtVd var(--dur) cubic-bezier(.2,.8,.3,1) both}
+.si-txt.vd b{color:#fff;text-shadow:0 4px 0 #0b3550,0 0 30px rgba(92,203,240,.95)}
+.si-txt.vd span{color:#d6f4ff;text-shadow:0 1px 2px #000}
+@keyframes siTxtVd{0%,34%{opacity:0;transform:translateY(40cqh) scale(.8)}48%{opacity:1;transform:translateY(-2cqh) scale(1.05)}56%{transform:none}93%{opacity:1}100%{opacity:0;transform:translateY(-3cqh)}}
+.si-txt.kk span{display:inline-block;padding:4px 12px;border-radius:99px;background:rgba(20,10,0,.62)}.si-txt.vd span{display:inline-block;padding:4px 12px;border-radius:99px;background:rgba(4,20,32,.6)}
+/* ===== Rondleiding (tour.js) ===== */
+#tour{position:fixed;inset:0;z-index:75;opacity:0;transition:opacity .25s}
+#tour.on{opacity:1}
+.tr-dim{position:absolute;inset:0}
+#tour.free .tr-dim{background:rgba(4,5,8,.78);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.tr-hole{position:absolute;border-radius:12px;pointer-events:none;box-shadow:0 0 0 2px var(--acc),0 0 0 6px rgba(255,122,26,.25),0 0 0 9999px rgba(4,5,8,.78);
+ transition:left .35s cubic-bezier(.2,.8,.2,1),top .35s cubic-bezier(.2,.8,.2,1),width .35s cubic-bezier(.2,.8,.2,1),height .35s cubic-bezier(.2,.8,.2,1),opacity .2s}
+#tour.free .tr-hole{box-shadow:none}
+.tr-hole::after{content:"";position:absolute;inset:-6px;border-radius:16px;box-shadow:0 0 0 2px rgba(255,122,26,.6);animation:trPulse 1.6s ease-out infinite}
+@keyframes trPulse{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.06)}}
+.tr-card{position:absolute;display:flex;flex-direction:column;gap:10px;padding:16px 18px 16px;border-radius:16px;outline:none;
+ background:linear-gradient(180deg,#17191e,#101216);box-shadow:inset 0 0 0 1px var(--line2),inset 0 3px 0 var(--acc),0 30px 70px -20px #000;transition:left .35s cubic-bezier(.2,.8,.2,1),top .35s cubic-bezier(.2,.8,.2,1)}
+.tr-card.in{animation:trIn .3s ease-out}
+@keyframes trIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.tr-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tr-n{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--acc)}
+.tr-skip{padding:4px 2px;color:var(--mute);font-size:13px;text-decoration:underline;text-underline-offset:3px}.tr-skip:hover{color:var(--fg)}
+.tr-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--acc);background:rgba(255,122,26,.12);box-shadow:inset 0 0 0 1px rgba(255,122,26,.4)}.tr-ic svg{width:24px;height:24px}
+.tr-card h3{margin:0;font-family:var(--f-display);font-weight:900;font-size:clamp(24px,3vw,30px);line-height:1;text-transform:uppercase;letter-spacing:.01em}
+.tr-card p{margin:0;font-size:14.5px;line-height:1.5;color:#c9ccd3}.tr-card p b{color:var(--fg)}
+.tr-more{display:block;margin-top:6px;font-style:normal;font-size:13px;color:var(--acc2)}
+.tr-dots{display:flex;gap:5px;flex-wrap:wrap}.tr-dots i{width:16px;height:4px;border-radius:2px;background:var(--line2)}.tr-dots i.done{background:rgba(255,122,26,.45)}.tr-dots i.on{background:var(--acc);width:26px}
+.tr-btns{display:flex;justify-content:space-between;gap:10px;margin-top:2px}
+.tr-btns .btn{width:auto;padding:11px 18px}
+body.tr-lock{overflow:hidden}
+@media (max-width:420px){.tr-card{padding:14px}.tr-card p{font-size:14px}.tr-btns .btn{padding:10px 14px;font-size:14px}}
+@media (prefers-reduced-motion:reduce){.tr-hole,.tr-card{transition:none}.tr-hole::after{animation:none}}

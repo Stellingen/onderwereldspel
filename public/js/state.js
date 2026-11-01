@@ -107,6 +107,15 @@ function czEyes(t){t=t||now();const P=40000,k=Math.floor(t/P),x=(t%P)/P;let h=21
 const czEyesLeft=()=>{const P=40000,t=now();let e=czEyes(t),d=0;while(d<P&&czEyes(t+d)===e)d+=500;return d};
 const czBanLeft=()=>S.czBan?Math.max(0,S.czBan-now()):0;
 function czVal(){const C=S.cz;if(!C)return 0;const m=Math.max(0,(now()-(C.t||now()))/60000),onCas=typeof page!=='undefined'&&page==='casino';C.s=Math.max(0,(C.s||0)-m*(onCas?4:8));C.t=now();if(!C.s)C.g=0;return C.s}
+// Te lang achter elkaar in het casino (zonder klussen, missies of iets anders dat XP geeft): na een uur loopt de verdenking op,
+// na twee uur ben je een speldag (4 uur) niet welkom. S.czT = {t0: begin, last: laatste ronde}; 20 minuten niets spelen = nieuwe sessie.
+const CZT_FREE=60*60000,CZT_MAX=120*60000,CZT_GAP=20*60000,CZT_BAN=4*3600000;
+const czTLen=()=>{const T=S.czT;if(!T||now()-T.last>CZT_GAP)return 0;return Math.max(0,now()-T.t0)};
+const czTimeSus=()=>Math.max(0,Math.min(100,(czTLen()-CZT_FREE)/(CZT_MAX-CZT_FREE)*100));
+const czShown=()=>Math.max(czVal(),czTimeSus());
+function czTimeTick(){const T=S.czT;if(!T||now()-T.last>CZT_GAP){S.czT={t0:now(),last:now(),w:0};return}T.last=now()}
+// iets anders doen (klus, missie, huurmoord, auto): de klok begint opnieuw
+function czTimeReset(){if(S.czT)S.czT=null}
 function zwCasinoRound(stake,game){if(!(stake>0))return;const C=S.cz||(S.cz={s:0,t:now(),g:0});czVal();
  const gw=CZ_GAME[game]||1,tf=CZ_TIER[typeof tier==='function'?tier():0]||1,ew=CZ_EYE[czEyes()];let gain;
  if(casPayMode()!=='wit'){const used=Math.min(zwart(),stake);if(used<=0)return;S.zwart=zwart()-used;C.g=(C.g||0)+used;gain=(used/czLim()*35+.04)*gw*tf*ew}
@@ -264,7 +273,7 @@ const playerTags=t=>'<i class="spt" title="Echte speler">SPELER</i>'+lidTag(t);
 // tag bij je naam; kort = 'HR' voor smalle plekken (balk bovenin)
 const vipTag=short=>isHR()?`<i class="vipt hr" title="High roller">${short?'HR':'HIGH ROLLER'}</i>`:isVip()?'<i class="vipt" title="VIP-lid">VIP</i>':'';
 // Elke afgeronde casinoronde: inzet, wat je terugkreeg en welk spel. VIP spaart een vast percentage van de inzet op.
-function casinoRound(stake,pay,game){zwCasinoRound(stake,game);if(typeof pushSoon==='function')setTimeout(pushSoon,0);if(!isVip())return;const r=(CB_RATE[game]||0)*(TIER_CB[tier()]||0);if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
+function casinoRound(stake,pay,game){zwCasinoRound(stake,game);czTimeTick();if(typeof pushSoon==='function')setTimeout(pushSoon,0);if(!isVip())return;const r=(CB_RATE[game]||0)*(TIER_CB[tier()]||0);if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
   const el=document.getElementById('cbAmt');if(el)el.textContent=fmt(cbAvail());const bt=document.getElementById('cbBtn');if(bt){bt.disabled=cbAvail()<1;bt.textContent=cbAvail()>=1?'Claimen':'Nog niks te claimen'}}
 const cbAvail=()=>isVip()&&S.cb?Math.floor(S.cb.acc||0):0;
 const crimeCd=c=>c.cd*1000*(1-S.skills.speed*SK.speed.cd)*(1-famPerk('cd'))*(1-fitFx('cd'))*waitK();
@@ -289,7 +298,7 @@ function toast(msg,cls='ok'){const t=document.createElement('div');t.className='
 // delay: de regel blijft verborgen tot de animatie klaar is (casino), zodat het logboek de uitslag niet verraadt
 function log(msg,cls='info',delay){const e={m:msg,c:cls,t:now()};if(delay)e.r=now()+delay;S.log.unshift(e);S.log=S.log.slice(0,40);return e}
 const logShown=()=>S.log.filter(l=>!(l.r>now()));
-function addXp(x){x*=(1+famPerk('xp'))*(1+fitFx('xp'));const before=rankIdx(S.xp),bl=rankLevel(S.xp);S.xp+=x;const after=rankIdx(S.xp),al=rankLevel(S.xp);if(after>before){toast('Promotie: je bent nu '+RANKS[after][0]+'! Claim je beloning op je profiel.','lvl');log('Gepromoveerd tot '+RANKS[after][0],'ok')}
+function addXp(x){if(x>0&&typeof page!=='undefined'&&page!=='casino')czTimeReset();x*=(1+famPerk('xp'))*(1+fitFx('xp'));const before=rankIdx(S.xp),bl=rankLevel(S.xp);S.xp+=x;const after=rankIdx(S.xp),al=rankLevel(S.xp);if(after>before){toast('Promotie: je bent nu '+RANKS[after][0]+'! Claim je beloning op je profiel.','lvl');log('Gepromoveerd tot '+RANKS[after][0],'ok')}
   else if(al>bl){toast(RANKS[after][0]+' level '+al+': +'+Math.round(RANK_SUB_LOOT*100)+'% extra buit','lvl');log(RANKS[after][0]+' level '+al+' bereikt','ok')}}
 
 const EN_BASE=100,EN_REGEN_S=12; // 1 energie per 12 seconden (was 18), ook als je niks doet, in het casino zit of vastzit

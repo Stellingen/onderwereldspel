@@ -135,10 +135,10 @@ function vdTick(t){vd.tick=t;const e=vdEl('vdTick');if(e){e.innerHTML=t;e.classL
 function vdCount(id,from,to,ms){const el=vdEl(id);if(!el||!vdOn()){if(el)el.textContent=fmt(to);return Promise.resolve()}
  return new Promise(res=>{const t0=performance.now();const st=t=>{const p=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(to-from)*e);if(p<1)requestAnimationFrame(st);else res()};requestAnimationFrame(st)})}
 // Bonus binnen: een boei valt in het water, plons met spetters en een golf over het scherm.
-function vdIntro(){const fast=slotSpd()===3,dur=fast?1500:2900,el=vdEl('vdBanner');SFX.vd.bonus(fast);
+function vdIntro(big,small){const fast=slotSpd()===3,dur=fast?2100:3800,el=vdEl('vdBanner');SFX.vd.bonus(fast);
  if(el&&vdOn())el.innerHTML=`<div class="si-splash ${fast?'fast':''}" style="--dur:${dur}ms"><div class="si-buoy"><i></i></div><div class="si-ring2"></div><div class="si-ring2 b"></div>
   <div class="si-drops">${Array.from({length:16},(_,i)=>{const a=-Math.PI*(.12+.76*i/15),d=22+(i*7)%20;return `<i style="--dx:${(Math.cos(a)*d).toFixed(1)}cqmin;--dy:${(Math.sin(a)*d*1.5).toFixed(1)}cqmin;--s:${(.6+(i%4)*.25).toFixed(2)};--dl:${(i%5)*30}ms"></i>`}).join('')}</div>
-  <div class="si-wave"></div></div>`;
+  <div class="si-wave"></div><div class="si-txt vd"><b>${big||'Free spins'}</b><span>${small||''}</span></div></div>`;
  return vdWait(dur).then(()=>{const e=vdEl('vdBanner');if(e)e.innerHTML=''})}
 function vdBanner(big,small,ms,cls){const el=vdEl('vdBanner');if(el)el.innerHTML=`<div class="kk-banner ${cls||''}"><div><b>${big}</b><span>${small||''}</span></div></div>`;
  return vdWait(ms||1400).then(()=>{const e=vdEl('vdBanner');if(e)e.innerHTML=''})}
@@ -209,7 +209,7 @@ async function vdPlay(round,bet,isBuy,from){const T=vdT();vd.stepWin=0;vdText('v
  if(round.fs){const n=round.base.sc;document.querySelectorAll('#vdReels .vd-cell.sc').forEach(e=>e.classList.add('win'));SFX.vd.scatter(3);vdTick(n+' boeien: bonus!');await vdWait(T.hold*.9);vdUnmark();
   const st0=resume?Math.max(0,Math.min(from,round.fs.spins.length-1)):0;
   if(resume){SFX.vd.bonus(true);await vdBanner('Je bonus gaat verder','Free spin '+(st0+1)+' · het geld staat al op je saldo',2200,'fsin')}
-  else{await vdIntro();await vdBanner(round.fsStart+' free spins',n+' boeien. De Visdief pakt alle vissen.',1900,'fsin')}
+  else await vdIntro(round.fsStart+' free spins',(isBuy?'Gekochte bonus':n+' boeien')+' · de Visdief pakt alle vissen');
   vd.fs={at:0,of:round.fsStart,total:0,caught:0,lvl:0};let at=0,wasSec=false;
   // al gespeelde spins meteen verwerken
   for(let i=0;i<st0;i++){const s=round.fs.spins[i];if(s.newRound){vd.fs.lvl=s.lvl;wasSec=false;at=0;vd.fs.of=VISD.RETRIG}at++;vd.fs.at=at;vd.fs.of=at+s.left;vd.fs.total=s.total*bet;vd.fs.caught=s.caught;if(s.secured)wasSec=true}

@@ -30,7 +30,7 @@ function gidsHtml(){const G=gidsS(),ri=rankIdx(S.xp),st=gidsSteps(),n=st.filter(
   ${cur?`<div class="gd-now"><h3>${cur.t}</h3>${body[cur.k]||''}<div class="gd-act">${cur.ok?`<button class="btn sm" onclick="gidsOk('${cur.k}')">Begrepen</button>`:''}${cur.href?`<a class="btn sm ${cur.ok?'ghost':''}" href="${cur.href}">${cur.k==='klus'?'Naar de klussen':cur.k==='train'?'Naar training':cur.k==='wz'?'Naar witwassen':'Verder klussen'} ›</a>`:''}</div></div>`:''}
  </section>`}
 // terugvinden als je hem verborgen hebt (zolang je nog in de eerste rangen zit)
-const gidsBack=()=>{const G=gidsS();return rankIdx(S.xp)<=3&&G.off&&gidsSteps().some(x=>!x.done)?`<button class="gd-back" onclick="gidsOn()">Beginnersdossier tonen</button>`:''};
+const gidsBack=()=>{const G=gidsS();return (rankIdx(S.xp)<=3&&G.off&&gidsSteps().some(x=>!x.done)?`<button class="gd-back" onclick="gidsOn()">Beginnersdossier tonen</button>`:'')+(rankIdx(S.xp)<=4?`<button class="gd-back" onclick="tourStart(true)">Rondleiding door het spel</button>`:'')};
 function gidsOk(k){gidsS()[k]=1;save();render()}
 function gidsOff(){gidsS().off=1;save();render();toast('Verborgen. Terughalen kan onderaan het dashboard.')}
 function gidsOn(){const G=gidsS();G.off=0;G.forced=1;save();render();window.scrollTo(0,0)}

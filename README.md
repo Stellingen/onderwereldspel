@@ -360,11 +360,21 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   te spelen: saldo, een raster met alle inzetten (met bonus kopen aan zie je per inzet de prijs van de bonus en is grijs wat je niet
   kunt betalen, plus een knop naar de hoogste bonus die je wel kunt betalen), de draaiknop, snelheid en bonus kopen, sessie en seed.
   Lolly-spanning na 3 lolly's, confetti, snelheden en spatiebalk zoals bij de andere slots.
+- **Casino op rang**: het casino gaat open vanaf Loopjongen (tafels, Mines, Hoogvlieger, Dubbel of niks), de slots pas vanaf
+  Dief. Lager zie je een gesloten deur met hoeveel XP je nog nodig hebt; in de lobby staan de slots op slot. Een lopende bonus
+  mag je altijd afmaken. **Te lang spelen valt op**: na een uur aan één stuk in het casino (20 minuten niets spelen = nieuwe
+  sessie) loopt de verdenking op, met waarschuwingen op 60, 90 en 110 minuten; na twee uur ben je een speldag (4 uur) niet
+  welkom. Een klus, missie of iets anders dat XP geeft zet de klok terug (`S.czT`, `czTimeSus`).
+- **Rondleiding** (`js/tour.js`): nieuwe accounts krijgen een tour van 13 stappen over de echte schermen (menu, energie,
+  wit/zwart geld, misdaden, verblijf, auto's, training, bezit, bank, casino, rang). Het onderdeel licht op, ernaast een kaartje;
+  op de telefoon boven of onder in beeld, met een verwijzing naar Meer als het daar zit. Overslaan, Vorige/Volgende en de
+  pijltjestoetsen. Terug te vinden op het dashboard (lagere rangen) en via "rondleiding" in het zoekmenu.
 - **Eigen geluid per slot** (`sfx.js`: `SFX.kk`, `SFX.vd`, `SFX.zb`, allemaal opgewekt met Web Audio): Kluiskraker metaal en munten,
   Visdief hout, water en een boeibel, Suikerbaron plopjes en glinsters. Bij het binnenkomen van de bonus (gewonnen of gekocht) een
   eigen deuntje met een korte animatie: Kluiskraker een kluisdeur (cijferslot, grendel, deur zwaait open naar het goud), Visdief een
   boei die in het water plonst (spetters en een golf), Suikerbaron een krullolly die het bord in draait met een regen van snoep.
-  Op snelheid 3× is de intro korter.
+  Op snelheid 3× is de intro korter. De titel van de bonus ("12 free spins", "Superbonus") staat in de intro zelf, in de stijl
+  van het spel: goud uit de kluis, wit uit het water, roze tussen de snoepjes.
 - **Indeling (computer)**: vanaf 1280px breed staat alles over jou in de rechterkolom: naam, status (vrij, gezocht, cel,
   ondergedoken), rang en level met XP-balk, wit geld, zwart geld en bank (drie aparte regels met eigen kleur en icoon), energie, gezondheid, hitte en familie, daaronder wat er klaarstaat,
   een snelle klus, het logboek en de top 5 (met jouw plek als je er niet in staat). Klik op energie, gezondheid of hitte voor

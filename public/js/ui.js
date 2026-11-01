@@ -116,12 +116,13 @@ function navBadges(){const b={};if(inJail())b.jail='!';if(typeof pbOpen==='funct
  if(typeof isVip==='function'&&isVip()&&typeof cbAvail==='function'&&cbAvail()>=1)b.casino='€';return b}
 function navHint(k){const jt=Math.ceil((S.jailUntil-now())/1000);
  return {dash:'Overzicht',verblijf:S.hide?'Ondergedoken':S.hp+'% gezond',crimes:Math.floor(S.energy)+' energie',hits:rankIdx(S.xp)<7?'Vanaf '+RANKS[7][0]:cdLeft('hit')?'Over '+fmtClock(cdLeft('hit')):((S.stats&&S.stats.hits)||0)+' gedaan',cars:S.cars.length+(S.cars.length===1?' auto':" auto's"),
-  casino:(typeof CAS_LIST!=='undefined'?CAS_LIST.length:10)+' spellen',biz:typeof income==='function'?fmtS(income())+'/speldag':'Bedrijven',bank:fmtS(typeof bankNet==='function'?bankNet():S.bank),shop:'Wapens',skills:'Trainen',
+  casino:typeof CAS_MIN_R!=='undefined'&&rankIdx(S.xp)<CAS_MIN_R?'vanaf '+RANKS[CAS_MIN_R][0]:(typeof CAS_LIST!=='undefined'?CAS_LIST.length:10)+' spellen',biz:typeof income==='function'?fmtS(income())+'/speldag':'Bedrijven',bank:fmtS(typeof bankNet==='function'?bankNet():S.bank),shop:'Wapens',skills:'Trainen',
   fam:S.family?fam().n:'Geen familie',jail:inJail()?'Vast, '+fmtTime(jt):'Vrij',politie:typeof pbOpen==='function'&&pbOpen().length?pbOpen().length+' dossier'+(pbOpen().length>1?'s':'')+' open':'Geld terugeisen',rank:'Spelers',profiel:'Codes en account',look:'Kleding',wit:typeof zwart==='function'&&zwart()>=1?fmtS(zwart())+' zwart':'Zwart geld wit maken'}[k]||''}
 function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('nav');bar.id='mbar';bar.className='mbar';bar.setAttribute('aria-label','Menu');document.body.appendChild(bar)}
  let sh=$('#msheet');if(!sh){sh=document.createElement('div');sh.id='msheet';sh.className='msheet';sh.setAttribute('aria-hidden','true');document.body.appendChild(sh);
   sh.addEventListener('click',e=>{const c=e.target.closest('[data-cas]');
    // zoekresultaat voor een casinospel: meteen het goede spel openen
+   if(c&&c.dataset.cas==='tour'){mSheet(false);if(typeof tourStart==='function')setTimeout(()=>tourStart(true),350);return}
    if(c){const k=c.dataset.cas;if(page==='casino'&&typeof casinoGo==='function')casinoGo(k);else if(typeof casinoTab!=='undefined'){casinoTab=k;window._casPick=1}}
    if(e.target===sh||e.target.closest('[data-close]'))mSheet(false)})}
  const bd=navBadges(),name=k=>PAGES.find(p=>p[0]===k)[1],inMain=MBAR.includes(page),more=Object.keys(bd).some(k=>!MBAR.includes(k));
@@ -157,6 +158,7 @@ const MS_FIND=[
  ['Omkopen','Hitte meteen naar 0%','dash','hitte politie omkopen smeergeld'],
  ['Trainen','Blijvend beter worden','trainen','skills training conditie snelheid kracht sportschool'],
  ['Ontspannen','Energie en gezondheid bijvullen','ontspannen','relax energie sauna massage spa'],
+ ['Rondleiding','Uitleg over het spel, stap voor stap','dash:tour','rondleiding uitleg hulp help tutorial beginnen hoe werkt het nieuw'],
  ['Kluiskraker','Gokkast','casino:kluis','slot gokkast kluis loper bonus'],
  ['Visdief','Gokkast','casino:vis','slot gokkast vis vissen'],
  ['Suikerbaron','Gokkast','casino:zoet','slot gokkast snoep snoepjes lolly kauwgom zoet candy suiker baron zoete buit'],
@@ -310,7 +312,7 @@ function casPayIc(m){return `<i class="cp-ic ${m}" aria-hidden="true"></i>`}
 function casHudHtml(){const pend=window.slotPending||0,b=typeof bankNet==='function'?bankNet():S.bank,t=typeof tier==='function'?tier():0;
  const cb=typeof cbAvail==='function'?cbAvail():0;
  const luck=typeof luckState==='function'?luckState():null,zw=zwart(),hasLuck=!!(luck&&luck.o&&luck.o.luck);
- const sus=Math.round(czVal()),susC=sus>=70?'hot':sus>=35?'warm':'',e=czEyes(),pm=casPayMode(),wn=witNu(pend);
+ const sus=Math.round(czShown()),susC=sus>=70?'hot':sus>=35?'warm':'',e=czEyes(),pm=casPayMode(),wn=witNu(pend);
  const lid=['Gewoon',`VIP`,`High roller`][t],open=!!window.casPayOpen;
  const bal=pm==='wit'?wn:pm==='zwart'?Math.max(0,zw-pend):Math.max(0,S.cash-pend);
  // waarmee je nu speelt, in gewone woorden
@@ -331,7 +333,7 @@ function casHudHtml(){const pend=window.slotPending||0,b=typeof bankNet==='funct
   <a class="ch-cell ch-bank" href="#bank"><i class="dm-ic">${ICO_BANK}</i><div><span class="label">Bank</span><b title="${fmt(b)}">${fmtFit(b,fitN(10))}</b></div></a>
   ${t?`<div class="ch-cell ch-cb" title="${typeof CB_RATE!=='undefined'?'Cashback op elke inzet: '+Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*(TIER_CB[t]||1)*100).toLocaleString('nl-NL',{maximumFractionDigits:3})+'%').join(' · '):''}"><div><span class="label">Cashback · ${lid}</span><b id="cbAmt">${fmt(cb)}</b></div><button class="btn gold sm" id="cbBtn" onclick="act.claimCb()" ${cb<1?'disabled':''}>${cb>=1?'Claimen':'Nog niks'}</button></div>`:`<a class="ch-cell ch-up" href="#profiel"><span class="label">Gewoon lid</span><b>VIP: cashback en vaker bonus</b></a>`}
   ${hasLuck?`<div class="ch-cell ch-luck ${luck.L?'on':''}"><i class="dm-ic">${diceSvg(luck.o)}</i><div><span class="label">Geluk +${Math.round(luck.o.luck*100)}%</span><b>${luck.L?'Nog '+fmtClock(luck.L):luck.W?bkDurL(luck.W):'Klaar'}</b></div>${luck.ready?`<button class="btn gold sm" onclick="act.luckUse()">Gebruiken</button>`:''}</div>`:''}
-  <a class="ch-cell ch-sus ${susC} e${e}" href="#wit" title="Spelen met zwart geld laat de verdenking oplopen (wit geld kun je verantwoorden). Grote inzetten, slots en ogen op jouw tafel tellen het zwaarst. Op 100% word je verbannen.">${czEyesSvg(e)}<div class="ch-sus-t"><span class="label">Verdenking · ${CZ_EYE_TXT[e]}</span><div class="ch-sus-r"><b>${sus}%</b><i class="mini"><i style="width:${sus}%"></i></i></div></div></a>
+  <a class="ch-cell ch-sus ${susC} e${e}" href="#wit" title="Spelen met zwart geld laat de verdenking oplopen (wit geld kun je verantwoorden). Grote inzetten, slots en ogen op jouw tafel tellen het zwaarst. Ook te lang achter elkaar spelen valt op: na een uur loopt hij op, na twee uur ben je 4 uur niet welkom. Op 100% word je verbannen.">${czEyesSvg(e)}<div class="ch-sus-t"><span class="label">Verdenking · ${CZ_EYE_TXT[e]}</span><div class="ch-sus-r"><b>${sus}%</b><i class="mini"><i style="width:${sus}%"></i></i></div></div></a>
   <div class="ch-cell ch-r">${statusTag()}</div><div class="ch-chips">${chips}</div>${open?sel:''}</div>`}
 // Kleine iconen voor de statusbalk op de telefoon (energie, gezondheid, hitte, cred)
 const TI={en:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2L4 13.5h6.5L9.5 22 20 9.5h-6.5z"/></svg>',

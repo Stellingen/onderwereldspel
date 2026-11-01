@@ -207,10 +207,11 @@ function kkInfoRefresh(){const el=kkEl('kkInfo');if(el){el.innerHTML=kkInfo();fi
 function kkShow(g,anim){kk.grid=g;const el=kkEl('kkCells');if(el)el.innerHTML=kkCellsHtml(g,anim)}
 function kkShowSpots(sp,prev){kk.spots=sp;const el=kkEl('kkSpots');if(el)el.innerHTML=kkSpotsHtml(sp,prev)}
 // Bonus binnen: de kluisdeur. Het cijferslot draait, de grendel schiet los en de deur zwaait open naar het goud.
-function kkIntro(sup){const fast=slotSpd()===3,dur=fast?1500:3300,el=kkEl('kkBanner');SFX.kk.bonus(fast);
+function kkIntro(sup,big,small){const fast=slotSpd()===3,dur=fast?2300:4300,el=kkEl('kkBanner');SFX.kk.bonus(fast);
  if(el&&kkOn())el.innerHTML=`<div class="si-vault ${fast?'fast':''} ${sup?'sup':''}" style="--dur:${dur}ms"><div class="si-gold"><i></i><i></i><i></i><i></i><i></i></div>
   <div class="si-door"><div class="si-ring"></div><div class="si-dial">${Array.from({length:12},(_,i)=>`<i style="transform:rotate(${i*30}deg)"></i>`).join('')}</div>
-   <div class="si-wheel"><i></i><i></i><i></i></div>${Array.from({length:8},(_,i)=>`<b style="--a:${i*45}deg"></b>`).join('')}</div></div>`;
+   <div class="si-wheel"><i></i><i></i><i></i></div>${Array.from({length:8},(_,i)=>`<b style="--a:${i*45}deg"></b>`).join('')}</div>
+  <div class="si-txt kk"><b>${big||'Free spins'}</b><span>${small||''}</span></div></div>`;
  return kkWait(dur).then(()=>{const e=kkEl('kkBanner');if(e)e.innerHTML=''})}
 function kkBanner(big,small,ms,cls){const el=kkEl('kkBanner');if(el)el.innerHTML=`<div class="kk-banner ${cls||''}"><div><b>${big}</b><span>${small||''}</span></div></div>`;
  return kkWait(ms||1400).then(()=>{const e=kkEl('kkBanner');if(e)e.innerHTML=''})}
@@ -298,8 +299,7 @@ async function kkPlay(round,bet,isBuy,from){
   const stage=kkEl('kkStage');if(stage)stage.classList.add('vault-open');
   const st0=resume?Math.max(0,Math.min(from,round.fs.spins.length-1)):0;
   if(resume){SFX.kk.bonus(true);await kkBanner('Je bonus gaat verder','Free spin '+(st0+1)+' · het geld staat al op je saldo',2200,sup?'fsin super':'fsin')}
-  else{await kkIntro(sup);if(sup)await kkBanner('Superbonus',sc+' kluizen! '+round.fsStart+' spins met extra lopers · zoek de Gouden baar',2600,'fsin super');
-   else await kkBanner(round.fsStart+' free spins',sc+' kluizen · vakjes blijven de hele bonus staan',1900,'fsin')}
+  else await kkIntro(sup,sup?'Superbonus':round.fsStart+' free spins',sup?sc+' kluizen · '+round.fsStart+' spins met extra lopers · zoek de Gouden baar':(isBuy?'Gekochte bonus':sc+' kluizen')+' · vakjes blijven de hele bonus staan');
   let of=round.fsStart;kk.fsBet=bet;kk.fs={at:0,of,total:0,kind:round.fs.kind,bars:0,barCells:[]};
   // vakjes uit de spin die de bonus gaf gaan mee; kluisvakjes beginnen op x2 (gekocht: plus een paar extra op x2)
   kkShowSpots(round.fs.preSpots||SLOT.newSpots(),resume?null:round.base.spots);
