@@ -631,7 +631,7 @@ Backup van de stand ervoor: branch `backup/2026-11-01-avond` (terugzetten = die 
 - **Rangcodes** voor de nieuwe rangen (Sjacheraar, Inbreker, Ritselaar, Handhaver, Luitenant, Kapitein, Rechterhand, Schaduwbaas)
   werken nu ook op de server (`RANK_CODES` in server.js, XP volgt de 20 rangen).
 - **Gelukspullen** (Outfit): brede banner met de dobbelsteen en de nieuwe **geldklem** (Koper +10%, Zilver +15%, Goud +20%,
-  Platina +25%, Diamant +35% alleen HR): 2 uur meer inkomen van al je bedrijven (`klemPct` in `bizMult`). Dobbelsteen nu 15 min.
+  Platina +25%; beloningen: VIP-geldklem ×1,5 (€30 mln, VIP en HR) en Diamanten geldklem ×2 (€75 mln, alleen HR)): 2 uur meer inkomen van al je bedrijven (`klemPct` in `bizMult`). Dobbelsteen nu 15 min.
   Beide daarna een werkdag (8 uur) rust. "Geldklem klaar" staat in Klaar voor je.
 - **Bezit → Woningen**: per woning een lijstje met gekocht voor, waarde nu (+/−) en wat je bij verkoop krijgt (winst/verlies).
 - **Families**: als lid eerst je eigen familie (met knoppen voor verhaal, overstappen en verlaten), dan de missies en de grote klus,
