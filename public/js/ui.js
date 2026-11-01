@@ -26,6 +26,7 @@ const ICONS={
  scale:'<path d="M12 3v17M7 21h10M4 7h16M6.5 7L3 14a3.5 3.5 0 007 0zM17.5 7L14 14a3.5 3.5 0 007 0z"/>',
  snack:'<path d="M5.5 10h13l-1.6 11H7.1zM8 10L6.8 3.5M11 10V3M14 10l1-6.5M17 10l2.2-5.5"/>',
  scissors:'<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.2 8.2L20 20M8.2 15.8L20 4"/>',
+ relax:'<path d="M12 21c-4.5 0-8.5-3.2-8.5-8.5 3.4 0 6.6 1.7 8.5 4.4 1.9-2.7 5.1-4.4 8.5-4.4 0 5.3-4 8.5-8.5 8.5z"/><path d="M12 16.9c-1.6-2.2-2.3-4.6-2.3-6.9 0-2.6 1-4.9 2.3-6.6 1.3 1.7 2.3 4 2.3 6.6 0 2.3-.7 4.7-2.3 6.9z"/>',
  spa:'<path d="M12 21c-4.5 0-8.5-3.2-8.5-8.5 3.4 0 6.6 1.7 8.5 4.4 1.9-2.7 5.1-4.4 8.5-4.4 0 5.3-4 8.5-8.5 8.5z"/><path d="M12 17c-1.7-2.2-2.3-4.6-2.3-7.4C10.9 8.5 11.6 7.7 12 7c.4.7 1.1 1.5 2.3 2.6 0 2.8-.6 5.2-2.3 7.4z"/>',
  yacht:'<path d="M2.5 16.5h19L18.8 21H5.2zM12 2.5v12M12 3.5l7 11h-7M10 6.5L4.5 14.5H10"/>',
  plane:'<path d="M21.5 2.5L2.5 10l7.5 3 3 8z"/><path d="M10 13l11.5-10.5"/>',
@@ -51,14 +52,14 @@ const ICONS={
  moto:'<circle cx="5.5" cy="16.5" r="3.5"/><circle cx="18.5" cy="16.5" r="3.5"/><path d="M5.5 16.5L9 10h4.5l2 4h-6.5M13 10l1.5-3.5H17M15.5 14l3 2.5"/>',
  heli:'<path d="M3 4.5h18M12 4.5v3.5"/><path d="M5.5 12.5c0 2.2 2.9 3.5 6.5 3.5s6.5-1.3 6.5-3.5V11a3 3 0 00-3-3h-7a3 3 0 00-3 3z"/><path d="M18.5 11.5h3M9 16l-1 3.5M15 16l1 3.5M6 19.5h12"/>',
  look:'<path d="M9 3.5L12 6l3-2.5 5.5 3.2-2.3 4.3-2.2-1V21H8V10l-2.2 1-2.3-4.3z"/><path d="M12 6v4"/>'};
-const PAGES=[['dash','Dashboard'],['verblijf','Verblijf'],['crimes','Misdaden'],['hits','Huurmoorden'],['cars','Auto\'s'],['casino','Casino'],['biz','Bezit'],['shop','Wapens'],['look','Outfit'],['skills','Training'],['bank','Bank'],['wit','Witwassen'],['fam','Families'],['jail','Bajes'],['politie','Politiebureau'],['rank','Ranglijst'],['profiel','Profiel']];
+const PAGES=[['dash','Dashboard'],['verblijf','Verblijf'],['crimes','Misdaden'],['hits','Huurmoorden'],['cars','Auto\'s'],['casino','Casino'],['biz','Bezit'],['shop','Wapens'],['look','Outfit'],['skills','Training'],['relax','Ontspannen'],['bank','Bank'],['wit','Witwassen'],['fam','Families'],['jail','Bajes'],['politie','Politiebureau'],['rank','Ranglijst'],['profiel','Profiel']];
 const svg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 let page=(location.hash||'#dash').slice(1);if(!PAGES.find(p=>p[0]===page))page='dash';
 let casinoTab='',rankTab='xp',slotState=['7','7','7'],spinning=false;
 
 // Elke sectie heeft een eigen kleur, zodat je ziet waar je bent
 // 'Jij' (dashboard, ranglijst, profiel) staat apart bovenaan; daaronder de vier spelsecties
-const NAV_GROUPS=[['Jij',['dash','rank','profiel'],'#f2c230','242,194,48'],['Straat',['verblijf','crimes','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank','wit'],'#3fe395','63,227,149'],['Macht',['shop','look','skills','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','politie'],'#a9dcff','169,220,255']];
+const NAV_GROUPS=[['Jij',['dash','rank','profiel'],'#f2c230','242,194,48'],['Straat',['verblijf','crimes','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank','wit'],'#3fe395','63,227,149'],['Macht',['shop','look','skills','relax','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','politie'],'#a9dcff','169,220,255']];
 const groupOf=k=>NAV_GROUPS.find(g=>g[1].includes(k))||NAV_GROUPS[0];
 function applySection(){document.body.classList.toggle('wide-page',page==='casino');document.body.classList.toggle('no-rail',page==='dash');const g=groupOf(page),r=document.documentElement.style;r.setProperty('--sec',g[2]);r.setProperty('--sec-rgb',g[3])}
 function crumbHtml(){const g=groupOf(page);return `<div class="crumb"><i></i><span>${g[0]}</span>/ ${PAGES.find(p=>p[0]===page)[1]}</div>`+(typeof feudBar==='function'?feudBar():'')}

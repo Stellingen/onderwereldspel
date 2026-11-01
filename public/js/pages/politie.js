@@ -40,44 +40,67 @@ const PBI={
  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>'};
 const pbI=(k,c)=>`<svg class="pbi ${c||''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PBI[k]}</svg>`;
 
-// ---------- het bureau in 3D (CSS): sleep om te draaien ----------
-function pb3d(){const win=(n,cls)=>Array.from({length:n},(_,i)=>`<i class="${cls||''}${(i*7)%5===1?' lit':''}"></i>`).join('');
- return `<div class="pb3d" id="pb3d" aria-label="Het politiebureau in 3D, sleep om te draaien" role="img">
-  <div class="pb-world" id="pbWorld">
-   <div class="pb-ground"><i class="pb-park"></i><i class="pb-park b"></i><i class="pb-path"></i></div>
-   <div class="pb-bld">
-    <div class="pb-f front"><div class="pb-wins top">${win(8)}</div><div class="pb-sign"><span>POLITIE</span><i class="pb-stripe"></i></div>
-     <div class="pb-entr"><i class="pb-lamp"></i><div class="pb-door"><i></i><i></i></div><b class="pb-nr">Bureau Centrum</b></div><div class="pb-wins low">${win(4)}</div></div>
-    <div class="pb-f back"><div class="pb-wins top">${win(8)}</div><div class="pb-wins low">${win(8)}</div></div>
-    <div class="pb-f left"><div class="pb-wins top">${win(4)}</div><div class="pb-wins low">${win(4,'bar')}</div></div>
-    <div class="pb-f right"><div class="pb-wins top">${win(4)}</div><div class="pb-wins low">${win(4)}</div><i class="pb-garage"></i></div>
-    <div class="pb-f roof"><i class="pb-hvac"></i><i class="pb-heli">H</i></div>
-    <div class="pb-mast"><i class="pb-flag"></i></div>
-    <div class="pb-beacon"><i></i></div>
-   </div>
-   <div class="pb-car">${pbCar()}</div>
-   <div class="pb-post l"><i></i></div><div class="pb-post r"><i></i></div>
-  </div></div>`}
-// een blok in 3D (CSS): zes vlakken rond het midden; y0 = onderkant (negatief is boven de grond)
-function pbBox(cls,w,d,h,y0,x,z){const T=(fw,fh,tr,top,left)=>`style="width:${fw}px;height:${fh}px;left:${left}px;top:${top}px;transform:${tr}"`;
- return `<div class="pbx ${cls}" style="transform:translate3d(${x||0}px,0,${z||0}px)">
-  <i class="fz" ${T(w,h,`translateZ(${d/2}px)`,y0-h,-w/2)}></i><i class="bz" ${T(w,h,`rotateY(180deg) translateZ(${d/2}px)`,y0-h,-w/2)}></i>
-  <i class="fx" ${T(d,h,`rotateY(90deg) translateZ(${w/2}px)`,y0-h,-d/2)}></i><i class="bx" ${T(d,h,`rotateY(-90deg) translateZ(${w/2}px)`,y0-h,-d/2)}></i>
-  <i class="tp" ${T(w,d,`translateY(${y0-h}px) rotateX(90deg)`,-d/2,-w/2)}></i></div>`}
-// politieauto: wit met een blauwe band en blauw-wit blokpatroon, blauwe lichtbalk, vier wielen
-function pbCar(){const wheel=(x,z)=>`<div class="pbw" style="transform:translate3d(${x}px,-9px,${z}px)"><i></i></div>`;
- return pbBox('car-body',104,48,18,-8)+pbBox('car-cab',58,42,15,-26,-6)+pbBox('car-bar',30,20,4,-41,-6)
-  +wheel(-34,25)+wheel(34,25)+wheel(-34,-25)+wheel(34,-25)}
-// draaien met slepen (muis of vinger); vanzelf zachtjes heen en weer
-let pbRot={y:-28,x:-16,drag:null,raf:0,t0:0};
-function pb3dBind(){const el=document.getElementById('pb3d'),w=document.getElementById('pbWorld');if(!el||!w||el._b)return;el._b=1;
- const set=()=>{w.style.transform=`rotateX(${pbRot.x}deg) rotateY(${pbRot.y}deg)`};set();
- el.addEventListener('pointerdown',e=>{pbRot.drag={x:e.clientX,y:e.clientY,ry:pbRot.y,rx:pbRot.x};el.setPointerCapture(e.pointerId);el.classList.add('drag')});
- el.addEventListener('pointermove',e=>{const d=pbRot.drag;if(!d)return;pbRot.y=d.ry+(e.clientX-d.x)*.45;pbRot.x=Math.max(-38,Math.min(-4,d.rx-(e.clientY-d.y)*.25));set()});
- const up=()=>{pbRot.drag=null;el.classList.remove('drag')};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
- const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;if(reduce)return;
- const loop=t=>{if(!document.body.contains(el))return;if(!pbRot.drag){pbRot.y+=Math.sin(t/2600)*.035}set();requestAnimationFrame(loop)};requestAnimationFrame(loop)}
-
+// ---------- het bureau als isometrische tekening (SVG) ----------
+// Drie verdiepingen met een blauw-witte band en POLITIE, een lage vleugel met garage, de ingang met de blauwe lamp,
+// een mast met zwaailicht en schotel, een vlag, straatlantaarns en een politieauto voor de deur. Vast standpunt; alleen
+// de lampen, het zwaailicht en de vlag bewegen.
+function pb3d(){const c=Math.cos(Math.PI/6),sn=.5,K=12.5,OX=205,OY=64;
+ const P=(x,y,z)=>[OX+(x-y)*c*K,OY+(x+y)*sn*K-z*K],pt=a=>a.map(q=>q.map(v=>v.toFixed(1)).join(',')).join(' ');
+ const poly=(a,f,ex)=>`<polygon points="${pt(a)}" fill="${f}" ${ex||''}/>`;
+ // blok: x0..x1, y0..y1, z0..z1 met boven (t), linker voorkant y=y1 (l) en rechter voorkant x=x1 (r)
+ const box=(x0,y0,x1,y1,z0,z1,t,l,r)=>poly([P(x0,y0,z1),P(x1,y0,z1),P(x1,y1,z1),P(x0,y1,z1)],t)+poly([P(x0,y1,z0),P(x1,y1,z0),P(x1,y1,z1),P(x0,y1,z1)],l)+poly([P(x1,y0,z0),P(x1,y1,z0),P(x1,y1,z1),P(x1,y0,z1)],r);
+ // vlak op de linker voorkant (y vast): rechthoek van x0..x1 en z0..z1
+ const fL=(y,x0,x1,z0,z1,f,ex)=>poly([P(x0,y,z0),P(x1,y,z0),P(x1,y,z1),P(x0,y,z1)],f,ex);
+ const fR=(x,y0,y1,z0,z1,f,ex)=>poly([P(x,y0,z0),P(x,y1,z0),P(x,y1,z1),P(x,y0,z1)],f,ex);
+ // tekst plat op de linker voorkant
+ const tL=(y,x,z,txt,size,col)=>{const [px,py]=P(x,y,z);return `<text transform="matrix(${c},${sn},0,1,${px.toFixed(1)},${py.toFixed(1)})" font-family="Big Shoulders Display,Impact,sans-serif" font-weight="900" font-size="${size}" fill="${col}" letter-spacing="1.5">${txt}</text>`};
+ let o='';
+ // grond, stoep en parkeervakken
+ o+=poly([P(-2,-1,0),P(22,-1,0),P(22,15,0),P(-2,15,0)],'#141a26');
+ o+=poly([P(-2,9,0),P(22,9,0),P(22,10.4,0),P(-2,10.4,0)],'#262d3b');
+ o+=poly([P(18.6,-1,0),P(20,-1,0),P(20,15,0),P(18.6,15,0)],'#262d3b');
+ for(let x=1;x<16;x+=3.2)o+=`<polyline points="${pt([P(x,10.6,0),P(x,14.6,0)])}" stroke="#dfe6f2" stroke-opacity=".35" stroke-width="1.2" fill="none"/>`;
+ // achterste vleugel en hoofdgebouw
+ o+=box(1,1,14,8,0,7.4,'#3a4558','#556179','#465166');
+ // ramen hoofdgebouw (drie verdiepingen) op de linker voorkant
+ let k=0;for(const z of [1.3,3.3,5.2])for(let x=1.7;x<13.5;x+=1.55){if(z===1.3&&x>5&&x<9.2)continue;const lit=((k++*7)%5===1)||((k*3)%7===2);
+  o+=fL(8,x,x+1,z,z+1.25,lit?'#ffd987':'#1b2333',lit?'class="pb-win"':'')+fL(8,x,x+1,z+1.15,z+1.25,'rgba(255,255,255,.12)')}
+ // ramen op de rechter voorkant
+ for(const z of [3.3,5.2])for(let y=1.7;y<7.5;y+=1.55){const lit=(Math.round(y*10)+Math.round(z))%4===0;o+=fR(14,y,y+1,z,z+1.25,lit?'#ffd987':'#1b2333')}
+ // blauw-witte band met POLITIE
+ o+=fL(8,1,14,6.75,7.2,'#163a8f');
+ for(let x=1;x<14;x+=.5)o+=fL(8,x,x+.25,6.45,6.75,(Math.round(x*2)%2)?'#e9eef7':'#163a8f');
+ o+=fR(14,1,8,6.45,7.2,'#163a8f');
+ o+=tL(8,5.2,7.3,'POLITIE',8,'#ffffff');
+ // dakrand, installaties, mast met zwaailicht en schotel
+ o+=box(1,1,14,1.35,7.4,7.8,'#4a566b','#5d6a83','#4d596e')+box(1,1,1.35,8,7.4,7.8,'#4a566b','#5d6a83','#4d596e');
+ o+=box(3,2.5,5.5,4.5,7.4,8.6,'#56627a','#6a7792','#5a6680')+box(9,2.4,10.6,3.6,7.4,8.2,'#56627a','#6a7792','#5a6680');
+ const [mx,my]=P(11.8,5.2,7.4),[tx,ty]=P(11.8,5.2,12.2);o+=`<path d="M${mx} ${my}L${tx} ${ty}" stroke="#9aa6bb" stroke-width="2"/><path d="M${mx-6} ${my}L${tx} ${ty+18}L${mx+6} ${my}" stroke="#7f8aa0" stroke-width="1" fill="none"/>`;
+ o+=`<circle cx="${tx}" cy="${ty}" r="3.4" fill="#3d7bff" class="pb-beac"/><circle cx="${tx}" cy="${ty}" r="11" fill="#3d7bff" opacity=".35" class="pb-beac2"/>`;
+ {const [dx,dy]=P(6.5,3.2,8.7);o+=`<ellipse cx="${dx}" cy="${dy}" rx="8" ry="5" fill="#c9d1de" transform="rotate(-25 ${dx} ${dy})"/><path d="M${dx} ${dy}l6 -6" stroke="#9aa6bb" stroke-width="1.4"/>`}
+ // helikopterplatform op het dak
+ {const [hx,hy]=P(10.5,6,7.42);o+=`<ellipse cx="${hx}" cy="${hy}" rx="22" ry="11" fill="none" stroke="#e9c94a" stroke-width="1.6" opacity=".8"/><text x="${hx}" y="${hy+4}" text-anchor="middle" font-family="Big Shoulders Display,Impact,sans-serif" font-weight="900" font-size="11" fill="#e9c94a" opacity=".85">H</text>`}
+ // lage vleugel met garage
+ o+=box(14,3,18.2,8,0,4.2,'#3a4558','#4f5b72','#424d61');
+ for(let x=14.6;x<17.8;x+=1.55)o+=fL(8,x,x+1,2.2,3.3,(x>16)?'#ffd987':'#1b2333');
+ o+=fR(18.2,4,7.2,0,2.9,'#2a3242')+[0.6,1.2,1.8,2.4].map(z=>fR(18.2,4,7.2,z,z+.08,'#3b4558')).join('');
+ o+=fL(8,14,18.2,3.7,4.2,'#163a8f')+fR(18.2,3,8,3.7,4.2,'#163a8f');
+ // ingang: luifel, glazen deuren en de blauwe lamp
+ o+=fL(8,5.6,8.8,0,2.6,'#0e1522')+fL(8,5.9,7.1,0,2.2,'#7fb3ff',`opacity=".55"`)+fL(8,7.3,8.5,0,2.2,'#7fb3ff',`opacity=".55"`)+fL(8,7.15,7.25,0,2.2,'#0e1522');
+ o+=box(5.2,8,9.2,9.4,2.7,3.05,'#c9d1de','#e9eef7','#b7c0cf');
+ o+=tL(8,5.95,2.45,'BUREAU',3.6,'#e9eef7');
+ {const [lx,ly]=P(9.4,8,2.6);o+=`<rect x="${lx-4}" y="${ly-9}" width="8" height="9" rx="1.5" fill="#1b4dd1" class="pb-lantern"/><circle cx="${lx}" cy="${ly-4.5}" r="9" fill="#3d7bff" opacity=".25" class="pb-lantern"/>`}
+ // vlaggenmast met Nederlandse vlag
+ {const [fx,fy]=P(13.2,10,0),[gx,gy]=P(13.2,10,6.8);o+=`<path d="M${fx} ${fy}L${gx} ${gy}" stroke="#c9d1de" stroke-width="1.6"/><g class="pb-flag2" style="transform-origin:${gx}px ${gy+2}px"><path d="M${gx} ${gy+1}h16v4h-16z" fill="#ae1c28"/><path d="M${gx} ${gy+5}h16v4h-16z" fill="#fff"/><path d="M${gx} ${gy+9}h16v4h-16z" fill="#21468b"/></g>`}
+ // straatlantaarns
+ for(const [x,y] of [[2,9.7],[17,9.7]]){const [bx,by]=P(x,y,0),[hx,hy]=P(x,y,4.4);o+=`<path d="M${bx} ${by}L${hx} ${hy}" stroke="#4a5568" stroke-width="1.6"/><path d="M${hx} ${hy}h7" stroke="#4a5568" stroke-width="1.6"/><circle cx="${hx+7}" cy="${hy+2}" r="2.2" fill="#ffe7a8"/><ellipse cx="${hx+7}" cy="${by-2}" rx="18" ry="6" fill="#ffe7a8" opacity=".08"/>`}
+ // politieauto voor de deur
+ o+=box(3,11,7.2,12.9,.35,1.25,'#e9eef7','#f4f6fa','#cfd6e2')+box(4,11.2,6.2,12.7,1.25,1.95,'#cfd6e2','#9bb6dd','#7f97bd');
+ o+=fL(12.9,3,7.2,.62,.86,'#163a8f')+[3.4,4.2,5,5.8].map(x=>fL(12.9,x,x+.4,.86,1.08,'#e3a10f')).join('');
+ o+=box(4.6,11.6,5.6,12.3,1.95,2.15,'#2a3242','#1b4dd1','#d12b3f');
+ for(const x of [3.7,6.4]){const [wx,wy]=P(x,12.9,.35);o+=`<ellipse cx="${wx}" cy="${wy}" rx="4.4" ry="3" fill="#0b0d12"/>`}
+ {const [bx,by]=P(5.1,11.95,2.2);o+=`<circle cx="${bx-3}" cy="${by-1}" r="5" fill="#3d7bff" opacity=".3" class="pb-beac"/><circle cx="${bx+3}" cy="${by+1}" r="5" fill="#ff3d52" opacity=".3" class="pb-beac2"/>`}
+ return `<div class="pb-scene" role="img" aria-label="Het politiebureau"><svg viewBox="0 0 450 300" preserveAspectRatio="xMidYMax meet" aria-hidden="true">${o}</svg></div>`}
 // ---------- de pagina ----------
 V.politie=()=>{if(pbExpire())save();const L=pbList(),open=pbOpen(),fr=pbFronts(),t=tier();
  const sum=(f)=>L.filter(f).reduce((a,d)=>a+d.a,0);
@@ -96,7 +119,7 @@ V.politie=()=>{if(pbExpire())save();const L=pbList(),open=pbOpen(),fr=pbFronts()
   ${pb3d()}
   <div class="pb-hero-t"><span class="label">${pbI('badge')} Bureau Centrum · 24 uur open</span><h1>Politiebureau</h1>
    <p>Opgepakt met meer zwart geld dan je kunt verantwoorden? Dan ligt het hier. Toon via je zaak aan dat het van jou is en je krijgt het terug.</p></div>
-  <span class="pb-hint" aria-hidden="true">Sleep om te draaien</span></section>
+</section>
  <div class="pb-kpis">${kpi('folder','Open dossiers',open.length,open.length?'nog terug te eisen':'niets openstaand',open.length?'warn':'')}
   ${kpi('lock','In beslag',fmt(open.reduce((a,d)=>a+d.a,0)),'open bedrag')}
   ${kpi('cash','Teruggekregen',fmt(L.filter(d=>d.st==='won').reduce((a,d)=>a+(d.back||0),0)),'na belasting','ok')}

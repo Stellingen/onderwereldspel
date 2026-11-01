@@ -40,7 +40,7 @@ if(S._gearBack){toast('Uitrusting vernieuwd: per soort telt nu je beste item. Je
 (()=>{tick()})();
 
 // snelkoppelingen: #ontspannen en #trainen openen de trainingspagina op het juiste deel
-window.addEventListener('hashchange',()=>{let p=location.hash.slice(1);if(p==='ontspannen'||p==='trainen'){if(window.trs)trs.tab=p==='ontspannen'?'relax':'train';p='skills';try{history.replaceState(null,'','#skills')}catch(e){}}if(PAGES.find(x=>x[0]===p)){
+window.addEventListener('hashchange',()=>{let p=location.hash.slice(1);if(p==='ontspannen'||p==='trainen'){p=p==='ontspannen'?'relax':'skills';try{history.replaceState(null,'','#'+p)}catch(e){}}if(PAGES.find(x=>x[0]===p)){
   // naar het casino vanaf een andere pagina: eerst de lobby (behalve als je via zoeken een spel koos of er nog iets loopt)
   if(p==='casino'&&page!=='casino'&&!window._casPick&&typeof casSwitchBusy==='function'&&!casSwitchBusy()&&!(window.kk&&kk.inBonus)&&!(window.vd&&vd.inBonus)&&!(window.zb&&zb.inBonus))casinoTab='';window._casPick=0;
   if(p==='verblijf'&&page!=='verblijf'&&window.vb)vb.view=null;
@@ -62,7 +62,7 @@ setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderR
   if(wasJail&&!inJail()){toast('Je bent vrijgelaten');wasJail=false;render()}else if(inJail())wasJail=true;
   const focusIn=document.activeElement&&document.activeElement.tagName==='INPUT';
   // pagina's met aftellers: alleen bijwerken als er iets veranderd is, en niet midden in het scrollen (telefoon)
-  if(!focusIn&&!spinning&&['crimes','hits','jail','politie','dash','skills','bank','biz','shop','fam','profiel'].includes(page)&&!window.__chase&&!userBusy()){const y=window.scrollY;if(setHTML($('#view'),crumbHtml()+V[page]())&&y&&Math.abs(window.scrollY-y)>2)window.scrollTo(0,y)}
+  if(!focusIn&&!spinning&&['crimes','hits','jail','politie','dash','skills','relax','bank','biz','shop','fam','profiel'].includes(page)&&!window.__chase&&!userBusy()){const y=window.scrollY;if(setHTML($('#view'),crumbHtml()+V[page]())&&y&&Math.abs(window.scrollY-y)>2)window.scrollTo(0,y)}
 },1000);
 render();renderTicker();
 // een ontsnapping die werd afgebroken (verversen, venster dicht) telt als betrapt

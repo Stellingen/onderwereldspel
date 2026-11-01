@@ -247,3 +247,15 @@
   .pb-stamp{font-size:30px;top:20%}
   .pb-bar{padding:10px 12px}.pb-bar .btn{flex:1 1 auto;justify-content:center}
 }
+/* ---------- bureau als isometrische tekening (politie.js pb3d) ---------- */
+.pb-scene{position:absolute;right:0;top:0;bottom:0;width:66%;z-index:1;pointer-events:none}
+.pb-scene svg{width:100%;height:100%;filter:drop-shadow(0 18px 30px rgba(0,0,0,.5))}
+.pb-scene .pb-beac{animation:pbBeac 1.2s steps(2,end) infinite}.pb-scene .pb-beac2{animation:pbBeac 1.2s steps(2,end) infinite reverse}
+@keyframes pbBeac{50%{opacity:.08}}
+.pb-scene .pb-lantern{animation:pbGlow 3s ease-in-out infinite}@keyframes pbGlow{50%{opacity:.6}}
+.pb-scene .pb-win{animation:pbWin 9s ease-in-out infinite}@keyframes pbWin{0%,85%,100%{opacity:1}90%{opacity:.55}}
+.pb-scene .pb-flag2{animation:pbFlag 2.6s ease-in-out infinite}@keyframes pbFlag{50%{transform:skewY(4deg) scaleX(.94)}}
+@media (max-width:900px){.pb-scene{width:100%;bottom:120px}}
+@media (prefers-reduced-motion:reduce){.pb-scene *{animation:none!important}}
+.pb-hero .pb-moon{right:auto;left:44%;top:9%;width:38px;height:38px}
+@media (max-width:900px){.pb-hero .pb-moon{left:8%}}

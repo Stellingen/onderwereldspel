@@ -1,6 +1,6 @@
 // Tab: Ranglijst
 V.rank=()=>{
- const key=rankTab;const me={n:'★ '+esc(S.name)+(window.__TOKEN__?playerTags(tier()):vipTag())+' (jij)',xp:S.xp,cash:S.cash+bankNet(),me:1};
+ const key=rankTab;const me={n:'★ '+esc(S.name)+(window.__TOKEN__?playerTags(tier()):vipTag())+' (jij)',xp:S.xp,cash:S.cash+bankNet()+(typeof homesVal==='function'?homesVal():0),me:1};
  if(window.__TOKEN__&&!window.__LB_LOADING__&&(!window.__LB__||Date.now()-window.__LB_AT__>30000))loadLeaderboard();
  const real=(window.__LB__||[]).filter(p=>!window.__USER__||p.name.toLowerCase()!==window.__USER__.toLowerCase()).map(p=>({n:esc(p.name)+playerTags(p.vip),xp:+p.xp,cash:+p.networth,u:p.name,pub:!!+p.pub}));
  const list=[...S.npcs.map((x,i)=>Object.assign({},x,{n:esc(x.n),npc:i})),...real,me].sort((a,b)=>b[key]-a[key]);
@@ -14,7 +14,8 @@ V.rank=()=>{
  return `<h1>Ranglijst</h1><p class="sub">Echte spelers staan hier tussen de rivalen uit de onderwereld. Je rivalen worden ook sterker terwijl jij speelt. Klik op een naam om het profiel te bekijken.</p>
  <div class="tabs"><button class="${key==='xp'?'on':''}" onclick="rankTab='xp';render()">Op rang</button><button class="${key==='cash'?'on':''}" onclick="rankTab='cash';render()">Op vermogen</button></div>
  <section class="lb-podium">${pod(top[1],1)}${pod(top[0],0)}${pod(top[2],2)}</section>
- ${meIdx>=3?`<div class="lb-mine">Jij staat op plek <b>#${meIdx+1}</b>${meIdx>0?` · nog ${key==='xp'?Math.ceil(list[meIdx-1].xp-list[meIdx].xp).toLocaleString('nl-NL')+' XP':fmt(list[meIdx-1].cash-list[meIdx].cash)} tot #${meIdx}`:''}</div>`:''}
+ ${meIdx>=3?(()=>{const a=list[meIdx-1],b=list[meIdx],gap=key==='xp'?a.xp-b.xp:a.cash-b.cash,nx=list[meIdx+1],lead=nx?(key==='xp'?b.xp-nx.xp:b.cash-nx.cash):0,pct=gap+lead>0?Math.max(4,Math.min(100,lead/(gap+lead)*100)):50;
+  return `<div class="lb-mine"><div><span class="label">Jouw plek</span><b>#${meIdx+1}</b><small>van ${list.length}</small></div><div class="lb-gap"><span>${gap>=1?`Nog <b>${key==='xp'?Math.ceil(gap).toLocaleString('nl-NL')+' XP':fmt(gap)}</b> tot #${meIdx}`:`Gelijk met #${meIdx}`}</span><i><i style="width:${pct}%"></i></i>${nx?`<small>${key==='xp'?Math.floor(lead).toLocaleString('nl-NL')+' XP':fmt(lead)} voor op #${meIdx+2}</small>`:''}</div></div>`})():''}
  <div class="card lb-card"><table class="lb lb2"><thead><tr><th>#</th><th>Naam</th><th class="lb-rcol">Rang</th><th style="text-align:right">${key==='xp'?'XP':'Vermogen'}</th></tr></thead><tbody>
  ${rest.map((p,j)=>{const i=j+3,ri=rankIdx(p.xp);return `<tr class="${p.me?'me':''}"><td class="pos">${i+1}</td><td>${who(p)?`<button class="lb-name" onclick="${who(p)}">${p.n}</button>`:p.n}${p.u&&!p.pub?'<span class="lb-priv" title="Privé profiel">privé</span>':''}<span class="lb-rk lb-rk-m" style="--rc:${RC[ri]}">${RANKS[ri][0]}</span></td><td class="lb-rcol"><span class="lb-rk" style="--rc:${RC[ri]}">${RANKS[ri][0]}</span></td><td class="num"><span data-fit="10">${key==='xp'?Math.floor(p.xp).toLocaleString('nl-NL'):fmt(p.cash)}</span></td></tr>`}).join('')}
  </tbody></table></div>`};

@@ -17,7 +17,8 @@ const trGo=id=>`trs.tab='train';render();setTimeout(()=>trFocus('tr-${id}'),30)`
 function rxFx(r){const o=[];if(r.hp)o.push(['hp',r.hp>=100?'Gezondheid vol':'+'+r.hp+'% gezondheid']);if(r.energy)o.push(['en',r.energy>=999?'Energie vol':'+'+r.energy+' energie']);
  if(r.focus)o.push(['fo','Slaagkans +'+r.focus+'% · '+r.mins+' min']);if(r.loot)o.push(['lo','Buit +'+r.loot+'% · '+r.mins+' min']);
  if(r.heat)o.push(['he','Hitte −'+r.heat+'%']);if(r.clearWanted)o.push(['wa','Van de gezochtlijst']);return o}
-V.skills=()=>{
+V.relax=()=>{trs.tab='relax';return V.skills(1)};
+V.skills=(rx)=>{if(!rx)trs.tab='train';
  const ri=rankIdx(S.xp),lv=rankLevel(S.xp);
  const pips=(l,col)=>`<div class="lvbar" style="--c:${col}"><i style="width:${l/TRAIN_MAX*100}%"></i>${TRAIN_MILES.slice(0,-1).map(m=>`<b class="${l>=m?'on':''}" style="left:${m/TRAIN_MAX*100}%"></b>`).join('')}</div>`;
  const btnLabel=(left,cost,extra)=>inJail()?'Je zit vast':left?'Weer over '+fmtClock(left):S.cash<cost?'Te weinig contant · '+fmt(cost):extra+' · '+fmt(cost);
@@ -58,8 +59,8 @@ V.skills=()=>{
  if(ffx)buffs.push(`<span style="--c:var(--violet)">Inrichting: slaagkans +${ffx}%</span>`);
  const relax=trs.tab==='relax';
  const modes=`<div class="tr-modes">
-  <button class="tr-mode m-train ${relax?'':'on'}" onclick="trs.tab='train';render()"><i>${svg('skills')}</i><div><b>Trainen</b><span>Blijvend beter worden · elke sessie een level, tot ${TRAIN_MAX}</span></div><em class="${readyT?'go':''}">${readyT?readyT+' klaar':'niets klaar'}</em></button>
-  <button class="tr-mode m-relax ${relax?'on':''}" onclick="trs.tab='relax';render()"><i>${svg('spa')}</i><div><b>Ontspannen</b><span>Tijdelijk voordeel · energie, gezondheid, focus, minder hitte</span></div><em class="${readyR?'go':''}">${readyR?readyR+' klaar':'niets klaar'}</em></button></div>`;
+  <button class="tr-mode m-train ${relax?'':'on'}" onclick="location.hash='skills'"><i>${svg('skills')}</i><div><b>Trainen</b><span>Blijvend beter worden · elke sessie een level, tot ${TRAIN_MAX}</span></div><em class="${readyT?'go':''}">${readyT?readyT+' klaar':'niets klaar'}</em></button>
+  <button class="tr-mode m-relax ${relax?'on':''}" onclick="location.hash='relax'"><i>${svg('spa')}</i><div><b>Ontspannen</b><span>Tijdelijk voordeel · energie, gezondheid, focus, minder hitte</span></div><em class="${readyR?'go':''}">${readyR?readyR+' klaar':'niets klaar'}</em></button></div>`;
  // tegel = één klik ontspannen, met het belangrijkste effect erop
  const rxTiles=RELAX.map(r=>{const lock=ri<(r.r||0),left=cdLeft('rx_'+r.id),cost=relaxCost(r,ri,lv),ready=!lock&&!left&&!inJail()&&S.cash>=cost,poor=!lock&&!left&&!inJail()&&S.cash<cost;
   const cls=lock?'s-lock':inJail()?'s-wait':left?'s-cd':poor?'s-poor':'s-ready',fx=rxFx(r);
