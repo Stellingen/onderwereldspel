@@ -6,14 +6,19 @@
 // spelen en hoe lang je daarna pauze moet nemen, je cashback, en hoe snel de beveiliging op zwart geld let.
 // VIP en High roller houden daarnaast hun betere kansen (RTP) in de slots; dat staat los van de kaart.
 const CC=[
- {id:'basis',n:'Basis',col:'#8a929c',need:null,slot:500,tafel:1000,side:50,rin:500,sess:30,cd:15,cb:0,eye:1.3,lim:20000},
- {id:'brons',n:'Brons',col:'#c27a3e',need:{slot:30000,snel:20000,tafel:50000},slot:2500,tafel:5000,side:250,rin:2500,sess:45,cd:12,cb:.25,eye:1.1,lim:60000},
- {id:'zilver',n:'Zilver',col:'#c9cfd8',need:{slot:150000,snel:100000,tafel:250000},slot:10000,tafel:20000,side:1000,rin:10000,sess:60,cd:10,cb:.5,eye:.9,lim:200000},
- {id:'goud',n:'Goud',col:'#e8b923',need:{slot:750000,snel:500000,tafel:1250000},slot:25000,tafel:50000,side:2500,rin:40000,sess:90,cd:8,cb:.75,eye:.7,lim:600000},
- {id:'platina',n:'Platina',col:'#a9dcff',need:{slot:3600000,snel:2400000,tafel:6000000},slot:50000,tafel:100000,side:5000,rin:100000,sess:150,cd:6,cb:1,eye:.5,lim:2000000},
- {id:'zwart',n:'Zwart',col:'#2a2a31',need:{slot:18000000,snel:12000000,tafel:30000000},slot:100000,tafel:200000,side:10000,rin:150000,sess:240,cd:5,cb:1.25,eye:.35,lim:6000000}];
+ {id:'basis',n:'Basis',col:'#8a929c',need:null,slot:500,snel:500,tafel:1000,side:50,rin:500,sess:30,cd:15,cb:0,eye:1.3,lim:20000},
+ {id:'brons',n:'Brons',col:'#c27a3e',need:{slot:30000,snel:20000,tafel:50000},slot:2500,snel:2500,tafel:5000,side:250,rin:2500,sess:45,cd:12,cb:.25,eye:1.1,lim:60000},
+ {id:'zilver',n:'Zilver',col:'#c9cfd8',need:{slot:150000,snel:100000,tafel:250000},slot:10000,snel:10000,tafel:20000,side:1000,rin:10000,sess:60,cd:10,cb:.5,eye:.9,lim:200000},
+ {id:'goud',n:'Goud',col:'#e8b923',need:{slot:750000,snel:500000,tafel:1250000},slot:50000,snel:25000,tafel:50000,side:5000,rin:40000,sess:90,cd:8,cb:.75,eye:.7,lim:600000},
+ {id:'platina',n:'Platina',col:'#a9dcff',need:{slot:3600000,snel:2400000,tafel:6000000},slot:200000,snel:50000,tafel:100000,side:20000,rin:100000,sess:150,cd:6,cb:1,eye:.5,lim:2000000},
+ {id:'zwart',n:'Zwart',col:'#2a2a31',need:{slot:18000000,snel:12000000,tafel:30000000},slot:500000,snel:100000,tafel:150000,side:50000,rin:250000,sess:240,cd:5,cb:1.25,eye:.35,lim:6000000}];
 // lidmaatschap bovenop de kaart: limieten (slots/snel, tafels, side bets, roulette-nummers), speeltijd, pauze
-const CC_T={slot:[1,2,2.5],tafel:[1,1.25,1.5],side:[1,1.5,2],rin:[1,1.33,1.67],sess:[1,1.5,2],cd:[1,.8,.6],lim:[1,1.5,2]};
+// Zwart: slots €500k (VIP €750k, HR €1 mln), side bets €50k (VIP €75k, HR €100k). Snel spel, tafels en roulette hebben een
+// plafond voor iedereen (snel €100k, kaartspellen €150k, roulette €250k per nummer): VIP en HR zitten daar eerder aan.
+// High rollers hebben daarnaast de High roller-tafel bij de kaartspellen: tot 3⅓× de gewone tafel, maximaal €500k.
+const CC_T={slot:[1,1.5,2],snel:[1,1.5,2],tafel:[1,1.25,1.5],side:[1,1.5,2],rin:[1,1.33,1.67],sess:[1,1.5,2],cd:[1,.8,.6],lim:[1,1.5,2]};
+const CC_CAP={snel:100000,tafel:150000,rin:250000,rout:500000,hrtafel:500000};
+const ccNice=v=>v>=10000?Math.round(v/1000)*1000:v>=1000?Math.round(v/100)*100:Math.round(v/10)*10;
 const CC_CAT={kluis:'slot',vis:'slot',zoet:'slot',mines:'snel',avia:'snel',coin:'snel',roulette:'tafel',bj:'tafel',tcp:'tafel',th:'tafel'};
 const CC_CATN={slot:'Slots',snel:'Snel spel',tafel:'Tafels'};
 // cashback mag nooit boven het huisvoordeel uitkomen: per spel een plafond op de factor
@@ -35,9 +40,10 @@ const ccLv=()=>Math.max(0,Math.min(CC.length-1,ccS().lv|0));
 const ccCard=()=>CC[ccLv()];
 const ccT=k=>(CC_T[k]||[1,1,1])[typeof tier==='function'?tier():0]||1;
 // maximale inzet: 'slot' (ook snel spel), 'tafel' (hoofdinzet), 'side', 'rin' (roulette binnen), 'rout' (roulette buiten)
-function casMax(k){const c=ccCard();if(k==='snel')k='slot';
- if(k==='rin')return Math.round(c.rin*ccT('rin')/100)*100;if(k==='rout')return Math.round(c.rin*2*ccT('rin')/100)*100;
- return Math.round(c[k]*ccT(k))}
+function casMax(k){const c=ccCard(),cap=v=>CC_CAP[k]?Math.min(CC_CAP[k],v):v;
+ if(k==='rout')return Math.min(CC_CAP.rout,casMax('rin')*2);
+ if(k==='hrtafel')return typeof tier==='function'&&tier()===2?Math.min(CC_CAP.hrtafel,ccNice(c.tafel*CC_T.tafel[2]*10/3/1.5)):0;
+ return cap(ccNice(c[k]*ccT(k)))}
 const ccSessMs=()=>Math.round(ccCard().sess*ccT('sess'))*60000;
 const ccCdMs=()=>Math.round(ccCard().cd*ccT('cd'))*60000;
 const ccCbF=g=>{const f=(ccCard().cb||0)+((typeof TIER_CB!=='undefined'&&TIER_CB[tier()])||0),mx=CC_CBMAX[g];return mx!=null?Math.min(mx,f):Math.min(2.25,f)};
@@ -78,7 +84,7 @@ function ccPanelHtml(){const lv=ccLv(),c=CC[lv],nx=CC[lv+1],C=ccS(),t=typeof tie
    ${['slot','snel','tafel'].map(k=>{const p=Math.min(1,(C.p[k]||0)/nx.need[k]);return `<div class="ccp-bar ${p>=1?'ok':''}"><span>${CC_CATN[k]}</span><i><i style="width:${(p*100).toFixed(1)}%"></i></i><em>${fmt(Math.min(C.p[k]||0,nx.need[k]))} / ${fmt(nx.need[k])}</em></div>`}).join('')}
    <small class="ccp-n">Alles telt: wit en zwart geld. Gepakt met zwart geld = 40% van je voortgang kwijt.</small>`:'<div class="ccp-h"><span class="label">Hoogste kaart</span><b>Je bent er</b></div><small class="ccp-n">De Zwarte kaart: de hoogste limieten, de langste speeltijd en de beveiliging laat je bijna met rust.</small>'}</div>
   <div class="ccp-perks"><div class="ccp-ph"><span></span><b>${c.n}</b>${nx?`<em>${nx.n}</em>`:''}</div>
-   ${perk('Max. inzet slots en snel spel',val(c,'slot'),nx?val(nx,'slot'):null)}${perk('Max. inzet aan tafel',val(c,'tafel'),nx?val(nx,'tafel'):null)}
+   ${perk('Max. inzet slots',val(c,'slot'),nx?val(nx,'slot'):null)}${perk('Max. inzet snel spel',val(c,'snel'),nx?val(nx,'snel'):null)}${perk('Max. inzet aan tafel',val(c,'tafel'),nx?val(nx,'tafel'):null)}${t===2?perk('High roller-tafel',val(c,'hrtafel'),nx?val(nx,'hrtafel'):null):''}
    ${perk('Side bets',val(c,'side'),nx?val(nx,'side'):null)}${perk('Roulette per nummer',val(c,'rin'),nx?val(nx,'rin'):null)}
    ${perk('Speeltijd achter elkaar',val(c,'sess'),nx?val(nx,'sess'):null)}${perk('Pauze daarna',val(c,'cd'),nx?val(nx,'cd'):null)}
    ${perk('Cashback',val(c,'cb'),nx?val(nx,'cb'):null)}${perk('Aandacht voor zwart geld',Math.round(c.eye*100)+'%',nx?Math.round(nx.eye*100)+'%':null)}</div>

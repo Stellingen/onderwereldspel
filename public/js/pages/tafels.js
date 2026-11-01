@@ -2,7 +2,14 @@
 // Echte regels en standaard uitbetalingstabellen, dus het huis wint op termijn. Side bets: €10 tot €50.
 // Side bets: maximaal €50 per rang (Rookie €50, Straatschoffie €100 … Peetvader €600)
 // maximum per hand en per side bet: van je casinokaart (VIP en High roller mogen meer)
-const TB={MAIN_MIN:50,get MAIN_MAX(){return typeof casMax==='function'?casMax('tafel'):50000},SIDE_MIN:10,get SIDE_MAX(){return typeof casMax==='function'?casMax('side'):500},CHIPS:[10,25,50,100,500,1000,5000,10000]};
+const TB={MAIN_MIN:50,get MAIN_MAX(){return typeof casMax!=='function'?50000:tbHrOn()?casMax('hrtafel'):casMax('tafel')},SIDE_MIN:10,get SIDE_MAX(){return typeof casMax==='function'?casMax('side'):500},CHIPS:[10,25,50,100,500,1000,5000,10000,25000,100000]};
+// High roller-tafel (alleen High rollers): hogere hoofdinzet bij Blackjack, Three Card Poker en Texas Hold'em
+const tbHrOn=()=>!!window.tbHR&&typeof tier==='function'&&tier()===2;
+function tbHrBar(game){if(typeof tier!=='function'||tier()!==2)return '';const T=tbT(game),on=tbHrOn(),lock=!['bet','done'].includes(T.phase);
+ return `<div class="tb-hr ${on?'on':''}" role="group" aria-label="Kies je tafel"><button class="${on?'':'on'}" onclick="tbHrSet(false,'${game}')" ${lock?'disabled':''} aria-pressed="${!on}"><b>Gewone tafel</b><small>tot ${fmt(casMax('tafel'))}</small></button><button class="${on?'on':''}" onclick="tbHrSet(true,'${game}')" ${lock?'disabled':''} aria-pressed="${on}"><b>High roller-tafel</b><small>tot ${fmt(casMax('hrtafel'))}</small></button></div>`}
+function tbHrSet(v,game){const T=tbT(game);if(!['bet','done'].includes(T.phase)||!!window.tbHR===v)return;if(T.phase==='done')tbNew(game);window.tbHR=v;tbClamp(T);try{SFX.chip()}catch(e){}render()}
+// inzetten nooit boven wat er aan deze tafel mag (na wisselen van tafel of bij Zelfde inzet)
+function tbClamp(T){const m=TB.MAIN_MAX,sd=TB.SIDE_MAX;Object.keys(T.bets).forEach(k=>{const main=k==='main'||k==='ante';T.bets[k]=Math.min(T.bets[k],main?m:sd)})}
 const RNK=['','','2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const SUITS=['♠','♥','♦','♣'];const isRed=s=>s==='♥'||s==='♦';
 function newShoe(decks){const a=[];for(let d=0;d<decks;d++)for(const s of SUITS)for(let r=2;r<=14;r++)a.push({r,s});
@@ -27,7 +34,7 @@ function tbRemember(g,bets){tbPref.last=Object.assign({},tbPref.last,{[g]:Object
 const tbLastOf=g=>{const l=tbPref.last&&tbPref.last[g];return l&&typeof l==='object'?Object.assign({},l):null};
 // wat een hand je in totaal kan kosten: nu (ante + side bets) en straks (play of call)
 function tbCost(now,later,laterTxt){return `<div class="tb-cost" role="note"><span>Nu <b>${fmt(now)}</b></span>${later?`<span>+ straks ${laterTxt} <b>${fmt(later)}</b></span><span class="tb-cost-max">Deze hand kost maximaal <b>${fmt(now+later)}</b></span>`:''}</div>`}
-function chipTray(game){const cur=tbChipOf(game);return `<div class="tray" role="group" aria-label="Kies een fiche">${TB.CHIPS.map(c=>`<button class="tchip c${c} ${cur===c?'on':''}" onclick="tbSetChip('${game}',${c})" aria-pressed="${cur===c}" aria-label="Fiche ${c}">${c>=1000?c/1000+'K':c}</button>`).join('')}
+function chipTray(game){const cur=tbChipOf(game),mx=Math.max(TB.MAIN_MAX,TB.SIDE_MAX);return `<div class="tray" role="group" aria-label="Kies een fiche">${TB.CHIPS.filter((c,i)=>i<4||c<=mx).map(c=>`<button class="tchip c${c} ${cur===c?'on':''}" onclick="tbSetChip('${game}',${c})" aria-pressed="${cur===c}" aria-label="Fiche ${c}">${c>=1000?c/1000+'K':c}</button>`).join('')}
   <span class="tray-l">Kies een fiche en tik op een vak</span></div>`}
 function spot(game,key,label,val,opts){opts=opts||{};return `<button class="spot ${opts.side?'side':''} ${val?'has':''} ${opts.res?'r-'+opts.res:''}" ${opts.dis?'disabled':''} onclick="act.tbBet('${game}','${key}')">
   <span class="spot-l">${label}</span>${chipStack(val)}${opts.sub?`<span class="spot-s">${opts.sub}</span>`:''}${opts.out?`<span class="spot-o">${opts.out}</span>`:''}</button>`}
@@ -52,12 +59,12 @@ function t3Result(cs){const rs=cs.map(c=>c.r).sort((x,y)=>x-y),fl=cs.every(c=>c.
 function bjTable(){
  const b=bt,bet=b.phase==='bet',h=b.hands,dUp0=b.dealer.length?bjTotal((b.phase==='play'||b.phase==='dealing')?[b.dealer[0]]:b.dealer).t:null,dUp=dUp0>21?'dood ('+dUp0+')':dUp0;
  const sideOut=k=>{const r=b.side[k];return r?(r.win?`${r.name} · +${fmt(r.win)}`:'Geen'):''};
- return `<div class="table bj">
+ return `${tbHrBar('bj')}<div class="table bj ${tbHrOn()?'hrt':''}">
   <div class="felt">
    <div class="felt-rules"><b>Blackjack betaalt 3 tegen 2</b><span>Dealer staat op alle 17 · 6 kaartspellen · splitsen en verdubbelen toegestaan</span></div>
    <div class="zone dealer"><div class="zl">Dealer${dUp!=null?` · <b>${dUp}${b.phase==='play'?'':''}</b>`:''}</div>
     ${b.dealer.length?`<div class="cards">${b.dealer.map((c,i)=>cardEl(c,i,(b.phase==='play'||b.phase==='dealing')&&i===1)).join('')}</div>`:ghosts(2)}</div>
-   <div class="felt-arc">Verzekering niet beschikbaar · Side bets €${TB.SIDE_MIN}–€${TB.SIDE_MAX} (hoger met je casinokaart)</div>
+   <div class="felt-arc">Verzekering niet beschikbaar · Side bets €${TB.SIDE_MIN}–${fmt(TB.SIDE_MAX)} (hoger met je casinokaart)</div>
    <div class="zone player">
     <div class="hands">${h.length?h.map((hd,i)=>{const t=bjTotal(hd.cards);return `<div class="hand ${b.phase==='play'&&i===b.active?'act':''} ${hd.res?'r-'+hd.res:''}">
       <div class="cards">${hd.cards.map((c,j)=>cardEl(c,j)).join('')}</div>
@@ -143,12 +150,12 @@ function tpTable(){
  const t=tp,bet=t.phase==='bet',dec=t.phase==='decide',done=t.phase==='done',rv=t.phase==='reveal';
  const pv=t.p.length?tp3(t.p):null,dv=done&&t.d.length?tp3(t.d):null;
  const o=t.res||{};
- return `<div class="table tcp">
+ return `${tbHrBar('tp')}<div class="table tcp ${tbHrOn()?'hrt':''}">
   <div class="felt">
    <div class="felt-rules"><b>Three Card Poker</b><span>Dealer speelt met vrouw-hoog of beter · ante-bonus wordt altijd uitbetaald</span></div>
    <div class="zone dealer"><div class="zl">Dealer${dv?` · <b>${dv.name}</b>${o.qual===false?' · speelt niet':''}`:''}</div>
     ${t.d.length?`<div class="cards">${t.d.map((c,i)=>cardEl(c,i,!(done||(rv&&i<(t.rv||0))))).join('')}</div>`:ghosts(3)}</div>
-   <div class="felt-arc">Pair Plus en 6-Card Bonus €${TB.SIDE_MIN}–€${TB.SIDE_MAX} (hoger met je casinokaart) · winnen ook als je past</div>
+   <div class="felt-arc">Pair Plus en 6-Card Bonus €${TB.SIDE_MIN}–${fmt(TB.SIDE_MAX)} (hoger met je casinokaart) · winnen ook als je past</div>
    <div class="zone player">
     <div class="hands"><div class="hand ${o.main?'r-'+o.main:''}">${t.p.length?`<div class="cards">${t.p.map((c,i)=>cardEl(c,i)).join('')}</div>`:ghosts(3)}
      ${pv?`<div class="hl"><b>${pv.name}</b>${o.mainOut?`<em>${o.mainOut}</em>`:''}</div>`:''}</div></div>
@@ -225,7 +232,7 @@ Object.assign(act,{
   if(tot+add>casCash()){toast(casShort(),'bad');return}
   T.bets[key]=cur+add;SFX.chip();render()},
  tbClear(game){const T=tbT(game);if(T.phase!=='bet')return;Object.keys(T.bets).forEach(k=>T.bets[k]=0);render()},
- tbRebet(game){const T=tbT(game);if(!T.last)T.last=tbLastOf(game);if(!T.last)return;if(T.phase==='done')tbNew(game);T.bets=Object.assign({},T.last);render()},
+ tbRebet(game){const T=tbT(game);if(!T.last)T.last=tbLastOf(game);if(!T.last)return;if(T.phase==='done')tbNew(game);T.bets=Object.assign({},T.last);tbClamp(T);render()},
  btNew(){Object.assign(bt,{bets:{main:0,pp:0,t21:0},lines:null,phase:'bet',hands:[],dealer:[],active:0,side:{},msg:'',net:0});render()},
  async btDeal(){const b=bt;if(b.phase!=='bet'||inJail())return;const tot=b.bets.main+b.bets.pp+b.bets.t21;
   if(b.bets.main<TB.MAIN_MIN){toast('Minimale inzet is €'+TB.MAIN_MIN,'bad');return}if(tot>casCash()){toast(casShort(),'bad');return}

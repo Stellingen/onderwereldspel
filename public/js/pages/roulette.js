@@ -1,7 +1,7 @@
 // Casino: Europese roulette (één nul, huisvoordeel 2,7%). Groot wiel met bal bovenaan, echte inzettafel eronder.
 // Elke inzet is een set getallen: valt de bal op een van die getallen, dan krijg je inzet × 36 / (aantal getallen) terug.
 // Zo betalen nummer 35:1, split 17:1, rij 11:1, hoek 8:1, zes 5:1, kolom en dozijn 2:1 en de kansen 1:1.
-const RL_CHIPS=[10,25,100,500,1000,5000,10000,25000];
+const RL_CHIPS=[10,25,100,500,1000,5000,10000,25000,100000];
 // Maximum per vak groeit met je rang: getallen (binnen-inzetten) / de rest (buiten-inzetten)
 const RL_LIMITS=[[0,50000,50000],[6,75000,100000],[9,150000,200000]]; // vanaf rang: Rookie, Soldaat, Onderbaas
 // maximum per vak: van je casinokaart (Zwart + High roller: €250.000 op een nummer)
@@ -105,7 +105,7 @@ function rouletteView(){const tot=rlTotal(),r=rl,done=!r.spinning&&r.res!=null,c
  </section>
  <section class="rl-felt">
   <div class="rl-bar">
-   <div class="rl-chips">${RL_CHIPS.map(v=>`<button class="pchip c${v} ${r.chip===v?'on':''}" data-v="${v}" onclick="rl.chip=${v};rl.erase=false;SFX.chip();rlPaintCtl();rlSay('Fiche ${fmt(v)} gekozen')" ${r.spinning?'disabled':''} aria-pressed="${r.chip===v}" aria-label="Fiche ${fmt(v)}">${rlShort(v)}</button>`).join('')}</div>
+   <div class="rl-chips">${RL_CHIPS.filter((v,i)=>i<4||v<=rlLim()[2]).map(v=>`<button class="pchip c${v} ${r.chip===v?'on':''}" data-v="${v}" onclick="rl.chip=${v};rl.erase=false;SFX.chip();rlPaintCtl();rlSay('Fiche ${fmt(v)} gekozen')" ${r.spinning?'disabled':''} aria-pressed="${r.chip===v}" aria-label="Fiche ${fmt(v)}">${rlShort(v)}</button>`).join('')}</div>
    <div class="rl-total"><span class="label">Totale inzet</span><b id="rlTot">${fmt(tot)}</b></div>
    <div id="rlLive" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
   </div>

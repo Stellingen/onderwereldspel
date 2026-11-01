@@ -47,14 +47,14 @@ function thTable(){
  const used=done&&o.pb?new Set(o.pb.use.map(i=>i)):null;
  const dName=showD&&o.db?o.db.name+(o.qual===false?' · speelt niet':''):'';
  const aaOut=t.p.length&&nb>=3&&t.bets.aa?(()=>{const x=thAA(t.p,t.b);return x?`${nb<5?'Nu ':''}${x.name} · +${fmt(t.bets.aa*x.m)}`:nb<5?'Nog niets':'Geen'})():'';
- return `<div class="table th">
+ return `${tbHrBar('th')}<div class="table th ${tbHrOn()?'hrt':''}">
   <div class="felt">
    <div class="felt-rules"><b>Texas Hold'em</b><span>Tegen de dealer · dealer speelt vanaf een paar vieren · meespelen kost 2× je ante</span></div>
    <div class="zone dealer"><div class="zl">Dealer${dName?` · <b>${dName}</b>`:''}</div>
     ${t.d.length?`<div class="cards">${t.d.map((c,i)=>cardEl(c,i,!showD)).join('')}</div>`:ghosts(2)}</div>
    <div class="zone board"><div class="zl">Tafel${nb?` · <b>${nb===3?'flop':nb===4?'turn':'river'}</b>`:''}</div>
     <div class="cards">${t.b.map((c,i)=>cardEl(c,i)).join('')}${'<div class="tc ghost"></div>'.repeat(5-nb)}</div></div>
-   <div class="felt-arc">AA Bonus €${TB.SIDE_MIN}–€${TB.SIDE_MAX.toLocaleString('nl-NL')} · jouw 2 + alle 5 tafelkaarten · ook als je past</div>
+   <div class="felt-arc">AA Bonus €${TB.SIDE_MIN}–${fmt(TB.SIDE_MAX)} · jouw 2 + alle 5 tafelkaarten · ook als je past</div>
    <div class="zone player">
     <div class="hands"><div class="hand ${o.main?'r-'+o.main:''}">${t.p.length?`<div class="cards">${t.p.map((c,i)=>cardEl(c,i)).join('')}</div>`:ghosts(2)}
      ${pNow?`<div class="hl"><b>${pNow.name}</b>${o.mainOut?`<em>${o.mainOut}</em>`:''}</div>`:''}</div></div>

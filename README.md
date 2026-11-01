@@ -637,3 +637,7 @@ Backup van de stand ervoor: branch `backup/2026-11-01-avond` (terugzetten = die 
 - **Families**: als lid eerst je eigen familie (met knoppen voor verhaal, overstappen en verlaten), dan de missies en de grote klus,
   dan de stad en de bendeoorlog, en onderaan een duidelijk blok om over te stappen (wie laat je toe) of de familie te verlaten,
   met de andere families en een filter. Zonder familie staan de families vóór de stad.
+- **Inzetlimieten per casinokaart** (`CC`, `CC_T`, `CC_CAP` in caskaart.js). Op de Zwarte kaart: slots €500.000 (VIP €750.000,
+  High roller €1 mln); snel spel tot €100.000, kaartspellen tot €150.000 en roulette tot €250.000 per nummer (€500.000 buiten);
+  side bets €50.000 (VIP €75.000, HR €100.000). VIP en HR halen de plafonds op een lagere kaart. **High roller-tafel** bij
+  Blackjack, Three Card Poker en Texas Hold'em: alleen voor HR, hoofdinzet tot €500.000 (ook naar kaart). Nieuwe fiches van 25K en 100K.

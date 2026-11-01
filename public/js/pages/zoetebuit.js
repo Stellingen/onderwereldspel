@@ -104,7 +104,7 @@ function zbSubHtml(){return zb.fs?`<span class="sb-tag fs">Bonus</span><span>Kau
 const zbBuyMaxI=()=>{const B=kkBets(),c=casCash();let r=-1;B.forEach((v,i)=>{if(v*ZOET.BUY_COST<=c)r=i});return r};
 // rechts: alle inzetten in een raster. Met bonus kopen aan zie je per inzet de prijs van de bonus; wat je niet kunt betalen is grijs.
 function zbBetsHtml(){const b=zbBet(),buy=!!zb.buyMode,cost=ZOET.BUY_COST,dis=zb.busy?'disabled':'',hr=typeof isHighRoller==='function'&&isHighRoller(),B=kkBets(),cash=casCash();
- const std=B.map((v,i)=>[v,i]).filter(([v])=>v<=50000),hi=B.map((v,i)=>[v,i]).filter(([v])=>v>50000),showHi=hr&&hi.length&&(zb.hrOpen==null?b>50000:zb.hrOpen);
+ const std=B.map((v,i)=>[v,i]).filter(([v])=>v<=50000),hi=B.map((v,i)=>[v,i]).filter(([v])=>v>50000),showHi=hi.length>0&&(zb.hrOpen==null?b>50000:zb.hrOpen);
  const btn=([v,i])=>{const pr=buy?v*cost:v,no=cash<pr;return `<button class="${i===zb.bi?'on':''} ${no?'no':''}" onclick="zbSetBet(${i})" ${dis} title="${fmt(v)} inzet${buy?' · bonus '+fmt(pr):''}${no?' · te weinig saldo':''}">${buy?`<b>${kkShortBet(pr)}</b><small>${kkShortBet(v)}</small>`:`<b>${kkShortBet(v)}</b>`}</button>`};
  const mi=zbBuyMaxI();
  return `<div class="sb-bets-h"><div><span class="label">${buy?'Bonus kopen · prijs per bonus':'Inzet per spin'}</span>
@@ -112,7 +112,7 @@ function zbBetsHtml(){const b=zbBet(),buy=!!zb.buyMode,cost=ZOET.BUY_COST,dis=zb
    ${buy?`<em>${cost}× je inzet van ${fmt(b)}</em>`:`<em>bonus kopen: ${fmt(b*cost)}</em>`}</div>
   <div class="sb-grid ${buy?'buy':''}">${(showHi?hi:std).map(btn).join('')}</div>
   ${buy&&cash<b*cost?`<p class="sb-hint">${mi>=0?`Je kunt een bonus kopen tot <b>${fmt(B[mi]*cost)}</b>. <button class="sb-lnk" onclick="zbSetBet(${mi})" ${dis}>Kies ${fmt(B[mi])} inzet</button>`:`Een bonus kost minstens ${fmt(B[0]*cost)}. Daar heb je nu te weinig voor.`}</p>`:''}
-  ${hr&&hi.length?`<button class="sb-hr ${showHi?'on':''}" onclick="zb.hrOpen=!${showHi};zbRefresh()" ${dis} aria-expanded="${!!showHi}"><span>${showHi?'Gewone inzetten':'High roller-inzetten'}</span><small>${showHi?'€10 t/m '+kkShortBet(std[std.length-1][0]):'tot '+kkShortBet(hi[hi.length-1][0])}</small></button>`:''}`}
+  ${hi.length?`<button class="sb-hr ${showHi?'on':''}" onclick="zb.hrOpen=!${showHi};zbRefresh()" ${dis} aria-expanded="${!!showHi}"><span>${showHi?'Gewone inzetten':'Hoge inzetten'}</span><small>${showHi?'€10 t/m '+kkShortBet(std[std.length-1][0]):'tot '+kkShortBet(hi[hi.length-1][0])}</small></button>`:''}`}
 function zbControls(){const b=zbBet(),bc=b*ZOET.BUY_COST,poor=casCash()<bc;
  return `<div class="sb-step"><span class="label">Inzet · klik om te kiezen</span>
    <div class="sb-amt"><button onclick="zbStepBet(-1)" ${zb.busy?'disabled':''} aria-label="Lagere inzet">−</button><button class="sb-betv" onclick="slotBetPop('zb')" ${zb.busy?'disabled':''} aria-label="Inzet kiezen">${fmt(b)}</button><button onclick="zbStepBet(1)" ${zb.busy?'disabled':''} aria-label="Hogere inzet">+</button></div></div>
