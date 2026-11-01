@@ -11,7 +11,9 @@ const FIT_STYLES={
  stil:{n:'Grijze muis',d:'Onopvallend. Niemand die je herkent.',col:'#a9b3c1',set3:{kans:2,heat:.06},set5:{kans:4,heat:.12}},
  sport:{n:'Atleet',d:'Snel weg en lang fit.',col:'#a9dcff',set3:{flee:.08,en:.04},set5:{flee:.15,en:.08}},
  patser:{n:'Patser',d:'Je ziet er rijk uit. Dat levert geld op, en aandacht.',col:'#f2c230',set3:{buit:.04,inc:.04,heat:-.04},set5:{buit:.06,inc:.08,heat:-.06}},
- zaken:{n:'Zakenman',d:'Respect bij rechters, bankiers en oude families.',col:'#b8a1ff',set3:{inc:.05,bail:.08},set5:{inc:.08,bail:.15,xp:.03}}};
+ zaken:{n:'Zakenman',d:'Respect bij rechters, bankiers en oude families.',col:'#b8a1ff',set3:{inc:.05,bail:.08},set5:{inc:.08,bail:.15,xp:.03}},
+ tac:{n:'Tactisch',d:'Gebouwd voor de klus: je slaagt vaker en komt overal uit.',col:'#9fe870',set3:{kans:2,esc:.08},set5:{kans:3,esc:.15,flee:.06}},
+ nacht:{n:'Nachtvlinder',d:'Clubs, deuren en mensen gaan voor je open. Sneller weer aan de slag.',col:'#e879f9',set3:{cd:.05,xp:.03},set5:{cd:.1,xp:.05,heat:-.03}}};
 const OUTFITS=[
  // hoofd
  {id:'pet',slot:'hoofd',st:'stil',n:'Zwarte pet',d:'Klep laag. Camera\'s zien alleen je kin.',p:150,r:0,fx:{heat:.05}},
@@ -100,6 +102,29 @@ const OUTFITS=[
  {id:'duim',slot:'ring',st:'sport',n:'Zilveren duimring',d:'Breed en mat. Goed voor je grip, zegt de man van de markt.',p:700,r:1,fx:{flee:.03,esc:.02}},
  {id:'kampdiam',slot:'ring',st:'patser',n:'Kampioensring met diamanten',d:'Groot, goud en vol steentjes. Je hebt hem niet gewonnen, wel betaald.',p:60000,r:6,fx:{buit:.05,inc:.04,heat:-.03}},
  {id:'diazegel',slot:'ring',st:'zaken',n:'Diamanten zegelring',d:'Wit goud met een zegel van diamant. Hij sluit deals zonder handtekening.',p:500000,r:10,fx:{inc:.09,xp:.04,bail:.06}},
+ // nieuw: Tactisch en Nachtvlinder, en stukken met dezelfde prijs maar een ander voordeel (kies wat bij je past)
+ {id:'tacpet',slot:'hoofd',st:'tac',n:'Tactische cap',d:'Olijfgroen, klittenband op de zijkant. Je ziet eruit alsof je weet wat je doet.',p:1200,r:2,fx:{kans:1,esc:.03},look:{k:'pet',c:'#3d4a32'}},
+ {id:'tacvest',slot:'kleding',st:'tac',n:'Tactisch vest',d:'Vakken voor alles: tang, zaklamp, tie-wraps. Klaar voor elke klus.',p:3200,r:3,fx:{kans:2,esc:.05},look:{k:'vest',c:'#2f3a2a',c2:'#55663f'}},
+ {id:'tackist',slot:'schoenen',st:'tac',n:'Legerkisten',d:'Stalen neus, grip op elke ondergrond, ook op een dak.',p:2200,r:2,fx:{flee:.04,esc:.04},look:{c:'#2b2a22',sole:'#0e0e0c',h:12}},
+ {id:'tackoord',slot:'nek',st:'tac',n:'Paracord-koord',d:'Gevlochten touw om je nek. Sterk genoeg om je uit een raam te laten zakken.',p:900,r:1,fx:{esc:.05},look:{c:'#5b7038',w:2.4}},
+ {id:'tacwatch',slot:'pols',st:'tac',n:'Tactisch horloge',d:'Mat zwart met groene wijzers die je in het donker nog ziet.',p:6500,r:4,fx:{kans:1,cd:.03},look:{band:'#2f3a2a',face:'#1b1d22',dial:'#9fe870'}},
+ {id:'tacring',slot:'ring',st:'tac',n:'Titanium ring',d:'Licht, mat en onbreekbaar. Valt op geen enkele camera op.',p:4800,r:4,fx:{esc:.06},look:{m:'#8a9099'}},
+ {id:'baret',slot:'hoofd',st:'nacht',n:'Fluwelen baret',d:'Paars fluweel, scheef op je hoofd. De portier knikt al voor je er bent.',p:9000,r:5,fx:{xp:.02,car:.02},look:{k:'muts',c:'#3a1546',c2:'#2a0f33'}},
+ {id:'clubjas',slot:'kleding',st:'nacht',n:'Glimmend clubjasje',d:'Zwart satijn met paarse bies. Je komt overal binnen en je bent snel weer weg.',p:18000,r:5,fx:{cd:.04,xp:.02,heat:-.03},look:{k:'top',c:'#22162e',c2:'#e879f9'}},
+ {id:'studs',slot:'schoenen',st:'nacht',n:'Lakloafers met studs',d:'Zwart lak vol zilveren studs. Op de dansvloer en in de garage.',p:15000,r:6,fx:{cd:.03,car:.03},look:{c:'#140b1a',sole:'#e879f9',h:0}},
+ {id:'neon',slot:'nek',st:'nacht',n:'Neonketting',d:'Een dunne ketting die in het blacklight oplicht.',p:7500,r:4,fx:{xp:.02},look:{c:'#e879f9',w:2.6}},
+ {id:'bangle',slot:'pols',st:'nacht',n:'Gouden bangle',d:'Een dikke, gladde band om je pols. Hij tikt op de bar als je bestelt.',p:26000,r:6,fx:{cd:.03,inc:.02},look:{band:'#e8b923',bangle:1}},
+ {id:'onyx',slot:'ring',st:'nacht',n:'Onyx clubring',d:'Een zwarte steen in goud. Wie hem kent, laat je voorgaan.',p:21000,r:6,fx:{xp:.03,heat:-.02},look:{m:'#e8b923',st:'#141414'}},
+ {id:'hartslag',slot:'pols',st:'sport',n:'Hartslagmeter',d:'Waarschuwt als je te hard gaat, zodat je langer volhoudt.',p:3500,r:3,fx:{en:.05},look:{band:'#1b1d22',face:'#0f1013',dial:'#3fe395'}},
+ {id:'stappen',slot:'pols',st:'stil',n:'Stoffen polsband',d:'Een grijs bandje zonder merk. Niemand onthoudt het.',p:3500,r:3,fx:{heat:.05,kans:1},look:{band:'#7d838c',bangle:1}},
+ {id:'zilverband',slot:'ring',st:'stil',n:'Simpel zilveren bandje',d:'Glad zilver, geen steen. Het zegt helemaal niets over je.',p:2600,r:3,fx:{heat:.04},look:{m:'#c9cdd3'}},
+ {id:'silicoon',slot:'ring',st:'sport',n:'Siliconen ring',d:'Rubber in plaats van metaal: je blijft nergens achter haken.',p:2600,r:3,fx:{en:.03,flee:.03},look:{m:'#3fe395'}},
+ {id:'oxford',slot:'schoenen',st:'zaken',n:'Oxfords op maat',d:'Handgemaakt in Northampton. Rechters kijken naar je schoenen.',p:42000,r:8,fx:{bail:.08,inc:.03},look:{c:'#2a1810',sole:'#120a06',h:0}},
+ {id:'goudsneak',slot:'schoenen',st:'patser',n:'Gouden sneakers',d:'Met de hand bespoten met bladgoud. Je ziet ze van ver aankomen.',p:42000,r:8,fx:{buit:.05,heat:-.04},look:{c:'#d9a520',sole:'#f6e7b0',h:0}},
+ {id:'kevlar',slot:'kleding',st:'tac',n:'Kevlarvest onder je overhemd',d:'Licht en onzichtbaar. Als het misgaat, kom je er heelhuids uit.',p:95000,r:9,fx:{esc:.1,bail:.08,kans:1},look:{k:'top',c:'#1d1f24',c2:'#3a3e46'}},
+ {id:'napels',slot:'kleding',st:'zaken',n:'Maatpak uit Napels',d:'Drie maanden werk van een kleermaker die alleen op aanbeveling werkt.',p:95000,r:9,fx:{inc:.06,xp:.04},look:{k:'jas',c:'#1b2233',c2:'#c9a15a',pants:'#1b2233'}},
+ {id:'homburg',slot:'hoofd',st:'zaken',n:'Homburg',d:'De hoed van staatslieden en peetvaders. Je wordt anders begroet.',p:60000,r:9,fx:{xp:.05,inc:.02},look:{k:'hoed',c:'#15171c',c2:'#3a2a1a'}},
+ {id:'nvg',slot:'hoofd',st:'tac',n:'Pet met nachtkijker',d:'Een opklapbare nachtkijker op je pet. In het donker zie jij alles.',p:60000,r:9,fx:{kans:3,esc:.04,heat:-.02},look:{k:'pet',c:'#1d2430',nvg:1}},
  // geluk: gebruik je, niet dragen voor een setbonus. luck = extra op je winst in de slots, 10 minuten, daarna 5 uur rust.
  {id:'dob1',slot:'geluk',st:'geluk',n:'Gebroken dobbelsteen',d:'Een hoekje eraf en een barst erdoor. Een heel klein beetje geluk.',p:2500,r:0,luck:.04,dc:['#8a8f98','#5d626b','#454950']},
  {id:'dob2',slot:'geluk',st:'geluk',n:'Houten dobbelsteen',d:'Met de hand gesneden door een oude man in de Jordaan.',p:20000,r:2,luck:.05,dc:['#a8743f','#86582d','#6b4523']},
@@ -133,8 +158,10 @@ const fitChips=fx=>fitFxStrs(fx).map(x=>`<span class="${x.good?'g':'b'}">${x.t}<
 const DOLL={body:'#2c3139',body2:'#3a414c',tee:'#30353e',jeans:'#1d2531'};
 const ARM_L='M64 104 L53 166 L48 218',ARM_R='M136 104 L147 166 L152 218',LEG_L='M88 198 L86 276 L85 346',LEG_R='M112 198 L114 276 L115 346';
 function dollParts(w){const g=id=>w.includes(id);const o={back:'',legs:'',shoes:'',top:'',neck:'',head:'',face:'',wrist:'',ring:''};
+ // nieuwere stukken tekenen we met een vaste vorm per soort en hun eigen kleuren (o.look)
+ const LK=sl=>{for(const id of w){const it=OUTFITS.find(x=>x.id===id);if(it&&it.slot===sl&&it.look)return it.look}return null};
  // broek: hoort bij het pak of het trainingspak, anders een donkere spijkerbroek
- const pants=g('pak')?'#262b35':g('smoking')?'#121317':g('trainingspak')?'#1b2a44':g('velours')?'#5e1a33':DOLL.jeans;
+ const pants=(LK('kleding')&&LK('kleding').pants)||(g('pak')?'#262b35':g('smoking')?'#121317':g('trainingspak')?'#1b2a44':g('velours')?'#5e1a33':DOLL.jeans);
  o.legs=`<path d="${LEG_L}" stroke="${pants}" stroke-width="23" stroke-linecap="round" fill="none"/><path d="${LEG_R}" stroke="${pants}" stroke-width="23" stroke-linecap="round" fill="none"/>
   <path d="M74 190h52v22H74z" fill="${pants}"/>${g('trainingspak')?`<path d="M77 202 L75 346M123 202 L125 346" stroke="#ff7a1a" stroke-width="2"/>`:''}${g('pak')?`<path d="M88 206 L86 340M112 206 L114 340" stroke="#323845" stroke-width="1"/>`:''}${g('smoking')?`<path d="M88 206 L86 340M112 206 L114 340" stroke="#2a2b31" stroke-width="2"/>`:''}`;
  // schoenen
@@ -174,6 +201,10 @@ function dollParts(w){const g=id=>w.includes(id);const o={back:'',legs:'',shoes:
  else if(g('overjas')){o.top=arms+sleeves('#b08a5a',214,19)+`<path d="M62 98 C82 88 118 88 138 98 L146 120 L146 290 L54 290 L54 120Z" fill="#b08a5a"/><path d="M84 94 L100 128 L116 94" fill="${DOLL.tee}"/><path d="M82 94 L99 130 L88 148M118 94 L101 130 L112 148" stroke="#93714a" stroke-width="3" fill="none"/><g fill="#5a4128"><circle cx="106" cy="160" r="2.2"/><circle cx="106" cy="190" r="2.2"/><circle cx="106" cy="220" r="2.2"/></g><path d="M100 130v160" stroke="#93714a" stroke-width="1.5"/><path d="M60 170h16M124 170h16" stroke="#93714a" stroke-width="2"/>`}
  else if(g('kroko')){let sc='';for(let y=112;y<200;y+=10)for(let x=64+((y/10)%2)*6;x<136;x+=12)sc+=`<path d="M${x} ${y} q6 -5 12 0" stroke="#1f3320" stroke-width="1.2" fill="none"/>`;
   o.top=arms+sleeves('#2f4a2c',212,19)+torso('#2f4a2c',204)+sc+`<path d="M100 94v110" stroke="#e8b923" stroke-width="2.4"/><path d="M84 92 L100 104 L116 92" stroke="#1f3320" stroke-width="4" fill="none"/><path d="M63 200h74" stroke="#1f3320" stroke-width="4"/>`}
+ else if(LK('kleding')){const l=LK('kleding');
+  if(l.k==='jas')o.top=arms+sleeves(l.c,214,19)+`<path d="M62 98 C82 88 118 88 138 98 L146 120 L144 270 L56 270 L54 120Z" fill="${l.c}"/><path d="M86 93 L100 140 L114 93Z" fill="#e9e6df"/><path d="M86 93 L96 150 L100 140M114 93 L104 150 L100 140" stroke="${l.c2}" stroke-width="2" fill="none"/><circle cx="100" cy="160" r="2" fill="${l.c2}"/><circle cx="100" cy="178" r="2" fill="${l.c2}"/><path d="M118 118h12" stroke="${l.c2}" stroke-width="3"/>`;
+  else if(l.k==='vest')o.top=arms+sleeves('#30343b',190,17)+torso('#30343b',202)+`<path d="M64 102 L136 102 L138 196 L62 196Z" fill="${l.c}"/><path d="M70 126h24v18H70zM106 126h24v18h-24zM70 154h24v18H70zM106 154h24v18h-24z" fill="${l.c2}"/><path d="M70 130h24M106 130h24M70 158h24M106 158h24" stroke="#1d241a" stroke-width="2"/><path d="M100 102v94" stroke="#1d241a" stroke-width="2"/>`;
+  else o.top=arms+sleeves(l.c,212,18)+torso(l.c,202)+`<path d="M100 92v110" stroke="${l.c2}" stroke-width="2"/><path d="M84 92 L100 112 L116 92" stroke="${l.c2}" stroke-width="2.4" fill="none"/><path d="M58 112 L52 166 L47 210M142 112 L148 166 L153 210" stroke="${l.c2}" stroke-width="1.6" fill="none" opacity=".8"/>`}
  else o.top=arms+sleeves(DOLL.tee,132,18)+torso(DOLL.tee,202);
  // handen
  o.top+=`<circle cx="48" cy="222" r="7" fill="${DOLL.body2}"/><circle cx="152" cy="222" r="7" fill="${DOLL.body2}"/>`;
@@ -206,6 +237,10 @@ function dollParts(w){const g=id=>w.includes(id);const o={back:'',legs:'',shoes:
  if(g('diagrill'))o.face+=`<rect x="91" y="60" width="18" height="5" rx="1.6" fill="#dff6ff"/><path d="M95 60v5M99 60v5M103 60v5M107 60v5" stroke="#9ad6ef" stroke-width=".8"/><path d="M110 56 l1 2.5 2.5 1 -2.5 1 -1 2.5 -1 -2.5 -2.5 -1 2.5 -1z" fill="#fff" class="fit-spark2"/>`;
  if(g('grill'))o.face+=`<rect x="92" y="60" width="16" height="4.6" rx="1.6" fill="#e8b923"/><path d="M96 60v4.6M100 60v4.6M104 60v4.6" stroke="#b8890f" stroke-width=".8"/>`;
  if(g('bril'))o.face+=`<path d="M84 49h13q1 9-6 10-7-1-7-10zM103 49h13q0 9-7 10-7-1-6-10z" fill="#1b1d22"/><path d="M84 49h13q1 9-6 10-7-1-7-10zM103 49h13q0 9-7 10-7-1-6-10z" stroke="#d9a520" stroke-width="1.3" fill="none"/><path d="M97 50h6" stroke="#d9a520" stroke-width="1.3"/><path d="M87 51l5 5M106 51l5 5" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>`;
+ {const l=LK('hoofd');if(l){
+  if(l.k==='pet')o.head=`<path d="M80 46 Q80 22 100 22 Q120 22 120 46Z" fill="${l.c}"/><path d="M78 44 Q100 54 122 44 L124 50 Q100 60 76 50Z" fill="${l.c}" opacity=".85"/><rect x="104" y="30" width="10" height="7" rx="1" fill="rgba(0,0,0,.35)"/>`+(l.nvg?`<rect x="86" y="14" width="28" height="12" rx="3" fill="#0f1217"/><circle cx="93" cy="20" r="4" fill="#1e2a12" stroke="#9fe870" stroke-width="1"/><circle cx="107" cy="20" r="4" fill="#1e2a12" stroke="#9fe870" stroke-width="1"/>`:'');
+  else if(l.k==='muts')o.head=`<path d="M79 48 Q79 18 100 18 Q121 18 121 48Z" fill="${l.c}"/><path d="M78 42h44v9H78z" fill="${l.c2||l.c}"/><ellipse cx="111" cy="24" rx="12" ry="6" fill="${l.c}" transform="rotate(-18 111 24)"/>`;
+  else if(l.k==='hoed'){o.back+=`<ellipse cx="100" cy="37" rx="33" ry="6" fill="${l.c}"/>`;o.head=`<path d="M81 38 L84 17 Q100 10 116 17 L119 38Z" fill="${l.c}"/><path d="M92 14 Q100 20 108 14" stroke="rgba(0,0,0,.5)" stroke-width="2" fill="none"/><path d="M82 32h36v5H82z" fill="${l.c2}"/>`}}}
  // pols (linker hand van de pop = rechts in beeld)
  const watch=(band,face,dial)=>`<path d="M144 206 l14 2" stroke="${band}" stroke-width="7" stroke-linecap="round"/><circle cx="151" cy="207" r="5.5" fill="${face}"/><circle cx="151" cy="207" r="3.6" fill="${dial}"/>`;
  o.wrist=g('digitaal')?`<path d="M144 206 l14 2" stroke="#16181c" stroke-width="7" stroke-linecap="round"/><rect x="146" y="202" width="10" height="9" rx="1.5" fill="#16181c"/><rect x="148" y="204" width="6" height="4" fill="#9fd8a8"/>`
@@ -217,12 +252,16 @@ function dollParts(w){const g=id=>w.includes(id);const o={back:'',legs:'',shoes:
   :g('skelet')?watch('#5a3a22','#e8b923','#1b1d22')+`<circle cx="151" cy="207" r="2.1" fill="none" stroke="#e8b923" stroke-width=".7"/><circle cx="150" cy="206" r=".9" fill="none" stroke="#e8b923" stroke-width=".5"/>`
   :g('president')?watch('#e8b923','#f2c230','#efe1b5')+`<path d="M144 206 l14 2" stroke="#b8890f" stroke-width="7" stroke-dasharray="1 2" stroke-linecap="round" opacity=".5"/><circle cx="151" cy="207" r="3.6" fill="#efe1b5"/>`
   :g('icedw')?watch('#e8fbff','#e8fbff','#cfefff')+`<path d="M144 206 l14 2" stroke="#9ad6ef" stroke-width="7" stroke-dasharray=".8 1.4" stroke-linecap="round" opacity=".6"/><circle cx="151" cy="207" r="3.6" fill="#cfefff"/><path d="M155 201 l.8 2 2 .8 -2 .8 -.8 2 -.8 -2 -2 -.8 2 -.8z" fill="#fff" class="fit-spark2"/>`:g('tennis')?`<path d="M144 206 l14 2" stroke="#e8fbff" stroke-width="3.6" stroke-dasharray="1.6 1.3" stroke-linecap="round"/><path d="M152 203 l.8 2 2 .8 -2 .8 -.8 2 -.8 -2 -2 -.8 2 -.8z" fill="#fff" class="fit-spark2"/>`:'';
+ {const l=LK('pols');if(l)o.wrist=l.bangle?`<path d="M144 206 l14 2" stroke="${l.band}" stroke-width="5.5" stroke-linecap="round"/><path d="M145 204.2 l12 1.8" stroke="rgba(255,255,255,.45)" stroke-width="1"/>`:watch(l.band,l.face,l.dial)}
  // ring (rechterhand van de pop = links in beeld)
  const ring=(m,st)=>`<circle cx="47.5" cy="227" r="2.7" fill="none" stroke="${m}" stroke-width="1.8"/>${st?`<circle cx="47.5" cy="224.3" r="1.8" fill="${st}"/>`:''}`;
  o.ring=g('trouwring')?ring('#e8b923'):g('zegel')?ring('#c9ced6')+`<rect x="45" y="222.4" width="5" height="3.4" rx=".6" fill="#c9ced6"/>`:g('kampioen')?ring('#e8b923','#4d7dff')+`<circle cx="47.5" cy="224.3" r="2.6" fill="none" stroke="#e8b923" stroke-width=".8"/>`
   :g('pinkring')?ring('#e8b923','#d12b3f'):g('famring')?ring('#d9a520','#7a1626')+`<circle cx="47.5" cy="224.3" r="2.5" fill="none" stroke="#d9a520" stroke-width=".9"/>`:g('duim')?`<circle cx="47.5" cy="227" r="2.9" fill="none" stroke="#b8bdc5" stroke-width="2.6"/>`
   :g('kampdiam')?ring('#e8b923','#e8fbff')+`<circle cx="47.5" cy="224.3" r="2.8" fill="none" stroke="#e8b923" stroke-width=".9"/><path d="M50.5 220.5 l.6 1.4 1.4 .6 -1.4 .6 -.6 1.4 -.6 -1.4 -1.4 -.6 1.4 -.6z" fill="#fff" class="fit-spark2"/>`
   :g('diazegel')?ring('#e5e7eb')+`<rect x="44.5" y="222" width="6" height="4.2" rx=".8" fill="#e8fbff" stroke="#9ad6ef" stroke-width=".5"/>`:g('zwartdiamant')?ring('#dfe3e8','#0b0b0d')+`<path d="M50 221 l.6 1.4 1.4 .6 -1.4 .6 -.6 1.4 -.6 -1.4 -1.4 -.6 1.4 -.6z" fill="#fff" class="fit-spark2"/>`:'';
+ {const l=LK('ring');if(l)o.ring=ring(l.m,l.st)}
+ {const l=LK('schoenen');if(l)o.shoes=shoe(l.c,l.sole,l.h||0)}
+ {const l=LK('nek');if(l)o.neck+=`<path d="M87 92 Q100 128 113 92" stroke="${l.c}" stroke-width="${l.w||2}" fill="none"/>`}
  return o}
 function dollSvg(wear,opts){opts=opts||{};const w=Object.values(wear||{}).filter(Boolean),P=dollParts(w);
  const vb=opts.vb||'0 0 200 372';
@@ -257,32 +296,66 @@ const fitExtra=o=>{const ri=rankIdx(S.xp);return ri>=o.r?0:Math.round((.4+.25*(o
 const fitUI={tab:'kleding',prev:null,street:null};
 function fitPreview(id){fitUI.prev=id;const el=document.getElementById('fitDoll');if(!el)return;const w=Object.assign({},fitS().wear);if(id){const o=fitItem(id);if(o)w[o.slot]=o.id}
  el.innerHTML=dollSvg(w);el.classList.toggle('try',!!id)}
+// wat verandert er als je dit stuk aantrekt (tegenover wat je nu draagt), inclusief setbonussen
+function fitDiff(o){if(!o||o.slot==='geluk')return {};const w=Object.assign({},fitS().wear,{[o.slot]:o.id}),L=FIT_SLOTS.map(sl=>fitItem(w[sl.id])).filter(x=>x&&FIT_STYLES[x.st]);
+ const a=fitTotals(),b=fitTotals(L),d={};new Set([...Object.keys(a),...Object.keys(b)]).forEach(k=>{const v=+((b[k]||0)-(a[k]||0)).toFixed(4);if(Math.abs(v)>1e-6)d[k]=v});return d}
+const fitDiffHtml=o=>{const F=fitS();if(F.wear[o.slot]===o.id)return '';const d=fitChips(fitDiff(o));return `<div class="fit-diff"><span>Als je hem aantrekt</span>${d||'<em>niets anders</em>'}</div>`};
+// setbanner: welke set je draagt, hoe ver je bent en wat de volle set geeft
+function fitSetHud(){const c=fitSets(),best=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];
+ if(!best)return `<div class="fit-hud none"><b>Geen set</b><span>Draag 3 stukken in dezelfde stijl voor een setbonus, 5 voor de volle bonus.</span></div>`;
+ const [k,n]=best,st=FIT_STYLES[k],lv=n>=5?'Volle set':n>=3?'Setbonus actief':'Nog '+(3-n)+' stuk'+(3-n>1?'ken':'')+' tot de setbonus';
+ return `<div class="fit-hud ${n>=5?'full':n>=3?'on':''}" style="--sc:${st.col}"><div class="fh-t"><span class="label">${lv}</span><b>${st.n}</b><em>${n}/${FIT_STYLE_SLOTS}</em></div>
+  <i class="fit-pips">${Array.from({length:FIT_STYLE_SLOTS},(_,i)=>`<i class="${i<n?'f':''} ${i===2||i===4?'m':''}"></i>`).join('')}</i>
+  <div class="fh-fx">${n>=3?fitChips(n>=5?st.set5:st.set3):''}${n<5?`<small>${n>=3?'Bij 5: ':'Bij 3: '}${fitFxStrs(n>=3?st.set5:st.set3).map(x=>x.t).join(', ')}</small>`:''}</div></div>`}
+// Kledingkast: je personage in het midden met de plekken eromheen; kies een plek en wissel tussen wat je hebt
+function fitWardrobe(){const F=fitS(),sl=fitUI.wslot||'kleding',own=OUTFITS.filter(o=>F.own[o.id]&&o.slot!=='geluk'),mine=own.filter(o=>o.slot===sl).sort((a,b)=>a.r-b.r||a.p-b.p),t=fitTotals();
+ const slotBtn=x=>{const o=fitItem(F.wear[x.id]),n=own.filter(i=>i.slot===x.id).length,stc=o&&FIT_STYLES[o.st]?FIT_STYLES[o.st].col:'var(--line2)';
+  return `<button class="wd-slot ${sl===x.id?'on':''} ${o?'has':''}" style="--sc:${stc}" onclick="fitUI.wslot='${x.id}';render()"><span class="wd-sth">${o?fitThumb(o):''}</span><span class="wd-stt"><small>${x.n}</small><b>${o?o.n:'Niets'}</b><em>${n} in kast</em></span></button>`};
+ const S6=FIT_SLOTS.filter(x=>x.id!=='geluk');
+ return `<div class="vb-bar"><button class="vb-back" onclick="fitUI.street=null;render()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Outfit</span></button><h2>Kledingkast</h2><span class="wd-cnt">${own.length} kledingstukken in bezit</span></div>
+ <div class="wd">
+  <section class="wd-left card">
+   ${fitSetHud()}
+   <div class="wd-stage"><div class="wd-col">${S6.slice(0,3).map(slotBtn).join('')}</div><div class="wd-doll" id="fitDoll">${dollSvg(F.wear)}</div><div class="wd-col">${S6.slice(3).map(slotBtn).join('')}</div></div>
+   <div class="fit-sum"><span class="label">Wat je outfit je nu geeft</span><div class="fit-chips">${fitChips(t)||'<em>Nog niks. Trek iets aan.</em>'}</div></div>
+  </section>
+  <section class="wd-right">
+   <div class="fit-tabs2" role="tablist">${S6.map(x=>{const n=own.filter(i=>i.slot===x.id).length;return `<button role="tab" class="${sl===x.id?'on':''}" aria-selected="${sl===x.id}" onclick="fitUI.wslot='${x.id}';render()">${x.n} <small>${n}</small></button>`}).join('')}</div>
+   ${mine.length?`<div class="wd-list">${mine.map(o=>{const on=F.wear[o.slot]===o.id,stl=FIT_STYLES[o.st];return `<article class="wd-item ${on?'on':''}" style="--sc:${stl.col}" onmouseenter="fitPreview('${o.id}')" onmouseleave="fitPreview(null)">
+     <div class="fit-th">${fitThumb(o)}</div><div class="wd-ib"><div class="fit-t"><h4>${o.n}</h4><span class="fit-st">${stl.n}</span></div><div class="fit-chips">${fitChips(o.fx)}</div>${on?'':fitDiffHtml(o)}</div>
+     <div class="wd-ia">${on?`<span class="fit-on">Draag je</span><button class="btn ghost sm" onclick="act.fitOff('${o.slot}')">Uittrekken</button>`:`<button class="btn sm" onclick="act.fitWear('${o.id}')">Aantrekken</button>`}</div></article>`}).join('')}</div>`
+    :`<div class="wd-empty"><b>Nog niets voor je ${FIT_SLOTS.find(x=>x.id===sl).n.toLowerCase()}</b><span>Koop iets in een van de winkelstraten.</span><button class="btn ghost sm" onclick="fitUI.street=null;render()">Naar de winkels</button></div>`}
+   <div class="fit-sets wd-sets">${Object.entries(FIT_STYLES).map(([k,st])=>{const n=fitSets()[k]||0,have=own.filter(o=>o.st===k).length;return `<div class="fit-set ${n>=3?'on':''}" style="--sc:${st.col}"><div><b>${st.n}</b><span>${n}/${FIT_STYLE_SLOTS} aan · ${have} in kast</span></div>
+    <i class="fit-pips">${Array.from({length:FIT_STYLE_SLOTS},(_,i)=>`<i class="${i<n?'f':''} ${i===2||i===4?'m':''}"></i>`).join('')}</i><small>3: ${fitFxStrs(st.set3).map(x=>x.t).join(', ')} · 5: ${fitFxStrs(st.set5).map(x=>x.t).join(', ')}</small></div>`}).join('')}</div>
+  </section></div>`}
 function fitSumHtml(){const t=fitTotals(),c=fitSets(),chips=fitChips(t);
  return `<div class="fit-sum"><span class="label">Wat je outfit je nu geeft</span><div class="fit-chips">${chips||'<em>Nog niks. Trek iets aan.</em>'}</div></div>
   <div class="fit-sets">${Object.entries(FIT_STYLES).map(([k,s])=>{const n=c[k]||0,on=n>=3;return `<div class="fit-set ${on?'on':''}" style="--sc:${s.col}"><div><b>${s.n}</b><span>${n}/${FIT_STYLE_SLOTS}</span></div>
    <i class="fit-pips">${Array.from({length:FIT_STYLE_SLOTS},(_,i)=>`<i class="${i<n?'f':''} ${i===2||i===4?'m':''}"></i>`).join('')}</i><small>${n>=5?'Volle set: ':n>=3?'Actief: ':'Vanaf 3: '}${fitFxStrs(n>=5?s.set5:s.set3).map(x=>x.t).join(', ')}${n>=3&&n<5?'. Bij 5 nog meer':''}</small></div>`}).join('')}</div>`}
 V.look=()=>{const ri=rankIdx(S.xp),F=fitS(),tab=fitUI.tab,worn=F.wear[tab];
  const st=fitUI.street,STR=FIT_STREETS.find(x=>x.id===st);
+ if(st==='kast')return `<h1>Outfit</h1>${fitWardrobe()}`;
  const pool=st==='kast'?OUTFITS.filter(o=>F.own[o.id]&&o.slot!=='geluk'):st==='geluk'?OUTFITS.filter(o=>o.slot==='geluk'):STR?OUTFITS.filter(o=>fitStreet(o)===st):[];
  const slots=st==='geluk'?FIT_SLOTS.filter(x=>x.id==='geluk'):FIT_SLOTS.filter(x=>x.id!=='geluk'&&pool.some(o=>o.slot===x.id));
  const tb=slots.find(x=>x.id===tab)?tab:(slots[0]||{}).id;
- const items=pool.filter(o=>o.slot===tb).sort((a,b)=>a.r-b.r||a.p-b.p);
+ const fl=fitUI.own||'all',items=pool.filter(o=>o.slot===tb&&(fl==='all'||(fl==='own'?F.own[o.id]:!F.own[o.id]))).sort((a,b)=>a.r-b.r||a.p-b.p);
  const card=o=>{const own=!!F.own[o.id],on=F.wear[o.slot]===o.id,hrLock=o.hr&&tier()<2,lock=ri<o.r&&!hrLock,poor=S.cash<fitPrice(o),s=FIT_STYLES[o.st]||{n:'Geluk +'+Math.round((o.luck||0)*100)+'%',col:'#f2c230'};
   const fxH=o.luck?`<span class="g">+${Math.round(o.luck*100)}% op je winst in de slots</span><span class="g">${LUCK_MIN} min actief</span><span>${LUCK_CD/60} uur rust</span>`:fitChips(o.fx);
   const btn=on?`<button class="btn ghost" onclick="act.fitOff('${o.slot}')">${o.luck?'Wegleggen':'Uittrekken'}</button>`:own?`<button class="btn act-btn" onclick="act.fitWear('${o.id}')">${o.luck?'Meenemen':'Aantrekken'}</button>`
    :hrLock?`<button class="btn ghost" disabled>Alleen High roller</button>`:`<button class="btn ${poor?'ghost':'act-btn'}" onclick="act.fitBuy('${o.id}')" ${poor?'disabled':''}>${poor?'Te duur · ':'Koop · '}${fmt(fitPrice(o))}</button>${lock?`<small class="fit-x">Vanaf ${RANKS[o.r][0]} ${fmt(o.p)} · nu +${fitExtra(o)}%</small>`:''}`;
   return `<article class="fit-item ${on?'on':own?'own':lock||hrLock?'lock':''}" style="--sc:${s.col}" onmouseenter="fitPreview('${o.id}')" onmouseleave="fitPreview(null)" onfocusin="fitPreview('${o.id}')" onfocusout="fitPreview(null)">
    <div class="fit-th">${fitThumb(o)}</div>
-   <div class="fit-b"><div class="fit-t"><h4>${o.n}</h4><span class="fit-st">${s.n}</span></div><p>${o.d}</p><div class="fit-chips">${fxH}</div></div>
+   <div class="fit-b"><div class="fit-t"><h4>${o.n}</h4><span class="fit-st">${s.n}</span></div><p>${o.d}</p><div class="fit-chips">${fxH}</div>${o.luck||on?'':fitDiffHtml(o)}</div>
    <div class="fit-btn">${on?`<span class="fit-on">${o.luck?'Op zak':'Draag je'}</span>`:own?'<span class="fit-own">In je kast</span>':''}${btn}</div></article>`};
  const luckPanel=tab==='geluk'?luckPanelHtml():'';
  return `<h1>Outfit</h1><p class="sub">Wat je draagt bepaalt hoe de straat naar je kijkt. Elk stuk geeft een voordeel, en drie of meer stukken in dezelfde stijl geven een setbonus. Vaak kies je tussen stukken van dezelfde prijs met een ander voordeel. Wat je koopt blijft in je kast; omkleden is gratis.</p>
  <div class="fit">
   <section class="card fit-left"><div class="fit-stage" id="fitDoll">${dollSvg(F.wear)}</div>
    <div class="fit-worn">${FIT_SLOTS.map(sl=>{const o=fitItem(F.wear[sl.id]);return `<button class="${tab===sl.id?'on':''}" onclick="fitUI.tab='${sl.id}';if(!fitUI.street||'${sl.id}'==='geluk'||fitUI.street==='geluk')fitUI.street='${sl.id}'==='geluk'?'geluk':'kast';render()"><span class="label">${sl.n}</span><b>${o?o.n:'Niets'}</b></button>`}).join('')}</div>
-   ${fitSumHtml()}</section>
+   ${fitSetHud()}${fitSumHtml()}</section>
   <section class="fit-right">${st?`<div class="vb-bar"><button class="vb-back" onclick="fitUI.street=null;render()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Winkelstraten</span></button><h2>${STR?STR.n:st==='kast'?'Je kast':'Geluk'}</h2></div>
-   ${STR?`<p class="fit-hint">${STR.sub}. ${STR.d}</p>`:st==='kast'?`<p class="fit-hint">Alles wat je hebt gekocht. Omkleden is gratis.</p>`:''}
+   ${STR?`<div class="fs-head" style="--c:${STR.col}"><div><span class="label">${STR.sub}</span><p>${STR.d}</p></div><button class="btn ghost sm" onclick="fitUI.street='kast';render()">Kledingkast · ${OUTFITS.filter(o=>F.own[o.id]&&o.slot!=='geluk').length}</button></div>
+   <div class="fs-own" role="group" aria-label="Laat zien">${[['all','Alles'],['buy','Te koop'],['own','In bezit']].map(([k,n])=>`<button class="${fl===k?'on':''}" onclick="fitUI.own='${k}';render()">${n} <small>${pool.filter(o=>o.slot===tb&&(k==='all'||(k==='own'?F.own[o.id]:!F.own[o.id]))).length}</small></button>`).join('')}</div>`:''}
    <div class="fit-tabs2" role="tablist">${slots.map(sl=>`<button role="tab" class="${tb===sl.id?'on':''}" aria-selected="${tb===sl.id}" onclick="fitUI.tab='${sl.id}';render()">${sl.n}${F.wear[sl.id]?'<i></i>':''}</button>`).join('')}</div>
    ${st==='geluk'?luckPanelHtml():''}<p class="fit-hint"><span class="hv">Ga met je muis over een stuk om het te passen.</span></p>
    ${items.length?`<div class="fit-grid">${items.map(card).join('')}</div>`:'<p class="fit-hint">Nog niets in je kast.</p>'}`
@@ -296,10 +369,12 @@ function fitLobbyHtml(){const ri=rankIdx(S.xp),F=fitS(),own=OUTFITS.filter(o=>F.
    <span class="bzb-art" aria-hidden="true">${art(s2.col,s2.id,s2.id==='hoog'?'tower':'shop')}</span>
    <span class="bzb-t"><span class="bzb-k">${s2.sub}</span><b>${s2.n}</b><span class="bzb-d">${s2.d}</span>
     <span class="bzb-f"><em><b>${cnt}</b> stuks</em><em><b>${has}</b> in je kast</em>${ok?'':`<em class="up">nu met toeslag</em>`}</span><span class="bzb-go">Naar binnen ›</span></span></button>`};
- return `<p class="fit-hint">Drie winkelstraten, van de markt tot de P.C. Hooftstraat. Iets boven je rang kun je al kopen, maar dan betaal je toeslag.</p>
+ const c=fitSets(),best=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];
+ return `<button class="wd-entry" onclick="fitUI.street='kast';render()"><span class="wd-e-doll" aria-hidden="true">${dollSvg(F.wear)}</span><span class="wd-e-t"><span class="label">Je eigen spullen</span><b>Kledingkast</b><small>${own} kledingstuk${own===1?'':'ken'} in bezit${best?' · '+FIT_STYLES[best[0]].n+' '+best[1]+'/'+FIT_STYLE_SLOTS:''}</small><span class="wd-e-go">Openen en omkleden ›</span></span></button>
+  <p class="fit-hint">Drie winkelstraten, van de markt tot de P.C. Hooftstraat. Iets boven je rang kun je al kopen, maar dan betaal je toeslag.</p>
   <div class="fit-streets">${FIT_STREETS.map(banner).join('')}
    <button class="bzb fsb small" style="--c:#f2c230" onclick="fitUI.street='geluk';fitUI.tab='geluk';render()"><span class="bzb-art" aria-hidden="true">${diceSvg(fitItem('dob5'),1)}</span><span class="bzb-t"><span class="bzb-k">Geluk</span><b>Dobbelstenen</b><span class="bzb-d">Extra winst in de slots, 10 minuten per keer.</span><span class="bzb-go">Bekijken ›</span></span></button>
-   <button class="bzb fsb small" style="--c:#b8a1ff" onclick="fitUI.street='kast';render()"><span class="bzb-art kast" aria-hidden="true">${dollSvg(F.wear)}</span><span class="bzb-t"><span class="bzb-k">Je kast</span><b>${own} stuks</b><span class="bzb-d">Omkleden met wat je al hebt, gratis.</span><span class="bzb-go">Openen ›</span></span></button></div>`}
+</div>`}
 Object.assign(act,{
  fitBuy(id){const o=fitItem(id),F=fitS();if(!o||F.own[id])return;if(o.hr&&tier()<2){toast('Alleen voor High rollers','bad');return}const pr=fitPrice(o);if(S.cash<pr){toast('Niet genoeg contant geld','bad');return}
   S.cash-=pr;F.own[id]=1;F.wear[o.slot]=id;try{SFX.buy&&SFX.buy()}catch(e){}toast(`${o.n} gekocht en aangetrokken`,'ok');log(`Outfit: ${o.n} gekocht (${fmt(pr)})`,'info');save();render()},
