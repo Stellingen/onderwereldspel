@@ -5,7 +5,7 @@ const GAMES=[
  {id:'kluis',slug:'kluiskraker',n:'Kluiskraker',col:'#ff7a1a',kind:'Cluster-slot · 10 × 10',short:'Vijf gelijke symbolen die elkaar raken, ontploffen. Op dezelfde plek weer winst? Dan wordt dat vakje x2, x4, x8.',tags:['Max 5.000×','RTP ±92,5%']},
  {id:'vis',slug:'visdief',n:'Visdief',col:'#5ad1ff',kind:'Video-slot · 5 × 4',short:'Elke vis heeft een prijskaartje. Valt de Visdief erbij, dan pakt hij ze allemaal.',tags:['Max 10.000×','RTP ±92%']},
  {id:'zoet',slug:'suikerbaron',n:'Suikerbaron',col:'#ff4f9a',kind:'Snoepslot · 6 × 5',short:'Acht of meer van hetzelfde snoepje, waar ze ook liggen. In de bonus maken kauwgomballen je winst tot ×1.000 groter.',tags:['Max 5.000×','RTP ±95%']},
- {id:'draak',slug:'gouden-draak',n:'Gouden Draak',col:'#ffb300',kind:'Video-slot · 5 × 3',short:'Drie gongs maken het midden één reuzensymbool. Zes gouden munten geven de Muntenbonus: vul alle 9 vakjes voor de Mega.',tags:['Max 5.000×','RTP ±93%']},
+ {id:'draak',slug:'gouden-draak',n:'Gouden Draak',col:'#ffb300',kind:'Video-slot · 5 × 3',short:'Drie gongs maken het midden één reuzendraak. Zes gouden munten geven de Muntenbonus: vul het hele bord voor de Mega.',tags:['Max 5.000×','RTP ±93,5%']},
  {id:'mines',slug:'mines',n:'Mines',col:'#3fe395',kind:'Durfspel · 5 × 5',short:'Vijfentwintig vakjes en jij kiest hoeveel bommen. Elk veilig vakje is meer waard. Stop op tijd.',tags:['Max 10.000×','RTP tot 99,2%']},
  {id:'avia',slug:'hoogvlieger',n:'Hoogvlieger',col:'#a9dcff',kind:'Vluchtspel',short:'Een vliegtuigje boven zee. Pluspunten duwen hem omhoog, bommen halen hem neer. Land op het dek.',tags:['Vlucht ligt vast','RTP ±87%']},
  {id:'bj',slug:'blackjack',n:'Blackjack',col:'#1fd17a',kind:'Kaarttafel',short:'Zo dicht mogelijk bij 21 zonder eroverheen. Blackjack betaalt 3 tot 2, de dealer pakt tot 17.',tags:['3 : 2','2 side bets']},
@@ -49,6 +49,73 @@ function wheelSvg(cx,cy,R,uid,ballA){const n=37,step=Math.PI*2/n;let pk='',nums=
   <g fill="#e6c25a"><circle cx="${cx-R*.3}" cy="${cy}" r="${R*.05}"/><circle cx="${cx+R*.3}" cy="${cy}" r="${R*.05}"/><circle cx="${cx}" cy="${cy-R*.3}" r="${R*.05}"/><circle cx="${cx}" cy="${cy+R*.3}" r="${R*.05}"/></g>
   <circle cx="${cx}" cy="${cy}" r="${R*.11}" fill="#e6c25a" stroke="#8a6a12"/>
   ${ballA===false?'':`<circle class="rl-ball" cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${R*.05}" fill="#fbfaf6" stroke="#9aa1ab" stroke-width=".6"/>`}`}
+
+// ---------- Gouden Draak: draak-tekening (gedeeld door de lobby, de website en het spel) ----------
+// Draak-tekening: kop (200 × 160) en een slangenlijf langs een kromme met schubben en rugvinnen
+function drHead(u){return `<defs><linearGradient id="${u}hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0b0"/><stop offset=".45" stop-color="#f7c948"/><stop offset="1" stop-color="#c47f0a"/></linearGradient>
+ <linearGradient id="${u}hr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6a4d"/><stop offset="1" stop-color="#a3120e"/></linearGradient>
+ <radialGradient id="${u}he" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#fff8c2"/><stop offset=".6" stop-color="#ffb300"/><stop offset="1" stop-color="#c25a00"/></radialGradient></defs>
+ <g stroke="#4a1500" stroke-width="2" stroke-linejoin="round">
+ <!-- manen achter de kop -->
+ <path d="M84 44C62 30 40 34 22 26c12 12 14 20 10 28C20 50 10 56 4 70c14-4 24-2 30 6C22 82 16 94 16 108c10-10 22-12 32-8-6 10-6 22 0 32 6-12 16-18 28-18z" fill="url(#${u}hr)"/>
+ <path d="M58 52c-10-2-20 2-26 8 10 0 16 4 18 10-8 4-12 12-12 20 8-6 16-6 22-2" fill="none" stroke="#ffb07a" stroke-width="2.4" opacity=".7"/>
+ <!-- gewei -->
+ <path d="M96 40C82 24 62 12 34 4c18 14 30 24 36 34-10-6-22-8-32-6 14 6 26 14 34 24z" fill="url(#${u}hg)"/>
+ <path d="M108 36C100 20 88 8 70 0c10 12 16 22 18 32z" fill="url(#${u}hg)"/>
+ <!-- wangvin -->
+ <path d="M76 74C62 86 54 100 56 118c8-12 16-18 26-22-2 10 2 18 8 24 2-14 8-22 16-26z" fill="url(#${u}hr)"/>
+ <!-- onderkaak -->
+ <path d="M96 88c18 2 42 4 60 10 8 3 6 13-4 13-20 2-42-3-58-11z" fill="#d99a1c"/>
+ <!-- mond van binnen -->
+ <path d="M100 86l54-8c4 6 6 12 4 18-18-6-38-8-58-10z" fill="#5a0b0b"/>
+ <path d="M112 82c8 6 24 8 40 4" fill="none" stroke="#ff5a6a" stroke-width="3" opacity=".8"/>
+ <!-- bovenkop en snuit -->
+ <path d="M62 60C72 36 102 26 130 34c12 3 22 10 34 14 10 3 20 6 22 14 2 9-6 14-16 14h-18c-4 5-12 8-22 8H98C82 84 68 78 62 70z" fill="url(#${u}hg)"/>
+ <!-- tanden -->
+ <path d="M114 80l3 7 3-7zM126 79l3 7 3-7zM138 78l3 7 3-7zM150 77l3 6 3-6z" fill="#fff" stroke-width="1"/>
+ <path d="M144 98l3-8 3 8zM128 96l3-7 3 7z" fill="#fff" stroke-width="1"/>
+ <!-- neusgat en snuit -->
+ <path d="M174 54c6-2 10 2 8 7" fill="none" stroke-width="2.4"/><circle cx="176" cy="60" r="2.6" fill="#4a1500"/>
+ <!-- wenkbrauw -->
+ <path d="M98 50c6-14 22-20 40-14l-6 4 10 2-10 4 8 4c-14-2-28 0-42 6z" fill="url(#${u}hr)"/>
+ <!-- oog -->
+ <path d="M108 56c6-7 18-8 26-2-5 7-18 9-26 2z" fill="url(#${u}he)"/>
+ <ellipse cx="121" cy="55" rx="2.2" ry="4.6" fill="#1a0500" stroke="none"/><circle cx="118" cy="53" r="1.4" fill="#fff" stroke="none"/>
+ </g>
+ <!-- schubben en glans -->
+ <g fill="none" stroke="#a8670a" stroke-width="1.6" opacity=".7"><path d="M80 60c4-4 10-4 14 0M86 70c4-4 10-4 14 0M72 68c3-3 8-3 11 0M150 52c3-3 8-3 11 0M140 46c3-3 8-3 11 0"/></g>
+ <path d="M80 44c14-10 34-14 52-10" fill="none" stroke="#fffbe0" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+ <!-- snorharen -->
+ <path d="M182 66c18 14 22 36 8 54-8 10-4 22 8 26" fill="none" stroke="#ffd35a" stroke-width="3.2" stroke-linecap="round"/>
+ <path d="M168 74c8 22 2 42-16 52-10 6-12 16-6 24" fill="none" stroke="#ffd35a" stroke-width="2.6" stroke-linecap="round"/>
+ <!-- baard -->
+ <path d="M100 100c-6 14 0 26 12 32-2-10 2-16 8-20 2 10 8 16 16 18-4-10-2-18 4-24" fill="url(#${u}hr)" stroke="#4a1500" stroke-width="2"/>`}
+// slangenlijf: kromme als lijst [x,y]; w = dikte. Schubben als stippellijnen, rugvinnen als driehoekjes langs de normaal.
+function drBody(u,pts,w,side){const P=pts,sd=side||1;const pl=a=>'M'+a.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join('L');
+ const N=P.map((p,i)=>{const a=P[Math.max(0,i-1)],b=P[Math.min(P.length-1,i+1)];let nx=-(b[1]-a[1]),ny=b[0]-a[0];const L=Math.hypot(nx,ny)||1;return [nx/L*sd,ny/L*sd,(b[0]-a[0])/L,(b[1]-a[1])/L]});
+ const off=k=>P.map((p,i)=>[p[0]+N[i][0]*w*k,p[1]+N[i][1]*w*k]);let fins='',sc='';
+ for(let i=2;i<P.length-3;i+=3){const [x,y]=P[i],[nx,ny,tx,ty]=N[i],r=w*.5,h=w*.62*(1-Math.abs(i/P.length-.45)*.7);const bx=x-nx*r*.9,by=y-ny*r*.9;
+  fins+=`<path d="M${(bx-tx*w*.32).toFixed(1)} ${(by-ty*w*.32).toFixed(1)}Q${(bx-nx*h*.6-tx*w*.25).toFixed(1)} ${(by-ny*h*.6-ty*w*.25).toFixed(1)} ${(bx-nx*h+tx*w*.05).toFixed(1)} ${(by-ny*h+ty*w*.05).toFixed(1)}Q${(bx-nx*h*.4+tx*w*.1).toFixed(1)} ${(by-ny*h*.4+ty*w*.1).toFixed(1)} ${(bx+tx*w*.3).toFixed(1)} ${(by+ty*w*.3).toFixed(1)}Z"/>`}
+ for(let i=1;i<P.length-1;i+=2)for(const k of [-.28,0,.28]){if(i%4===1&&k)continue;const [nx,ny,tx,ty]=N[i],cx=P[i][0]-nx*w*(k-.12),cy=P[i][1]-ny*w*(k-.12),r=w*.16;
+  sc+=`<path d="M${(cx-tx*r-nx*r*.2).toFixed(1)} ${(cy-ty*r-ny*r*.2).toFixed(1)}Q${(cx+nx*r).toFixed(1)} ${(cy+ny*r).toFixed(1)} ${(cx+tx*r-nx*r*.2).toFixed(1)} ${(cy+ty*r-ny*r*.2).toFixed(1)}"/>`}
+ const belly=off(.3);
+ return `<defs><linearGradient id="${u}bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0b0"/><stop offset=".5" stop-color="#f2b632"/><stop offset="1" stop-color="#b8700a"/></linearGradient></defs>
+ <g fill="#d32f2f" stroke="#4a1500" stroke-width="1.6" stroke-linejoin="round">${fins}</g>
+ <path d="${pl(P)}" fill="none" stroke="#4a1500" stroke-width="${w+5}" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="${pl(P)}" fill="none" stroke="url(#${u}bg)" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="${pl(belly)}" fill="none" stroke="#fde7b0" stroke-width="${(w*.36).toFixed(1)}" stroke-linecap="round"/>
+ <path d="${pl(belly)}" fill="none" stroke="#c98a2a" stroke-width="${(w*.36).toFixed(1)}" stroke-dasharray="1.6 ${(w*.22).toFixed(1)}"/>
+ <g fill="none" stroke="#a8650a" stroke-width="1.4" stroke-linecap="round" opacity=".85">${sc}</g>
+ <path d="${pl(off(-.28))}" fill="none" stroke="#fff6d0" stroke-width="${(w*.12).toFixed(1)}" stroke-linecap="round" opacity=".4"/>`}
+// klauw met drie nagels, rond een parel
+function drClaw(u,x,y,s,rot){return `<g transform="translate(${x} ${y}) rotate(${rot||0}) scale(${s})" stroke="#4a1500" stroke-width="2" stroke-linejoin="round">
+ <path d="M-30 -6C-18 -14-6-14 4-8l6 10c-8 2-16 2-22-2l-18 8z" fill="#f2b632"/>
+ <path d="M2 -8c8-6 16-6 20 0-4 0-8 2-10 6M8 0c8-2 14 2 16 8-4-2-8-2-12 0M2 4c4 4 6 10 4 16-2-4-4-6-8-8" fill="#fff3d0"/></g>`}
+function drPearl(u,x,y,r){return `<defs><radialGradient id="${u}pg" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#ffe9a8"/><stop offset="1" stop-color="#f5a623"/></radialGradient></defs>
+ <g transform="translate(${x} ${y})"><path d="M0 ${-r*2.1}C${r*.6} ${-r*1.4} ${r*1.5} ${-r*1.2} ${r*1.3} ${-r*.2}C${r*2} ${-r*.8} ${r*1.9} ${r*.6} ${r*1.2} ${r*1.2}C${r*.4} ${r*1.6} ${-r*.4} ${r*1.6} ${-r*1.2} ${r*1.2}C${-r*1.9} ${r*.6} ${-r*2} ${-r*.8} ${-r*1.3} ${-r*.2}C${-r*1.5} ${-r*1.2} ${-r*.6} ${-r*1.4} 0 ${-r*2.1}Z" fill="#ff7a1a" opacity=".85"/>
+ <circle r="${r}" fill="url(#${u}pg)" stroke="#b8700a" stroke-width="1.2"/><path d="M${-r*.5} ${-r*.2}c${r*.3} ${-r*.5} ${r*.8} ${-r*.6} ${r*1.1} ${-r*.3}" fill="none" stroke="#fff" stroke-width="${r*.18}" stroke-linecap="round" opacity=".8"/></g>`}
+function bez(p0,p1,p2,p3,n){const o=[];for(let i=0;i<=n;i++){const t=i/n,a=1-t;o.push([a*a*a*p0[0]+3*a*a*t*p1[0]+3*a*t*t*p2[0]+t*t*t*p3[0],a*a*a*p0[1]+3*a*a*t*p1[1]+3*a*t*t*p2[1]+t*t*t*p3[1]])}return o}
+
 
 function coverSvg(id,uid){uid=uid||('c'+id);if(id==='zoet')return window.ZBA?ZBA.cover(uid):'';const T='font-family="Big Shoulders Display,Impact,sans-serif" font-weight="900"';
  const M='font-family="JetBrains Mono,monospace"';
@@ -99,20 +166,16 @@ function coverSvg(id,uid){uid=uid||('c'+id);if(id==='zoet')return window.ZBA?ZBA
    <g transform="translate(276 206)"><ellipse cx="0" cy="-8" rx="40" ry="7" fill="#1a1d22"/><path d="M-21-8c-1-13 4-22 11-24 4 2 15 2 21 0 7 3 11 12 10 24z" fill="#262a31"/><path d="M-21-15h42v5h-42z" fill="#ff4b5c"/>
     <path d="M-20 4h17l-1.5 8c-.4 2-2 3-4 3h-6c-2 0-3.6-1.2-4-3zM3 4h17l-1.5 8c-.4 2-2 3-4 3h-6c-2 0-3.6-1.2-4-3z" fill="#0b0f14"/><path d="M-3 6h6" stroke="#0b0f14" stroke-width="2"/></g>
    <g transform="translate(34 40)"><circle r="20" fill="#5ad1ff" opacity=".14"/><circle r="20" fill="none" stroke="#5ad1ff" stroke-opacity=".6"/><text y="7" text-anchor="middle" ${T} font-size="19" fill="#5ad1ff">×10</text></g>`);
- if(id==='draak'){const coin=(x,y,r,o)=>`<g transform="translate(${x} ${y})" opacity="${o||1}"><circle r="${r}" fill="url(#${uid}c)" stroke="#8a5d00" stroke-width="1.2"/><circle r="${r*.78}" fill="none" stroke="#c48c10" stroke-width="1.4"/><rect x="${-r*.24}" y="${-r*.24}" width="${r*.48}" height="${r*.48}" fill="#5a1414"/></g>`;
-  const lan=(x,y,s)=>`<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 -22v8" stroke="#caa24a" stroke-width="1.4"/><ellipse cx="0" cy="0" rx="14" ry="16" fill="#e53935"/><path d="M-8 -12c-3 7-3 17 0 24M8 -12c3 7 3 17 0 24M0 -15v30" stroke="#9b1b1b" stroke-width="1.4" fill="none"/><rect x="-7" y="-17" width="14" height="4" fill="#ffd35a"/><rect x="-7" y="13" width="14" height="4" fill="#ffd35a"/><path d="M-2 17l-1 9M2 17l1 9" stroke="#ffd35a" stroke-width="1.4"/><ellipse cx="0" cy="0" rx="26" ry="26" fill="#ff7043" opacity=".15"/></g>`;
-  return svg(`<defs><radialGradient id="${uid}c" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#fff1b0"/><stop offset=".55" stop-color="#f5c542"/><stop offset="1" stop-color="#a87400"/></radialGradient>
-   <radialGradient id="${uid}g" cx="50%" cy="60%" r="60%"><stop offset="0" stop-color="#ffb300" stop-opacity=".55"/><stop offset="1" stop-color="#ffb300" stop-opacity="0"/></radialGradient>
-   <linearGradient id="${uid}d" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5a4e"/><stop offset="1" stop-color="#8e0e0e"/></linearGradient></defs>
-   <path d="M0 220V170l40-12 40 12v50zM230 220V160l45-14 45 14v60z" fill="#2a0c0c"/><path d="M0 30Q160 60 320 26" stroke="#5a1a12" stroke-width="1.4" fill="none"/>
-   ${lan(40,52,1)}${lan(272,46,1.1)}${lan(150,40,.7)}
-   <ellipse cx="170" cy="150" rx="130" ry="80" fill="url(#${uid}g)"/>
-   <path d="M60 170c20-40 60-70 110-74 46-4 80 18 96 50-30-16-62-18-90-6-30 14-58 30-116 30z" fill="url(#${uid}d)"/>
-   <path d="M120 98c-8-22 2-40 22-46-8 10-8 22-2 32zM210 96c10-20 4-38-14-46 6 10 6 22-2 32z" fill="#ffd35a"/>
-   <path d="M118 110c4-24 26-40 52-40s48 16 52 40c2 18-6 32-16 40l-6 18h-60l-6-18c-10-8-18-22-16-40z" fill="url(#${uid}d)"/>
-   <path d="M136 104c6-4 14-4 18 2M204 104c-6-4-14-4-18 2" stroke="#ffd35a" stroke-width="3.4" fill="none" stroke-linecap="round"/><circle cx="146" cy="114" r="5" fill="#ffe27a"/><circle cx="194" cy="114" r="5" fill="#ffe27a"/><circle cx="146" cy="114" r="2" fill="#1c0b0b"/><circle cx="194" cy="114" r="2" fill="#1c0b0b"/>
-   <path d="M150 148c10 6 30 6 40 0" stroke="#ffd35a" stroke-width="2.6" fill="none"/><path d="M134 140C110 146 92 160 84 182M206 140c24 6 42 20 50 42" stroke="#ffd35a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-   ${coin(84,182,22)}${coin(250,176,18)}${coin(170,196,26)}${coin(214,204,13,.9)}${coin(122,206,12,.9)}`)}
+ if(id==='draak'){const coin=(x,y,r)=>`<g transform="translate(${x} ${y})"><circle r="${r}" fill="#f5c542" stroke="#8a5d00" stroke-width="1.2"/><circle r="${r*.78}" fill="none" stroke="#c48c10" stroke-width="1.4"/><rect x="${-r*.24}" y="${-r*.24}" width="${r*.48}" height="${r*.48}" fill="#5a1414"/></g>`;
+  const cloud=(x,y,sc)=>`<g transform="translate(${x} ${y}) scale(${sc})" fill="none" stroke="#7a2a16" stroke-width="3" stroke-linecap="round" opacity=".55"><path d="M0 0c0-10 14-10 14 0 0-14 20-14 20 0 0-8 12-8 12 0"/><path d="M8 6c4 4 10 4 12 0"/></g>`;
+  const lan=(x,y,k)=>`<g transform="translate(${x} ${y}) scale(${k})"><path d="M0 -24v8" stroke="#caa24a" stroke-width="1.4"/><ellipse rx="12" ry="14" fill="#d32f2f"/><path d="M-7-11c-3 7-3 15 0 22M7-11c3 7 3 15 0 22M0-14v28" stroke="#8e1a12" stroke-width="1.3" fill="none"/><rect x="-6" y="-16" width="12" height="3.5" fill="#ffd35a"/><rect x="-6" y="12.5" width="12" height="3.5" fill="#ffd35a"/><path d="M-2 16v8M2 16v8" stroke="#ffd35a" stroke-width="1.3"/><circle r="22" fill="#ff7043" opacity=".14"/></g>`;
+  const body=bez([96,232],[60,170],[130,140],[160,176],24).concat(bez([160,176],[190,212],[250,200],[236,140],24).slice(1)).concat(bez([236,140],[226,104],[196,96],[206,70],14).slice(1));
+  return svg(`<defs><radialGradient id="${uid}w" cx="66%" cy="45%" r="62%"><stop offset="0" stop-color="#ff8a00" stop-opacity=".5"/><stop offset="1" stop-color="#ff8a00" stop-opacity="0"/></radialGradient></defs>
+   <rect width="320" height="220" fill="url(#${uid}w)"/><path d="M0 14Q160 40 320 10" stroke="#5a1a12" stroke-width="1.4" fill="none"/>${lan(150,26,.75)}${lan(300,22,.85)}
+   ${cloud(150,64,.8)}${cloud(256,186,.8)}${cloud(110,150,.7)}
+   ${drBody(uid+'b',body,22,-1)}${drPearl(uid+'p',172,150,9)}
+   <g transform="translate(176 4) scale(.68)">${drHead(uid+'h')}</g>
+   ${coin(270,202,18)}${coin(236,210,13)}${coin(302,188,11)}`)}
  if(id==='mines'){const gem=new Set(['0,0','1,0','0,1','2,1','1,2','3,2','2,4']),mine='3,3';let t='';
   const order=[];for(let i=0;i<5;i++)for(let j=0;j<5;j++)order.push([i,j]);order.sort((a,b)=>(a[0]+a[1])-(b[0]+b[1]));
   order.forEach(([i,j])=>{const cx=176+(i-j)*24,cy=70+(i+j)*13.4,k=i+','+j,g=gem.has(k),m=k===mine;
@@ -163,4 +226,4 @@ function coverSvg(id,uid){uid=uid||('c'+id);if(id==='zoet')return window.ZBA?ZBA
    <g transform="translate(272 40)" ${T} text-anchor="middle">${['×2','×4','×8','×16','×32'].map((t,i)=>`<text y="${i*30}" font-size="${16+i*2}" fill="#ffc53a" opacity="${.25+i*.18}">${t}</text>`).join('')}</g>`)}
  return ''}
 
-return {GAMES,gameBy,SUIT,pcard,chip,RL_ORDER,RL_RED,arcSeg,wheelSvg,coverSvg}})();
+return {GAMES,gameBy,SUIT,pcard,chip,RL_ORDER,RL_RED,arcSeg,wheelSvg,coverSvg,drHead,drBody,drPearl,drClaw,bez}})();

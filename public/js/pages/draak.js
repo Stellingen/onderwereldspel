@@ -1,6 +1,6 @@
 // Casino: Gouden Draak — een draak boven een restaurant op de Zeedijk. 5 rollen, 3 rijen, 20 lijnen. Engine: js/draak.js (DRAAK).
 // Twee bonussen: 3 gongs = 10 free spins met de Reuzendraak (rol 2 t/m 4 worden één groot symbool), en 6 of meer gouden munten =
-// de Muntenbonus op 9 vakjes (munten blijven plakken, je staat dan weer op 3 spins; alle 9 vol = Mega, de max win).
+// de Muntenbonus op het hele bord van 15 vakjes (munten blijven plakken, je staat dan weer op 3 spins; alle 15 vol = Mega, de max win).
 // De uitkomst ligt vast bij het draaien en wordt meteen verrekend; de animatie laat alleen zien wat er gebeurde.
 window.dr=window.dr||{bi:4,busy:false,grid:null,fs:null,hs:null,buyMode:false,shown:0,bet:0,tick:'',stepWin:0,lastWin:0,paused:false,inBonus:false};
 const drBet=()=>{const B=kkBets();if(dr.bi>=B.length)dr.bi=B.length-1;return B[dr.bi]};
@@ -18,26 +18,19 @@ const drShort=n=>n>=1e6?'€'+(Math.round(n/1e5)/10).toLocaleString('nl-NL')+'M'
 const DR_LC=['#ffd35a','#ff5a4e','#ffb347','#f7e08a','#ff8a5c','#e8c66a','#ffcf70','#ff6f61','#f5b041','#ffe7a3'];
 const DR_JP={mini:['Mini','#5fe08f'],minor:['Minor','#5ad1ff'],major:['Major','#b48cff'],mega:['Mega','#ff4f5a']};
 // doorgerekend per lidmaatschap (draaksim2.js)
-const DR_TIER=[{fs:240,hs:260,rtp:'93'},{fs:220,hs:240,rtp:'94,5'},{fs:205,hs:210,rtp:'96'}];
+const DR_TIER=[{fs:240,hs:260,rtp:'93,5'},{fs:220,hs:240,rtp:'95'},{fs:205,hs:210,rtp:'96,5'}];
 
 // ---------- Iconen ----------
 const DR_IC={
- koekje:'<path d="M8 40c2-16 18-26 30-22 10 3 16 12 18 20-8-4-16-4-22 2-6-8-16-8-26 0z" fill="#e9b45a"/><path d="M8 40c10-8 20-8 26 0 6-6 14-6 22-2-4 10-14 16-25 16S10 48 8 40z" fill="#c98a32"/><path d="M34 40c-1 6-1 10 1 14" stroke="#a5701f" stroke-width="2" fill="none"/><path d="M30 34l22-10 2 4-22 10z" fill="#fff8e6"/><path d="M36 33l12-5M37 35.5l9-4" stroke="#c0392b" stroke-width="1.3"/>',
+ koekje:'<ellipse cx="32" cy="52" rx="22" ry="4" fill="rgba(0,0,0,.3)"/><path d="M8 44C6 28 18 16 32 18c-4 8-4 16 2 24-10-2-18-1-26 2z" fill="#e9a94a" stroke="#7a4a12" stroke-width="2" stroke-linejoin="round"/><path d="M32 18c16-2 28 12 24 28-8-6-16-6-22-4-6-8-6-16-2-24z" fill="#f6c46a" stroke="#7a4a12" stroke-width="2" stroke-linejoin="round"/><path d="M34 42C30 34 30 26 32 18" fill="none" stroke="#b9772a" stroke-width="2"/><path d="M14 30c4-6 10-8 16-8M40 24c6 0 10 4 12 8" fill="none" stroke="#fff3cf" stroke-width="2.2" stroke-linecap="round" opacity=".7"/><path d="M30 40l18-14 4 4-18 14z" fill="#fffaf0" stroke="#c9b48a" stroke-width="1"/><path d="M36 38l9-7M38 40l6-5" stroke="#c62828" stroke-width="1.4"/>',
  stokjes:'<ellipse cx="32" cy="48" rx="20" ry="6" fill="#1c1c22"/><path d="M12 44h40c-2 9-10 14-20 14s-18-5-20-14z" fill="#f2efe6"/><path d="M14 47h36" stroke="#c0392b" stroke-width="2.4"/><ellipse cx="32" cy="44" rx="20" ry="4" fill="#fff"/><path d="M20 44c3-3 21-3 24 0" fill="#f6f1df"/><path d="M14 8l26 34" stroke="#b71c1c" stroke-width="4.5" stroke-linecap="round"/><path d="M24 6l20 36" stroke="#d32f2f" stroke-width="4.5" stroke-linecap="round"/><path d="M14 8l5 6.5M24 6l4 7" stroke="#ffd35a" stroke-width="4.5" stroke-linecap="round"/>',
  theepot:'<path d="M12 30c-8 0-10 12 0 14" stroke="#e9e6dc" stroke-width="4" fill="none"/><path d="M52 34l10-8-2 10-8 6z" fill="#e9e6dc"/><ellipse cx="32" cy="38" rx="21" ry="17" fill="#f4f1ea"/><path d="M14 36c6 4 30 4 36 0" stroke="#2c5aa0" stroke-width="3" fill="none"/><path d="M22 44c3 3 6 3 9 0s6-3 9 0" stroke="#2c5aa0" stroke-width="2" fill="none"/><ellipse cx="32" cy="22" rx="12" ry="4" fill="#e3dfd2"/><circle cx="32" cy="16" r="3.5" fill="#2c5aa0"/><ellipse cx="32" cy="54" rx="13" ry="3" fill="#d6d1c2"/>',
  jade:'<circle cx="32" cy="32" r="25" fill="#2fae74"/><circle cx="32" cy="32" r="25" fill="none" stroke="#8ff0bd" stroke-width="2" opacity=".6"/><circle cx="32" cy="32" r="9" fill="#0b2a1c"/><circle cx="32" cy="32" r="16.5" fill="none" stroke="#1f8a58" stroke-width="3"/><path d="M32 7v6M32 51v6M7 32h6M51 32h6M14 14l4 4M46 46l4 4M14 50l4-4M46 18l4-4" stroke="#1f8a58" stroke-width="2.4"/><path d="M18 20c4-6 10-8 16-8" stroke="#c9ffe2" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".7"/>',
  waaier:'<path d="M32 54L4 26a40 40 0 0 1 56 0z" fill="#c0392b"/><path d="M32 54L4 26a40 40 0 0 1 56 0z" fill="none" stroke="#ffd35a" stroke-width="2"/>'+[0,1,2,3,4,5,6].map(i=>{const a=(-135+i*15)*Math.PI/180;return `<path d="M32 54L${(32+Math.cos(a)*40).toFixed(1)} ${(54+Math.sin(a)*40).toFixed(1)}" stroke="#ffd35a" stroke-width="1.4" opacity=".75"/>`}).join('')+'<path d="M14 30c6-6 30-8 36 0" stroke="#fff" stroke-width="1.5" fill="none" opacity=".35"/><circle cx="32" cy="54" r="4" fill="#ffd35a"/>',
  lantaarn:'<path d="M32 2v6" stroke="#ffd35a" stroke-width="2"/><rect x="22" y="8" width="20" height="5" rx="2" fill="#ffd35a"/><ellipse cx="32" cy="30" rx="20" ry="18" fill="#e53935"/><path d="M20 15c-4 9-4 22 0 31M44 15c4 9 4 22 0 31M32 12v36" stroke="#a11a1a" stroke-width="2" fill="none"/><ellipse cx="26" cy="24" rx="5" ry="8" fill="#ff8a80" opacity=".5"/><rect x="22" y="46" width="20" height="5" rx="2" fill="#ffd35a"/><path d="M28 51l-1 11M32 51v12M36 51l1 11" stroke="#ffd35a" stroke-width="2"/>',
  kat:'<ellipse cx="32" cy="58" rx="18" ry="4" fill="rgba(0,0,0,.3)"/><path d="M14 58V38c0-10 8-18 18-18s18 8 18 18v20z" fill="#fbf8f2"/><path d="M44 30l8-18 4 4-6 16z" fill="#fbf8f2"/><circle cx="55" cy="14" r="5" fill="#fbf8f2"/><path d="M18 22l3-12 8 8zM46 22l-3-12-8 8z" fill="#fbf8f2"/><path d="M20 20l2-6 4 4zM44 20l-2-6-4 4z" fill="#ff9aa2"/><path d="M22 30q4 3 8 0M34 30q4 3 8 0" stroke="#1c1c22" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M30 35h4l-2 2z" fill="#ff7a8a"/><path d="M16 42c10 4 22 4 32 0" stroke="#d32f2f" stroke-width="4" fill="none"/><circle cx="32" cy="46" r="4" fill="#ffd35a"/><ellipse cx="32" cy="54" rx="9" ry="3" fill="#ffd35a"/>',
- draak:`<defs><linearGradient id="drDg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5a4e"/><stop offset="1" stop-color="#9b1010"/></linearGradient></defs>
-  <path d="M10 18c6-10 14-12 20-6-6 0-10 4-10 8z" fill="#ffd35a"/><path d="M54 18c-6-10-14-12-20-6 6 0 10 4 10 8z" fill="#ffd35a"/>
-  <path d="M12 30c0-12 9-18 20-18s20 6 20 18c0 8-4 14-8 18l-3 10H23l-3-10c-4-4-8-10-8-18z" fill="url(#drDg)"/>
-  <path d="M20 26c3-2 7-2 9 1M44 26c-3-2-7-2-9 1" stroke="#ffd35a" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="25" cy="30" r="3" fill="#ffe27a"/><circle cx="39" cy="30" r="3" fill="#ffe27a"/><circle cx="25" cy="30" r="1.2" fill="#1c0b0b"/><circle cx="39" cy="30" r="1.2" fill="#1c0b0b"/>
-  <path d="M24 44c4 3 12 3 16 0" stroke="#ffd35a" stroke-width="2" fill="none"/><path d="M26 47l2 4 2-4M34 47l2 4 2-4" fill="#fff"/><circle cx="28" cy="39" r="1.6" fill="#5a0b0b"/><circle cx="36" cy="39" r="1.6" fill="#5a0b0b"/>
-  <path d="M22 42C12 44 6 50 4 58M42 42c10 2 16 8 18 16" stroke="#ffd35a" stroke-width="1.8" fill="none" stroke-linecap="round"/>`,
- parel:`<defs><radialGradient id="drPg" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fffbe6"/><stop offset=".45" stop-color="#ffd35a"/><stop offset="1" stop-color="#b8790a"/></radialGradient></defs>
-  <path d="M8 46c6-10 10-12 14-10M56 46c-6-10-10-12-14-10M18 56c2-8 6-10 10-8M46 56c-2-8-6-10-10-8" stroke="#c0392b" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-  <circle cx="32" cy="30" r="20" fill="url(#drPg)"/><path d="M22 26c4-8 14-10 20-4-6-2-12 0-14 6s2 10 8 10c-8 2-16-4-14-12z" fill="#fff6c9" opacity=".7"/><circle cx="25" cy="22" r="4" fill="#fff" opacity=".8"/>`,
+ draak:`<g transform="translate(-5 7) scale(.3)">${COV.drHead('drIcH')}</g>`,
+ parel:`<g transform="translate(0 4)">${COV.drPearl('drIcP',32,30,15)}</g>`,
  gong:'<path d="M6 10h52" stroke="#7a3a12" stroke-width="5" stroke-linecap="round"/><path d="M10 10v48M54 10v48" stroke="#7a3a12" stroke-width="4.5"/><path d="M4 10l4-5h48l4 5" fill="#c0392b"/><path d="M24 12v6M40 12v6" stroke="#caa24a" stroke-width="1.6"/><circle cx="32" cy="36" r="17" fill="#c98a2a"/><circle cx="32" cy="36" r="17" fill="none" stroke="#ffe08a" stroke-width="1.6"/><circle cx="32" cy="36" r="9" fill="#e8b04a"/><circle cx="32" cy="36" r="4" fill="#ffd35a"/><path d="M22 28a14 14 0 0 1 8-5" stroke="#fff3c4" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/>',
  munt:`<defs><radialGradient id="drMg" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#fff1b0"/><stop offset=".55" stop-color="#f5c542"/><stop offset="1" stop-color="#a87400"/></radialGradient></defs>
   <circle cx="32" cy="32" r="27" fill="url(#drMg)"/><circle cx="32" cy="32" r="27" fill="none" stroke="#8a5d00" stroke-width="1.6"/><circle cx="32" cy="32" r="21.5" fill="none" stroke="#c48c10" stroke-width="2"/>
@@ -63,14 +56,17 @@ const DR_SKY=`<svg class="dr-sky" viewBox="0 0 900 80" preserveAspectRatio="xMid
  ${[60,170,290,410,530,650,770,870].map((x,i)=>{const y=12+Math.sin(i*1.3)*6+10;return `<g class="dr-lan" style="--d:${(i%4)*.6}s"><path d="M${x} ${y-10}v6" stroke="#caa24a" stroke-width="1"/><ellipse cx="${x}" cy="${y+2}" rx="7" ry="8" fill="#e53935"/><rect x="${x-4}" y="${y-6}" width="8" height="2.4" fill="#ffd35a"/><rect x="${x-4}" y="${y+9}" width="8" height="2.4" fill="#ffd35a"/><ellipse cx="${x}" cy="${y+2}" rx="12" ry="12" fill="#ff7043" opacity=".18"/></g>`}).join('')}</svg>`;
 
 function drInfo(){const fs=dr.fs,hs=dr.hs,pend=window.slotPending||0;
- return `<div class="kk-bal has-r"><div class="kk-bal-l"><span class="label">Saldo</span><b id="drBal">${fmt(S.cash-pend+(dr.shown||0))}</b></div>${fs?slotFsIn(fs,'Free spins'):hs?`<div class="kk-fsin"><span class="label">Munten</span><b>${hs.filled||0} / 9</b></div>`:slotBetIn(dr.busy&&dr.bet?dr.bet:drBet(),false,0)}</div>
-  <div class="kk-stat"><span class="label">Deze spin</span><b id="drStep" class="acc">${fmt(dr.stepWin)}</b></div>
-  <div class="kk-stat"><span class="label">${fs||hs?'Bonuswinst':'Gewonnen'}</span><b id="drLast" class="grn">${fmt(fs?fs.total:hs?hs.total||0:dr.lastWin)}</b></div>
-  ${fs?`<div class="kk-stat kk-fsx"><span class="label">Bonus</span><b class="sm kk-xn">${slotX(fs.total,dr.bet)}</b></div><div class="kk-stat fsb"><span class="label">Free spins</span><b class="kk-fsn">${fs.at} / ${fs.of}</b></div>`:''}`}
+ const mid=fs?`<div class="dr-c dr-c-fs"><span class="label">Free spins</span><b class="kk-fsn" data-fit="14">${fs.at} / ${fs.of}</b></div>`:hs?`<div class="dr-c dr-c-fs"><span class="label">Munten</span><b data-fit="14">${hs.filled||0} / 15</b></div>`:'';
+ return `<div class="dr-c dr-c-bal"><span class="label">Saldo</span><b id="drBal" data-fit="16">${fmt(S.cash-pend+(dr.shown||0))}</b></div>${mid}
+  <div class="dr-c"><span class="label">Deze spin</span><b id="drStep" class="acc" data-fit="13">${fmt(dr.stepWin)}</b></div>
+  <div class="dr-c dr-c-win"><span class="label">${fs||hs?'Bonuswinst':'Gewonnen'}</span><b id="drLast" class="grn" data-fit="14">${fmt(fs?fs.total:hs?hs.total||0:dr.lastWin)}</b>${fs?`<small class="kk-xn">${slotX(fs.total,dr.bet)}</small>`:''}</div>`}
+// Jackpots altijd zichtbaar boven het bord (bij je huidige inzet)
+function drJpHtml(){const b=dr.busy&&dr.bet?dr.bet:drBet();return ['mini','minor','major','mega'].map(j=>`<div class="dr-jp ${j}" style="--jc:${DR_JP[j][1]}"><b>${DR_JP[j][0]}</b><em data-fit="9">${fmt((j==='mega'?DRAAK.MAX_WIN:DRAAK.JP[j])*b)}</em></div>`).join('')}
 function drSubHtml(){return dr.fs?'<span class="dr-tag">Reuzendraak</span> Rol 2 t/m 4 zijn één groot symbool':dr.hs?'<span class="dr-tag">Muntenbonus</span> Elke nieuwe munt zet je weer op 3 spins':`${vipTag()}Free spins ±1 op ${DR_TIER[tier()].fs} · munten ±1 op ${DR_TIER[tier()].hs} · max ${DRAAK.MAX_WIN.toLocaleString('nl-NL')}×`}
 function drControls(){const b=drBet(),fsC=b*DRAAK.FS_BUY,hsC=b*DRAAK.HS_BUY,dis=dr.busy||inJail();
- return `<div class="kk-betbox"><span class="label">Inzet</span>
-   <div class="kk-bet"><button onclick="drStepBet(-1)" ${dr.busy?'disabled':''} aria-label="Lagere inzet">−</button><button class="kk-betv" onclick="slotBetPop('dr')" ${dr.busy?'disabled':''} aria-label="Inzet kiezen">${fmt(b)}</button><button onclick="drStepBet(1)" ${dr.busy?'disabled':''} aria-label="Hogere inzet">+</button></div></div>
+ return `<div class="kk-betbox dr-bet"><div class="dr-bet-h"><span class="label">Inzet per spin</span><button class="dr-bet-all" onclick="slotBetPop('dr')" ${dr.busy?'disabled':''}>Alle bedragen</button></div>
+   <div class="kk-bet"><button onclick="drStepBet(-1)" ${dr.busy?'disabled':''} aria-label="Lagere inzet">−</button><button class="kk-betv" onclick="slotBetPop('dr')" ${dr.busy?'disabled':''} aria-label="Inzet kiezen" data-fit="14">${fmt(b)}</button><button onclick="drStepBet(1)" ${dr.busy?'disabled':''} aria-label="Hogere inzet">+</button></div>
+   <div class="dr-bet-f"><span>Max win <b>${b*DRAAK.MAX_WIN>=1e6?fmtS(b*DRAAK.MAX_WIN):fmt(b*DRAAK.MAX_WIN)}</b></span><span>Max inzet <b>${fmtS?fmtS(kkBets().slice(-1)[0]):''}</b></span></div></div>
    ${dr.buyMode?`<div class="dr-buys"><button class="btn kk-go buy dr-bfs" onclick="act.drSpin('fs')" ${dis||casCash()<fsC?'disabled':''}><span class="kk-buy-l">Free spins</span><b class="kk-buy-p" data-fit="13" title="${fmt(fsC)}">${fsC>=1e6?fmtS(fsC):fmt(fsC)}</b><small>${DRAAK.FS_BUY}× · 10 spins</small></button>
     <button class="btn kk-go buy dr-bhs" onclick="act.drSpin('hs')" ${dis||casCash()<hsC?'disabled':''}><span class="kk-buy-l">Munten</span><b class="kk-buy-p" data-fit="13" title="${fmt(hsC)}">${hsC>=1e6?fmtS(hsC):fmt(hsC)}</b><small>${DRAAK.HS_BUY}× · 6 munten</small></button></div>`
     :`<button class="btn kk-go" onclick="act.drSpin(false)" ${dis?'disabled':''}>${dr.busy?'Bezig…':'Draaien'}<small>spatie</small></button>`}
@@ -86,30 +82,34 @@ function drSeedHtml(){const s0=drSeed(),p=s0.prev,sd={...s0,bon:s0.bon-(dr.busy&
 function drPayTab(){const b=drBet(),k=DRAAK.PAYK/DRAAK.LINES.length*(DRAAK.VIP_KT[tier()]||1);
  const rows=DRAAK.SYMS.slice().reverse().map(s=>`<div class="vd-pt dr-pt"><span>${drSvg(s.id)}</span><div>${[2,1,0].map(i=>`<p><i>${i+3}</i>${fmt(s.pay[i]*k*b)}</p>`).join('')}</div></div>`).join('');
  const coins=DRAAK.COINS.filter(c=>typeof c[0]==='number').map(c=>`<i>${drShort(c[0]*b)}</i>`).join('');
- const jp=['mini','minor','major'].map(j=>`<div class="dr-jpr" style="--jc:${DR_JP[j][1]}"><b>${DR_JP[j][0]}</b><span>${DRAAK.JP[j]}×</span><em>${fmt(DRAAK.JP[j]*b)}</em></div>`).join('')+`<div class="dr-jpr mega" style="--jc:${DR_JP.mega[1]}"><b>Mega</b><span>alle 9 vol</span><em>${fmt(DRAAK.MAX_WIN*b)}</em></div>`;
+ const jp=['mini','minor','major'].map(j=>`<div class="dr-jpr" style="--jc:${DR_JP[j][1]}"><b>${DR_JP[j][0]}</b><span>${DRAAK.JP[j]}×</span><em>${fmt(DRAAK.JP[j]*b)}</em></div>`).join('')+`<div class="dr-jpr mega" style="--jc:${DR_JP.mega[1]}"><b>Mega</b><span>alle 15 vol</span><em>${fmt(DRAAK.MAX_WIN*b)}</em></div>`;
  return `<div class="vd-pay-g"><div><h3 class="vd-h">Uitbetaling per lijn bij ${fmt(b)} inzet${isVip()?' ('+lidName()+')':''}</h3><p class="vd-p">3, 4 of 5 dezelfde van links naar rechts, op 20 vaste lijnen. De parel vervangt alles behalve de gong en de munt.</p><div class="vd-ptab">${rows}</div></div>
   <div><h3 class="vd-h">Jackpots in de Muntenbonus</h3><div class="dr-jps">${jp}</div>
   <h3 class="vd-h" style="margin-top:18px">Waarde van een munt</h3><div class="vd-fishv dr-coinv">${coins}</div></div></div>`}
 function draakView(){const g=dr.grid||drDemo(),fs=dr.fs,hs=dr.hs;
  return `<div class="kk kk3 dr ${fs?'is-fs':''} ${hs?'is-hs':''} ${dr.buyMode?'is-buy':''}">
- <div class="kk-stage dr-stage" id="drStage">
+ <div class="kk-stage dr-stage" id="drStage"><div class="dr-main">
   <div class="dr-board" id="drBoard">${DR_SKY}<header class="dr-head">${DR_LOGO}<span id="drSub" class="dr-sub">${drSubHtml()}</span><button class="kk-snd dr-snd" onclick="SFX.toggle();this.textContent=SFX.on?'🔊':'🔇'" aria-label="Geluid aan of uit">${SFX.on?'🔊':'🔇'}</button></header>
+   <div class="dr-jps-top" id="drJp">${drJpHtml()}</div>
    <div class="dr-deck"><div class="dr-frame"><div class="dr-reels ${fs?'fs':''}" id="drReels">${drReelsHtml(g,!!fs)}</div>${hs?drHsHtml():''}<svg class="dr-lines" id="drLines" viewBox="0 0 500 300" preserveAspectRatio="none"></svg><div class="dr-fx" id="drFx"></div></div></div>
-   <div class="dr-tick" id="drTick">${dr.tick||'3 gongs geven 10 free spins met de Reuzendraak. 6 gouden munten geven de Muntenbonus.'}</div>
+   <div class="dr-tick" id="drTick">${hs?drHsBar():dr.tick||'3 gongs: 10 free spins met de Reuzendraak. 6 gouden munten: de Muntenbonus.'}</div>
    <div id="drBanner"></div>${drRunHtml()}${dr.paused?`<div class="kk-banner pause dr-ban"><div><b>Gepauzeerd</b><span>Je bonus staat klaar</span><button class="btn kk-go" style="margin-top:18px" onclick="drResume()">Bonus verder afspelen</button></div></div>`:''}</div>
-  <div class="kk-bar"><div class="kk-hud" id="drInfo">${drInfo()}</div><div class="kk-ctl" id="drCtl">${drControls()}</div></div>
-  <div id="drSeedBox">${drSeedHtml()}</div>
+  <aside class="dr-side">
+   <div class="dr-hud" id="drInfo">${drInfo()}</div>
+   <div class="kk-ctl dr-ctl" id="drCtl">${drControls()}</div>
+   <div id="drSeedBox">${drSeedHtml()}</div>
+  </aside></div>
  </div>
  <section class="card kk-pay vd-pay dr-pay"><div id="drPayTab">${drPayTab()}</div>
   <div class="kk-rules">
    <div><span>${drSvg('gong')}</span><p><b>3 gongs</b> (op rol 1, 3 en 5) geven ${DRAAK.FS_START} free spins met de <b>Reuzendraak</b>: rol 2, 3 en 4 worden één groot blok met één symbool. Dat telt als drie volle rollen van dat symbool, dus één gelijk symbool op rol 1 is al vier op een lijn, en met rol 5 erbij vijf. Een gong op rol 1, een reuzengong en een gong op rol 5 geven ${DRAAK.FS_RETRIG} spins extra.</p></div>
-   <div><span>${drSvg('munt')}</span><p><b>${DRAAK.HS_TRIG} of meer gouden munten</b>, waar ook op het scherm, geven de <b>Muntenbonus</b>: een bord van 9 vakjes waarin de beste munten blijven staan. Je hebt 3 spins. Valt er een munt bij, dan blijft hij plakken en sta je weer op 3. Valt er niets, dan gaat er een spin af. Munten zijn 1× tot 50× je inzet waard, of een jackpot: Mini ${DRAAK.JP.mini}×, Minor ${DRAAK.JP.minor}×, Major ${DRAAK.JP.major}×. Alle 9 vakjes vol is <b>Mega</b>: ${DRAAK.MAX_WIN.toLocaleString('nl-NL')}× je inzet, de max win.</p></div>
+   <div><span>${drSvg('munt')}</span><p><b>${DRAAK.HS_TRIG} of meer gouden munten</b>, waar ook op het scherm, geven de <b>Muntenbonus</b> op het hele bord van 15 vakjes. De munten blijven op hun plek staan en je hebt 3 spins. Valt er een munt bij, dan blijft hij plakken en sta je weer op 3. Valt er niets, dan gaat er een spin af. Munten zijn 1× tot 50× je inzet waard, of een jackpot: Mini ${DRAAK.JP.mini}×, Minor ${DRAAK.JP.minor}×, Major ${DRAAK.JP.major}×. Alle 15 vakjes vol is <b>Mega</b>: ${DRAAK.MAX_WIN.toLocaleString('nl-NL')}× je inzet, de max win.</p></div>
    <div><span>${drSvg('parel')}</span><p><b>De drakenparel</b> is wild op rol 2, 3 en 4. In de free spins kan het hele grote blok een parel zijn: dan telt elke lijn met een symbool op rol 1 als vier op een lijn.</p></div>
    <div><span class="kk-mini key">␣</span><p><b>Spatiebalk</b> draait. RTP ±${DR_TIER[tier()].rtp}%. Bonus kopen: free spins ${DRAAK.FS_BUY}× of de Muntenbonus met 6 munten ${DRAAK.HS_BUY}× je inzet (±96%).${isVip()?` Als <b>${lidName()}</b> vallen gongs en munten vaker; lijnwinst in het basisspel is daarvoor ${Math.round((1-DRAAK.VIP_KT[tier()])*100)}% lager.`:` <b>VIP</b> en <b>High roller</b> komen vaker in de bonussen.`}</p></div>
   </div></section></div>`}
 function drRefresh(){const root=document.querySelector('.dr');if(!root)return;root.classList.toggle('is-fs',!!dr.fs);root.classList.toggle('is-hs',!!dr.hs);root.classList.toggle('is-buy',!!dr.buyMode);
  const set=(id,h)=>{const e=drEl(id);if(e){e.innerHTML=h;fitText(e)}};
- set('drSub',drSubHtml());set('drInfo',drInfo());set('drCtl',drControls());set('drSeedBox',drSeedHtml());set('drPayTab',drPayTab())}
+ set('drSub',drSubHtml());set('drInfo',drInfo());set('drJp',drJpHtml());set('drCtl',drControls());set('drSeedBox',drSeedHtml());set('drPayTab',drPayTab())}
 function drStepBet(d){if(dr.busy)return;dr.bi=Math.max(0,Math.min(kkBets().length-1,dr.bi+d));SFX.chip();drRefresh()}
 function drSetBet(i){if(dr.busy)return;dr.bi=Math.max(0,Math.min(kkBets().length-1,i));SFX.chip();drRefresh()}
 function drText(id,v){const e=drEl(id);if(e)e.textContent=v}
@@ -156,35 +156,47 @@ async function drShowWins(wins,bet,stepFrom){if(!wins.length)return 0;await drHo
  if(T.line&&wins.length>1)for(const w of wins.slice(0,5)){if(!drOn())break;drUnmark();drMark(w.cells);const sv=drEl('drLines');if(sv)sv.innerHTML=drLineSvg(w,false);drTick(`${drSymName(w)}: <b>${fmt(w.pay*bet)}</b>`);await drWait(T.line)}
  drUnmark();return add}
 
-// ---------- Muntenbonus ----------
-function drHsHtml(){const h=dr.hs;if(!h)return '';const lamps=Array.from({length:DRAAK.HS_SPINS},(_,i)=>`<i class="${i<h.left?'on':''}"></i>`).join('');
- return `<div class="dr-hs" id="drHs"><div class="dr-hs-jp">${['mega','major','minor','mini'].map(j=>`<div class="dr-jp ${j}" style="--jc:${DR_JP[j][1]}"><b>${DR_JP[j][0]}</b><em>${fmt((j==='mega'?DRAAK.MAX_WIN:DRAAK.JP[j])*dr.bet)}</em></div>`).join('')}</div>
-  <div class="dr-hs-g" id="drHsG">${h.cells.map((v,i)=>`<div class="dr-hc ${v!=null?'on':''}" data-i="${i}">${v!=null?drCoinHtml(v):''}</div>`).join('')}</div>
-  <div class="dr-hs-side"><span class="label">Spins</span><div class="dr-lamps" id="drLamps">${lamps}</div><span class="label">Totaal</span><b id="drHsSum">${fmt(h.sum*dr.bet)}</b></div></div>`}
+// ---------- Muntenbonus: het hele bord (5 × 3), de munten blijven op hun plek ----------
+const DR_HSI=i=>[Math.floor(i/3),i%3]; // vakje → rol, rij
+function drHsHtml(){const h=dr.hs;if(!h)return '';const cells=[];for(let r=0;r<3;r++)for(let c=0;c<5;c++){const i=c*3+r,v=h.cells[i];cells.push(`<div class="dr-hc ${v!=null?'on':''}" data-i="${i}" style="grid-column:${c+1};grid-row:${r+1}">${v!=null?drCoinHtml(v):''}</div>`)}
+ return `<div class="dr-hs" id="drHs">${cells.join('')}</div>`}
+function drHsBar(){const h=dr.hs;if(!h)return '';return `<div class="dr-hsbar"><span class="label">Spins</span><span class="dr-lamps" id="drLamps">${Array.from({length:DRAAK.HS_SPINS},(_,i)=>`<i class="${i<h.left?'on':''}"></i>`).join('')}</span><span class="dr-hsn"><b>${h.filled}</b>/15</span><span class="label">Totaal</span><b id="drHsSum" data-fit="12">${fmt(h.sum*dr.bet)}</b></div>`}
 const drCoinHtml=v=>`<div class="dr-coin ${typeof v==='string'?'jp jp-'+v:''}" style="${typeof v==='string'?'--jc:'+DR_JP[v][1]:''}">${drSvg('munt')}<b>${drCoinLab(v,dr.bet)}</b></div>`;
-function drHsSet(i,v,anim){const el=document.querySelector(`#drHsG .dr-hc[data-i="${i}"]`);if(!el)return;el.classList.add('on');el.innerHTML=drCoinHtml(v);if(anim){el.classList.remove('drop');void el.offsetWidth;el.classList.add('drop')}}
-function drLamps(){const e=drEl('drLamps');if(e)e.innerHTML=Array.from({length:DRAAK.HS_SPINS},(_,i)=>`<i class="${i<dr.hs.left?'on':''}"></i>`).join('')}
+function drHsSet(i,v,anim){const el=document.querySelector(`#drHs .dr-hc[data-i="${i}"]`);if(!el)return;el.classList.add('on');el.innerHTML=drCoinHtml(v);if(anim){el.classList.remove('drop');void el.offsetWidth;el.classList.add('drop')}}
+// Muntenbonus draaien: elk leeg vakje rolt door munten (ook Mini, Minor en Major) en stopt op leeg of op de nieuwe munt
+function drHsTumble(nw){const T=drT(),map=new Map(nw),els=[...document.querySelectorAll('#drHs .dr-hc:not(.on)')];if(!els.length||!drOn())return Promise.resolve();let maxD=0;
+ els.forEach(el=>{const i=+el.dataset.i,c=Math.floor(i/3),fin=map.has(i)?map.get(i):null,N=7+c;const it=[];
+  for(let k=0;k<N;k++){const r=Math.random();it.push(r<.42?null:r<.5?['mini','minor','major'][Math.floor(Math.random()*3)]:DRAAK.pickCoin(Math.random))}it.push(fin);
+  el.innerHTML=`<div class="dr-hstrip" style="--n:${N+1}">${it.map(v=>`<div class="dr-hi">${v!=null?drCoinHtml(v):''}</div>`).join('')}</div>`;
+  const strip=el.firstChild,d=T.hs+c*slotSp(110,60)+(r=>r)(0);maxD=Math.max(maxD,d);el.classList.add('roll');
+  strip.animate(drReduce()?[{transform:`translateY(-${N/(N+1)*100}%)`},{transform:`translateY(-${N/(N+1)*100}%)`}]:[
+   {transform:'translateY(0)',filter:'blur(0px)'},{transform:`translateY(-${N*.35/(N+1)*100}%)`,filter:'blur(2px)',offset:.35},
+   {transform:`translateY(-${(N+.12)/(N+1)*100}%)`,filter:'blur(0px)',offset:.88},{transform:`translateY(-${N/(N+1)*100}%)`,filter:'blur(0px)'}],{duration:d,easing:'cubic-bezier(.2,.6,.3,1)',fill:'forwards'});
+  setTimeout(()=>{el.classList.remove('roll');if(fin==null){el.innerHTML=''}else{el.innerHTML=drCoinHtml(fin)}},d)});
+ return drWait(maxD+40)}
+function drHsBarSet(){const t=drEl('drTick');if(t){t.innerHTML=drHsBar();fitText(t)}}
 async function drPlayHs(hsr,bet,step0){const T=drT();dr.inBonus=true;
- await drBanner('Muntenbonus','9 vakjes · elke nieuwe munt zet je weer op 3 spins',slotSp(2000,1300),'plus',drSvg('munt'));SFX.dr.bonus();
- dr.hs={cells:Array(9).fill(null),left:DRAAK.HS_SPINS,sum:0,filled:0,total:0};drUnmark();
- const box=drEl('drReels');const fr=box&&box.parentElement;if(fr){const old=drEl('drHs');if(old)old.remove();fr.insertAdjacentHTML('beforeend',drHsHtml())}drRefresh();
- // startmunten: een voor een op hun plek
- let k=0;for(let i=0;i<9;i++){const v=hsr.start[i];if(v==null)continue;dr.hs.cells[i]=v;dr.hs.sum+=DRAAK.coinVal(v);dr.hs.filled++;drHsSet(i,v,true);SFX.dr.coin(k++);drText('drHsSum',fmt(dr.hs.sum*bet));drInfoSet();await drWait(slotSp(260,120))}
- drTick(`${dr.hs.filled} munten blijven staan. Nog ${9-dr.hs.filled} vakjes: vul ze allemaal voor de Mega.`);await drWait(T.hold*.6);
+ await drBanner('Muntenbonus','De munten blijven staan · elke nieuwe munt zet je weer op 3 spins',slotSp(2200,1300),'plus',drSvg('munt'));SFX.dr.bonus();
+ dr.hs={cells:Array(15).fill(null),left:DRAAK.HS_SPINS,sum:0,filled:0,total:0};drUnmark();
+ const fr=drEl('drReels')&&drEl('drReels').parentElement;if(fr){const old=drEl('drHs');if(old)old.remove();fr.insertAdjacentHTML('beforeend',drHsHtml())}
+ const root=document.querySelector('.dr');if(root)root.classList.add('is-hs');drHsBarSet();drInfoSet();drText('drSub','');const sb=drEl('drSub');if(sb)sb.innerHTML=drSubHtml();
+ // startmunten: op hun plek, een voor een
+ let k=0;for(let i=0;i<15;i++){const v=hsr.start[i];if(v==null)continue;dr.hs.cells[i]=v;dr.hs.sum+=DRAAK.coinVal(v);dr.hs.filled++;drHsSet(i,v,true);SFX.dr.coin(k++);drHsBarSet();drInfoSet();await drWait(slotSp(240,110))}
+ drTick(`${dr.hs.filled} munten blijven staan. Vul alle 15 vakjes voor de Mega.`);await drWait(T.hold*.7);drHsBarSet();
  for(const st of hsr.steps){try{await drHold();
-  const g=drEl('drHsG');if(g)g.classList.add('spin');SFX.dr.spin();await drWait(T.hs);if(g)g.classList.remove('spin');
+  SFX.dr.spin();await drHsTumble(st.nw);
   if(st.nw.length){for(const [i,v] of st.nw){dr.hs.cells[i]=v;dr.hs.sum+=DRAAK.coinVal(v);dr.hs.filled++;drHsSet(i,v,true);
-    if(typeof v==='string'){SFX.dr.jp(['mini','minor','major'].indexOf(v));drTick(`<b>${DR_JP[v][0]}</b>: ${fmt(DRAAK.JP[v]*bet)}!`);document.querySelector(`.dr-jp.${v}`)?.classList.add('hit')}else{SFX.dr.coin(i);drTick(`Munt van <b>${fmt(v*bet)}</b> blijft plakken. Weer 3 spins!`)}
-    drText('drHsSum',fmt(dr.hs.sum*bet));await drWait(T.drop)}}
-  else{SFX.dr.lose();drTick(st.left?`Niets erbij. Nog ${st.left} spin${st.left>1?'s':''}.`:'Geen spins meer.')}
-  dr.hs.left=st.left;drLamps();drInfoSet();
-  if(dr.hs.filled>=9){await drWait(300);break}
-  await drWait(slotSp(260,110))}catch(e){console.error(e)}}
+    if(typeof v==='string'){SFX.dr.jp(['mini','minor','major'].indexOf(v));document.querySelector(`#drJp .dr-jp.${v}`)?.classList.add('hit');await drBanner(DR_JP[v][0],fmt(DRAAK.JP[v]*bet),slotSp(1500,900),'plus',drCoinHtml(v));document.querySelector(`#drJp .dr-jp.${v}`)?.classList.remove('hit')}else SFX.dr.coin(i);
+    dr.hs.left=DRAAK.HS_SPINS;drHsBarSet();drInfoSet();await drWait(T.drop)}}
+  else{SFX.dr.lose();dr.hs.left=st.left;drHsBarSet()}
+  dr.hs.left=st.left;drHsBarSet();drInfoSet();
+  if(dr.hs.filled>=15){await drWait(300);break}
+  await drWait(slotSp(240,100))}catch(e){console.error(e)}}
  const tot=hsr.total*bet;dr.hs.total=tot;
- if(hsr.full){SFX.dr.big();document.querySelector('.dr-jp.mega')?.classList.add('hit');await drBanner('MEGA',`Alle 9 vakjes vol · ${DRAAK.MAX_WIN.toLocaleString('nl-NL')}× je inzet · ${fmt(tot)}`,4000,'plus gold',drSvg('draak'))}
- else{SFX.dr.retrig();await drCount('drHsSum',0,tot,slotSp(900,450));await drBanner(fmt(tot),`Muntenbonus · ${(Math.round(hsr.total*10)/10).toLocaleString('nl-NL')}× je inzet`,2400,hsr.total>=40?'big':'',drSvg('munt'))}
+ if(hsr.full){SFX.dr.big();document.querySelector('#drJp .dr-jp.mega')?.classList.add('hit');await drBanner('MEGA',`Alle 15 vakjes vol · ${DRAAK.MAX_WIN.toLocaleString('nl-NL')}× je inzet · ${fmt(tot)}`,4500,'plus gold',drSvg('draak'))}
+ else{SFX.dr.retrig();document.querySelectorAll('#drHs .dr-hc.on').forEach(e=>e.classList.add('cash'));await drCount('drHsSum',0,tot,slotSp(900,450));await drBanner(fmt(tot),`Muntenbonus · ${(Math.round(hsr.total*10)/10).toLocaleString('nl-NL')}× je inzet`,2400,hsr.total>=40?'big':'',drSvg('munt'))}
  drCount('drStep',step0,step0+tot,500);drShowBal(tot);
- dr.hs=null;const h=drEl('drHs');if(h)h.remove();const bx=drEl('drReels');if(bx){bx.classList.remove('fs');bx.innerHTML=drReelsHtml(dr.grid&&!dr.grid[1][0].big?dr.grid:drDemo(),false)}drRefresh();return tot}
+ dr.hs=null;const h=drEl('drHs');if(h)h.remove();if(root)root.classList.remove('is-hs');document.querySelectorAll('#drJp .dr-jp.hit').forEach(e=>e.classList.remove('hit'));drRefresh();return tot}
 const drInfoSet=()=>{const e=drEl('drInfo');if(e){e.innerHTML=drInfo();fitText(e)}};
 
 // ---------- Ronde afspelen ----------

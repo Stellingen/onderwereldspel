@@ -71,49 +71,7 @@
 .dr-tick b{color:var(--dr-goud);font-family:var(--f-mono)}
 .dr-tick.pop{animation:tin .25s}
 #drBanner .kk-banner{z-index:8}
-/* Muntenbonus: jackpots links, 3 × 3 in het midden, spins rechts */
-.dr-hs{position:absolute;inset:8px;z-index:3;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,3fr) minmax(0,1fr);gap:8px;align-items:stretch;
- background:radial-gradient(circle at 50% 50%,rgba(255,179,0,.18),transparent 60%),#160404;border-radius:6px;padding:6px}
-.dr-hs-jp{display:flex;flex-direction:column;gap:6px;justify-content:center;min-width:0}
-.dr-jp{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 4px;border-radius:8px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1.5px var(--jc);min-width:0}
-.dr-jp b{font-family:var(--f-display);font-weight:900;font-size:clamp(12px,2.2cqi,22px);line-height:1;text-transform:uppercase;color:var(--jc);letter-spacing:.04em}
-.dr-jp em{font-style:normal;font-family:var(--f-mono);font-size:clamp(8px,1.3cqi,12px);color:#f3d9c9;white-space:nowrap}
-.dr-jp.mega{background:linear-gradient(180deg,rgba(255,79,90,.3),rgba(0,0,0,.4))}
-.dr-jp.hit{animation:drJp .5s ease-in-out 6 alternate;background:color-mix(in srgb,var(--jc) 35%,transparent)}
-@keyframes drJp{0%{transform:scale(1)}100%{transform:scale(1.08);box-shadow:inset 0 0 0 2px var(--jc),0 0 24px var(--jc)}}
-.dr-hs-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:6px;aspect-ratio:1;align-self:center;width:100%;max-height:100%}
-.dr-hc{position:relative;border-radius:8px;background:linear-gradient(180deg,#2a0907,#1c0605);box-shadow:inset 0 0 0 1px rgba(255,211,90,.18);display:grid;place-items:center;overflow:hidden}
-.dr-hs-g.spin .dr-hc:not(.on){animation:drSpinCell .18s linear infinite;background:linear-gradient(180deg,#3a0c09,#220706)}
-@keyframes drSpinCell{0%{box-shadow:inset 0 0 0 1px rgba(255,211,90,.18)}50%{box-shadow:inset 0 0 0 2px rgba(255,211,90,.55),inset 0 0 18px rgba(255,179,0,.25)}100%{box-shadow:inset 0 0 0 1px rgba(255,211,90,.18)}}
-.dr-hc.on{background:radial-gradient(circle,rgba(255,211,90,.25),transparent 70%),#2a0907;box-shadow:inset 0 0 0 2px rgba(255,211,90,.55)}
-.dr-hc.drop .dr-coin{animation:drDrop .45s cubic-bezier(.3,1.5,.5,1)}
-@keyframes drDrop{0%{transform:translateY(-120%) scale(.7);opacity:0}70%{opacity:1}100%{transform:none}}
-.dr-coin{position:relative;width:86%;height:86%;display:grid;place-items:center}
-.dr-coin svg{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 5px 8px rgba(0,0,0,.6))}
-.dr-coin b{position:relative;z-index:1;font-family:var(--f-display);font-weight:900;font-size:clamp(12px,2.6cqi,26px);color:#2a1200;text-shadow:0 1px 0 rgba(255,255,255,.6);white-space:nowrap}
-.dr-coin.jp svg{filter:drop-shadow(0 0 12px var(--jc))}
-.dr-coin.jp b{color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.55);text-transform:uppercase;font-size:clamp(11px,2.2cqi,22px)}
-.dr-hs-side{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0;text-align:center}
-.dr-hs-side .label{margin:0;color:#e5b9a8}
-.dr-hs-side b{font-family:var(--f-display);font-weight:900;font-size:clamp(14px,2.6cqi,28px);color:var(--dr-goud);white-space:nowrap}
-.dr-lamps{display:flex;gap:6px}
-.dr-lamps i{width:clamp(12px,2.2cqi,22px);height:clamp(12px,2.2cqi,22px);border-radius:50%;background:#3a0f0c;box-shadow:inset 0 0 0 2px #5a1a12}
-.dr-lamps i.on{background:radial-gradient(circle at 35% 30%,#fff3c4,#ffd35a 55%,#c98a12);box-shadow:0 0 12px rgba(255,211,90,.8)}
-/* bediening en panelen in rood en goud */
-.dr.kk3 .kk-hud{border-color:#4a1a12;background:#4a1a12;border-radius:10px;overflow:hidden}
-.dr.kk3 .kk-hud>div{background:#1c0706}
-.dr.kk3 .kk-hud .kk-bal{background:linear-gradient(180deg,rgba(255,179,0,.14),transparent),#1c0706}
-.dr.kk3 .kk-hud .kk-bal b{color:#fff4dc}
-.dr.kk3 .kk-hud b.acc{color:var(--dr-goud)}.dr.kk3 .kk-hud b.grn{color:#5fe08f}
-.dr.kk3 .kk-betbox{background:#1c0706;border-color:#4a1a12}
-.dr.kk3 .kk-go:not(.buy){background:linear-gradient(180deg,#ff6a55,#c62828 60%,#8e1a12);color:#fff7e6;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 30px -12px rgba(198,40,40,.8)}
-.dr.kk3 .kk-go:not(.buy) small{color:#ffd9cf}
-.dr.kk3 .kk-small .kk-buyt,.dr.kk3 .kk-small .spd{background:#1c0706;box-shadow:inset 0 0 0 1px #4a1a12}
-.dr .kk-hud .label.plus{color:var(--dr-goud)}
-.dr-buys{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0}
-.dr-buys .kk-go{min-width:0;padding:8px 10px}
-.dr-buys .kk-go small{font-size:10px;line-height:1.25}
-.dr-bhs{background:linear-gradient(180deg,#fff1b0,#f5c542 55%,#c98a12)!important;color:#2a1200!important}
+
 /* uitbetaling */
 .dr-pay .vd-h{color:var(--dr-goud)}
 .dr-jps{display:grid;gap:6px}
@@ -129,67 +87,141 @@
 .dr-ban.fsin{background:radial-gradient(circle,rgba(198,40,40,.45),rgba(16,4,3,.93) 70%)}
 .dr-ban.gold,.dr-ban.big{background:radial-gradient(circle,rgba(255,211,90,.42),rgba(16,4,3,.93) 70%)}.dr-ban.gold b,.dr-ban.big b{color:#ffe08a}
 .dr-ban{--rip:#ffd35a}
-/* layout: bediening onder het bord, even breed */
+/* ===== Indeling: bord links, rechts een paneel met saldo, winst en de knoppen. Telefoon: onder elkaar, knoppen vast onderin ===== */
 .dr.kk3 .kk-stage{display:block}
-.dr.kk3 .kk-bar{width:min(100%,1100px);margin:12px auto 0}
-.dr.kk3 .kk-seed{max-width:980px;margin-left:auto;margin-right:auto}
-@container (min-width:1100px){
- .dr.kk3 .kk-bar{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1.5fr);gap:12px;align-items:stretch}
- .dr.kk3 .kk-hud{grid-template-columns:1.75fr 1fr 1fr}.dr.kk3.is-fs .kk-hud{grid-template-columns:1.7fr .8fr .95fr .95fr}
- .dr.kk3 .kk-hud .kk-bal,.dr.kk3 .kk-hud>div:last-child{grid-column:auto}
- .dr.kk3 .kk-ctl{grid-template-columns:minmax(128px,.9fr) minmax(160px,1.4fr) minmax(108px,.8fr)}
- .dr.kk3 .kk-ctl .kk-betbox,.dr.kk3 .kk-ctl .kk-go,.dr.kk3 .kk-ctl .kk-small,.dr.kk3 .kk-ctl .dr-buys{grid-column:auto}
- .dr.kk3 .kk-ctl .kk-small{flex-direction:column}
+.dr-main{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+.dr-side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.dr-hud{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.dr-c{display:flex;flex-direction:column;gap:3px;min-width:0;padding:9px 12px;border-radius:10px;background:#1c0706;box-shadow:inset 0 0 0 1px #4a1a12}
+.dr-c .label{margin:0;color:#c99a8a}
+.dr-c b{font-family:var(--f-display);font-weight:900;font-size:22px;line-height:1.05;color:#fff4dc;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dr-c b.acc{color:var(--dr-goud)}.dr-c b.grn{color:#5fe08f}
+.dr-c small{font-family:var(--f-mono);font-size:11px;color:var(--mute)}
+.dr-c-bal{grid-column:1/-1;background:linear-gradient(180deg,rgba(255,179,0,.14),transparent),#1c0706;box-shadow:inset 0 0 0 1px rgba(255,211,90,.3)}
+.dr-c-bal b{font-size:30px}
+.dr-c-fs{background:linear-gradient(180deg,rgba(255,179,0,.2),rgba(0,0,0,.2)),#1c0706;box-shadow:inset 0 0 0 1px rgba(255,211,90,.45)}
+.dr-c-fs b{color:var(--dr-goud)}
+.dr-c-win{grid-column:span 1}
+.dr-ctl{display:flex!important;flex-direction:column;gap:8px;margin:0!important}
+.dr-ctl>*{min-width:0}
+.dr-ctl .kk-go{min-height:64px;width:100%}
+.dr-ctl .kk-small{display:flex;flex-direction:column;gap:6px}
+.dr-ctl .kk-betv{white-space:nowrap}
+.dr-ctl .kk-buyt span{white-space:nowrap}
+.dr-side .kk-seed{margin:0;padding:8px 10px;gap:4px 12px;flex-wrap:wrap}
+.dr-side .kk-seed .btn{margin-left:auto}
+.dr-side .kk-seed-i.prev{display:none}
+.dr-buys{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0}
+.dr-buys .kk-go{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;overflow:hidden;text-align:center;min-width:0;padding:8px 6px;min-height:78px}
+.dr-buys .kk-buy-l{font-size:13px;letter-spacing:.06em;white-space:nowrap;max-width:100%;overflow:hidden}
+.dr-buys .kk-buy-p{font-size:20px;line-height:1;white-space:nowrap;max-width:100%}
+.dr-buys .kk-go small{white-space:nowrap;max-width:100%;overflow:hidden;font-size:10px}
+.dr-bhs{background:linear-gradient(180deg,#fff1b0,#f5c542 55%,#c98a12)!important;color:#2a1200!important}
+/* jackpots boven het bord */
+.dr-jps-top{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:0 12px 6px}
+.dr-jp{display:flex;align-items:baseline;justify-content:center;gap:8px;padding:5px 8px;border-radius:8px;background:rgba(0,0,0,.4);box-shadow:inset 0 0 0 1.5px var(--jc);min-width:0}
+.dr-jp b{font-family:var(--f-display);font-weight:900;font-size:clamp(12px,1.9cqi,18px);line-height:1;text-transform:uppercase;color:var(--jc);letter-spacing:.04em}
+.dr-jp em{font-style:normal;font-family:var(--f-mono);font-size:clamp(9px,1.4cqi,13px);color:#f3d9c9;white-space:nowrap;min-width:0}
+.dr-jp.mega{background:linear-gradient(180deg,rgba(255,79,90,.32),rgba(0,0,0,.45))}
+.dr-jp.hit{animation:drJp .5s ease-in-out 6 alternate;background:color-mix(in srgb,var(--jc) 35%,transparent)}
+@keyframes drJp{0%{transform:scale(1)}100%{transform:scale(1.06);box-shadow:inset 0 0 0 2px var(--jc),0 0 24px var(--jc)}}
+/* Muntenbonus: het hele bord, munten op hun plek */
+.dr-hs{position:absolute;left:8px;top:8px;right:8px;bottom:8px;z-index:3;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:5px;
+ background:#160404;border-radius:6px}
+.dr-hc{position:relative;border-radius:6px;background:linear-gradient(180deg,#2a0907,#1c0605);box-shadow:inset 0 0 0 1px rgba(255,211,90,.16);display:grid;place-items:center;overflow:hidden}
+.dr-hs.spin .dr-hc:not(.on){animation:drSpinCell .18s linear infinite;background:linear-gradient(180deg,#3a0c09,#220706)}
+@keyframes drSpinCell{0%,100%{box-shadow:inset 0 0 0 1px rgba(255,211,90,.16)}50%{box-shadow:inset 0 0 0 2px rgba(255,211,90,.55),inset 0 0 18px rgba(255,179,0,.25)}}
+.dr-hc.on{background:radial-gradient(circle,rgba(255,211,90,.28),transparent 70%),#2a0907;box-shadow:inset 0 0 0 2px rgba(255,211,90,.6)}
+.dr-hc.cash{animation:drCash .6s ease-in-out 2 alternate}
+@keyframes drCash{100%{box-shadow:inset 0 0 0 3px #ffe08a,0 0 20px rgba(255,211,90,.6)}}
+.dr-hc.drop .dr-coin{animation:drDrop .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes drDrop{0%{transform:translateY(-120%) scale(.7);opacity:0}70%{opacity:1}100%{transform:none}}
+.dr-coin{position:relative;width:84%;height:84%;display:grid;place-items:center}
+.dr-coin svg{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 5px 8px rgba(0,0,0,.6))}
+.dr-coin b{position:relative;z-index:1;font-family:var(--f-display);font-weight:900;white-space:nowrap}
+.dr-coin.jp svg{filter:drop-shadow(0 0 12px var(--jc))}
+.dr-hsbar{display:flex;align-items:center;justify-content:center;gap:8px 14px;flex-wrap:wrap;width:100%}
+.dr-hsbar .label{margin:0;color:#c99a8a}
+.dr-hsbar b{font-family:var(--f-display);font-weight:900;font-size:20px;color:var(--dr-goud)}
+.dr-hsn{font-family:var(--f-mono);color:#f3d9c9}.dr-hsn b{font-size:18px}
+.dr-lamps{display:inline-flex;gap:6px}
+.dr-lamps i{width:16px;height:16px;border-radius:50%;background:#3a0f0c;box-shadow:inset 0 0 0 2px #5a1a12}
+.dr-lamps i.on{background:radial-gradient(circle at 35% 30%,#fff3c4,#ffd35a 55%,#c98a12);box-shadow:0 0 12px rgba(255,211,90,.8)}
+/* bedrag op een munt: rood plaatje, gouden letters */
+.dr-cv,.dr-coin b{background:#5a1414;color:#ffe08a!important;text-shadow:none!important;padding:2px 6px;border-radius:6px;box-shadow:0 0 0 1.5px #c48c10,0 2px 6px rgba(0,0,0,.5)}
+.dr-cv{font-size:clamp(10px,2.2cqi,20px)}
+.dr-coin b{font-size:clamp(11px,2.4cqi,22px)}
+.dr-cell.coin.jp .dr-cv,.dr-coin.jp b{background:var(--jc);color:#10141a!important;box-shadow:0 0 0 1.5px #fff,0 0 12px var(--jc);text-transform:uppercase}
+/* computer: bord en paneel naast elkaar, alles op één scherm */
+@container (min-width:1000px){
+ .dr-main{grid-template-columns:minmax(0,1fr) minmax(270px,300px)}
+ .dr-board{width:min(100%,calc((100svh - 400px) * 1.62),1040px);min-width:0}
+ .dr-side{position:sticky;top:12px}
+}
+@container (max-width:999px){.dr-board{width:100%;min-width:0}}
+@container (min-width:701px) and (max-width:999px){
+ .dr-side{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:10px;align-items:start}
+ .dr-side>#drSeedBox{grid-column:1/-1}
 }
 @container (max-width:700px){
  .dr.kk3 .dr-stage{padding:10px}
- .dr-board{min-width:0;width:100%}
  .dr-head{padding:8px 8px 4px;min-height:44px}.dr-lg-ic{width:30px;height:30px}.dr-sub{display:none}
+ .dr-jps-top{gap:4px;padding:0 6px 4px}.dr-jp{flex-direction:column;align-items:center;gap:1px;padding:4px 2px}
  .dr-deck{padding:2px 6px 6px}.dr-frame{padding:4px}.dr-reels{gap:3px}
  .dr-lines{left:4px;top:4px;width:calc(100% - 8px);height:calc(100% - 8px)}
- .dr-hs{inset:4px;gap:4px;padding:4px}
+ .dr-hs{left:4px;top:4px;right:4px;bottom:4px;gap:3px}
  .dr-lb{font-size:7.5px;padding:0 4px}
  .dr-tick{margin:0 6px 6px;font-size:12px;min-height:32px;padding:6px 8px}
+ .dr-c b{font-size:19px}.dr-c-bal b{font-size:26px}
+ .dr-hsbar b{font-size:16px}.dr-lamps i{width:13px;height:13px}
 }
 /* telefoon: inzet en Draaien vast onderin (zoals de andere slots) */
 @media (max-width:700px){
- body.cas-game #drCtl{position:fixed;left:0;right:0;bottom:calc(62px + env(safe-area-inset-bottom,0px));z-index:55;margin:0;
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:6px 8px;align-items:stretch;padding:8px max(10px,env(safe-area-inset-left,0px)) 9px;
+ body.cas-game #drCtl{position:fixed;left:0;right:0;bottom:calc(62px + env(safe-area-inset-bottom,0px));z-index:55;margin:0!important;
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:6px 8px;align-items:stretch;padding:8px max(10px,env(safe-area-inset-left,0px)) 9px;
   background:rgba(30,8,6,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:0;border-top:1px solid rgba(255,211,90,.4);border-radius:0;box-shadow:0 -12px 24px -14px rgba(0,0,0,.9)}
- body.cas-game #drCtl>*{margin:0;min-width:0}
- body.cas-game #drCtl>.kk-small{grid-column:1/-1;display:flex;gap:6px;align-items:stretch}
+ body.cas-game #drCtl>.kk-small{grid-column:1/-1;flex-direction:row}
  body.cas-game #drCtl>.kk-small>*{flex:1 1 0;min-width:0;min-height:34px;margin:0}
  body.cas-game #drCtl .kk-betbox>.label{display:none}
  body.cas-game #drCtl .kk-betbox{display:flex;align-items:stretch;padding:0;background:none;border:0}
  body.cas-game #drCtl .kk-bet{width:100%;height:100%;min-height:52px}
  body.cas-game #drCtl .kk-go{min-height:52px;height:100%;width:100%;margin:0;padding:6px 10px}
- body.cas-game #drCtl .kk-go:not(.buy) small{display:none}
- body.cas-game #drCtl .dr-buys .kk-go small{display:none}
+ body.cas-game #drCtl .kk-go:not(.buy) small,body.cas-game #drCtl .dr-buys .kk-go small{display:none}
+ body.cas-game #drCtl .dr-buys .kk-go{min-height:52px}
 }
-@media (prefers-reduced-motion:reduce){.dr-lan,.dr-hs-g.spin .dr-hc,.dr-jp.hit{animation:none}}
-/* bedrag op de munt: een rood plaatje met gouden letters, goed leesbaar */
-.dr-cv,.dr-coin b{background:#5a1414;color:#ffe08a!important;text-shadow:none!important;padding:2px 6px;border-radius:6px;box-shadow:0 0 0 1.5px #c48c10,0 2px 6px rgba(0,0,0,.5)}
-.dr-cv{font-size:clamp(10px,2.4cqi,20px)}
-.dr-coin b{font-size:clamp(12px,3.2cqi,28px)}
-.dr-cell.coin.jp .dr-cv,.dr-coin.jp b{background:var(--jc);color:#10141a!important;box-shadow:0 0 0 1.5px #fff,0 0 12px var(--jc)}
-/* bonus kopen: twee knoppen naast elkaar, alles past (ook bij grote bedragen) */
-.dr-buys .kk-go{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;overflow:hidden;text-align:center}
-.dr-buys .kk-buy-l{font-size:13px;letter-spacing:.06em;white-space:nowrap;max-width:100%;overflow:hidden}
-.dr-buys .kk-buy-p{font-size:clamp(14px,1.5vw,22px);line-height:1;white-space:nowrap;max-width:100%}
-.dr-buys .kk-go small{white-space:nowrap;max-width:100%;overflow:hidden;font-size:10px}
-@container (min-width:1100px){
- .dr.kk3.is-buy .kk-bar{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
- .dr.kk3.is-buy .kk-ctl{grid-template-columns:minmax(150px,1fr) minmax(230px,1.9fr) minmax(118px,.75fr)}
-}
-@container (min-width:701px) and (max-width:1099px){
- .dr.kk3.is-buy .kk-bar{grid-template-columns:minmax(0,1fr)}
- .dr.kk3.is-buy .kk-ctl{display:grid;grid-template-columns:minmax(150px,.8fr) minmax(0,2fr) minmax(120px,.9fr);gap:8px;align-items:stretch}
- .dr.kk3.is-buy .kk-ctl>*{grid-column:auto!important;min-width:0}
- .dr.kk3.is-buy .kk-ctl .kk-small{flex-direction:column}
-}
-@container (max-width:700px){.dr.kk3.is-buy .kk-ctl .dr-buys,.dr.kk3.is-buy .kk-ctl .kk-small{grid-column:1/-1}}
-@container (min-width:1100px){.dr.kk3 .kk-ctl .kk-buyt small{display:none}}
-
-.dr.kk3 .kk-betv{white-space:nowrap}
-.dr.kk3 .kk-small .kk-buyt span{white-space:nowrap}
-@container (min-width:701px) and (max-width:1099px){.dr.kk3:not(.is-fs) .kk-hud{grid-template-columns:1.6fr 1fr 1fr}}
+@media (prefers-reduced-motion:reduce){.dr-lan,.dr-hs.spin .dr-hc,.dr-jp.hit,.dr-hc.cash{animation:none}}
+/* knoppen en panelen in rood en goud */
+.dr .kk-betbox{background:#1c0706;border-color:#4a1a12}
+.dr .kk-go:not(.buy){background:linear-gradient(180deg,#ff6a55,#c62828 60%,#8e1a12);color:#fff7e6;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 30px -12px rgba(198,40,40,.8)}
+.dr .kk-go:not(.buy):hover:not(:disabled){filter:brightness(1.08)}
+.dr .kk-go:not(.buy) small{color:#ffd9cf}
+.dr .kk-small .kk-buyt,.dr .kk-small .spd{background:#1c0706;box-shadow:inset 0 0 0 1px #4a1a12}
+.dr .kk-seed{background:#160505;border-color:#3a1210}
+.dr-hud{grid-template-columns:repeat(3,minmax(0,1fr))}
+.dr-hud .dr-c{padding:8px 10px}
+.dr-hud .dr-c b{font-size:19px}.dr-hud .dr-c-bal b{font-size:30px}
+.dr-sky{opacity:.55}
+.dr-sub{position:relative;z-index:1;text-shadow:0 1px 3px #000}
+@container (max-width:700px){.dr-hud .dr-c b{font-size:17px}.dr-hud .dr-c-bal b{font-size:26px}}
+/* Muntenbonus: rollende vakjes */
+.dr-hc.roll{overflow:hidden}
+.dr-hstrip{position:absolute;left:0;right:0;top:0;height:calc(var(--n) * 100%);display:flex;flex-direction:column}
+.dr-hi{flex:1 0 0;display:grid;place-items:center;min-height:0}
+.dr-hc.roll .dr-coin{opacity:.92}
+/* paneel: saldo, deze spin en winst; in de bonus ook de teller */
+.dr-hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dr.is-fs .dr-hud,.dr.is-hs .dr-hud{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* inzet: duidelijk blok met groot bedrag */
+.dr .dr-bet{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,211,90,.08),transparent),#1c0706;box-shadow:inset 0 0 0 1px rgba(255,211,90,.28);border:0}
+.dr-bet-h{display:flex;align-items:center;justify-content:space-between;gap:8px}.dr-bet-h .label{margin:0;color:#e5b9a8}
+.dr-bet-all{background:none;border:0;padding:0;font:inherit;font-size:11.5px;color:var(--dr-goud);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.dr-bet-all:disabled{opacity:.5}
+.dr .dr-bet .kk-bet{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:6px;align-items:stretch}
+.dr .dr-bet .kk-bet>button{min-height:44px;border-radius:8px;font-size:22px;background:#2a0b09;color:#fff4dc;box-shadow:inset 0 0 0 1px #5a1a12;border:0}
+.dr .dr-bet .kk-betv{font-family:var(--f-display)!important;font-weight:900;font-size:26px!important;color:var(--dr-goud)!important;background:#120404!important;box-shadow:inset 0 0 0 1px rgba(255,211,90,.35)!important;border:0!important;border-radius:8px;min-width:0;white-space:nowrap}
+.dr-bet-f{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#c99a8a;flex-wrap:wrap}.dr-bet-f b{font-family:var(--f-mono);color:#f3d9c9}
+@media (max-width:700px){body.cas-game #drCtl .dr-bet-h,body.cas-game #drCtl .dr-bet-f{display:none}body.cas-game #drCtl .dr-bet{padding:0;background:none;box-shadow:none}
+ body.cas-game #drCtl .dr-bet .kk-bet{min-height:52px}body.cas-game #drCtl .dr-bet .kk-betv{font-size:20px!important}}
+.dr .dr-bet .kk-betv{width:100%!important;max-width:none!important;padding:0 6px}
+.dr-hc.roll .dr-coin{opacity:.6}
+.dr-hc.roll{background:linear-gradient(180deg,#3a0c09,#220706);box-shadow:inset 0 0 0 1px rgba(255,211,90,.35),inset 0 0 18px rgba(255,179,0,.18)}

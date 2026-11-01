@@ -659,9 +659,13 @@ restaurant op de Zeedijk, rood lakwerk en goud. 5 rollen × 3 rijen, 20 lijnen. 
 jade, waaier, lantaarn, gelukskat, draak; drakenparel = wild (rol 2–4); gong = scatter (rol 1, 3, 5); gouden munt.
 - **Free spins (3 gongs)**: 10 spins met de Reuzendraak: rol 2–4 zijn één groot symbool (telt als drie volle rollen). Gong op
   rol 1 + reuzengong + gong op rol 5 = 3 spins extra (±1 op 80 bonussen).
-- **Muntenbonus (6+ munten)**: 9 vakjes, de beste munten blijven staan, 3 spins; elke nieuwe munt plakt en zet je terug op 3.
-  Munten 1× tot 50× je inzet, of Mini 10×, Minor 25×, Major 100×. Alle 9 vol = **Mega** = max win 5.000×.
-- **Bonus kopen**: free spins 57× of de Muntenbonus met 6 munten 40×.
-- Doorgerekend (3 mln. spins per lidmaatschap): RTP ±93% (VIP ±94,5%, High roller ±96%); free spins ±1 op 240, munten ±1 op
-  255, bord vol ±1 op 500 muntenbonussen; kopen ±96%. Telt als slot voor de casinokaart, cashback 0,5%, seeds, geluk, pauze
+- **Muntenbonus (6+ munten)**: op het hele bord (5 × 3 = 15 vakjes), de munten blijven op hun plek, 3 spins; elke nieuwe munt
+  plakt en zet je terug op 3. De lege vakjes rollen zichtbaar door munten en jackpots. Munten 1× tot 50× je inzet, of Mini 10×,
+  Minor 25×, Major 100× (VIP 30% en High roller 60% vaker). Alle 15 vol = **Mega** = max win 5.000× (±1 op 1.700 bonussen).
+- **Indeling**: bord met jackpotbalk links, rechts saldo, deze spin, winst, inzetblok (groot bedrag, −/+, alle bedragen, max
+  win) en de knoppen. Nieuwe draak-tekening (kop, slangenlijf met schubben en rugvinnen, parel) in `covers.js` (`drHead`,
+  `drBody`, `drPearl`), gebruikt voor het symbool, de lobby en de website.
+- **Bonus kopen**: free spins 57× of de Muntenbonus met 6 munten 43× (voor iedereen dezelfde kansen).
+- Doorgerekend (3 mln. spins per lidmaatschap): RTP ±93,5% (VIP ±95%, High roller ±96,5%); free spins ±1 op 240, munten ±1 op
+  260; kopen ±96% (free spins 57×, munten 43×). Telt als slot voor de casinokaart, cashback 0,5%, seeds, geluk, pauze
   bij wegklikken, "bonus loopt nog" na verversen. Ook op de website (`/casino/gouden-draak`, `covers.js`, `landing.js`).
