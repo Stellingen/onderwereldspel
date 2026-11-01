@@ -279,6 +279,11 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   telefoon op slot of andere app), dan **pauzeert** hij ("Gepauzeerd", met "Bonus verder afspelen") in alle drie de slots;
   vroeger speelde Visdief en Suikerbaron dan in een tel uit en bleef er een oud bord met nieuwe winlijnen staan. Wordt het spel
   ergens anders geopend terwijl een bonus loopt, dan speelt die eerst rustig uit en komt de melding pas daarna.
+- **Bonussen aan tafel nagerekend**: de handbeoordeling van Hold'em (alle 2.598.960 handen van 5 kaarten), de 6-Card Bonus
+  en Three Card Poker (alle 22.100 handen) komen precies overeen met de bekende aantallen, en een paar azen, een straat in
+  Pair Plus en drie gelijke in de 6-Card Bonus worden echt uitbetaald. De AA Bonus telt alleen je 2 kaarten + de flop (een
+  straat die pas met de turn of river komt telt niet), Pair Plus alleen je eigen 3 kaarten. Op het bonnetje staat nu waarom
+  er niets viel, bijvoorbeeld "geen: jouw 2 + flop = hoge kaart". AA Bonus RTP ±93,4%.
 - **Roulette** (Europees, één nul, 2,7% huisvoordeel): groot wiel met rollende bal bovenaan, echte inzettafel eronder.
   Nummer, split, rij, hoek, zes, drie met nul, eerste vier, kolom, dozijn en de kansen, plus groepen op het wiel
   (Buren van nul, Overkant, Weesjes, Nulspel). Ongedaan maken, fiches weghalen (ook met rechtsklik), alles wissen,
@@ -300,8 +305,8 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   | Hoge inzetten in de slots | – | ja (ook met code `trainwreck`) |
   Casino, doorgerekend (gewoon / VIP / High roller): Kluiskraker (10×10, max 5.000×) bonus 1 op 400 / 350 / 300, RTP 92,5% / 94% / 95,5%, bonus kopen
   ±93% / 94,5% / 96%; Visdief bonus 1 op 200 / 172 / 143, RTP 91,5% / 94% / 96,5%, kopen ±97%; Suikerbaron (6×5, max 5.000×) bonus
-  1 op 330 / 300 / 250, RTP 94,9% / 95,7% / 96,2%, kopen ±95% / 96% / 97%; Hoogvlieger landt 18,7% / 19,5% / 20,5%,
-  RTP 87% / 91% / 96,5%. Alles blijft onder 100%, ook met cashback.
+  1 op 330 / 300 / 250, RTP 94,9% / 95,7% / 96,2%, kopen ±95% / 96% / 97%; Hoogvlieger landt 23% / 24% / 25%,
+  RTP 88% / 91,5% / 96%. Alles blijft onder 100%, ook met cashback.
 - **Huurmoorden** (`hits.js`): de drie niveaus (Straat, Professioneel, Elite) staan als banners met de doelwitten in het vizier; tik op een niveau voor de contracten. 9 contracten in drie niveaus (Straat, Professioneel vanaf Capo, Elite vanaf Onderbaas) en een
   reputatie in 6 niveaus (+3% beloning per niveau). Per contract kies je de methode: **mes** (sluipen, stilstaan als hij omkijkt,
   toeslaan op een timingring), **pistool**, **geweer** (vizier met wind) of een **ongeluk** (vanaf Capo, een slingerende lading
@@ -431,14 +436,14 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Live bijwerken**: Bezit, Wapens, Families, Profiel, Bank, Training, Huurmoorden en het dashboard verversen elke seconde als
   er iets verandert, zodat knoppen meteen kloppen. In de slots loopt het saldo ook live mee.
 - **Hoogvlieger**: een propellervliegtuigje (met rookspoor) vliegt op eigen kracht over zee, zonder vaste baan. Overal in de lucht
-  hangen willekeurig items (30% minder dan eerst, gemiddeld ±6 raak per vlucht); wat hij raakt bepaalt zijn koers: een plusje
-  (+1 tot +10) schiet hem omhoog, ×2 tot ×5 vermenigvuldigt en geeft een klein zetje, een bom (÷2) ontploft en drukt hem omlaag.
-  Daarnaast trekt hij op willekeurige momenten zelf fel op of duikt hij weg, en de zwaartekracht trekt flink: geen langzaam
-  klimmen, zweven en zakken meer. Op zee liggen vliegdekschepen met water ertussen; blijft hij op het dek staan, dan win je
-  inzet × multiplier (max 250×). De vlucht (items, stoten en schepen) wordt bij het opstijgen in één keer doorgerekend en ligt dan
-  vast; de **snelheid** (1×/2×/3×, ook tijdens de vlucht) verandert alleen hoe snel je hem ziet. Doorgerekend (avsim4.js,
-  3 × 250.000 vluchten per lidmaatschap): vlucht meestal 9 tot 57 s (mediaan ±22 s); gewoon landt ±18,7%, RTP ±87%; VIP (dekken
-  5% langer) ±19,5%, RTP ±91%; High roller (10% langer) ±20,5%, RTP ±96,5%. Code: `public/js/pages/vlucht.js`.
+  hangen willekeurig items (30% minder dan eerst). Hij stijgt op en glijdt daarna rustig omlaag; hij beweegt niet uit zichzelf op
+  en neer. Alleen wat hij raakt verandert zijn koers: een plusje (+1 tot +10) geeft een flinke stuiter omhoog, ×2 tot ×5
+  vermenigvuldigen en geven een kleine stuiter, een bom (÷2) ontploft en hij valt een stuk, waarna hij weer verder glijdt.
+  Op zee liggen vliegdekschepen met water ertussen; blijft hij op het dek staan, dan win je inzet × multiplier (max 250×). De
+  vlucht wordt bij het opstijgen in één keer doorgerekend en ligt dan vast; de **snelheid** (1×/2×/3×, ook tijdens de vlucht)
+  verandert alleen hoe snel je hem ziet. Doorgerekend (avsim4.js, 3 × 250.000 vluchten per lidmaatschap): vlucht meestal 12 tot
+  64 s (mediaan ±25 s), ±7 items raak; gewoon landt ±23%, RTP ±88%; VIP (dekken 5% langer) ±24%, RTP ±91,5%; High roller (10%
+  langer) ±25%, RTP ±96%. Code: `public/js/pages/vlucht.js`.
 - **Dubbel of niks**: een munt die echt in 3D wordt opgegooid, precies 50% kans (crypto-random), geen huisvoordeel.
   Win je, dan kies je: je pot pakken of nog een keer gooien voor het dubbele, tot 10 keer (×1024). De pot blijft bewaard bij verversen.
   Code: `public/js/pages/munt.js`.

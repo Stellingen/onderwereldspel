@@ -203,8 +203,8 @@ function tpSettle(folded){
   L.push({label:'Ante',note:o.mainOut,stake:t.bets.ante,back:aBack});
   if(!folded)L.push({label:'Play',note:!qual?'terug, dealer speelt niet':o.mainOut,stake:t.play,back:pBack});
   if(ab&&!folded)L.push({label:'Ante-bonus',note:pv.name,stake:0,back:ab})}
- if(t.bets.pp)L.push({label:'Pair Plus',note:pm?pv.name:'geen',stake:t.bets.pp,back:pm?t.bets.pp*(pm+1):0});
- if(t.bets.six)L.push({label:'6-Card Bonus',note:c6[2]?c6[0]:'geen',stake:t.bets.six,back:c6[2]?t.bets.six*(c6[2]+1):0});
+ if(t.bets.pp)L.push({label:'Pair Plus',note:pm?pv.name+' (jouw 3)':'geen: jouw 3 = '+pv.name.toLowerCase(),stake:t.bets.pp,back:pm?t.bets.pp*(pm+1):0});
+ if(t.bets.six)L.push({label:'6-Card Bonus',note:(c6[2]?c6[0]:'geen')+' (jouw 3 + dealer 3)',stake:t.bets.six,back:c6[2]?t.bets.six*(c6[2]+1):0});
  t.lines=L;
  t.res=o;S.cash+=back;t.net=back-staked;
  if(t.net>0)S.stats.won+=t.net;else S.stats.lost+=-t.net;casinoRound(staked,back,'tcp');

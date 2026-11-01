@@ -44,7 +44,7 @@ function thTable(){
  const pNow=t.p.length&&nb>=3?thBest([...t.p,...t.b]):null;
  const used=done&&o.pb?new Set(o.pb.use.map(i=>i)):null;
  const dName=showD&&o.db?o.db.name+(o.qual===false?' · speelt niet':''):'';
- const aaOut=t.p.length&&nb>=3&&t.bets.aa?(()=>{const x=thAA(t.p,t.b.slice(0,3));return x?`${x.name} · +${fmt(t.bets.aa*x.m)}`:'Geen'})():'';
+ const aaOut=t.p.length&&nb>=3&&t.bets.aa?(()=>{const x=thAA(t.p,t.b.slice(0,3));return x?`${x.name} · +${fmt(t.bets.aa*x.m)}`:'Geen (flop)'})():'';
  return `<div class="table th">
   <div class="felt">
    <div class="felt-rules"><b>Texas Hold'em</b><span>Tegen de dealer · dealer speelt vanaf een paar vieren · meespelen kost 2× je ante</span></div>
@@ -96,7 +96,7 @@ function thFinish(folded){const t=th;t.phase='done';
  if(t.bets.aa)o.aa=r.aa?'win':'lose';
  const L=[{label:'Ante',note:o.mainOut+(r.ante>t.bets.ante*2?' · '+r.pb.name+' '+am+':1':''),stake:t.bets.ante,back:r.ante}];
  if(!folded)L.push({label:'Call',note:r.out==='nq'?'terug, dealer speelt niet':o.mainOut,stake:t.call,back:r.call});
- if(t.bets.aa)L.push({label:'AA Bonus',note:r.aaHit?r.aaHit.name:'geen',stake:t.bets.aa,back:r.aa});
+ if(t.bets.aa)L.push({label:'AA Bonus',note:r.aaHit?r.aaHit.name+' (jouw 2 + flop)':'geen: jouw 2 + flop = '+thBest([...t.p,...t.b.slice(0,3)]).name.toLowerCase(),stake:t.bets.aa,back:r.aa});
  t.lines=L;t.res=o;S.cash+=back;t.net=back-staked;
  if(t.net>0)S.stats.won+=t.net;else S.stats.lost+=-t.net;casinoRound(staked,back,'th');
  t.msg=t.net>0?'Je krijgt '+fmt(back)+' terug':t.net<0?(back?'Je krijgt '+fmt(back)+' terug':'Je verliest '+fmt(-t.net)):'Quitte · '+fmt(back)+' terug';
