@@ -48,13 +48,16 @@ function rlZones(){const Z=[];const add=(u,v,ns,cls)=>Z.push({u,v,ns,cls});
  for(let r=0;r<3;r++)add(0,r+.5,[0,rlN(0,r)],'sp');add(0,1,[0,2,3],'co');add(0,2,[0,1,2],'co');add(0,3,[0,1,2,3],'sl');return Z}
 const RL_ZONES=rlZones();
 function rlChip(v,win){return v?`<i aria-hidden="true" class="rchip c${RL_CHIPS.filter(c=>c<=v).pop()||10} ${win?'win':''}">${rlShort(v)}</i>`:''}
-function rlSpot(k,inner,cls,extra){const v=rl.bets[k]||0,won=rl.res!=null&&!rl.spinning&&rl.lines&&rl.lines.some(l=>l.k===k&&l.back>0);
- return `<button class="rs ${cls||''}" data-k="${k}" data-ns="${rlNums(k).join(',')}" aria-label="${rlAria(k)}" ${extra||''} onclick="act.rlBet('${k}')" oncontextmenu="event.preventDefault();act.rlRemove('${k}')" onmouseenter="rlHl(this.dataset.ns)" onmouseleave="rlHl('')" ${rl.spinning?'disabled':''}>${inner}${rlChip(v,won)}</button>`}
+// na de worp blijven je fiches van die ronde liggen: gewonnen vakken lichten op met wat ze terugbetalen, de rest wordt grijs
+const rlShowRes=()=>!rl.spinning&&rl.res!=null&&rl.showRes&&rl.lines&&!rlTotal();
+const rlLastLine=k=>rlShowRes()?rl.lines.find(l=>l.k===k):null;
+function rlSpot(k,inner,cls,extra){const L=rlLastLine(k),v=rl.bets[k]||(L?L.stake:0),won=!!(L&&L.back>0);cls=(cls||'')+(L?(won?' wonl':' lostl'):'');
+ return `<button class="rs ${cls||''}" data-k="${k}" data-ns="${rlNums(k).join(',')}" aria-label="${rlAria(k)}" ${extra||''} onclick="act.rlBet('${k}')" oncontextmenu="event.preventDefault();act.rlRemove('${k}')" onmouseenter="rlHl(this.dataset.ns)" onmouseleave="rlHl('')" ${rl.spinning?'disabled':''}>${inner}${rlChip(v,won)}${L&&won?`<em class="rs-pay">+${rlShort(L.back)}</em>`:''}</button>`}
 function rlTable(){const vert=rlVert(),hit=!rl.spinning&&rl.res!=null?rl.res:null;
  let nums='';for(let j=0;j<12;j++)for(let r=0;r<3;r++){const n=rlN(j,r),[x,y]=vert?[2-r,j]:[j,r];
   nums+=rlSpot(rlKey([n]),`<b>${n}</b>`,'num '+numCol(n)+(hit===n?' hit':''),`style="grid-column:${x+1};grid-row:${y+1}"`)}
- const zones=RL_ZONES.map(z=>{const [x,y]=rlPos(z.u,z.v,vert),k=rlKey(z.ns),v=rl.bets[k]||0,won=rl.res!=null&&!rl.spinning&&rl.lines&&rl.lines.some(l=>l.k===k&&l.back>0);
-  return `<button class="rz ${z.cls} ${v?'on':''}" style="left:${x}%;top:${y}%" data-k="${k}" data-ns="${z.ns.join(',')}" aria-label="${rlAria(k)}" title="${rlLabel(k)} · ${36/z.ns.length-1}:1" onclick="act.rlBet('${k}')" oncontextmenu="event.preventDefault();act.rlRemove('${k}')" onmouseenter="rlHl(this.dataset.ns)" onmouseleave="rlHl('')" ${rl.spinning?'disabled':''}>${rlChip(v,won)}</button>`}).join('');
+ const zones=RL_ZONES.map(z=>{const [x,y]=rlPos(z.u,z.v,vert),k=rlKey(z.ns),L=rlLastLine(k),v=rl.bets[k]||(L?L.stake:0),won=!!(L&&L.back>0);
+  return `<button class="rz ${z.cls} ${v?'on':''} ${L?(won?'wonl':'lostl'):''}" style="left:${x}%;top:${y}%" data-k="${k}" data-ns="${z.ns.join(',')}" aria-label="${rlAria(k)}" title="${rlLabel(k)} · ${36/z.ns.length-1}:1" onclick="act.rlBet('${k}')" oncontextmenu="event.preventDefault();act.rlRemove('${k}')" onmouseenter="rlHl(this.dataset.ns)" onmouseleave="rlHl('')" ${rl.spinning?'disabled':''}>${rlChip(v,won)}</button>`}).join('');
  const red=`<span class="dia red" aria-hidden="true"></span><b class="rl-cw">Rood</b>`,blk=`<span class="dia black" aria-hidden="true"></span><b class="rl-cw">Zwart</b>`;
  return `<div class="rt ${vert?'v':'h'} ${rl.erase?'erase':''}">
   <div class="rt-zero">${rlSpot(rlKey([0]),'<b>0</b>','num green zero'+(hit===0?' hit':''))}</div>
@@ -89,12 +92,13 @@ function rlPaintCtl(){if(!document.getElementById('rlCtl')){render();return}
  const rt=document.querySelector('.rt');if(rt)rt.classList.toggle('erase',!!rl.erase)}
 function rouletteView(){const tot=rlTotal(),r=rl,done=!r.spinning&&r.res!=null,cnt={red:0,black:0,green:0};r.hist.slice(0,50).forEach(n=>cnt[numCol(n)]++);
  const hn=Math.max(1,r.hist.slice(0,50).length);
- return `<div class="rlx">
+ const land=rlShowRes(),back=land?r.lines.reduce((a,l)=>a+l.back,0):0,stk=land?r.lines.reduce((a,l)=>a+l.stake,0):0;
+ return `<div class="rlx rl2">
  <section class="rl-top">
   <div class="rl-stats card"><div class="label">Laatste worpen</div><div class="hist">${r.hist.map((n,i)=>`<span class="hn ${numCol(n)} ${i===0&&done?'new':''}">${n}</span>`).join('')||'<span class="label">Nog geen worpen</span>'}</div>
    <div class="rl-bars"><div><span>Rood</span><i style="width:${cnt.red/hn*100}%;background:#c8243f"></i><b>${cnt.red}</b></div><div><span>Zwart</span><i style="width:${cnt.black/hn*100}%;background:#cfd3da"></i><b>${cnt.black}</b></div><div><span>Nul</span><i style="width:${cnt.green/hn*100}%;background:#13a86b"></i><b>${cnt.green}</b></div></div>
    ${done&&r.lines&&r.lines.length?`<div class="rl-receipt side">${receiptHtml(r.lines.filter(l=>l.back>0).concat(r.lines.some(l=>!l.back)?[{label:'Overige inzetten',note:r.lines.filter(l=>!l.back).length+' vakken verloren',stake:r.lines.filter(l=>!l.back).reduce((a,l)=>a+l.stake,0),back:0}]:[]),r.net)}</div>`:''}
-   <p class="rl-fine">Europese roulette met één nul. Elke worp staat los van de vorige: een reeks rood maakt zwart niet waarschijnlijker. Huisvoordeel 2,7%.</p></div>
+   ${casSesHtml('roulette','rl')}<p class="rl-fine">Europese roulette met één nul. Elke worp staat los van de vorige: een reeks rood maakt zwart niet waarschijnlijker. Huisvoordeel 2,7%.</p></div>
   <div class="rl-wheel"><div class="wheelbox"><canvas id="wheel" width="1100" height="1100" aria-label="Roulettewiel"></canvas></div></div>
   <div class="rl-res card ${done?numCol(r.res):''}">
    <div class="label">${r.spinning?'Rien ne va plus':'Uitslag'}</div>
@@ -109,6 +113,7 @@ function rouletteView(){const tot=rlTotal(),r=rl,done=!r.spinning&&r.res!=null,c
    <div class="rl-total"><span class="label">Totale inzet</span><b id="rlTot">${fmt(tot)}</b></div>
    <div id="rlLive" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
   </div>
+  ${land?`<div class="rl-land ${numCol(r.res)} ${r.net>0?'w':r.net<0?'l':''}" role="status"><span class="rl-land-n">${r.res}</span><span class="rl-land-t"><b>Geland op ${r.res} · ${({red:'Rood',black:'Zwart',green:'Nul'})[numCol(r.res)]}</b><small>${back>0?'Je krijgt '+fmt(back)+' terug':'Alles verloren'} · inzet ${fmt(stk)}</small></span><span class="rl-land-net">${r.net>0?'+':r.net<0?'−':''}${fmt(Math.abs(r.net))}</span></div>`:''}
   ${rlTable()}
   <div class="rl-groups" id="rlGroups">${rlGroupsHtml()}</div>
   <div class="rl-ctl" id="rlCtl">${rlCtlHtml()}</div>
@@ -137,25 +142,27 @@ function drawWheel(a){const cv=document.getElementById('wheel');if(!cv)return;co
  if(rl.res!=null||rl.spinning){const br=(R+(c*.86-R)*rl.ballR)-(1-rl.ballR)*W*.03,bx=c+Math.cos(rl.ball)*br,by=c+Math.sin(rl.ball)*br;
   x.beginPath();x.arc(bx+2*k,by+3*k,W*.014,0,Math.PI*2);x.fillStyle='rgba(0,0,0,.45)';x.fill();
   g=x.createRadialGradient(bx-3*k,by-3*k,1,bx,by,W*.016);g.addColorStop(0,'#fff');g.addColorStop(1,'#b9bcc4');x.beginPath();x.arc(bx,by,W*.015,0,Math.PI*2);x.fillStyle=g;x.fill()}}
+// de uitslag op de tafel weghalen zodra je weer gaat inzetten (de hele tafel opnieuw tekenen)
+function rlClearRes(){if(!rl.showRes)return false;rl.showRes=false;render();return true}
 let rlResizeT=null,rlWasVert=null;
 window.addEventListener('resize',()=>{clearTimeout(rlResizeT);rlResizeT=setTimeout(()=>{const v=rlVert();if(page==='casino'&&casinoTab==='roulette'&&v!==rlWasVert&&!rl.spinning)render();rlWasVert=v},150)});
 Object.assign(act,{
- rlBet(k){const r=rl;if(r.spinning)return;if(r.erase){act.rlRemove(k);return}
+ rlBet(k){const r=rl;if(r.spinning)return;if(rlClearRes())return act.rlBet(k);if(r.erase){act.rlRemove(k);return}
   const cur=r.bets[k]||0,add=Math.min(r.chip,rlMax(k)-cur);if(add<=0){toast('Maximaal '+fmt(rlMax(k))+' op '+rlLabel(k).toLowerCase(),'bad');return}
   if(rlTotal()+add>casCash()){toast('Niet genoeg contant geld voor deze fiche','bad');return}
   r.bets[k]=cur+add;r.undo.push([[k,add]]);SFX.chip();rlPaint([k])},
  rlRemove(k){const r=rl;if(r.spinning||!r.bets[k])return;const v=r.bets[k];delete r.bets[k];r.undo.push([[k,-v]]);SFX.click();rlPaint([k])},
- rlGroup(id){const r=rl,g=RL_GROUPS.find(x=>x.id===id);if(r.spinning||!g)return;
+ rlGroup(id){const r=rl,g=RL_GROUPS.find(x=>x.id===id);if(r.spinning||!g)return;rlClearRes();
   const cost=g.bets.length*r.chip;if(rlTotal()+cost>casCash()){toast('Niet genoeg contant geld voor '+g.n.toLowerCase(),'bad');return}
   const step=[];g.bets.forEach(ns=>{const k=rlKey(ns),cur=r.bets[k]||0,add=Math.min(r.chip,rlMax(k)-cur);if(add>0){r.bets[k]=cur+add;step.push([k,add])}});
   if(step.length)r.undo.push(step);SFX.chip();rlPaint(step.map(x=>x[0]))},
  rlUndo(){const r=rl;if(r.spinning||!r.undo.length)return;const step=r.undo.pop();step.forEach(([k,v])=>{r.bets[k]=(r.bets[k]||0)-v;if(r.bets[k]<=0)delete r.bets[k]});SFX.click();rlPaint(step.map(x=>x[0]))},
  rlClear(){const r=rl;if(r.spinning)return;const keys=Object.keys(r.bets),step=Object.entries(r.bets).map(([k,v])=>[k,-v]);if(step.length)r.undo.push(step);r.bets={};r.erase=false;rlPaint(keys)},
- rlDouble(){const r=rl;if(r.spinning)return;const src=rlTotal()?r.bets:r.last;if(!src)return;const tot=Object.values(src).reduce((a,b)=>a+b,0)*2;
+ rlDouble(){const r=rl;if(r.spinning)return;rlClearRes();const src=rlTotal()?r.bets:r.last;if(!src)return;const tot=Object.values(src).reduce((a,b)=>a+b,0)*2;
   if(tot>casCash()){toast('Niet genoeg contant geld om te verdubbelen','bad');return}
   const keys=[...Object.keys(r.bets),...Object.keys(src)],step=[],nb={};Object.entries(src).forEach(([k,v])=>{const nv=Math.min(rlMax(k),v*2);nb[k]=nv;step.push([k,nv-(r.bets[k]||0)])});
   r.bets=nb;r.undo.push(step);SFX.chip();rlPaint(keys)},
- rlRepeat(){const r=rl;if(r.spinning||!r.last||rlTotal())return;const tot=Object.values(r.last).reduce((a,b)=>a+b,0);if(tot>casCash()){toast(casShort(),'bad');return}
+ rlRepeat(){const r=rl;if(r.spinning||!r.last||rlTotal())return;rlClearRes();const tot=Object.values(r.last).reduce((a,b)=>a+b,0);if(tot>casCash()){toast(casShort(),'bad');return}
   r.bets=Object.assign({},r.last);r.undo.push(Object.entries(r.bets).map(([k,v])=>[k,v]));SFX.chip();rlPaint(Object.keys(r.bets))},
  rlSpin(){const r=rl;if(r.spinning||inJail())return;const tot=rlTotal();if(!tot)return;if(tot>casCash()){toast(casShort(),'bad');return}
   // uitkomst staat meteen vast en wordt meteen verrekend (verversen verandert niets)
@@ -178,7 +185,7 @@ Object.assign(act,{
    if(p>.62&&p<.9&&t-lastTick>110+(p-.62)*600){lastTick=t;SFX.tick()}
    drawWheel(r.angle);if(p<1)requestAnimationFrame(step);else finish()};
   requestAnimationFrame(step);
-  const finish=()=>{if(lg)delete lg.r;r.spinning=false;r.res=n;r.net=net;r.lines=lines;r.hist.unshift(n);r.hist=r.hist.slice(0,16);r.bets={};window.slotPending=0;
+  const finish=()=>{if(lg)delete lg.r;r.spinning=false;r.res=n;r.net=net;r.lines=lines;r.hist.unshift(n);r.hist=r.hist.slice(0,16);r.bets={};r.showRes=true;window.slotPending=0;
    if(net>0){toast(n+' '+({red:'rood',black:'zwart',green:'nul'})[numCol(n)]+'. Je krijgt '+fmt(pay)+' terug (+'+fmt(net)+')');net>=tot*5?SFX.big():SFX.win(2)}
    else if(pay>0){toast(n+'. Je krijgt '+fmt(pay)+' terug ('+fmt(net)+')','bad');SFX.chip()}
    else{toast(n+' '+({red:'rood',black:'zwart',green:'nul'})[numCol(n)]+'. Verloren: '+fmt(tot),'bad');SFX.lose()}

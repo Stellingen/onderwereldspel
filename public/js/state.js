@@ -126,6 +126,12 @@ function czVal(){const C=S.cz;if(!C)return 0;const m=Math.max(0,(now()-(C.t||now
 const czTLen=()=>{const T=S.czT;if(!T||now()-T.last>(typeof ccCdMs==='function'?ccCdMs():15*60000))return 0;return Math.max(0,now()-T.t0)};
 const czTimeSus=()=>0;
 const czShown=()=>czVal();
+// Sessie per spel (zolang je speelsessie in het casino loopt): rondes, ingezet, terug en je beste ronde
+function casSesAdd(g,stake,pay){if(!g||!(stake>0))return;const t0=S.czT&&S.czT.t0||now();if(!S.cses||S.cses.t0!==t0)S.cses={t0,g:{}};const G=S.cses.g[g]||(S.cses.g[g]={n:0,i:0,o:0,b:0});
+ G.n++;G.i+=stake;G.o+=pay||0;G.b=Math.max(G.b,(pay||0)-stake)}
+function casSes(g){const t0=S.czT&&S.czT.t0;return S.cses&&S.cses.t0===t0&&S.cses.g[g]||{n:0,i:0,o:0,b:0}}
+function casSesHtml(g,cls){const G=casSes(g),net=G.o-G.i;
+ return `<div class="cses ${cls||''}" title="Sinds het begin van je speelsessie in het casino"><span class="label">Deze sessie</span><span class="cs-n"><b>${G.n}</b> ronde${G.n===1?'':'s'}</span><span class="cs-i">Ingezet <b>${fmt(G.i)}</b></span><span class="cs-o">Terug <b>${fmt(G.o)}</b></span><span class="cs-net ${net>0?'up':net<0?'dn':''}">${net>0?'+':net<0?'−':''}${fmt(Math.abs(net))}</span>${G.b>0?`<span class="cs-b">Beste <b>+${fmt(G.b)}</b></span>`:''}</div>`}
 function czTimeTick(){const T=S.czT;if(!T||now()-T.last>(typeof ccCdMs==='function'?ccCdMs():15*60000)){S.czT={t0:now(),last:now(),w:0};return}T.last=now()}
 // vroeger: een klus zette de klok terug. Nu telt alleen de pauze na je speeltijd.
 function czTimeReset(){}
@@ -287,7 +293,7 @@ const playerTags=t=>'<i class="spt" title="Echte speler">SPELER</i>'+lidTag(t);
 // tag bij je naam; kort = 'HR' voor smalle plekken (balk bovenin)
 const vipTag=short=>isHR()?`<i class="vipt hr" title="High roller">${short?'HR':'HIGH ROLLER'}</i>`:isVip()?'<i class="vipt" title="VIP-lid">VIP</i>':'';
 // Elke afgeronde casinoronde: inzet, wat je terugkreeg en welk spel. VIP spaart een vast percentage van de inzet op.
-function casinoRound(stake,pay,game){zwCasinoRound(stake,game);czTimeTick();if(typeof ccAdd==='function')ccAdd(game,stake);if(typeof pushSoon==='function')setTimeout(pushSoon,0);const r=(CB_RATE[game]||0)*(typeof ccCbF==='function'?ccCbF(game):(TIER_CB[tier()]||0));if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
+function casinoRound(stake,pay,game){zwCasinoRound(stake,game);czTimeTick();casSesAdd(game,stake,pay);if(typeof ccAdd==='function')ccAdd(game,stake);if(typeof pushSoon==='function')setTimeout(pushSoon,0);const r=(CB_RATE[game]||0)*(typeof ccCbF==='function'?ccCbF(game):(TIER_CB[tier()]||0));if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
   const el=document.getElementById('cbAmt');if(el)el.textContent=fmt(cbAvail());const bt=document.getElementById('cbBtn');if(bt){bt.disabled=cbAvail()<1;bt.textContent=cbAvail()>=1?'Claimen':'Nog niks te claimen'}}
 const cbAvail=()=>S.cb?Math.floor(S.cb.acc||0):0;
 const crimeCd=c=>c.cd*1000*(1-S.skills.speed*SK.speed.cd)*(1-famPerk('cd'))*(1-fitFx('cd'))*waitK();

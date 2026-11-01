@@ -59,7 +59,7 @@ function t3Result(cs){const rs=cs.map(c=>c.r).sort((x,y)=>x-y),fl=cs.every(c=>c.
 function bjTable(){
  const b=bt,bet=b.phase==='bet',h=b.hands,dUp0=b.dealer.length?bjTotal((b.phase==='play'||b.phase==='dealing')?[b.dealer[0]]:b.dealer).t:null,dUp=dUp0>21?'dood ('+dUp0+')':dUp0;
  const sideOut=k=>{const r=b.side[k];return r?(r.win?`${r.name} · +${fmt(r.win)}`:'Geen'):''};
- return `${tbHrBar('bj')}<div class="table bj ${tbHrOn()?'hrt':''}">
+ return `${casSesHtml('bj','tb')}${tbHrBar('bj')}<div class="table bj ${tbHrOn()?'hrt':''}">
   <div class="felt">
    <div class="felt-rules"><b>Blackjack betaalt 3 tegen 2</b><span>Dealer staat op alle 17 · 6 kaartspellen · splitsen en verdubbelen toegestaan</span></div>
    <div class="zone dealer"><div class="zl">Dealer${dUp!=null?` · <b>${dUp}${b.phase==='play'?'':''}</b>`:''}</div>
@@ -150,7 +150,7 @@ function tpTable(){
  const t=tp,bet=t.phase==='bet',dec=t.phase==='decide',done=t.phase==='done',rv=t.phase==='reveal';
  const pv=t.p.length?tp3(t.p):null,dv=done&&t.d.length?tp3(t.d):null;
  const o=t.res||{};
- return `${tbHrBar('tp')}<div class="table tcp ${tbHrOn()?'hrt':''}">
+ return `${casSesHtml('tcp','tb')}${tbHrBar('tp')}<div class="table tcp ${tbHrOn()?'hrt':''}">
   <div class="felt">
    <div class="felt-rules"><b>Three Card Poker</b><span>Dealer speelt met vrouw-hoog of beter · ante-bonus wordt altijd uitbetaald</span></div>
    <div class="zone dealer"><div class="zl">Dealer${dv?` · <b>${dv.name}</b>${o.qual===false?' · speelt niet':''}`:''}</div>

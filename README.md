@@ -646,3 +646,8 @@ Backup van de stand ervoor: branch `backup/2026-11-01-avond` (terugzetten = die 
   eigen vangnet: gaat er iets mis in de animatie, dan speelt de bonus gewoon verder.
 - **Bonusbanners per slot**: Visdief in water en met een reddingsboei (+10 spins bij een nieuwe ronde, "Ronde N binnen"),
   Kluiskraker in staal met de kluisknop (+N spins), met uitdijende kringen.
+- **Roulette op één scherm** (computer, vanaf ±900 px inhoud): links het wiel, de uitslag en de laatste worpen met je sessie,
+  rechts fiches, tafel en knoppen. Na de worp blijft je inzet op de tafel liggen: gewonnen vakken groen met wat ze terugbetalen,
+  verloren fiches grijs, en een balk "Geland op 17 · Rood · +€X". Bij de volgende fiche is de tafel weer leeg.
+- **Sessie per spel** (`casSesAdd`/`casSesHtml` in state.js) bij Blackjack, Three Card Poker, Texas Hold'em en Roulette: rondes,
+  ingezet, terug, netto en je beste ronde, zolang je speelsessie in het casino loopt (de tijd van je casinokaart).

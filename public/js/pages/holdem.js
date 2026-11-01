@@ -47,7 +47,7 @@ function thTable(){
  const used=done&&o.pb?new Set(o.pb.use.map(i=>i)):null;
  const dName=showD&&o.db?o.db.name+(o.qual===false?' · speelt niet':''):'';
  const aaOut=t.p.length&&nb>=3&&t.bets.aa?(()=>{const x=thAA(t.p,t.b);return x?`${nb<5?'Nu ':''}${x.name} · +${fmt(t.bets.aa*x.m)}`:nb<5?'Nog niets':'Geen'})():'';
- return `${tbHrBar('th')}<div class="table th ${tbHrOn()?'hrt':''}">
+ return `${casSesHtml('th','tb')}${tbHrBar('th')}<div class="table th ${tbHrOn()?'hrt':''}">
   <div class="felt">
    <div class="felt-rules"><b>Texas Hold'em</b><span>Tegen de dealer · dealer speelt vanaf een paar vieren · meespelen kost 2× je ante</span></div>
    <div class="zone dealer"><div class="zl">Dealer${dName?` · <b>${dName}</b>`:''}</div>
