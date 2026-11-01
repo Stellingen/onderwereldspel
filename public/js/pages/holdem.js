@@ -2,10 +2,12 @@
 // Ante inzetten → jij en de dealer krijgen 2 kaarten, de flop (3) ligt open → meespelen (call = 2× je ante) of passen.
 // Dealer speelt mee vanaf een paar vieren. Speelt hij niet, dan betaalt je ante volgens de tabel en krijg je je call terug.
 // Speelt hij wel: wint jouw beste 5 (uit 7) → ante volgens de tabel + call 1:1; gelijk → alles terug; anders alles kwijt.
-// AA Bonus (side bet): jouw 2 kaarten + de flop, vanaf een paar azen. Doorgerekend in sim_holdem.js.
+// AA Bonus (side bet): je beste hand uit jouw 2 kaarten + alle 5 tafelkaarten (flop, turn en river), vanaf drie gelijke.
+// Met 7 kaarten valt er veel vaker iets, dus een andere tabel dan bij alleen de flop: RTP ±91,4% (kansen per 7 kaarten,
+// nagerekend met 1 mln. handen in /tmp/claude-0/pk/aa7.js).
 /*CORE*/
 const TH_ANTE={9:100,8:20,7:10,6:3,5:2};            // royal, straight flush, carré, full house, flush; de rest 1:1
-const TH_AA={9:100,8:50,7:40,6:30,5:20,4:7,3:7,2:7};  // plus een paar azen 7:1
+const TH_AA={9:200,8:60,7:40,6:8,5:6,4:4,3:2};  // royal, straight flush, carré, full house, flush, straat, drie gelijke
 const TH_NAMES=['Hoge kaart','Paar','Twee paar','Drie gelijke','Straat','Flush','Full house','Carré','Straight flush','Royal flush'];
 // 5 kaarten → [categorie, tiebreakers...] (r: 2..14)
 function thEval5(cs){const rs=cs.map(c=>c.r).sort((a,b)=>b-a),fl=cs.every(c=>c.s===cs[0].s),cnt={};rs.forEach(r=>cnt[r]=(cnt[r]||0)+1);
@@ -23,10 +25,10 @@ function thBest(cs){let best=null,use=null;
  for(const I of thCombos(cs.length)){const h=I.map(i=>cs[i]),v=thEval5(h);if(!best||thCmp(v,best)>0){best=v;use=I}}
  return {v:best,cat:best[0],name:best[0]===1?'Paar '+TH_PL[best[1]]:TH_NAMES[best[0]],use}}
 const thQual=d=>d.cat>=2||(d.cat===1&&d.v[1]>=4);
-function thAA(p,flop){const b=thBest([...p,...flop]);if(TH_AA[b.cat])return {name:b.name,m:TH_AA[b.cat]};if(b.cat===1&&b.v[1]===14)return {name:'Paar azen',m:7};return null}
+function thAA(p,board){const b=thBest([...p,...board]);return TH_AA[b.cat]?{name:b.name,m:TH_AA[b.cat]}:null}
 // uitkomst in "terug"-bedragen (inclusief inzet). call = 0 als je past.
 function thSettle(ante,call,aa,p,d,board){const pb=thBest([...p,...board]),db=thBest([...d,...board]),qual=thQual(db);const r={pb,db,qual,ante:0,call:0,aa:0};
- if(aa){const x=thAA(p,board.slice(0,3));r.aaHit=x;r.aa=x?aa*(x.m+1):0}
+ if(aa){const x=thAA(p,board);r.aaHit=x;r.aa=x?aa*(x.m+1):0}
  if(!call){r.out='fold';return r}
  const am=(TH_ANTE[pb.cat]||1);
  if(!qual){r.ante=ante*(am+1);r.call=call;r.out='nq';return r}
@@ -44,20 +46,20 @@ function thTable(){
  const pNow=t.p.length&&nb>=3?thBest([...t.p,...t.b]):null;
  const used=done&&o.pb?new Set(o.pb.use.map(i=>i)):null;
  const dName=showD&&o.db?o.db.name+(o.qual===false?' · speelt niet':''):'';
- const aaOut=t.p.length&&nb>=3&&t.bets.aa?(()=>{const x=thAA(t.p,t.b.slice(0,3));return x?`${x.name} · +${fmt(t.bets.aa*x.m)}`:'Geen · '+thBest([...t.p,...t.b.slice(0,3)]).name.toLowerCase()})():'';
+ const aaOut=t.p.length&&nb>=3&&t.bets.aa?(()=>{const x=thAA(t.p,t.b);return x?`${nb<5?'Nu ':''}${x.name} · +${fmt(t.bets.aa*x.m)}`:nb<5?'Nog niets':'Geen'})():'';
  return `<div class="table th">
   <div class="felt">
    <div class="felt-rules"><b>Texas Hold'em</b><span>Tegen de dealer · dealer speelt vanaf een paar vieren · meespelen kost 2× je ante</span></div>
    <div class="zone dealer"><div class="zl">Dealer${dName?` · <b>${dName}</b>`:''}</div>
     ${t.d.length?`<div class="cards">${t.d.map((c,i)=>cardEl(c,i,!showD)).join('')}</div>`:ghosts(2)}</div>
    <div class="zone board"><div class="zl">Tafel${nb?` · <b>${nb===3?'flop':nb===4?'turn':'river'}</b>`:''}</div>
-    <div class="cards">${t.b.map((c,i)=>cardEl(c,i)).join('')}${'<div class="tc ghost"></div>'.repeat(5-nb)}${t.bets.aa&&nb>=3?'<div class="aa-mark"><span>AA Bonus: deze 3 + jouw 2</span></div>':''}</div></div>
-   <div class="felt-arc">AA Bonus €${TB.SIDE_MIN}–€${TB.SIDE_MAX} · jouw 2 + de flop (niet turn of river) · ook als je past</div>
+    <div class="cards">${t.b.map((c,i)=>cardEl(c,i)).join('')}${'<div class="tc ghost"></div>'.repeat(5-nb)}</div></div>
+   <div class="felt-arc">AA Bonus €${TB.SIDE_MIN}–€${TB.SIDE_MAX} · jouw 2 + alle 5 tafelkaarten · ook als je past</div>
    <div class="zone player">
     <div class="hands"><div class="hand ${o.main?'r-'+o.main:''}">${t.p.length?`<div class="cards">${t.p.map((c,i)=>cardEl(c,i)).join('')}</div>`:ghosts(2)}
      ${pNow?`<div class="hl"><b>${pNow.name}</b>${o.mainOut?`<em>${o.mainOut}</em>`:''}</div>`:''}</div></div>
     <div class="spots">
-     ${spot('th','aa','AA Bonus',t.bets.aa,{side:1,dis:!bet,sub:'tot 100 : 1',out:bet?'':aaOut,res:o.aa})}
+     ${spot('th','aa','AA Bonus',t.bets.aa,{side:1,dis:!bet,sub:'tot 200 : 1',out:bet?'':aaOut,res:o.aa})}
      ${spot('th','ante','Ante',t.bets.ante,{dis:!bet,sub:`€${TB.MAIN_MIN}–€${TB.MAIN_MAX.toLocaleString('nl-NL')}`,out:o.anteOut||'',res:o.main})}
      <div class="spot play ${t.call?'has':''}"><span class="spot-l">Call</span>${chipStack(t.call||0)}<span class="spot-s">= 2× ante</span></div>
     </div>
@@ -78,7 +80,7 @@ function thTable(){
   </div>
   <div class="paytabs three">
    <div class="card"><h3>Ante</h3><p class="sub">Win je van de dealer, of speelt hij niet (lager dan een paar vieren), dan betaalt je ante volgens deze tabel. Je call betaalt 1:1, of je krijgt hem terug als de dealer niet speelt.</p>${tbPayRow([['Royal flush','100 : 1'],['Straight flush','20 : 1'],['Carré','10 : 1'],['Full house','3 : 1'],['Flush','2 : 1'],['Straat of lager','1 : 1']])}</div>
-   <div class="card"><h3>AA Bonus</h3><p class="sub">Alleen jouw twee kaarten plus de flop (de eerste 3 tafelkaarten), vanaf een paar azen. De turn en de river tellen niet mee: een straat die pas met de turn komt, telt alleen voor je ante. Telt ook als je past.</p>${tbPayRow([['Royal flush','100 : 1'],['Straight flush','50 : 1'],['Carré','40 : 1'],['Full house','30 : 1'],['Flush','20 : 1'],['Straat','7 : 1'],['Drie gelijke','7 : 1'],['Twee paar','7 : 1'],['Paar azen','7 : 1']])}</div>
+   <div class="card"><h3>AA Bonus</h3><p class="sub">Je beste vijf uit jouw twee kaarten en alle vijf tafelkaarten (flop, turn en river), vanaf drie gelijke. Telt ook als je past: de turn en de river worden dan toch gedraaid.</p>${tbPayRow([['Royal flush','200 : 1'],['Straight flush','60 : 1'],['Carré','40 : 1'],['Full house','8 : 1'],['Flush','6 : 1'],['Straat','4 : 1'],['Drie gelijke','2 : 1']])}</div>
    <div class="card"><h3>Zo speel je</h3><p class="sub">Zet je ante (en eventueel AA Bonus) en deel. Je ziet je twee kaarten en de flop. Meespelen kost 2× je ante; daarna komen de turn en de river en draait de dealer om. Jouw beste vijf uit zeven tegen die van de dealer.</p>${tbPayRow([['Dealer speelt','vanaf paar vieren'],['Gelijk','alles terug'],['Passen','ante kwijt']])}</div>
   </div>
  </div>`}
@@ -96,7 +98,7 @@ function thFinish(folded){const t=th;t.phase='done';
  if(t.bets.aa)o.aa=r.aa?'win':'lose';
  const L=[{label:'Ante',note:o.mainOut+(r.ante>t.bets.ante*2?' · '+r.pb.name+' '+am+':1':''),stake:t.bets.ante,back:r.ante}];
  if(!folded)L.push({label:'Call',note:r.out==='nq'?'terug, dealer speelt niet':o.mainOut,stake:t.call,back:r.call});
- if(t.bets.aa)L.push({label:'AA Bonus',note:r.aaHit?r.aaHit.name+' (jouw 2 + flop)':'geen: jouw 2 + flop = '+thBest([...t.p,...t.b.slice(0,3)]).name.toLowerCase(),stake:t.bets.aa,back:r.aa});
+ if(t.bets.aa)L.push({label:'AA Bonus',note:r.aaHit?r.aaHit.name+' (jouw 2 + tafel)':'geen: '+r.pb.name.toLowerCase()+' (vanaf drie gelijke)',stake:t.bets.aa,back:r.aa});
  t.lines=L;t.res=o;S.cash+=back;t.net=back-staked;
  if(t.net>0)S.stats.won+=t.net;else S.stats.lost+=-t.net;casinoRound(staked,back,'th');
  t.msg=t.net>0?'Je krijgt '+fmt(back)+' terug':t.net<0?(back?'Je krijgt '+fmt(back)+' terug':'Je verliest '+fmt(-t.net)):'Quitte · '+fmt(back)+' terug';

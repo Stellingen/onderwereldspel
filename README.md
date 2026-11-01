@@ -281,10 +281,11 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   ergens anders geopend terwijl een bonus loopt, dan speelt die eerst rustig uit en komt de melding pas daarna.
 - **Bonussen aan tafel nagerekend**: de handbeoordeling van Hold'em (alle 2.598.960 handen van 5 kaarten), de 6-Card Bonus
   en Three Card Poker (alle 22.100 handen) komen precies overeen met de bekende aantallen, en een paar azen, een straat in
-  Pair Plus en drie gelijke in de 6-Card Bonus worden echt uitbetaald. De AA Bonus telt alleen je 2 kaarten + de flop (een
-  straat die pas met de turn of river komt telt niet), Pair Plus alleen je eigen 3 kaarten. Op het bonnetje staat nu waarom
-  er niets viel, bijvoorbeeld "geen: jouw 2 + flop = hoge kaart". Aan tafel markeert een haakje onder de flop welke kaarten
-  de AA Bonus telt (alleen als je hem hebt ingezet); onder de inzet staat al bij de flop wat hij oplevert. AA Bonus RTP ±93,4%.
+  Pair Plus en drie gelijke in de 6-Card Bonus worden echt uitbetaald. De **AA Bonus** telt je beste hand uit je 2 kaarten + alle 5 tafelkaarten (flop, turn en
+  river), vanaf drie gelijke: royal 200, straight flush 60, carré 40, full house 8, flush 6, straat 4, drie gelijke 2 (: 1).
+  Eerder telde alleen de flop (zoals in het echte Casino Hold'em) met een hogere tabel; met 7 kaarten valt er veel vaker iets
+  (±15% van de rondes), vandaar de lagere tabel. Pair Plus telt alleen je eigen 3 kaarten (er liggen geen tafelkaarten), de
+  6-Card Bonus jouw 3 + die van de dealer. Op het bonnetje staat waarom er niets viel. AA Bonus RTP ±91%.
 - **Roulette** (Europees, één nul, 2,7% huisvoordeel): groot wiel met rollende bal bovenaan, echte inzettafel eronder.
   Nummer, split, rij, hoek, zes, drie met nul, eerste vier, kolom, dozijn en de kansen, plus groepen op het wiel
   (Buren van nul, Overkant, Weesjes, Nulspel). Ongedaan maken, fiches weghalen (ook met rechtsklik), alles wissen,
