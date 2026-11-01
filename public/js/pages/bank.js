@@ -118,7 +118,8 @@ document.addEventListener('keydown',e=>{if(!atm.open)return;const t=e.target;
 window.addEventListener('hashchange',()=>{if(location.hash!=='#bank'){if(atm.open)atmClose(true);atm.mode=null;atm.amt='';atm.done=null}});
 const bk={tab:'home',amt:'',src:'bank',term:'8u',fund:'coin',rng:'24u',brk:null};
 const bkAmt=()=>Math.max(0,Math.floor(+bk.amt||0));
-const bkSrcBal=()=>Math.floor(bk.src==='bank'?S.bank:wit());
+// beleggen en deposito's gaan alleen van de spaarrekening (eerst storten); uitbetalingen komen ook altijd op de rekening
+const bkSrcBal=()=>Math.floor(S.bank);
 // invoer + snelknoppen. max = wat je hier maximaal kunt gebruiken
 function bkInput(max,label){const a=bkAmt();
  const q=[[1e4,'10k'],[1e5,'100k'],[1e6,'1 mln'],[1e7,'10 mln']].filter(x=>x[0]<=Math.max(max,1e4)).slice(-3);
@@ -225,7 +226,7 @@ function bkInvTab(){if(!fundOf(bk.fund))bk.fund='coin';const f=fundOf(bk.fund),t
     <div><span>Winst / verlies</span><b class="${ppl>=0?'up':'dn'}">${ppl>=0?'+':'−'}${fmt(Math.abs(ppl))} (${pctNl(ppl/p.c)})</b></div>${f.coin?'':`<div><span>Ontvangen ${f.kind.toLowerCase()}</span><b class="up">+${fmt(p.paid||0)}</b></div>`}</div>
     <div class="bk-sell">${[[.25,'25%'],[.5,'50%'],[1,'Alles']].map(([q,l])=>`<button class="btn sm ${q===1?'':'ghost'}" onclick="act.invSell(${q})" ${gone?'disabled':''}>Verkoop ${l} <small>${fmt(pv*q*(1-fee))}</small></button>`).join('')}</div>`
     :`<p class="sub">${f.coin?(gone?(f.endKind==='scam'?'Dit was een scam. De makers zijn er met het geld vandoor en de coin is van de markt gehaald.':'Deze coin is naar de grote beurs gegaan.'):'Je hebt nog niets in deze coin. Hij kan hard stijgen, maar ook ineens naar nul gaan.'):'Je hebt nog niets in dit fonds. Wat je koopt groeit met de uitkering mee, maar de koers kan ook zakken.'}</p>`}
-   <div class="bk-buy">${bkSrc()}${bkInput(Math.min(src,room),'Kopen voor')}
+   <div class="bk-buy"><div class="bk-src"><span class="label">Betalen van</span><div class="bk-from"><span>Spaarrekening</span><b>${fmt(S.bank)}</b></div>${S.bank<INV_MIN&&wit()>=1?`<small class="bk-hint">Stort eerst geld op je rekening (<a href="#bank" onclick="act.bkTab('rek')">rekening</a>)</small>`:''}</div>${bkInput(Math.min(src,room),'Kopen voor')}
     <div class="bk-sum" data-bk-live>${a?`Je krijgt ${nl(a*(1-fee)/px,px<1?0:px<10?2:4)} stukken à ${fmtPx(px)} (kosten ${fmt(a*fee)}).`:`Nog in te leggen: <b>${fmt(room)}</b> van ${fmt(cap)} in totaal (groeit met je rang; VIP ×3, High roller ×10).`}</div>
     <button class="btn" data-bk-btn onclick="act.invBuy()" ${why?'disabled':''}>${why||'Koop '+f.s+' voor '+fmt(a)}</button></div>
    <p class="bk-note">Verkopen gaat naar je spaarrekening. Koersen zijn voor iedereen hetzelfde en lopen door als je offline bent.</p></section></div>`}
@@ -379,7 +380,7 @@ Object.assign(act,{
   toast('Deposito opgezegd: '+fmt(back)+' terug op je spaarrekening','bad');log('Deposito opgezegd: '+fmt(back)+' terug','info');save();render()},
  invBuy(){const f=fundOf(bk.fund),a=bkAmt();if(!f||(f.coin&&now()>=f.end))return;const p=S.inv[f.id]||{u:0,c:0,paid:0,bp:0},room=invCap()-invCost();
   if(a<INV_MIN||a>room||a>bkSrcBal())return;const px=MK.price(f,now()),u=a*(1-invFee(f))/px;
-  if(bk.src==='bank')S.bank-=a;else spendWit(a);p.bp=(p.bp*p.u+px*u)/(p.u+u);p.u+=u;p.c+=a;S.inv[f.id]=p;bkTx('buy',bk.src==='bank'?-a:0,f.n+(bk.src==='bank'?'':' · contant'),a);
+  S.bank-=a;p.bp=(p.bp*p.u+px*u)/(p.u+u);p.u+=u;p.c+=a;S.inv[f.id]=p;bkTx('buy',-a,f.n,a);
   toast('Gekocht: '+f.s+' voor '+fmt(a),'ok');log(f.n+' gekocht voor '+fmt(a)+' à '+fmtPx(px),'info');bk.amt='';save();render()},
  invSell(q){const f=fundOf(bk.fund),p=f&&S.inv[f.id];if(!p||p.u<=0||(f.coin&&now()>=f.end))return;q=Math.min(1,Math.max(0,q));const px=MK.price(f,now()),u=p.u*q,got=u*px*(1-invFee(f)),cost=p.c*q,res=got-cost;
   p.u-=u;p.c-=cost;p.paid=(p.paid||0)*(1-q);if(q>=1||p.u<=1e-9)delete S.inv[f.id];S.bank+=got;bkTx('sell',got,f.n+' · '+(res>=0?'winst ':'verlies ')+fmt(Math.abs(res)));

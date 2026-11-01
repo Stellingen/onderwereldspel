@@ -20,7 +20,7 @@ function srchStam(){const h=srch(),mx=srchMax(),left=srchLeft(),cd=SRCH_CD[tier(
   <p>${left?'Je bent moe gelopen. Even zitten, dan kun je weer.':h.n?`Volgende zoektocht kost <b>${srchCost()} energie</b>. Hoe vaker je achter elkaar zoekt, hoe moeier je wordt. Zoek je ${cd} minuten niet, dan begin je weer bij 2.`:'De eerste zoektocht kost 2 energie. Elke volgende kost meer, want je wordt moe.'}</p></div>`}
 const carEn=m=>4+m.d*2+(m.leg?4:0);
 // Kans per zoektocht per zeldzaamheid (0 = niks gevonden, 6 = mythisch). Binnen een groep telt het gewicht (w) van het model.
-const FIND_TIER={0:.15,1:.4425,2:.24,3:.10,4:.045,5:.02,6:.0025};
+const FIND_TIER={0:.15,1:.43,2:.235,3:.105,4:.05,5:.025,6:.005};
 const tierName=t=>t===6?CAR_MYTH:CAR_RARITY[t];
 const CAR_ODDS=(()=>{const sum={},o={};CARS.forEach(m=>{const t=carTier(m);sum[t]=(sum[t]||0)+m.w});CARS.forEach(m=>{const t=carTier(m);o[m.id]=FIND_TIER[t]*m.w/sum[t]});return o})();
 const oddTxt=p=>{const v=p*100;return (v>=10?v.toFixed(0):v>=1?v.toFixed(1):v.toFixed(2)).replace('.',',')+'%'};
@@ -75,7 +75,7 @@ function huntBtns(){const x=S.carFind,left=cdLeft('car'),full=S.cars.length>=gar
  const got=x&&x.res==='ok'?carGotHtml('zoek'):'';
  return `${got}<div class="hunt-btns">${steal}<button class="btn ${live||got?'ghost':'xl'}" onclick="act.searchCar()" ${sOk?'':'disabled'}>${got&&sOk?'Zoek nog een auto · '+en+' energie':sl}</button></div>${srchStam()}`}
 // Eigen kleur per model (zoals je hem het vaakst ziet) en het soort auto, zodat je in de collectie meteen ziet wat het is
-const CAR_SIG={panda:'#e8c547',corsa:'#d9483b',yaris:'#e6e1d6',clio:'#f08a24',p208:'#3a6fd8',picanto:'#7fd1c7',polo:'#c9cfd6',c3:'#d8a23a',
+const CAR_SIG={p918:'#c9ced6',p1:'#ff8a12',spectre:'#2b2f3a',laf:'#d0102a',huayra:'#2a6dd8',amgone:'#c7ccd3',panda:'#e8c547',corsa:'#d9483b',yaris:'#e6e1d6',clio:'#f08a24',p208:'#3a6fd8',picanto:'#7fd1c7',polo:'#c9cfd6',c3:'#d8a23a',
  golf:'#c81e2c',focus:'#2f6fe0',leon:'#8a929c',a3:'#1f2a44',octavia:'#5fb34a',mini:'#2f6b4a',v60:'#a9b4c2',gr86:'#e8e4da',
  m3:'#2f9ad8',c63:'#50565f',tesla:'#e9edf2',rs6:'#7d838d',rr:'#2a2f38',macan:'#b8333a',x5m:'#1c3d6e',
  911:'#e8c547','r8':'#e9edf2',taycan:'#6a4bd6',g63:'#1c1d22',mase:'#2a3f8a',bent:'#2f4f3a',db12:'#5a6b4a',
@@ -93,18 +93,38 @@ function oddsList(){const dex=S.carDex||{},got=CARS.filter(m=>(dex[m.id]||[0,0])
     <div class="dex-car">${carSvg(m.b,carSig(m))}</div>
     <div class="dex-t"><b>${m.n}</b><small class="dex-k">${CAR_KIND(m.b)}</small><span>${kTxt(m.lo)} – ${kTxt(m.hi)}</span></div>
     <div class="dex-f"><em>${oddTxt(CAR_ODDS[m.id])}</em>${d[1]?`<i class="ok">✓ ${d[1]}× gestolen</i>`:d[0]?`<i>${d[0]}× gezien</i>`:'<i>nog niet gezien</i>'}${o?'<i class="hl">heler zoekt hem</i>':''}</div></div>`}).join('')}</div></section>`}).join('')}`}
-// Bestellingen van de heler: elke speldag (4 uur) vraagt hij 3 modellen. Lever je zo'n auto af uit je garage,
-// dan krijg je ×1,4 tot ×1,9 de waarde en wat straatcredit. Geeft een doel aan het verzamelen.
-const ORD_TIER={1:.34,2:.34,3:.22,4:.1};
-function carOrders(){const d=dayStart(now());if(S.orders&&S.orders.day===d)return S.orders;
- const pick=()=>{let r=Math.random(),t=1;for(const k of [1,2,3,4]){r-=ORD_TIER[k];if(r<=0){t=k;break}}const pool=CARS.filter(m=>carTier(m)===t);return pool[Math.floor(Math.random()*pool.length)]};
- const list=[];for(let g=0;list.length<3&&g<40;g++){const m=pick();if(!list.some(o=>o.id===m.id))list.push({id:m.id,k:+(1.4+Math.random()*.5).toFixed(2),done:0})}
- S.orders={day:d,list};return S.orders}
-function ordersHtml(){const O=carOrders(),left=O.day+DAY_MS-now();
- return `<div class="tierhead"><h2>Bestellingen van de heler</h2><span>Lever een auto uit je garage af voor extra geld · nieuwe lijst over ${bkDur(left)}</span></div>
+// Bestellingen van de heler: elke speldag (4 uur) een nieuwe lijst. Lever je zo'n auto af uit je garage, dan betaalt hij
+// een veelvoud van de waarde en krijg je straatcredit. Hoe meer je levert, hoe hoger je niveau bij hem (S.heler.n = leveringen):
+// meer bestellingen, hogere bedragen, een deel in wit geld, een spoedorder (×3) en uiteindelijk neemt hij elke auto aan.
+const HELER_LV=[
+ {n:'Kennis',need:0,ord:3,k:[1.4,1.9],wit:0,T:{1:.34,2:.34,3:.22,4:.1},p:'3 bestellingen per speldag, ×1,4 tot ×1,9 de waarde'},
+ {n:'Vaste klant',need:5,ord:4,k:[1.5,2.0],wit:0,T:{1:.28,2:.34,3:.25,4:.13},p:'4 bestellingen, ×1,5 tot ×2,0'},
+ {n:'Partner',need:15,ord:4,k:[1.6,2.1],wit:.25,T:{1:.2,2:.32,3:.3,4:.15,5:.03},p:'25% van het geld krijg je wit, soms een supercar op de lijst'},
+ {n:'Rechterhand',need:35,ord:5,k:[1.7,2.2],wit:.3,spoed:1,T:{1:.15,2:.3,3:.32,4:.18,5:.05},p:'5 bestellingen en elke speldag een spoedorder voor ×3'},
+ {n:'Compagnon',need:70,ord:5,k:[1.8,2.4],wit:.4,spoed:1,any:1.1,T:{1:.1,2:.28,3:.34,4:.21,5:.07},p:'40% wit en hij neemt elke auto aan voor ×1,1'}];
+const helerN=()=>{if(!S.heler)S.heler={n:(S.stats&&S.stats.orders)||0};return S.heler.n};
+const helerLv=()=>{const n=helerN();let l=0;HELER_LV.forEach((x,i)=>{if(n>=x.need)l=i});return l};
+function carOrders(){const d=dayStart(now());if(S.orders&&S.orders.day===d)return S.orders;const L=HELER_LV[helerLv()];
+ const pick=()=>{let r=Math.random(),t=1;for(const k of Object.keys(L.T)){r-=L.T[k];if(r<=0){t=+k;break}}const pool=CARS.filter(m=>carTier(m)===t);return pool[Math.floor(Math.random()*pool.length)]};
+ const list=[];for(let g=0;list.length<L.ord&&g<60;g++){const m=pick();if(m&&!list.some(o=>o.id===m.id))list.push({id:m.id,k:+(L.k[0]+Math.random()*(L.k[1]-L.k[0])).toFixed(2),done:0})}
+ if(L.spoed){const pool=CARS.filter(m=>carTier(m)>=3&&carTier(m)<=4&&!list.some(o=>o.id===m.id)),m=pool[Math.floor(Math.random()*pool.length)];if(m)list.push({id:m.id,k:3,spoed:1,done:0})}
+ S.orders={day:d,list,lv:helerLv()};return S.orders}
+function helerHtml(){const lv=helerLv(),L=HELER_LV[lv],nx=HELER_LV[lv+1],n=helerN(),pct=nx?Math.min(100,(n-L.need)/(nx.need-L.need)*100):100;
+ return `<section class="hl-lv"><div class="hl-lv-h"><span class="label">Jouw naam bij de heler</span><b>${L.n}</b><em>niveau ${lv+1} van ${HELER_LV.length} · ${n} auto${n===1?'':'\'s'} geleverd</em></div>
+  <div class="hl-steps">${HELER_LV.map((x,i)=>`<i class="${i<lv?'done':i===lv?'now':''}" title="${x.n}: vanaf ${x.need} leveringen"><b>${i+1}</b><span>${x.n}</span></i>`).join('')}</div>
+  ${nx?`<div class="hl-bar"><i style="width:${pct}%"></i></div><p class="hl-next">Nog <b>${nx.need-n}</b> levering${nx.need-n===1?'':'en'} tot <b>${nx.n}</b>: ${nx.p}.</p>`:'<p class="hl-next">Hoogste niveau: hij vertrouwt je alles toe.</p>'}
+  <div class="hl-perk"><span class="label">Nu</span>${L.p}${L.wit?` · ${Math.round(L.wit*100)}% wit`:''}</div></section>`}
+function ordersHtml(){const O=carOrders(),L=HELER_LV[helerLv()],next=O.day+DAY_MS;
+ const any=L.any?S.cars.map((c,i)=>[c,i]).filter(([c])=>!O.list.some(o=>o.id===c.id&&!o.done)):[];
+ return `${helerHtml()}
+ <div class="tierhead"><h2>Bestellingen van vandaag</h2><span class="hl-cd">Nieuwe lijst over <b class="js-cd" data-until="${next}">${bkDur(next-now())}</b></span></div>
  <div class="ord-grid">${O.list.map((o,i)=>{const m=CARS.find(c=>c.id===o.id)||CARS[0],R=carRarity(m),have=S.cars.findIndex(c=>c.id===o.id),car=have>=0?S.cars[have]:null;
-  return `<div class="ord ${o.done?'done':''}" style="--rc:${R[1]}"><div class="ord-car">${carSvg(m.b,'#3a404a')}</div><div class="ord-t"><span class="rar" style="--rc:${R[1]}">${R[0]}</span><b>${m.n}</b><small>${o.done?'Afgeleverd':`×${o.k.toLocaleString('nl-NL')} de waarde${car?' · jij hebt hem: '+fmt(Math.round(car.v*o.k)):''}`}</small></div>
-   ${o.done?'<em class="ord-ok">✓</em>':`<button class="btn sm ${car?'':'ghost'}" onclick="act.carOrder(${i})" ${car?'':'disabled'}>${car?'Afleveren':'Niet in je garage'}</button>`}</div>`}).join('')}</div>`}
+  return `<div class="ord ${o.done?'done':''} ${o.spoed?'spoed':''}" style="--rc:${R[1]}">${o.spoed?'<span class="ord-sp">Spoed ×3</span>':''}<div class="ord-car">${carSvg(m.b,'#3a404a')}</div><div class="ord-t"><span class="rar" style="--rc:${R[1]}">${R[0]}</span><b>${m.n}</b><small>${o.done?'Afgeleverd':`×${o.k.toLocaleString('nl-NL')} de waarde${car?' · jij hebt hem: '+fmt(Math.round(car.v*o.k)):' · '+kTxt(Math.round(m.lo*o.k))+'–'+kTxt(Math.round(m.hi*o.k))}`}</small></div>
+   ${o.done?'<em class="ord-ok">✓</em>':`<button class="btn sm ${car?'':'ghost'}" onclick="act.carOrder(${i})" ${car?'':'disabled'}>${car?'Afleveren':'Niet in je garage'}</button>`}</div>`}).join('')}</div>
+ ${any.length?`<div class="tierhead"><h2>Ook welkom</h2><span>Als ${L.n.toLowerCase()} neemt hij elke auto aan voor ×${String(L.any).replace('.',',')} de waarde</span></div>
+  <div class="ord-grid">${any.map(([c,i])=>{const m=CARS.find(k=>k.id===c.id)||CARS[0];return `<div class="ord"><div class="ord-car">${carSvg(m.b,c.c||'#3a404a')}</div><div class="ord-t"><b>${esc(c.n)}</b><small>waarde ${fmt(c.v)}</small></div><button class="btn sm" onclick="act.carHelerAny(${i})">Verkopen · ${fmt(Math.round(c.v*L.any/10)*10)}</button></div>`}).join('')}</div>`:''}`}
+// aftellers (heler-lijst) elke seconde bijwerken zonder de pagina opnieuw te tekenen
+setInterval(()=>{document.querySelectorAll('.js-cd[data-until]').forEach(e=>{const l=+e.dataset.until-now();e.textContent=l>0?bkDur(l):'nu'})},1000);
 // ---------- Verkopen via kopers, het autokerkhof en de garage ----------
 // Verkopen: een koper doet een bod rond de gemiddelde prijs (soms flink eronder, soms erboven). Per speluur (10 min) krijg je
 // 3 biedingen; wijs je ze alle drie af, dan wacht je op het volgende speluur. Netjes verkocht = wit geld, contant of op je bank.
@@ -170,7 +190,7 @@ function carLobby(){const ri=rankIdx(S.xp),cap=garageCap(),gv=S.cars.reduce((a,c
   ${b('zoek','#7fd1c7','Stelen','Straat afzoeken','Kijk wat er geparkeerd staat. Een Polo vind je zo, een Lamborghini bijna nooit.',(srchLeft()?`<em class="dn">uitrusten nog ${fmtClock(srchLeft())}</em>`:`<em>${cdLeft('car')?'nog '+fmtClock(cdLeft('car')):'klaar'}</em><em><b>${srchCost()}</b> energie · ${srchMax()-srch().n}/${srchMax()} over</em>`),'Op pad ›',caArt('street','<i class="lamp"></i>'+carSvg('hatch','#5a6270')))}
   ${b('jack','#ff5c6c','Stelen','Carjacken','Bij het stoplicht, portier open en gas erop. Snel, maar heet.',ri<JACK_R?`<em>vanaf ${RANKS[JACK_R][0]}</em>`:`<em>${cdLeft('jack')?'nog '+fmtClock(cdLeft('jack')):'klaar'}</em><em><b>${JACK_EN}</b> energie</em>`,'Naar het stoplicht ›',caArt('light',carSvg('sedan','#7a1424')+'<i class="tl"><i></i><i></i><i></i></i>'))}
   ${b('sloop','#c9a227','Onderdelen · zwart geld','Het Autokerkhof',S.sloop?'Je eigen sloperij. Hier gaat elke auto weg, ook als hij als gestolen is gemeld.':`Koop een sloperij en verkoop auto's als onderdelen. Ook gemelde auto's raak je hier kwijt.`,S.sloop?`<em><b>${Math.round(SLOOP_K*100)}%</b> van de waarde</em><em>zwart geld</em>`:`<em>${ri<SLOOP_R?'vanaf '+RANKS[SLOOP_R][0]:fmt(SLOOP_P)}</em>`,S.sloop?'Openen ›':'Bekijken ›',caArt('yard',yardSvg()))}
-  ${b('heler','#b8a1ff','Op bestelling','De heler',`Elke speldag vraagt hij drie modellen, en betaalt er ×1,4 tot ×1,9 voor.`,`<em><b>${O.list.filter(o=>!o.done).length}</b> open</em>${od?`<em class="up"><b>${od}</b> in je garage</em>`:''}`,'Bekijken ›',caArt('van',carSvg('van','#2f3640')))}
+  ${b('heler','#b8a1ff','Op bestelling','De heler',`Elke speldag een nieuwe lijst. Hoe meer je levert, hoe beter hij betaalt. Jij bent: ${HELER_LV[helerLv()].n}.`,`<em><b>${O.list.filter(o=>!o.done).length}</b> open</em><em>nieuw over ${bkDur(O.day+DAY_MS-now())}</em>${od?`<em class="up"><b>${od}</b> in je garage</em>`:''}`,'Bekijken ›',caArt('van',carSvg('van','#2f3640')))}
  </div>
  <button class="dex-bn" onclick="carMode='dex';render();window.scrollTo({top:0,behavior:'smooth'})"><span><span class="label">Collectie en kansen</span><b>${CARS.filter(m=>((S.carDex||{})[m.id]||[0,0])[1]>0).length} van de ${CARS.length} modellen gestolen</b><small>Bekijk per model hoe groot de kans is en wat hij waard is</small></span><i>›</i></button>`}
 function carBack(t){return `<div class="vb-bar"><button class="vb-back" onclick="carMode=null;carSaleIdx=null;carGot=null;carFresh=null;render()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Terug naar auto's</span></button><h2>${t}</h2></div>`}
@@ -219,10 +239,11 @@ Object.assign(act,{
  carSloop(i){const c=S.cars[i];if(!c||!S.sloop)return;const a=Math.round(c.v*SLOOP_K);S.cars.splice(i,1);carSaleIdx=null;S.cash+=a;addZwart(a);SFX.chip();toast(`${c.n} gesloopt: ${fmt(a)} zwart voor de onderdelen`,'ok');log(`${c.n} gesloopt (${fmt(a)} zwart)`,'info');save();render()},
  sloopAll(){if(!S.sloop||!S.cars.length)return;const a=Math.round(S.cars.reduce((x,c)=>x+c.v,0)*SLOOP_K);const n=S.cars.length;S.cars=[];carSaleIdx=null;S.cash+=a;addZwart(a);SFX.big();toast(`${n} auto's gesloopt: ${fmt(a)} zwart`,'ok');log(`${n} auto's gesloopt (${fmt(a)} zwart)`,'info');save();render()},
  carOrder(i,ci){const O=carOrders(),o=O.list[i];if(!o||o.done)return;const at=ci!=null&&S.cars[ci]&&S.cars[ci].id===o.id?ci:S.cars.findIndex(c=>c.id===o.id);if(at<0)return;const c=S.cars.splice(at,1)[0];
-  const pay=Math.round(c.v*o.k/10)*10,cr=2+Math.floor(carTier(CARS.find(m=>m.id===o.id)||{d:1})/2);o.done=1;S.cash+=pay;addZwart(pay);S.cred+=cr;S.stats.orders=(S.stats.orders||0)+1;
-  toast(`${c.n} afgeleverd bij de heler: +${fmt(pay)} · +${cr} cred`,'lvl');log(`Bestelling: ${c.n} afgeleverd (+${fmt(pay)})`,'ok');save();render()},
+  const lv0=helerLv(),L=HELER_LV[lv0],pay=Math.round(c.v*o.k/10)*10,w=Math.round(pay*(L.wit||0)),cr=2+Math.floor(carTier(CARS.find(m=>m.id===o.id)||{d:1})/2)+(o.spoed?3:0);o.done=1;S.cash+=pay;addZwart(pay-w);S.cred+=cr;S.stats.orders=(S.stats.orders||0)+1;helerN();S.heler.n++;
+  const up=helerLv()>lv0;toast(`${c.n} afgeleverd bij de heler: +${fmt(pay)}${w?' ('+fmt(w)+' wit)':''} · +${cr} cred`+(up?` · je bent nu ${HELER_LV[helerLv()].n}!`:''),'lvl');if(up)log('De heler: je bent nu '+HELER_LV[helerLv()].n+' ('+HELER_LV[helerLv()].p+')','ok');log(`Bestelling: ${c.n} afgeleverd (+${fmt(pay)})`,'ok');save();render()},
  carGotGo(m){carFresh=m==='garage'&&carGot?carGot.car:null;carGot=null;carSaleIdx=null;carMode=m;if(!m)S.carFind=null;render();window.scrollTo(0,0);
   if(carFresh)setTimeout(()=>{const el=document.querySelector('.gcar.is-new');if(el)el.scrollIntoView({behavior:'smooth',block:'center'})},60)},
+ carHelerAny(i){const L=HELER_LV[helerLv()],c=S.cars[i];if(!L.any||!c)return;const pay=Math.round(c.v*L.any/10)*10,w=Math.round(pay*L.wit);S.cars.splice(i,1);S.cash+=pay;addZwart(pay-w);SFX.chip();toast(`${c.n} aan de heler verkocht: +${fmt(pay)} (${fmt(w)} wit)`,'ok');log(`${c.n} aan de heler verkocht (${fmt(pay)})`,'ok');save();render()},
  carGotHeler(i){const g=carGot;if(!g)return;const ci=S.cars.indexOf(g.car);if(ci<0)return;carGot=null;act.carOrder(i,ci)},
  async searchCar(){carGot=null;if(carSearch||window.__chase||inJail()||cdLeft('car'))return;if(S.cars.length>=garageCap()){toast('Garage vol, verkoop eerst iets','bad');return}
   if(srchLeft()){toast('Je bent moe gelopen. Uitrusten: nog '+fmtClock(srchLeft()),'bad');return}
