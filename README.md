@@ -553,3 +553,42 @@ public/js/*.js       spelmodules; public/js/pages/ bevat één bestand per tabbl
 - **Beginnersdossier** op het dashboard (dashboard.js, `gidsHtml`): vijf stappen (eerste klus met een aanrader op laag risico, geld
   of XP; energie; eerste training; wit en zwart geld; volgende rang), op basis van de echte accountstatus, zonder beloningen.
   Alleen voor de eerste rangen; verbergen kan, terughalen met de knop onderaan het dashboard (`S.guide`).
+
+## Grote update: navigatie, woningen, auto's, kleding (november 2026)
+
+Backup van de stand ervoor: branch `backup/2026-11-01-voor-grote-update` (terugzetten = die branch naar `main`).
+
+- **Navigatie** (`ui.js` `navMe`, `NAV_GROUPS`): bovenaan een eigen blok **Jij** met een groot dashboardvak (rang, level,
+  XP-balk) en Ranglijst + Profiel ernaast. Daaronder Straat, Geld, Macht en Overig met grotere koppen in hun kleur; de sectie
+  waar je bent licht op met "hier".
+- **Dashboard** (`dashboard.js`): de rechterbalk verdwijnt op het dashboard (`body.no-rail`) en alles staat erin: naam en status,
+  rang met XP-balk en levelstappen, **Volgende rang** (wat die opent: klussen, woningen, trainingen, spullen, casino, huurmoorden,
+  rangbeloning; `rankUnlocks`) en de twee rangen daarna, vermogen met wit/zwart/bank, energie/gezondheid/hitte/familie met
+  knoppen, buffs, klaar voor je, top 5, aanbevolen klussen, jouw cijfers en het logboek. Op andere pagina's is de balk er weer.
+- **Huizenmarkt** (`data.js` `HOUSES`, `pages/woningen.js`, `verblijf.js`): 12 woningen (2 per soort, Landgoed in Het Gooi
+  vanaf Peetvader). Prijzen €6.500 tot €3,9 mln (penthouses €850.000 tot €1,8 mln). **Kopen**: blijft van jou, ook als je
+  verhuist, en stijgt per speldag in waarde (kraakpand ±0,12%, villa ±0,8%), tot een maximum (kraakpand +12%, landgoed +55%).
+  Verkopen bij **Bezit → Woningen** (−5% makelaar, geld naar de bank). Bestaande woningen tellen tegen de oude prijs.
+  **Huren**: €70 tot €13.000 per speldag (penthouse €4.500–€7.000). Eerste speldag bij het huren, daarna elke 4 uur automatisch
+  van de bank en anders van je wit geld (`rentTick`, met een teller per speldag: offline wordt het ingehaald, niets dubbel).
+  Lukt het niet: **achterstand** met zichtbare termijn; na 7 speldagen (28 uur) **uitzetting** naar je beste eigen woning of
+  onder de brug, spullen die niet passen naar de opslag. De schuld blijft staan en wordt verrekend zodra er geld is; tot dan
+  kun je niets huren. Verhuizen naar een andere woning beëindigt de huur. Woningwaarde telt mee in je vermogen (ook op de server).
+- **Auto's** (`data.js` `CARS`): waardes per zeldzaamheid omhoog (gewoon ×1,25 tot legendarisch ×3,4, mythisch ×4) en 6
+  exclusieve auto's (918 Spyder, P1, Spectre, LaFerrari, Huayra, AMG One). Iets meer kans op zeldzame vondsten (`FIND_TIER`).
+- **De heler** (`autos.js` `HELER_LV`): 5 niveaus op basis van geleverde auto's (Kennis, Vaste klant 5, Partner 15, Rechterhand
+  35, Compagnon 70): meer bestellingen, hogere bedragen, deels wit geld, een dagelijkse spoedorder ×3 en als Compagnon neemt hij
+  elke auto aan voor ×1,1. Elke speldag een nieuwe lijst met een lopende afteller.
+- **Bank**: beleggen en deposito's alleen van de spaarrekening; alle uitbetalingen gaan naar de rekening.
+- **Kleding** (`look.js`): 23 nieuwe stukken (108 in totaal) en 2 nieuwe sets: **Tactisch** (kans, ontsnappen, vluchten) en
+  **Nachtvlinder** (kortere wachttijd, XP). Paren met dezelfde prijs en een ander voordeel. Nieuwe stukken worden getekend met
+  een vaste vorm per soort en eigen kleuren (`look` in `OUTFITS`). **Kledingkast** (`fitWardrobe`): personage in het midden met de
+  zes plekken eromheen, per plek je eigen stukken, setbanner (`fitSetHud`) en per stuk wat er verandert als je het aantrekt
+  (`fitDiff`, inclusief setbonussen). In de winkels: kop met de straat, filter Alles/Te koop/In bezit en een knop naar je kast.
+- **Ontspannen** is een eigen pagina (`#relax`) naast Training; `#ontspannen` en `#trainen` blijven werken.
+- **Rondleiding**: stappen voor het dashboardblok, de huizenmarkt, Trainen en Ontspannen apart (15 stappen).
+- **Families**: banner per familie met of je erbij kunt, stappenplan, filter (Alle/Kan je bij/Nog niet) en snelle knoppen
+  naar missies, grote klus, de stad en andere families.
+- **Politiebureau**: nieuwe isometrische tekening (drie verdiepingen, POLITIE-band, ingang met blauwe lamp, mast met zwaailicht,
+  helikopterplatform, vleugel met garage, vlag, lantaarns en een politieauto); "Sleep om te draaien" is weg.
+- **Ranglijst**: jouw plek met afstand tot de volgende en voorsprong op de plek erachter; vermogen telt woningen mee.

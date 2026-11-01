@@ -146,3 +146,7 @@
 .wd-item .fit-diff{margin-top:6px}
 .wd-stt b{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .wd-item .fit-th{align-self:start}
+.wd-stt b{-webkit-line-clamp:unset;display:block;overflow:visible}
+.fit-worn b{white-space:normal;overflow:visible;text-align:right;overflow-wrap:anywhere}
+.fit-worn b{text-overflow:clip}
+.wd-stt b{text-overflow:clip;white-space:normal;overflow-wrap:anywhere}

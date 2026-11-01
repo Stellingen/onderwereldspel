@@ -3124,3 +3124,7 @@ a.dv:hover{box-shadow:inset 0 0 0 1px var(--line2)}
 .lb-gap{display:flex;flex-direction:column;gap:5px}.lb-gap>i{display:block;height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}.lb-gap>i>i{display:block;height:100%;background:linear-gradient(90deg,#c25a10,var(--acc))}
 .lb-gap small{font-family:var(--f-mono);font-size:11px;color:var(--mute)}
 .lb2 tr.me td{background:rgba(255,122,26,.08)}.lb2 tr.me td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
+.nd-t small{white-space:normal;overflow:visible;line-height:1.25}
+.du-later span{white-space:normal;overflow:visible}
+.ds-g{grid-template-columns:repeat(auto-fill,minmax(min(132px,100%),1fr))}
+.ds-g b{white-space:normal;overflow:visible;font-size:20px;overflow-wrap:anywhere}.ds-g span{overflow-wrap:anywhere}
