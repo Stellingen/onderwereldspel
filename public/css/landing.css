@@ -738,3 +738,8 @@ button,.btn,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-to
 }
 /* beste klus: de buit (twee bedragen) krijgt de breedste kolom, zodat hij niet tegen de kans aan loopt */
 .b-best .b-kv{grid-template-columns:minmax(0,1.7fr) minmax(0,.75fr) minmax(0,.75fr)}
+/* 20 rangen: namen om en om hoog en laag, zodat ze niet over elkaar vallen */
+.line{height:142px}
+.stop.alt span{margin-top:40px}
+.stop span{font-size:12.5px;letter-spacing:.02em}
+@media (max-width:760px){.line{min-width:1500px}}

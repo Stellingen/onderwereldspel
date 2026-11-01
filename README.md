@@ -26,7 +26,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   (indexering, rich results, previews op sociale media) is nog niet gedaan.
 - **Spel** (`/game.html`) alleen voor ingelogde spelers; voortgang wordt opgeslagen in MySQL
 - **Ranglijst** met echte spelers en rivalen uit de stad
-- **72 misdaden** over 12 rangen (zes per rang), met energie (1 punt per 12 s, ook in het casino of de cel; uit de cel kom je met minstens +4% van je max per minuut, dus 5 minuten = +20%) zodat je niet alles kunt speedrunnen.
+- **72 misdaden** over 20 rangen (zes per rang), met energie (1 punt per 12 s, ook in het casino of de cel; uit de cel kom je met minstens +4% van je max per minuut, dus 5 minuten = +20%) zodat je niet alles kunt speedrunnen.
   Hoe hoger je rang, hoe meer elke klus oplevert: +6% buit per rang (Peetvader +66%), bovenop je familiebonus.
   **Levels binnen je rang**: elke rang heeft 5 levels (★ tot ★★★★★) op basis van je XP in die rang. Elk level geeft +3% buit
   en +1% op je passieve inkomen. Peetvader heeft eigen levels (100k, 150k, 225k, 340k en 500k XP). Je ziet je level in de
