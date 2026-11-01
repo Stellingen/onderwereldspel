@@ -16,6 +16,7 @@ function tick(){
     if(Math.random()<mins*6*(1+furnFx('hpRegen')))S.hp=Math.min(100,S.hp+1);
     if(typeof bankTick==='function')bankTick(mins);
     if(typeof rentTick==='function')rentTick();
+    if(typeof dlTick==='function')dlTick();
     if(typeof famDaily==='function')famDaily();
     S.npcs.forEach((n,i)=>{n.xp+=mins*(4+i*3)*(0.5+Math.random());n.cash+=mins*(30+i*60)*(Math.random()*2-0.3)})}
   // uit de cel (straf uitgezeten, borg betaald of ontsnapt): de tijd binnen telde als rust
@@ -62,7 +63,7 @@ setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderR
   if(wasJail&&!inJail()){toast('Je bent vrijgelaten');wasJail=false;render()}else if(inJail())wasJail=true;
   const focusIn=document.activeElement&&document.activeElement.tagName==='INPUT';
   // pagina's met aftellers: alleen bijwerken als er iets veranderd is, en niet midden in het scrollen (telefoon)
-  if(!focusIn&&!spinning&&['crimes','hits','jail','politie','dash','skills','relax','bank','biz','shop','fam','profiel'].includes(page)&&!window.__chase&&!userBusy()){const y=window.scrollY;if(setHTML($('#view'),crumbHtml()+V[page]())&&y&&Math.abs(window.scrollY-y)>2)window.scrollTo(0,y)}
+  if(!focusIn&&!spinning&&['crimes','werk','hits','jail','politie','dash','skills','relax','bank','biz','shop','fam','profiel'].includes(page)&&!window.__chase&&!userBusy()){const y=window.scrollY;if(setHTML($('#view'),crumbHtml()+V[page]())&&y&&Math.abs(window.scrollY-y)>2)window.scrollTo(0,y)}
 },1000);
 render();renderTicker();
 // een ontsnapping die werd afgebroken (verversen, venster dicht) telt als betrapt
