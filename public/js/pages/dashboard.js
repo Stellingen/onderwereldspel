@@ -39,7 +39,7 @@ function gidsMode(m){gidsS().mode=m;save();render()}
 function rankUnlocks(ri){const U=[],add=(ic,t,s)=>U.push({ic,t,s});if(!RANKS[ri])return U;
  const cr=CRIMES.filter(c=>c.r===ri);if(cr.length)add('crimes',cr.length===1?cr[0].n:cr.length+' nieuwe klussen',cr.length>1?cr.slice(0,3).map(c=>c.n).join(', ')+(cr.length>3?'…':''):'nieuwe klus');
  TRAININGS.filter(t=>(t.r||0)===ri&&ri>0).forEach(t=>add('skills',t.n,'nieuwe training · '+t.place));
- (typeof HOMES!=='undefined'?HOMES:[]).filter(h=>h.r===ri&&ri>0).forEach(h=>add('verblijf',h.n,'woning · '+h.place));
+ (typeof HOUSES!=='undefined'?HOUSES:[]).filter(h=>h.r===ri&&ri>0).forEach(h=>add('verblijf',h.n,'woning · '+h.place+' · '+fmt(h.p)));
  (typeof GEAR!=='undefined'?GEAR:[]).filter(g=>g.r===ri&&ri>0).slice(0,3).forEach(g=>add('shop',g.n,'te koop'));
  if(typeof CAS_MIN_R!=='undefined'&&ri===CAS_MIN_R)add('casino','Casino open','tafels, Mines, Hoogvlieger, Dubbel of niks');
  if(typeof CAS_SLOT_R!=='undefined'&&ri===CAS_SLOT_R)add('casino','Slots open','Kluiskraker, Visdief, Suikerbaron');
@@ -95,7 +95,7 @@ V.dash=()=>{
     ${vit('heat','Politie-hitte',S.heat+'%',S.heat,S.heat>30?hc:'var(--mute)',S.heat>60?'politie let op':S.heat>30?'lauw':'koel',`<button class="btn ghost sm" onclick="act.bribe()" ${S.heat<=0?'disabled':''}>Omkopen · ${fmt(bribeCost())}</button>`)}
     <a class="card dv fam" href="#fam"><div class="label">Familie</div><b style="color:${F?F.col:'var(--faint)'}">${F?esc(F.n):'Geen'}</b><small>${F?'naar je familie':'sluit je aan'}</small><span class="btn ghost sm">${F?'Bekijken':'Families'} ›</span></a>
    </div>
-   <div class="d-buffs"><span>Straatcredit <b style="color:var(--violet)">${S.cred}</b></span>${bl?`<span>Buit <b style="color:var(--green)">+${bl}%</b> ${fmtClock(S.buffs.loot.until-now())}</span>`:''}${fp?`<span>Focus <b style="color:#ff6b7c">+${fp}%</b>${buffFocus()?' '+fmtClock(S.buffs.focus.until-now()):''}</span>`:''}${lk?`<a href="#casino">Geluk <b style="color:#f2c230">+${Math.round(lk*100)}%</b> ${fmtClock(luckLeft())}</a>`:''}<span>Woning <b>${home().n}</b></span></div>
+   <div class="d-buffs"><span>Straatcredit <b style="color:var(--violet)">${S.cred}</b></span>${bl?`<span>Buit <b style="color:var(--green)">+${bl}%</b> ${fmtClock(S.buffs.loot.until-now())}</span>`:''}${fp?`<span>Focus <b style="color:#ff6b7c">+${fp}%</b>${buffFocus()?' '+fmtClock(S.buffs.focus.until-now()):''}</span>`:''}${lk?`<a href="#casino">Geluk <b style="color:#f2c230">+${Math.round(lk*100)}%</b> ${fmtClock(luckLeft())}</a>`:''}<span>Woning <b>${house().n}</b></span></div>
    <section class="card d-todo"><h3>Klaar voor je${td.length?` <small>${td.length}</small>`:''}</h3>${td.length?`<div class="todos">${todoHtml(td)}</div>`:'<p class="sub" style="margin:4px 0 0">Alles is gedaan. Wacht tot je energie weer vol is of kijk in het casino.</p>'}</section>
    <section class="card d-top"><h3>Ranglijst <small>#${pos} van ${lb.length}</small></h3>
     <ol class="rtop">${lb.slice(0,5).map((p,i)=>`<li class="${p.me?'me':''}"><span>${i+1}</span><b><button class="lb-name" onclick="${p.me?(window.__USER__?`pvShow('${window.__USER__}')`:''):p.u?`pvShow('${p.u}')`:`pvNpc(${p.npc})`}">${p.n}</button></b><em>${RANKS[rankIdx(p.xp)][0]}</em></li>`).join('')}${pos>5?`<li class="me gap"><span>${pos}</span><b>${lb[pos-1].n}</b><em>${RANKS[ri][0]}</em></li>`:''}</ol>

@@ -28,6 +28,9 @@ function load(){
     if(oldGear){d.gear=d.gear||{};let back=0;GEAR_CATS.forEach(c=>{const own=GEAR.filter(g=>g.cat===c.id&&d.gear[g.id]);own.slice(0,-1).forEach(g=>{back+=g.p;delete d.gear[g.id]})});if(back){d.cash+=back;d._gearBack=back}d.gearV=2}d.inv=d.inv||{};d.furn=d.furn||{};d.carDex=d.carDex||{};
     // oude saves: aantal bedrijven per soort → vestigingen op level 1
     if(oldBiz){d.biz2={};Object.entries(d.biz||{}).forEach(([k,n])=>{if(n>0)d.biz2[k]=Array(n).fill(1)})}
+    // huizenmarkt: je oude woning is van jou, gewaardeerd op wat je er toen voor betaalde
+    if(!d.owned){d.owned={};if(d.home&&d.home!=='brug'&&HOME_OLD_P[d.home])d.owned[d.home]={b:HOME_OLD_P[d.home],t:Date.now(),xp:1}}
+    if(d.home&&!HOUSES.find(h=>h.id===d.home))d.home='brug';
     if(window.__USER__)d.name=window.__USER__;return d}
   const f=fresh();f.trainV=2;if(window.__USER__)f.name=window.__USER__;return f}
 let _pushTimer=null,_lastPush=0,_retry=0,_inFlight=false,_pushAgain=false;
@@ -39,7 +42,7 @@ function pushState(beacon){
   if(_inFlight&&!beacon){_pushAgain=true;return Promise.resolve()}
   S._dev=DEV_ID;if(!S.savedAt)S.savedAt=Date.now();
   if(!beacon)_inFlight=true;const done=()=>{if(beacon)return;_inFlight=false;if(_pushAgain){_pushAgain=false;clearTimeout(_pushTimer);_pushTimer=setTimeout(()=>pushState(),50)}};
-  const body=JSON.stringify({sid:window.__SID__||null,state:Object.assign({},S,{rankname:RANKS[rankIdx(S.xp)][0],bankExtra:typeof bankNet==='function'?Math.floor(bankNet()-S.bank):0})});
+  const body=JSON.stringify({sid:window.__SID__||null,state:Object.assign({},S,{rankname:RANKS[rankIdx(S.xp)][0],bankExtra:typeof bankNet==='function'?Math.floor(bankNet()-S.bank):0,homeVal:typeof homesVal==='function'?homesVal():0})});
   const again=()=>{if(beacon)return;clearTimeout(_pushTimer);_retry=Math.min(_retry+1,6);_pushTimer=setTimeout(()=>pushState(),Math.min(60000,2000*Math.pow(2,_retry)))};
   let pr=Promise.resolve();
   try{pr=fetch('/api/state',{method:'POST',keepalive:!!beacon&&body.length<60000,headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.__TOKEN__},body})
@@ -305,5 +308,8 @@ const EN_BASE=100,EN_REGEN_S=12; // 1 energie per 12 seconden (was 18), ook als 
 // In de cel rust je ook: je komt eruit met minstens 4% van je maximale energie per minuut erbij (5 minuten = +20%), nooit boven vol.
 const EN_JAIL=.04;
 // Maximale energie groeit met Conditie (sportschool): +5 per level
-const home=()=>HOMES.find(h=>h.id===((S&&S.home)||'brug'))||HOMES[0];
+// S.home = id uit HOUSES (de woning waar je woont); home() = de soort (HOMES) met rust, energie en plekken, house() = de woning zelf
+const houseOf=id=>HOUSES.find(h=>h.id===id)||HOUSES[0];
+const house=()=>houseOf((S&&S.home)||'brug');
+const home=()=>HOMES.find(h=>h.id===house().t)||HOMES[0];
 Object.defineProperty(window,'EN_MAX',{get:()=>EN_BASE+Math.round(SK.conditie.en*((S&&S.skills&&S.skills.conditie)||0))+((S&&S.home)?home().en:0)+((S&&S.furn)?furnFx('en'):0),configurable:true});

@@ -347,6 +347,25 @@ const codeShow=c=>c==='highroller'?'HIGH ROLLER':c.replace(/v\d+$/,'').toUpperCa
 const LIVE_CODES={lotto:1500,welkom:500,casino:5000,vip:20000,spinnetje:25000,jackpot:1000000,trainwreck:3000000,highroller:50000};
 
 // Verblijf: je begint onder de brug. Rusten vult je energie in `rest` seconden, maar alleen zolang je blijft.
+// Huizenmarkt: ±12 woningen. t = soort (HOMES hieronder: bepaalt rust, energie, plekken en het tafereel), p = koopprijs,
+// rent = huur per speldag (4 uur), r = vanaf welke rang, g = waardestijging per speldag, cap = hoogste waarde (× aankoopprijs).
+// Hoe beter de woning, hoe sneller hij in waarde stijgt. Verkopen kost 5% makelaarskosten.
+const HOUSES=[
+ {id:'brug',t:'brug',n:'Onder de brug',place:'Berlagebrug',d:'Een vochtig matras, een vuurton en het geraas van de tram boven je hoofd.',p:0,rent:0,r:0,g:0,cap:1},
+ {id:'kraak',t:'kraak',n:'Kraakpand',place:'Amsterdam-West',d:'Een leegstaand kantoor met een kapotte lift. Je hebt een deur die op slot kan.',p:6500,rent:70,r:2,g:.0012,cap:1.12},
+ {id:'boot',t:'kraak',n:'Lekke woonboot',place:'Houthavens',d:'Een roestige woonboot aan een vergeten steiger. Bij harde wind deint je bed mee.',p:11000,rent:110,r:2,g:.0014,cap:1.14},
+ {id:'kamer',t:'kamer',n:'Zolderkamer',place:'De Pijp',d:'Zestien vierkante meter, een eigen douche en een huisbaas die geen vragen stelt.',p:38000,rent:290,r:4,g:.0025,cap:1.22},
+ {id:'studio',t:'kamer',n:'Studio',place:'Oost',d:'Een studio boven een kapperszaak. Klein, maar alles is van jou.',p:55000,rent:390,r:4,g:.0028,cap:1.25},
+ {id:'gracht',t:'gracht',n:'Grachtenappartement',place:'Keizersgracht',d:'Hoge plafonds, uitzicht op het water. Niemand verwacht hier een crimineel.',p:260000,rent:1500,r:6,g:.0045,cap:1.32},
+ {id:'jordaan',t:'gracht',n:'Herenhuisetage',place:'Jordaan',d:'De bel-etage van een herenhuis uit 1680, met een tuin aan de achterkant.',p:340000,rent:1900,r:6,g:.005,cap:1.35},
+ {id:'penthouse',t:'penthouse',n:'Penthouse',place:'Zuidas',d:'Bovenste verdieping, eigen lift, bewaking in de lobby.',p:850000,rent:4500,r:8,g:.0065,cap:1.42},
+ {id:'ijpent',t:'penthouse',n:'Penthouse IJ-oever',place:'Amsterdam-Noord',d:'Glazen wanden boven het IJ. Je ziet de pont, de stad en iedereen die eraan komt.',p:1250000,rent:6000,r:8,g:.007,cap:1.45},
+ {id:'omval',t:'penthouse',n:'Toppenthouse',place:'De Omval',d:'De top van de hoogste woontoren van de stad, met een dakterras rondom.',p:1800000,rent:7000,r:9,g:.0075,cap:1.48},
+ {id:'villa',t:'villa',n:'Villa',place:'Wassenaar',d:'Een hek, camera\'s, een zwembad en personeel. Zo slaapt een peetvader.',p:2600000,rent:9000,r:10,g:.008,cap:1.5},
+ {id:'gooi',t:'villa',n:'Landgoed',place:'Het Gooi',d:'Een landhuis achter een bos, met een oprijlaan van vierhonderd meter en een eigen helikopterplatform.',p:3900000,rent:13000,r:11,g:.0085,cap:1.55}];
+// oude woningprijzen (vóór de huizenmarkt): wat bestaande spelers ervoor betaalden, voor de waarde van hun woning
+const HOME_OLD_P={kraak:2500,kamer:15000,gracht:80000,penthouse:400000,villa:1500000};
+const HOUSE_FEE=.05;
 const HOMES=[
  // rest = seconden rusten, cd = wachttijd tussen rustbeurten (s), en = extra max. energie, hp = gezondheid per rustbeurt, heat = minder hitte per rustbeurt,
  // slots = hoeveel spullen er staan (zie FURN)

@@ -154,7 +154,7 @@ function checkJump(uid, prev, s, dt) {
   try {
     const ps = prev.state ? JSON.parse(prev.state) : null; if (!ps || ps.__reset) return;
     const st = s.stats || {}, pst = ps.stats || {};
-    const net = (+s.cash || 0) + (+s.bank || 0) + Math.max(0, +s.bankExtra || 0), pnet = +prev.networth || 0;
+    const net = (+s.cash || 0) + (+s.bank || 0) + Math.max(0, +s.bankExtra || 0) + Math.max(0, +s.homeVal || 0), pnet = +prev.networth || 0;
     const won = Math.max(0, (+st.won || 0) - (+pst.won || 0)), kas = Math.max(0, (+ps.kas || 0) - (+s.kas || 0));
     const unexplained = net - pnet - won - kas;
     if (unexplained > Math.max(75e6, pnet * 3) && !prev.recentCode)
@@ -209,7 +209,7 @@ app.post('/api/state', auth, async (req, res) => {
     if (cur.length) checkJump(req.user.id, cur[0], s, +cur[0].dt || 1);
     const json = JSON.stringify(s);
     const xp = +s.xp || 0;
-    const networth = Math.floor((+s.cash || 0) + (+s.bank || 0) + Math.max(0, +s.bankExtra || 0)); // bankExtra = deposito's + beleggingen
+    const networth = Math.floor((+s.cash || 0) + (+s.bank || 0) + Math.max(0, +s.bankExtra || 0) + Math.max(0, +s.homeVal || 0)); // bankExtra = deposito's + beleggingen, homeVal = woningen
     const rankname = String(s.rankname || 'Rookie').slice(0, 40);
     const day = +s.day || 1;
     await db.q(

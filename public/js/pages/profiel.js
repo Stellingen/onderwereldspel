@@ -21,7 +21,7 @@ V.profiel=()=>{
      <a href="#shop"><span class="label">Uitrusting</span><b>+${gearBonus()}%</b><small>slaagkans · vuurkracht ${gearVk()}</small></a>
      <a href="#biz"><span class="label">Bezit</span><b>${fmt(income())}</b><small>per speldag (4 uur)</small></a>
      <a href="#bank"><span class="label">Bank</span><b>${fmt(bankNet())}</b><small>sparen, deposito's, beleggen</small></a>
-     <a href="#verblijf"><span class="label">Woning</span><b>${home().n}</b><small>${home().place}</small></a>
+     <a href="#verblijf"><span class="label">Woning</span><b>${house().n}</b><small>${house().place}</small></a>
      <a href="#crimes"><span class="label">Buit</span><b>×${lootMult().toLocaleString('nl-NL',{maximumFractionDigits:2})}</b><small>op elke klus</small></a>
     </div>
    </div>
@@ -80,7 +80,7 @@ function pvShow(name){if(!name)return;pvOpen('<div class="pv-load">Profiel laden
   if(j.private){pvOpen(`<div class="pv-head solo">${pvHead(j.name,j.xp,tagH)}</div><div class="pv-lock">${pvLock}<b>Dit profiel is privé</b><span>${esc(j.name)} laat alleen de naam en de rang zien.</span></div>`);return}
   const p=j.p||{},since=j.since?new Date(j.since).toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'}):'';
   const F=p.family?FAMILIES.find(f=>f.id===p.family):null;let fr='';if(F&&typeof FAM_RANKS!=='undefined'){const t=FAMILIES.indexOf(F);let r=0;FAM_RANKS.forEach((x,i)=>{if(!x[2]&&(p.famEer||0)>=Math.round(x[1]*(1+t*.5)))r=i});const top=FAM_RANKS.findIndex(x=>x[2])-1;if(top>=0&&r>=top&&p.famLead)r=Math.min(FAM_RANKS.length-1,top+p.famLead);fr=FAM_RANKS[r][0]}
-  const H=typeof HOMES!=='undefined'&&p.home?HOMES.find(x=>x.id===p.home):null,st=p.stats||{},net=(j.networth||0);
+  const H=typeof HOMES!=='undefined'&&p.home?(HOUSES.find(x=>x.id===p.home)||HOMES.find(x=>x.id===p.home)):null,st=p.stats||{},net=(j.networth||0);
   const note=j.own?`<div class="pv-note">${j.public?'Zo zien andere spelers je profiel.':'Je profiel is privé: anderen zien alleen je naam en rang. Hieronder zie je wat ze zouden zien als je het openbaar zet.'} <button class="pv-tg" onclick="pvSetPublic(${!j.public});pvClose()">${j.public?'Zet op privé':'Zet openbaar'}</button></div>`
    :j.admin&&!j.public?`<div class="pv-note adm">Privé profiel. Je ziet het omdat je beheerder bent.</div>`:'';
   const tile=(l,v,s_,c)=>`<div class="pv-t"><span class="label">${l}</span><b${c?` style="color:${c}"`:''}>${v}</b>${s_?`<small>${s_}</small>`:''}</div>`;

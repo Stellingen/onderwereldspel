@@ -597,7 +597,7 @@ Object.assign(act,{
  buyFurn(id,src){const f=FURN.find(x=>x.id===id);if(!f||S.furn[id]||(S.furnStore&&S.furnStore[id]))return;
   if(!furnFits(f,furnHi())){toast(furnWhy(f),'bad');return}if(!furnFree()){toast('Geen plek meer. Berg eerst iets op.','bad');return}
   if(src==='bank'){if(S.bank<f.p){toast('Niet genoeg op de bank','bad');return}S.bank-=f.p;typeof bkTx==='function'&&bkTx('pay',-f.p,'Inrichting: '+f.n)}else{if(S.cash<f.p){toast('Niet genoeg contant geld','bad');return}S.cash-=f.p}S.furn[id]=1;try{SFX.pop()}catch(e){}window._vbNew=id;
-  toast(f.n+' staat in je '+home().n.toLowerCase()+'.','lvl');log(f.n+' gekocht voor je woning ('+fmt(f.p)+(src==='bank'?', van de bank':'')+')','ok');addXp(Math.floor(f.p/500));save();render()},
+  toast(f.n+' staat in je '+house().n.toLowerCase()+'.','lvl');log(f.n+' gekocht voor je woning ('+fmt(f.p)+(src==='bank'?', van de bank':'')+')','ok');addXp(Math.floor(f.p/500));save();render()},
  storeFurn(id){if(!S.furn[id])return;delete S.furn[id];S.furnStore=S.furnStore||{};S.furnStore[id]=1;try{SFX.click()}catch(e){}save();render()},
  placeFurn(id){const f=FURN.find(x=>x.id===id);if(!f||!S.furnStore||!S.furnStore[id])return;if(!furnFits(f,furnHi())){toast(furnWhy(f),'bad');return}
   if(!furnFree()){toast('Geen plek meer. Berg eerst iets op.','bad');return}delete S.furnStore[id];S.furn[id]=1;try{SFX.pop()}catch(e){}window._vbNew=id;save();render()},
