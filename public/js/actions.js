@@ -1,6 +1,6 @@
 // Alle acties (klikken) en de politiecontroles
 const act={
- crime(id){const c=CRIMES.find(x=>x.id===id);if(inJail()||cdLeft(id)||rankIdx(S.xp)<c.r)return;if(S.energy<c.en){toast('Te moe. Je hebt '+c.en+' energie nodig','bad');return}S.energy-=c.en;S.cd[id]=now()+crimeCd(c);
+ crime(id){const c=CRIMES.find(x=>x.id===id);if(inJail()||cdLeft(id)||rankIdx(S.xp)<c.r)return;if(S.energy<crEn(c)){toast('Te moe. Je hebt '+crEn(c)+' energie nodig','bad');return}S.energy-=crEn(c);S.cd[id]=now()+crimeCd(c);
   const roll=rnd(1,100),ch=chance(c);
   if(roll<=ch){const g=Math.floor(rnd(c.min,c.max)*lootMult()*mastLoot(c.id));S.cash+=g;addZwart(g);S.stats.crimes++;
    const ml0=mastLv(c.id);S.mast=S.mast||{};S.mast[c.id]=(S.mast[c.id]||0)+1;const ml1=mastLv(c.id);

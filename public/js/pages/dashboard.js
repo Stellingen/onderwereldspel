@@ -4,7 +4,7 @@
 // S.guide = {off, en, wz, mode}: off = verborgen, en/wz = uitleg over energie en wit/zwart geld gelezen, mode = aanrader op geld/xp/risico.
 const gidsS=()=>S.guide||(S.guide={});
 function gidsPick(mode){const ri=rankIdx(S.xp),av=CRIMES.filter(c=>c.r<=ri);if(!av.length)return null;
- const sc=c=>mode==='geld'?chance(c)/100*(c.min+c.max)/2/c.en:mode==='xp'?chance(c)/100*(c.xp||1)/c.en:chance(c)-c.en*.01;
+ const sc=c=>mode==='geld'?chance(c)/100*(c.min+c.max)/2/crEn(c):mode==='xp'?chance(c)/100*(c.xp||1)/crEn(c):chance(c)-crEn(c)*.01;
  return av.slice().sort((a,b)=>sc(b)-sc(a))[0]}
 function gidsSteps(){const G=gidsS(),ri=rankIdx(S.xp),nxt=RANKS[ri+1],sk=Object.values(S.skills||{}).some(v=>v>0);
  return [{k:'klus',done:(S.stats&&S.stats.crimes||0)>=1,t:'Doe je eerste klus',href:'#crimes'},
@@ -19,7 +19,7 @@ function gidsHtml(){const G=gidsS(),ri=rankIdx(S.xp),st=gidsSteps(),n=st.filter(
  const mode=G.mode||'risico',c=gidsPick(mode),cur=st.find(x=>!x.done);
  const body={klus:c?`<p>Elke klus kost energie en kan mislukken: dan kun je de cel in. Begin met iets dat bij je past.</p>
    <div class="gd-modes" role="group" aria-label="Aanrader op">${[['risico','Laag risico'],['geld','Meeste geld'],['xp','Meeste XP']].map(([m,l])=>`<button class="${mode===m?'on':''}" aria-pressed="${mode===m}" onclick="gidsMode('${m}')">${l}</button>`).join('')}</div>
-   <div class="gd-pick"><b>${c.n}</b><span>${chance(c)}% kans · ${c.en} energie · ${fmt(c.min*lootMult())}–${fmt(c.max*lootMult())}</span><em>${mode==='geld'?'Levert per energiepunt het meeste geld op.':mode==='xp'?'Levert per energiepunt de meeste ervaring op.':'De hoogste kans van wat je nu kunt doen.'} Mislukt hij, dan kun je opgepakt worden.</em></div>`:'',
+   <div class="gd-pick"><b>${c.n}</b><span>${chance(c)}% kans · ${crEn(c)} energie · ${fmt(c.min*lootMult())}–${fmt(c.max*lootMult())}</span><em>${mode==='geld'?'Levert per energiepunt het meeste geld op.':mode==='xp'?'Levert per energiepunt de meeste ervaring op.':'De hoogste kans van wat je nu kunt doen.'} Mislukt hij, dan kun je opgepakt worden.</em></div>`:'',
   en:`<p>Klussen kosten energie. Die komt vanzelf terug (1 punt per ${EN_REGEN_S} seconden, ook als je in het casino zit of vastzit). Thuis rusten gaat veel sneller.</p>`,
   train:`<p>Een training maakt je blijvend beter, bijvoorbeeld meer kans bij klussen of sneller wegrennen. Daarna wacht je even tot de volgende sessie.</p>`,
   wz:`<p>Klussen leveren <b class="z">zwart</b> geld op. De bank en je zaken nemen alleen <b class="w">wit</b> geld: was het eerst wit. Word je gepakt met meer dan ${fmt(typeof seizeKeep==='function'?seizeKeep():10000)} zwart op zak, dan neemt de politie de rest mee.</p>`,
@@ -42,7 +42,7 @@ V.dash=()=>{
   const all=[...S.npcs.map(n=>n.xp),S.xp].sort((a,b)=>b-a);const pos=all.indexOf(S.xp)+1;
   const h=new Date().getHours(),greet=h<6?'Goedenacht':h<12?'Goedemorgen':h<18?'Goedemiddag':'Goedenavond';
   const full=Math.max(0,Math.ceil((EN_MAX-S.energy)*EN_REGEN_S/60));
-  const recs=CRIMES.filter(c=>c.r<=ri).map(c=>({c,ev:chance(c)/100*(c.min+c.max)/2/c.en})).sort((a,b)=>b.ev-a.ev).slice(0,3);
+  const recs=CRIMES.filter(c=>c.r<=ri).map(c=>({c,ev:chance(c)/100*(c.min+c.max)/2/crEn(c)})).sort((a,b)=>b.ev-a.ev).slice(0,3);
   const nextC=CRIMES.find(c=>c.r>ri);
   const meter=(label,val,max,col,sub)=>`<div class="card kpi"><div class="label">${label}</div><div class="big" style="color:${col}">${val}</div>
     <div class="bar"><i style="width:${Math.max(0,Math.min(100,max))}%;background:${col}"></i></div><div class="kpi-sub">${sub}</div></div>`;
@@ -77,8 +77,8 @@ V.dash=()=>{
     <div class="bar"><i style="width:${(1-(pos-1)/all.length)*100}%;background:var(--violet)"></i></div><div class="kpi-sub">Bekijk de ranglijst →</div></a>
    <section class="card d-todo"><h3>Klaar voor je</h3>${(()=>{const td=todoItems();return td.length?`<div class="todos">${todoHtml(td)}</div>`:'<p class="sub" style="margin:4px 0 0">Alles is gedaan. Wacht tot je energie weer vol is of kijk in het casino.</p>'})()}</section>
    <section class="card d-recs"><h3>Aanbevolen klussen</h3><p class="sub" style="margin:0 0 6px">Beste opbrengst per energiepunt voor jouw rang.</p>
-    ${recs.map(({c})=>{const left=cdLeft(c.id),ok=!inJail()&&!left&&S.energy>=c.en;return `<div class="d-rec"><div><b>${c.n}</b><span>${fmt(c.min*lootMult())}–${fmt(c.max*lootMult())} · ${chance(c)}% kans · ${c.en} energie</span></div>
-     <button class="btn sm" onclick="act.crime('${c.id}')" ${ok?'':'disabled'}>${inJail()?'Vast':left?Math.ceil(left/1000)+'s':S.energy<c.en?'Te moe':'Doen'}</button></div>`}).join('')}
+    ${recs.map(({c})=>{const left=cdLeft(c.id),ok=!inJail()&&!left&&S.energy>=crEn(c);return `<div class="d-rec"><div><b>${c.n}</b><span>${fmt(c.min*lootMult())}–${fmt(c.max*lootMult())} · ${chance(c)}% kans · ${crEn(c)} energie</span></div>
+     <button class="btn sm" onclick="act.crime('${c.id}')" ${ok?'':'disabled'}>${inJail()?'Vast':left?Math.ceil(left/1000)+'s':S.energy<crEn(c)?'Te moe':'Doen'}</button></div>`}).join('')}
    </section>
    <section class="card d-stats"><h3>Statistieken</h3>
      <div class="row"><span>Familie</span><b style="color:${S.family?fam().col:'var(--mute)'}">${S.family?fam().n:'Geen'}</b></div>

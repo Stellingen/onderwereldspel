@@ -145,7 +145,8 @@ const furnIc=f=>{const k=Object.keys(f.fx)[0],m={restHp:'hp',hpRegen:'hp',docHp:
  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${FURN_IC[m]}</svg>`};
 // winkel: filter op wat een spul doet
 const FURN_CAT=[['all','Alles'],['hp','Gezondheid en rust'],['en','Energie'],['hide','Onderduiken en hitte'],['safe','Veiligheid'],['focus','Focus en vluchten']];
-const furnCat=f=>{const k=Object.keys(f.fx);return k.some(x=>['restHp','hpRegen','docHp','restCd','docCd'].includes(x))?'hp':k.some(x=>['en','enRegen'].includes(x))?'en':k.some(x=>['hideRate','hideRisk','heat'].includes(x))?'hide':k.includes('safe')?'safe':'focus'};
+// categorie = het eerste (belangrijkste) voordeel van een stuk
+const furnCat=f=>{const k=Object.keys(f.fx)[0];return ['restHp','hpRegen','docHp','restCd','docCd'].includes(k)?'hp':['en','enRegen'].includes(k)?'en':['hideRate','hideRisk','heat'].includes(k)?'hide':k==='safe'?'safe':'focus'};
 function vbShopHtml(){const hi=furnHi(),h=home(),used=furnPlaced().length,free=furnFree(),bank=vb.pay==='bank',have=bank?S.bank:S.cash,cf=vb.cat||'all',fc=L=>cf==='all'?L:L.filter(f=>furnCat(f)===cf);
  const placed=furnPlaced(),stored=FURN.filter(f=>S.furnStore&&S.furnStore[f.id]),buy=FURN.filter(f=>!S.furn[f.id]&&!(S.furnStore&&S.furnStore[f.id])&&furnFits(f,hi)),later=FURN.filter(f=>!S.furn[f.id]&&!(S.furnStore&&S.furnStore[f.id])&&hi<f.h);
  const card=(f,kind)=>{const why=furnWhy(f);let btn='';

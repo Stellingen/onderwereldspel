@@ -516,3 +516,13 @@ body.ba-lock{overflow:hidden}
 .bz-cat-in em.ok{color:var(--green);border-color:rgba(63,227,149,.4)}.bz-cat-in em.no{color:var(--mute);border-color:var(--line2)}
 .bz-shop .bz-cat.ex .bzb-grid{padding:12px 18px 18px}
 @container (max-width:560px){.bz-ctabs{grid-template-columns:repeat(2,minmax(0,1fr))}.bz-ctabs button{padding:10px}.bz-ctabs button b{font-size:14px}.bz-more{padding:12px 14px;gap:10px}.bz-more-t b{font-size:17px}}
+/* nieuwe coins */
+.bk-coins-h{margin-top:18px}
+.bk-coin .bk-f-m{gap:8px}
+.bk-cst{font-style:normal;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:99px;white-space:nowrap}
+.bk-cst.new{color:#1a1206;background:#ffd35a}
+.bk-cst.scam{color:#fff;background:var(--red)}
+.bk-cst.beurs{color:#04130b;background:var(--green)}
+.bk-coin.gone{opacity:.62}
+.bk-coin.gone.scam .bk-spark .l{stroke:var(--red)}
+.bk-coin.gone.scam{background:repeating-linear-gradient(135deg,rgba(255,61,82,.06) 0 10px,transparent 10px 20px),var(--panel)}

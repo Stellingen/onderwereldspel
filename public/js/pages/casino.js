@@ -8,7 +8,7 @@ function casBanView(){const L=czBanLeft(),t=typeof tier==='function'?tier():0;
   <div class="cas-ban-t"><span>Nog</span><b id="casBanT">${fmtClock(L)}</b></div>
   <small>${['Gewone spelers 30 minuten','VIP 20 minuten','High roller 10 minuten'][t]}. Daarna mag je terug en staat je verdenking weer op 0%. Met wit geld loopt de verdenking niet op, dat kun je verantwoorden.</small>
   <div class="cas-ban-b"><a class="btn ghost" href="#wit">Naar witwassen</a><a class="btn ghost" href="#dash">Naar je dashboard</a></div></div></section>`}
-const CAS_LIST=[['kluis','Kluiskraker'],['vis','Visdief'],['zoet','Zoete Buit'],['mines','Mines'],['avia','Hoogvlieger'],['bj','Blackjack'],['tcp','Three Card Poker','Poker'],['th',"Texas Hold'em","Hold'em"],['roulette','Roulette'],['coin','Dubbel of niks','Dubbel']];
+const CAS_LIST=[['kluis','Kluiskraker'],['vis','Visdief'],['zoet','Suikerbaron'],['mines','Mines'],['avia','Hoogvlieger'],['bj','Blackjack'],['tcp','Three Card Poker','Poker'],['th',"Texas Hold'em","Hold'em"],['roulette','Roulette'],['coin','Dubbel of niks','Dubbel']];
 const CAS_NAMES=Object.fromEntries(CAS_LIST.map(([k,n])=>[k,n]));
 const CAS_ICO_BACK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>';
 function casGameView(){

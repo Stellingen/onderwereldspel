@@ -4,7 +4,7 @@ window.COV=(()=>{
 const GAMES=[
  {id:'kluis',slug:'kluiskraker',n:'Kluiskraker',col:'#ff7a1a',kind:'Cluster-slot · 10 × 10',short:'Vijf gelijke symbolen die elkaar raken, ontploffen. Op dezelfde plek weer winst? Dan wordt dat vakje x2, x4, x8.',tags:['Max 5.000×','RTP ±92,5%']},
  {id:'vis',slug:'visdief',n:'Visdief',col:'#5ad1ff',kind:'Video-slot · 5 × 4',short:'Elke vis heeft een prijskaartje. Valt de Visdief erbij, dan pakt hij ze allemaal.',tags:['Max 10.000×','RTP ±92%']},
- {id:'zoet',slug:'zoete-buit',n:'Zoete Buit',col:'#ff4f9a',kind:'Snoepslot · 6 × 5',short:'Acht of meer van hetzelfde snoepje, waar ze ook liggen. In de bonus maken kauwgomballen je winst tot ×1.000 groter.',tags:['Max 5.000×','RTP ±95%']},
+ {id:'zoet',slug:'suikerbaron',n:'Suikerbaron',col:'#ff4f9a',kind:'Snoepslot · 6 × 5',short:'Acht of meer van hetzelfde snoepje, waar ze ook liggen. In de bonus maken kauwgomballen je winst tot ×1.000 groter.',tags:['Max 5.000×','RTP ±95%']},
  {id:'mines',slug:'mines',n:'Mines',col:'#3fe395',kind:'Durfspel · 5 × 5',short:'Vijfentwintig vakjes en jij kiest hoeveel bommen. Elk veilig vakje is meer waard. Stop op tijd.',tags:['Max 10.000×','RTP tot 99,2%']},
  {id:'avia',slug:'hoogvlieger',n:'Hoogvlieger',col:'#a9dcff',kind:'Vluchtspel',short:'Een vliegtuigje boven zee. Pluspunten duwen hem omhoog, bommen halen hem neer. Land op het dek.',tags:['Vlucht ligt vast','RTP ±87%']},
  {id:'bj',slug:'blackjack',n:'Blackjack',col:'#1fd17a',kind:'Kaarttafel',short:'Zo dicht mogelijk bij 21 zonder eroverheen. Blackjack betaalt 3 tot 2, de dealer pakt tot 17.',tags:['3 : 2','2 side bets']},

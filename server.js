@@ -366,6 +366,8 @@ app.get('/sitemap.xml', (req, res) => {
 // de voorpagina en zijn onderwerpen (de browser tekent ze; de server geeft de juiste titel en status mee)
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/')) return next();
+  // oude naam van de snoepslot (Zoete Buit heet nu Suikerbaron)
+  if (/^\/casino\/zoete-buit\/?$/i.test(req.path)) return res.redirect(301, '/casino/suikerbaron');
   const p = (req.path.replace(/\/+$/, '') || '/').toLowerCase(), m = routeMeta(p);
   if (!m) return next();
   if (p === '/') m.ld = HOME_LD;

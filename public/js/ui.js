@@ -159,7 +159,7 @@ const MS_FIND=[
  ['Ontspannen','Energie en gezondheid bijvullen','ontspannen','relax energie sauna massage spa'],
  ['Kluiskraker','Gokkast','casino:kluis','slot gokkast kluis loper bonus'],
  ['Visdief','Gokkast','casino:vis','slot gokkast vis vissen'],
- ['Zoete Buit','Gokkast','casino:zoet','slot gokkast snoep snoepjes lolly kauwgom zoet candy'],
+ ['Suikerbaron','Gokkast','casino:zoet','slot gokkast snoep snoepjes lolly kauwgom zoet candy suiker baron zoete buit'],
  ['Roulette','Tafelspel','casino:roulette','rood zwart tafel'],
  ['Blackjack','Kaartspel','casino:bj','21 kaarten eenentwintig'],
  ['Three Card Poker','Kaartspel','casino:tcp','poker kaarten'],
@@ -202,7 +202,7 @@ function mSheet(open){const sh=$('#msheet');if(!sh)return;if(open&&!sh.classList
 window.addEventListener('hashchange',()=>mSheet(false));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('ms-lock'))mSheet(false)});
 // Rechter zijbalk op brede schermen: dossier, snelle klus, logboek, top 5
-function bestCrime(){const ri=rankIdx(S.xp);return CRIMES.filter(c=>c.r<=ri).map(c=>({c,ev:chance(c)/100*(c.min+c.max)/2/c.en})).sort((a,b)=>b.ev-a.ev)[0].c}
+function bestCrime(){const ri=rankIdx(S.xp);return CRIMES.filter(c=>c.r<=ri).map(c=>({c,ev:chance(c)/100*(c.min+c.max)/2/crEn(c)})).sort((a,b)=>b.ev-a.ev)[0].c}
 // Wat staat er klaar? Voor het dashboard en de zijbalk. h = pagina of snelkoppeling (#trainen, #ontspannen)
 function todoItems(){const o=[],ri=rankIdx(S.xp);
  if(inJail())o.push({ic:'jail',t:'Je zit vast',s:'Borg betalen of ontsnappen',h:'jail',c:'var(--red)'});
@@ -261,7 +261,7 @@ function statusTag(){const jt=Math.ceil((S.jailUntil-now())/1000);return inJail(
 function renderRail(){
   const el=$('#rail');if(!el||getComputedStyle(el).display==='none')return;
   const ri=rankIdx(S.xp),nxt=RANKS[ri+1],pct=nxt?(S.xp-RANKS[ri][1])/(nxt[1]-RANKS[ri][1])*100:100,pend=window.slotPending||0;
-  const bc=bestCrime(),left=cdLeft(bc.id),ok=!inJail()&&!left&&S.energy>=bc.en;
+  const bc=bestCrime(),left=cdLeft(bc.id),ok=!inJail()&&!left&&S.energy>=crEn(bc);
   const full=Math.max(0,Math.ceil((EN_MAX-S.energy)*EN_REGEN_S/60));
   const all=lbAll(),pos=all.findIndex(x=>x.me)+1;
   const td=todoItems(),F=S.family?fam():null,fr=S.family&&typeof famRankIdx==='function'&&typeof FAM_RANKS!=='undefined'?FAM_RANKS[famRankIdx()]:null;
@@ -285,8 +285,8 @@ function renderRail(){
    </section>
    ${td.length?`<section class="rcard"><div class="label">Klaar voor je · ${td.length}</div><div class="todos">${todoHtml(td,4)}</div>${td.length>4?`<a class="todo-more" href="#dash">Nog ${td.length-4} op het dashboard ›</a>`:''}</section>`:''}
    <section class="rcard"><div class="label">Snelle klus</div>
-    <div class="rq"><div><b>${bc.n}</b><small>${chance(bc)}% kans · ${bc.en} energie · ${fmt(bc.min*lootMult())}–${fmt(bc.max*lootMult())}</small></div></div>
-    <button class="btn" onclick="act.crime('${bc.id}')" ${ok?'':'disabled'}>${inJail()?'Je zit vast':left?'Wacht '+Math.ceil(left/1000)+'s':S.energy<bc.en?'Te moe':'Uitvoeren'}</button></section>
+    <div class="rq"><div><b>${bc.n}</b><small>${chance(bc)}% kans · ${crEn(bc)} energie · ${fmt(bc.min*lootMult())}–${fmt(bc.max*lootMult())}</small></div></div>
+    <button class="btn" onclick="act.crime('${bc.id}')" ${ok?'':'disabled'}>${inJail()?'Je zit vast':left?'Wacht '+Math.ceil(left/1000)+'s':S.energy<crEn(bc)?'Te moe':'Uitvoeren'}</button></section>
    <section class="rcard grow"><div class="label">Logboek</div><div class="log">${logShown().length?logShown().slice(0,14).map(l=>`<div class="${l.c}">${l.m}</div>`).join(''):'<div class="info">Nog niks gebeurd.</div>'}</div></section>
    <section class="rcard"><div class="label">Top 5 · <a href="#rank" style="color:var(--acc)">ranglijst</a></div>
     <ol class="rtop">${top.map((p,i)=>`<li class="${p.me?'me':''}"><span>${i+1}</span><b><button class="lb-name" onclick="${p.me?(window.__USER__?`pvShow('${window.__USER__}')`:''):p.u?`pvShow('${p.u}')`:`pvNpc(${p.npc})`}">${p.n}</button></b><em>${RANKS[rankIdx(p.xp)][0]}</em></li>`).join('')}${pos>5?`<li class="me gap"><span>${pos}</span><b>${all[pos-1].n}</b><em>${RANKS[ri][0]}</em></li>`:''}</ol></section>`);

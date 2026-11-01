@@ -3,16 +3,16 @@
 // Beleggen: uitkering per uur (rente, huur, dividend, staking) plus een koers die kan stijgen én dalen.
 // Alles bij de bank ben je niet kwijt als je gepakt wordt. Maximaal bedrag per deposito groeit met je rang; beleggen heeft een totaalplafond per lidmaatschap.
 const SAV_RATE=.001; // per uur; rente per lidmaatschap ×BANK_T (gewoon 0,10%, VIP 0,12%, High roller 0,15% per uur), kosten −15% / −40%
-// Per lidmaatschap: aantal depositoplekken (2 / 5 / 10) en hoeveel je in totaal kunt beleggen (€10.000 / €30.000 / €100.000)
-const BANK_T=[1,1.2,1.5],DEP_SLOTS_T=[2,5,10],INV_CAP_T=[10000,30000,100000],LID_N=['Gewoon','VIP','High roller'];
-// Deposito's: 2 / 4 / 8 / 12 uur. Rente per looptijd voor gewoon / VIP / High roller (VIP ±15%, High roller ±32% beter).
-// Langer vast = iets meer rente per uur (0,15% tot 0,18% per uur bij gewoon, spaarrekening 0,10%), maar nooit zo veel
-// dat deposito's grinden loont: twee keer 12 uur per dag is gewoon ±4,4% per dag, VIP ±5%, High roller ±5,9%.
+// Per lidmaatschap: aantal depositoplekken (2 / 5 / 10) en hoeveel je in totaal kunt beleggen: €100.000 / €300.000 / €1 mln.,
+// keer (1 + je rang), dus bij een hogere rang veel meer (ook in coins)
+const BANK_T=[1,1.2,1.5],DEP_SLOTS_T=[2,5,10],INV_CAP_T=[100000,300000,1000000],LID_N=['Gewoon','VIP','High roller'];
+// Deposito's in speltijd (1 speldag = 4 uur): een halve speldag, 1, 2 of 3 speldagen. Rente voor gewoon / VIP / High roller
+// (VIP ±20%, High roller ±45% meer). Veel beter dan de spaarrekening (0,10% per uur), maar je geld staat vast.
 const DEP_TERMS=[
- {id:'2u',h:2,r:[.003,.0035,.004],n:'2 uur',tag:'Even parkeren'},
- {id:'4u',h:4,r:[.0065,.0075,.0085],n:'4 uur',tag:'Middagje'},
- {id:'8u',h:8,r:[.014,.016,.0185],n:'8 uur',tag:'Een nacht'},
- {id:'12u',h:12,r:[.022,.025,.029],n:'12 uur',tag:'Meeste rente'}];
+ {id:'2u',h:2,r:[.015,.018,.022],n:'Halve speldag',tag:'2 uur'},
+ {id:'4u',h:4,r:[.03,.036,.044],n:'1 speldag',tag:'4 uur'},
+ {id:'8u',h:8,r:[.055,.066,.08],n:'2 speldagen',tag:'8 uur'},
+ {id:'12u',h:12,r:[.08,.096,.116],n:'3 speldagen',tag:'12 uur · meeste rente'}];
 const DEP_SLOTS=3,DEP_EARLY=.02,DEP_MIN=1000,INV_MIN=100;
 const bankCap=()=>250000*Math.pow(2,rankIdx(S.xp));
 const savRate=()=>SAV_RATE*(BANK_T[tier()]||1);
@@ -23,20 +23,21 @@ const pctR=v=>{const p=Math.round(v*1e4)/100;return nl(p,p<1||Math.round(p*10)!=
 function depFix(){(S.dep||[]).forEach(d=>{if(d.v===2)return;const nt=d.h===72?'8u':d.h===24?'12u':null;
  if(nt){const t=DEP_TERMS.find(x=>x.id===nt);d.h=t.h;d.n=t.n;d.r=depRate(t);d.t1=d.t0+t.h*36e5}d.v=2})}
 const depSlots=()=>DEP_SLOTS_T[tier()]||DEP_SLOTS_T[0];
-const invCap=()=>INV_CAP_T[tier()]||INV_CAP_T[0];
+const invCap=()=>(INV_CAP_T[tier()]||INV_CAP_T[0])*(1+rankIdx(S.xp));
 // een rijtje per lidmaatschap, met het jouwe gemarkeerd
 const bkTiers=(f,suf)=>`<div class="bk-tiers">${LID_N.map((n,i)=>`<span class="${i===tier()?'on':''}"><i>${n}</i><b>${f(i)}</b>${suf?`<em>${suf}</em>`:''}</span>`).join('')}</div>`;
 const invFee=f=>f.fee*(1-tierK())*(1-sk('handel')*SK.handel.fee/100);
-const fundOf=id=>MK.FUNDS.find(f=>f.id===id);
+const fundOf=id=>MK.FUNDS.find(f=>f.id===id)||(id&&id[0]==='L'?MK.coin(id):null);
 const invPos=id=>(S.inv||{})[id];
 const invVal=id=>{const p=invPos(id);return p&&p.u>0?p.u*MK.price(id,now()):0};
-const invTotal=()=>MK.FUNDS.reduce((a,f)=>a+invVal(f.id),0);
-const invCost=()=>MK.FUNDS.reduce((a,f)=>a+((invPos(f.id)||{}).c||0),0);
+const invIds=()=>Object.keys(S.inv||{});
+const invTotal=()=>invIds().reduce((a,id)=>a+invVal(id),0);
+const invCost=()=>invIds().reduce((a,id)=>a+((invPos(id)||{}).c||0),0);
 const depTotal=()=>(S.dep||[]).reduce((a,d)=>a+d.a,0);
 const bankNet=()=>S.bank+depTotal()+invTotal();
 const nl=(v,d)=>v.toLocaleString('nl-NL',{minimumFractionDigits:d,maximumFractionDigits:d});
 const pctNl=(v,d=1)=>(v>=0?'+':'−')+nl(Math.abs(v*100),d)+'%';
-const fmtPx=v=>'€'+nl(v,v<10?3:2);
+const fmtPx=v=>v>=10?'€'+nl(v,2):v>=.1?'€'+nl(v,3):v>=.001?'€'+nl(v,5):'€'+v.toLocaleString('nl-NL',{maximumSignificantDigits:3});
 const bkDur=ms=>{const s=Math.max(0,Math.ceil(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+'u '+String(m).padStart(2,'0')+'m':m+'m '+String(s%60).padStart(2,'0')+'s'};
 // wanneer iets klaar is: "om 16:42", "morgen 09:10" of "za 14:05"
 const bkAt=t=>{const d=new Date(t),n=new Date(now()),hm=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
@@ -45,12 +46,18 @@ const bkAt=t=>{const d=new Date(t),n=new Date(now()),hm=String(d.getHours()).pad
 const BK_ARROWS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h15l-4-4M20 16H5l4 4"/></svg>';
 // kans op verlies na 24 uur en na 7 dagen (doorgerekend met de echte koersen, inclusief kosten)
 const FUND_RISK={oblig:[0,0],vast:[13,0],haven:[30,1],coin:[37,9]};
-const DAYMS=864e5;
+const DAYMS=864e5,L5=3e5;
 
+// nieuwe coins die van de markt zijn: een scam is weg (inzet kwijt), een echte coin gaat naar de grote beurs (verkocht, naar je spaarrekening)
+function coinTick(t){Object.keys(S.inv||{}).forEach(id=>{if(id[0]!=='L')return;const c=MK.coin(id),p=S.inv[id];if(!c||t<c.end)return;
+ if(c.endKind==='scam'){delete S.inv[id];log(c.n+' ('+c.s+') was een scam: '+fmt(p.c)+' inleg kwijt','bad');toast(c.n+' was een scam. Hij is van de markt en je inleg van '+fmt(p.c)+' is weg.','bad')}
+ else{const got=p.u*MK.price(id,c.end-1);delete S.inv[id];S.bank+=got;bkTx('sell',got,c.n+' · naar de grote beurs');log(c.n+' ging naar de grote beurs: '+fmt(got)+' op je spaarrekening','ok');toast(c.n+' gaat naar de grote beurs: je stukken zijn verkocht voor '+fmt(got),'ok')}});
+ if(bk.fund&&bk.fund[0]==='L'){const c=MK.coin(bk.fund);if(c&&t-c.end>12*36e5)bk.fund='coin'}}
 // elke minuut: spaarrente, uitkering op beleggingen en deposito's die klaar zijn
 function bankTick(mins){if(!S.dep)S.dep=[];if(!S.inv)S.inv={};depFix();
  S.bank*=Math.pow(1+savRate(),mins/60);
  const t=now();MK.FUNDS.forEach(f=>{const p=S.inv[f.id];if(p&&p.u>0){const g=Math.exp(f.y*mins/60)-1;p.paid=(p.paid||0)+p.u*g*MK.price(f,t);p.u*=1+g}});
+ coinTick(t);
  const done=S.dep.filter(d=>d.t1<=t);
  if(done.length){S.dep=S.dep.filter(d=>d.t1>t);done.forEach(d=>{const pay=Math.round(d.a*(1+d.r));S.bank+=pay;bkTx('depin',pay,d.n+' · '+pctR(d.r)+' rente');log('Deposito '+d.n+' uitbetaald: '+fmt(pay),'ok');toast('Deposito klaar: '+fmt(pay)+' staat op je spaarrekening','ok')})}}
 
@@ -125,17 +132,17 @@ function bkLive(){if(!document.querySelector('[data-bk-live],[data-bk-btn]'))ret
  tmp.querySelectorAll('[data-bk-btn]').forEach((n,i)=>{const cur=document.querySelectorAll('[data-bk-btn]')[i];if(cur){cur.disabled=n.disabled;cur.className=n.className;cur.innerHTML=n.innerHTML}});v._h=null}
 const bkSrc=()=>`<div class="bk-src"><span class="label">Betalen van</span><div class="bk-seg"><button class="${bk.src==='bank'?'on':''}" onclick="bk.src='bank';render()" aria-pressed="${bk.src==='bank'}"><span>Spaarrekening</span><b>${fmt(S.bank)}</b></button><button class="${bk.src==='cash'?'on':''}" onclick="bk.src='cash';render()" aria-pressed="${bk.src==='cash'}"><span>Contant</span><b>${fmt(S.cash)}</b></button></div></div>`;
 
-function bkSpark(f){const s=MK.series(f,now(),DAYMS,48),mn=Math.min(...s),mx=Math.max(...s),k=mx-mn||1,up=s[s.length-1]>=s[0];
+function bkSpark(f){const t=now(),sp=f.coin?Math.max(6e5,Math.min(DAYMS,Math.min(t,f.end)-f.t0)):DAYMS,s=MK.series(f,f.coin?Math.min(t,f.end):t,sp,48),mn=Math.min(...s),mx=Math.max(...s),k=mx-mn||1,up=s[s.length-1]>=s[0];
  const d=s.map((v,i)=>(i?'L':'M')+(i/(s.length-1)*100).toFixed(2)+','+(28-(v-mn)/k*26).toFixed(2)).join('');
  return `<svg class="bk-spark ${up?'up':'dn'}" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><path d="${d}L100,30L0,30Z" class="a"/><path d="${d}" class="l"/></svg>`}
 const BK_RNG={'1u':[36e5,72,'1 uur'],'24u':[DAYMS,96,'24 uur'],'7d':[7*DAYMS,112,'7 dagen'],'30d':[30*DAYMS,120,'30 dagen']};
-function bkChart(f){const [span,n,lab]=BK_RNG[bk.rng],t=now(),s=MK.series(f,t,span,n),p=invPos(f.id);
+function bkChart(f){let [span,n,lab]=BK_RNG[bk.rng],t=now();if(f.coin){t=Math.min(t,f.end);span=Math.max(6e5,t-f.t0);n=Math.min(160,Math.max(24,Math.round(span/L5)));lab=bkDur(span)}const s=MK.series(f,t,span,n),p=invPos(f.id);
  let mn=Math.min(...s),mx=Math.max(...s);if(p&&p.bp){mn=Math.min(mn,p.bp);mx=Math.max(mx,p.bp)}const pad=(mx-mn)*.08||mx*.01;mn-=pad;mx+=pad;
  const y=v=>(1-(v-mn)/(mx-mn))*100,d=s.map((v,i)=>(i?'L':'M')+(i/(s.length-1)*100).toFixed(2)+','+y(v).toFixed(2)).join('');
  const ch=s[s.length-1]/s[0]-1,hi=Math.max(...s),lo=Math.min(...s),last=s[s.length-1];
  return `<div class="bk-chart" style="--fc:${f.col}">
   <div class="bk-ch-top"><div><span class="label">Koers ${f.s}</span><b>${fmtPx(last)}</b><em class="${ch>=0?'up':'dn'}">${pctNl(ch,2)} <small>in ${lab}</small></em></div>
-   <div class="bk-rng">${Object.keys(BK_RNG).map(k=>`<button class="${bk.rng===k?'on':''}" onclick="bk.rng='${k}';render()">${k}</button>`).join('')}</div></div>
+   ${f.coin?`<div class="bk-rng"><button class="on">sinds de start</button></div>`:`<div class="bk-rng">${Object.keys(BK_RNG).map(k=>`<button class="${bk.rng===k?'on':''}" onclick="bk.rng='${k}';render()">${k}</button>`).join('')}</div>`}</div>
   <div class="bk-plot"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Koersverloop ${f.n}"><defs><linearGradient id="bkg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${f.col}" stop-opacity=".32"/><stop offset="1" stop-color="${f.col}" stop-opacity="0"/></linearGradient></defs>
    ${[25,50,75].map(g=>`<line x1="0" x2="100" y1="${g}" y2="${g}" class="g"/>`).join('')}
    <path d="${d}L100,100L0,100Z" fill="url(#bkg)"/><path d="${d}" class="l"/>${p&&p.bp?`<line x1="0" x2="100" y1="${y(p.bp)}" y2="${y(p.bp)}" class="bp"/>`:''}</svg>
@@ -183,7 +190,7 @@ function bkDepTab(){depFix();const t=DEP_TERMS.find(x=>x.id===bk.term)||DEP_TERM
     <div class="bk-mini"><span>Max per deposito <b>${fmt(cap)}</b> (groeit met je rang)</span></div></div>
   </div></section>`}
 
-function bkInvTab(){const f=fundOf(bk.fund),t=now(),p=invPos(f.id),px=MK.price(f,t),a=bkAmt(),src=bkSrcBal(),cap=invCap(),room=Math.max(0,cap-invCost()),fee=invFee(f);
+function bkInvTab(){if(!fundOf(bk.fund))bk.fund='coin';const f=fundOf(bk.fund),t=now(),gone=!!(f.coin&&t>=f.end),p=invPos(f.id),px=MK.price(f,t),a=bkAmt(),src=bkSrcBal(),cap=invCap(),room=Math.max(0,cap-invCost()),fee=invFee(f);
  const tv=invTotal(),tc=invCost(),pl=tv-tc;
  const cards=MK.FUNDS.map(x=>{const s0=MK.price(x,t-DAYMS),s1=MK.price(x,t),ch=s1/s0-1,v=invVal(x.id);
   return `<button class="bk-fund ${bk.fund===x.id?'on':''}" style="--fc:${x.col}" onclick="bk.fund='${x.id}';render()">
@@ -191,24 +198,35 @@ function bkInvTab(){const f=fundOf(bk.fund),t=now(),p=invPos(f.id),px=MK.price(f
    <div class="bk-f-v"><span>${fmtPx(s1)}</span><em class="${ch>=0?'up':'dn'}">${pctNl(ch)}</em></div>
    <div class="bk-f-m">${riskPips(x.risk)}<span>${x.kind} ±${nl((Math.exp(24*x.y)-1)*100,1)}%/dag</span></div>
    ${v?`<div class="bk-f-own">Jij: <b>${fmt(v)}</b></div>`:''}</button>`}).join('');
+ const cs=MK.coins(t),nx=MK.nextCoin(t);
+ const ccards=cs.map(x=>{const end=t>=x.end,s1=MK.price(x,t),ch=s1/x.base-1,v=invVal(x.id),age=Math.min(t,x.end)-x.t0;
+  return `<button class="bk-fund bk-coin ${bk.fund===x.id?'on':''} ${end?'gone '+x.endKind:''}" style="--fc:${x.col}" onclick="bk.fund='${x.id}';render()">
+   <div class="bk-f-h"><b>${x.n}</b><span>${x.s}</span></div>${bkSpark(x)}
+   <div class="bk-f-v"><span>${end&&x.endKind==='scam'?'€0':fmtPx(s1)}</span><em class="${ch>=0?'up':'dn'}">${end&&x.endKind==='scam'?'−100%':pctNl(ch)}</em></div>
+   <div class="bk-f-m">${end?`<i class="bk-cst ${x.endKind}">${x.endKind==='scam'?'Scam · van de markt':'Naar de grote beurs'}</i>`:`<i class="bk-cst new">${age<4*36e5?'Nieuw':'Live'}</i><span>${bkDur(age)} op de markt</span>`}</div>
+   ${v?`<div class="bk-f-own">Jij: <b>${fmt(v)}</b></div>`:''}</button>`}).join('');
  const pv=p?p.u*px:0,ppl=p?pv-p.c:0;
- const why=!a?'Vul een bedrag in':a<INV_MIN?'Minimaal '+fmt(INV_MIN):a>room?(room?'Je kunt nog '+fmt(room)+' inleggen':'Je zit aan het maximum van '+fmt(cap)+' ('+LID_N[tier()]+')'):a>src?'Niet genoeg op je '+(bk.src==='bank'?'spaarrekening':'contant'):null;
- const rk=FUND_RISK[f.id];
+ const why=gone?(f.endKind==='scam'?'Dit was een scam: van de markt':'Van de markt: naar de grote beurs'):!a?'Vul een bedrag in':a<INV_MIN?'Minimaal '+fmt(INV_MIN):a>room?(room?'Je kunt nog '+fmt(room)+' inleggen':'Je zit aan het maximum van '+fmt(cap)+' ('+LID_N[tier()]+')'):a>src?'Niet genoeg op je '+(bk.src==='bank'?'spaarrekening':'contant'):null;
+ const rk=FUND_RISK[f.id]||[null,null];
  return `${tc?`<div class="bk-port"><div><span class="label">Jouw portefeuille</span><b>${fmt(tv)}</b></div><div><span class="label">Ingelegd</span><b>${fmt(tc)}</b></div><div><span class="label">Winst / verlies</span><b class="${pl>=0?'up':'dn'}">${pl>=0?'+':'−'}${fmt(Math.abs(pl))} <small>${pctNl(pl/tc)}</small></b></div></div>`:''}
  <div class="bk-funds">${cards}</div>
+ <div class="bk-sec bk-coins-h"><h2>Nieuwe coins</h2><span>volgende over ${bkDur(nx-t)}</span><em>Elke 4 uur komt er een nieuwe coin. Een memecoin kan 10× tot 50× stijgen, maar kan ook elk moment een scam blijken: dan is hij weg en je inleg ook. Echte coins gaan na 2 dagen naar de grote beurs.</em></div>
+ ${cs.length?`<div class="bk-funds bk-coins">${ccards}</div>`:`<p class="bk-note">Er staat nu geen nieuwe coin op de markt. De volgende komt over ${bkDur(nx-t)}.</p>`}
  <div class="bk-inv">
   <section class="card bk-box"><div class="bk-f-title"><div><h3>${f.n}</h3><p class="sub">${f.d}</p></div>${riskPips(f.risk)}</div>
    ${bkChart(f)}
-   <div class="bk-facts"><div><span>${f.kind}</span><b>±${nl((Math.exp(24*f.y)-1)*100,1)}% per dag</b><i>bovenop de koers, ook offline (tot 12 uur)</i></div>
+   ${f.coin?`<div class="bk-facts"><div><span>Uitkering</span><b>Geen</b><i>alleen de koers telt</i></div>
+    <div><span>${gone?'Status':'Op de markt'}</span><b>${gone?(f.endKind==='scam'?'Scam, van de markt':'Naar de grote beurs'):bkDur(t-f.t0)}</b><i>${gone?(f.endKind==='scam'?'wie erin zat, is alles kwijt':'stukken zijn verkocht tegen de laatste koers'):'echt of meme? kijk naar de naam en de grafiek'}</i></div>
+    <div><span>Kosten</span><b>${nl(fee*100,2)}% bij kopen en verkopen</b><i>${isVip()?lidName()+': '+Math.round(tierK()*100)+'% minder kosten':'VIP −15%, High roller −40%'}</i></div></div>`:`<div class="bk-facts"><div><span>${f.kind}</span><b>±${nl((Math.exp(24*f.y)-1)*100,1)}% per dag</b><i>bovenop de koers, ook offline (tot 12 uur)</i></div>
     <div><span>Kans op verlies</span><b>${rk[0]}% na 24 uur</b><i>${rk[1]}% na 7 dagen</i></div>
-    <div><span>Kosten</span><b>${nl(fee*100,2)}% bij kopen en verkopen</b><i>${isVip()?lidName()+': '+Math.round(tierK()*100)+'% minder kosten':'VIP −15%, High roller −40%'}</i></div></div></section>
+    <div><span>Kosten</span><b>${nl(fee*100,2)}% bij kopen en verkopen</b><i>${isVip()?lidName()+': '+Math.round(tierK()*100)+'% minder kosten':'VIP −15%, High roller −40%'}</i></div></div>`}</section>
   <section class="card bk-box"><h3>Jouw positie</h3>
    ${p?`<div class="bk-rows"><div><span>Waarde</span><b>${fmt(pv)}</b></div><div><span>Ingelegd</span><b>${fmt(p.c)}</b></div>
-    <div><span>Winst / verlies</span><b class="${ppl>=0?'up':'dn'}">${ppl>=0?'+':'−'}${fmt(Math.abs(ppl))} (${pctNl(ppl/p.c)})</b></div><div><span>Ontvangen ${f.kind.toLowerCase()}</span><b class="up">+${fmt(p.paid||0)}</b></div></div>
-    <div class="bk-sell">${[[.25,'25%'],[.5,'50%'],[1,'Alles']].map(([q,l])=>`<button class="btn sm ${q===1?'':'ghost'}" onclick="act.invSell(${q})">Verkoop ${l} <small>${fmt(pv*q*(1-fee))}</small></button>`).join('')}</div>`
-    :'<p class="sub">Je hebt nog niets in dit fonds. Wat je koopt groeit met de uitkering mee, maar de koers kan ook zakken.</p>'}
+    <div><span>Winst / verlies</span><b class="${ppl>=0?'up':'dn'}">${ppl>=0?'+':'−'}${fmt(Math.abs(ppl))} (${pctNl(ppl/p.c)})</b></div>${f.coin?'':`<div><span>Ontvangen ${f.kind.toLowerCase()}</span><b class="up">+${fmt(p.paid||0)}</b></div>`}</div>
+    <div class="bk-sell">${[[.25,'25%'],[.5,'50%'],[1,'Alles']].map(([q,l])=>`<button class="btn sm ${q===1?'':'ghost'}" onclick="act.invSell(${q})" ${gone?'disabled':''}>Verkoop ${l} <small>${fmt(pv*q*(1-fee))}</small></button>`).join('')}</div>`
+    :`<p class="sub">${f.coin?(gone?(f.endKind==='scam'?'Dit was een scam. De makers zijn er met het geld vandoor en de coin is van de markt gehaald.':'Deze coin is naar de grote beurs gegaan.'):'Je hebt nog niets in deze coin. Hij kan hard stijgen, maar ook ineens naar nul gaan.'):'Je hebt nog niets in dit fonds. Wat je koopt groeit met de uitkering mee, maar de koers kan ook zakken.'}</p>`}
    <div class="bk-buy">${bkSrc()}${bkInput(Math.min(src,room),'Kopen voor')}
-    <div class="bk-sum" data-bk-live>${a?`Je krijgt ${nl(a*(1-fee)/px,px<10?2:4)} stukken à ${fmtPx(px)} (kosten ${fmt(a*fee)}).`:`Nog in te leggen: <b>${fmt(room)}</b> van ${fmt(cap)} in totaal (gewoon €10.000, VIP €30.000, High roller €100.000).`}</div>
+    <div class="bk-sum" data-bk-live>${a?`Je krijgt ${nl(a*(1-fee)/px,px<1?0:px<10?2:4)} stukken à ${fmtPx(px)} (kosten ${fmt(a*fee)}).`:`Nog in te leggen: <b>${fmt(room)}</b> van ${fmt(cap)} in totaal (groeit met je rang; VIP ×3, High roller ×10).`}</div>
     <button class="btn" data-bk-btn onclick="act.invBuy()" ${why?'disabled':''}>${why||'Koop '+f.s+' voor '+fmt(a)}</button></div>
    <p class="bk-note">Verkopen gaat naar je spaarrekening. Koersen zijn voor iedereen hetzelfde en lopen door als je offline bent.</p></section></div>`}
 
@@ -272,11 +290,11 @@ function bkHero(){const sv=S.bank,dp=depTotal(),iv=invTotal(),all=sv+dp+iv,tot=a
    ${qa('inv','Beleggen','koersen',"act.bkTab('inv')",'#ff7a1a')}
   </div></section>`}
 // waarde van je beleggingen over de laatste 24 uur (met je huidige stukken)
-function bkPortSpark(){const own=MK.FUNDS.filter(f=>invVal(f.id)>0);if(!own.length)return '';const n=48,t=now(),sum=new Array(n).fill(0);
+function bkPortSpark(){const own=invIds().map(fundOf).filter(f=>f&&invVal(f.id)>0);if(!own.length)return '';const n=48,t=now(),sum=new Array(n).fill(0);
  own.forEach(f=>{const s=MK.series(f,t,DAYMS,n),u=invPos(f.id).u;s.forEach((v,i)=>{sum[i]+=v*u})});
  const mn=Math.min(...sum),mx=Math.max(...sum),k=mx-mn||1,up=sum[n-1]>=sum[0],d=sum.map((v,i)=>(i?'L':'M')+(i/(n-1)*100).toFixed(2)+','+(30-(v-mn)/k*27).toFixed(2)).join('');
  return `<svg class="ba-spark ${up?'up':'dn'}" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true"><path d="${d}L100,32L0,32Z" class="a"/><path d="${d}" class="l"/></svg>`}
-function bkHome(){const sv=S.bank,dp=depTotal(),iv=invTotal(),tc=invCost(),pl=iv-tc,run=S.dep.slice().sort((x,y)=>x.t1-y.t1),nx=run[0],nf=MK.FUNDS.filter(f=>invVal(f.id)>0).length;
+function bkHome(){const sv=S.bank,dp=depTotal(),iv=invTotal(),tc=invCost(),pl=iv-tc,run=S.dep.slice().sort((x,y)=>x.t1-y.t1),nx=run[0],nf=invIds().filter(id=>invVal(id)>0).length;
  const pr=nx?Math.min(1,Math.max(0,(now()-nx.t0)/(nx.t1-nx.t0))):0;
  const head=(tab,ic,n,s)=>`<button class="ba-acct-h" onclick="act.bkTab('${tab}')"><span class="ba-acct-ic">${baI(ic)}</span><span class="ba-acct-n"><b>${n}</b><small>${s}</small></span><i aria-hidden="true">›</i></button>`;
  return `<div class="ba-accts">
@@ -287,7 +305,7 @@ function bkHome(){const sv=S.bank,dp=depTotal(),iv=invTotal(),tc=invCost(),pl=iv
   <article class="ba-acct" style="--c:#b8a1ff">${head('dep','dep',"Deposito's",S.dep.length+' van '+depSlots()+' plekken')}
    <b class="ba-acct-v" data-fit="18">${fmt(dp)}</b>
    ${nx?`<span class="ba-acct-s">Eerste klaar ${bkAt(nx.t1)}: <em>${fmt(Math.round(nx.a*(1+nx.r)))}</em></span><div class="ba-prog" aria-hidden="true"><i style="width:${(pr*100).toFixed(1)}%"></i></div>`
-    :`<span class="ba-acct-s">Vaste rente, tot ${pctR(depRate(DEP_TERMS[3]))} in 12 uur. Kan niet zakken.</span>`}
+    :`<span class="ba-acct-s">Vaste rente, tot ${pctR(depRate(DEP_TERMS[3]))} in 3 speldagen. Kan niet zakken.</span>`}
    <div class="ba-acct-a"><button onclick="act.bkTab('dep',1)">${baI('lock')}Nieuw deposito</button></div></article>
   <article class="ba-acct" style="--c:#ff7a1a">${head('inv','inv','Beleggen',nf?nf+(nf>1?' fondsen':' fonds'):MK.FUNDS.length+' fondsen')}
    <b class="ba-acct-v" data-fit="18">${fmt(iv)}</b>
@@ -314,7 +332,7 @@ function bkRek(){const r=savRate();
    <div class="bk-rows"><div><span>Nu per uur</span><b class="up">+${fmt(S.bank*r)}</b></div><div><span>Na 24 uur</span><b>${fmt(S.bank*Math.pow(1+r,24))}</b></div></div>
    <div class="bk-cmp"><span class="label">Vergelijk</span>
     <div><span>Spaarrekening</span><em>±${nl((Math.pow(1+r,24)-1)*100,1)}% per dag</em><i>vrij opneembaar</i></div>
-    <div><span>Deposito 12 uur</span><em>${pctR(depRate(DEP_TERMS[3]))}</em><i>vast, kan niet zakken</i></div>
+    <div><span>Deposito 3 speldagen</span><em>${pctR(depRate(DEP_TERMS[3]))}</em><i>vast, kan niet zakken</i></div>
     <div><span>Beleggen</span><em>±5% tot 15% per dag</em><i>kan ook flink dalen</i></div></div></section>
   <section class="ba-panel"><div class="ba-ph"><h3>Transacties</h3><span class="ba-cnt">laatste ${Math.min(30,(S.bkTx||[]).length)}</span></div>${bkTxList(30)}</section>
  </div>`}
@@ -359,11 +377,11 @@ Object.assign(act,{
   S.dep.push({id,n:t.n,h:t.h,a,r,t0:id,t1:id+t.h*36e5,v:2});bkTx('dep',-a,t.n+' · '+pctR(r)+' rente');toast(fmt(a)+' vastgezet voor '+t.n+': je krijgt '+fmt(Math.round(a*(1+r))),'ok');log('Deposito '+t.n+': '+fmt(a)+' tegen '+pctR(r),'info');bk.amt='';save();render()},
  depBreak(id){const d=S.dep.find(x=>x.id===id);if(!d)return;const back=Math.floor(d.a*(1-DEP_EARLY));S.dep=S.dep.filter(x=>x.id!==id);S.bank+=back;bkTx('depbrk',back,d.n+' · 2% kosten, geen rente');bk.brk=null;
   toast('Deposito opgezegd: '+fmt(back)+' terug op je spaarrekening','bad');log('Deposito opgezegd: '+fmt(back)+' terug','info');save();render()},
- invBuy(){const f=fundOf(bk.fund),a=bkAmt();if(!f)return;const p=S.inv[f.id]||{u:0,c:0,paid:0,bp:0},room=invCap()-invCost();
+ invBuy(){const f=fundOf(bk.fund),a=bkAmt();if(!f||(f.coin&&now()>=f.end))return;const p=S.inv[f.id]||{u:0,c:0,paid:0,bp:0},room=invCap()-invCost();
   if(a<INV_MIN||a>room||a>bkSrcBal())return;const px=MK.price(f,now()),u=a*(1-invFee(f))/px;
   if(bk.src==='bank')S.bank-=a;else spendWit(a);p.bp=(p.bp*p.u+px*u)/(p.u+u);p.u+=u;p.c+=a;S.inv[f.id]=p;bkTx('buy',bk.src==='bank'?-a:0,f.n+(bk.src==='bank'?'':' · contant'),a);
   toast('Gekocht: '+f.s+' voor '+fmt(a),'ok');log(f.n+' gekocht voor '+fmt(a)+' à '+fmtPx(px),'info');bk.amt='';save();render()},
- invSell(q){const f=fundOf(bk.fund),p=f&&S.inv[f.id];if(!p||p.u<=0)return;q=Math.min(1,Math.max(0,q));const px=MK.price(f,now()),u=p.u*q,got=u*px*(1-invFee(f)),cost=p.c*q,res=got-cost;
+ invSell(q){const f=fundOf(bk.fund),p=f&&S.inv[f.id];if(!p||p.u<=0||(f.coin&&now()>=f.end))return;q=Math.min(1,Math.max(0,q));const px=MK.price(f,now()),u=p.u*q,got=u*px*(1-invFee(f)),cost=p.c*q,res=got-cost;
   p.u-=u;p.c-=cost;p.paid=(p.paid||0)*(1-q);if(q>=1||p.u<=1e-9)delete S.inv[f.id];S.bank+=got;bkTx('sell',got,f.n+' · '+(res>=0?'winst ':'verlies ')+fmt(Math.abs(res)));
   toast(f.s+' verkocht: '+fmt(got)+' ('+(res>=0?'+':'−')+fmt(Math.abs(res))+')',res>=0?'ok':'bad');log(f.n+' verkocht voor '+fmt(got)+' ('+(res>=0?'winst ':'verlies ')+fmt(Math.abs(res))+')',res>=0?'ok':'bad');save();render()}
 });

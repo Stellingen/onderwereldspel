@@ -1,4 +1,4 @@
-// Zoete Buit: snoepslot op een raster van 6 × 5, uitbetaling overal (geen lijnen). Pure functies, zodat de RTP in Node
+// Suikerbaron: snoepslot op een raster van 6 × 5, uitbetaling overal (geen lijnen). Pure functies, zodat de RTP in Node
 // te simuleren is (zie README).
 // - Winst: 8 of meer van hetzelfde snoepje, waar ze ook liggen. Uitbetaling per aantal: 8–9, 10–11, 12–14 en 15+.
 // - Tumbles: winnende snoepjes knallen weg, de rest valt naar beneden en er vallen nieuwe in. Zolang er winst valt, gaat het door.

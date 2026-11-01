@@ -469,6 +469,68 @@ const VH_ITEM={
   A.dogs.forEach(([x,y])=>s+=g.at(x,y,0,VH_DOBER));return s}};
 
 // Waar elk spul staat, per woning (vloer: x,y; wand: w,a0..a1,v0..v1). Ontbreekt een woning, dan past het daar niet.
+/* ---------- uitbreiding: spullen die op een vrije plek komen (zelfde stijl: blokjes, cilinders, gloed) ---------- */
+// Elke woning heeft vrije plekken (VH_SPOT, linksachter-hoek van een vak van ±1 × 1); de nieuwe spullen vullen ze op volgorde.
+// fr(g,x,y,yy,s) = tekening op de voorkant van een blok (vlak y = yy), lokaal: x loopt mee, y = −hoogte
+const vhFront=(g,yy,s)=>`<g transform="${g.wr(yy)}">${s}</g>`;
+const vhSide=(g,xx,yr,s)=>`<g transform="${g.wl(xx,yr)}">${s}</g>`;
+const VH_SPOT={kraak:[[1.0,3.6],[5.5,5.3],[2.2,5.3],[8.0,3.2]],kamer:[[5.8,4.4],[0.5,4.5],[4.2,4.7],[6.0,2.4]],
+ gracht:[[8.7,6.5],[6.8,6.6],[9.2,5.9],[7.4,.3],[.6,6.6],[5.3,6.7]],
+ penthouse:[[2.4,7.2],[5.4,1.6],[4.0,7.4],[11.0,7.4],[2.2,3.4],[7.6,2.4],[11.0,3.4],[3.3,5.4],[1.4,5.0]],
+ villa:[[2.4,5.4],[1.3,3.3],[3.4,6.8],[9.4,9.2],[13.1,7.0],[11.3,2.2],[3.6,9.4],[4.4,4.4],[1.2,6.6],[9.0,2.6]]};
+const VH_GEN={
+ meditatie(g,x,y){return g.ell(x+.5,y+.5,0,.42,'#4a3466')+g.ell(x+.5,y+.5,.08,.4,'#c9a2ff')+g.ell(x+.5,y+.5,.12,.22,'#e2ccff')+g.cyl(x+.95,y+.2,0,.05,.35,'#6b4a2a')+g.glow(x+.95,y+.2,.45,.4,'#ffb15a',.4)},
+ koelkast(g,x,y){const w=.7,d=.6,h=1.6;let s=g.box(x,y,0,w,d,h,'#dfe7ee');
+  s+=vhFront(g,y+d,`<rect x="${vhR(x+.06)}" y="${-h+.08}" width="${vhR(w-.12)}" height="${vhR(h-.2)}" rx=".04" fill="#0f2a24" opacity=".85"/>`+[0,1,2].map(r=>[0,1,2].map(c=>`<rect x="${vhR(x+.1+c*.18)}" y="${vhR(-h+.18+r*.45)}" width=".12" height=".3" rx=".03" fill="${['#5fe3a6','#ffd35a','#ff5c6c'][(r+c)%3]}"/>`).join('')).join('')+`<rect x="${vhR(x+w-.1)}" y="${-h+.5}" width=".03" height=".4" fill="#c7d2dc"/>`);
+  return s+g.glow(x+.35,y+.65,.8,.6,'#5fe3a6',.35)},
+ medkast(g,x,y){const w=.6,d=.4,h=1.1;let s=g.box(x,y,0,w,d,h,'#f2f2f2');
+  s+=vhFront(g,y+d,`<rect x="${vhR(x+.22)}" y="${-h+.3}" width=".16" height=".42" fill="#ff3d52"/><rect x="${vhR(x+.09)}" y="${-h+.43}" width=".42" height=".16" fill="#ff3d52"/><path d="M${vhR(x+.3)} ${-h+.85}V-.05" stroke="#c9ccd2" stroke-width=".02"/>`);return s},
+ schaak(g,x,y){let s=g.cyl(x+.45,y+.45,0,.08,.55,'#5b4630')+g.box(x+.05,y+.05,.55,.8,.8,.07,'#3a2a1c');
+  let t='';for(let i=0;i<6;i++)for(let j=0;j<6;j++)if((i+j)%2)t+=`<rect x="${vhR(x+.1+i*.117)}" y="${vhR(y+.1+j*.117)}" width=".117" height=".117" fill="#e6d3a3"/>`;
+  s+=`<g transform="${g.fl(.62)}"><rect x="${x+.1}" y="${y+.1}" width=".7" height=".7" fill="#6b4a2a"/>${t}</g>`;
+  return s+g.cyl(x+.3,y+.35,.62,.04,.14,'#f4f0e6')+g.cyl(x+.6,y+.6,.62,.04,.18,'#1c1c20')+g.cyl(x+.5,y+.3,.62,.035,.1,'#f4f0e6')},
+ scanner(g,x,y){let s=g.box(x,y+.1,0,.8,.6,.7,'#2a2420')+g.box(x+.1,y+.2,.7,.55,.35,.2,'#1c1d22');
+  s+=vhFront(g,y+.55,`<rect x="${vhR(x+.15)}" y="-.86" width=".25" height=".1" fill="#5fe3a6"/><circle cx="${vhR(x+.52)}" cy="-.8" r=".05" fill="#9aa3ad"/>`);
+  return s+g.pl([[x+.6,y+.3,.9],[x+.7,y+.3,1.55]],'#9aa3ad',1.2)+`<circle class="vh-blink" cx="${g.P(x+.7,y+.3,1.58)[0]}" cy="${g.P(x+.7,y+.3,1.58)[1]}" r="2.6" fill="#ff3d52"/>`+g.glow(x+.4,y+.4,.9,.5,'#ff3d52',.25)},
+ blender(g,x,y){let s=g.box(x,y+.1,0,.8,.6,.85,'#e9e2d6')+g.box(x+.15,y+.25,.85,.25,.25,.08,'#2a2c31');
+  s+=g.cyl(x+.27,y+.37,.93,.11,.32,'#ffad6b',{top:'#ffcf9e'})+g.cyl(x+.6,y+.4,.85,.08,.2,'#8bdc5a',{top:'#b5f08a'})+g.cyl(x+.6,y+.6,.85,.07,.18,'#ff7fb3');return s},
+ daglamp(g,x,y){let s=g.ell(x+.4,y+.4,0,.2,'#2a2c31')+g.pl([[x+.4,y+.4,0],[x+.4,y+.4,1.3]],'#c7ccd4',1.2);
+  s+=g.box(x+.15,y+.38,1.3,.5,.06,.55,{t:'#fff7c2',l:'#fff3a6',r:'#e8d77a'});return s+g.glow(x+.4,y+.45,1.55,1.3,'#ffe36b',.55)},
+ stadskaart(g,x,y){let s=g.pl([[x+.15,y+.5,0],[x+.25,y+.5,1.0]],'#6b4a2a',1.2)+g.pl([[x+.85,y+.5,0],[x+.75,y+.5,1.0]],'#6b4a2a',1.2);
+  s+=g.box(x+.05,y+.45,.5,.9,.06,.85,'#e8e4da');
+  s+=vhFront(g,y+.51,`<path d="M${vhR(x+.12)} -1.15L${vhR(x+.4)} -.9L${vhR(x+.55)} -1.1L${vhR(x+.85)} -.7" stroke="#ff3d52" stroke-width=".03" fill="none"/><path d="M${vhR(x+.15)} -.75L${vhR(x+.45)} -.6L${vhR(x+.8)} -.95" stroke="#4d7dff" stroke-width=".025" fill="none"/><circle cx="${vhR(x+.55)}" cy="-1.1" r=".04" fill="#ff3d52"/><path d="M${vhR(x+.1)} -.85H${vhR(x+.9)}M${vhR(x+.35)} -1.3V-.55M${vhR(x+.7)} -1.3V-.55" stroke="#b9b2a2" stroke-width=".012"/>`);return s},
+ alarm(g,x,y){let s=g.box(x+.3,y+.3,0,.35,.35,1.15,'#2b2e34')+g.box(x+.25,y+.25,1.15,.45,.45,.08,'#3a3e46');
+  s+=vhFront(g,y+.65,`<rect x="${vhR(x+.36)}" y="-1.0" width=".23" height=".32" fill="#0d1a14"/>${[0,1,2].map(r=>[0,1].map(c=>`<rect x="${vhR(x+.39+c*.1)}" y="${vhR(-.95+r*.08)}" width=".06" height=".05" fill="#5fe3a6"/>`).join('')).join('')}`);
+  return s+`<circle class="vh-blink" cx="${g.P(x+.47,y+.47,1.3)[0]}" cy="${g.P(x+.47,y+.47,1.3)[1]}" r="3" fill="#ff7a1a"/>`+g.glow(x+.47,y+.47,1.3,.6,'#ff7a1a',.3)},
+ spinning(g,x,y){const c='#4cc6ff';let s=g.box(x+.1,y+.35,0,.85,.3,.08,'#1c1d22');
+  s+=g.pl([[x+.25,y+.5,.08],[x+.35,y+.5,.95]],c,2.4)+g.pl([[x+.8,y+.5,.08],[x+.75,y+.5,1.15]],c,2.4)+g.pl([[x+.35,y+.5,.6],[x+.75,y+.5,.6]],c,2);
+  s+=`<g transform="${g.wr(y+.5)}"><circle cx="${vhR(x+.62)}" cy="-.42" r=".28" fill="none" stroke="#2a2c31" stroke-width=".07"/><circle cx="${vhR(x+.62)}" cy="-.42" r=".06" fill="#9aa3ad"/></g>`;
+  return s+g.box(x+.22,y+.4,.95,.28,.2,.06,'#1c1d22')+g.pl([[x+.65,y+.3,1.2],[x+.88,y+.3,1.2],[x+.88,y+.7,1.2],[x+.65,y+.7,1.2]],'#1c1d22',1.8)},
+ vermomming(g,x,y){const w=.8,d=.5,h=1.8;let s=g.box(x,y,0,w,d,h,'#5a3d6e');
+  s+=vhFront(g,y+d,`<path d="M${vhR(x+w/2)} ${-h+.08}V-.08" stroke="#3a2648" stroke-width=".02"/><circle cx="${vhR(x+w/2-.06)}" cy="${-h/2}" r=".025" fill="#e2c37a"/><circle cx="${vhR(x+w/2+.06)}" cy="${-h/2}" r=".025" fill="#e2c37a"/>`);
+  return s+g.ell(x+.25,y+.25,h,.17,'#1c1c20')+g.cyl(x+.25,y+.25,h,.1,.14,'#1c1c20')+g.ell(x+.58,y+.28,h,.13,'#c0392b')+g.cyl(x+.58,y+.28,h+.01,.09,.08,'#e9b25a')},
+ massage(g,x,y){const c='#7a3f26';let s=g.box(x+.05,y+.1,0,.85,.8,.35,'#2a1e18')+g.box(x+.1,y+.15,.35,.75,.7,.2,c);
+  s+=g.box(x+.1,y+.1,.55,.75,.22,.95,c)+g.box(x+.05,y+.25,.55,.12,.6,.25,'#5a2e1c')+g.box(x+.78,y+.25,.55,.12,.6,.25,'#5a2e1c');
+  return s+vhFront(g,y+.32,`<path d="M${vhR(x+.2)} -1.3H${vhR(x+.75)}M${vhR(x+.2)} -1.05H${vhR(x+.75)}M${vhR(x+.2)} -.8H${vhR(x+.75)}" stroke="#5a2e1c" stroke-width=".025"/>`)},
+ boekenkast(g,x,y){const w=.95,d=.4,h=1.95;let s=g.box(x,y,0,w,d,h,'#5a3a22');let b='';const r=vhRng('bk'+x);
+  for(let sh=0;sh<4;sh++){let xx=x+.06;const yb=-.12-sh*.46;b+=`<rect x="${vhR(x+.04)}" y="${vhR(yb-.4)}" width="${vhR(w-.08)}" height=".4" fill="#2a1a10"/>`;
+   while(xx<x+w-.1){const bw=.05+r()*.05,bh=.25+r()*.12;b+=`<rect x="${vhR(xx)}" y="${vhR(yb-bh)}" width="${vhR(bw)}" height="${vhR(bh)}" fill="${['#c0392b','#2f6a9a','#d9a441','#3a7d44','#7b4a9a','#e6e1d6'][Math.floor(r()*6)]}"/>`;xx+=bw+.01}}
+  return s+vhFront(g,y+d,b+`<rect x="${vhR(x+.4)}" y="-1.32" width=".07" height=".3" fill="#ff2e2e"/>`)},
+ klimmuur(g,x,y){const w=1.0,h=2.2;let s=g.box(x,y+.3,0,w,.18,h,'#2a3a33');const r=vhRng('kl'+y);let t='';
+  for(let i=0;i<16;i++)t+=`<circle cx="${vhR(x+.1+r()*.8)}" cy="${vhR(-.15-r()*1.9)}" r="${vhR(.035+r()*.03)}" fill="${['#ffd35a','#ff5c6c','#5fe3a6','#4cc6ff','#ff7fb3'][i%5]}"/>`;
+  return s+vhFront(g,y+.48,t)+g.box(x-.05,y+.55,0,1.1,.5,.08,'#3fa36b')},
+ capsule(g,x,y){let s=g.box(x,y+.05,0,1.0,.9,.25,'#c9d6e3');
+  s+=`<path d="${(()=>{const a=g.P(x,y+.95,.25),b=g.P(x+1,y+.95,.25),c=g.P(x+1,y+.05,.25),t1=g.P(x+.5,y+.95,1.05),t2=g.P(x+.5,y+.05,1.05);return `M${a[0]} ${a[1]}Q${vhR((a[0]+b[0])/2)} ${t1[1]-8} ${b[0]} ${b[1]}L${c[0]} ${c[1]}Q${t2[0]} ${t2[1]-6} ${vhR(c[0]-(c[0]-a[0]))} ${c[1]}Z`})()}" fill="#eef3f8"/>`;
+  s+=vhFront(g,y+.95,`<path d="M${vhR(x+.12)} -.35Q${vhR(x+.5)} -.95 ${vhR(x+.88)} -.35Z" fill="#7cc4ff" opacity=".85"/>`);return s+g.glow(x+.5,y+.95,.5,.9,'#a9dcff',.45)},
+ ijsbad(g,x,y){let s=g.cyl(x+.5,y+.5,0,.45,.75,'#6b4a2a')+g.ell(x+.5,y+.5,.75,.4,'#7fe0ff')+g.ell(x+.5,y+.5,.76,.32,'#bff2ff');
+  [[.35,.4],[.62,.55],[.48,.68]].forEach(([a,b])=>s+=g.box(x+a,y+b,.74,.1,.1,.08,{t:'#fff',l:'#e2f7ff',r:'#c6e9f5'}));
+  return s},
+ hottub(g,x,y){let s=g.box(x-.1,y-.1,0,1.2,1.2,.55,'#7a5236');
+  s+=`<g transform="${g.fl(.55)}"><rect x="${vhR(x)}" y="${vhR(y)}" width="1" height="1" rx=".12" fill="#2bb5e6"/>${[[.3,.3],[.65,.4],[.45,.7],[.75,.75]].map(([a,b])=>`<circle class="vh-bub" cx="${vhR(x+a)}" cy="${vhR(y+b)}" r=".06" fill="#e8fbff" opacity=".8"/>`).join('')}</g>`;
+  return s+g.glow(x+.5,y+.5,.6,.9,'#5ad1ff',.4)},
+ paniekkamer(g,x,y){const w=1.1,d=1.0,h=2.1;let s=g.box(x,y,0,w,d,h,'#6a717c');
+  s+=vhFront(g,y+d,`<rect x="${vhR(x+.2)}" y="${-h+.25}" width=".7" height="${vhR(h-.3)}" rx=".05" fill="#4f5560" stroke="#8a919c" stroke-width=".03"/><circle cx="${vhR(x+.55)}" cy="-1.05" r=".18" fill="none" stroke="#c9ced6" stroke-width=".05"/><path d="M${vhR(x+.37)} -1.05H${vhR(x+.73)}M${vhR(x+.55)} -1.23V-.87" stroke="#c9ced6" stroke-width=".04"/>`);
+  return s+`<circle class="vh-blink" cx="${g.P(x+.9,y+d,1.9)[0]}" cy="${g.P(x+.9,y+d,1.9)[1]}" r="2.4" fill="#5fe3a6"/>`}};
 const VH_AT={
  brug:{slaapzak:{x:.42,y:2.0,z:.2,dx:1.2,dy:1.8,dir:'y'},kar:{x:6.2,y:.9,dx:.8,dy:1.3},hond:{x:3.1,y:3.7}},
  kraak:{slaapzak:{x:1.3,y:.42,z:.22,dx:1.92,dy:1.26,dir:'x'},kar:{x:7.2,y:2.5,dx:.8,dy:1.3},hond:{x:3.6,y:3.6},kaarsen:{x:3.62,y:.52,z:.55},sloten:{door:1}},
@@ -491,6 +553,10 @@ function vhScene(hid,o){o=o||{};const g=vhIso('v'+hid+(o.key||'')+'_'),F=o.furn|
  FURN.forEach(f=>{const A=VH_AT[hid]&&VH_AT[hid][f.id];if(!A||A.base||A.door||!VH_ITEM[f.id])return;const own=!!F[f.id];if(!own&&!(GH&&furnFits(f,hi)))return;
   const s=VH_ITEM[f.id](g,A,hid,L,F);if(!s)return;const w=`<g class="vh-it${own?'':' vh-ghost'}" data-it="${f.id}">${s}</g>`;
   if(A.w)L.wall.push(w);else L.obj.push({k:A.k!=null?A.k:A.x+(A.dx||0)/2+A.y+(A.dy||0)/2,s:w})});
+ // nieuwe spullen op de vrije plekken: eerst wat je hebt, daarna (in de winkel) wat je zou kunnen neerzetten
+ const sp=VH_SPOT[hid]||[],gen=FURN.filter(f=>VH_GEN[f.id]&&!(VH_AT[hid]&&VH_AT[hid][f.id])),mine=gen.filter(f=>F[f.id]),maybe=GH?gen.filter(f=>!F[f.id]&&furnFits(f,hi)):[];
+ mine.concat(maybe).slice(0,sp.length).forEach((f,i)=>{const [x,y]=sp[i],own=!!F[f.id];
+  L.obj.push({k:x+y+1,s:`<g class="vh-it${own?'':' vh-ghost'}" data-it="${f.id}">${g.ell(x+.5,y+.5,0,.55,'rgba(0,0,0,.28)')}${VH_GEN[f.id](g,x,y,f)}</g>`})});
  const pad=16,vb=[bx.x0-pad,bx.y0-pad,bx.x1-bx.x0+pad*2,bx.y1-bx.y0+pad*2].map(vhR).join(' ');
  const zz=L.bed&&!o.thumb?(p=>`<g class="vh-zz" transform="translate(${p[0]} ${p[1]})"><text x="0" y="0">z</text><text x="7" y="-9">z</text><text x="15" y="-20">Z</text></g>`)(g.P(L.bed[0],L.bed[1],L.bed[2])):'';
  return `<svg class="vh-svg${o.thumb?' vh-thumb':''}" viewBox="${vb}" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs>${g.defs.join('')}</defs>${L.walls.join('')}${L.wall.join('')}${L.floor.join('')}${L.obj.sort((a,b)=>a.k-b.k).map(x=>x.s).join('')}${L.front.join('')}${zz}</svg>`}

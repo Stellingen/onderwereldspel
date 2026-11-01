@@ -36,7 +36,7 @@ function spawnCar(m,spot){const [y0,y1]=m.y,year=y0+Math.floor(Math.random()*(y1
  const ST=[['Slecht',.72,.16],['Redelijk',.88,.36],['Goed',1,.34],['Nieuwstaat',1.08,.14]];let r=Math.random(),st=ST[2];for(const x of ST){r-=x[2];if(r<=0){st=x;break}}
  const base=m.lo+(m.hi-m.lo)*(.55*(1-age)+.45*(1-Math.min(1,km/220000)));
  const v=Math.max(Math.round(m.lo*.7/50)*50,Math.min(Math.round(m.hi*1.08/50)*50,Math.round(base*st[1]/50)*50));
- const pal=CAR_COLORS[m.d];return {id:m.id,spot,year,km,staat:st[0],v,c:pal[Math.floor(Math.random()*pal.length)],plate:randPlate()}}
+ const pal=CAR_COLORS[m.d];return {id:m.id,spot,year,km,staat:st[0],v,c:Math.random()<.4?carSig(m):pal[Math.floor(Math.random()*pal.length)],plate:randPlate()}}
 const carSell=v=>Math.round(v*(1+((S.skills&&S.skills.cars)||0)*SK.cars.price)*(1+famPerk('car'))*(1+fitFx('car'))/10)*10;
 let carSearch=null,oddsOpen=false;
 const findM=x=>CARS.find(k=>k.id===x.id)||CARS[0];
@@ -74,13 +74,24 @@ function huntBtns(){const x=S.carFind,left=cdLeft('car'),full=S.cars.length>=gar
  const sl=carSearch?'Zoeken…':jail?'Je zit vast':rest?'Uitrusten · <span id="huntRest">'+fmtClock(rest)+'</span>':left?'Even afkoelen · <span id="huntCd">'+fmtClock(left)+'</span>':full?'Garage vol, verkoop eerst':S.energy<en?'Te moe · '+en+' energie nodig':(live?'Laat staan, verder zoeken':'Zoek een auto')+' · '+en+' energie';
  const got=x&&x.res==='ok'?carGotHtml('zoek'):'';
  return `${got}<div class="hunt-btns">${steal}<button class="btn ${live||got?'ghost':'xl'}" onclick="act.searchCar()" ${sOk?'':'disabled'}>${got&&sOk?'Zoek nog een auto · '+en+' energie':sl}</button></div>${srchStam()}`}
+// Eigen kleur per model (zoals je hem het vaakst ziet) en het soort auto, zodat je in de collectie meteen ziet wat het is
+const CAR_SIG={panda:'#e8c547',corsa:'#d9483b',yaris:'#e6e1d6',clio:'#f08a24',p208:'#3a6fd8',picanto:'#7fd1c7',polo:'#c9cfd6',c3:'#d8a23a',
+ golf:'#c81e2c',focus:'#2f6fe0',leon:'#8a929c',a3:'#1f2a44',octavia:'#5fb34a',mini:'#2f6b4a',v60:'#a9b4c2',gr86:'#e8e4da',
+ m3:'#2f9ad8',c63:'#50565f',tesla:'#e9edf2',rs6:'#7d838d',rr:'#2a2f38',macan:'#b8333a',x5m:'#1c3d6e',
+ 911:'#e8c547','r8':'#e9edf2',taycan:'#6a4bd6',g63:'#1c1d22',mase:'#2a3f8a',bent:'#2f4f3a',db12:'#5a6b4a',
+ hura:'#a8e04a',urus:'#f2b21a',f8:'#c81e2c',mc720:'#f08a24',cull:'#3a2a4a',sf90:'#d01c2c',chiron:'#1f4fd8',jesko:'#e9edf2',
+ transporter:'#e9edf2',prius:'#f2c230',i30:'#5a8ac8',sprinter:'#d9dde2',xc90:'#3a4a5a',mustang:'#2f6fe0',raptor:'#f08a24',challenger:'#7a2be0',
+ sklasse:'#15171c',e280:'#c9b48a',limo:'#e9edf2',etype:'#2f5a3a',phantom:'#3a1f2a'};
+const CAR_KIND=b=>({city:'Stadsauto',hatch:'Hatchback',hot:'Hot hatch',sedan:'Sedan',estate:'Stationwagen',liftback:'Liftback',coupe:'Coupé',sport:'Sportwagen',gt:'Gran turismo',
+ suv:'SUV',cross:'Crossover',supersuv:'Super-SUV',offroad:'Terreinwagen',luxsuv:'Luxe-SUV',luxury:'Luxe sedan',super:'Supercar',hyper:'Hypercar',muscle:'Muscle car',pickup:'Pick-up',van:'Bestelbus',limo:'Limousine',classic:'Klassieker'})[String(b).replace(/\d+$/,'')]||'Auto';
+const carSig=m=>CAR_SIG[m.id]||(CAR_COLORS[m.d]||['#8a929c'])[0];
 function oddsList(){const dex=S.carDex||{},got=CARS.filter(m=>(dex[m.id]||[0,0])[1]>0).length,cur=S.carFind&&!S.carFind.res&&S.carFind.id;
  return `<div class="dex-top"><div><span class="label">Verzameld</span><b>${got} / ${CARS.length}</b></div><div class="dex-bar"><i style="width:${got/CARS.length*100}%"></i></div><div><span class="label">Niks gevonden</span><b>${oddTxt(FIND_TIER[0])}</b></div></div>
   ${[1,2,3,4,5,6].map(t=>{const R=tierName(t),ms=CARS.filter(m=>carTier(m)===t).sort((a,b)=>CAR_ODDS[b.id]-CAR_ODDS[a.id]),gt=ms.filter(m=>(dex[m.id]||[0,0])[1]>0).length;
    return `<section class="dex-tier" style="--rc:${R[1]}"><div class="dex-th"><h3>${R[0]}</h3><span>${oddTxt(FIND_TIER[t])} per zoektocht · ${gt}/${ms.length} verzameld</span></div>
    <div class="dex-grid">${ms.map(m=>{const d=dex[m.id]||[0,0],o=helerWants(m.id);return `<div class="dex-card ${d[1]?'got':''} ${cur===m.id?'now':''}">
-    <div class="dex-car">${carSvg(m.b,d[1]?(CAR_COLORS[m.d]||['#8a929c'])[0]:'#2a2f38')}</div>
-    <div class="dex-t"><b>${m.n}</b><span>${kTxt(m.lo)} – ${kTxt(m.hi)}</span></div>
+    <div class="dex-car">${carSvg(m.b,carSig(m))}</div>
+    <div class="dex-t"><b>${m.n}</b><small class="dex-k">${CAR_KIND(m.b)}</small><span>${kTxt(m.lo)} – ${kTxt(m.hi)}</span></div>
     <div class="dex-f"><em>${oddTxt(CAR_ODDS[m.id])}</em>${d[1]?`<i class="ok">✓ ${d[1]}× gestolen</i>`:d[0]?`<i>${d[0]}× gezien</i>`:'<i>nog niet gezien</i>'}${o?'<i class="hl">heler zoekt hem</i>':''}</div></div>`}).join('')}</div></section>`}).join('')}`}
 // Bestellingen van de heler: elke speldag (4 uur) vraagt hij 3 modellen. Lever je zo'n auto af uit je garage,
 // dan krijg je ×1,4 tot ×1,9 de waarde en wat straatcredit. Geeft een doel aan het verzamelen.

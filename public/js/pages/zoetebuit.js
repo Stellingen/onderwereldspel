@@ -1,7 +1,10 @@
-// Casino: Zoete Buit — snoepslot op 6 × 5, uitbetaling overal (8+ van hetzelfde), tumbles, en een bonus met kauwgomballen
-// die de winst vermenigvuldigen. Engine: js/zoet.js (ZOET), tekeningen: js/zoet-art.js (ZBA).
+// Casino: Suikerbaron (intern 'zoet') — snoepslot op 6 × 5, uitbetaling overal (8+ van hetzelfde), tumbles, en een bonus met
+// kauwgomballen die de winst vermenigvuldigen. Engine: js/zoet.js (ZOET), tekeningen: js/zoet-art.js (ZBA), geluid: SFX.zb (sfx.js).
 // De uitkomst ligt vast bij het draaien en wordt meteen verrekend; de animatie laat alleen zien wat er gebeurde.
-window.zb=window.zb||{bi:4,busy:false,grid:null,fs:null,lastWin:0,stepWin:0,shown:0,bet:0,tick:'',buyMode:false};
+// Indeling: bord links, rechts alles om te spelen (saldo, inzetten met wat je kunt betalen, draaiknop, bonus kopen, sessie).
+window.zb=window.zb||{bi:4,busy:false,grid:null,fs:null,lastWin:0,stepWin:0,shown:0,bet:0,tick:'',buyMode:false,sess:{n:0,bet:0,won:0,best:0,bon:0},hrOpen:null};
+if(!zb.sess)zb.sess={n:0,bet:0,won:0,best:0,bon:0};
+const ZB_NAME='Suikerbaron';
 const zbBet=()=>{const B=kkBets();if(zb.bi>=B.length)zb.bi=B.length-1;return B[zb.bi]};
 const zbEl=id=>document.getElementById(id);
 const zbOn=()=>page==='casino'&&casinoTab==='zoet'&&!!zbEl('zbCells')&&!document.hidden;
@@ -31,10 +34,10 @@ function zbFallTime(g,anim){const T=zbT();if(anim==='all'){const P=zb.plan||zbPl
 function zbLand(g,anim){const T=zbT();
  if(anim==='all'){const P=zb.plan||zbPlan(g);let n=0;
   for(let c=0;c<ZB_C();c++){const p=P[c],land=p.delay+(T.base+ZB_R()*T.per)*p.slow*.72,scs=g[c].filter(x=>x.sc).length,from=n;n+=scs;
-   if(p.tease)setTimeout(()=>{if(!zbOn())return;const gl=zbEl('zbGlow');if(gl){gl.style.setProperty('--c',c);gl.classList.add('on')}SFX.tease(p.cnt,(land-p.delay)/1000)},Math.max(0,p.delay-30));
-   setTimeout(()=>{if(!zbOn())return;SFX.land(c);for(let k=0;k<scs;k++)setTimeout(()=>SFX.scatter(from+k),k*90);const gl=zbEl('zbGlow');if(gl&&p.tease)gl.classList.remove('on')},land-20)}
+   if(p.tease)setTimeout(()=>{if(!zbOn())return;const gl=zbEl('zbGlow');if(gl){gl.style.setProperty('--c',c);gl.classList.add('on')}SFX.zb.tease(p.cnt,(land-p.delay)/1000)},Math.max(0,p.delay-30));
+   setTimeout(()=>{if(!zbOn())return;SFX.zb.land(c);for(let k=0;k<scs;k++)setTimeout(()=>SFX.zb.scatter(from+k),k*90);const gl=zbEl('zbGlow');if(gl&&p.tease)gl.classList.remove('on')},land-20)}
   zb.scSeen=n;return}
- for(let c=0;c<ZB_C();c++){if(!g[c].some(x=>x.fall))continue;const d=c*Math.round(T.col/3)+(T.base+Math.max(...g[c].map(x=>x.fall||0))*T.per)*.7;setTimeout(()=>{if(zbOn())SFX.land(c)},d-20)}}
+ for(let c=0;c<ZB_C();c++){if(!g[c].some(x=>x.fall))continue;const d=c*Math.round(T.col/3)+(T.base+Math.max(...g[c].map(x=>x.fall||0))*T.per)*.7;setTimeout(()=>{if(zbOn())SFX.zb.land(c)},d-20)}}
 // nieuwe spin: het oude bord valt naar beneden weg terwijl het nieuwe invalt
 function zbDropOut(){const cells=zbEl('zbCells');if(!cells||!zbOn()||!cells.children.length)return;const T=zbT(),dur=Math.round((T.base+ZB_R()*T.per)*.7);
  const old=cells.cloneNode(true);old.removeAttribute('id');old.classList.add('zb-old');
@@ -60,50 +63,67 @@ async function zbAnimate(sp,bet,inFs,runFrom){let sofar=0;zb.scSeen=0;
  for(let i=0;i<sp.steps.length;i++){const T=zbT(),st=sp.steps[i],anim=i===0?'all':'tumble';
   if(i===0)zbDropOut();zbShow(st.grid,anim);zbLand(st.grid,anim);
   await zbWait(zbFallTime(st.grid,anim)+60);
-  let sc=0;st.grid.forEach(col=>col.forEach(x=>{if(x.sc)sc++}));for(let k=zb.scSeen;k<sc;k++)SFX.scatter(k);
+  let sc=0;st.grid.forEach(col=>col.forEach(x=>{if(x.sc)sc++}));for(let k=zb.scSeen;k<sc;k++)SFX.zb.scatter(k);
   if(i>0&&sc>zb.scSeen&&sc>=(inFs?ZOET.RETRIG_SC:ZOET.TRIG))zbTick(`<b>${sc} lolly's</b>, er tumbelde er een bij!`);zb.scSeen=Math.max(zb.scSeen,sc);
   if(!st.wins.length)break;
   const hit=new Set();st.wins.forEach(w=>w.cells.forEach(([c,r])=>hit.add(c*ZB_R()+r)));
   document.querySelectorAll('#zbCells .zb-cell').forEach(el=>{const k=+el.dataset.k;el.classList.toggle('win',hit.has(k));el.classList.toggle('dim',!hit.has(k)&&!el.classList.contains('bomb'))});
-  st.wins.forEach(w=>zbLabel(w,bet));SFX.win(i);
+  st.wins.forEach(w=>zbLabel(w,bet));SFX.zb.win(i);
   const add=st.wins.reduce((a,w)=>a+w.pay,0)*bet;
   zbTick(st.wins.length>1?`${st.wins.map(w=>zbName(w)).join(' + ')}: <b>${fmt(add)}</b>`:`${zbName(st.wins[0])}: <b>${fmt(add)}</b>`);
   zbCount('zbStep',sofar,sofar+add,T.hold*.8);if(runFrom!=null){zbCount('zbLast',runFrom+sofar,runFrom+sofar+add,T.hold*.8);slotXSet(runFrom+sofar+add,bet)}zbShowBal(add);
   sofar+=add;zb.stepWin=sofar;await zbWait(T.hold);
-  document.querySelectorAll('#zbCells .zb-cell.win').forEach(el=>el.classList.add('pop'));SFX.pop();zbSparks([...hit]);await zbWait(T.pop)}
+  document.querySelectorAll('#zbCells .zb-cell.win').forEach(el=>el.classList.add('pop'));SFX.zb.pop();zbSparks([...hit]);await zbWait(T.pop)}
  document.querySelectorAll('#zbCells .zb-cell').forEach(el=>el.classList.remove('dim'));
  return sofar}
 // kauwgomballen: een voor een optellen, daarna × de winst van de spin
 async function zbBombs(sp,bet,sofar,runFrom){if(!sp.mult||!sp.bombs.length)return sofar;const T=zbT();let m=0;const mb=zbEl('zbMul');
  for(const [c,r,v] of sp.bombs){const el=zbCellEl(c*ZB_R()+r);if(el)el.classList.add('boom');m+=v;if(mb){mb.textContent='×'+m;mb.classList.remove('bump');void mb.offsetWidth;mb.classList.add('bump')}
-  SFX.mult(v);zbTick(`Kauwgombal <b>×${v}</b>${sp.bombs.length>1?' · samen ×'+m:''}`);await zbWait(T.bomb)}
- const to=sofar*sp.mult;SFX.big();zbTick(`${fmt(sofar)} × ${sp.mult} = <b>${fmt(to)}</b>`);
+  SFX.zb.mult(v);zbTick(`Kauwgombal <b>×${v}</b>${sp.bombs.length>1?' · samen ×'+m:''}`);await zbWait(T.bomb)}
+ const to=sofar*sp.mult;SFX.zb.big();zbTick(`${fmt(sofar)} × ${sp.mult} = <b>${fmt(to)}</b>`);
  zbCount('zbStep',sofar,to,T.hold);zbShowBal(to-sofar);if(runFrom!=null){zbCount('zbLast',runFrom+sofar,runFrom+to,T.hold);slotXSet(runFrom+to,bet)}
  const fx=zbEl('zbFx');if(fx&&zbOn()){const d=document.createElement('div');d.className='zb-multpop';d.innerHTML=`×${sp.mult}<small>${fmt(to)}</small>`;fx.appendChild(d);setTimeout(()=>d.remove(),1700)}
  await zbWait(T.hold*1.3);document.querySelectorAll('#zbCells .zb-cell.boom').forEach(el=>el.classList.remove('boom'));if(mb)mb.textContent='×0';return to}
 function zbInfo(){const fs=zb.fs,pend=window.slotPending||0;
- return `<div class="kk-bal has-r"><div class="kk-bal-l"><span class="label">Saldo</span><b id="zbBal">${fmt(S.cash-pend+(zb.shown||0))}</b></div>${fs?slotFsIn(fs,'Free spins'):slotBetIn(zb.busy&&zb.bet?zb.bet:zbBet(),zb.buyMode,ZOET.BUY_COST)}</div>
-  <div class="kk-stat"><span class="label">Deze spin</span><b id="zbStep" class="acc">${fmt(zb.stepWin)}</b></div>
-  <div class="kk-stat"><span class="label">${fs?'Bonuswinst':'Gewonnen'}</span><b id="zbLast" class="grn">${fmt(fs?fs.total:zb.lastWin)}</b></div>
-  ${fs?`<div class="kk-stat kk-fsx"><span class="label">Bonus</span><b class="sm kk-xn">${slotX(fs.total,zb.bet)}</b></div>`:''}`}
+ return `<div class="sb-bal"><div class="sb-bal-l"><span class="label">Saldo</span><b id="zbBal" data-fit="18">${fmt(S.cash-pend+(zb.shown||0))}</b></div>${fs?slotFsIn(fs,'Free spins'):slotBetIn(zb.busy&&zb.bet?zb.bet:zbBet(),zb.buyMode,ZOET.BUY_COST)}</div>
+  <div class="sb-st"><span class="label">Deze spin</span><b id="zbStep" class="acc" data-fit="12">${fmt(zb.stepWin)}</b></div>
+  <div class="sb-st"><span class="label">${fs?'Bonuswinst':'Gewonnen'}</span><b id="zbLast" class="grn" data-fit="12">${fmt(fs?fs.total:zb.lastWin)}</b></div>
+  ${fs?`<div class="sb-st sb-fsx"><span class="label">Bonus tot nu toe</span><b class="kk-xn">${slotX(fs.total,zb.bet)}</b></div>`:''}`}
 function zbFsBar(){const f=zb.fs;if(!f)return '';
  return `<div class="zb-fs"><div class="zb-fsl"><span>Free spins</span><b class="kk-fsl">${Math.max(0,f.of-f.at)}</b></div>
   <p>Kauwgomballen blijven liggen tot de spin klaar is. Valt er winst, dan tellen ze op en gaat de winst van die spin keer het totaal. ${ZOET.RETRIG_SC}+ lolly's = +${ZOET.FS_RETRIG} spins.</p>
   <div class="zb-mul"><span>Deze spin</span><b id="zbMul">×0</b></div></div>`}
-function zbSubHtml(){return zb.fs?'':`${typeof kkTierTag==='function'?kkTierTag():''}<span>Bonus ±1 op ${ZB_TIER[tier()].b} · max ${ZOET.MAX_WIN.toLocaleString('nl-NL')}×</span>`}
-function zbControls(){const b=zbBet();return `<div class="kk-betbox"><span class="label">Inzet · klik om te kiezen</span>
-   <div class="kk-bet"><button onclick="zbStepBet(-1)" ${zb.busy?'disabled':''} aria-label="Lagere inzet">−</button><button class="kk-betv" onclick="slotBetPop('zb')" ${zb.busy?'disabled':''} aria-label="Inzet kiezen" title="Klik om je inzet te kiezen">${fmt(b)}</button><button onclick="zbStepBet(1)" ${zb.busy?'disabled':''} aria-label="Hogere inzet">+</button></div></div>
-   ${zb.buyMode?`<button class="btn kk-go buy" onclick="act.zbSpin(true)" ${zb.busy||inJail()||casCash()<b*ZOET.BUY_COST?'disabled':''}><span class="kk-buy-l">${zb.busy?'Bezig…':casCash()<b*ZOET.BUY_COST?'Te weinig geld':'Bonus kopen'}</span><b class="kk-buy-p">${fmt(b*ZOET.BUY_COST)}</b><small>${ZOET.BUY_COST}× je inzet van ${fmt(b)}</small></button>`
-    :`<button class="btn kk-go" onclick="act.zbSpin(false)" ${zb.busy||inJail()?'disabled':''}>${zb.busy?'Bezig…':'Draaien'}<small>spatie</small></button>`}
-   <div class="kk-small">${slotSpdHtml()}
-    <button class="kk-buyt ${zb.buyMode?'on':''}" onclick="zb.buyMode=!zb.buyMode;SFX.click();zbRefresh()" ${zb.busy?'disabled':''} aria-pressed="${!!zb.buyMode}"><i></i><span>Bonus kopen</span><small>${zb.buyMode?'aan':'uit'} · ${fmt(b*ZOET.BUY_COST)}</small></button></div>`}
-function zbConfirm(){const b=zbBet(),buy=b*ZOET.BUY_COST;return `<div class="kk-buyinfo"><b>Bonus kopen staat aan · ${fmt(buy)} per bonus</b><span>Elke klik op de grote knop koopt een bonus voor ${fmt(buy)} (${ZOET.BUY_COST}× je inzet van ${fmt(b)}). Je krijgt altijd ${ZOET.TRIG} lolly's en ${ZOET.FS_START} free spins; valt er vanzelf nog een lolly, dan betaalt die ook mee (${ZOET.TRIG} = ${ZOET.SC_PAY[4]}×, 5 = ${ZOET.SC_PAY[5]}×, 6+ = ${ZOET.SC_PAY[6]}× je inzet). Gemiddeld krijg je ±${ZB_TIER[tier()].buy}% van de prijs terug, maar de helft van de keren minder dan 65× je inzet: de rest zit in de uitschieters met grote kauwgomballen. Zet hem uit om weer gewoon te draaien.</span></div>`}
+function zbSubHtml(){return zb.fs?`<span class="sb-tag fs">Bonus</span><span>Kauwgomballen vermenigvuldigen je winst</span>`
+ :`${typeof kkTierTag==='function'?kkTierTag():''}<span>Bonus ±1 op ${ZB_TIER[tier()].b} · RTP ±${ZB_TIER[tier()].rtp}% · max ${ZOET.MAX_WIN.toLocaleString('nl-NL')}× je inzet</span>`}
+// grootste inzet waarvoor je een bonus kunt kopen (index), of -1
+const zbBuyMaxI=()=>{const B=kkBets(),c=casCash();let r=-1;B.forEach((v,i)=>{if(v*ZOET.BUY_COST<=c)r=i});return r};
+// rechts: alle inzetten in een raster. Met bonus kopen aan zie je per inzet de prijs van de bonus; wat je niet kunt betalen is grijs.
+function zbBetsHtml(){const b=zbBet(),buy=!!zb.buyMode,cost=ZOET.BUY_COST,dis=zb.busy?'disabled':'',hr=typeof isHighRoller==='function'&&isHighRoller(),B=kkBets(),cash=casCash();
+ const std=B.map((v,i)=>[v,i]).filter(([v])=>v<=50000),hi=B.map((v,i)=>[v,i]).filter(([v])=>v>50000),showHi=hr&&hi.length&&(zb.hrOpen==null?b>50000:zb.hrOpen);
+ const btn=([v,i])=>{const pr=buy?v*cost:v,no=cash<pr;return `<button class="${i===zb.bi?'on':''} ${no?'no':''}" onclick="zbSetBet(${i})" ${dis} title="${fmt(v)} inzet${buy?' · bonus '+fmt(pr):''}${no?' · te weinig saldo':''}">${buy?`<b>${kkShortBet(pr)}</b><small>${kkShortBet(v)}</small>`:`<b>${kkShortBet(v)}</b>`}</button>`};
+ const mi=zbBuyMaxI();
+ return `<div class="sb-bets-h"><div><span class="label">${buy?'Bonus kopen · prijs per bonus':'Inzet per spin'}</span>
+   <div class="sb-amt"><button onclick="zbStepBet(-1)" ${dis} aria-label="Lagere inzet">−</button><b data-fit="16">${fmt(buy?b*cost:b)}</b><button onclick="zbStepBet(1)" ${dis} aria-label="Hogere inzet">+</button></div></div>
+   ${buy?`<em>${cost}× je inzet van ${fmt(b)}</em>`:`<em>bonus kopen: ${fmt(b*cost)}</em>`}</div>
+  <div class="sb-grid ${buy?'buy':''}">${(showHi?hi:std).map(btn).join('')}</div>
+  ${buy&&cash<b*cost?`<p class="sb-hint">${mi>=0?`Je kunt een bonus kopen tot <b>${fmt(B[mi]*cost)}</b>. <button class="sb-lnk" onclick="zbSetBet(${mi})" ${dis}>Kies ${fmt(B[mi])} inzet</button>`:`Een bonus kost minstens ${fmt(B[0]*cost)}. Daar heb je nu te weinig voor.`}</p>`:''}
+  ${hr&&hi.length?`<button class="sb-hr ${showHi?'on':''}" onclick="zb.hrOpen=!${showHi};zbRefresh()" ${dis} aria-expanded="${!!showHi}"><span>${showHi?'Gewone inzetten':'High roller-inzetten'}</span><small>${showHi?'€10 t/m €50K':'tot '+kkShortBet(hi[hi.length-1][0])}</small></button>`:''}`}
+function zbControls(){const b=zbBet(),bc=b*ZOET.BUY_COST,poor=casCash()<bc;
+ return `<div class="sb-step"><span class="label">Inzet · klik om te kiezen</span>
+   <div class="sb-amt"><button onclick="zbStepBet(-1)" ${zb.busy?'disabled':''} aria-label="Lagere inzet">−</button><button class="sb-betv" onclick="slotBetPop('zb')" ${zb.busy?'disabled':''} aria-label="Inzet kiezen">${fmt(b)}</button><button onclick="zbStepBet(1)" ${zb.busy?'disabled':''} aria-label="Hogere inzet">+</button></div></div>
+  ${zb.buyMode?`<button class="sb-go buy" onclick="act.zbSpin(true)" ${zb.busy||inJail()||poor?'disabled':''}><span>${zb.busy?'Bezig…':poor?'Te weinig saldo':'Koop bonus'}</span><b data-fit="16">${fmt(bc)}</b><small>${ZOET.FS_START} free spins · ${ZOET.TRIG} lolly's</small></button>`
+   :`<button class="sb-go" onclick="act.zbSpin(false)" ${zb.busy||inJail()?'disabled':''}><span>${zb.busy?'Bezig…':'Draaien'}</span><small>spatiebalk</small></button>`}
+  <div class="sb-row">${slotSpdHtml('sb-spd')}
+   <button class="kk-buyt sb-buyt ${zb.buyMode?'on':''}" onclick="zb.buyMode=!zb.buyMode;SFX.click();zbRefresh()" ${zb.busy?'disabled':''} aria-pressed="${!!zb.buyMode}"><i></i><span>Bonus kopen</span><small>${zb.buyMode?'aan':'uit'}</small></button></div>`}
+function zbConfirm(){const b=zbBet(),buy=b*ZOET.BUY_COST;return `<div class="sb-bonus"><span class="sb-bonus-ic">${ZBA.svg('lolly')}</span><div><b>Bonus kopen staat aan</b>
+  <p>Elke klik koopt een bonus voor <b>${fmt(buy)}</b> (${ZOET.BUY_COST}× je inzet): altijd ${ZOET.TRIG} lolly's en ${ZOET.FS_START} free spins. Valt er nog een lolly bij, dan betaalt die mee. Gemiddeld ±${ZB_TIER[tier()].buy}% terug; de helft van de keren minder dan 65× je inzet, de rest zit in de grote kauwgomballen.</p></div></div>`}
+function zbSessHtml(){const x=zb.sess||{n:0,bet:0,won:0,best:0,bon:0},net=x.won-x.bet;
+ return `<div class="sb-sess"><span class="label">Deze sessie</span>
+  <div><span>Spins</span><b>${x.n.toLocaleString('nl-NL')}</b></div><div><span>Bonussen</span><b>${x.bon}</b></div><div><span>Netto</span><b class="${net>0?'up':net<0?'dn':''}" data-fit="10">${net>=0?'+':'−'}${fmt(Math.abs(net))}</b></div></div>`}
 function zbSeed(){if(!S.zbSeed||!S.zbSeed.s)S.zbSeed=kkNewSd(S.zbSeed&&S.zbSeed.prev);return S.zbSeed}
-function zbSeedHtml(){const s0=zbSeed(),p=s0.prev,sd={...s0,bon:s0.bon-(zb.busy&&zb.sdPend?1:0)};
- return `<div class="kk-seed"><div class="kk-seed-i"><span class="label">Seed</span><b>${kkSeedId(sd)}</b></div>
-  <div class="kk-seed-i"><span class="label">Op deze seed</span><b>${sd.spins} spin${sd.spins===1?'':'s'}, ${sd.bon} bonus${sd.bon===1?'':'sen'}</b></div>
-  ${p?`<div class="kk-seed-i prev"><span class="label">Vorige seed</span><b>${p.id}: ${p.spins} spins, ${p.bon} bonus${p.bon===1?'':'sen'}</b></div>`:''}
-  <button class="btn ghost sm" onclick="act.zbNewSeed()" ${zb.busy?'disabled':''}>Nieuwe seed</button></div>`}
+function zbSeedHtml(){const s0=zbSeed(),sd={...s0,bon:s0.bon-(zb.busy&&zb.sdPend?1:0)};
+ return `<div class="sb-seed"><div><span class="label">Seed</span><b>${kkSeedId(sd)}</b><small>${sd.spins} spin${sd.spins===1?'':'s'}, ${sd.bon} bonus${sd.bon===1?'':'sen'}</small></div>
+  <button class="sb-lnk" onclick="act.zbNewSeed()" ${zb.busy?'disabled':''}>Nieuwe seed</button></div>`}
 // Uitbetaling per snoepje bij de gekozen inzet (8–9, 10–11, 12–14, 15+), lolly's en kauwgomballen
 function zbPayTab(){const b=zbBet(),k=ZOET.PAYK*(ZOET.VIP_KT[tier()]||1),B=['8–9','10–11','12–14','15+'];
  const rows=ZOET.SYMS.slice().reverse().map(s=>`<div class="zb-pt"><span>${ZBA.svg(s.id)}</span><div><b>${s.n}</b>${s.p.map((p,i)=>`<p><i>${B[i]}</i>${fmt(p*k*b)}</p>`).join('')}</div></div>`).join('');
@@ -113,20 +133,29 @@ function zbPayTab(){const b=zbBet(),k=ZOET.PAYK*(ZOET.VIP_KT[tier()]||1),B=['8�
    <div class="kk-scpay zb-scpay">${[4,5,6].map(n=>`<span><i>${n}${n===6?'+':''} lolly's</i><b>${fmt(ZOET.SC_PAY[n]*b)}</b><i>${ZOET.SC_PAY[n]}×</i></span>`).join('')}</div>
    <h3 class="vd-h" style="margin-top:18px">Kauwgomballen in de bonus</h3><div class="zb-balls">${balls}</div>
    <p class="vd-p" style="margin-top:8px">Hoe hoger, hoe zeldzamer: ×250 en hoger komen maar heel af en toe voor.</p></div></div>`}
-// Zoete Buit-bord: luifel met de naam, raster, melding
-const ZB_TOP=`<div class="zb-top" aria-hidden="true"><svg class="zb-awn" viewBox="0 0 600 40" preserveAspectRatio="none">${Array.from({length:12},(_,i)=>`<path d="M${i*50} 0h50v24a25 16 0 0 1-50 0z" fill="${i%2?'#fff':'#ff4f9a'}"/>`).join('')}</svg>
- <div class="zb-sign"><span>Zoete</span><b>Buit</b></div></div>`;
+const zbLogo=()=>`<div class="sb-logo"><span class="sb-hat">${ZBA.hat()}</span><span class="sb-name">Suiker<b>baron</b></span></div>`;
 function zoetView(){const g=zb.grid||zbDemo(),fs=zb.fs;
- return `<div class="kk kk3 vd zb ${fs?'is-fs':''}">
- <div class="kk-stage vd-stage zb-stage" id="zbStage">
-  <div class="zb-board" id="zbBoard">${ZB_TOP}<button class="kk-snd zb-snd" onclick="SFX.toggle();this.textContent=SFX.on?'🔊':'🔇'" aria-label="Geluid aan of uit">${SFX.on?'🔊':'🔇'}</button><span id="zbSub" class="zb-sub">${zbSubHtml()}</span>
-   <div id="zbFs">${zbFsBar()}</div>
-   <div class="zb-deck"><div class="zb-grid"><div class="zb-glow" id="zbGlow"></div><div class="zb-cells" id="zbCells">${zbCellsHtml(g,'none')}</div><div class="zb-fx" id="zbFx"></div></div></div>
-   <div class="vd-tick zb-tick" id="zbTick">${zb.tick||(fs?'Kauwgomballen vermenigvuldigen de winst van de spin':'8 of meer van hetzelfde wint, waar ze ook liggen. 4 lolly\'s geven de bonus.')}</div>
-   <div id="zbBanner"></div>${zbRunHtml()}</div>
-  <div class="kk-bar"><div class="kk-hud" id="zbInfo">${zbInfo()}</div><div class="kk-ctl" id="zbCtl">${zbControls()}</div></div>
-  <div id="zbConfirmBox">${zb.buyMode&&!zb.busy?zbConfirm():''}</div>
-  <div id="zbSeedBox">${zbSeedHtml()}</div>
+ return `<div class="zb sb ${fs?'is-fs':''} ${zb.buyMode?'is-buy':''}">
+ <div class="sb-stage" id="zbStage">
+  <header class="sb-head">${zbLogo()}
+   <div class="sb-sub" id="zbSub">${zbSubHtml()}</div>
+   <button class="sb-ibtn" onclick="SFX.toggle();this.textContent=SFX.on?'🔊':'🔇'" aria-label="Geluid aan of uit" title="Geluid">${SFX.on?'🔊':'🔇'}</button></header>
+  <div class="sb-main">
+   <div class="sb-play">
+    <div id="zbFs">${zbFsBar()}</div>
+    <div class="sb-board" id="zbBoard">
+     <div class="zb-grid"><div class="zb-glow" id="zbGlow"></div><div class="zb-cells" id="zbCells">${zbCellsHtml(g,'none')}</div><div class="zb-fx" id="zbFx"></div></div>
+     <div id="zbBanner"></div>${zbRunHtml()}</div>
+    <div class="sb-tick" id="zbTick">${zb.tick||(fs?'Kauwgomballen vermenigvuldigen de winst van de spin':'8 of meer van hetzelfde wint, waar ze ook liggen. 4 lolly\'s geven de bonus.')}</div>
+   </div>
+   <aside class="sb-side">
+    <div class="sb-hud" id="zbInfo">${zbInfo()}</div>
+    <div class="sb-bets" id="zbBets">${zbBetsHtml()}</div>
+    <div class="sb-ctl" id="zbCtl">${zbControls()}</div>
+    <div id="zbConfirmBox">${zb.buyMode&&!zb.busy?zbConfirm():''}</div>
+    <div class="sb-foot"><div id="zbSess">${zbSessHtml()}</div><div id="zbSeedBox">${zbSeedHtml()}</div></div>
+   </aside>
+  </div>
  </div>
  <section class="card kk-pay vd-pay zb-pay"><div id="zbPayTab">${zbPayTab()}</div>
   <div class="kk-rules">
@@ -135,47 +164,54 @@ function zoetView(){const g=zb.grid||zbDemo(),fs=zb.fs;
    <div><span>${ZBA.svg('bal',10)}</span><p><b>Kauwgomballen</b> vallen alleen in de bonus, met ×2 tot ×1.000. Ze blijven liggen tot de spin klaar is. Is er in die spin iets gewonnen, dan worden alle ballen op het bord opgeteld en gaat de winst van de hele spin keer dat totaal. Zonder winst doen ze niets.</p></div>
    <div><span class="kk-mini key">␣</span><p><b>Spatiebalk</b> draait. De max win is ${ZOET.MAX_WIN.toLocaleString('nl-NL')}× je inzet per ronde, ook bij een gekochte bonus. RTP ±${ZB_TIER[tier()].rtp}%, bonus kopen ±${ZB_TIER[tier()].buy}%.${isVip()?` Als <b>${lidName()}</b> vallen er vaker lolly's (bonus ±1 op ${ZB_TIER[tier()].b} in plaats van ±1 op ${ZB_TIER[0].b}); snoepjes betalen in het basisspel daarvoor ${Math.round((1-ZOET.VIP_KT[tier()]/ZOET.VIP_KT[0])*100)}% minder.`:` <b>VIP</b> komt ±10% vaker in de bonus, <b>High roller</b> ±30%.`}</p></div>
   </div></section></div>`}
-function zbRefresh(){const root=document.querySelector('.zb');if(!root)return;root.classList.toggle('is-fs',!!zb.fs);
- const set=(id,h)=>{const e=zbEl(id);if(e){e.innerHTML=h;fitText(e)}};
- set('zbSub',zbSubHtml());set('zbInfo',zbInfo());set('zbCtl',zbControls());set('zbFs',zbFsBar());
- set('zbConfirmBox',zb.buyMode&&!zb.busy?zbConfirm():'');set('zbSeedBox',zbSeedHtml());set('zbPayTab',zbPayTab())}
+function zbRefresh(){const root=document.querySelector('.zb');if(!root)return;root.classList.toggle('is-fs',!!zb.fs);root.classList.toggle('is-buy',!!zb.buyMode);
+ const set=(id,h)=>{const e=zbEl(id);if(e&&e._h!==h){e.innerHTML=h;e._h=h;fitText(e)}};
+ set('zbSub',zbSubHtml());set('zbInfo',zbInfo());set('zbBets',zbBetsHtml());set('zbCtl',zbControls());set('zbFs',zbFsBar());
+ set('zbConfirmBox',zb.buyMode&&!zb.busy?zbConfirm():'');set('zbSess',zbSessHtml());set('zbSeedBox',zbSeedHtml());set('zbPayTab',zbPayTab())}
 function zbStepBet(d){if(zb.busy)return;zb.bi=Math.max(0,Math.min(kkBets().length-1,zb.bi+d));SFX.chip();zbRefresh()}
 function zbSetBet(i){if(zb.busy)return;zb.bi=Math.max(0,Math.min(kkBets().length-1,i));SFX.chip();zbRefresh()}
+// Bonus binnen (gewonnen of gekocht): de krullolly draait het bord in, snoepjes knallen alle kanten op, dan de free spins
+async function zbIntro(n,sc,isBuy){const fast=slotSpd()===3,dur=fast?1500:2800,el=zbEl('zbBanner');SFX.zb.bonus();
+ const kinds=['zuurtje','gombeer','donut','spek','bal','bonbon','zuurstok','wafel'];
+ if(el&&zbOn())el.innerHTML=`<div class="sb-intro" style="--dur:${dur}ms"><div class="sb-rays"></div><div class="sb-in-lolly">${ZBA.svg('lolly')}</div>
+  <div class="sb-in-burst">${Array.from({length:18},(_,i)=>{const a=i/18*Math.PI*2+.2,d=34+(i%3)*8;return `<i style="--dx:${(Math.cos(a)*d).toFixed(1)}cqi;--dy:${(Math.sin(a)*d*.8).toFixed(1)}cqi;--r:${(i*67)%360-180}deg;--dl:${(i%4)*45}ms">${ZBA.svg(kinds[i%kinds.length],[3,12,40][i%3])}</i>`}).join('')}</div>
+  <div class="sb-in-t"><b>${n} free spins</b><span>${isBuy?'Gekochte bonus':sc+' lolly\'s'} · kauwgomballen vermenigvuldigen je winst</span></div></div>`;
+ await zbWait(dur);const e=zbEl('zbBanner');if(e)e.innerHTML=''}
 // from = free spin waar een eerder gestarte bonus verdergaat (het geld is dan al verrekend)
 async function zbPlay(round,bet,isBuy,from){const T=zbT();zb.stepWin=0;zbText('zbStep',fmt(0));const resume=from!=null&&!!round.fs;
  const b=round.base;
  if(resume){zbTick('Je bonus gaat verder');zbShow(b.steps[b.steps.length-1].grid,'none')}
  else{zbTick(isBuy?'Bonus gekocht':'&nbsp;');let w=await zbAnimate(b,bet,false,null);if(!w&&!round.fs)zbTick(b.sc===3?'Drie lolly\'s, net niet':'Geen winst')}
  const baseWin=b.win*bet,scPay=b.scPay*bet;
- if(scPay>0&&!resume){document.querySelectorAll('#zbCells .zb-cell.sc').forEach(el=>el.classList.add('win'));SFX.win(3);zbShowBal(scPay);
+ if(scPay>0&&!resume){document.querySelectorAll('#zbCells .zb-cell.sc').forEach(el=>el.classList.add('win'));SFX.zb.win(3);zbShowBal(scPay);
   zbCount('zbStep',baseWin-scPay,baseWin,700);await zbBanner('+'+fmt(scPay),Math.min(6,b.sc)+(b.sc>6?'+':'')+' lolly\'s betalen '+b.scPay+'× je inzet',1900,'gold')}
  if(baseWin>0){zb.lastWin=baseWin;zbText('zbLast',fmt(baseWin))}
- if(round.fs){SFX.bonus();const st0=resume?Math.max(0,Math.min(from,round.fs.spins.length-1)):0;
-  if(resume)await zbBanner('Je bonus gaat verder','Free spin '+(st0+1)+' · het geld staat al op je saldo',2200,'fsin');
-  else{zbTick(`<b>${b.sc} lolly's</b>: bonus!`);await zbWait(T.hold*.7);await zbBanner(round.fsStart+' free spins',b.sc+' lolly\'s · kauwgomballen vermenigvuldigen je winst',2400,'fsin')}
+ if(round.fs){const st0=resume?Math.max(0,Math.min(from,round.fs.spins.length-1)):0;
+  if(resume){SFX.zb.bonus(true);await zbBanner('Je bonus gaat verder','Free spin '+(st0+1)+' · het geld staat al op je saldo',2200,'fsin')}
+  else{zbTick(`<b>${b.sc} lolly's</b>: bonus!`);await zbWait(T.hold*.5);await zbIntro(round.fsStart,b.sc,isBuy)}
   document.querySelectorAll('#zbCells .zb-cell.win').forEach(el=>el.classList.remove('win'));
   zb.fs={at:0,of:round.fsStart,total:0};let of=round.fsStart;
   for(let i=0;i<st0;i++){const s=round.fs.spins[i];if(s.extra)of+=s.extra;zb.fs.of=of;zb.fs.at=i+1;zb.fs.total=Math.min(ZOET.MAX_WIN,s.total)*bet}
   zbRefresh();if(st0)zbText('zbLast',fmt(zb.fs.total));
   for(let i=st0;i<round.fs.spins.length;i++){const s=round.fs.spins[i];
    if(S.slotRun&&S.slotRun.g==='zoet'&&i>(S.slotRun.at||0)){S.slotRun.at=i;save()}
-   zb.fs.at=i+1;zb.fs.of=Math.max(of,i+1);slotFsSet(zb.fs.at,zb.fs.of);zb.stepWin=0;zbText('zbStep',fmt(0));SFX.spin();
+   zb.fs.at=i+1;zb.fs.of=Math.max(of,i+1);slotFsSet(zb.fs.at,zb.fs.of);zb.stepWin=0;zbText('zbStep',fmt(0));SFX.zb.spin();
    const before=zb.fs.total;let w=await zbAnimate(s,bet,true,before);
    if(s.mult)w=await zbBombs(s,bet,w,before);
    else if(!w)zbTick(s.bombs.length?'Kauwgomballen, maar geen winst':'Geen winst deze spin');
    zb.fs.total=Math.min(ZOET.MAX_WIN,s.total)*bet;zbText('zbLast',fmt(zb.fs.total));slotXSet(zb.fs.total,bet);
-   if(round.fs.maxHit&&s.total>=ZOET.MAX_WIN){SFX.big();await zbBanner('Max win',ZOET.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3000,'big gold');break}
-   if(s.extra){SFX.bonus();of+=s.extra;zb.fs.of=Math.max(of,zb.fs.at);slotFsSet(zb.fs.at,zb.fs.of,s.extra);await zbBanner('+'+s.extra+' spins',s.sc+' lolly\'s tijdens de bonus',1500,'fsin')}
+   if(round.fs.maxHit&&s.total>=ZOET.MAX_WIN){SFX.zb.big();await zbBanner('Max win',ZOET.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3000,'big gold');break}
+   if(s.extra){SFX.zb.retrig();of+=s.extra;zb.fs.of=Math.max(of,zb.fs.at);slotFsSet(zb.fs.at,zb.fs.of,s.extra);await zbBanner('+'+s.extra+' spins',s.sc+' lolly\'s tijdens de bonus',1500,'fsin')}
    await zbWait(slotSp(300,120))}
-  const x=round.fs.total;if(x>=20)SFX.big();
+  const x=round.fs.total;if(x>=20)SFX.zb.big();
   await zbBanner(fmt(x*bet),(x>=ZOET.MAX_WIN?'Max win · ':x>=200?'Episch · ':x>=100?'Megawinst · ':x>=40?'Zoete winst · ':'Bonus voorbij · ')+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× je inzet',2600,x>=40?'big':'');
   zb.fs=null;zbRefresh();zbTick(`Bonus voorbij: <b>${fmt(x*bet)}</b>`)}
- else{const x=round.total;if(x>=20){SFX.big();await zbBanner(fmt(x*bet),(x>=100?'Megawinst':'Zoete winst')+' · '+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× je inzet',2000,'big')}else if(x===0)SFX.lose()}}
+ else{const x=round.total;if(x>=20){SFX.zb.big();await zbBanner(fmt(x*bet),(x>=100?'Megawinst':'Zoete winst')+' · '+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× je inzet',2000,'big')}else if(x===0)SFX.zb.lose()}}
 document.addEventListener('keydown',e=>{if(e.code!=='Space'||page!=='casino'||casinoTab!=='zoet'||window.__chase||czBanLeft())return;const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;if(!$('#modal').hidden)return;
  e.preventDefault();if(document.activeElement&&document.activeElement.tagName==='BUTTON')document.activeElement.blur();if(zb.busy)return;if(S.slotRun&&S.slotRun.g==='zoet'){zbResumeRun();return}if(zb.buyMode){if(!e.repeat)act.zbSpin(true);return}act.zbSpin(false)});
 async function zbResumeRun(){const run=S.slotRun;if(!run||run.g!=='zoet'||zb.busy)return;
  let round=null;try{round=ZOET.playRound(SLOT.seedRng(run.seed),{buy:run.buy,vip:run.t})}catch(e){}
- if(!round||!round.fs||Math.abs(round.total-run.tot)>1e-6){delete S.slotRun;save();render();toast('Je bonus in Zoete Buit is al uitbetaald: '+fmt(run.pay),'lvl');return}
+ if(!round||!round.fs||Math.abs(round.total-run.tot)>1e-6){delete S.slotRun;save();render();toast('Je bonus in '+ZB_NAME+' is al uitbetaald: '+fmt(run.pay),'lvl');return}
  zb.busy=true;zb.bet=run.bet;zb.shown=0;window.slotPending=0;SFX.click();render();
  try{await zbPlay(round,run.bet,run.buy,run.at||0)}catch(e){console.error(e)}
  zb.busy=false;zb.fs=null;zb.lastWin=run.pay;zb.stepWin=0;delete S.slotRun;save();renderTop();zbRefresh()}
@@ -186,7 +222,7 @@ const zbRunHtml=()=>{const run=S.slotRun;if(!run||run.g!=='zoet'||zb.busy)return
 Object.assign(act,{
  zbNewSeed(){if(zb.busy)return;const o=zbSeed();S.zbSeed=kkNewSd({id:kkSeedId(o),spins:o.spins,bon:o.bon,sup:0});SFX.chip();save();zbRefresh();toast('Nieuwe seed: '+kkSeedId(S.zbSeed))},
  async zbSpin(isBuy){if(zb.busy||inJail())return;const bet=zbBet(),cost=isBuy?bet*ZOET.BUY_COST:bet;if(casCash()<cost){toast(casShort(),'bad');return}
-  zb.busy=true;zb.bet=bet;zb.shown=0;SFX.spin();
+  zb.busy=true;zb.bet=bet;zb.shown=0;SFX.zb.spin();
   if(S.slotRun&&S.slotRun.g==='zoet')delete S.slotRun;
   const sd=zbSeed(),seedStr='zoet:'+sd.s+':'+sd.c+':'+sd.n,rng=SLOT.seedRng(seedStr);sd.n++;
   const round=ZOET.playRound(rng,{buy:isBuy,vip:tier()});if(!isBuy){sd.spins++;if(round.fs)sd.bon++}
@@ -198,7 +234,8 @@ Object.assign(act,{
   save();renderTop();zbRefresh();
   try{await zbPlay(round,bet,isBuy)}catch(e){console.error(e)}
   window.slotPending=0;zb.busy=false;zb.shown=0;zb.fs=null;zb.lastWin=pay+lk;zb.stepWin=0;zb.sdPend=0;if(S.slotRun&&S.slotRun.g==='zoet')delete S.slotRun;
+  const ss=zb.sess||(zb.sess={n:0,bet:0,won:0,best:0,bon:0});ss.n++;ss.bet+=cost;ss.won+=pay+lk;ss.best=Math.max(ss.best,pay+lk);if(round.fs)ss.bon++;
   if(lk)toast('Geluksdobbelsteen: +'+fmt(lk)+' extra','lvl');
-  if(pay>=bet*20||isBuy||round.fs)log('Zoete Buit: '+fmt(pay)+' gewonnen ('+(isBuy?'gekochte bonus, ':round.fs?'bonus, ':'')+'inzet '+fmt(cost)+')',pay>=cost?'ok':'bad');
+  if(pay>=bet*20||isBuy||round.fs)log(ZB_NAME+': '+fmt(pay)+' gewonnen ('+(isBuy?'gekochte bonus, ':round.fs?'bonus, ':'')+'inzet '+fmt(cost)+')',pay>=cost?'ok':'bad');
   if(pay>=bet*50)toast('Zoete winst: '+fmt(pay)+'!','lvl');
   save();renderTop();zbRefresh()}});

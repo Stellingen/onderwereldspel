@@ -11,7 +11,7 @@ function news(){const n=S.npcs[rnd(0,S.npcs.length-1)].n;const T=[
 function renderTicker(){}
 function tick(){
   const t=now(),dt=(t-S.last)/60000;S.last=t;const mins=Math.min(dt,720);
-  if(mins>0){bizPayTick(mins,t);S._enAcc=(S._enAcc||0)+mins*60/EN_REGEN_S*(1+furnFx('enRegen')+fitFx('en'));if(S._enAcc>=1){S.energy=Math.min(EN_MAX,S.energy+Math.floor(S._enAcc));S._enAcc%=1}const hd=mins*2*(1+furnFx('heat'));S.heat=Math.max(0,S.heat-Math.floor(hd>=1?hd:Math.random()<hd?1:0));
+  if(mins>0){bizPayTick(mins,t);S._enAcc=(S._enAcc||0)+mins*60/EN_REGEN_S*(1+furnFx('enRegen')+fitFx('en')+sk('duur')*SK.duur.regen);if(S._enAcc>=1){S.energy=Math.min(EN_MAX,S.energy+Math.floor(S._enAcc));S._enAcc%=1}const hd=mins*2*(1+furnFx('heat'));S.heat=Math.max(0,S.heat-Math.floor(hd>=1?hd:Math.random()<hd?1:0));
     if(typeof hideTick==='function')hideTick(mins,mins<.2);
     if(Math.random()<mins*6*(1+furnFx('hpRegen')))S.hp=Math.min(100,S.hp+1);
     if(typeof bankTick==='function')bankTick(mins);
@@ -32,7 +32,7 @@ if(S._admin){const A=S._admin;if(A.refill){S.energy=Math.max(S.energy,EN_MAX);S.
   if(T.length>=30){const iv=[];for(let i=T.length-30+1;i<T.length;i++)iv.push(T[i]-T[i-1]);const m=iv.reduce((a,b)=>a+b,0)/iv.length,sd=Math.sqrt(iv.reduce((a,b)=>a+(b-m)*(b-m),0)/iv.length);
    if(m<600&&sd<4){send(`30 klikken met een machinaal vast ritme: elke ${Math.round(m)} ms (afwijking ±${sd.toFixed(1)} ms)`);T.length=0}}},true)})();
 // een bonus die nog liep (verversen of ander apparaat): het geld staat al op je saldo, het spel biedt aan om hem verder af te spelen
-if(S.slotRun){const n=S.slotRun.g==='vis'?'Visdief':S.slotRun.g==='zoet'?'Zoete Buit':'Kluiskraker';setTimeout(()=>toast('Je bonus in '+n+' loopt nog. Het geld staat al op je saldo; open '+n+' om hem verder af te spelen.','lvl'),900)}
+if(S.slotRun){const n=S.slotRun.g==='vis'?'Visdief':S.slotRun.g==='zoet'?'Suikerbaron':'Kluiskraker';setTimeout(()=>toast('Je bonus in '+n+' loopt nog. Het geld staat al op je saldo; open '+n+' om hem verder af te spelen.','lvl'),900)}
 if(S._gearBack){toast('Uitrusting vernieuwd: per soort telt nu je beste item. Je krijgt '+fmt(S._gearBack)+' terug voor overbodige spullen.','lvl');log('Uitrusting: '+fmt(S._gearBack)+' terug voor overbodige spullen','ok');delete S._gearBack}
 // offline-inkomen bij openen
 // bij openen: wat je bedrijven offline verdienden (tot 12 uur) gaat in de kas; is er intussen een speldag voorbij, dan volgt de uitbetaling

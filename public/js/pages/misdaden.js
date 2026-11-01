@@ -2,7 +2,7 @@
 // Elke klus heeft een eigen pictogram. Per klus: kans, opbrengst (buit, XP, straatcredit) en wat er gebeurt als het misgaat.
 let crimeShowAll=false;const crimeOpen={};let crimeRank=null;
 const fmtK=v=>v>=1e6?'€'+(v/1e6).toLocaleString('nl-NL',{maximumFractionDigits:1})+' mln':v>=1e4?'€'+Math.round(v/1000)+'k':fmt(v);
-const crEv=c=>chance(c)/100*(c.min+c.max)/2*lootMult()*mastLoot(c.id)/c.en;
+const crEv=c=>chance(c)/100*(c.min+c.max)/2*lootMult()*mastLoot(c.id)/crEn(c);
 // Pictogrammen (24×24, lijnen) en welke klus welk pictogram krijgt
 const KL_IC={
  cup:'<path d="M7 9h10l-1.4 11.5H8.4z"/><path d="M6 9h12"/><circle cx="12" cy="4.6" r="2.1"/>',
@@ -62,13 +62,27 @@ const KL_IC={
  horseshoe:'<path d="M6.5 20.5V12a5.5 5.5 0 0111 0v8.5"/><path d="M4.5 20.5h4M15.5 20.5h4M7.1 13v.01M16.9 13v.01M8 9.4v.01M16 9.4v.01M12 6.6v.01"/>',
  scale:'<path d="M12 3v17M7 21h10M4 7h16M6.5 7L3 14a3.5 3.5 0 007 0zM17.5 7L14 14a3.5 3.5 0 007 0z"/>',
  tanker:'<path d="M2 14.5h20l-2.6 5H4.6z"/><path d="M4 14.5V12h7.5v2.5M15 14.5V9h3.5v5.5M16.75 9V6"/><circle cx="8" cy="9" r="1.8"/>'};
+Object.assign(KL_IC,{
+ bottles:'<path d="M7 21V12l1-2V5h2v5l1 2v9z"/><path d="M13 21V13l1-2V7h2v4l1 2v8z"/><path d="M5 21h14"/>',
+ doorbell:'<rect x="7" y="3" width="10" height="18" rx="3"/><circle cx="12" cy="9" r="2.4"/><circle cx="12" cy="16" r="1.6"/>',
+ saw:'<path d="M3 15l12-9 3 4-12 9z"/><path d="M5 16.5l1.2 1.6M8 14.3l1.2 1.6M11 12.1l1.2 1.6M14 9.9l1.2 1.6"/><path d="M18 10l3-1"/>',
+ pill:'<rect x="3.5" y="8" width="17" height="8" rx="4" transform="rotate(-35 12 12)"/><path d="M10 9.5l4.6 5.5"/>',
+ printer:'<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="1.5"/><path d="M7 14h10v7H7z"/><path d="M9 17h6"/>',
+ crate:'<path d="M3 8l9-4 9 4v9l-9 4-9-4z"/><path d="M3 8l9 4 9-4M12 12v9M7.5 6l9 4"/>',
+ bolt:'<path d="M13 2L5 13h6l-1 9 8-12h-6z"/>',
+ stadium:'<ellipse cx="12" cy="9" rx="9" ry="3.5"/><path d="M3 9v6c0 2 4 3.5 9 3.5s9-1.5 9-3.5V9"/><path d="M7 14.5v3M12 15.5v3M17 14.5v3"/>',
+ satellite:'<path d="M7.5 9.5l7 7"/><rect x="2.5" y="4.5" width="6" height="4" transform="rotate(45 5.5 6.5)"/><rect x="15.5" y="15.5" width="6" height="4" transform="rotate(45 18.5 17.5)"/><path d="M11 13l-3 3M14 8a3 3 0 012 2M15 5a6 6 0 014 4"/>',
+ rings:'<circle cx="6" cy="10" r="3.2"/><circle cx="12" cy="10" r="3.2"/><circle cx="18" cy="10" r="3.2"/><circle cx="9" cy="14" r="3.2"/><circle cx="15" cy="14" r="3.2"/>',
+ globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/>'});
 const KL_OF={bedelen:'cup',zakken:'wallet',winkeldief:'tag',fiets:'bike',pakket:'box',telefoon:'phonewave',autokraak:'carbreak',winkel:'store',
  fruitautomaat:'slot',tickets:'ticket',scooter:'scooter',inbraak:'house',snackbar:'fries',pand:'tower',witwas:'polish',smokkel:'ship',juwelier:'ring',
  vrachtwagen:'truck',transport:'van',bank:'bank',kunst:'frame',diamant:'diamond',casino:'chip',centralebank:'vault',spuiten:'spray',envelop:'mail',
  heling:'listing',koper:'coil',parkeer:'meter',ramkraak:'smash',gokhal:'cards',horloge:'watch',afpersing:'camera',container:'container',veiling:'gavel',
  rivaal:'warehouse',jacht:'yacht',goud:'gold',havenbaas:'bribe',londen:'gavel',voorkennis:'chart',jet:'jet',aanbesteding:'doc',geneve:'vault',
  minister:'dossier',cryptobeurs:'crypto',kaaiman:'island',kartelvrede:'handshake',tanker:'tanker',rotterdam:'crane',kroon:'crown',webshop:'sneaker',
- garagebox:'garage',bouwfraude:'hardhat',matchfix:'ball',kasteel:'castle',datalek:'lock',renbaan:'horseshoe',rechter:'scale',goudreserve:'gold'};
+ garagebox:'garage',bouwfraude:'hardhat',matchfix:'ball',kasteel:'castle',datalek:'lock',renbaan:'horseshoe',rechter:'scale',goudreserve:'gold',
+ flessen:'bottles',deurbel:'doorbell',katalysator:'saw',apotheek:'pill',drukkerij:'printer',wapenlading:'crate',stroom:'bolt',stadion:'stadium',
+ scheepswerf:'yacht',satelliet:'satellite',olympisch:'rings',wereldbank:'globe'};
 const klIc=c=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${KL_IC[KL_OF[c.id]]||KL_IC.box}</svg>`;
 // vakmanschap: sterretjes en de voortgang naar het volgende niveau
 function mastHtml(c){const n=mastN(c.id),l=mastLv(c.id),nx=MAST[l+1];
@@ -78,14 +92,14 @@ const klPips=lv=>`<span class="kl-pips l${lv}" aria-hidden="true"><i></i><i></i>
 const klM=v=>v>=1e6?fmtK(v):fmt(v);
 const klChCls=ch=>ch>60?'up':ch>35?'':'dn';
 const klSeg=ch=>`<i class="kl-seg" aria-hidden="true"><i style="width:${ch}%"></i></i>`;
-function klState(c){const lock=rankIdx(S.xp)<c.r,left=cdLeft(c.id),tired=S.energy<c.en,jail=inJail();return {lock,left,tired,jail,ok:!lock&&!left&&!tired&&!jail}}
-function klBtn(c,st){const [b,s]=st.lock?['Vanaf '+RANKS[c.r][0],'nog '+Math.ceil(RANKS[c.r][1]-S.xp).toLocaleString('nl-NL')+' XP']:st.jail?['Je zit vast','eerst vrijkomen']:st.left?['Nog '+fmtClock(st.left),'even afkoelen']:st.tired?['Te moe',c.en+' energie nodig']:['Uitvoeren',c.en+' energie'];
+function klState(c){const lock=rankIdx(S.xp)<c.r,left=cdLeft(c.id),tired=S.energy<crEn(c),jail=inJail();return {lock,left,tired,jail,ok:!lock&&!left&&!tired&&!jail}}
+function klBtn(c,st){const [b,s]=st.lock?['Vanaf '+RANKS[c.r][0],'nog '+Math.ceil(RANKS[c.r][1]-S.xp).toLocaleString('nl-NL')+' XP']:st.jail?['Je zit vast','eerst vrijkomen']:st.left?['Nog '+fmtClock(st.left),'even afkoelen']:st.tired?['Te moe',crEn(c)+' energie nodig']:['Uitvoeren',crEn(c)+' energie'];
  return `<button class="btn kl-go" onclick="act.crime('${c.id}')" ${st.ok?'':'disabled'}><b>${b}</b><small>${s}</small></button>`}
 // kansopbouw in gewone woorden: dezelfde onderdelen als chanceRaw()/chance() in state.js, alleen uitgeschreven.
 // De voorpagina toont de basiskans van een klus; hier zie je wat er bij jou bijkomt.
 function klChParts(c){const ri=rankIdx(S.xp),up=crimeUp(c),fx=k=>typeof fitFx==='function'?fitFx(k):0,heat=Math.floor(S.heat/4*Math.max(.4,1-up*.1));
  const P=[['rang',ri*2],['lagere klus',up],['vakmanschap',mastLv(c.id)*2],['uitrusting',gearBonus()],['outfit',fx('kans')],['familie',fam().chance],
-  ['vingervlugheid',S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)],['schieten',c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0],['focus',focusPct()]].filter(x=>x[1]>0);
+  ['vingervlugheid',S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)],['ademhaling',sk('ademhaling')*SK.ademhaling.focus],['schieten',c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0],['focus',focusPct()]].filter(x=>x[1]>0);
  const n=v=>(Math.round(v*10)/10).toLocaleString('nl-NL');
  let t='Basis '+c.base+'%'+P.map(([l,v])=>' + '+l+' '+n(v)).join('')+(heat>0?' − hitte '+heat:'');
  if(tierK())t+=' · daarna ×'+(1+tierK()).toLocaleString('nl-NL')+' als '+lidName();
@@ -121,7 +135,7 @@ function klBest(c){const st=klState(c),v=klVals(c),ev=crEv(c);
   ${st.left?`<div class="kl-cd" style="transform:scaleX(${Math.min(1,st.left/crimeCd(c)).toFixed(3)})"></div>`:''}</article>`}
 // Rangen als banners: alleen wat je hebt vrijgespeeld, plus de eerstvolgende rang (met hoeveel XP je nog nodig hebt)
 const KL_RCOL=['#9aa3ad','#d9a066','#ffad6b','#ff7a1a','#ff5c6c','#ff3d52','#b8a1ff','#7c5cff','#5ad1ff','#3fe395','#f2c230','#ffd84d'];
-function klRankBanner(t,ri){const cs=CRIMES.filter(c=>c.r===t),lock=t>ri,ready=cs.filter(c=>!lock&&!cdLeft(c.id)&&S.energy>=c.en).length,mst=cs.filter(c=>mastLv(c.id)>0).length,need=Math.ceil(RANKS[t][1]-S.xp);
+function klRankBanner(t,ri){const cs=CRIMES.filter(c=>c.r===t),lock=t>ri,ready=cs.filter(c=>!lock&&!cdLeft(c.id)&&S.energy>=crEn(c)).length,mst=cs.filter(c=>mastLv(c.id)>0).length,need=Math.ceil(RANKS[t][1]-S.xp);
  const prevXp=RANKS[Math.max(0,t-1)][1],pct=lock?Math.max(0,Math.min(100,(S.xp-prevXp)/(RANKS[t][1]-prevXp)*100)):100;
  return `<button class="krb ${lock?'locked':''} ${t===ri?'cur':''}" style="--c:${KL_RCOL[t]||'var(--acc)'}" onclick="crimeRank=${t};render();window.scrollTo({top:0,behavior:'smooth'})">
   <span class="krb-bg" aria-hidden="true">${klIc(cs[cs.length-1])}</span>

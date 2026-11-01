@@ -3,8 +3,8 @@
 Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op tot Peetvader.
 
 - **Website** (`/`, `public/js/landing.js`): elk onderwerp heeft een eigen pagina en adres (History API; de server geeft
-  bekende paden `index.html` met de juiste titel, onbekende paden een 404 met dezelfde pagina "Doodlopende steeg"): `/misdaden` (alle 60 klussen in een kans-tegen-buit grafiek, filter per rang en sorteren),
-  `/casino` en `/casino/<spel>` (elk spel een eigen illustratie, regels en uitbetalingen; de tabellen van Kluiskraker, Visdief en Zoete Buit
+  bekende paden `index.html` met de juiste titel, onbekende paden een 404 met dezelfde pagina "Doodlopende steeg"): `/misdaden` (alle 72 klussen in een kans-tegen-buit grafiek, filter per rang en sorteren),
+  `/casino` en `/casino/<spel>` (elk spel een eigen illustratie, regels en uitbetalingen; de tabellen van Kluiskraker, Visdief en Suikerbaron
   komen live uit `slot.js`, `vis.js` en `zoet.js`; oefendemo's van Mines, roulette en de munt), `/families` en `/families/<id>` (verhaal uit
   `lore.js`, plek in de voedselketen, de machtsverhoudingen van nu uit `famwar.js`, doorgroeien tot Onderbaas en Baas), `/rangen`
   en `/training`. De voorpagina heeft een 3D-stadskaart met een meldkamer en een loopbaanlijn van Rookie tot Peetvader die je
@@ -26,7 +26,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   (indexering, rich results, previews op sociale media) is nog niet gedaan.
 - **Spel** (`/game.html`) alleen voor ingelogde spelers; voortgang wordt opgeslagen in MySQL
 - **Ranglijst** met echte spelers en rivalen uit de stad
-- **60 misdaden** over 12 rangen (vijf per rang), met energie (1 punt per 12 s, ook in het casino of de cel; uit de cel kom je met minstens +4% van je max per minuut, dus 5 minuten = +20%) zodat je niet alles kunt speedrunnen.
+- **72 misdaden** over 12 rangen (zes per rang), met energie (1 punt per 12 s, ook in het casino of de cel; uit de cel kom je met minstens +4% van je max per minuut, dus 5 minuten = +20%) zodat je niet alles kunt speedrunnen.
   Hoe hoger je rang, hoe meer elke klus oplevert: +6% buit per rang (Peetvader +66%), bovenop je familiebonus.
   **Levels binnen je rang**: elke rang heeft 5 levels (★ tot ★★★★★) op basis van je XP in die rang. Elk level geeft +3% buit
   en +1% op je passieve inkomen. Peetvader heeft eigen levels (100k, 150k, 225k, 340k en 500k XP). Je ziet je level in de
@@ -55,7 +55,8 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   familie en woning maken het makkelijker. Lukt het: vrij en niet gezocht. Mislukt het: cel met 20% extra straf.
 - **Misdaden** (`misdaden.js`): klussen onder je rang gaan makkelijker: per rang erboven +1% extra kans, de hitte drukt minder op je kans en het plafond gaat van 95% naar 98% (er blijft altijd 2% risico). Lukt zo'n klus (2+ rangen eronder), dan stijgt je hitte 2 tot 3. elke klus heeft een eigen icoon en een balk met kans, opbrengst (plus XP en cred) en wat er
   gebeurt als het misgaat (straf en hoe moeilijk vluchten is). Bovenaan de drie beste klussen voor jou, met opbrengst per energie.
-- **Training** met tijdsloten: elke sessie is één level, tot level 50. Elk level is duurder (conditie: €60 voor level 1,
+- **Training** met tijdsloten (11 plekken; nieuw: **Uithouding**, elke klus kost tot 30% minder energie en je laadt tot 30% sneller op,
+  en **Ademhaling**, tot +3%-punt slaagkans en meer ruimte bij vluchten): elke sessie is één level, tot level 50. Elk level is duurder (conditie: €60 voor level 1,
   ongeveer €690.000 voor level 50). Oude saves worden omgerekend: elke gedane sessie telt als één level.
   9 plekken: Conditie, Vingervlugheid, Snelheid, Rijvaardigheid, Charisma en (vanaf een rang) Schieten (Dief: +0,5% slaagkans
   per level bij zware klussen vanaf Gangster), Hacken (Boef: +0,5% buit per level), Handelsgeest (Gangster: +0,4% passief inkomen
@@ -74,9 +75,13 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   wat niet past na een verhuizing gaat naar de opslag. Bekijk een andere woning voor een vergelijking.
   Rusten vult je energie en geeft +20% gezondheid of meer (beter huis = meer), daarna 5 minuten wachten (beter huis = korter).
   Dokter: +20% gezondheid in 10 seconden, daarna 10 minuten wachten. Ga je eerder weg, dan houd je wat je had en wacht je naar verhouding.
-  **Inrichting** vanaf de huurkamer: planten, espressomachine, goed bed, bokszak, aquarium, camera's, kluis, thuisbioscoop, sauna
-  en meditatieruimte, elk met een blijvend voordeel (sneller herstel, focus, energie, minder hitte of verlies).
-- **Auto's**: **lobby** met bovenaan de brede banner **Garage** (je gestolen auto's, met je drie duurste erop), daarna Straat afzoeken, Carjacken, Het Autokerkhof en De heler. In de garage is elke auto een grote kaart (zeldzaamheid, heet/gemeld/heler zoekt hem, bouwjaar, km-stand, staat, nieuwprijs). Duidelijke knop **Terug naar auto's**. **Garage**: 2 plekken, uit te bouwen naar 4/6/8/10 (€25.000/€90.000/€300.000/€900.000 wit). **Verkopen** gaat via kopers die bieden (68% tot 110% van de gemiddelde prijs), met de nieuwprijs ernaast; 3 biedingen per speluur (10 min), daarna wachten. Netjes verkocht = wit geld, contant of overgemaakt naar je bank. Een deel van de gestolen auto's (en elke gecarjackte) is **als gestolen gemeld**: die wil geen koper, alleen het autokerkhof, de heler of je familie. Zoekt de heler het model dat je vindt (straat of stoplicht), dan staat dat er meteen bij. **Collectie en kansen**: per zeldzaamheid grote kaarten per model met waarde, kans, gezien/gestolen en of de heler hem zoekt. **Het Autokerkhof** (vanaf Dief, €80.000 wit) sloopt elke auto voor 60% van de waarde in zwart geld. 38 modellen, elk getekend in zijn eigen klasse (stadsauto, hatchback, sedan, stationwagen, SUV, super-SUV, sportwagen, GT, supercar, hypercar, terreinwagen, limousine en meer) op basis van echte afmetingen, zonder merktekens (`carSvg` in `carheist.js`). Klik op "Zoek een auto" (2 energie) en je komt willekeurig iets tegen; de kans per model staat
+  **Inrichting**: 37 stukken in vijf soorten (gezondheid en rust 10, energie 8, onderduiken en hitte 7, veiligheid 4, focus en
+  vluchten 8; de soort is het belangrijkste voordeel). Nieuw: meditatiekussen, koelkast vol energiedrank, medicijnkastje,
+  schaaktafel, politiescanner, smoothiebar, daglichtlamp, stadskaart met routes, alarmsysteem, spinningfiets, vermommingskast,
+  massagestoel, draaiende boekenkast, klimmuur, powernap-capsule, ijsbad, bubbelbad en paniekkamer. Ze staan in je woning op vaste
+  vrije plekken (`VH_SPOT`, tekeningen in `VH_GEN`).
+- **Auto's** (51 modellen, nieuw o.a. busjes, pick-up, muscle cars, luxe sedans, limousine en klassiekers; in de collectie heeft
+  elk model zijn eigen kleur en staat erbij wat voor auto het is; nog niet gestolen is grijzer): **lobby** met bovenaan de brede banner **Garage** (je gestolen auto's, met je drie duurste erop), daarna Straat afzoeken, Carjacken, Het Autokerkhof en De heler. In de garage is elke auto een grote kaart (zeldzaamheid, heet/gemeld/heler zoekt hem, bouwjaar, km-stand, staat, nieuwprijs). Duidelijke knop **Terug naar auto's**. **Garage**: 2 plekken, uit te bouwen naar 4/6/8/10 (€25.000/€90.000/€300.000/€900.000 wit). **Verkopen** gaat via kopers die bieden (68% tot 110% van de gemiddelde prijs), met de nieuwprijs ernaast; 3 biedingen per speluur (10 min), daarna wachten. Netjes verkocht = wit geld, contant of overgemaakt naar je bank. Een deel van de gestolen auto's (en elke gecarjackte) is **als gestolen gemeld**: die wil geen koper, alleen het autokerkhof, de heler of je familie. Zoekt de heler het model dat je vindt (straat of stoplicht), dan staat dat er meteen bij. **Collectie en kansen**: per zeldzaamheid grote kaarten per model met waarde, kans, gezien/gestolen en of de heler hem zoekt. **Het Autokerkhof** (vanaf Dief, €80.000 wit) sloopt elke auto voor 60% van de waarde in zwart geld. 38 modellen, elk getekend in zijn eigen klasse (stadsauto, hatchback, sedan, stationwagen, SUV, super-SUV, sportwagen, GT, supercar, hypercar, terreinwagen, limousine en meer) op basis van echte afmetingen, zonder merktekens (`carSvg` in `carheist.js`). Klik op "Zoek een auto" (2 energie) en je komt willekeurig iets tegen; de kans per model staat
   **Na het stelen** (straat afzoeken of carjacken) verschijnt een keuzevak: naar je garage (de nieuwe auto licht daar op), terug naar
   het overzicht, of, als de heler dit model zoekt, meteen verkopen aan de heler (precies deze auto, ×1,4 tot ×1,9, zwart geld).
   **Straat afzoeken maakt moe**: elke zoektocht in een reeks kost meer energie (2, 3, 4, 5, 6, 8, 10, 12, 14, 17, 20, 23, 26, 30, 34;
@@ -194,20 +199,26 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   rekeningnummer, rente, vergelijking en de laatste 30 transacties), **Deposito's** en **Beleggen**. Transacties (`S.bkTx`, `bkTx`):
   stortingen, opnames, deposito's, beleggingen, auto's verkocht naar de bank en betalingen van de bank (borg, woning, inrichting).
   Per lidmaatschap: spaarrente 0,10% / 0,12% / 0,15% per uur
-  (gewoon / VIP / High roller), 2 / 5 / 10 depositoplekken en in totaal €10.000 / €30.000 /
-  €100.000 beleggen. Lopende deposito's en beleggingen boven die grens blijven gewoon staan. Alles bij de bank ben je niet kwijt als je gepakt wordt.
+  (gewoon / VIP / High roller), 2 / 5 / 10 depositoplekken en in totaal €100.000 / €300.000 /
+  €1 mln. beleggen, keer (1 + je rang): een Peetvader met High roller mag tot ±€12 mln. inleggen (ook in coins). Lopende deposito's en beleggingen boven die grens blijven gewoon staan. Alles bij de bank ben je niet kwijt als je gepakt wordt.
   - *Spaarrekening*: 0,10% rente per uur (VIP 0,12%), vrij opneembaar, ook offline tot 12 uur. (Was 1% per 10 minuten:
     dat is ruim 300% per dag en maakte beleggen zinloos.)
-  - *Deposito*: geld vast voor 2, 4, 8 of 12 uur. Rente gewoon / VIP / High roller: 2 uur 0,30 / 0,35 / 0,40%, 4 uur
-    0,65 / 0,75 / 0,85%, 8 uur 1,4 / 1,6 / 1,85%, 12 uur 2,2 / 2,5 / 2,9%. Langer vast geeft iets meer per uur, maar twee keer
-    12 uur per dag is ±4,4 / 5 / 5,9% per dag (spaarrekening ±2,4 / 2,9 / 3,7%), dus grinden loont niet. VIP en High roller zien
-    de gewone rente doorgestreept met hun eigen rente ernaast. Alleen te openen met geld van je spaarrekening (niet contant).
+  - *Deposito* in speltijd (1 speldag = 4 uur): een halve speldag (2 uur), 1, 2 of 3 speldagen (12 uur). Rente gewoon / VIP /
+    High roller: halve speldag 1,5 / 1,8 / 2,2%, 1 speldag 3 / 3,6 / 4,4%, 2 speldagen 5,5 / 6,6 / 8%, 3 speldagen 8 / 9,6 / 11,6%.
+    Veel meer dan de spaarrekening (0,10% per uur), maar je geld staat vast en het maximum per deposito groeit met je rang.
+    VIP en High roller zien de gewone rente doorgestreept met hun eigen rente ernaast. Alleen te openen met geld van je spaarrekening.
     Kan niet zakken; na afloop gaat alles vanzelf naar je spaarrekening. Eerder opzeggen kost 2% en je krijgt geen rente.
-    Oude deposito's: 3 dagen is omgezet naar 8 uur en 24 uur naar 12 uur, tegen de nieuwe rente (`depFix`).
+    Lopende deposito's houden de rente waarmee ze zijn geopend.
   - *Beleggen*: Staatsobligaties, Vastgoedfonds Zuidas, Haven Rotterdam NV en OnderCoin. Elk fonds keert per uur uit (rente, huur,
     dividend, staking: ±5% tot ±17% per dag) en heeft een koers die kan stijgen en dalen. De koersen zijn voor alle spelers gelijk en
     lopen door als je offline bent (vaste functie van de tijd, Brownse brug, dus geen server nodig). Kosten 0,25% tot 1% bij kopen
     en verkopen (VIP de helft). Kans op verlies na 24 uur: 0% / 13% / 30% / 37%, na 7 dagen 0% / 0% / 1% / 9%.
+  - *Nieuwe coins* (`market.js`, `MK.coin`/`MK.coins`): elke 4 uur komt er een nieuwe coin op de markt, voor iedereen dezelfde.
+    60% is een memecoin: stijgt hard (±25–40% per uur), maar kan elk moment crashen; haalt hij 50× dan crasht hij zeker. Bij een crash
+    staat er "Dit was een scam", is je inleg weg en gaat hij van de markt (nog 12 uur zichtbaar). 40% is een echte coin: rustiger, licht
+    stijgend, na 48 uur naar de grote beurs (je stukken worden verkocht tegen de laatste koers). Echt of meme zie je alleen aan de naam
+    en de grafiek. Doorgerekend: een memecoin een uur vasthouden levert gemiddeld ±92% op, verkopen bij 2× of na 3 uur ±83%
+    (de crashkans per uur is iets groter dan de groei). Er staat ±37% van de tijd een memecoin op de markt. Kosten 1,2%.
   - Max per deposito en per fonds: €250.000 × 2 per rang (Capo €64 mln., Peetvader €512 mln.).
 - **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000), `spinnetje` (€25.000), `jackpot` (€1.000.000) `trainwreck` (€3.000.000; daarna kun je in Kluiskraker inzetten tot €500.000 per spin) en `highroller` (€50.000; ook te typen als "High Roller", spaties en streepjes tellen niet mee). De oude codes `m1` tot en met `m9` zijn weg en verdwijnen ook uit 'gebruikte codes'. Daarnaast is er een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
 - **Kluiskraker**: cluster-slot op **10×10** met 9 symbolen (5+ aangrenzende gelijke symbolen, uitbetaling per clustergrootte
@@ -278,11 +289,11 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   | Groen gat bij vluchten en kans om te ontsnappen | ×1,15 | ×1,40 |
   | Straatcredit | +15% | +40% |
   | Bank: rente / kosten beleggen / depositoplekken | +15% / −15% / +1 | +40% / −40% / +2 |
-  | Casino-cashback (Kluiskraker, Visdief, Zoete Buit, Mines, Hoogvlieger 0,5%, roulette 1%, poker 0,75%, blackjack 0,25%) | ×1 | ×1,5 |
+  | Casino-cashback (Kluiskraker, Visdief, Suikerbaron, Mines, Hoogvlieger 0,5%, roulette 1%, poker 0,75%, blackjack 0,25%) | ×1 | ×1,5 |
   | Huurmoorden: rustiger vizier / meer tijd | −7,5% / +15% | −20% / +40% |
   | Hoge inzetten in de slots | – | ja (ook met code `trainwreck`) |
   Casino, doorgerekend (gewoon / VIP / High roller): Kluiskraker (10×10, max 5.000×) bonus 1 op 400 / 350 / 300, RTP 92,5% / 94% / 95,5%, bonus kopen
-  ±93% / 94,5% / 96%; Visdief bonus 1 op 200 / 172 / 143, RTP 91,5% / 94% / 96,5%, kopen ±97%; Zoete Buit (6×5, max 5.000×) bonus
+  ±93% / 94,5% / 96%; Visdief bonus 1 op 200 / 172 / 143, RTP 91,5% / 94% / 96,5%, kopen ±97%; Suikerbaron (6×5, max 5.000×) bonus
   1 op 330 / 300 / 250, RTP 94,9% / 95,7% / 96,2%, kopen ±95% / 96% / 97%; Hoogvlieger landt 17% / 18% / 19%,
   RTP 86% / 92% / 96%. Alles blijft onder 100%, ook met cashback.
 - **Huurmoorden** (`hits.js`): de drie niveaus (Straat, Professioneel, Elite) staan als banners met de doelwitten in het vizier; tik op een niveau voor de contracten. 9 contracten in drie niveaus (Straat, Professioneel vanaf Capo, Elite vanaf Onderbaas) en een
@@ -336,7 +347,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   Breed bord (rollen breder dan hoog, houten kade, water in de rollen) met saldo, deze spin, laatste winst en de bediening
   eronder, even breed als het bord. Doorgerekend (`visim2.js`, 3 mln. spins per lidmaatschap, `vbuy2.js`): gewoon bonus ±1 op 200,
   RTP ±91,5%; VIP ±1 op 172, RTP ±94%; High roller ±1 op 143, RTP ±96,5%; bonus kopen ±97%.
-- **Zoete Buit** (6 × 5 snoep, uitbetaling overal; motor `public/js/zoet.js`, tekeningen `zoet-art.js`, scherm
+- **Suikerbaron** (heette eerst Zoete Buit; `/casino/zoete-buit` stuurt door; 6 × 5 snoep, uitbetaling overal; motor `public/js/zoet.js`, tekeningen `zoet-art.js`, scherm
   `pages/zoetebuit.js`, stijl `css/zoet.css`): 8 of meer van hetzelfde snoepje waar dan ook betaalt (8–9, 10–11, 12–14, 15+),
   winnende snoepjes knallen weg en er vallen nieuwe in (tumbles) zolang er winst valt. Negen snoepjes van drop (±0,45× bij 8)
   tot snoeppot (±14,4× bij 8, ±216× bij 15+). **4 lolly's** (geteld na het tumbelen) = 10 free spins en de lolly's betalen zelf
@@ -345,7 +356,15 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   5.000× je inzet. Doorgerekend met een simulatie in Node per lidmaatschap (basisspel en bonus apart): gewoon RTP ±94,9%, bonus
   ±1 op 330; VIP ±95,7%, ±1 op 300; High roller ±96,2%, ±1 op 250; bonus kopen ±95% / 96% / 97%. Een bonus geeft gemiddeld ±94×
   (mediaan 65×); 5.000× zit er ±1 op 10.000–16.000 gekochte bonussen in. Eigen naam en tekeningen (geen kopie van een bestaand
-  spel). Lolly-spanning na 3 lolly's, confetti, snelheden en spatiebalk zoals bij de andere slots.
+  spel), allemaal in één stijl; logo met een hoge hoed. Eén doorlopend snoepthema rond het bord. Op de computer staat rechts alles om
+  te spelen: saldo, een raster met alle inzetten (met bonus kopen aan zie je per inzet de prijs van de bonus en is grijs wat je niet
+  kunt betalen, plus een knop naar de hoogste bonus die je wel kunt betalen), de draaiknop, snelheid en bonus kopen, sessie en seed.
+  Lolly-spanning na 3 lolly's, confetti, snelheden en spatiebalk zoals bij de andere slots.
+- **Eigen geluid per slot** (`sfx.js`: `SFX.kk`, `SFX.vd`, `SFX.zb`, allemaal opgewekt met Web Audio): Kluiskraker metaal en munten,
+  Visdief hout, water en een boeibel, Suikerbaron plopjes en glinsters. Bij het binnenkomen van de bonus (gewonnen of gekocht) een
+  eigen deuntje met een korte animatie: Kluiskraker een kluisdeur (cijferslot, grendel, deur zwaait open naar het goud), Visdief een
+  boei die in het water plonst (spetters en een golf), Suikerbaron een krullolly die het bord in draait met een regen van snoep.
+  Op snelheid 3× is de intro korter.
 - **Indeling (computer)**: vanaf 1280px breed staat alles over jou in de rechterkolom: naam, status (vrij, gezocht, cel,
   ondergedoken), rang en level met XP-balk, wit geld, zwart geld en bank (drie aparte regels met eigen kleur en icoon), energie, gezondheid, hitte en familie, daaronder wat er klaarstaat,
   een snelle klus, het logboek en de top 5 (met jouw plek als je er niet in staat). Klik op energie, gezondheid of hitte voor

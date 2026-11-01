@@ -17,7 +17,7 @@
 function fleeParams(level){
   const L=FLEE_LEVELS[level]||FLEE_LEVELS[2],k=(S.skills&&S.skills.conditie)||0,sp=(S.skills&&S.skills.speed)||0;
   return {level,label:L.label,hits:L.hits,miss:L.miss,time:L.time,shrink:L.shrink||1,accel:L.accel||1,drift:!!L.drift,
-    zone:Math.min(.42,L.zone*(1+k*SK.conditie.zone+furnFx('zone')+famPerk('flee')+gearFx('flee')+(typeof fitFx==='function'?fitFx('flee'):0))*(1+tierK())),speed:L.speed*(1-sp*SK.speed.mark)};
+    zone:Math.min(.42,L.zone*(1+k*SK.conditie.zone+sk('ademhaling')*SK.ademhaling.flee+furnFx('zone')+famPerk('flee')+gearFx('flee')+(typeof fitFx==='function'?fitFx('flee'):0))*(1+tierK())),speed:L.speed*(1-sp*SK.speed.mark)};
 }
 // Van de vluchtparameters naar de achtervolging
 function fleeRun(P){

@@ -76,7 +76,20 @@ const CRIMES=[
  {id:'datalek',n:'Losgeld van een verzekeraar',d:'Twee miljoen dossiers en een directie die stilletjes betaalt.',min:21000,max:46000,xp:360,base:36,cd:285,jail:490,r:8,cr:10,en:32,flee:1},
  {id:'renbaan',n:'Een paardenrace beslissen',d:'Elf jockeys, en de winnaar staat al vast.',min:38000,max:88000,xp:540,base:31,cd:380,jail:600,r:9,cr:12,en:36,flee:2},
  {id:'rechter',n:'Een rechter in je zak',d:'Een vrijspraak hier, een kwijtgeraakt dossier daar.',min:75000,max:170000,xp:850,base:26,cd:500,jail:600,r:10,cr:16,en:41,flee:1},
- {id:'goudreserve',n:'De goudreserve van een land',d:'Een land dat zijn eigen goud nooit meer terugziet.',min:200000,max:420000,xp:1550,base:20,cd:650,jail:600,r:11,cr:26,en:49,flee:5}];
+ {id:'goudreserve',n:'De goudreserve van een land',d:'Een land dat zijn eigen goud nooit meer terugziet.',min:200000,max:420000,xp:1550,base:20,cd:650,jail:600,r:11,cr:26,en:49,flee:5},
+ // nieuw: een zesde klus voor elke rang
+ {id:'flessen',n:'Statiegeld van andermans krat',d:'Een volle krat achter de supermarkt. Tien cent per fles, maar wel cash.',min:10,max:45,xp:5,base:92,cd:6,jail:30,r:0,cr:0,en:4,flee:1},
+ {id:'deurbel',n:'Deurbelcamera\'s jatten',d:'Ze filmen alles, behalve wie ze meeneemt.',min:110,max:340,xp:19,base:72,cd:19,jail:60,r:1,cr:2,en:9,flee:2},
+ {id:'katalysator',n:'Katalysatoren zagen',d:'Tien minuten onder een auto en je hebt platina in je tas.',min:330,max:950,xp:35,base:64,cd:33,jail:110,r:2,cr:3,en:12,flee:3},
+ {id:'apotheek',n:'Apotheek na sluitingstijd',d:'Een achterdeur, een alarm van tien jaar oud en kasten vol pillen.',min:650,max:1700,xp:52,base:59,cd:52,jail:150,r:3,cr:3,en:15,flee:3},
+ {id:'drukkerij',n:'Valse briefjes van vijftig',d:'Een drukpers in een schuur in Brabant. Het watermerk is bijna echt.',min:1600,max:3900,xp:78,base:55,cd:82,jail:195,r:4,cr:4,en:18,flee:2},
+ {id:'wapenlading',n:'Wapenlading uit de Balkan',d:'Kisten met "landbouwmachines". Niemand maakt ze open.',min:3200,max:7200,xp:115,base:47,cd:115,jail:245,r:5,cr:6,en:22,flee:3},
+ {id:'stroom',n:'Stroom aftappen voor een kwekerij',d:'Een kabel onder de stoep en een meter die stilstaat.',min:5200,max:11500,xp:155,base:46,cd:145,jail:285,r:6,cr:6,en:24,flee:2},
+ {id:'stadion',n:'Stadionkassa op een topwedstrijd',d:'Vijftigduizend man, en de kassa wordt pas morgen geteld.',min:13000,max:29000,xp:270,base:38,cd:225,jail:425,r:7,cr:9,en:30,flee:4},
+ {id:'scheepswerf',n:'Een megajacht op de werf',d:'Nog niet afgebouwd, wel al verkocht. Twee keer.',min:23000,max:50000,xp:380,base:34,cd:295,jail:505,r:8,cr:11,en:33,flee:3},
+ {id:'satelliet',n:'Satellietbeelden verkopen',d:'Een hacker in Tallinn en een koper die je nooit te zien krijgt.',min:42000,max:95000,xp:580,base:30,cd:400,jail:600,r:9,cr:13,en:37,flee:1},
+ {id:'olympisch',n:'Olympische bouwcontracten',d:'Een stadion dat drie keer te duur wordt. Het verschil is van jou.',min:85000,max:185000,xp:900,base:25,cd:520,jail:600,r:10,cr:17,en:42,flee:1},
+ {id:'wereldbank',n:'Een lening van de Wereldbank',d:'Een land dat niet bestaat, met een president die jij bent.',min:220000,max:450000,xp:1650,base:19,cd:680,jail:600,r:11,cr:28,en:49,flee:2}];
 // Rangbonus op elke buit: +6% per rang (Peetvader +66%)
 const RANK_LOOT=.06;
 // Families. r = vanaf rang, cred = straatcredit om binnen te komen. chance/loot/jail = familiebonus op het hoogste familielevel
@@ -146,7 +159,15 @@ const CARS=[
  {id:'hura',n:'Lamborghini Huracán',b:'super2',lo:45000,hi:85000,y:[2017,2024],d:5,w:.6},{id:'urus',n:'Lamborghini Urus',b:'supersuv',lo:40000,hi:75000,y:[2019,2024],d:5,w:.7},
  {id:'f8',n:'Ferrari F8 Tributo',b:'super3',lo:50000,hi:90000,y:[2020,2023],d:5,w:.5},{id:'mc720',n:'McLaren 720S',b:'super4',lo:55000,hi:95000,y:[2018,2023],d:5,w:.45},
  {id:'cull',n:'Rolls-Royce Cullinan',b:'luxsuv',lo:60000,hi:110000,y:[2019,2024],d:5,w:.4},{id:'sf90',n:'Ferrari SF90 Stradale',b:'super5',lo:90000,hi:150000,y:[2020,2024],d:5,w:.22},
- {id:'chiron',n:'Bugatti Chiron',b:'hyper',lo:180000,hi:320000,y:[2017,2023],d:5,w:.07,leg:1},{id:'jesko',n:'Koenigsegg Jesko',b:'hyper2',lo:220000,hi:380000,y:[2022,2024],d:5,w:.05,leg:1}];
+ {id:'chiron',n:'Bugatti Chiron',b:'hyper',lo:180000,hi:320000,y:[2017,2023],d:5,w:.07,leg:1},{id:'jesko',n:'Koenigsegg Jesko',b:'hyper2',lo:220000,hi:380000,y:[2022,2024],d:5,w:.05,leg:1},
+ // nieuw: busjes, pick-ups, muscle cars, luxe sedans, klassiekers
+ {id:'transporter',n:'Volkswagen Transporter',b:'van',lo:700,hi:2400,y:[2012,2022],d:1,w:18},{id:'prius',n:'Toyota Prius (taxi)',b:'liftback',lo:500,hi:1900,y:[2012,2021],d:1,w:18},
+ {id:'i30',n:'Hyundai i30',b:'hatch2',lo:600,hi:2000,y:[2013,2022],d:1,w:18},{id:'sprinter',n:'Mercedes Sprinter',b:'van',lo:1600,hi:4600,y:[2015,2023],d:2,w:9},
+ {id:'xc90',n:'Volvo XC90',b:'suv',lo:2600,hi:6200,y:[2016,2023],d:2,w:8},{id:'mustang',n:'Ford Mustang GT',b:'muscle',lo:5500,hi:12500,y:[2016,2024],d:3,w:4},
+ {id:'raptor',n:'Ford Ranger Raptor',b:'pickup',lo:6000,hi:13500,y:[2019,2024],d:3,w:3.5},{id:'challenger',n:'Dodge Challenger SRT',b:'muscle',lo:7000,hi:15000,y:[2017,2023],d:3,w:3},
+ {id:'sklasse',n:'Mercedes S-Klasse',b:'luxury',lo:16000,hi:30000,y:[2019,2024],d:4,w:1.8},{id:'e280',n:'Mercedes 280 SE (1971)',b:'classic',lo:14000,hi:28000,y:[1968,1972],d:4,w:1.2},
+ {id:'limo',n:'Stretch-limousine',b:'limo',lo:18000,hi:36000,y:[2010,2020],d:4,w:1},{id:'etype',n:'Jaguar E-Type (1965)',b:'classic',lo:40000,hi:78000,y:[1961,1968],d:5,w:.35},
+ {id:'phantom',n:'Rolls-Royce Phantom',b:'luxury',lo:65000,hi:115000,y:[2018,2024],d:5,w:.3}];
 const CAR_LEVEL=['','makkelijk','redelijk','lastig','moeilijk','extreem'];
 const CAR_RARITY=[null,['Gewoon','#9aa1ab'],['Ongewoon','#3fe395'],['Zeldzaam','#4d9dff'],['Episch','#b8a1ff'],['Legendarisch','#ffad6b']];
 const CAR_MYTH=['Mythisch','#ff3d52'];
@@ -246,7 +267,7 @@ const TRAIN_MAX=50;
 const pctTxt=(v,sign,pt)=>{if(!v)return '0'+(pt?'%-punt':'%');const a=Math.abs(v),d=a>=10?0:a>=1?1:a>=.1?1:2;
  return sign+a.toLocaleString('nl-NL',{maximumFractionDigits:d,minimumFractionDigits:0})+(pt?'%-punt':'%')};
 // Effect per level (op level 50 haal je het maximum). Eén sessie = één level.
-const SK={conditie:{en:1,zone:.008},steal:{all:.4,zakken:.8},speed:{cd:.01,mark:.006},cars:{time:.01,price:.008},charisma:{talk:.9,bail:.008},
+const SK={conditie:{en:1,zone:.008},duur:{save:.006,regen:.006},ademhaling:{focus:.06,flee:.004},steal:{all:.4,zakken:.8},speed:{cd:.01,mark:.006},cars:{time:.01,price:.008},charisma:{talk:.9,bail:.008},
  schiet:{heavy:.5},hack:{loot:.5},handel:{inc:.4,fee:1},rechten:{jail:1,bail:.4}};
 const HEAVY_R=5; // zware klussen: vanaf Gangster
 // Prijs per sessie stijgt steil: level 1 kost een paar tientjes, de laatste levels honderdduizenden euro's.
@@ -280,7 +301,14 @@ const TRAININGS=[
   eff:l=>[['Passief inkomen',pctTxt(SK.handel.inc*l,'+')],['Kosten bij beleggen',pctTxt(SK.handel.fee*l,'-')]]},
  {id:'rechten',place:'Avondstudie rechten',n:'Rechtenkennis',col:'#9db4ff',ic:'scale',base:300,cd:30,r:6,
   d:'Wetboeken op de Zuidas. Je weet precies wat ze wel en niet kunnen bewijzen.',
-  eff:l=>[['Kortere celstraf',pctTxt(SK.rechten.jail*l,'-')],['Lagere borg',pctTxt(SK.rechten.bail*l,'-')]]}];
+  eff:l=>[['Kortere celstraf',pctTxt(SK.rechten.jail*l,'-')],['Lagere borg',pctTxt(SK.rechten.bail*l,'-')]]},
+ // nieuw: uithoudingsvermogen (minder energie per klus) en ademhaling (rustiger bij klussen en vluchten)
+ {id:'duur',place:'Hardloopclub langs de Amstel',n:'Uithouding',col:'#5fe3a6',ic:'run',base:90,cd:15,
+  d:'Lange rondjes in een rustig tempo. Je lijf leert zuinig met energie om te gaan: elke klus kost minder en je laadt sneller op.',
+  eff:l=>[['Energie per klus',pctTxt(SK.duur.save*100*l,'-')],['Energie laadt sneller op',pctTxt(SK.duur.regen*100*l,'+')]]},
+ {id:'ademhaling',place:'Yogaschool in Oost',n:'Ademhaling',col:'#c9a2ff',ic:'spa',base:110,cd:15,r:1,
+  d:'Ademen in vier tellen, vasthouden, uitademen. Je hartslag blijft laag als het spannend wordt.',
+  eff:l=>[['Slaagkans alle klussen',pctTxt(SK.ademhaling.focus*l,'+',1)],['Meer ruimte bij vluchten',pctTxt(SK.ademhaling.flee*100*l,'+')]]}];
 // Oude saves telden sessies per level (2, 2, 3, 3, ...). Nu telt elke gedane sessie als één level.
 function migrateTrain(d){if(d.trainV===2)return;d.skills=d.skills||{};d.train=d.train||{};
  TRAININGS.forEach(t=>{const L=d.skills[t.id]||0;let n=d.train[t.id]||0;for(let l=0;l<L;l++)n+=2+Math.floor(l/2);d.skills[t.id]=Math.min(TRAIN_MAX,n)});d.train={};d.trainV=2}
@@ -351,7 +379,26 @@ const FURN=[
  {id:'fitness',n:'Fitnesshoek',h:4,p:120000,col:'#5ce1c4',d:'Loopband, halters en een bank. Je houdt het langer vol.',fx:{en:10,zone:.05}},
  {id:'sauna',n:'Eigen sauna',h:5,p:250000,col:'#ff3d52',d:'Een cederhouten sauna met uitzicht op de tuin.',fx:{hpRegen:.5,restCd:.15}},
  {id:'zen',n:'Japanse tuin',h:5,p:400000,col:'#e6e1d6',d:'Geharkt grind, drie stenen en een esdoorn. Stilte.',fx:{focus:5}},
- {id:'hek',n:'Hek met bewaking',h:5,p:600000,col:'#7fb8ff',d:'Een man in een hokje, twee honden en schijnwerpers. Je slaapt.',fx:{hideRate:.3,heat:.25}}];
+ {id:'hek',n:'Hek met bewaking',h:5,p:600000,col:'#7fb8ff',d:'Een man in een hokje, twee honden en schijnwerpers. Je slaapt.',fx:{hideRate:.3,heat:.25}},
+ // uitbreiding: meer voor gezondheid, energie, onderduiken, veiligheid, focus en vluchten (eigen tekening, staan op vrije plekken in je woning)
+ {id:'meditatie',n:'Meditatiekussen',h:1,p:600,col:'#c9a2ff',d:'Tien minuten zitten en ademen. Je handen worden rustiger.',fx:{focus:2}},
+ {id:'koelkast',n:'Koelkast vol energiedrank',h:1,p:900,col:'#5fe3a6',d:'Blikjes met namen die je niet kunt uitspreken. Ze werken wel.',fx:{en:6}},
+ {id:'medkast',n:'Medicijnkastje',h:1,p:1100,col:'#ff8f9c',d:'Pijnstillers, zalf en een rol tape. Kleine wonden heel je zelf.',fx:{hpRegen:.15,docHp:2}},
+ {id:'schaak',n:'Schaaktafel',h:1,p:1400,col:'#e6d3a3',d:'Elke avond een potje tegen jezelf. Je leert drie zetten vooruit denken.',fx:{focus:2}},
+ {id:'scanner',n:'Politiescanner',h:2,p:3500,col:'#ff5c6c',d:'Je hoort de meldkamer mee. Zodra ze je straat noemen, ben je al weg.',fx:{heat:.25,hideRisk:.1}},
+ {id:'blender',n:'Smoothiebar',h:2,p:4500,col:'#ffad6b',d:'Spinazie, banaan en een schep eiwitpoeder. Vies, maar je gaat langer door.',fx:{en:8,enRegen:.05}},
+ {id:'daglamp',n:'Daglichtlamp',h:2,p:5500,col:'#ffe36b',d:'Een halfuur per ochtend en je lijf denkt dat het zomer is.',fx:{hpRegen:.15,enRegen:.08}},
+ {id:'stadskaart',n:'Stadskaart met routes',h:2,p:7000,col:'#7cc4ff',d:'Elke steeg, elk hek en elke achteruitgang met rood aangestreept.',fx:{zone:.05,focus:1}},
+ {id:'alarm',n:'Alarmsysteem',h:2,p:9000,col:'#ff7a1a',d:'Bewegingsmelders, een sirene en een knop naast je bed.',fx:{safe:.15,hideRate:.1}},
+ {id:'spinning',n:'Spinningfiets',h:3,p:18000,col:'#4cc6ff',d:'Elke dag twintig minuten. Je conditie gaat omhoog en je energie raakt minder snel op.',fx:{en:10,enRegen:.1}},
+ {id:'vermomming',n:'Vermommingskast',h:3,p:22000,col:'#b8a1ff',d:'Pruiken, petten, een nepsnor en drie jassen die je nooit draagt als jezelf.',fx:{hideRisk:.3}},
+ {id:'massage',n:'Massagestoel',h:3,p:28000,col:'#d07a52',d:'Twaalf programma\'s en een stand die "Na een lange nacht" heet.',fx:{restHp:8,restCd:.1}},
+ {id:'boekenkast',n:'Draaiende boekenkast',h:4,p:70000,col:'#a8794f',d:'Trek aan het rode boek en de kast draait open naar een kamertje.',fx:{hideRate:.25,hideRisk:.15}},
+ {id:'klimmuur',n:'Klimmuur',h:4,p:85000,col:'#3fe395',d:'Grepen tot aan het plafond. Over een hek klimmen gaat je nu makkelijk af.',fx:{zone:.08}},
+ {id:'capsule',n:'Powernap-capsule',h:4,p:110000,col:'#a9dcff',d:'Twintig minuten in een eitje met zacht licht en je bent weer fris.',fx:{enRegen:.2,en:5}},
+ {id:'ijsbad',n:'IJsbad',h:4,p:130000,col:'#7fe0ff',d:'Drie minuten bij twee graden. Daarna voel je je onverwoestbaar.',fx:{enRegen:.12,hpRegen:.2}},
+ {id:'hottub',n:'Bubbelbad',h:5,p:300000,col:'#5ad1ff',d:'Warm water, bubbels en een glas champagne op de rand.',fx:{hpRegen:.4,restHp:10}},
+ {id:'paniekkamer',n:'Paniekkamer',h:5,p:750000,col:'#9aa3ad',d:'Stalen deur, eigen lucht en een kluis voor het geld. Hier komt niemand binnen.',fx:{safe:.4,heat:.25}}];
 const FURN_FX={hpRegen:['Gezondheid herstelt',v=>'+'+Math.round(v*100)+'% sneller'],enRegen:['Energie laadt op',v=>'+'+Math.round(v*100)+'% sneller'],heat:['Hitte zakt',v=>'+'+Math.round(v*100)+'% sneller'],
  focus:['Rust in je hoofd',v=>'+'+v+'% slaagkans'],en:['Max. energie',v=>'+'+v],restHp:['Per rustbeurt',v=>'+'+v+'% gezondheid'],restCd:['Wachttijd rusten',v=>'-'+Math.round(v*100)+'%'],
  zone:['Groen gat bij vluchten',v=>'+'+Math.round(v*100)+'%'],safe:['Verlies bij mislukken',v=>'-'+Math.round(v*100)+'%'],

@@ -134,6 +134,12 @@ function vdText(id,v){const e=vdEl(id);if(e)e.textContent=v}
 function vdTick(t){vd.tick=t;const e=vdEl('vdTick');if(e){e.innerHTML=t;e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop')}}
 function vdCount(id,from,to,ms){const el=vdEl(id);if(!el||!vdOn()){if(el)el.textContent=fmt(to);return Promise.resolve()}
  return new Promise(res=>{const t0=performance.now();const st=t=>{const p=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(to-from)*e);if(p<1)requestAnimationFrame(st);else res()};requestAnimationFrame(st)})}
+// Bonus binnen: een boei valt in het water, plons met spetters en een golf over het scherm.
+function vdIntro(){const fast=slotSpd()===3,dur=fast?1500:2900,el=vdEl('vdBanner');SFX.vd.bonus(fast);
+ if(el&&vdOn())el.innerHTML=`<div class="si-splash ${fast?'fast':''}" style="--dur:${dur}ms"><div class="si-buoy"><i></i></div><div class="si-ring2"></div><div class="si-ring2 b"></div>
+  <div class="si-drops">${Array.from({length:16},(_,i)=>{const a=-Math.PI*(.12+.76*i/15),d=22+(i*7)%20;return `<i style="--dx:${(Math.cos(a)*d).toFixed(1)}cqmin;--dy:${(Math.sin(a)*d*1.5).toFixed(1)}cqmin;--s:${(.6+(i%4)*.25).toFixed(2)};--dl:${(i%5)*30}ms"></i>`}).join('')}</div>
+  <div class="si-wave"></div></div>`;
+ return vdWait(dur).then(()=>{const e=vdEl('vdBanner');if(e)e.innerHTML=''})}
 function vdBanner(big,small,ms,cls){const el=vdEl('vdBanner');if(el)el.innerHTML=`<div class="kk-banner ${cls||''}"><div><b>${big}</b><span>${small||''}</span></div></div>`;
  return vdWait(ms||1400).then(()=>{const e=vdEl('vdBanner');if(e)e.innerHTML=''})}
 function vdShowBal(add){vd.shown=(vd.shown||0)+add;vdText('vdBal',fmt(S.cash-(window.slotPending||0)+vd.shown))}
@@ -155,8 +161,8 @@ async function vdSpinReels(g,fs,lvl,rd){const reels=[...document.querySelectorAl
    {transform:'translateY(0%)',filter:'blur(0px)'}];
   anims.push(strip.animate(kf,{duration:dur,fill:'both'}));
   const scHere=g[c].filter(x=>x.sc).length;
-  setTimeout(()=>{el.classList.remove('tease');el.classList.add('stop');setTimeout(()=>el.classList.remove('stop'),260);SFX.tick();if(scHere){SFX.scatter(heard);heard+=scHere;el.classList.add('scland')}},dur*.93);
-  if(tease)setTimeout(()=>SFX.tease&&SFX.tease(sc,Math.min(1.2,T.tease/1000)),Math.max(0,dur-T.tease));
+  setTimeout(()=>{el.classList.remove('tease');el.classList.add('stop');setTimeout(()=>el.classList.remove('stop'),260);SFX.vd.tick();if(scHere){SFX.vd.scatter(heard);heard+=scHere;el.classList.add('scland')}},dur*.93);
+  if(tease)setTimeout(()=>SFX.vd.tease(sc,Math.min(1.2,T.tease/1000)),Math.max(0,dur-T.tease));
   sc+=scHere});
  await vdWait(maxT+60);
  reels.forEach((el,c)=>{const strip=el.querySelector('.vd-strip');strip.getAnimations().forEach(a=>a.cancel());strip.style.transform='none';strip.style.setProperty('--n',VISD.ROWS);strip.innerHTML=g[c].map(x=>vdCellHtml(x,fs)).join('');el.classList.remove('scland','tease')});
@@ -170,7 +176,7 @@ function vdUnmark(){document.querySelectorAll('#vdReels .vd-cell').forEach(e=>e.
 async function vdShowWins(wins,mult,bet,stepFrom){if(!wins.length)return 0;const T=vdT();const svg=vdEl('vdLines');
  vdMark(wins.flatMap(w=>w.cells));
  if(svg)svg.innerHTML=wins.map(w=>vdLineSvg(w,true)).join('');
- const add=wins.reduce((a,w)=>a+w.pay,0)*mult*bet;SFX.win(Math.min(6,wins.length+1));
+ const add=wins.reduce((a,w)=>a+w.pay,0)*mult*bet;SFX.vd.win(Math.min(6,wins.length+1));
  vdTick(wins.length>1?`${wins.length} lijnen winnen samen <b>${fmt(add)}</b>${mult>1?' (×'+mult+')':''}`:`${vdSymName(wins[0])}: <b>${fmt(add)}</b>${mult>1?' (×'+mult+')':''}`);
  vdCount('vdStep',stepFrom,stepFrom+add,T.hold*.7);vdShowBal(add);
  await vdWait(T.hold);
@@ -184,11 +190,11 @@ async function vdCollect(s,bet,stepFrom){const board=vdEl('vdReels');if(!s.wilds
  const fx=vdEl('vdFx'),br=fx.getBoundingClientRect();const ctr=(c,r)=>{const e=vdCellEl(c,r);if(!e)return [0,0];const q=e.getBoundingClientRect();return [q.left-br.left+q.width/2,q.top-br.top+q.height/2]};
  wild.forEach(([c,r])=>vdCellEl(c,r)?.classList.add('collect'));s.fish.forEach(([c,r])=>vdCellEl(c,r)?.classList.add('caught'));
  vdTick(`${wild.length>1?wild.length+' Visdieven pakken':'De Visdief pakt'} ${s.fish.length} vis${s.fish.length>1?'sen':''}`);
- SFX.bonus();await vdWait(T.collect*.5);let got=0;
+ SFX.vd.collect();await vdWait(T.collect*.5);let got=0;
  for(const [wc,wr] of wild){const [tx,ty]=ctr(wc,wr);
   s.fish.forEach(([c,r,v],i)=>{const [x,y]=ctr(c,r);const d=document.createElement('div');d.className='vd-chip';d.textContent=vdShort(v*bet*s.mult);d.style.left=x+'px';d.style.top=y+'px';fx.appendChild(d);
    setTimeout(()=>{d.style.transform=`translate(calc(-50% + ${tx-x}px),calc(-50% + ${ty-y}px)) scale(.55)`;d.style.opacity='0'},40+i*70);setTimeout(()=>d.remove(),T.collect+i*70+200)});
-  const part=s.fish.reduce((a,f)=>a+f[2],0)*s.mult*bet;setTimeout(()=>{SFX.win(4);vdCellEl(wc,wr)?.classList.add('gulp');setTimeout(()=>vdCellEl(wc,wr)?.classList.remove('gulp'),300)},T.collect*.85);
+  const part=s.fish.reduce((a,f)=>a+f[2],0)*s.mult*bet;setTimeout(()=>{SFX.vd.win(4);vdCellEl(wc,wr)?.classList.add('gulp');setTimeout(()=>vdCellEl(wc,wr)?.classList.remove('gulp'),300)},T.collect*.85);
   vdCount('vdStep',stepFrom+got,stepFrom+got+part,T.collect);vdShowBal(part);got+=part;
   await vdWait(T.collect+s.fish.length*70)}
  const p=document.createElement('div');p.className='kk-pop vd-pop';const [px,py]=ctr(wild[0][0],wild[0][1]);p.style.left=px+'px';p.style.top=py+'px';p.innerHTML=fmt(add)+(s.mult>1?`<small>×${s.mult}</small>`:'');fx.appendChild(p);setTimeout(()=>p.remove(),1500);
@@ -200,32 +206,32 @@ async function vdPlay(round,bet,isBuy,from){const T=vdT();vd.stepWin=0;vdText('v
  else if(!isBuy){vdText('vdMsg','Draait…');vdTick('&nbsp;');await vdSpinReels(round.base.grid,false,0);if(round.base.wins.length){await vdShowWins(round.base.wins,1,bet,0)}else if(!round.fs)vdTick(round.base.sc===2?'Twee boeien, net niet':'Geen winst')}
  else{vdText('vdMsg','Bonus gekocht');vdTick('Bonus gekocht');await vdSpinReels(round.base.grid,false,0)}
  const baseWin=round.base.win*bet;if(!isBuy&&baseWin>0){vd.lastWin=baseWin;vdText('vdLast',fmt(baseWin))}
- if(round.fs){const n=round.base.sc;document.querySelectorAll('#vdReels .vd-cell.sc').forEach(e=>e.classList.add('win'));SFX.bonus();vdTick(n+' boeien: bonus!');await vdWait(T.hold*.9);vdUnmark();
+ if(round.fs){const n=round.base.sc;document.querySelectorAll('#vdReels .vd-cell.sc').forEach(e=>e.classList.add('win'));SFX.vd.scatter(3);vdTick(n+' boeien: bonus!');await vdWait(T.hold*.9);vdUnmark();
   const st0=resume?Math.max(0,Math.min(from,round.fs.spins.length-1)):0;
-  if(resume)await vdBanner('Je bonus gaat verder','Free spin '+(st0+1)+' · het geld staat al op je saldo',2200,'fsin');
-  else await vdBanner(round.fsStart+' free spins',n+' boeien. De Visdief pakt alle vissen.',2200,'fsin');
+  if(resume){SFX.vd.bonus(true);await vdBanner('Je bonus gaat verder','Free spin '+(st0+1)+' · het geld staat al op je saldo',2200,'fsin')}
+  else{await vdIntro();await vdBanner(round.fsStart+' free spins',n+' boeien. De Visdief pakt alle vissen.',1900,'fsin')}
   vd.fs={at:0,of:round.fsStart,total:0,caught:0,lvl:0};let at=0,wasSec=false;
   // al gespeelde spins meteen verwerken
   for(let i=0;i<st0;i++){const s=round.fs.spins[i];if(s.newRound){vd.fs.lvl=s.lvl;wasSec=false;at=0;vd.fs.of=VISD.RETRIG}at++;vd.fs.at=at;vd.fs.of=at+s.left;vd.fs.total=s.total*bet;vd.fs.caught=s.caught;if(s.secured)wasSec=true}
   vdRefresh();if(st0)vdText('vdLast',fmt(vd.fs.total));
   for(let i=st0;i<round.fs.spins.length;i++){const s=round.fs.spins[i];
    if(S.slotRun&&S.slotRun.g==='vis'&&i>(S.slotRun.at||0)){S.slotRun.at=i;save()}
-   if(s.newRound){vd.fs.lvl=s.lvl;wasSec=false;at=0;const fb=vdEl('vdFs');if(fb)fb.innerHTML=vdFsBar();SFX.big();
+   if(s.newRound){vd.fs.lvl=s.lvl;wasSec=false;at=0;const fb=vdEl('vdFs');if(fb)fb.innerHTML=vdFsBar();SFX.vd.big();
     await vdBanner('Ronde '+s.newRound,VISD.RETRIG+' free spins. Alles telt nu ×'+VISD.MULTS[s.lvl]+'.',2200,s.lvl>=3?'big gold':'fsin');vd.fs.of=VISD.RETRIG}
-   at++;vd.fs.at=at;vd.fs.of=at+s.left;slotFsSet(at,vd.fs.of);vd.stepWin=0;vdText('vdStep',fmt(0));SFX.spin();
+   at++;vd.fs.at=at;vd.fs.of=at+s.left;slotFsSet(at,vd.fs.of);vd.stepWin=0;vdText('vdStep',fmt(0));SFX.vd.spin();
    await vdSpinReels(s.grid,true,Math.min(VISD.MULTS.length-1,Math.floor((s.caught-s.wilds)/VISD.PER_LEVEL)),s.lvl);let step=0;
    if(s.wins.length)step+=await vdShowWins(s.wins,s.mult,bet,step);
    if(s.wilds&&s.fish.length)step+=await vdCollect(s,bet,step);
-   else if(s.wilds){SFX.lose();document.querySelectorAll('#vdReels .vd-cell.wild').forEach(e=>e.classList.add('win'));vdTick(s.wilds>1?s.wilds+' Visdieven, maar geen vis':'Visdief, maar geen vis');await vdWait(T.hold*.5);vdUnmark()}
+   else if(s.wilds){SFX.vd.lose();document.querySelectorAll('#vdReels .vd-cell.wild').forEach(e=>e.classList.add('win'));vdTick(s.wilds>1?s.wilds+' Visdieven, maar geen vis':'Visdief, maar geen vis');await vdWait(T.hold*.5);vdUnmark()}
    else if(!s.wins.length)vdTick(s.fish.length?'Vissen, maar geen Visdief':'Niets gevangen');
    vd.fs.total=s.total*bet;vd.fs.caught=s.caught;vdText('vdLast',fmt(vd.fs.total));slotXSet(vd.fs.total,bet);const fb=vdEl('vdFs');if(fb)fb.innerHTML=vdFsBar();
-   if(s.secured&&!wasSec){wasSec=true;SFX.bonus();vdTick(`<b>Ronde ${s.lvl+2} is binnen</b>: na deze ronde nog ${VISD.RETRIG} spins met ×${VISD.MULTS[s.lvl+1]}`);await vdWait(T.hold*.8)}
-   if(s.total>=VISD.MAX_WIN){SFX.big();await vdBanner('Max win',VISD.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3000,'big gold');break}
+   if(s.secured&&!wasSec){wasSec=true;SFX.vd.retrig();vdTick(`<b>Ronde ${s.lvl+2} is binnen</b>: na deze ronde nog ${VISD.RETRIG} spins met ×${VISD.MULTS[s.lvl+1]}`);await vdWait(T.hold*.8)}
+   if(s.total>=VISD.MAX_WIN){SFX.vd.big();await vdBanner('Max win',VISD.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3000,'big gold');break}
    await vdWait(slotSp(280,100))}
-  const x=round.fs.total;if(x>=20)SFX.big();
+  const x=round.fs.total;if(x>=20)SFX.vd.big();
   await vdBanner(fmt(x*bet),(x>=VISD.MAX_WIN?'Max win, ':x>=200?'Episch, ':x>=100?'Megawinst, ':x>=40?'Grote vangst, ':'Bonus voorbij, ')+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× je inzet',2600,x>=40?'big':'');
   vd.fs=null;vdRefresh();vdTick(`Bonus voorbij: <b>${fmt(x*bet)}</b>`)}
- else{const x=round.total;if(x>=20){SFX.big();await vdBanner(fmt(x*bet),(x>=100?'Megawinst':'Grote winst')+', '+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× je inzet',2000,'big')}else if(x===0)SFX.lose()}}
+ else{const x=round.total;if(x>=20){SFX.vd.big();await vdBanner(fmt(x*bet),(x>=100?'Megawinst':'Grote winst')+', '+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× je inzet',2000,'big')}else if(x===0)SFX.vd.lose()}}
 document.addEventListener('keydown',e=>{if(e.code!=='Space'||page!=='casino'||casinoTab!=='vis'||window.__chase||czBanLeft())return;const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;if(!$('#modal').hidden)return;
  e.preventDefault();if(vd.busy)return;if(S.slotRun&&S.slotRun.g==='vis'){vdResumeRun();return}if(vd.buyMode){if(!e.repeat)act.vdSpin(true);return}act.vdSpin(false)});
 async function vdResumeRun(){const run=S.slotRun;if(!run||run.g!=='vis'||vd.busy)return;
@@ -241,7 +247,7 @@ const vdRunHtml=()=>{const run=S.slotRun;if(!run||run.g!=='vis'||vd.busy)return 
 Object.assign(act,{
  vdNewSeed(){if(vd.busy)return;const o=vdSeed();S.vdSeed=kkNewSd({id:kkSeedId(o),spins:o.spins,bon:o.bon,sup:0});SFX.chip();save();vdRefresh();toast('Nieuwe seed: '+kkSeedId(S.vdSeed))},
  async vdSpin(isBuy){if(vd.busy||inJail())return;const bet=vdBet(),cost=isBuy?bet*VISD.BUY_COST:bet;if(casCash()<cost){toast(casShort(),'bad');return}
-  vd.busy=true;vd.confirm=false;vd.pick=false;vd.bet=bet;vd.shown=0;SFX.spin();
+  vd.busy=true;vd.confirm=false;vd.pick=false;vd.bet=bet;vd.shown=0;SFX.vd.spin();
   if(S.slotRun&&S.slotRun.g==='vis')delete S.slotRun;
   const sd=vdSeed(),seedStr='vis:'+sd.s+':'+sd.c+':'+sd.n,rng=SLOT.seedRng(seedStr);sd.n++;
   const round=VISD.playRound(rng,{buy:isBuy,vip:tier()});if(!isBuy){sd.spins++;if(round.fs)sd.bon++}

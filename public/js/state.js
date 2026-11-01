@@ -160,6 +160,8 @@ const furnFx=k=>FURN.reduce((a,f)=>a+((S&&S.furn&&S.furn[f.id])?(f.fx[k]||0):0),
 const buffFocus=()=>(S.buffs&&S.buffs.focus&&S.buffs.focus.until>now())?S.buffs.focus.pct:0;
 const buffLoot=()=>(S.buffs&&S.buffs.loot&&S.buffs.loot.until>now())?S.buffs.loot.pct:0;
 const sk=id=>(S.skills&&S.skills[id])||0;
+// energie per klus: Uithoudingsvermogen maakt elke klus zuiniger (tot −30% op level 50), minimaal 1
+const crEn=c=>Math.max(1,Math.round(c.en*(1-sk('duur')*SK.duur.save)));
 // buit-vermenigvuldiger bij klussen: familie × (rang + rang-level + hacken + buit-buff + uitrusting) × lidmaatschap
 const lootMult=()=>(1+fam().loot/100)*(1+rankIdx(S.xp)*RANK_LOOT+rankLvlBonus()+sk('hack')*SK.hack.loot/100+buffLoot()/100+gearFx('buit')+fitFx('buit'))*(1+tierLoot());
 const focusPct=()=>buffFocus()+furnFx('focus');
@@ -173,7 +175,7 @@ const mastLoot=id=>1+mastLv(id)*.05;
 // Lagere misdaden dan je rang: +1% extra per rang erboven, de hitte telt minder mee (vakmensen blijven rustig)
 // en het plafond gaat van 95% naar maximaal 98%. Er blijft altijd 2% risico in het vak.
 const crimeUp=c=>Math.max(0,rankIdx(S.xp)-(c.r||0));
-const chanceRaw=c=>mastLv(c.id)*2+c.base+rankIdx(S.xp)*2+crimeUp(c)+gearBonus()+fitFx('kans')+fam().chance+S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)+(c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0)+focusPct()-Math.floor(S.heat/4*Math.max(.4,1-crimeUp(c)*.1));
+const chanceRaw=c=>mastLv(c.id)*2+c.base+rankIdx(S.xp)*2+crimeUp(c)+gearBonus()+fitFx('kans')+fam().chance+S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)+sk('ademhaling')*SK.ademhaling.focus+(c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0)+focusPct()-Math.floor(S.heat/4*Math.max(.4,1-crimeUp(c)*.1));
 const chance=c=>Math.max(5,Math.min(95+Math.min(3,crimeUp(c)),Math.round(chanceRaw(c)*(1+tierK()))));
 // straf 30 s – 10 min, plus 30–60 s (hoe langer de straf, hoe meer) omdat je in de bajes kunt werken: 1 – 11 minuten
 const jailSec=sec=>{const b=Math.max(30,Math.min(600,Math.round(sec*(1-fam().jail/100)*(1-sk('rechten')*SK.rechten.jail/100)*(1-gearFx('jail')))));return b+Math.round(30+30*(b-30)/570)};
@@ -239,7 +241,7 @@ function closeModal(){$('#modal').hidden=true}
 // VIP en High roller: tag bij je naam, vaker de bonus in de slots en cashback op elke inzet (High roller ×1,5).
 // Cashback per spel, afgestemd op het huisvoordeel, zodat je er nooit structureel winst mee maakt. Direct te claimen.
 const CB_RATE={kluis:.005,vis:.005,zoet:.005,mines:.005,avia:.005,roulette:.01,tcp:.0075,th:.005,bj:.0025,coin:0};
-const CB_NAME={kluis:'Kluiskraker',vis:'Visdief',zoet:'Zoete Buit',mines:'Mines',avia:'Hoogvlieger',roulette:'Roulette',tcp:'Three Card Poker',th:"Texas Hold'em",bj:'Blackjack',coin:'Dubbel of niks'};
+const CB_NAME={kluis:'Kluiskraker',vis:'Visdief',zoet:'Suikerbaron',mines:'Mines',avia:'Hoogvlieger',roulette:'Roulette',tcp:'Three Card Poker',th:"Texas Hold'em",bj:'Blackjack',coin:'Dubbel of niks'};
 // Lidmaatschap: 0 = gewoon, 1 = VIP, 2 = High roller. Komt van je account (beheerder); oude VIP-code telt nog als VIP.
 const tier=()=>{const t=window.__TIER__;if(t!=null)return t;return (S&&S.redeemed&&S.redeemed.includes('vip'))?1:0};
 const isVip=()=>tier()>=1;

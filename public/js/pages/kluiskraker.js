@@ -115,7 +115,7 @@ function kkSeedHtml(){const s0=kkSeed(),p=s0.prev,pd=kk.busy&&kk.sdPend,sd={...s
 function kkConfirm(){const b=kkBet(),buy=b*SLOT.BUY_COST;return `<div class="kk-buyinfo"><b>Bonus kopen staat aan · ${fmt(buy)} per bonus</b><span>Elke klik op de grote knop koopt een bonus voor ${fmt(buy)} (${SLOT.BUY_COST}× je inzet van ${fmt(b)}). Je krijgt altijd 3 kluizen; valt er vanzelf al een kluis, dan heb je er meteen 4. ${SLOT.BUY_SPOTS} vakjes beginnen al op x2, net als elk vakje waar een kluis ligt (gemarkeerde vakjes uit die spin gaan ook mee), en je krijgt altijd minstens ${SLOT.BUY_FLOOR}× je inzet terug (vangnet). Omdat je met een voorsprong begint, betalen de clusters in een gekochte bonus ${Math.round(SLOT.FS_K*(SLOT.BUY_KT[tier()]||SLOT.BUY_KT[0])*100)}% van de tabel. Gemiddeld krijg je ±${KK_TIER[tier()].buy}% van de prijs terug, maar de helft van de keren minder dan de helft: de rest zit in de grote uitschieters. Valt er winst, dan tumbelt hij door en kunnen er nog meer bij vallen (vaker dan bij gewoon spinnen${isVip()?', en als '+lidName()+' valt er vaker vanzelf een':''}). Een gekochte bonus geeft ${SLOT.BUY_EXTRA} extra free spin: 3 kluizen = ${SLOT.FS_BY_SC[3]+SLOT.BUY_EXTRA}, 4 = ${SLOT.FS_BY_SC[4]+SLOT.BUY_EXTRA}, 5 = ${SLOT.FS_BY_SC[5]+SLOT.BUY_EXTRA}, superbonus ${SLOT.SUPER_SPINS+SLOT.BUY_EXTRA_SUP}. Winst in die spin krijg je ook, net als de kluiswinst: 3 kluizen = ${SLOT.SCATTER_PAY[3]}×, 4 = ${SLOT.SCATTER_PAY[4]}×, 5 = ${SLOT.SCATTER_PAY[5]}×, 6+ = ${SLOT.SCATTER_PAY[6]}× je inzet. Zet hem uit om weer gewoon te draaien.</span></div>`}
 // Inzet kiezen in een pop-up (Kluiskraker en Visdief): klik op een bedrag en de pop-up gaat meteen dicht.
 // game = 'kk' of 'vd'. Toont per bedrag ook wat een gekochte bonus kost.
-const SLOT_POP={kk:{st:()=>kk,cost:()=>SLOT.BUY_COST,n:'Kluiskraker',pick:'kkSetBet'},vd:{st:()=>vd,cost:()=>VISD.BUY_COST,n:'Visdief',pick:'vdSetBet'},zb:{st:()=>zb,cost:()=>ZOET.BUY_COST,n:'Zoete Buit',pick:'zbSetBet'}};
+const SLOT_POP={kk:{st:()=>kk,cost:()=>SLOT.BUY_COST,n:'Kluiskraker',pick:'kkSetBet'},vd:{st:()=>vd,cost:()=>VISD.BUY_COST,n:'Visdief',pick:'vdSetBet'},zb:{st:()=>zb,cost:()=>ZOET.BUY_COST,n:'Suikerbaron',pick:'zbSetBet'}};
 function slotBetPop(game){const G=SLOT_POP[game]||SLOT_POP.kk,B=kkBets(),cur=G.st().bi,cost=G.cost(),buy=G.st().buyMode;
  const groups=[['Klein',v=>v<300],['Middel',v=>v>=300&&v<5000],['Groot',v=>v>=5000&&v<=50000],['High roller',v=>v>50000]];
  const pick=G.pick;let el=document.getElementById('slotPop');if(!el){el=document.createElement('div');el.id='slotPop';document.body.appendChild(el)}
@@ -206,6 +206,12 @@ function kkText(id,v){const el=kkEl(id);if(el)el.textContent=v}
 function kkInfoRefresh(){const el=kkEl('kkInfo');if(el){el.innerHTML=kkInfo();fitText(el)}}
 function kkShow(g,anim){kk.grid=g;const el=kkEl('kkCells');if(el)el.innerHTML=kkCellsHtml(g,anim)}
 function kkShowSpots(sp,prev){kk.spots=sp;const el=kkEl('kkSpots');if(el)el.innerHTML=kkSpotsHtml(sp,prev)}
+// Bonus binnen: de kluisdeur. Het cijferslot draait, de grendel schiet los en de deur zwaait open naar het goud.
+function kkIntro(sup){const fast=slotSpd()===3,dur=fast?1500:3300,el=kkEl('kkBanner');SFX.kk.bonus(fast);
+ if(el&&kkOn())el.innerHTML=`<div class="si-vault ${fast?'fast':''} ${sup?'sup':''}" style="--dur:${dur}ms"><div class="si-gold"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="si-door"><div class="si-ring"></div><div class="si-dial">${Array.from({length:12},(_,i)=>`<i style="transform:rotate(${i*30}deg)"></i>`).join('')}</div>
+   <div class="si-wheel"><i></i><i></i><i></i></div>${Array.from({length:8},(_,i)=>`<b style="--a:${i*45}deg"></b>`).join('')}</div></div>`;
+ return kkWait(dur).then(()=>{const e=kkEl('kkBanner');if(e)e.innerHTML=''})}
 function kkBanner(big,small,ms,cls){const el=kkEl('kkBanner');if(el)el.innerHTML=`<div class="kk-banner ${cls||''}"><div><b>${big}</b><span>${small||''}</span></div></div>`;
  return kkWait(ms||1400).then(()=>{const e=kkEl('kkBanner');if(e)e.innerHTML=''})}
 // Teller loopt soepel op naar het nieuwe bedrag
@@ -226,12 +232,12 @@ function kkLandSounds(g,anim){const T=KK_T();
  if(anim==='all'){const P=kk.plan||kkPlan(g);let n=0;
   for(let c=0;c<SLOT.COLS;c++){const p=P[c],land=p.delay+(T.base+SLOT.ROWS*T.per)*p.slow*.7,scs=g[c].filter(x=>x.sc).length,from=n;n+=scs;
    const col=on=>{const sp=document.querySelectorAll('#kkSpots .kk-spot');for(let r=0;r<SLOT.ROWS;r++){const el=sp[r*SLOT.COLS+c];if(el)el.classList.toggle('tease',on)}};
-   if(p.tease)setTimeout(()=>{if(!kkOn())return;col(true);SFX.tease(p.cnt,(land-p.delay)/1000)},Math.max(0,p.delay-30));
-   setTimeout(()=>{if(!kkOn())return;SFX.land(c);for(let k=0;k<scs;k++)setTimeout(()=>SFX.scatter(from+k),k*90);
+   if(p.tease)setTimeout(()=>{if(!kkOn())return;col(true);SFX.kk.tease(p.cnt,(land-p.delay)/1000)},Math.max(0,p.delay-30));
+   setTimeout(()=>{if(!kkOn())return;SFX.kk.land(c);for(let k=0;k<scs;k++)setTimeout(()=>SFX.kk.scatter(from+k),k*90);
      if(p.tease)col(false)},land-20)}
   kkScSeen=n;return}
  for(let c=0;c<SLOT.COLS;c++){if(!g[c].some(x=>x.fall))continue;const d=c*Math.round(T.col/2)+(T.base+Math.max(...g[c].map(x=>x.fall||0))*T.per)*.7;
-  setTimeout(()=>{if(kkOn())SFX.land(c)},d-20)}}
+  setTimeout(()=>{if(kkOn())SFX.kk.land(c)},d-20)}}
 let kkScSeen=0;
 // Nieuwe spin: het bord draait als een rol. De oude symbolen schuiven kolom voor kolom naar beneden uit beeld,
 // precies gelijk met de nieuwe die van boven invallen (dezelfde snelheid), zodat het één doorlopende strook lijkt.
@@ -252,7 +258,7 @@ async function kkAnimateSpin(sp,bet,inFs,runTotal){
   kkShow(st.grid,anim);kkLandSounds(st.grid,anim);
   await kkWait(kkFallTime(st.grid,anim)+60);
   // kluizen die erbij zijn gekomen laten horen
-  let sc=0;st.grid.forEach(col=>col.forEach(x=>{if(x.sc)sc++}));const scPrev=kkScSeen;for(let k=kkScSeen;k<sc;k++)SFX.scatter(k);kkScSeen=Math.max(kkScSeen,sc);
+  let sc=0;st.grid.forEach(col=>col.forEach(x=>{if(x.sc)sc++}));const scPrev=kkScSeen;for(let k=kkScSeen;k<sc;k++)SFX.kk.scatter(k);kkScSeen=Math.max(kkScSeen,sc);
   // een kluis die erin tumbelt terwijl er al 3 of meer liggen: even laten zien
   if(!inFs&&i>0&&sc>scPrev&&sc>=4)await kkBanner(sc+' kluizen!',sc>=SLOT.SUPER_SC?'Superbonus!':'Er tumbelde een kluis bij',slotSp(1000,600),sc>=SLOT.SUPER_SC?'fsin super':'fsin');
   if(!st.wins.length)break;
@@ -260,13 +266,13 @@ async function kkAnimateSpin(sp,bet,inFs,runTotal){
   // Gouden baren tellen mee als loper maar blijven liggen: ze lichten op, maar verdwijnen niet
   const hit=new Set(),barHit=new Set();st.wins.forEach(w=>w.cells.forEach(([c,r])=>{const k=c*SLOT.ROWS+r;if(st.grid[c][r].bar)barHit.add(k);else hit.add(k)}));
   if(cells)cells.querySelectorAll('.kk-cell').forEach(el=>{const k=+el.dataset.k;if(hit.has(k))el.classList.add('win');else if(barHit.has(k))el.classList.add('barwin');else if(!el.classList.contains('gbar'))el.classList.add('dim')});
-  st.wins.forEach(w=>kkFxLabel(w,bet));SFX.win(i);if(st.wins.some(w=>w.mult))setTimeout(()=>SFX.mult(Math.max(...st.wins.map(w=>w.mult))),120);
+  st.wins.forEach(w=>kkFxLabel(w,bet));SFX.kk.win(i);if(st.wins.some(w=>w.mult))setTimeout(()=>SFX.kk.mult(Math.max(...st.wins.map(w=>w.mult))),120);
   const add=st.wins.reduce((a,w)=>a+w.pay,0)*bet;
   kkCount('kkStep',sofar,sofar+add,T.hold*.8);if(runTotal!=null){kkCount('kkLast',runTotal+sofar,runTotal+sofar+add,T.hold*.8);slotXSet(runTotal+sofar+add,bet)}
   sofar+=add;kk.stepWin=sofar;
   await kkWait(T.hold);
   if(cells)cells.querySelectorAll('.kk-cell.win').forEach(el=>el.classList.add('pop'));
-  SFX.pop();kkSparks([...hit]);
+  SFX.kk.pop();kkSparks([...hit]);
   await kkWait(T.pop);
   kkShowSpots(st.spotsAfter,st.spots);
  }
@@ -282,7 +288,7 @@ async function kkPlay(round,bet,isBuy,from){
  // kluizen betalen zelf ook (3 = 5×, 4 = 10×, 5 = 25×, 6+ = 100×), bovenop de clusters, ook bij een gekochte bonus
  if(scPay>0&&!resume){const cl=baseWin-scPay,sc=round.base.scatters;
   const cells=kkEl('kkCells');if(cells)cells.querySelectorAll('.kk-cell').forEach(el=>{const k=+el.dataset.k,g=round.base.steps[round.base.steps.length-1].grid[Math.floor(k/SLOT.ROWS)][k%SLOT.ROWS];el.classList.toggle('scwin',!!(g&&g.sc))});
-  SFX.win(2);kkCount('kkStep',cl,baseWin,700);kkCount('kkLast',cl,baseWin,700);
+  SFX.kk.win(2);kkCount('kkStep',cl,baseWin,700);kkCount('kkLast',cl,baseWin,700);
   await kkBanner('+'+fmt(scPay),Math.min(sc,6)+(sc>6?'+':'')+' kluizen betalen '+round.base.scPay+'× je inzet',1900,'gold');
   if(cells)cells.querySelectorAll('.kk-cell.scwin').forEach(el=>el.classList.remove('scwin'))}
  if(baseWin>0){kk.lastWin=baseWin;kkText('kkLast',fmt(baseWin))}
@@ -291,9 +297,9 @@ async function kkPlay(round,bet,isBuy,from){
   const sc=round.base.scatters,sup=round.kind==='super';
   const stage=kkEl('kkStage');if(stage)stage.classList.add('vault-open');
   const st0=resume?Math.max(0,Math.min(from,round.fs.spins.length-1)):0;
-  SFX.bonus();if(resume)await kkBanner('Je bonus gaat verder','Free spin '+(st0+1)+' · het geld staat al op je saldo',2200,sup?'fsin super':'fsin');
-  else if(sup){SFX.big();await kkBanner('Superbonus',sc+' kluizen! '+round.fsStart+' spins met extra lopers · zoek de Gouden baar',3000,'fsin super')}
-  else await kkBanner(round.fsStart+' free spins',sc+' kluizen · vakjes blijven de hele bonus staan',2200,'fsin');
+  if(resume){SFX.kk.bonus(true);await kkBanner('Je bonus gaat verder','Free spin '+(st0+1)+' · het geld staat al op je saldo',2200,sup?'fsin super':'fsin')}
+  else{await kkIntro(sup);if(sup)await kkBanner('Superbonus',sc+' kluizen! '+round.fsStart+' spins met extra lopers · zoek de Gouden baar',2600,'fsin super');
+   else await kkBanner(round.fsStart+' free spins',sc+' kluizen · vakjes blijven de hele bonus staan',1900,'fsin')}
   let of=round.fsStart;kk.fsBet=bet;kk.fs={at:0,of,total:0,kind:round.fs.kind,bars:0,barCells:[]};
   // vakjes uit de spin die de bonus gaf gaan mee; kluisvakjes beginnen op x2 (gekocht: plus een paar extra op x2)
   kkShowSpots(round.fs.preSpots||SLOT.newSpots(),resume?null:round.base.spots);
@@ -307,26 +313,26 @@ async function kkPlay(round,bet,isBuy,from){
   for(let i=st0;i<round.fs.spins.length;i++){const s=round.fs.spins[i];
    if(S.slotRun&&S.slotRun.g==='kluis'&&i>(S.slotRun.at||0)){S.slotRun.at=i;save()}
    kk.fs.at=i+1;kk.fs.of=Math.max(of,i+1);slotFsSet(kk.fs.at,kk.fs.of);
-   kk.stepWin=0;kkText('kkStep',fmt(0));kkScSeen=0;SFX.spin();
+   kk.stepWin=0;kkText('kkStep',fmt(0));kkScSeen=0;SFX.kk.spin();
    const before=kk.fs.total;
    await kkAnimateSpin(s,bet,true,before);
    kk.fs.total=Math.min(SLOT.MAX_WIN,s.total)*bet;kkText('kkLast',fmt(kk.fs.total));slotXSet(kk.fs.total,bet);
    if(s.barNew){const cells=kkEl('kkCells');if(cells)cells.querySelectorAll('.kk-cell.gbar').forEach(el=>el.classList.add('win'));kk.fs.bars=s.bars;if(s.barPos){kk.fs.barCells=kk.fs.barCells.concat(s.barPos);kkShowSpots(kk.spots)}const sb=kkEl('kkSub');if(sb)sb.innerHTML=kkSubHtml();
-    if(!s.barMax){SFX.bonus();await kkBanner('Gouden baar '+s.bars+'/'+SLOT.BAR.need,s.bars===SLOT.BAR.need-1?'Nog één en je hebt de max win':'Hij blijft de hele bonus liggen en telt als loper',1800,'gold')}}
-   if(s.barMax){const cells=kkEl('kkCells');if(cells)cells.querySelectorAll('.kk-cell.gbar').forEach(el=>el.classList.add('win'));SFX.big();await kkBanner(kk.fs.kind==='super'?'Gouden baar':'3 Gouden baren','Max win · '+SLOT.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3200,'big gold');break}
-   if(round.fs.maxHit&&s.total>=SLOT.MAX_WIN){SFX.big();await kkBanner('Max win',SLOT.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3000,'big gold');break}
-   if(s.extra){SFX.bonus();of+=s.extra;kk.fs.of=Math.max(of,kk.fs.at);slotFsSet(kk.fs.at,kk.fs.of,s.extra);await kkBanner('+'+s.extra+' spins',s.scatters+' kluizen tijdens de bonus',1400,'fsin')}
+    if(!s.barMax){SFX.kk.retrig();await kkBanner('Gouden baar '+s.bars+'/'+SLOT.BAR.need,s.bars===SLOT.BAR.need-1?'Nog één en je hebt de max win':'Hij blijft de hele bonus liggen en telt als loper',1800,'gold')}}
+   if(s.barMax){const cells=kkEl('kkCells');if(cells)cells.querySelectorAll('.kk-cell.gbar').forEach(el=>el.classList.add('win'));SFX.kk.big();await kkBanner(kk.fs.kind==='super'?'Gouden baar':'3 Gouden baren','Max win · '+SLOT.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3200,'big gold');break}
+   if(round.fs.maxHit&&s.total>=SLOT.MAX_WIN){SFX.kk.big();await kkBanner('Max win',SLOT.MAX_WIN.toLocaleString('nl-NL')+'× je inzet',3000,'big gold');break}
+   if(s.extra){SFX.kk.retrig();of+=s.extra;kk.fs.of=Math.max(of,kk.fs.at);slotFsSet(kk.fs.at,kk.fs.of,s.extra);await kkBanner('+'+s.extra+' spins',s.scatters+' kluizen tijdens de bonus',1400,'fsin')}
    await kkWait(slotSp(280,120));
   }
   const x=round.total;
-  if(x>=20)SFX.big();
+  if(x>=20)SFX.kk.big();
   if(round.floor){SFX.chip();await kkBanner('Vangnet',`Een gekochte bonus geeft altijd minstens ${SLOT.BUY_FLOOR}× je inzet terug`,1800,'fsin')}
   await kkBanner(fmt(x*bet),(x>=SLOT.MAX_WIN?'Max win · ':x>=200?'Episch · ':x>=100?'Megawinst · ':x>=40?'Grote winst · ':'Bonus voorbij · ')+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× inzet',2600,x>=40?'big':'');
   kk.fs=null;kkShowSpots(null);kk.inBonus=false;
  }else{
   const x=round.total;
-  if(x>=20){SFX.big();await kkBanner(fmt(x*bet),(x>=100?'Megawinst':'Grote winst')+' · '+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× inzet',2000,'big')}
-  else if(x===0)SFX.lose();
+  if(x>=20){SFX.kk.big();await kkBanner(fmt(x*bet),(x>=100?'Megawinst':'Grote winst')+' · '+(Math.round(x*10)/10).toLocaleString('nl-NL')+'× inzet',2000,'big')}
+  else if(x===0)SFX.kk.lose();
  }
 }
 function kkHistIc(){return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>'}
@@ -358,7 +364,7 @@ Object.assign(act,{
  async kkSpin(isBuy){
   if(kk.busy||inJail())return;const bet=kkBet(),cost=isBuy?bet*SLOT.BUY_COST:bet;
   if(casCash()<cost){toast(casShort(),'bad');return}
-  kk.busy=true;kk.confirm=false;kk.pick=false;kk.inBonus=!!isBuy;kk.paused=false;SFX.spin();
+  kk.busy=true;kk.confirm=false;kk.pick=false;kk.inBonus=!!isBuy;kk.paused=false;SFX.kk.spin();
   if(S.slotRun&&S.slotRun.g==='kluis')delete S.slotRun;
   const sd=kkSeed(),seedStr=sd.s+':'+sd.c+':'+sd.n,rng=SLOT.seedRng(seedStr);sd.n++;
   const round=SLOT.playRound(rng,{buy:isBuy,vip:tier()});
