@@ -57,15 +57,25 @@ let page=(location.hash||'#dash').slice(1);if(!PAGES.find(p=>p[0]===page))page='
 let casinoTab='',rankTab='xp',slotState=['7','7','7'],spinning=false;
 
 // Elke sectie heeft een eigen kleur, zodat je ziet waar je bent
-const NAV_GROUPS=[['Straat',['dash','verblijf','crimes','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank','wit'],'#3fe395','63,227,149'],['Macht',['shop','look','skills','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','politie','rank','profiel'],'#a9dcff','169,220,255']];
+// 'Jij' (dashboard, ranglijst, profiel) staat apart bovenaan; daaronder de vier spelsecties
+const NAV_GROUPS=[['Jij',['dash','rank','profiel'],'#f2c230','242,194,48'],['Straat',['verblijf','crimes','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank','wit'],'#3fe395','63,227,149'],['Macht',['shop','look','skills','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','politie'],'#a9dcff','169,220,255']];
 const groupOf=k=>NAV_GROUPS.find(g=>g[1].includes(k))||NAV_GROUPS[0];
-function applySection(){document.body.classList.toggle('wide-page',page==='casino');const g=groupOf(page),r=document.documentElement.style;r.setProperty('--sec',g[2]);r.setProperty('--sec-rgb',g[3])}
+function applySection(){document.body.classList.toggle('wide-page',page==='casino');document.body.classList.toggle('no-rail',page==='dash');const g=groupOf(page),r=document.documentElement.style;r.setProperty('--sec',g[2]);r.setProperty('--sec-rgb',g[3])}
 function crumbHtml(){const g=groupOf(page);return `<div class="crumb"><i></i><span>${g[0]}</span>/ ${PAGES.find(p=>p[0]===page)[1]}</div>`+(typeof feudBar==='function'?feudBar():'')}
+// Persoonlijk blok bovenaan: een groot dashboard-vak (rang, level, XP naar de volgende rang) en ranglijst + profiel ernaast
+function navMe(st){const ri=rankIdx(S.xp),nx=RANKS[ri+1],pct=nx?Math.max(0,Math.min(100,(S.xp-RANKS[ri][1])/(nx[1]-RANKS[ri][1])*100)):100,[pos]=myPos();
+ const claim=typeof RANK_CODES!=='undefined'&&RANKS.slice(1,ri+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase()));
+ const g=NAV_GROUPS[0];
+ return `<div class="navgroup me ${g[1].includes(page)?'cur':''}" style="--g:${g[2]};--g-rgb:${g[3]}">
+  <a class="nav-dash ${page==='dash'?'on':''}" href="#dash" title="Jouw overzicht"><span class="nd-ic">${svg('dash')}</span><span class="nd-t"><b>Dashboard</b><small>${RANKS[ri][0]} · lv ${rankLevel(S.xp)}</small></span>
+   <i class="nd-bar" aria-hidden="true"><i style="width:${pct.toFixed(1)}%"></i></i></a>
+  <div class="nav-duo"><a class="nav-sq ${page==='rank'?'on':''}" href="#rank">${svg('rank')}<span>Ranglijst</span><em>#${pos}</em></a><a class="nav-sq ${page==='profiel'?'on':''}" href="#profiel">${svg('profiel')}<span>Profiel</span>${claim?'<em class="b">€</em>':''}</a></div></div>`}
 function renderNav(){
   const name=k=>PAGES.find(p=>p[0]===k)[1];
   const st=navStat(),link=k=>`<a class="navlink ${k===page?'on':''}" href="#${k}">${svg(k)}<span>${name(k)}</span>${st[k]?`<em class="nst">${st[k]}</em>`:''}${k==='jail'&&inJail()?'<span class="badge">!</span>':''}${k==='crimes'&&!inJail()&&S.energy>=EN_MAX?'<span class="badge ok">●</span>':''}${k==='profiel'&&typeof RANK_CODES!=='undefined'&&RANKS.slice(1,rankIdx(S.xp)+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase()))?'<span class="badge">€</span>':''}</a>`;
   setHTML($('#nav'),`<a class="brand" href="/" style="text-decoration:none;color:inherit"><span class="mark">${((window.BRAND&&window.BRAND.name)||'Onderwereld')[0]}</span><span><b>${esc((window.BRAND&&window.BRAND.name)||'Onderwereld')}</b><small>${window.__USER__?esc(window.__USER__):'Offline modus'} ${vipTag(1)}</small></span></a>`
-   +NAV_GROUPS.map(([g,ks,col,rgb])=>`<div class="navgroup" style="--g:${col};--g-rgb:${rgb}"><div class="navlabel">${g}</div>${ks.map(link).join('')}</div>`).join('')
+   +navMe(st)
+   +NAV_GROUPS.slice(1).map(([g,ks,col,rgb])=>{const cur=ks.includes(page);return `<div class="navgroup ${cur?'cur':''}" style="--g:${col};--g-rgb:${rgb}"><div class="navlabel"><i aria-hidden="true"></i><span>${g}</span>${cur?'<em>hier</em>':''}</div>${ks.map(link).join('')}</div>`}).join('')
    +(window.__TOKEN__?`<div class="navspace"></div>${window.__ADMIN__?`<a class="navlink beheer" href="/admin">${svg('beheer')}<span>Beheer</span></a>`:''}<button class="navlink logout" onclick="logout()">${svg('logout')}<span>Uitloggen</span></button>`:''));
   renderMbar();
 }
