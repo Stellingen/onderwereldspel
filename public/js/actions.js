@@ -53,7 +53,7 @@ const act={
  casPay(m){S.casPay=m==='zwart'||m==='wit'?m:'auto';window.casPayOpen=false;try{SFX.click()}catch(e){}
   toast(m==='zwart'?(zwart()<1?'Je hebt geen zwart geld op zak':'Je speelt nu alleen met zwart geld'):m==='wit'?'Je speelt nu alleen met wit geld (geen verdenking)':'Automatisch: eerst je zwarte geld, daarna je witte',m==='zwart'&&zwart()<1?'bad':'ok');save();renderTop();if(page==='casino')render()},
  casPaySel(){window.casPayOpen=!window.casPayOpen;try{SFX.click()}catch(e){}renderTop()},
- claimCb(){const a=cbAvail();if(a<1)return;S.cash+=a;S.cb.acc=(S.cb.acc||0)-a;SFX.big();toast('VIP-cashback: +'+fmt(a),'lvl');log('VIP-cashback ontvangen: '+fmt(a),'ok');save();pushState();render()},
+ claimCb(){const a=cbAvail();if(a<1)return;S.cash+=a;S.cb.acc=(S.cb.acc||0)-a;SFX.big();toast('Cashback: +'+fmt(a),'lvl');log('Cashback ontvangen: '+fmt(a),'ok');save();pushState();render()},
  win(b,m,label){casinoRound(b,m>0?b*m:0,'coin');if(m>0){S.cash+=b*m-b;S.stats.won+=b*m-b;toast(label+' Gewonnen: +'+fmt(b*m-b));log('Casino: +'+fmt(b*m-b),'ok')}else{S.cash-=b;S.stats.lost+=b;toast(label+' Verloren: -'+fmt(b),'bad');log('Casino: -'+fmt(b),'bad')}save()},
  coin(k){const b=act.getBet();if(!b)return;const r=Math.random()<.5?'kop':'munt';act.win(b,r===k?2:0,'Het werd '+r+'.');render()},
  /* oude roulettesnelknop */ roul(k){const b=act.getBet();if(!b)return;const n=rnd(0,36);const col=n===0?'groen':n%2?'rood':'zwart';window._roul=n+' '+col.toUpperCase();act.win(b,col===k?(k==='groen'?14:2):0,n+' '+col+'.');render()},

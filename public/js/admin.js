@@ -11,7 +11,7 @@ const ago=sec=>{if(sec==null)return 'nooit';const s=Math.max(0,+sec);return s<60
 const date=d=>d?new Date(d).toLocaleString('nl-NL',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'–';
 const online=sec=>sec!=null&&+sec<300;
 const TIERS=[['Gewoon','Geen voordeel',''],['VIP','+15% kans · wachttijden 75%','vip'],['High roller','+40% kans · wachttijden 55% · hoge inzetten','hr']];
-const TOP_STEPS=[100000,150000,225000,340000,500000],SUB=5;
+const TOP_STEPS=[380000,560000,800000,1150000,1650000],SUB=5;
 const rankIdx=xp=>{let i=0;RANKS.forEach((r,k)=>{if(xp>=r[1])i=k});return i};
 const rankLevel=xp=>{const i=rankIdx(xp);if(i>=RANKS.length-1){let l=0;TOP_STEPS.forEach(t=>{if(xp>=t)l++});return Math.max(1,l)}const a=RANKS[i][1],b=RANKS[i+1][1];return Math.min(SUB,1+Math.floor((xp-a)/(b-a)*SUB))};
 const xpFor=(i,l)=>i>=RANKS.length-1?TOP_STEPS[l-1]:Math.ceil(RANKS[i][1]+(RANKS[i+1][1]-RANKS[i][1])*(l-1)/SUB);

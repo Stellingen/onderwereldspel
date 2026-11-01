@@ -195,20 +195,22 @@ function wwGame(amount,B){return new Promise(resolve=>{
 const casBusy=()=>(window.kk&&kk.busy)||(window.vd&&vd.busy)||(window.cf&&cf.flipping)||(window.av&&av.flying)||(window.rl&&rl.spinning)||(window.bt&&['dealing','dealer'].includes(bt.phase))||(window.tp&&['dealing','reveal'].includes(tp.phase))||(window.th&&['dealing','reveal'].includes(th.phase));
 function czControl(){window.__czCheck=false;const C=S.cz||(S.cz={s:0,t:now(),g:0});czVal();const z=zwart(),g=Math.round((C.g||0)*.5);
  if(z<1&&g<1){C.s=Math.max(0,C.s-40);toast('Controle in het casino. Je bent schoon, ze laten je gaan.','ok');log('Casino: gecontroleerd, niets gevonden','info');save();return}
- const conf=Math.min(S.cash,z+g);S.cash-=conf;S.zwart=0;C.s=0;C.g=0;addHeat(25);wwHist('bust',conf,0,'controle in het casino');
+ const conf=Math.min(S.cash,z+g);if(typeof ccPenalty==='function')ccPenalty('controle in het casino');S.cash-=conf;S.zwart=0;C.s=0;C.g=0;addHeat(25);wwHist('bust',conf,0,'controle in het casino');
  const sec=Math.min(600,Math.round(60+25*Math.log2(1+conf/5000)));
  log(`Casinocontrole: ${fmt(conf)} zwart geld in beslag genomen`,'bad');save();render();
  arrest(sec,'Controle in het casino',`De beveiliging en de recherche controleren je. Ze vinden zwart geld en nemen ${fmt(conf)} in beslag.`,{flee:4})}
 // Verdenking op 100%: verbannen uit het casino (gewoon 30, VIP 20, High roller 10 minuten). Daarna staat de verdenking op 0%.
-function czBanStart(){window.__czBan=false;S.czBanWhy='zwart';const t=typeof tier==='function'?tier():0,min=CZ_BAN[t]||30;S.czBan=now()+min*60000;const C=S.cz||(S.cz={s:0,t:now(),g:0});C.s=0;C.g=0;C.t=now();
+function czBanStart(){window.__czBan=false;S.czBanWhy='zwart';if(typeof ccPenalty==='function')ccPenalty('verbannen met zwart geld');
+ // soms belt het casino ook de politie: vaker met een lage kaart
+ if(Math.random()<.35*(typeof ccCard==='function'?ccCard().eye:1)){addHeat(20);S.czReport=(S.czReport||0)+1;log('Het casino heeft je gemeld bij de politie (+20% hitte)','bad')}const t=typeof tier==='function'?tier():0,min=CZ_BAN[t]||30;S.czBan=now()+min*60000;const C=S.cz||(S.cz={s:0,t:now(),g:0});C.s=0;C.g=0;C.t=now();
  try{SFX.lose()}catch(e){}toast(`Verbannen uit het casino: ${min} minuten. De beveiliging heeft je te vaak gezien.`,'bad');log(`Verbannen uit het casino (${min} min, verdenking 100%)`,'bad');save();if(page==='casino')render();else renderTop()}
 // te lang achter elkaar gespeeld: een speldag (4 uur) niet welkom, voor iedereen gelijk
-function czBanLong(){S.czBan=now()+CZT_BAN;S.czBanWhy='tijd';S.czT=null;const C=S.cz||(S.cz={s:0,t:now(),g:0});C.s=0;C.t=now();
- try{SFX.lose()}catch(e){}toast('Twee uur aan één stuk in het casino: de beveiliging zet je een speldag (4 uur) buiten de deur.','bad');log('Verbannen uit het casino: 4 uur (te lang achter elkaar gespeeld)','bad');save();if(page==='casino')render();else renderTop()}
-const CZT_WARN=[[60,'Je zit al een uur in het casino. De beveiliging begint op je te letten: doe tussendoor eens een klus.'],[90,'Anderhalf uur aan de tafels. Nog een half uur en je wordt een speldag geweerd.'],[110,'Nog 10 minuten en de beveiliging zet je buiten de deur. Ga even iets anders doen.']];
+function czBanLong(){const cd=ccCdMs();S.czBan=now()+cd;S.czBanWhy='pauze';S.czT=null;
+ try{SFX.lose()}catch(e){}toast(`Je speeltijd met de ${ccCard().n}-kaart zit erop: ${ccMin(cd)} pauze.`,'bad');log(`Casino: speeltijd op, ${ccMin(cd)} pauze`,'info');save();if(page==='casino')render();else renderTop()}
+const CZT_WARN=[[5,'Nog 5 minuten speeltijd, daarna pauze. Met een hogere casinokaart mag je langer.'],[1,'Nog 1 minuut speeltijd.']];
 setInterval(()=>{if(window.__czBan&&!casBusy()&&!window.__chase)czBanStart();
- if(!czBanLeft()&&S.czT){const L=czTLen()/60000;if(czTimeSus()>=100&&!casBusy()&&!window.__chase)czBanLong();
-  else CZT_WARN.forEach(([m,t],i)=>{if(L>=m&&!((S.czT.w||0)&(1<<i))){S.czT.w=(S.czT.w||0)|(1<<i);toast(t,'bad')}})}
+ if(!czBanLeft()&&S.czT&&czTLen()>0){const left=(S.czT.t0+ccSessMs()-now())/60000;if(left<=0&&!casBusy()&&!window.__chase)czBanLong();
+  else CZT_WARN.forEach(([m,t],i)=>{if(left<=m&&left>0&&!((S.czT.w||0)&(1<<i))){S.czT.w=(S.czT.w||0)|(1<<i);toast(t,'bad')}})}
  const bt=document.getElementById('casBanT');if(bt)bt.textContent=fmtClock(czBanLeft());
  if(S.czBan&&!czBanLeft()){delete S.czBan;delete S.czBanWhy;const C=S.cz;if(C){C.s=0;C.t=now()}toast('Je mag het casino weer in.','ok');save();if(page==='casino')render()}},1000);
 

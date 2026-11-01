@@ -54,7 +54,7 @@ function thTable(){
     ${t.d.length?`<div class="cards">${t.d.map((c,i)=>cardEl(c,i,!showD)).join('')}</div>`:ghosts(2)}</div>
    <div class="zone board"><div class="zl">Tafel${nb?` · <b>${nb===3?'flop':nb===4?'turn':'river'}</b>`:''}</div>
     <div class="cards">${t.b.map((c,i)=>cardEl(c,i)).join('')}${'<div class="tc ghost"></div>'.repeat(5-nb)}</div></div>
-   <div class="felt-arc">AA Bonus €${TB.SIDE_MIN}–€${TB.SIDE_MAX} · jouw 2 + alle 5 tafelkaarten · ook als je past</div>
+   <div class="felt-arc">AA Bonus €${TB.SIDE_MIN}–€${TB.SIDE_MAX.toLocaleString('nl-NL')} · jouw 2 + alle 5 tafelkaarten · ook als je past</div>
    <div class="zone player">
     <div class="hands"><div class="hand ${o.main?'r-'+o.main:''}">${t.p.length?`<div class="cards">${t.p.map((c,i)=>cardEl(c,i)).join('')}</div>`:ghosts(2)}
      ${pNow?`<div class="hl"><b>${pNow.name}</b>${o.mainOut?`<em>${o.mainOut}</em>`:''}</div>`:''}</div></div>

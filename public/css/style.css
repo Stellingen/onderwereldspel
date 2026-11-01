@@ -3128,3 +3128,27 @@ a.dv:hover{box-shadow:inset 0 0 0 1px var(--line2)}
 .du-later span{white-space:normal;overflow:visible}
 .ds-g{grid-template-columns:repeat(auto-fill,minmax(min(132px,100%),1fr))}
 .ds-g b{white-space:normal;overflow:visible;font-size:20px;overflow-wrap:anywhere}.ds-g span{overflow-wrap:anywhere}
+/* ===== Casinokaart (caskaart.js) ===== */
+.ccp{--cc:#8a929c;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(0,1.15fr);gap:14px;margin:0 0 18px;padding:16px;border-radius:16px;background:linear-gradient(120deg,color-mix(in srgb,var(--cc) 16%,transparent),transparent 55%),var(--panel);border:1px solid color-mix(in srgb,var(--cc) 40%,var(--line))}
+.ccp-card{display:flex;gap:14px;align-items:center;min-width:0}
+.ccp-card .cc-svg{width:min(190px,48%);flex:none;filter:drop-shadow(0 10px 18px rgba(0,0,0,.55));transform:rotate(-4deg)}
+.ccp-id{display:flex;flex-direction:column;gap:3px;min-width:0}.ccp-id .label{margin:0}
+.ccp-id b{font-family:var(--f-display);font-weight:900;font-size:clamp(30px,2.6vw,40px);line-height:1;text-transform:uppercase;color:color-mix(in srgb,var(--cc) 70%,#fff)}
+.ccp-id small{font-size:12.5px;color:var(--mute);line-height:1.35}
+.ccp-prog{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ccp-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}.ccp-h .label{margin:0}.ccp-h b{font-family:var(--f-mono);font-size:13px}
+.ccp-bar{display:grid;grid-template-columns:76px minmax(0,1fr);gap:2px 10px;align-items:center}
+.ccp-bar span{font-size:12.5px;color:var(--mute)}.ccp-bar>i{display:block;height:8px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}
+.ccp-bar>i>i{display:block;height:100%;background:linear-gradient(90deg,color-mix(in srgb,var(--cc) 60%,#000),var(--cc));border-radius:4px}
+.ccp-bar.ok>i>i{background:var(--green)}
+.ccp-bar em{grid-column:2;font-style:normal;font-family:var(--f-mono);font-size:10.5px;color:var(--faint)}
+.ccp-n{font-size:11.5px;color:var(--faint);line-height:1.4}
+.ccp-perks{display:flex;flex-direction:column;gap:0;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:rgba(0,0,0,.2);min-width:0}
+.ccp-perks>div{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:baseline;padding:5px 10px;border-top:1px solid var(--line);font-size:12px}
+.ccp-perks>div:first-child{border-top:0}
+.ccp-perks span{color:var(--mute)}.ccp-perks b{font-family:var(--f-mono);font-size:12px;white-space:nowrap}.ccp-perks em{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--green);white-space:nowrap}
+.ccp-ph b,.ccp-ph em{font-family:var(--f-head)!important;font-weight:800;text-transform:uppercase;letter-spacing:.06em;font-size:11px!important}.ccp-ph em{color:var(--faint)!important}
+.ch-card{display:flex;align-items:center;gap:8px}.ch-card .cc-mini{width:44px;flex:none}.ch-card .cc-mini svg{width:100%;display:block}
+.cas-ban.pauze{--banc:#a9dcff}
+@media (max-width:1200px){.ccp{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.ccp-perks{grid-column:1/-1}}
+@media (max-width:700px){.ccp{grid-template-columns:minmax(0,1fr);padding:12px}.ccp-card .cc-svg{width:130px}.ch-card .cc-mini{width:34px}}

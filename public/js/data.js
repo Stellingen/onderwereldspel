@@ -10,9 +10,24 @@ const fitN=k=>innerWidth>900?99:Math.max(8,Math.floor(k*Math.min(1.6,innerWidth/
 const now=()=>Date.now();
 const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 
+// 20 rangen (sinds november 2026; daarvoor 12). De oude rangen staan op RK[oud]; daartussen nieuwe tussenrangen.
+// De weg omhoog is zwaarder: Peetvader op 380.000 XP (was 100.000). Bestaande spelers zakken niet (zie state.js load).
 const RANKS=[
- ['Rookie',0],['Straatschoffie',150],['Loopjongen',500],['Dief',1200],['Boef',2500],['Gangster',5000],
- ['Soldaat',9000],['Huurmoordenaar',15000],['Capo',25000],['Onderbaas',40000],['Consigliere',65000],['Peetvader',100000]];
+ ['Rookie',0],['Straatschoffie',150],['Loopjongen',500],['Sjacheraar',900],['Dief',1500],['Inbreker',2600],
+ ['Boef',4000],['Ritselaar',6500],['Gangster',10000],['Handhaver',15000],['Soldaat',22000],['Luitenant',32000],
+ ['Huurmoordenaar',45000],['Kapitein',62000],['Capo',85000],['Rechterhand',115000],['Onderbaas',155000],['Schaduwbaas',210000],
+ ['Consigliere',280000],['Peetvader',380000]];
+// oude rang-index (0..11) → nieuwe index; en terug: hoe 'sterk' een rang is op de oude schaal (voor buit, kans, prijzen)
+const RK=[0,1,2,4,6,8,10,12,14,16,18,19];
+const RKP=[0,1,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10,11];
+const rkPow=ri=>RKP[Math.max(0,Math.min(RKP.length-1,ri|0))];
+// zet de rang (r) van spullen en klussen om naar de nieuwe indeling. split: de goedkopere helft van een rang gaat naar de
+// tussenrang eronder, zodat elke nieuwe rang ook iets opent.
+function rkRemap(arr,split,key){if(!arr||arr._rk)return arr;arr._rk=1;const k=key||'p';
+ arr.forEach(x=>{if(typeof x.r==='number'&&x.r<RK.length)x.r=RK[x.r]});
+ if(split){const by={};arr.forEach(x=>{if(typeof x.r==='number'&&x.r>2&&RK.indexOf(x.r-1)<0)(by[x.r]=by[x.r]||[]).push(x)});
+  Object.values(by).forEach(L=>{L.sort((a,b)=>(a[k]||0)-(b[k]||0)).slice(0,Math.floor(L.length/2)).forEach(x=>x.r-=1)})}
+ return arr}
 const CRIMES=[
  // r = minimale rang, en = energie, cd = wachttijd (s), jail = straf (s), cr = straatcredit
  {id:'bedelen',n:'Bedelen bij Centraal',d:'Een zielig verhaal en een bekertje. Weinig geld, weinig risico.',min:5,max:25,xp:3,base:95,cd:4,jail:30,r:0,cr:0,en:3,flee:1},
@@ -273,7 +288,7 @@ const pctTxt=(v,sign,pt)=>{if(!v)return '0'+(pt?'%-punt':'%');const a=Math.abs(v
 // Effect per level (op level 50 haal je het maximum). Eén sessie = één level.
 const SK={conditie:{en:1,zone:.008},duur:{save:.006,regen:.006},ademhaling:{focus:.06,flee:.004},steal:{all:.4,zakken:.8},speed:{cd:.01,mark:.006},cars:{time:.01,price:.008},charisma:{talk:.9,bail:.008},
  schiet:{heavy:.5},hack:{loot:.5},handel:{inc:.4,fee:1},rechten:{jail:1,bail:.4}};
-const HEAVY_R=5; // zware klussen: vanaf Gangster
+const HEAVY_R=RK[5]; // zware klussen: vanaf Gangster
 // Prijs per sessie stijgt steil: level 1 kost een paar tientjes, de laatste levels honderdduizenden euro's.
 const trainCost=(t,l)=>Math.round(t.base*Math.pow(1+l,1.9)*Math.pow(1.04,l)/10)*10;
 const TRAIN_MILES=[10,20,30,40,50];
@@ -340,10 +355,10 @@ const RELAX=[
   d:'Champagne aan dek en zakendoen met mensen die je anders nooit spreekt.',energy:999,heat:30,focus:15,loot:10,mins:60},
  {id:'ibiza',tier:2,r:10,place:'Privéjet naar Ibiza',n:'Weekend Ibiza',col:'#ff7a1a',ic:'plane',cd:480,base:200000,
   d:'Je verdwijnt een weekend. Als je terugkomt is de stad je vergeten en ben je scherper dan ooit.',hp:999,energy:999,heat:60,clearWanted:true,focus:20,loot:15,mins:90}];
-const relaxCost=(r,ri,lv)=>Math.round(r.base*(1+ri*.5)*(1+((lv||1)-1)*.1)/5)*5;
+const relaxCost=(r,ri,lv)=>Math.round(r.base*(1+rkPow(ri)*.5)*(1+((lv||1)-1)*.1)/5)*5;
 
 // Rangcodes: typ de naam van een rang bij Profiel > Code inwisselen (één keer, zodra je die rang hebt)
-const RANK_CODES={straatschoffie:150,loopjongen:400,dief:1000,boef:2500,gangster:6000,soldaat:12000,huurmoordenaar:25000,capo:50000,onderbaas:100000,consigliere:200000,peetvader:500000};
+const RANK_CODES={straatschoffie:150,loopjongen:400,sjacheraar:700,dief:1000,inbreker:1800,ritselaar:4000,handhaver:9000,luitenant:18000,kapitein:36000,rechterhand:75000,schaduwbaas:150000,boef:2500,gangster:6000,soldaat:12000,huurmoordenaar:25000,capo:50000,onderbaas:100000,consigliere:200000,peetvader:500000};
 const CODE_ALIAS={kapo:'capo'};
 // zo toon je een code in 'gebruikte codes' (m1v2 → M1)
 const codeShow=c=>c==='highroller'?'HIGH ROLLER':c.replace(/v\d+$/,'').toUpperCase();
@@ -356,17 +371,17 @@ const LIVE_CODES={lotto:1500,welkom:500,casino:5000,vip:20000,spinnetje:25000,ja
 // Hoe beter de woning, hoe sneller hij in waarde stijgt. Verkopen kost 5% makelaarskosten.
 const HOUSES=[
  {id:'brug',t:'brug',n:'Onder de brug',place:'Berlagebrug',d:'Een vochtig matras, een vuurton en het geraas van de tram boven je hoofd.',p:0,rent:0,r:0,g:0,cap:1},
- {id:'kraak',t:'kraak',n:'Kraakpand',place:'Amsterdam-West',d:'Een leegstaand kantoor met een kapotte lift. Je hebt een deur die op slot kan.',p:6500,rent:70,r:2,g:.0012,cap:1.12},
- {id:'boot',t:'kraak',n:'Lekke woonboot',place:'Houthavens',d:'Een roestige woonboot aan een vergeten steiger. Bij harde wind deint je bed mee.',p:11000,rent:110,r:2,g:.0014,cap:1.14},
- {id:'kamer',t:'kamer',n:'Zolderkamer',place:'De Pijp',d:'Zestien vierkante meter, een eigen douche en een huisbaas die geen vragen stelt.',p:38000,rent:290,r:4,g:.0025,cap:1.22},
- {id:'studio',t:'kamer',n:'Studio',place:'Oost',d:'Een studio boven een kapperszaak. Klein, maar alles is van jou.',p:55000,rent:390,r:4,g:.0028,cap:1.25},
- {id:'gracht',t:'gracht',n:'Grachtenappartement',place:'Keizersgracht',d:'Hoge plafonds, uitzicht op het water. Niemand verwacht hier een crimineel.',p:260000,rent:1500,r:6,g:.0045,cap:1.32},
- {id:'jordaan',t:'gracht',n:'Herenhuisetage',place:'Jordaan',d:'De bel-etage van een herenhuis uit 1680, met een tuin aan de achterkant.',p:340000,rent:1900,r:6,g:.005,cap:1.35},
- {id:'penthouse',t:'penthouse',n:'Penthouse',place:'Zuidas',d:'Bovenste verdieping, eigen lift, bewaking in de lobby.',p:850000,rent:4500,r:8,g:.0065,cap:1.42},
- {id:'ijpent',t:'penthouse',n:'Penthouse IJ-oever',place:'Amsterdam-Noord',d:'Glazen wanden boven het IJ. Je ziet de pont, de stad en iedereen die eraan komt.',p:1250000,rent:6000,r:8,g:.007,cap:1.45},
- {id:'omval',t:'penthouse',n:'Toppenthouse',place:'De Omval',d:'De top van de hoogste woontoren van de stad, met een dakterras rondom.',p:1800000,rent:7000,r:9,g:.0075,cap:1.48},
- {id:'villa',t:'villa',n:'Villa',place:'Wassenaar',d:'Een hek, camera\'s, een zwembad en personeel. Zo slaapt een peetvader.',p:2600000,rent:9000,r:10,g:.008,cap:1.5},
- {id:'gooi',t:'villa',n:'Landgoed',place:'Het Gooi',d:'Een landhuis achter een bos, met een oprijlaan van vierhonderd meter en een eigen helikopterplatform.',p:3900000,rent:13000,r:11,g:.0085,cap:1.55}];
+ {id:'kraak',t:'kraak',n:'Kraakpand',place:'Amsterdam-West',d:'Een leegstaand kantoor met een kapotte lift. Je hebt een deur die op slot kan.',p:6500,rent:180,r:2,g:.0012,cap:1.12},
+ {id:'boot',t:'kraak',n:'Lekke woonboot',place:'Houthavens',d:'Een roestige woonboot aan een vergeten steiger. Bij harde wind deint je bed mee.',p:11000,rent:280,r:2,g:.0014,cap:1.14},
+ {id:'kamer',t:'kamer',n:'Zolderkamer',place:'De Pijp',d:'Zestien vierkante meter, een eigen douche en een huisbaas die geen vragen stelt.',p:38000,rent:720,r:4,g:.0025,cap:1.22},
+ {id:'studio',t:'kamer',n:'Studio',place:'Oost',d:'Een studio boven een kapperszaak. Klein, maar alles is van jou.',p:55000,rent:980,r:4,g:.0028,cap:1.25},
+ {id:'gracht',t:'gracht',n:'Grachtenappartement',place:'Keizersgracht',d:'Hoge plafonds, uitzicht op het water. Niemand verwacht hier een crimineel.',p:260000,rent:3750,r:6,g:.0045,cap:1.32},
+ {id:'jordaan',t:'gracht',n:'Herenhuisetage',place:'Jordaan',d:'De bel-etage van een herenhuis uit 1680, met een tuin aan de achterkant.',p:340000,rent:4750,r:6,g:.005,cap:1.35},
+ {id:'penthouse',t:'penthouse',n:'Penthouse',place:'Zuidas',d:'Bovenste verdieping, eigen lift, bewaking in de lobby.',p:850000,rent:11250,r:8,g:.0065,cap:1.42},
+ {id:'ijpent',t:'penthouse',n:'Penthouse IJ-oever',place:'Amsterdam-Noord',d:'Glazen wanden boven het IJ. Je ziet de pont, de stad en iedereen die eraan komt.',p:1250000,rent:15000,r:8,g:.007,cap:1.45},
+ {id:'omval',t:'penthouse',n:'Toppenthouse',place:'De Omval',d:'De top van de hoogste woontoren van de stad, met een dakterras rondom.',p:1800000,rent:17500,r:9,g:.0075,cap:1.48},
+ {id:'villa',t:'villa',n:'Villa',place:'Wassenaar',d:'Een hek, camera\'s, een zwembad en personeel. Zo slaapt een peetvader.',p:2600000,rent:22500,r:10,g:.008,cap:1.5},
+ {id:'gooi',t:'villa',n:'Landgoed',place:'Het Gooi',d:'Een landhuis achter een bos, met een oprijlaan van vierhonderd meter en een eigen helikopterplatform.',p:3900000,rent:32500,r:11,g:.0085,cap:1.55}];
 // oude woningprijzen (vóór de huizenmarkt): wat bestaande spelers ervoor betaalden, voor de waarde van hun woning
 const HOME_OLD_P={kraak:2500,kamer:15000,gracht:80000,penthouse:400000,villa:1500000};
 const HOUSE_FEE=.05;
@@ -428,3 +443,6 @@ const FURN_FX={hpRegen:['Gezondheid herstelt',v=>'+'+Math.round(v*100)+'% snelle
  docHp:['Bij de dokter',v=>'+'+v+'% gezondheid'],docCd:['Wachttijd dokter',v=>'-'+Math.round(v*100)+'%'],
  hideRate:['Onderduiken',v=>'+'+Math.round(v*100)+'% sneller'],hideRisk:['Kans herkend te worden',v=>'-'+Math.round(v*100)+'%']};
 const DOC={dur:10,cd:600,hp:20};
+
+// rangen omzetten naar de nieuwe indeling (20 rangen)
+rkRemap(CRIMES,1,'max');rkRemap(FAMILIES);rkRemap(BIZ,1);rkRemap(GEAR,1);rkRemap(TRAININGS);rkRemap(RELAX,1,'base');rkRemap(HOUSES);rkRemap(HOMES);

@@ -8,7 +8,7 @@
 // Na een klus kun je gezocht worden: S.wanted={lv,until,t,sec}. Dan komen er controles (actions.js, main.js) en vanaf niveau 2
 // premiejagers. Het zakt met de tijd, drie keer zo snel als je ondergedoken bent. Ontsnapt uit de bajes = S.wanted=true (geen timer).
 // Verversen tijdens een contract telt als mislukt (resumePending in state.js).
-const HIT_RANK=7,HIT_GUN=4; // HIT_GUN: Scherpschuttersgeweer of beter
+const HIT_RANK=RK[7],HIT_GUN=4; // HIT_GUN: Scherpschuttersgeweer of beter
 const HIT_TIERS=[
  {id:'straat',n:'Straat',r:7,rep:0,col:'var(--acc)',d:'Verklikkers, koeriers en wanbetalers. Weinig bescherming, wel veel ogen op straat.'},
  {id:'pro',n:'Professioneel',r:8,rep:2,col:'var(--red)',d:'Mensen met geld, macht of een advocaat. Ze verwachten iemand zoals jij.'},
@@ -24,6 +24,7 @@ const HITS=[
  {id:'getuige',tier:'elite',d:5,r:10,n:'De kroongetuige',t:'"Getuige 17"',w:'Boulevard bij het safehouse in Scheveningen',desc:'Morgen getuigt hij tegen de halve onderwereld. Eén wandeling per dag, altijd tussen mensen.',pay:[170000,310000],xp:1300,cr:42,en:50,cd:18,m:['geweer','ongeluk']},
  {id:'bankier',tier:'elite',d:5,r:10,n:'De bankier',t:'Maurits van Lier',w:'Jachthaven van Muiden',desc:'Hij wast geld voor drie families tegelijk en wil met allemaal afrekenen. De andere twee moeten het in de krant lezen.',pay:[190000,340000],xp:1400,cr:44,en:51,cd:18,m:['mes','geweer','ongeluk'],pref:'mes',prefWhy:'Een boodschap voor de andere families.'},
  {id:'peetvader',tier:'elite',d:6,r:11,n:'De oude peetvader',t:'Don Aurelio Basile',w:'Kerkplein na de zondagsmis',desc:'De laatste die nog boven jou staat. Lijfwachten, kerkgangers en maar één kans.',pay:[300000,550000],xp:1900,cr:56,en:56,cd:22,m:['geweer','mes','pistool']}];
+rkRemap(HIT_TIERS);rkRemap(HITS); // rangen naar de nieuwe indeling (20 rangen)
 const HIT_COLS=['#5b6b7c','#3f5a46','#6b5a44','#4a4f6b','#6b4a5a','#556070'];
 const hitWeapon=()=>{const g=gearBest('wapen');return g?GEAR.filter(x=>x.cat==='wapen').indexOf(g):-1};
 // methodes: pay/cr = factor op beloning en cred, want = basiskans om gezocht te worden, feud = factor op de kans op wraak
@@ -31,7 +32,7 @@ const HIT_M={
  mes:{n:'Mes',k:'Van dichtbij',d:'Sluip naar hem toe zonder dat hij je ziet en sla toe op het juiste moment.',pay:.9,cr:1.3,want:.42,feud:1.2,need:()=>hitWeapon()>=0,why:'Eerst een mes of ander wapen'},
  pistool:{n:'Pistool',k:'Korte afstand',d:'Dichtbij op straat: grote doelen, snelle mensen en meer kogels.',pay:1,cr:1,want:.32,feud:1,need:()=>hitWeapon()>=1,why:'Eerst een pistool of zwaarder'},
  geweer:{n:'Geweer',k:'Van een afstand',d:'Door het vizier vanaf een dak. Houd je adem in en reken met de wind.',pay:1.05,cr:.9,want:.14,feud:.9,need:()=>hitWeapon()>=HIT_GUN,why:'Eerst een scherpschuttersgeweer'},
- ongeluk:{n:'Ongeluk',k:'Geen wapen',d:'Een lading van de bouwkraan die net verkeerd valt. Lijkt het een ongeluk, dan stelt niemand vragen.',pay:1.12,cr:.85,want:.05,feud:.45,need:()=>rankIdx(S.xp)>=8,why:'Vanaf '+RANKS[8][0]}};
+ ongeluk:{n:'Ongeluk',k:'Geen wapen',d:'Een lading van de bouwkraan die net verkeerd valt. Lijkt het een ongeluk, dan stelt niemand vragen.',pay:1.12,cr:.85,want:.05,feud:.45,need:()=>rankIdx(S.xp)>=RK[8],why:'Vanaf '+RANKS[RK[8]][0]}};
 const HIT_MORDER=['mes','pistool','geweer','ongeluk'];
 const HIT_REP=[['Nieuweling',0],['Huurling',50],['Vakman',150],['Specialist',350],['Schim',700],['Legende',1300]];
 const ht={tier:null,sel:{},how:false,open:false};

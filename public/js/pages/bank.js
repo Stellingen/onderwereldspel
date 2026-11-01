@@ -23,7 +23,7 @@ const pctR=v=>{const p=Math.round(v*1e4)/100;return nl(p,p<1||Math.round(p*10)!=
 function depFix(){(S.dep||[]).forEach(d=>{if(d.v===2)return;const nt=d.h===72?'8u':d.h===24?'12u':null;
  if(nt){const t=DEP_TERMS.find(x=>x.id===nt);d.h=t.h;d.n=t.n;d.r=depRate(t);d.t1=d.t0+t.h*36e5}d.v=2})}
 const depSlots=()=>DEP_SLOTS_T[tier()]||DEP_SLOTS_T[0];
-const invCap=()=>(INV_CAP_T[tier()]||INV_CAP_T[0])*(1+rankIdx(S.xp));
+const invCap=()=>(INV_CAP_T[tier()]||INV_CAP_T[0])*(1+rankPow());
 // een rijtje per lidmaatschap, met het jouwe gemarkeerd
 const bkTiers=(f,suf)=>`<div class="bk-tiers">${LID_N.map((n,i)=>`<span class="${i===tier()?'on':''}"><i>${n}</i><b>${f(i)}</b>${suf?`<em>${suf}</em>`:''}</span>`).join('')}</div>`;
 const invFee=f=>f.fee*(1-tierK())*(1-sk('handel')*SK.handel.fee/100);

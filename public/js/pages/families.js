@@ -47,7 +47,7 @@ function famEv(ev,e){if(!S.family)return;e=e||{};famDaily();
 function famHeistReq(){const H=famHeist(),o=[{l:`Vuurkracht ${H.vk} (jij ${gearVk()})`,ok:gearVk()>=H.vk}];
  H.need.forEach(id=>{const g=GEAR.find(x=>x.id===id),best=gearBest(g.cat),ok=!!best&&GEAR.indexOf(best)>=GEAR.indexOf(g);o.push({l:`${g.n} of beter`,ok})});
  o.push({l:`${H.en} energie (jij ${Math.floor(S.energy)})`,ok:S.energy>=H.en});return o}
-const famHeistChance=()=>Math.round(Math.max(10,Math.min(85,35+rankIdx(S.xp)*1.5+gearBonus()*.8+fam().chance+sk('schiet')*.3+focusPct()-S.heat/3)));
+const famHeistChance=()=>Math.round(Math.max(10,Math.min(85,35+rankPow()*1.5+gearBonus()*.8+fam().chance+sk('schiet')*.3+focusPct()-S.heat/3)));
 const famHeistLoot=()=>{const H=famHeist(),k=lootMult();return [H.loot[0]*k,H.loot[1]*k]};
 const famUI={confirm:null};
 function famPerkTxt(f,scale){const fx=f.perk.fx,o=[];const p=v=>Math.round(v*scale*100)+'%';

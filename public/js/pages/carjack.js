@@ -3,7 +3,7 @@
 // Er stopt een auto voor rood. Druk drie keer op het juiste moment (portier open, bestuurder eruit, gas erop) voordat het licht
 // op groen springt. Het groene stuk is groter met ervaring, Conditie, Rijvaardigheid en een zwaarder wapen; duurdere auto's gaan sneller.
 // Mis je, dan rijdt hij soms gewoon weg, vecht de bestuurder soms terug (gezondheid), en soms staat er politie om de hoek.
-const JACK_R=4,JACK_EN=12,JACK_CD=4,JACK_HOT=.85,JACK_STEPS=['Portier open','Bestuurder eruit','Gas erop'];
+const JACK_R=RK[4],JACK_EN=12,JACK_CD=4,JACK_HOT=.85,JACK_STEPS=['Portier open','Bestuurder eruit','Gas erop'];
 const JACK_TIER={1:.45,2:.32,3:.16,4:.07};
 const JACK_SPOTS=['Stoplicht op de Wibautstraat','Kruispunt bij het Museumplein','Afrit van de A10 bij de RAI','Stoplicht op de Coolsingel','Kruising bij het Malieveld','Rotonde in Amstelveen'];
 let carMode=null;

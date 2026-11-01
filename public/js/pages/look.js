@@ -290,9 +290,10 @@ const FIT_STREETS=[
  {id:'laag',n:'Albert Cuypmarkt',sub:'Lage klasse · Rookie tot Dief',d:'Kraampjes, nepmerken en een man die alles voor een tientje regelt.',r:[0,3],col:'#7fd1c7',ic:'look'},
  {id:'midden',n:'Kalverstraat',sub:'Middenklasse · Boef tot Huurmoordenaar',d:'Ketens, sneakerwinkels en een juwelier die geen vragen stelt.',r:[4,7],col:'#ffad6b',ic:'look'},
  {id:'hoog',n:'P.C. Hooftstraat',sub:'Hoge klasse · Capo tot Peetvader',d:'Portiers, champagne bij het passen en prijzen die niet op het kaartje staan.',r:[8,11],col:'#f2c230',ic:'look'}];
-const fitStreet=o=>o.slot==='geluk'?'geluk':o.r<=3?'laag':o.r<=7?'midden':'hoog';
-const fitPrice=o=>{const ri=rankIdx(S.xp);return ri>=o.r?o.p:Math.round(o.p*(1.4+.25*(o.r-ri))/100)*100};
-const fitExtra=o=>{const ri=rankIdx(S.xp);return ri>=o.r?0:Math.round((.4+.25*(o.r-ri))*100)};
+rkRemap(OUTFITS,1);FIT_STREETS.forEach(x=>{if(!x._rk){x._rk=1;x.r=[RK[x.r[0]],RK[x.r[1]]]}});
+const fitStreet=o=>o.slot==='geluk'?'geluk':o.r<=RK[3]?'laag':o.r<=RK[7]?'midden':'hoog';
+const fitPrice=o=>{const ri=rankIdx(S.xp);return ri>=o.r?o.p:Math.round(o.p*(1.4+.25*(rkPow(o.r)-rkPow(ri)))/100)*100};
+const fitExtra=o=>{const ri=rankIdx(S.xp);return ri>=o.r?0:Math.round((.4+.25*(rkPow(o.r)-rkPow(ri)))*100)};
 const fitUI={tab:'kleding',prev:null,street:null};
 function fitPreview(id){fitUI.prev=id;const el=document.getElementById('fitDoll');if(!el)return;const w=Object.assign({},fitS().wear);if(id){const o=fitItem(id);if(o)w[o.slot]=o.id}
  el.innerHTML=dollSvg(w);el.classList.toggle('try',!!id)}

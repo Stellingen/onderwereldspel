@@ -129,7 +129,7 @@ setInterval(()=>{document.querySelectorAll('.js-cd[data-until]').forEach(e=>{con
 // Verkopen: een koper doet een bod rond de gemiddelde prijs (soms flink eronder, soms erboven). Per speluur (10 min) krijg je
 // 3 biedingen; wijs je ze alle drie af, dan wacht je op het volgende speluur. Netjes verkocht = wit geld, contant of op je bank.
 // Auto's die als gestolen zijn opgegeven (rep) kan niemand kopen: die kunnen alleen naar het autokerkhof (zwart geld voor de onderdelen).
-const GHOUR=DAY_MS/24,SALE_TRIES=3,SLOOP_P=80000,SLOOP_R=3,SLOOP_K=.6;
+const GHOUR=DAY_MS/24,SALE_TRIES=3,SLOOP_P=80000,SLOOP_R=RK[3],SLOOP_K=.6;
 const BUYERS=['Henk uit Purmerend','Een opkoper uit Antwerpen','Sandra, leaseklant','Mo van de autohandel','Een student uit Delft','Gerrit, verzamelaar','Een Pool met een trailer','Jamal uit Lelystad','Een tandarts uit het Gooi','Familie Bakker'];
 const carRep=c=>c.rep!=null?!!c.rep:!!c.hot;
 const carNew=c=>{const m=CARS.find(k=>k.id===c.id);return m?Math.round(m.hi*1.7/500)*500:Math.round(c.v*2/500)*500};

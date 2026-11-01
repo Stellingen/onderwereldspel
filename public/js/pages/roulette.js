@@ -4,7 +4,8 @@
 const RL_CHIPS=[10,25,100,500,1000,5000,10000,25000];
 // Maximum per vak groeit met je rang: getallen (binnen-inzetten) / de rest (buiten-inzetten)
 const RL_LIMITS=[[0,50000,50000],[6,75000,100000],[9,150000,200000]]; // vanaf rang: Rookie, Soldaat, Onderbaas
-const rlLim=()=>{const ri=rankIdx(S.xp);let L=RL_LIMITS[0];RL_LIMITS.forEach(x=>{if(ri>=x[0])L=x});return L};
+// maximum per vak: van je casinokaart (Zwart + High roller: €250.000 op een nummer)
+const rlLim=()=>typeof casMax==='function'?[0,casMax('rin'),casMax('rout')]:RL_LIMITS[0];
 const rlMax=k=>k.startsWith('i:')?rlLim()[1]:rlLim()[2];
 window.rl=Object.assign({bets:{},angle:0,ball:0,ballR:1,spinning:false,hist:[],chip:100,res:null,net:0,last:null,undo:[],erase:false,lines:null},window.rl||{});
 if(!rl.undo)rl.undo=[];
@@ -111,7 +112,7 @@ function rouletteView(){const tot=rlTotal(),r=rl,done=!r.spinning&&r.res!=null,c
   ${rlTable()}
   <div class="rl-groups" id="rlGroups">${rlGroupsHtml()}</div>
   <div class="rl-ctl" id="rlCtl">${rlCtlHtml()}</div>
-  <p class="rl-help">Klik op een vak om een fiche te zetten. Op de lijnen tussen getallen zet je een split, op een kruispunt een hoek, onderaan een rij (3) of zes getallen. Rechtsklik of "Fiches weghalen" haalt een inzet weg. Max ${fmt(rlLim()[1])} per getal en ${fmt(rlLim()[2])} op de rest.${rankIdx(S.xp)<9?` Vanaf ${RANKS[rankIdx(S.xp)<6?6:9][0]}: ${fmt((rankIdx(S.xp)<6?RL_LIMITS[1]:RL_LIMITS[2])[1])} / ${fmt((rankIdx(S.xp)<6?RL_LIMITS[1]:RL_LIMITS[2])[2])}.`:''}</p>
+  <p class="rl-help">Klik op een vak om een fiche te zetten. Op de lijnen tussen getallen zet je een split, op een kruispunt een hoek, onderaan een rij (3) of zes getallen. Rechtsklik of "Fiches weghalen" haalt een inzet weg. Max ${fmt(rlLim()[1])} per getal en ${fmt(rlLim()[2])} op de rest.${rankIdx(S.xp)<RK[9]?` Vanaf ${RANKS[rankIdx(S.xp)<RK[6]?6:9][0]}: ${fmt((rankIdx(S.xp)<RK[6]?RL_LIMITS[1]:RL_LIMITS[2])[1])} / ${fmt((rankIdx(S.xp)<RK[6]?RL_LIMITS[1]:RL_LIMITS[2])[2])}.`:''}</p>
  </section>
  <div class="rl-dock" id="rlDock">${rlDockHtml()}</div></div>`}
 // Wiel + bal

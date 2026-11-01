@@ -5,7 +5,8 @@ const KK_BETS_STD=[10,20,30,40,50,100,150,200,250,300,400,500,750,1000,1500,2000
 const KK_HIGH=[100000,200000,250000,500000];
 // hoge inzetten: High roller-lidmaatschap of de code trainwreck
 const isHighRoller=()=>isHR()||!!(S&&S.redeemed&&S.redeemed.includes('trainwreck'));
-const kkBets=()=>isHighRoller()?KK_BETS_STD.concat(KK_HIGH):KK_BETS_STD;
+// inzetten tot het maximum van je casinokaart (lidmaatschap bovenop de kaart)
+const kkBets=()=>{const m=typeof casMax==='function'?casMax('slot'):50000,L=KK_BETS_STD.concat(KK_HIGH).filter(v=>v<=m);return L.length?L:[KK_BETS_STD[0]]};
 window.kk={bi:4,busy:false,turbo:false,confirm:false,grid:null,spots:null,msg:'Kies je inzet en draai',stepWin:0,fs:null,lastWin:0,shown:0};
 const kkBet=()=>{const B=kkBets();if(kk.bi>=B.length)kk.bi=B.length-1;return B[kk.bi]};
 // Snelheid 1× (rustig), 2× (sneller) en 3× (snelst, het oude 'snel'). Geldt voor Kluiskraker en Visdief; bewaard bij je account.

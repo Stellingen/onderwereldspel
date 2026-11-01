@@ -98,7 +98,7 @@ function klBtn(c,st){const [b,s]=st.lock?['Vanaf '+RANKS[c.r][0],'nog '+Math.cei
 // kansopbouw in gewone woorden: dezelfde onderdelen als chanceRaw()/chance() in state.js, alleen uitgeschreven.
 // De voorpagina toont de basiskans van een klus; hier zie je wat er bij jou bijkomt.
 function klChParts(c){const ri=rankIdx(S.xp),up=crimeUp(c),fx=k=>typeof fitFx==='function'?fitFx(k):0,heat=Math.floor(S.heat/4*Math.max(.4,1-up*.1));
- const P=[['rang',ri*2],['lagere klus',up],['vakmanschap',mastLv(c.id)*2],['uitrusting',gearBonus()],['outfit',fx('kans')],['familie',fam().chance],
+ const P=[['rang',rkPow(ri)*2],['lagere klus',up],['vakmanschap',mastLv(c.id)*2],['uitrusting',gearBonus()],['outfit',fx('kans')],['familie',fam().chance],
   ['vingervlugheid',S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)],['ademhaling',sk('ademhaling')*SK.ademhaling.focus],['schieten',c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0],['focus',focusPct()]].filter(x=>x[1]>0);
  const n=v=>(Math.round(v*10)/10).toLocaleString('nl-NL');
  let t='Basis '+c.base+'%'+P.map(([l,v])=>' + '+l+' '+n(v)).join('')+(heat>0?' − hitte '+heat:'');
@@ -157,8 +157,8 @@ V.crimes=()=>{
  const avail=CRIMES.filter(c=>c.r<=ri);
  const isOpen=t=>crimeOpen[t]!=null?crimeOpen[t]:(t>=ri-1);
  const best=avail.slice().sort((a,b)=>crEv(b)-crEv(a)).slice(0,3);
- const bon=[['Rang',ri*RANK_LOOT],['Level',rankLvlBonus()],['Familie',fam().loot/100],['Uitrusting',gearFx('buit')],['Outfit',fit('buit')],['Hacken',sk('hack')*SK.hack.loot/100],['Buit-boost',buffLoot()/100],[lidName(),tierLoot()]].filter(x=>x[1]>0);
- const chb=[['Rang',ri*2],['Uitrusting',gearBonus()],['Outfit',fit('kans')],['Familie',fam().chance],['Vingervlugheid',sk('steal')*SK.steal.all],['Focus',focusPct()]].filter(x=>x[1]>0);
+ const bon=[['Rang',rkPow(ri)*RANK_LOOT],['Level',rankLvlBonus()],['Familie',fam().loot/100],['Uitrusting',gearFx('buit')],['Outfit',fit('buit')],['Hacken',sk('hack')*SK.hack.loot/100],['Buit-boost',buffLoot()/100],[lidName(),tierLoot()]].filter(x=>x[1]>0);
+ const chb=[['Rang',rkPow(ri)*2],['Uitrusting',gearBonus()],['Outfit',fit('kans')],['Familie',fam().chance],['Vingervlugheid',sk('steal')*SK.steal.all],['Focus',focusPct()]].filter(x=>x[1]>0);
  const pct=v=>'+'+Math.round(v*100)+'%';
  return `<div class="kl-page"><h1>Misdaden</h1>
  <section class="card hud kl-hero">

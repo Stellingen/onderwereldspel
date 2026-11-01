@@ -8,7 +8,7 @@ const MN_RTP={base:.955,bomb:.0015,click:.004,max:.992},MN_N=25,MN_MAX=10000;
 const mnRtp=(m,k)=>Math.min(MN_RTP.max,MN_RTP.base+MN_RTP.bomb*m+MN_RTP.click*Math.max(0,k-1));
 const MN_LEVELS=[['Makkelijk',3],['Normaal',5],['Moeilijk',10],['Expert',15],['Extreem',20],['Gekkenhuis',24]];
 const MN_BETS=[10,25,50,100,250,500,1000,2500,5000,10000,25000,50000];
-const mnBets=()=>isHighRoller()?MN_BETS.concat([100000,250000,500000]):MN_BETS;
+const mnBets=()=>{const m=typeof casMax==='function'?casMax('snel'):50000,L=MN_BETS.concat([100000,250000,500000]).filter(v=>v<=m);return L.length?L:[MN_BETS[0]]};
 window.mn=window.mn||{bi:3,m:5,fx:null};if(!mn.m)mn.m=5;
 const mnSetM=m=>{if(S.mines&&S.mines.st==='play')return;mn.m=Math.max(1,Math.min(24,m));SFX.chip();render()};
 const mnStepBet=d=>{if(S.mines&&S.mines.st==='play')return;mn.bi=Math.max(0,Math.min(mnBets().length-1,mn.bi+d));SFX.chip();render()};

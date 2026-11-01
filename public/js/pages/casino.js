@@ -3,7 +3,7 @@
 const casNote=()=>`<p class="cas-note"><b>18+</b> Spel met virtueel spelgeld. Je kunt geen echt geld inzetten, winnen of laten uitbetalen.</p>`;
 // Toegang per rang: het casino vanaf Loopjongen (eerst het spel leren), de slots (het verslavendst) pas vanaf Dief.
 // Een bonus die nog loopt mag je altijd afmaken.
-const CAS_MIN_R=2,CAS_SLOT_R=3,CAS_SLOTS=['kluis','vis','zoet'];
+const CAS_MIN_R=RK[2],CAS_SLOT_R=RK[3],CAS_SLOTS=['kluis','vis','zoet'];
 const casNeedR=k=>CAS_SLOTS.includes(k)?CAS_SLOT_R:CAS_MIN_R;
 const casLocked=k=>!(S.slotRun&&S.slotRun.g===k)&&rankIdx(S.xp)<(k?casNeedR(k):CAS_MIN_R);
 V.casino=()=>{if(casinoTab&&casLocked(casinoTab))casinoTab='';
@@ -18,6 +18,10 @@ function casLockView(){const r=CAS_MIN_R,xp=S.xp||0,need=RANKS[r][1],from=RANKS[
   <div class="cas-ban-b"><a class="btn" href="#crimes">Naar de misdaden</a><a class="btn ghost" href="#dash">Naar je dashboard</a></div></div></section>`}
 // Verbannen: de hele pagina rood, met hoe lang nog. Daarna staat de verdenking weer op 0%.
 function casBanView(){const L=czBanLeft(),t=typeof tier==='function'?tier():0,lang=S.czBanWhy==='tijd';
+ if(S.czBanWhy==='pauze'){const c=ccCard();return `<section class="cas-ban pauze"><div class="cas-ban-in">${czEyesSvg(0)}<span class="label">Casino · kaart ${c.n}</span><h1>Even pauze</h1><p>Je speeltijd zit erop. Met je ${c.n}-kaart mag je ${ccMin(ccSessMs())} achter elkaar spelen, daarna ${ccMin(ccCdMs())} pauze.</p>
+  <div class="cas-ban-t"><span>Weer welkom over</span><b id="casBanT">${fmtClock(L)}</b></div>
+  <small>Hoe hoger je casinokaart, hoe langer je mag spelen en hoe korter de pauze. VIP speelt 1,5× zo lang, High roller 2×.</small>
+  <div class="cas-ban-b"><a class="btn ghost" href="#crimes">Naar de misdaden</a><a class="btn ghost" href="#dash">Naar je dashboard</a></div></div></section>`}
  return `<section class="cas-ban"><div class="cas-ban-in">${czEyesSvg(2)}<span class="label">Casino</span><h1>U bent verbannen</h1><p>${lang?'U zit hier al uren achter elkaar. De beveiliging zet u een speldag buiten de deur.':'De beveiliging heeft u te vaak gezien. U bent hier voorlopig niet meer welkom.'}</p>
   <div class="cas-ban-t"><span>Nog</span><b id="casBanT">${fmtClock(L)}</b></div>
   <small>${lang?'Wie twee uur aan één stuk in het casino zit zonder iets anders te doen, valt op: 4 uur (een speldag) niet welkom. Doe tussendoor klussen of missies, dan zakt het weer.':['Gewone spelers 30 minuten','VIP 20 minuten','High roller 10 minuten'][t]+'. Daarna mag je terug en staat je verdenking weer op 0%. Met wit geld loopt de verdenking niet op, dat kun je verantwoorden.'}</small>
@@ -40,6 +44,7 @@ function casLobby(){const G=window.COV?COV.GAMES:[],by=id=>G.find(g=>g.id===id),
  return `<div class="cl">
   <div class="cl-head"><div><h1>Casino</h1><p>${G.length} spellen. Echte regels en doorgerekende kansen; het huis heeft een klein voordeel, net als in elk casino.</p></div></div>
   ${S.wanted?'<div class="card cl-warn">▲ Casino\'s hangen vol camera\'s. Als gezochte crimineel loop je hier extra risico op een controle.</div>':''}
+  ${typeof ccPanelHtml==='function'?ccPanelHtml():''}
   ${run&&CAS_NAMES[run.g]?`<button class="cl-run" onclick="casinoGo('${run.g}')"><b>Je bonus in ${CAS_NAMES[run.g]} loopt nog</b><span>Het geld staat al op je saldo. Tik om hem verder af te spelen.</span></button>`:''}
   ${CAS_GROUPS.map(([t,sub,ids],gi)=>`<section class="cl-sec"><div class="cl-sh"><h2>${t}</h2><span>${sub}</span></div>
    <div class="cl-grid g${ids.length}">${ids.map(id=>by(id)).filter(Boolean).map(g=>card(g,gi===0)).join('')}</div></section>`).join('')}

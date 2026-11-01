@@ -3,7 +3,8 @@
 // De lopende pot (S.coin) staat in je opslag: verversen of weggaan verandert niets aan de uitkomst.
 const CF_BETS=[10,25,50,100,250,500,1000,2500,5000,10000,25000,50000],CF_MAX=10;
 window.cf=window.cf||{bi:3,side:'kop',flipping:false,rot:0,hist:[],msg:null};
-const cfBet=()=>CF_BETS[cf.bi];
+const cfBets=()=>{const m=typeof casMax==='function'?casMax('snel'):50000,L=CF_BETS.filter(v=>v<=m);return L.length?L:[CF_BETS[0]]};
+const cfBet=()=>{const L=cfBets();if(cf.bi>=L.length)cf.bi=L.length-1;return L[cf.bi]};
 function cfFaceSvg(id){if(id==='kop')return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="40" fill="none" stroke="#7a5506" stroke-width="1.5" stroke-dasharray="2 3"/>
   <path d="M30 58 L26 36 L38 46 L50 30 L62 46 L74 36 L70 58 Z" fill="#7a5506"/><rect x="29" y="60" width="42" height="7" rx="2" fill="#7a5506"/><circle cx="50" cy="30" r="3.2" fill="#7a5506"/><circle cx="26" cy="35" r="2.6" fill="#7a5506"/><circle cx="74" cy="35" r="2.6" fill="#7a5506"/>
   <text x="50" y="82" text-anchor="middle" font-family="Big Shoulders Display,Impact,sans-serif" font-weight="900" font-size="13" letter-spacing="2" fill="#7a5506">KOP</text></svg>`;
@@ -35,8 +36,8 @@ function coinView(){const flip=cf.flipping,sh=flip&&cf.show,c=sh?sh.coin:S.coin,
    <button class="btn gold xl cf-go" onclick="act.cfFlip()" ${flip||c.step>=CF_MAX?'disabled':''}>${c.step>=CF_MAX?'Maximaal bereikt':'Dubbel of niks · gooi voor '+fmt(c.pot*2)}</button>
    <button class="btn cf-cash" onclick="act.cfCash()" ${flip?'disabled':''}>Pak je geld · ${fmt(c.pot)}</button>`
   :`<div class="label">Inzet</div>
-   <div class="kk-bet"><button onclick="cf.bi=Math.max(0,cf.bi-1);cf.msg=null;SFX.chip();render()" ${flip?'disabled':''} aria-label="Lagere inzet">−</button><b>${fmt(bet)}</b><button onclick="cf.bi=Math.min(CF_BETS.length-1,cf.bi+1);cf.msg=null;SFX.chip();render()" ${flip?'disabled':''} aria-label="Hogere inzet">+</button></div>
-   <div class="cf-quick">${CF_BETS.map((v,i)=>`<button class="${cf.bi===i?'on':''}" onclick="cf.bi=${i};SFX.chip();render()" ${flip?'disabled':''}>${v>=1000?v/1000+'K':v}</button>`).join('')}</div>
+   <div class="kk-bet"><button onclick="cf.bi=Math.max(0,cf.bi-1);cf.msg=null;SFX.chip();render()" ${flip?'disabled':''} aria-label="Lagere inzet">−</button><b>${fmt(bet)}</b><button onclick="cf.bi=Math.min(cfBets().length-1,cf.bi+1);cf.msg=null;SFX.chip();render()" ${flip?'disabled':''} aria-label="Hogere inzet">+</button></div>
+   <div class="cf-quick">${cfBets().map((v,i)=>`<button class="${cf.bi===i?'on':''}" onclick="cf.bi=${i};SFX.chip();render()" ${flip?'disabled':''}>${v>=1000?v/1000+'K':v}</button>`).join('')}</div>
    <div class="label" style="margin:14px 0 6px">Jouw kant</div>${sideBtns}
    <button class="btn gold xl cf-go" onclick="act.cfFlip()" ${flip||inJail()||casCash()<bet?'disabled':''}>${casCash()<bet?'Te weinig geld':'Gooien · '+fmt(bet)}</button>
    ${ladder}`}

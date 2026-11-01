@@ -363,7 +363,7 @@ const secTxt=ms=>(ms/1000).toLocaleString('nl-NL',{maximumFractionDigits:1})+' s
 // Ervaring als autodief: als groentje trillen je handen (minder tijd per pijl) en ziet vaker een voorbijganger je bezig.
 // Groeit met het aantal gestolen auto's en je rang.
 const CAR_LV=['Groentje','Leerling','Handig','Ervaren','Meesterdief'];
-const carNerve=()=>{const n=(S.stats&&S.stats.cars)||0,ri=rankIdx(S.xp),a=.6*Math.min(1,n/40),b=.4*Math.min(1,ri/6),lv=Math.min(1,a+b),i=Math.min(4,Math.floor(lv*5));
+const carNerve=()=>{const n=(S.stats&&S.stats.cars)||0,ri=rankIdx(S.xp),a=.6*Math.min(1,n/40),b=.4*Math.min(1,rkPow(ri)/6),lv=Math.min(1,a+b),i=Math.min(4,Math.floor(lv*5));
  return {lv,i,name:CAR_LV[i],time:.78+.22*lv,wit:Math.max(.05,.28-.23*lv)}};
 function heistParams(m){const sk=(S.skills&&S.skills.cars)||0,T=HEIST_TIERS[carTier(m)],N=carNerve();return {...T,per:Math.round(T.per*(1+sk*SK.cars.time+gearFx('car'))*N.time),d:m.d,wit:N.wit,nv:N}}
 function heistTxt(P){return [P.locks>1?P.locks+' sloten':'1 slot',P.len+' pijlen in '+secTxt(P.len*P.per),P.rev?P.rev+' rode per slot':null,P.miss?P.miss+'× fout mag':'geen fouten'].filter(Boolean).join(' · ')}

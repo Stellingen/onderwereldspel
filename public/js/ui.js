@@ -52,14 +52,14 @@ const ICONS={
  moto:'<circle cx="5.5" cy="16.5" r="3.5"/><circle cx="18.5" cy="16.5" r="3.5"/><path d="M5.5 16.5L9 10h4.5l2 4h-6.5M13 10l1.5-3.5H17M15.5 14l3 2.5"/>',
  heli:'<path d="M3 4.5h18M12 4.5v3.5"/><path d="M5.5 12.5c0 2.2 2.9 3.5 6.5 3.5s6.5-1.3 6.5-3.5V11a3 3 0 00-3-3h-7a3 3 0 00-3 3z"/><path d="M18.5 11.5h3M9 16l-1 3.5M15 16l1 3.5M6 19.5h12"/>',
  look:'<path d="M9 3.5L12 6l3-2.5 5.5 3.2-2.3 4.3-2.2-1V21H8V10l-2.2 1-2.3-4.3z"/><path d="M12 6v4"/>'};
-const PAGES=[['dash','Dashboard'],['verblijf','Verblijf'],['crimes','Misdaden'],['hits','Huurmoorden'],['cars','Auto\'s'],['casino','Casino'],['biz','Bezit'],['shop','Wapens'],['look','Outfit'],['skills','Training'],['relax','Ontspannen'],['bank','Bank'],['wit','Witwassen'],['fam','Families'],['jail','Bajes'],['politie','Politiebureau'],['rank','Ranglijst'],['profiel','Profiel']];
+const PAGES=[['dash','Dashboard'],['verblijf','Verblijf'],['crimes','Misdaden'],['hits','Huurmoorden'],['cars','Auto\'s'],['casino','Casino'],['biz','Bezit'],['shop','Wapens'],['look','Outfit'],['skills','Training'],['werk','Werk en dealen'],['relax','Ontspannen'],['bank','Bank'],['wit','Witwassen'],['fam','Families'],['jail','Bajes'],['politie','Politiebureau'],['rank','Ranglijst'],['profiel','Profiel']];
 const svg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 let page=(location.hash||'#dash').slice(1);if(!PAGES.find(p=>p[0]===page))page='dash';
 let casinoTab='',rankTab='xp',slotState=['7','7','7'],spinning=false;
 
 // Elke sectie heeft een eigen kleur, zodat je ziet waar je bent
 // 'Jij' (dashboard, ranglijst, profiel) staat apart bovenaan; daaronder de vier spelsecties
-const NAV_GROUPS=[['Jij',['dash','rank','profiel'],'#f2c230','242,194,48'],['Straat',['verblijf','crimes','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank','wit'],'#3fe395','63,227,149'],['Macht',['shop','look','skills','relax','fam'],'#b8a1ff','184,161,255'],['Overig',['jail','politie'],'#a9dcff','169,220,255']];
+const NAV_GROUPS=[['Jij',['dash','rank','profiel'],'#f2c230','242,194,48'],['Straat',['crimes','werk','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank','wit'],'#3fe395','63,227,149'],['Macht',['fam','shop','look'],'#b8a1ff','184,161,255'],['Leven',['verblijf','skills','relax'],'#5ce1c4','92,225,196'],['Overig',['jail','politie'],'#a9dcff','169,220,255']];
 const groupOf=k=>NAV_GROUPS.find(g=>g[1].includes(k))||NAV_GROUPS[0];
 function applySection(){document.body.classList.toggle('wide-page',page==='casino');document.body.classList.toggle('no-rail',page==='dash');const g=groupOf(page),r=document.documentElement.style;r.setProperty('--sec',g[2]);r.setProperty('--sec-rgb',g[3])}
 function crumbHtml(){const g=groupOf(page);return `<div class="crumb"><i></i><span>${g[0]}</span>/ ${PAGES.find(p=>p[0]===page)[1]}</div>`+(typeof feudBar==='function'?feudBar():'')}
@@ -120,13 +120,13 @@ const userBusy=()=>_touching||_mouse||performance.now()-_lastScroll<700;
 const MBAR=['dash','crimes','cars','casino'];
 const MSHORT={dash:'Start',crimes:'Misdaden',cars:"Auto's",casino:'Casino'};
 // Klein getal rechts in het menu (computer): waar je staat, wat er loopt
-function navStat(){const o={};try{const [p]=myPos();o.rank='#'+p;if(inJail())o.jail=fmtClock(S.jailUntil-now());const h=cdLeft('hit');if(h&&rankIdx(S.xp)>=7)o.hits=fmtClock(h);
+function navStat(){const o={};try{const [p]=myPos();o.rank='#'+p;if(inJail())o.jail=fmtClock(S.jailUntil-now());const h=cdLeft('hit');if(h&&rankIdx(S.xp)>=RK[7])o.hits=fmtClock(h);
  if(typeof garageCap==='function')o.cars=S.cars.length+'/'+garageCap();if(S.family)o.fam=fam().m}catch(e){}return o}
 function navBadges(){const b={};if(inJail())b.jail='!';if(typeof pbOpen==='function'&&pbOpen().length)b.politie=pbOpen().length;if(!inJail()&&S.energy>=EN_MAX)b.crimes='●';
  if(typeof RANK_CODES!=='undefined'&&RANKS.slice(1,rankIdx(S.xp)+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase())))b.profiel='€';
  if(typeof isVip==='function'&&isVip()&&typeof cbAvail==='function'&&cbAvail()>=1)b.casino='€';return b}
 function navHint(k){const jt=Math.ceil((S.jailUntil-now())/1000);
- return {dash:'Overzicht',verblijf:S.hide?'Ondergedoken':S.hp+'% gezond',crimes:Math.floor(S.energy)+' energie',hits:rankIdx(S.xp)<7?'Vanaf '+RANKS[7][0]:cdLeft('hit')?'Over '+fmtClock(cdLeft('hit')):((S.stats&&S.stats.hits)||0)+' gedaan',cars:S.cars.length+(S.cars.length===1?' auto':" auto's"),
+ return {dash:'Overzicht',verblijf:S.hide?'Ondergedoken':S.hp+'% gezond',crimes:Math.floor(S.energy)+' energie',hits:rankIdx(S.xp)<RK[7]?'Vanaf '+RANKS[RK[7]][0]:cdLeft('hit')?'Over '+fmtClock(cdLeft('hit')):((S.stats&&S.stats.hits)||0)+' gedaan',cars:S.cars.length+(S.cars.length===1?' auto':" auto's"),
   casino:typeof CAS_MIN_R!=='undefined'&&rankIdx(S.xp)<CAS_MIN_R?'vanaf '+RANKS[CAS_MIN_R][0]:(typeof CAS_LIST!=='undefined'?CAS_LIST.length:10)+' spellen',biz:typeof income==='function'?fmtS(income())+'/speldag':'Bedrijven',bank:fmtS(typeof bankNet==='function'?bankNet():S.bank),shop:'Wapens',skills:'Trainen',
   fam:S.family?fam().n:'Geen familie',jail:inJail()?'Vast, '+fmtTime(jt):'Vrij',politie:typeof pbOpen==='function'&&pbOpen().length?pbOpen().length+' dossier'+(pbOpen().length>1?'s':'')+' open':'Geld terugeisen',rank:'Spelers',profiel:'Codes en account',look:'Kleding',wit:typeof zwart==='function'&&zwart()>=1?fmtS(zwart())+' zwart':'Zwart geld wit maken'}[k]||''}
 function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('nav');bar.id='mbar';bar.className='mbar';bar.setAttribute('aria-label','Menu');document.body.appendChild(bar)}
@@ -331,8 +331,8 @@ function casHudHtml(){const pend=window.slotPending||0,b=typeof bankNet==='funct
  // Telefoon: een rij knoppen onder saldo en bank (betalen met, cashback, geluk, verdenking)
  const chips=[
   `<button class="cc cc-pay ${pm} ${open?'open':''}" onclick="act.casPaySel()" aria-expanded="${open}" aria-label="Kies waarmee je betaalt"><span>Betalen met</span><b>${casPayIc(pm)}${pm==='auto'?'Auto':pm==='wit'?'Wit':'Zwart'} ▾</b></button>`,
-  t?`<button class="cc cc-cb ${cb>=1?'can':''}" onclick="act.claimCb()" ${cb<1?'disabled':''} aria-label="Cashback claimen"><span>${cb>=1?'Claim nu':'Cashback'}</span><b>${fmt(cb)}</b></button>`
-   :`<a class="cc cc-up" href="#profiel"><span>Cashback</span><b>Alleen VIP</b></a>`,
+  (t||(typeof ccLv==='function'&&ccLv()))?`<button class="cc cc-cb ${cb>=1?'can':''}" onclick="act.claimCb()" ${cb<1?'disabled':''} aria-label="Cashback claimen"><span>${cb>=1?'Claim nu':'Cashback'}</span><b>${fmt(cb)}</b></button>`
+   :`<button class="cc cc-up" onclick="casinoGo('')"><span>Cashback</span><b>Vanaf Brons</b></button>`,
   hasLuck?(luck.ready?`<button class="cc cc-luck can" onclick="act.luckUse()" aria-label="Geluk +${Math.round(luck.o.luck*100)}% gebruiken"><span><i>${diceSvg(luck.o)}</i>+${Math.round(luck.o.luck*100)}%</span><b>Gebruik</b></button>`
    :`<a class="cc cc-luck ${luck.L?'on':''}" href="#look" aria-label="Geluk +${Math.round(luck.o.luck*100)}%"><span><i>${diceSvg(luck.o)}</i>Geluk +${Math.round(luck.o.luck*100)}%</span><b>${luck.L?fmtClock(luck.L):bkDurL(luck.W)}</b></a>`):'',
   `<a class="cc cc-sus ${susC} e${e}" href="#wit" style="--v:${sus}%" title="Verdenking: ${CZ_EYE_TXT[e]}"><span>${czEyesSvg(e)}</span><b>${sus}%</b></a>`].join('').replace(/<span>/g,'<span data-fit="7.5">').replace(/<b>/g,'<b data-fit="9.5">');
@@ -342,7 +342,8 @@ function casHudHtml(){const pend=window.slotPending||0,b=typeof bankNet==='funct
   <div class="ch-pay" role="group" aria-label="Betalen met"><span class="label">Betalen met</span>
    <div class="ch-seg">${['auto','wit','zwart'].map(m=>`<button class="${m==='auto'?'a':m==='wit'?'w':'z'} ${pm===m?'on':''}" onclick="act.casPay('${m}')" aria-pressed="${pm===m}"><small>${m==='auto'?'Auto · zwart eerst':m==='wit'?'Wit · legaal':'Zwart · riskant'}</small><b>${fmt(m==='wit'?wn:m==='zwart'?zw:Math.max(0,S.cash-pend))}</b></button>`).join('')}</div></div>
   <a class="ch-cell ch-bank" href="#bank"><i class="dm-ic">${ICO_BANK}</i><div><span class="label">Bank</span><b title="${fmt(b)}">${fmtFit(b,fitN(10))}</b></div></a>
-  ${t?`<div class="ch-cell ch-cb" title="${typeof CB_RATE!=='undefined'?'Cashback op elke inzet: '+Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*(TIER_CB[t]||1)*100).toLocaleString('nl-NL',{maximumFractionDigits:3})+'%').join(' · '):''}"><div><span class="label">Cashback · ${lid}</span><b id="cbAmt">${fmt(cb)}</b></div><button class="btn gold sm" id="cbBtn" onclick="act.claimCb()" ${cb<1?'disabled':''}>${cb>=1?'Claimen':'Nog niks'}</button></div>`:`<a class="ch-cell ch-up" href="#profiel"><span class="label">Gewoon lid</span><b>VIP: cashback en vaker bonus</b></a>`}
+  ${typeof ccChip==='function'?ccChip():''}
+  ${(t||(typeof ccLv==='function'&&ccLv()))?`<div class="ch-cell ch-cb" title="${typeof CB_RATE!=='undefined'?'Cashback op elke inzet: '+Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*(typeof ccCbF==='function'?ccCbF(k):(TIER_CB[t]||1))*100).toLocaleString('nl-NL',{maximumFractionDigits:3})+'%').join(' · '):''}"><div><span class="label">Cashback · ${lid}</span><b id="cbAmt">${fmt(cb)}</b></div><button class="btn gold sm" id="cbBtn" onclick="act.claimCb()" ${cb<1?'disabled':''}>${cb>=1?'Claimen':'Nog niks'}</button></div>`:`<a class="ch-cell ch-up" href="#profiel"><span class="label">Gewoon lid</span><b>VIP: cashback en vaker bonus</b></a>`}
   ${hasLuck?`<div class="ch-cell ch-luck ${luck.L?'on':''}"><i class="dm-ic">${diceSvg(luck.o)}</i><div><span class="label">Geluk +${Math.round(luck.o.luck*100)}%</span><b>${luck.L?'Nog '+fmtClock(luck.L):luck.W?bkDurL(luck.W):'Klaar'}</b></div>${luck.ready?`<button class="btn gold sm" onclick="act.luckUse()">Gebruiken</button>`:''}</div>`:''}
   <a class="ch-cell ch-sus ${susC} e${e}" href="#wit" title="Spelen met zwart geld laat de verdenking oplopen (wit geld kun je verantwoorden). Grote inzetten, slots en ogen op jouw tafel tellen het zwaarst. Ook te lang achter elkaar spelen valt op: na een uur loopt hij op, na twee uur ben je 4 uur niet welkom. Op 100% word je verbannen.">${czEyesSvg(e)}<div class="ch-sus-t"><span class="label">Verdenking · ${CZ_EYE_TXT[e]}</span><div class="ch-sus-r"><b>${sus}%</b><i class="mini"><i style="width:${sus}%"></i></i></div></div></a>
   <div class="ch-cell ch-r">${statusTag()}</div><div class="ch-chips">${chips}</div>${open?sel:''}</div>`}

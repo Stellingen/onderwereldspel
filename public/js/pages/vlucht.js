@@ -15,7 +15,7 @@ const AVC={free:420,a0:12,g:10,vt:4.5,drag:3,v0:32,hit:7,gap:[54,136],lo:6,hi:97
 // stoot omhoog per plusje, duw omlaag bij een bom
 const AV_LIFT={'+1':20,'+2':22,'+5':26,'+10':30},AV_BOMB=45;
 const AV_BETS=[10,25,50,100,250,500,1000,2500,5000,10000,25000,50000];
-const avBets=()=>isHighRoller()?AV_BETS.concat([100000,250000,500000]):AV_BETS;
+const avBets=()=>{const m=typeof casMax==='function'?casMax('snel'):50000,L=AV_BETS.concat([100000,250000,500000]).filter(v=>v<=m);return L.length?L:[AV_BETS[0]]};
 window.av=window.av||{bi:3,flying:false,plan:null,t0:0,raf:null,res:null,shake:0};
 const avBet=()=>{const B=avBets();if(av.bi>=B.length)av.bi=B.length-1;return B[av.bi]};
 const avR=()=>crypto.getRandomValues(new Uint32Array(1))[0]/4294967296;
