@@ -5,6 +5,7 @@ const GAMES=[
  {id:'kluis',slug:'kluiskraker',n:'Kluiskraker',col:'#ff7a1a',kind:'Cluster-slot · 10 × 10',short:'Vijf gelijke symbolen die elkaar raken, ontploffen. Op dezelfde plek weer winst? Dan wordt dat vakje x2, x4, x8.',tags:['Max 5.000×','RTP ±92,5%']},
  {id:'vis',slug:'visdief',n:'Visdief',col:'#5ad1ff',kind:'Video-slot · 5 × 4',short:'Elke vis heeft een prijskaartje. Valt de Visdief erbij, dan pakt hij ze allemaal.',tags:['Max 10.000×','RTP ±92%']},
  {id:'zoet',slug:'suikerbaron',n:'Suikerbaron',col:'#ff4f9a',kind:'Snoepslot · 6 × 5',short:'Acht of meer van hetzelfde snoepje, waar ze ook liggen. In de bonus maken kauwgomballen je winst tot ×1.000 groter.',tags:['Max 5.000×','RTP ±95%']},
+ {id:'draak',slug:'gouden-draak',n:'Gouden Draak',col:'#ffb300',kind:'Video-slot · 5 × 3',short:'Drie gongs maken het midden één reuzensymbool. Zes gouden munten geven de Muntenbonus: vul alle 9 vakjes voor de Mega.',tags:['Max 5.000×','RTP ±93%']},
  {id:'mines',slug:'mines',n:'Mines',col:'#3fe395',kind:'Durfspel · 5 × 5',short:'Vijfentwintig vakjes en jij kiest hoeveel bommen. Elk veilig vakje is meer waard. Stop op tijd.',tags:['Max 10.000×','RTP tot 99,2%']},
  {id:'avia',slug:'hoogvlieger',n:'Hoogvlieger',col:'#a9dcff',kind:'Vluchtspel',short:'Een vliegtuigje boven zee. Pluspunten duwen hem omhoog, bommen halen hem neer. Land op het dek.',tags:['Vlucht ligt vast','RTP ±87%']},
  {id:'bj',slug:'blackjack',n:'Blackjack',col:'#1fd17a',kind:'Kaarttafel',short:'Zo dicht mogelijk bij 21 zonder eroverheen. Blackjack betaalt 3 tot 2, de dealer pakt tot 17.',tags:['3 : 2','2 side bets']},
@@ -98,6 +99,20 @@ function coverSvg(id,uid){uid=uid||('c'+id);if(id==='zoet')return window.ZBA?ZBA
    <g transform="translate(276 206)"><ellipse cx="0" cy="-8" rx="40" ry="7" fill="#1a1d22"/><path d="M-21-8c-1-13 4-22 11-24 4 2 15 2 21 0 7 3 11 12 10 24z" fill="#262a31"/><path d="M-21-15h42v5h-42z" fill="#ff4b5c"/>
     <path d="M-20 4h17l-1.5 8c-.4 2-2 3-4 3h-6c-2 0-3.6-1.2-4-3zM3 4h17l-1.5 8c-.4 2-2 3-4 3h-6c-2 0-3.6-1.2-4-3z" fill="#0b0f14"/><path d="M-3 6h6" stroke="#0b0f14" stroke-width="2"/></g>
    <g transform="translate(34 40)"><circle r="20" fill="#5ad1ff" opacity=".14"/><circle r="20" fill="none" stroke="#5ad1ff" stroke-opacity=".6"/><text y="7" text-anchor="middle" ${T} font-size="19" fill="#5ad1ff">×10</text></g>`);
+ if(id==='draak'){const coin=(x,y,r,o)=>`<g transform="translate(${x} ${y})" opacity="${o||1}"><circle r="${r}" fill="url(#${uid}c)" stroke="#8a5d00" stroke-width="1.2"/><circle r="${r*.78}" fill="none" stroke="#c48c10" stroke-width="1.4"/><rect x="${-r*.24}" y="${-r*.24}" width="${r*.48}" height="${r*.48}" fill="#5a1414"/></g>`;
+  const lan=(x,y,s)=>`<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 -22v8" stroke="#caa24a" stroke-width="1.4"/><ellipse cx="0" cy="0" rx="14" ry="16" fill="#e53935"/><path d="M-8 -12c-3 7-3 17 0 24M8 -12c3 7 3 17 0 24M0 -15v30" stroke="#9b1b1b" stroke-width="1.4" fill="none"/><rect x="-7" y="-17" width="14" height="4" fill="#ffd35a"/><rect x="-7" y="13" width="14" height="4" fill="#ffd35a"/><path d="M-2 17l-1 9M2 17l1 9" stroke="#ffd35a" stroke-width="1.4"/><ellipse cx="0" cy="0" rx="26" ry="26" fill="#ff7043" opacity=".15"/></g>`;
+  return svg(`<defs><radialGradient id="${uid}c" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#fff1b0"/><stop offset=".55" stop-color="#f5c542"/><stop offset="1" stop-color="#a87400"/></radialGradient>
+   <radialGradient id="${uid}g" cx="50%" cy="60%" r="60%"><stop offset="0" stop-color="#ffb300" stop-opacity=".55"/><stop offset="1" stop-color="#ffb300" stop-opacity="0"/></radialGradient>
+   <linearGradient id="${uid}d" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5a4e"/><stop offset="1" stop-color="#8e0e0e"/></linearGradient></defs>
+   <path d="M0 220V170l40-12 40 12v50zM230 220V160l45-14 45 14v60z" fill="#2a0c0c"/><path d="M0 30Q160 60 320 26" stroke="#5a1a12" stroke-width="1.4" fill="none"/>
+   ${lan(40,52,1)}${lan(272,46,1.1)}${lan(150,40,.7)}
+   <ellipse cx="170" cy="150" rx="130" ry="80" fill="url(#${uid}g)"/>
+   <path d="M60 170c20-40 60-70 110-74 46-4 80 18 96 50-30-16-62-18-90-6-30 14-58 30-116 30z" fill="url(#${uid}d)"/>
+   <path d="M120 98c-8-22 2-40 22-46-8 10-8 22-2 32zM210 96c10-20 4-38-14-46 6 10 6 22-2 32z" fill="#ffd35a"/>
+   <path d="M118 110c4-24 26-40 52-40s48 16 52 40c2 18-6 32-16 40l-6 18h-60l-6-18c-10-8-18-22-16-40z" fill="url(#${uid}d)"/>
+   <path d="M136 104c6-4 14-4 18 2M204 104c-6-4-14-4-18 2" stroke="#ffd35a" stroke-width="3.4" fill="none" stroke-linecap="round"/><circle cx="146" cy="114" r="5" fill="#ffe27a"/><circle cx="194" cy="114" r="5" fill="#ffe27a"/><circle cx="146" cy="114" r="2" fill="#1c0b0b"/><circle cx="194" cy="114" r="2" fill="#1c0b0b"/>
+   <path d="M150 148c10 6 30 6 40 0" stroke="#ffd35a" stroke-width="2.6" fill="none"/><path d="M134 140C110 146 92 160 84 182M206 140c24 6 42 20 50 42" stroke="#ffd35a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+   ${coin(84,182,22)}${coin(250,176,18)}${coin(170,196,26)}${coin(214,204,13,.9)}${coin(122,206,12,.9)}`)}
  if(id==='mines'){const gem=new Set(['0,0','1,0','0,1','2,1','1,2','3,2','2,4']),mine='3,3';let t='';
   const order=[];for(let i=0;i<5;i++)for(let j=0;j<5;j++)order.push([i,j]);order.sort((a,b)=>(a[0]+a[1])-(b[0]+b[1]));
   order.forEach(([i,j])=>{const cx=176+(i-j)*24,cy=70+(i+j)*13.4,k=i+','+j,g=gem.has(k),m=k===mine;

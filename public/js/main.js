@@ -43,7 +43,7 @@ if(S._gearBack){toast('Uitrusting vernieuwd: per soort telt nu je beste item. Je
 // snelkoppelingen: #ontspannen en #trainen openen de trainingspagina op het juiste deel
 window.addEventListener('hashchange',()=>{let p=location.hash.slice(1);if(p==='ontspannen'||p==='trainen'){p=p==='ontspannen'?'relax':'skills';try{history.replaceState(null,'','#'+p)}catch(e){}}if(PAGES.find(x=>x[0]===p)){
   // naar het casino vanaf een andere pagina: eerst de lobby (behalve als je via zoeken een spel koos of er nog iets loopt)
-  if(p==='casino'&&page!=='casino'&&!window._casPick&&typeof casSwitchBusy==='function'&&!casSwitchBusy()&&!(window.kk&&kk.inBonus)&&!(window.vd&&vd.inBonus)&&!(window.zb&&zb.inBonus))casinoTab='';window._casPick=0;
+  if(p==='casino'&&page!=='casino'&&!window._casPick&&typeof casSwitchBusy==='function'&&!casSwitchBusy()&&!(window.kk&&kk.inBonus)&&!(window.vd&&vd.inBonus)&&!(window.zb&&zb.inBonus)&&!(window.dr&&dr.inBonus))casinoTab='';window._casPick=0;
   if(p==='verblijf'&&page!=='verblijf'&&window.vb)vb.view=null;
   if(p==='crimes'&&page!=='crimes'&&typeof crimeRank!=='undefined')crimeRank=null;
   if(p==='shop'&&page!=='shop'&&window.gsel)gsel.shop=null;

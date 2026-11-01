@@ -19,7 +19,7 @@ const CC=[
 const CC_T={slot:[1,1.5,2],snel:[1,1.5,2],tafel:[1,1.25,1.5],side:[1,1.5,2],rin:[1,1.33,1.67],sess:[1,1.5,2],cd:[1,.8,.6],lim:[1,1.5,2]};
 const CC_CAP={snel:100000,tafel:150000,rin:250000,rout:500000,hrtafel:500000};
 const ccNice=v=>v>=10000?Math.round(v/1000)*1000:v>=1000?Math.round(v/100)*100:Math.round(v/10)*10;
-const CC_CAT={kluis:'slot',vis:'slot',zoet:'slot',mines:'snel',avia:'snel',coin:'snel',roulette:'tafel',bj:'tafel',tcp:'tafel',th:'tafel'};
+const CC_CAT={kluis:'slot',vis:'slot',zoet:'slot',draak:'slot',mines:'snel',avia:'snel',coin:'snel',roulette:'tafel',bj:'tafel',tcp:'tafel',th:'tafel'};
 const CC_CATN={slot:'Slots',snel:'Snel spel',tafel:'Tafels'};
 // cashback mag nooit boven het huisvoordeel uitkomen: per spel een plafond op de factor
 const CC_CBMAX={bj:1.5,coin:0};

@@ -109,7 +109,7 @@ function spendWit(x){zwWit=true;try{S.cash-=x}finally{zwWit=false}}
 // maar een kwart. Zakt 4% per minuut in het casino, 8% per minuut als je weg bent. Op 100%: verbannen (30 / 20 / 10 minuten), daarna begint het weer op 0%.
 // hoeveel zwart geld je kunt inzetten voordat het opvalt: hangt af van je casinokaart (en lidmaatschap), niet van je rang
 const czLim=()=>typeof ccCard==='function'?ccCard().lim*ccT('lim'):20000;
-const CZ_GAME={kluis:1.4,vis:1.4,zoet:1.4,roulette:1,bj:.85,tcp:.85,th:.85,coin:.8,mines:.55,avia:.55},CZ_TIER=[1,.65,.35],CZ_BAN=[30,20,10],CZ_EYE=[.25,1,2];
+const CZ_GAME={kluis:1.4,vis:1.4,zoet:1.4,draak:1.4,roulette:1,bj:.85,tcp:.85,th:.85,coin:.8,mines:.55,avia:.55},CZ_TIER=[1,.65,.35],CZ_BAN=[30,20,10],CZ_EYE=[.25,1,2];
 // Betaalwijze (S.casPay): 'auto' (standaard) = eerst je zwarte geld, is dat op dan je witte; 'wit' = alleen wit; 'zwart' = alleen zwart.
 const casPayMode=()=>S.casPay==='zwart'?'zwart':S.casPay==='wit'?'wit':'auto';
 const casCash=()=>{const m=casPayMode();return m==='zwart'?zwart():m==='wit'?wit():S.cash};
@@ -269,8 +269,8 @@ function showModal(t,m,btns){if(typeof atmClose==='function'&&typeof atm!=='unde
 function closeModal(){$('#modal').hidden=true}
 // VIP en High roller: tag bij je naam, vaker de bonus in de slots en cashback op elke inzet (High roller ×1,5).
 // Cashback per spel, afgestemd op het huisvoordeel, zodat je er nooit structureel winst mee maakt. Direct te claimen.
-const CB_RATE={kluis:.005,vis:.005,zoet:.005,mines:.005,avia:.005,roulette:.01,tcp:.0075,th:.005,bj:.0025,coin:0};
-const CB_NAME={kluis:'Kluiskraker',vis:'Visdief',zoet:'Suikerbaron',mines:'Mines',avia:'Hoogvlieger',roulette:'Roulette',tcp:'Three Card Poker',th:"Texas Hold'em",bj:'Blackjack',coin:'Dubbel of niks'};
+const CB_RATE={kluis:.005,vis:.005,zoet:.005,draak:.005,mines:.005,avia:.005,roulette:.01,tcp:.0075,th:.005,bj:.0025,coin:0};
+const CB_NAME={kluis:'Kluiskraker',vis:'Visdief',zoet:'Suikerbaron',draak:'Gouden Draak',mines:'Mines',avia:'Hoogvlieger',roulette:'Roulette',tcp:'Three Card Poker',th:"Texas Hold'em",bj:'Blackjack',coin:'Dubbel of niks'};
 // Lidmaatschap: 0 = gewoon, 1 = VIP, 2 = High roller. Komt van je account (beheerder); oude VIP-code telt nog als VIP.
 const tier=()=>{const t=window.__TIER__;if(t!=null)return t;return (S&&S.redeemed&&S.redeemed.includes('vip'))?1:0};
 const isVip=()=>tier()>=1;

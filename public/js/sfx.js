@@ -85,9 +85,22 @@ const SFX=(()=>{
     retrig(){[0,4,7,12].forEach((k,i)=>bell(N(84+k),i*.06,.6,.08,3.5,.9));tone(500,.25,.12,'sine',.15,1400)},
     big(){for(let i=0;i<16;i++)bell(N(84+(i%8)*2+(i>7?12:0)),i*.05,.5,.06,3.5,.9);[60,64,67,72].forEach((m,i)=>tone(N(m),.1+i*.02,.8,'triangle',.06))},
     lose(){tone(420,0,.25,'sine',.06,300)}};
+  // ---------- Gouden Draak: gong, munten en een pentatonisch deuntje ----------
+  const PENTA=[60,62,64,67,69,72,74,76,79,81,84];
+  const dr={
+    spin(){let t=0;for(let i=0;i<12;i++){t+=.024+Math.abs(i-6)*.004;fnoise(t,.02,.08,'bandpass',2400,2400,3)}fnoise(0,.35,.04,'lowpass',500,200,1)},
+    tick(){tone(180,0,.09,'triangle',.14,110);fnoise(0,.05,.06,'lowpass',800,250)},
+    win(step){const b=Math.max(0,Math.min(step|0,5));[0,2,4].forEach((k,i)=>{const f=N(PENTA[b+k]);tone(f,i*.08,.32,'triangle',.13);bell(f*2,i*.08,.25,.03,3.5,.8)})},
+    gong(i){bell(N(45+(i|0)*5),0,2.2,.2,1.41,1.4);tone(N(45+(i|0)*5)/2,0,1.6,'sine',.12);fnoise(0,.6,.05,'lowpass',500,140,1)},
+    coin(i){const f=N(84+((i|0)%6)*2);bell(f,0,.4,.08,3.5,.9);tone(f*1.5,.03,.12,'sine',.04)},
+    jp(lv){for(let k=0;k<10+lv*4;k++)bell(N(PENTA[k%PENTA.length]+12),k*.05,.4,.07,3.5,.9);tone(N(48),0,1.2,'sine',.16)},
+    bonus(){[0,2,4,5,7,9,10].forEach((k,i)=>{tone(N(PENTA[k]),i*.1,.35,'triangle',.15);bell(N(PENTA[k]+12),i*.1,.3,.04,3.5,.8)});bell(N(43),0,2.4,.2,1.41,1.4)},
+    retrig(){[0,2,4,7].forEach((k,i)=>bell(N(PENTA[k]+12),i*.07,.6,.08,3.5,.9));bell(N(50),0,1.6,.14,1.41,1.4)},
+    big(){melody([67,69,72,74,76,79,[79,84]],.05,.12,(f,t)=>{tone(f,t,.45,'triangle',.15);bell(f*2,t,.3,.04,3.5,.8)});bell(N(43),0,2.6,.2,1.41,1.4)},
+    lose(){tone(200,0,.22,'sine',.07,140)}};
   // elke geluidsfunctie in een vangnet: een fout in het geluid mag nooit een spin of bonus afbreken
   const safe=o=>{Object.keys(o).forEach(k=>{const f=o[k];if(typeof f==='function')o[k]=function(){try{return f.apply(this,arguments)}catch(e){}};else if(f&&typeof f==='object')safe(f)});return o};
-  return safe({kk,vd,zb,
+  return safe({kk,vd,zb,dr,
 
     get on(){return on},
     toggle(){on=!on;try{localStorage.setItem('ow_sound',on?'1':'0')}catch(e){}if(on)this.click();return on},

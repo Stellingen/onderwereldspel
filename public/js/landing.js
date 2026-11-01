@@ -521,6 +521,14 @@ const GD={
    `Drie lolly's in de bonus geven ${(Z&&Z.FS_RETRIG)||5} extra spins. De max win is ${nl((Z&&Z.MAX_WIN)||5000)}× je inzet per ronde.`,
    `Bonus kopen kost ${(Z&&Z.BUY_COST)||100}× je inzet en geeft altijd vier lolly's.`]},
   src:'/js/zoet.js'},
+ draak:{stats:D=>[['Rollen','5 × 3'],['Lijnen','20'],['Max win',nl(D?D.MAX_WIN:5000)+'×'],['Bonus kopen',(D?D.FS_BUY:57)+'× / '+(D?D.HS_BUY:40)+'×']],
+  rules:D=>{const J=(D&&D.JP)||{mini:10,minor:25,major:100};return [`Vijf rollen, drie rijen en twintig vaste lijnen. Drie, vier of vijf dezelfde van links naar rechts is winst. De drakenparel is wild op rol 2, 3 en 4.`,
+   `Drie gongs geven ${(D&&D.FS_START)||10} free spins met de Reuzendraak: rol 2, 3 en 4 worden één groot symbool. Eén gelijk symbool op rol 1 is dan al vier op een lijn.`,
+   `Een gong op rol 1, een reuzengong in het midden en een gong op rol 5 geven ${(D&&D.FS_RETRIG)||3} spins extra.`,
+   `Zes of meer gouden munten geven de Muntenbonus: 9 vakjes, 3 spins. Elke nieuwe munt blijft plakken en zet je weer op 3.`,
+   `Jackpots: Mini ${J.mini}×, Minor ${J.minor}×, Major ${J.major}×. Alle 9 vakjes vol is de Mega: ${nl((D&&D.MAX_WIN)||5000)}× je inzet.`,
+   `Bonus kopen: free spins ${(D&&D.FS_BUY)||57}× of de Muntenbonus met zes munten ${(D&&D.HS_BUY)||40}× je inzet.`]},
+  src:'/js/draak.js'},
  mines:{stats:()=>[['Veld','5 × 5'],['Bommen','1 tot 24'],['RTP','95,5 – 99,2%'],['Max win','10.000×']],
   rules:()=>[`Kies hoeveel bommen er in het veld liggen, van 1 tot 24. Meer bommen is spannender en betaalt meer per vakje.`,
    `Klik vakjes open. Elk veilig vakje verhoogt je multiplier. Raak je een bom, dan ben je je inzet kwijt.`,
@@ -576,7 +584,7 @@ function gamePage(slug){const g=gameBy(slug);if(!g)return null;const D=GD[g.id],
   ${D.extra?`<section class="wrap rv">${D.extra()}</section>`:''}
   <nav class="gn wrap" aria-label="Andere spellen"><a href="/casino/${prev.slug}" data-link>${ic('back')}<span><small>Vorige</small><b>${prev.n}</b></span></a><a href="/casino/${next.slug}" data-link><span><small>Volgende</small><b>${next.n}</b></span>${ic('arrow')}</a></nav>`
   +moreHtml('casino'),
- after(){initTilt();const my=renderId;if(D.src)need(D.src).then(()=>{if(my!==renderId)return;const API=g.id==='kluis'?window.SLOT:g.id==='zoet'?window.ZOET:window.VISD;if(!API)return;
+ after(){initTilt();const my=renderId;if(D.src)need(D.src).then(()=>{if(my!==renderId)return;const API=g.id==='kluis'?window.SLOT:g.id==='zoet'?window.ZOET:g.id==='draak'?window.DRAAK:window.VISD;if(!API)return;
    const st=q('#gStats'),ru=q('#gRules');if(st)st.innerHTML=D.stats(API).map(s=>`<div><dt>${s[0]}</dt><dd>${s[1]}</dd></div>`).join('');if(ru)ru.innerHTML=rules(D.rules(API));demoReady(g.id)});
   demoInit(g.id)}}}
 route(/^\/casino\/([a-z0-9-]+)$/,gamePage);

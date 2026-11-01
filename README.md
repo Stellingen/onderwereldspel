@@ -651,3 +651,17 @@ Backup van de stand ervoor: branch `backup/2026-11-01-avond` (terugzetten = die 
   verloren fiches grijs, en een balk "Geland op 17 · Rood · +€X". Bij de volgende fiche is de tafel weer leeg.
 - **Sessie per spel** (`casSesAdd`/`casSesHtml` in state.js) bij Blackjack, Three Card Poker, Texas Hold'em en Roulette: rondes,
   ingezet, terug, netto en je beste ronde, zolang je speelsessie in het casino loopt (de tijd van je casinokaart).
+- **Dobbelstenen**: 4% / 8% / 12% / 15% / 25% op je slotwinst, 15 minuten, daarna 8 uur (2 speldagen) rust.
+
+## Gouden Draak (nieuwe slot, november 2026)
+`js/draak.js` (engine `DRAAK`, pure functies) en `js/pages/draak.js` (spel), `css/draak.css`. Thema: een draak boven een
+restaurant op de Zeedijk, rood lakwerk en goud. 5 rollen × 3 rijen, 20 lijnen. Symbolen: gelukskoekje, eetstokjes, theepot,
+jade, waaier, lantaarn, gelukskat, draak; drakenparel = wild (rol 2–4); gong = scatter (rol 1, 3, 5); gouden munt.
+- **Free spins (3 gongs)**: 10 spins met de Reuzendraak: rol 2–4 zijn één groot symbool (telt als drie volle rollen). Gong op
+  rol 1 + reuzengong + gong op rol 5 = 3 spins extra (±1 op 80 bonussen).
+- **Muntenbonus (6+ munten)**: 9 vakjes, de beste munten blijven staan, 3 spins; elke nieuwe munt plakt en zet je terug op 3.
+  Munten 1× tot 50× je inzet, of Mini 10×, Minor 25×, Major 100×. Alle 9 vol = **Mega** = max win 5.000×.
+- **Bonus kopen**: free spins 57× of de Muntenbonus met 6 munten 40×.
+- Doorgerekend (3 mln. spins per lidmaatschap): RTP ±93% (VIP ±94,5%, High roller ±96%); free spins ±1 op 240, munten ±1 op
+  255, bord vol ±1 op 500 muntenbonussen; kopen ±96%. Telt als slot voor de casinokaart, cashback 0,5%, seeds, geluk, pauze
+  bij wegklikken, "bonus loopt nog" na verversen. Ook op de website (`/casino/gouden-draak`, `covers.js`, `landing.js`).
