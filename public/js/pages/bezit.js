@@ -142,12 +142,17 @@ function bzHomesHtml(){const ids=Object.keys(typeof ownedS==='function'?ownedS()
  const sum=ids.reduce((a,id)=>a+houseVal(id),0),paid=ids.reduce((a,id)=>a+ownedS()[id].b,0);
  return `<div class="bz-sec"><h2>Woningen</h2><span>${ids.length?ids.length+' in bezit · waarde '+fmt(sum)+' · '+(sum>=paid?'+':'−')+fmt(Math.abs(sum-paid)):'nog geen eigen woning'}</span></div>
  ${ids.length?`<div class="bz-homes">${ids.map(id=>{const L=houseOf(id),o=ownedS()[id],v=houseVal(id),d=Math.floor((now()-o.t)/DAY_MS),T=HOMES.find(t=>t.id===L.t),cur=S.home===id,max=Math.floor(o.b*L.cap);
-  return `<article class="bz-home ${cur?'cur':''}"><span class="bzh-th">${vhScene(T.id,{thumb:1,key:'b'+id,furn:cur?S.furn:{}})}</span>
-   <div class="bzh-b"><span class="label">${L.place}${cur?' · hier woon je':''}</span><b>${L.n}</b>
-    <div class="bzh-v"><div><small>Gekocht</small><em>${fmt(o.b)}</em></div><div><small>Waarde</small><em class="${v>=o.b?'up':'dn'}">${fmt(v)}</em></div><div><small>Verkoop (−5%)</small><em>${fmt(houseSell(id))}</em></div></div>
-    <div class="bzh-bar" title="Waarde tot het maximum (${fmt(max)})"><i style="width:${Math.min(100,(v-o.b)/Math.max(1,max-o.b)*100)}%"></i></div>
-    <small class="bzh-n">${d} speldag${d===1?'':'en'} in bezit · +${(L.g*100).toFixed(2).replace('.',',')}% per speldag, max ${fmt(max)}</small>
-    <div class="bzh-a"><button class="btn ghost sm" onclick="vb.view='markt';vb.sel='${id}';location.hash='verblijf'">Bekijken</button><button class="btn sm" onclick="bzSellHome('${id}')">Verkopen · ${fmt(houseSell(id))}</button></div></div></article>`}).join('')}</div>`
+  const gain=v-o.b,sell=houseSell(id),res=sell-o.b,pct=Math.min(100,Math.max(0,(v-o.b)/Math.max(1,max-o.b)*100));
+  return `<article class="bz-home ${cur?'cur':''}">
+   <div class="bzh-top"><span class="bzh-th">${vhScene(T.id,{thumb:1,key:'b'+id,furn:cur?S.furn:{}})}</span>
+    <div class="bzh-id"><span class="label">${L.place}</span><b>${L.n}</b>${cur?'<span class="bzh-cur">Hier woon je</span>':'<span class="bzh-cur off">Leeg</span>'}</div></div>
+   <dl class="bzh-v">
+    <div><dt>Gekocht voor</dt><dd>${fmt(o.b)}</dd></div>
+    <div><dt>Waarde nu</dt><dd class="${gain>=0?'up':'dn'}">${fmt(v)}<small>${gain>=0?'+':'−'}${fmt(Math.abs(gain))}</small></dd></div>
+    <div class="sell"><dt>Je krijgt bij verkoop <span>(−5% makelaar)</span></dt><dd>${fmt(sell)}<small class="${res>=0?'up':'dn'}">${res>=0?'winst':'verlies'} ${fmt(Math.abs(res))}</small></dd></div>
+   </dl>
+   <div class="bzh-grow"><div><span>Waardegroei</span><em>${d} speldag${d===1?'':'en'} · +${(L.g*100).toFixed(2).replace('.',',')}% per speldag · max ${fmt(max)}</em></div><div class="bzh-bar"><i style="width:${pct}%"></i></div></div>
+   <div class="bzh-a"><button class="btn ghost sm" onclick="vb.view='markt';vb.sel='${id}';location.hash='verblijf'">Bekijken</button><button class="btn sm" onclick="bzSellHome('${id}')">Verkopen · ${fmt(sell)}</button></div></article>`}).join('')}</div>`
  :`<div class="bz-empty card"><b>Je hebt nog geen eigen woning.</b><span>Een gekochte woning wordt meer waard naarmate je hem langer hebt: een goede woning sneller dan een kraakpand. Kijk op de <a href="#verblijf" onclick="vb.view='markt'">huizenmarkt</a>.</span></div>`}`}
 function bzSellHome(id){const L=houseOf(id);if(bz._sellAsk!==id){bz._sellAsk=id;toast('Nog een keer klikken om '+L.n+' te verkopen voor '+fmt(houseSell(id)),'info');setTimeout(()=>{if(bz._sellAsk===id)bz._sellAsk=null},4000);return}bz._sellAsk=null;act.sellHouse(id)}
 // Zaken kopen: per categorie doorklikken. Bovenaan de categorieën als knoppen, daaronder de zaken van die categorie.

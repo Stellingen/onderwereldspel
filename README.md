@@ -628,3 +628,12 @@ Backup van de stand ervoor: branch `backup/2026-11-01-avond` (terugzetten = die 
   knoppen. Zo zie je het hele bord en de knop tegelijk (getest op 440 × 956, iPhone 17 Pro Max, en 320 px).
 - **Kluiskraker** kreeg een eigen kluisthema (staal met klinknagels, een kluisknop als logo die meedraait bij elke spin,
   kluisjes als vakken); **Visdief** een doorgetrokken haventhema (sterren, water met golven, touwrand).
+- **Rangcodes** voor de nieuwe rangen (Sjacheraar, Inbreker, Ritselaar, Handhaver, Luitenant, Kapitein, Rechterhand, Schaduwbaas)
+  werken nu ook op de server (`RANK_CODES` in server.js, XP volgt de 20 rangen).
+- **Gelukspullen** (Outfit): brede banner met de dobbelsteen en de nieuwe **geldklem** (Koper +10%, Zilver +15%, Goud +20%,
+  Platina +25%, Diamant +35% alleen HR): 2 uur meer inkomen van al je bedrijven (`klemPct` in `bizMult`). Dobbelsteen nu 15 min.
+  Beide daarna een werkdag (8 uur) rust. "Geldklem klaar" staat in Klaar voor je.
+- **Bezit → Woningen**: per woning een lijstje met gekocht voor, waarde nu (+/−) en wat je bij verkoop krijgt (winst/verlies).
+- **Families**: als lid eerst je eigen familie (met knoppen voor verhaal, overstappen en verlaten), dan de missies en de grote klus,
+  dan de stad en de bendeoorlog, en onderaan een duidelijk blok om over te stappen (wie laat je toe) of de familie te verlaten,
+  met de andere families en een filter. Zonder familie staan de families vóór de stad.

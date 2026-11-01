@@ -367,3 +367,25 @@
 .bzh-n{font-size:11.5px;color:var(--mute)}
 .bzh-a{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
 @media (max-width:520px){.bz-home{grid-template-columns:minmax(0,1fr)}.bzh-th{aspect-ratio:16/8}}
+/* Bezit → Woningen: per woning een duidelijk lijstje (gekocht, waarde nu, wat je bij verkoop krijgt) */
+.bz-homes{grid-template-columns:repeat(auto-fill,minmax(min(380px,100%),1fr));gap:12px}
+.bz-home{display:flex;flex-direction:column;gap:10px;padding:12px}
+.bzh-top{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;align-items:center}
+.bzh-id{display:flex;flex-direction:column;gap:3px;min-width:0}.bzh-id .label{margin:0}
+.bzh-id b{font-family:var(--f-head);font-weight:800;font-size:20px;line-height:1.05;text-transform:uppercase}
+.bzh-cur{align-self:flex-start;font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;color:#06140d;background:var(--green)}
+.bzh-cur.off{color:var(--mute);background:none;box-shadow:inset 0 0 0 1px var(--line2)}
+.bzh-v{display:flex;flex-direction:column;margin:0;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.2);overflow:hidden}
+.bzh-v>div{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 12px;border-top:1px solid var(--line)}
+.bzh-v>div:first-child{border-top:0}
+.bzh-v dt{font-size:12.5px;color:var(--mute);min-width:0}.bzh-v dt span{color:var(--faint);font-size:11px}
+.bzh-v dd{margin:0;display:flex;flex-direction:column;align-items:flex-end;gap:1px;font-family:var(--f-mono);font-size:14px;font-weight:700;white-space:nowrap;text-align:right}
+.bzh-v dd small{font-size:10.5px;font-weight:400;color:var(--faint)}
+.bzh-v dd.up{color:var(--green)}.bzh-v dd.dn{color:var(--red)}
+.bzh-v small.up{color:var(--green)}.bzh-v small.dn{color:#ff8a96}
+.bzh-v .sell{background:rgba(255,255,255,.025)}
+.bzh-grow{display:flex;flex-direction:column;gap:5px}
+.bzh-grow>div:first-child{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:11.5px}
+.bzh-grow span{color:var(--mute)}.bzh-grow em{font-style:normal;font-family:var(--f-mono);font-size:10.5px;color:var(--faint)}
+.bzh-a{margin-top:0}.bzh-a .btn{flex:1 1 auto;width:auto}
+@media (max-width:520px){.bzh-top{grid-template-columns:96px minmax(0,1fr)}.bzh-th{aspect-ratio:4/3}}

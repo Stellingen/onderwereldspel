@@ -128,10 +128,10 @@ V.fam=()=>{const ri=rankIdx(S.xp),f=famBase();famDaily();
    <p>Met de juiste rang en genoeg straatcredit word je toegelaten. De vier zwaarste families nemen alleen Huurmoordenaars en hoger aan die al een aantal huurmoorden op hun naam hebben. Iedereen begint onderaan als Aspirant en klimt met eer op tot Erelid: als Aspirant krijg je de helft van de familiebonus en het eigen voordeel, elk level +10%, als Erelid alles (de getallen hieronder). Daarboven kun je Onderbaas worden en uiteindelijk de familie overnemen.</p></div>
    <div class="fm-intro-k"><div><span class="label">Jouw straatcredit</span><b>${S.cred}</b></div><div><span class="label">Jouw rang</span><b data-fit="12">${RANKS[ri][0]}</b></div></div>
    <ol class="fm-steps"><li><i>${svg('rank')}</i><b>Rang en credit</b><span>genoeg om toegelaten te worden</span></li><li><i>${svg('profiel')}</i><b>Gesprek</b><span>3 vragen over de familie</span></li><li><i>${svg('crimes')}</i><b>Missies</b><span>elke speldag, voor eer en geld</span></li><li><i>${svg('fam')}</i><b>Klimmen</b><span>van Aspirant tot Onderbaas</span></li></ol></section>
-  ${fwCityHtml()}
   <div class="tierhead"><h2>Alle families</h2><span>Klik op een naam voor het verhaal en de rangen</span></div>
   ${famFilterHtml()}
-  <div class="fm-grid">${famFiltered().map(x=>famCard(x,pos[x.id])).join('')}</div>`;
+  <div class="fm-grid">${famFiltered().map(x=>famCard(x,pos[x.id])).join('')}</div>
+  <div style="margin-top:26px">${fwCityHtml()}</div>`;
  const T=famTier(),fr=famRankIdx(),eer=famEer(),nx=FAM_RANKS[fr+1],need=nx?famNeed(fr+1):null,cur=famNeed(fr),sc=famScale(),F=fam();
  const done=S.fm.list.filter(m=>m.done).length,B=FM_BONUS(T),H=famHeist(),req=famHeistReq(),can=req.every(r=>r.ok)&&!inJail()&&!cdLeft('fam_heist'),hm=S.fm.list.find(m=>m.k==='heist'),[l0,l1]=famHeistLoot();
  const mcard=m=>{const D=FM_DEF[m.k],pct=Math.min(100,m.p/m.n*100),val=v=>D.money?fmt(v):Math.floor(v);
@@ -152,9 +152,9 @@ V.fam=()=>{const ri=rankIdx(S.xp),f=famBase();famDaily();
   ${famLeadHtml(f,T)}
   <div class="fm-h-fx"><div><span class="label">Slaagkans</span><b>+${F.chance}%</b></div><div><span class="label">Buit</span><b>+${F.loot}%</b></div><div><span class="label">Straf</span><b>−${F.jail}%</b></div>
    <div class="fm-h-perk"><span class="label">${f.perk.n} · nu ${Math.round(sc*100)}%</span><b>${famPerkTxt(f,sc)}</b></div></div>
+  <div class="fm-h-act"><button class="btn ghost sm" onclick="famOpen('${f.id}')">Verhaal en rangen</button><button class="btn ghost sm" onclick="famGo('fmOthers')">Andere families · overstappen</button><button class="btn ghost sm fm-leave-b" onclick="famUI.confirm='leave';render();setTimeout(()=>famGo('fmSwitch'),30)">Familie verlaten</button></div>
  </section>
- <nav class="fm-quick" aria-label="Naar">${[['fmDay','Missies',done+'/5'],['fmHeist','Grote klus',hm.done?'gedaan':cdLeft('fam_heist')?'wacht':'klaar'],['fmCity','De stad','#'+pos[f.id]],['fmOthers','Andere families',FAMILIES.length-1]].map(([id,t,v])=>`<button onclick="document.getElementById('${id}').scrollIntoView({behavior:'smooth',block:'start'})"><b>${t}</b><em>${v}</em></button>`).join('')}</nav>
- <div id="fmCity">${fwCityHtml()}</div>
+ <nav class="fm-quick" aria-label="Naar">${[['fmDay','Missies',done+'/5'],['fmHeist','Grote klus',hm.done?'gedaan':cdLeft('fam_heist')?'wacht':'klaar'],['fmCity','De stad · oorlog','#'+pos[f.id]],['fmOthers','Andere families',FAMILIES.length-1]].map(([id,t,v])=>`<button onclick="famGo('${id}')"><b>${t}</b><em>${v}</em></button>`).join('')}</nav>
  <section class="fm-day" id="fmDay">
   <div class="fm-day-h"><div><h2>Missies van vandaag</h2><p>Haal er minimaal 3, anders verlies je 10% van je eer. Hoe hoger je in de familie staat, hoe meer elke missie betaalt. Alle 5: <b>+${B.eer} eer</b> en <b>+${B.cred} straatcredit</b>.${S.fm.grace?' Vandaag telt nog niet mee: je bent net binnen.':''}</p></div>
    <div class="fm-day-k"><div class="fm-dots">${S.fm.list.map((m,i)=>`<i class="${m.done?'on':''} ${i===2?'min':''}"></i>`).join('')}</div><b>${done}/5</b><span>nieuwe missies over ${bkDur(fmLeft())}</span></div></div>
@@ -167,14 +167,25 @@ V.fam=()=>{const ri=rankIdx(S.xp),f=famBase();famDaily();
   </div>
   <div class="fm-how"><span class="label">Zo verdien je eer</span><div><span>Geslaagde klus</span><b>+ je straatcredit</b></div><div><span>Auto gestolen</span><b>+1</b></div><div><span>Auto afleveren (Auto's → garage)</span><b>+2 tot +50</b></div><div><span>Missie</span><b>+${S.fm.list[0].eer} tot +${hm.eer}</b></div><div><span>Oorlogsslag gewonnen</span><b>+${Math.round(18*(1+T*.5))}</b></div></div>
  </section>
- <div class="fm-foot" id="fmOthers"><div class="tierhead"><h2>Andere families</h2><span>Overstappen kan, maar je begint dan weer onderaan</span></div>
-  ${famUI.confirm==='leave'?`<div class="fm-cf"><span>Weet je het zeker? Je verliest al je eer bij ${f.n}${famLead()?` en je plek als ${FAM_RANKS[fr][0]}`:''}.</span><button class="btn sm red" onclick="act.leave()">Ja, verlaten</button><button class="btn sm ghost" onclick="famUI.confirm=null;render()">Toch niet</button></div>`:`<button class="bk-link" onclick="famUI.confirm='leave';render()">${f.n} verlaten</button>`}</div>
- <div class="fm-grid">${FAMILIES.filter(x=>x.id!==f.id).map(x=>famCard(x,pos[x.id])).join('')}</div>`};
+ <div id="fmCity">${fwCityHtml()}</div>
+ <section class="fm-switch" id="fmOthers">
+  <div class="tierhead"><h2>Andere families</h2><span>Overstappen of op jezelf verder</span></div>
+  <div class="fm-sw" id="fmSwitch">
+   <div class="fm-sw-c"><i>${svg('fam')}</i><div><b>Overstappen naar een andere familie</b><span>Kies hieronder een familie die je toelaat. Eerst volgt een gesprek met 3 vragen. Daar begin je onderaan als Aspirant; je eer bij ${f.n} ben je kwijt.</span></div>
+    <button class="btn sm" onclick="famUI.flt='ok';render();setTimeout(()=>famGo('fmList'),30)">Wie laat je toe · ${FAMILIES.filter(x=>x.id!==f.id&&ri>=x.r&&S.cred>=x.cred&&famHits()>=(x.hits||0)&&!feudBanLeft(x.id)).length}</button></div>
+   <div class="fm-sw-c leave"><i>${svg('profiel')}</i><div><b>${f.n} verlaten</b><span>Je gaat op jezelf verder, zonder familiebonus en missies. Je eer${famLead()?` en je plek als ${FAM_RANKS[fr][0]}`:''} ben je kwijt. Later kun je je weer ergens aansluiten.</span></div>
+    ${famUI.confirm==='leave'?`<div class="fm-sw-cf"><span>Zeker weten?</span><button class="btn sm red" onclick="act.leave()">Ja, verlaten</button><button class="btn sm ghost" onclick="famUI.confirm=null;render()">Toch niet</button></div>`:`<button class="btn sm ghost red-t" onclick="famUI.confirm='leave';render()">Verlaten</button>`}</div>
+  </div>
+  <div class="tierhead fm-lh" id="fmList"><h2>Kies een familie</h2><span>Klik op een naam voor het verhaal en de rangen</span></div>
+  ${famFilterHtml(f.id)}
+  <div class="fm-grid">${famFiltered(f.id).map(x=>famCard(x,pos[x.id])).join('')}${famFiltered(f.id).length?'':'<p class="fm-none">Geen families in deze lijst.</p>'}</div>
+ </section>`};
+const famGo=id=>{const e=document.getElementById(id);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})};
 
 // filter in de lijst met families
-function famFiltered(){const k=famUI.flt||'all',ri=rankIdx(S.xp),ok=x=>ri>=x.r&&S.cred>=x.cred&&famHits()>=(x.hits||0);return FAMILIES.filter(x=>k==='all'||(k==='ok'?ok(x):!ok(x)))}
-function famFilterHtml(){const ri=rankIdx(S.xp),ok=FAMILIES.filter(x=>ri>=x.r&&S.cred>=x.cred&&famHits()>=(x.hits||0)).length,k=famUI.flt||'all';
- return `<div class="fs-own fm-flt" role="group" aria-label="Laat zien">${[['all','Alle',FAMILIES.length],['ok','Kan je bij',ok],['no','Nog niet',FAMILIES.length-ok]].map(([id,n,c])=>`<button class="${k===id?'on':''}" onclick="famUI.flt='${id}';render()">${n} <small>${c}</small></button>`).join('')}</div>`}
+function famFiltered(ex){const k=famUI.flt||'all',ri=rankIdx(S.xp),ok=x=>ri>=x.r&&S.cred>=x.cred&&famHits()>=(x.hits||0)&&!feudBanLeft(x.id);return FAMILIES.filter(x=>x.id!==ex).filter(x=>k==='all'||(k==='ok'?ok(x):!ok(x)))}
+function famFilterHtml(ex){const ri=rankIdx(S.xp),L=FAMILIES.filter(x=>x.id!==ex),ok=L.filter(x=>ri>=x.r&&S.cred>=x.cred&&famHits()>=(x.hits||0)&&!feudBanLeft(x.id)).length,k=famUI.flt||'all';
+ return `<div class="fs-own fm-flt" role="group" aria-label="Laat zien">${[['all','Alle',L.length],['ok','Kan je bij',ok],['no','Nog niet',L.length-ok]].map(([id,n,c])=>`<button class="${k===id?'on':''}" onclick="famUI.flt='${id}';render()">${n} <small>${c}</small></button>`).join('')}</div>`}
 Object.assign(act,{
  join(id){const x=FAMILIES.find(k=>k.id===id);if(!x||inJail()||feudBanLeft(id)||rankIdx(S.xp)<x.r||S.cred<x.cred||famHits()<(x.hits||0)||S.family===id)return;const old=famBase();
   S.family=id;S.fr={id,eer:0,since:now()};fmNew(true);famUI.confirm=null;toast('Welkom bij '+x.n+'. Je begint als Aspirant.','lvl');log((old?old.n+' verlaten, ':'')+'aangesloten bij '+x.n,'ok');save();pushState();render()},

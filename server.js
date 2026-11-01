@@ -96,10 +96,13 @@ app.get('/api/me', auth, async (req, res) => {
 // Inwisselcodes: elke code één keer per account. Bedrag in euro (spelgeld).
 const CODES = { lotto: 1500, welkom: 500, casino: 5000, vip: 20000, spinnetje: 25000, jackpot: 1000000, trainwreck: 3000000, highroller: 50000 };
 // Rangcodes: de naam van een rang, alleen in te wisselen als je die rang hebt bereikt (xp uit game_state).
+// [XP nodig, beloning]; op volgorde van rang (rankOf loopt ze zo af). XP volgt de 20 rangen uit data.js.
 const RANK_CODES = {
-  straatschoffie: [150, 150], loopjongen: [500, 400], dief: [1200, 1000], boef: [2500, 2500],
-  gangster: [5000, 6000], soldaat: [9000, 12000], huurmoordenaar: [15000, 25000], capo: [25000, 50000],
-  onderbaas: [40000, 100000], consigliere: [65000, 200000], peetvader: [100000, 500000]
+  straatschoffie: [150, 150], loopjongen: [500, 400], sjacheraar: [900, 700], dief: [1500, 1000], inbreker: [2600, 1800],
+  boef: [4000, 2500], ritselaar: [6500, 4000], gangster: [10000, 6000], handhaver: [15000, 9000], soldaat: [22000, 12000],
+  luitenant: [32000, 18000], huurmoordenaar: [45000, 25000], kapitein: [62000, 36000], capo: [85000, 50000],
+  rechterhand: [115000, 75000], onderbaas: [155000, 100000], schaduwbaas: [210000, 150000], consigliere: [280000, 200000],
+  peetvader: [380000, 500000]
 };
 // m1 t/m m9 bestaan niet meer; ze verdwijnen daardoor ook uit 'gebruikte codes'. Spaties en streepjes tellen niet mee (High Roller = highroller).
 const ALIASES = { kapo: 'capo' };

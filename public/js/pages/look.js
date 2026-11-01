@@ -5,7 +5,9 @@
 // Visdief, daarna 5 uur rust. Andere casinospellen (roulette, blackjack, poker, mines, hoogvlieger, munt) houden de echte kansen.
 // Effecten (fitFx in state.js): kans = %-punten slaagkans, buit/inc/xp/bail/cd/flee/en/car/esc = fractie (.05 = 5%),
 // heat = minder hitte (negatief = opvallend, dus meer hitte).
-const FIT_SLOTS=[{id:'hoofd',n:'Hoofd'},{id:'kleding',n:'Kleding'},{id:'schoenen',n:'Schoenen'},{id:'nek',n:'Ketting'},{id:'pols',n:'Pols'},{id:'ring',n:'Ring'},{id:'geluk',n:'Geluk'}];
+const FIT_SLOTS=[{id:'hoofd',n:'Hoofd'},{id:'kleding',n:'Kleding'},{id:'schoenen',n:'Schoenen'},{id:'nek',n:'Ketting'},{id:'pols',n:'Pols'},{id:'ring',n:'Ring'},{id:'geluk',n:'Geluk'},{id:'zaken',n:'Geldklem'}];
+// gelukspullen: gebruik je, ze tellen niet mee voor een set en staan niet in de kledingkast
+const FIT_CHARM=['geluk','zaken'];const fitIsCharm=o=>!!o&&FIT_CHARM.includes(o.slot);
 const FIT_STYLE_SLOTS=6; // geluk telt niet mee voor een set
 const FIT_STYLES={
  stil:{n:'Grijze muis',d:'Onopvallend. Niemand die je herkent.',col:'#a9b3c1',set3:{kans:2,heat:.06},set5:{kans:4,heat:.12}},
@@ -130,8 +132,18 @@ const OUTFITS=[
  {id:'dob2',slot:'geluk',st:'geluk',n:'Houten dobbelsteen',d:'Met de hand gesneden door een oude man in de Jordaan.',p:20000,r:2,luck:.05,dc:['#a8743f','#86582d','#6b4523']},
  {id:'dob5',slot:'geluk',st:'geluk',n:'Benen dobbelsteen',d:'Uit een speelhol in Marseille. Hij heeft vaker gewonnen dan verloren.',p:150000,r:4,luck:.08,dc:['#e8dcc2','#c9bb9b','#ab9e80']},
  {id:'dob8',slot:'geluk',st:'geluk',n:'Zilveren dobbelsteen',d:'Massief zilver, gewogen tot op de milligram.',p:750000,r:6,luck:.11,dc:['#dfe3e8','#b4bac3','#8f969f']},
- {id:'dob15',slot:'geluk',st:'geluk',n:'Gouden dobbelsteen',d:'Alleen voor High rollers. Het casino ziet hem liever niet.',p:5000000,r:0,hr:1,luck:.18,dc:['#f2c230','#d9a520','#b8890f']}];
-const LUCK_MIN=10,LUCK_CD=5*60; // minuten actief, minuten rust
+ {id:'dob15',slot:'geluk',st:'geluk',n:'Gouden dobbelsteen',d:'Alleen voor High rollers. Het casino ziet hem liever niet.',p:5000000,r:0,hr:1,luck:.18,dc:['#f2c230','#d9a520','#b8890f']},
+ // geldklem: gebruik je, dan verdienen je bedrijven een tijdje meer (passief inkomen). Daarna een werkdag rust.
+ {id:'klem1',slot:'zaken',st:'zaken',n:'Koperen geldklem',d:'Van een marktkoopman die zweert dat hij er zijn eerste ton mee bij elkaar hield.',p:15000,r:1,inc:.10,dc:['#e0915a','#b8693a','#8a4a25']},
+ {id:'klem2',slot:'zaken',st:'zaken',n:'Zilveren geldklem',d:'Gegraveerd met initialen die niet van jou zijn. De vorige eigenaar mist hem niet meer.',p:250000,r:4,inc:.15,dc:['#e6eaef','#b4bac3','#858c96']},
+ {id:'klem3',slot:'zaken',st:'zaken',n:'Gouden geldklem',d:'Achttien karaat. Wie hem ziet, weet dat je zaken goed lopen.',p:2500000,r:7,inc:.20,dc:['#ffd75e','#e0a920','#a87a0c']},
+ {id:'klem4',slot:'zaken',st:'zaken',n:'Platina geldklem',d:'Gemaakt door een juwelier in Antwerpen die alleen op aanbeveling werkt.',p:15000000,r:10,inc:.25,dc:['#e8f4ff','#a9c4d9','#6f8aa0']},
+ {id:'klem5',slot:'zaken',st:'zaken',n:'Diamanten geldklem',d:'Alleen voor High rollers. Elke diamant is een gunst die iemand je nog schuldig is.',p:40000000,r:0,hr:1,inc:.35,dc:['#c9f1ff','#7fd6f5','#3aa7d6']}];
+const LUCK_MIN=15,LUCK_CD=8*60; // minuten actief, minuten rust (een werkdag)
+const KLEM_MIN=120,KLEM_CD=8*60; // geldklem: 2 uur meer inkomen, daarna rust tot een werkdag na gebruik
+const klemPct=()=>S.klem&&S.klem.until>now()?(+S.klem.pct||0):0;
+const klemLeft=()=>S.klem?Math.max(0,S.klem.until-now()):0;
+const klemWait=()=>S.klem?Math.max(0,S.klem.ready-now()):0;
 const luckPct=()=>S.luck&&S.luck.until>now()?(+S.luck.pct||0):0;
 const luckLeft=()=>S.luck?Math.max(0,S.luck.until-now()):0;
 const luckWait=()=>S.luck?Math.max(0,S.luck.ready-now()):0;
@@ -281,8 +293,17 @@ function diceSvg(o,big){const [t,l,r]=o.dc||['#ddd','#bbb','#999'],pip=o.id==='d
   ${o.id==='dob1'?'<path d="M14 23 L22 30 L19 36 L26 44" stroke="#2c2f35" stroke-width="1.6" fill="none"/><path d="M54 20 L50 18 L49 24Z" fill="#2c3139"/>':''}
   ${o.id==='dob2'?'<path d="M12 27 Q22 30 30 40M12 34 Q20 38 30 48M36 36 Q44 32 52 26" stroke="#6b4523" stroke-width="1" fill="none" opacity=".7"/>':''}
   ${o.luck>=.08?`<path d="M50 9 l1.5 3.5 3.5 1.5 -3.5 1.5 -1.5 3.5 -1.5 -3.5 -3.5 -1.5 3.5 -1.5z" fill="#fff" class="fit-spark3"/>`:''}</svg>`}
-const fitThumb=o=>o.slot==='geluk'?diceSvg(o):dollSvg({[o.slot]:o.id},{vb:FIT_VB[o.slot],label:o.n});
+const fitThumb=o=>o.slot==='geluk'?diceSvg(o):o.slot==='zaken'?klemSvg(o):dollSvg({[o.slot]:o.id},{vb:FIT_VB[o.slot],label:o.n});
 
+// geldklem: een stapeltje briefjes met een metalen klem erom, schuin in beeld
+function klemSvg(o,big){const [a,b,c]=o.dc||['#ddd','#bbb','#999'],dia=o.id==='klem5';
+ return `<svg class="klem${big?' big':''}" viewBox="0 0 64 64" role="img" aria-label="${esc(o.n)}"><ellipse cx="32" cy="56" rx="22" ry="4" fill="rgba(0,0,0,.4)"/>
+  <g transform="rotate(-14 32 34)"><rect x="9" y="24" width="46" height="24" rx="2.5" fill="#2f6b45"/><rect x="10" y="21" width="46" height="24" rx="2.5" fill="#3d8a59"/><rect x="11" y="18" width="46" height="24" rx="2.5" fill="#56b07a"/>
+  <rect x="14" y="21" width="40" height="18" rx="1.5" fill="none" stroke="#2f6b45" stroke-width="1"/><circle cx="34" cy="30" r="5" fill="none" stroke="#2f6b45" stroke-width="1.2"/><text x="34" y="33" text-anchor="middle" font-size="7" font-weight="800" fill="#2f6b45" font-family="sans-serif">€</text>
+  <path d="M22 15 h20 a4 4 0 0 1 4 4 v30 a4 4 0 0 1 -4 4 h-20z" fill="${b}"/><path d="M22 15 h20 a4 4 0 0 1 4 4 v6 h-24z" fill="${a}"/><rect x="22" y="15" width="3" height="38" fill="${c}"/>
+  <path d="M28 20 h12" stroke="rgba(255,255,255,.55)" stroke-width="1.4" stroke-linecap="round"/>
+  ${dia?'<g fill="#fff"><path d="M34 34l3 3-3 3-3-3z"/><path d="M34 43l2 2-2 2-2-2z" opacity=".8"/></g>':''}</g>
+  ${o.inc>=.2?`<path d="M52 8 l1.5 3.5 3.5 1.5 -3.5 1.5 -1.5 3.5 -1.5 -3.5 -3.5 -1.5 3.5 -1.5z" fill="#fff" class="fit-spark3"/>`:''}</svg>`}
 // ---------- Winkelstraten ----------
 // Drie straten op klasse (rang): laag tot en met Dief, midden Boef tot Huurmoordenaar, hoog vanaf Capo.
 // Iets van boven je rang mag je al kopen, maar dan betaal je toeslag: +40% en +25% per rang die je nog mist.
@@ -291,14 +312,14 @@ const FIT_STREETS=[
  {id:'midden',n:'Kalverstraat',sub:'Middenklasse · Boef tot Huurmoordenaar',d:'Ketens, sneakerwinkels en een juwelier die geen vragen stelt.',r:[4,7],col:'#ffad6b',ic:'look'},
  {id:'hoog',n:'P.C. Hooftstraat',sub:'Hoge klasse · Capo tot Peetvader',d:'Portiers, champagne bij het passen en prijzen die niet op het kaartje staan.',r:[8,11],col:'#f2c230',ic:'look'}];
 rkRemap(OUTFITS,1);FIT_STREETS.forEach(x=>{if(!x._rk){x._rk=1;x.r=[RK[x.r[0]],RK[x.r[1]]]}});
-const fitStreet=o=>o.slot==='geluk'?'geluk':o.r<=RK[3]?'laag':o.r<=RK[7]?'midden':'hoog';
+const fitStreet=o=>fitIsCharm(o)?'geluk':o.r<=RK[3]?'laag':o.r<=RK[7]?'midden':'hoog';
 const fitPrice=o=>{const ri=rankIdx(S.xp);return ri>=o.r?o.p:Math.round(o.p*(1.4+.25*(rkPow(o.r)-rkPow(ri)))/100)*100};
 const fitExtra=o=>{const ri=rankIdx(S.xp);return ri>=o.r?0:Math.round((.4+.25*(rkPow(o.r)-rkPow(ri)))*100)};
 const fitUI={tab:'kleding',prev:null,street:null};
 function fitPreview(id){fitUI.prev=id;const el=document.getElementById('fitDoll');if(!el)return;const w=Object.assign({},fitS().wear);if(id){const o=fitItem(id);if(o)w[o.slot]=o.id}
  el.innerHTML=dollSvg(w);el.classList.toggle('try',!!id)}
 // wat verandert er als je dit stuk aantrekt (tegenover wat je nu draagt), inclusief setbonussen
-function fitDiff(o){if(!o||o.slot==='geluk')return {};const w=Object.assign({},fitS().wear,{[o.slot]:o.id}),L=FIT_SLOTS.map(sl=>fitItem(w[sl.id])).filter(x=>x&&FIT_STYLES[x.st]);
+function fitDiff(o){if(!o||fitIsCharm(o))return {};const w=Object.assign({},fitS().wear,{[o.slot]:o.id}),L=FIT_SLOTS.map(sl=>fitItem(w[sl.id])).filter(x=>x&&FIT_STYLES[x.st]);
  const a=fitTotals(),b=fitTotals(L),d={};new Set([...Object.keys(a),...Object.keys(b)]).forEach(k=>{const v=+((b[k]||0)-(a[k]||0)).toFixed(4);if(Math.abs(v)>1e-6)d[k]=v});return d}
 const fitDiffHtml=o=>{const F=fitS();if(F.wear[o.slot]===o.id)return '';const d=fitChips(fitDiff(o));return `<div class="fit-diff"><span>Als je hem aantrekt</span>${d||'<em>niets anders</em>'}</div>`};
 // setbanner: welke set je draagt, hoe ver je bent en wat de volle set geeft
@@ -309,10 +330,10 @@ function fitSetHud(){const c=fitSets(),best=Object.entries(c).sort((a,b)=>b[1]-a
   <i class="fit-pips">${Array.from({length:FIT_STYLE_SLOTS},(_,i)=>`<i class="${i<n?'f':''} ${i===2||i===4?'m':''}"></i>`).join('')}</i>
   <div class="fh-fx">${n>=3?fitChips(n>=5?st.set5:st.set3):''}${n<5?`<small>${n>=3?'Bij 5: ':'Bij 3: '}${fitFxStrs(n>=3?st.set5:st.set3).map(x=>x.t).join(', ')}</small>`:''}</div></div>`}
 // Kledingkast: je personage in het midden met de plekken eromheen; kies een plek en wissel tussen wat je hebt
-function fitWardrobe(){const F=fitS(),sl=fitUI.wslot||'kleding',own=OUTFITS.filter(o=>F.own[o.id]&&o.slot!=='geluk'),mine=own.filter(o=>o.slot===sl).sort((a,b)=>a.r-b.r||a.p-b.p),t=fitTotals();
+function fitWardrobe(){const F=fitS(),sl=fitUI.wslot||'kleding',own=OUTFITS.filter(o=>F.own[o.id]&&!fitIsCharm(o)),mine=own.filter(o=>o.slot===sl).sort((a,b)=>a.r-b.r||a.p-b.p),t=fitTotals();
  const slotBtn=x=>{const o=fitItem(F.wear[x.id]),n=own.filter(i=>i.slot===x.id).length,stc=o&&FIT_STYLES[o.st]?FIT_STYLES[o.st].col:'var(--line2)';
   return `<button class="wd-slot ${sl===x.id?'on':''} ${o?'has':''}" style="--sc:${stc}" onclick="fitUI.wslot='${x.id}';render()"><span class="wd-sth">${o?fitThumb(o):''}</span><span class="wd-stt"><small>${x.n}</small><b>${o?o.n:'Niets'}</b><em>${n} in kast</em></span></button>`};
- const S6=FIT_SLOTS.filter(x=>x.id!=='geluk');
+ const S6=FIT_SLOTS.filter(x=>!FIT_CHARM.includes(x.id));
  return `<div class="vb-bar"><button class="vb-back" onclick="fitUI.street=null;render()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Outfit</span></button><h2>Kledingkast</h2><span class="wd-cnt">${own.length} kledingstukken in bezit</span></div>
  <div class="wd">
   <section class="wd-left card">
@@ -336,34 +357,34 @@ function fitSumHtml(){const t=fitTotals(),c=fitSets(),chips=fitChips(t);
 V.look=()=>{const ri=rankIdx(S.xp),F=fitS(),tab=fitUI.tab,worn=F.wear[tab];
  const st=fitUI.street,STR=FIT_STREETS.find(x=>x.id===st);
  if(st==='kast')return `<h1>Outfit</h1>${fitWardrobe()}`;
- const pool=st==='kast'?OUTFITS.filter(o=>F.own[o.id]&&o.slot!=='geluk'):st==='geluk'?OUTFITS.filter(o=>o.slot==='geluk'):STR?OUTFITS.filter(o=>fitStreet(o)===st):[];
- const slots=st==='geluk'?FIT_SLOTS.filter(x=>x.id==='geluk'):FIT_SLOTS.filter(x=>x.id!=='geluk'&&pool.some(o=>o.slot===x.id));
+ const pool=st==='kast'?OUTFITS.filter(o=>F.own[o.id]&&!fitIsCharm(o)):st==='geluk'?OUTFITS.filter(fitIsCharm):STR?OUTFITS.filter(o=>fitStreet(o)===st):[];
+ const slots=st==='geluk'?FIT_SLOTS.filter(x=>FIT_CHARM.includes(x.id)):FIT_SLOTS.filter(x=>!FIT_CHARM.includes(x.id)&&pool.some(o=>o.slot===x.id));
  const tb=slots.find(x=>x.id===tab)?tab:(slots[0]||{}).id;
  const fl=fitUI.own||'all',items=pool.filter(o=>o.slot===tb&&(fl==='all'||(fl==='own'?F.own[o.id]:!F.own[o.id]))).sort((a,b)=>a.r-b.r||a.p-b.p);
- const card=o=>{const own=!!F.own[o.id],on=F.wear[o.slot]===o.id,hrLock=o.hr&&tier()<2,lock=ri<o.r&&!hrLock,poor=S.cash<fitPrice(o),s=FIT_STYLES[o.st]||{n:'Geluk +'+Math.round((o.luck||0)*100)+'%',col:'#f2c230'};
-  const fxH=o.luck?`<span class="g">+${Math.round(o.luck*100)}% op je winst in de slots</span><span class="g">${LUCK_MIN} min actief</span><span>${LUCK_CD/60} uur rust</span>`:fitChips(o.fx);
-  const btn=on?`<button class="btn ghost" onclick="act.fitOff('${o.slot}')">${o.luck?'Wegleggen':'Uittrekken'}</button>`:own?`<button class="btn act-btn" onclick="act.fitWear('${o.id}')">${o.luck?'Meenemen':'Aantrekken'}</button>`
+ const card=o=>{const own=!!F.own[o.id],on=F.wear[o.slot]===o.id,hrLock=o.hr&&tier()<2,lock=ri<o.r&&!hrLock,poor=S.cash<fitPrice(o),s=FIT_STYLES[o.st]||(o.inc?{n:'Inkomen +'+Math.round(o.inc*100)+'%',col:'#5fe08f'}:{n:'Geluk +'+Math.round((o.luck||0)*100)+'%',col:'#f2c230'}),use=fitIsCharm(o);
+  const fxH=o.luck?`<span class="g">+${Math.round(o.luck*100)}% op je winst in de slots</span><span class="g">${LUCK_MIN} min actief</span><span>${LUCK_CD/60} uur rust</span>`:o.inc?`<span class="g">+${Math.round(o.inc*100)}% inkomen van je bedrijven</span><span class="g">${KLEM_MIN/60} uur actief</span><span>${KLEM_CD/60} uur rust</span>`:fitChips(o.fx);
+  const btn=on?`<button class="btn ghost" onclick="act.fitOff('${o.slot}')">${use?'Wegleggen':'Uittrekken'}</button>`:own?`<button class="btn act-btn" onclick="act.fitWear('${o.id}')">${use?'Meenemen':'Aantrekken'}</button>`
    :hrLock?`<button class="btn ghost" disabled>Alleen High roller</button>`:`<button class="btn ${poor?'ghost':'act-btn'}" onclick="act.fitBuy('${o.id}')" ${poor?'disabled':''}>${poor?'Te duur · ':'Koop · '}${fmt(fitPrice(o))}</button>${lock?`<small class="fit-x">Vanaf ${RANKS[o.r][0]} ${fmt(o.p)} · nu +${fitExtra(o)}%</small>`:''}`;
   return `<article class="fit-item ${on?'on':own?'own':lock||hrLock?'lock':''}" style="--sc:${s.col}" onmouseenter="fitPreview('${o.id}')" onmouseleave="fitPreview(null)" onfocusin="fitPreview('${o.id}')" onfocusout="fitPreview(null)">
    <div class="fit-th">${fitThumb(o)}</div>
-   <div class="fit-b"><div class="fit-t"><h4>${o.n}</h4><span class="fit-st">${s.n}</span></div><p>${o.d}</p><div class="fit-chips">${fxH}</div>${o.luck||on?'':fitDiffHtml(o)}</div>
-   <div class="fit-btn">${on?`<span class="fit-on">${o.luck?'Op zak':'Draag je'}</span>`:own?'<span class="fit-own">In je kast</span>':''}${btn}</div></article>`};
+   <div class="fit-b"><div class="fit-t"><h4>${o.n}</h4><span class="fit-st">${s.n}</span></div><p>${o.d}</p><div class="fit-chips">${fxH}</div>${use||on?'':fitDiffHtml(o)}</div>
+   <div class="fit-btn">${on?`<span class="fit-on">${use?'Op zak':'Draag je'}</span>`:own?'<span class="fit-own">In je kast</span>':''}${btn}</div></article>`};
  const luckPanel=tab==='geluk'?luckPanelHtml():'';
  return `<h1>Outfit</h1><p class="sub">Wat je draagt bepaalt hoe de straat naar je kijkt. Elk stuk geeft een voordeel, en drie of meer stukken in dezelfde stijl geven een setbonus. Vaak kies je tussen stukken van dezelfde prijs met een ander voordeel. Wat je koopt blijft in je kast; omkleden is gratis.</p>
  <div class="fit">
   <section class="card fit-left"><div class="fit-stage" id="fitDoll">${dollSvg(F.wear)}</div>
-   <div class="fit-worn">${FIT_SLOTS.map(sl=>{const o=fitItem(F.wear[sl.id]);return `<button class="${tab===sl.id?'on':''}" onclick="fitUI.tab='${sl.id}';if(!fitUI.street||'${sl.id}'==='geluk'||fitUI.street==='geluk')fitUI.street='${sl.id}'==='geluk'?'geluk':'kast';render()"><span class="label">${sl.n}</span><b>${o?o.n:'Niets'}</b></button>`}).join('')}</div>
+   <div class="fit-worn">${FIT_SLOTS.map(sl=>{const o=fitItem(F.wear[sl.id]);return `<button class="${tab===sl.id?'on':''}" onclick="fitUI.tab='${sl.id}';fitUI.street=${FIT_CHARM.includes(sl.id)}?'geluk':(fitUI.street&&fitUI.street!=='geluk'?fitUI.street:'kast');render()"><span class="label">${sl.n}</span><b>${o?o.n:'Niets'}</b></button>`}).join('')}</div>
    ${fitSetHud()}${fitSumHtml()}</section>
-  <section class="fit-right">${st?`<div class="vb-bar"><button class="vb-back" onclick="fitUI.street=null;render()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Winkelstraten</span></button><h2>${STR?STR.n:st==='kast'?'Je kast':'Geluk'}</h2></div>
-   ${STR?`<div class="fs-head" style="--c:${STR.col}"><div><span class="label">${STR.sub}</span><p>${STR.d}</p></div><button class="btn ghost sm" onclick="fitUI.street='kast';render()">Kledingkast · ${OUTFITS.filter(o=>F.own[o.id]&&o.slot!=='geluk').length}</button></div>
+  <section class="fit-right">${st?`<div class="vb-bar"><button class="vb-back" onclick="fitUI.street=null;render()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Winkelstraten</span></button><h2>${STR?STR.n:st==='kast'?'Je kast':'Gelukspullen'}</h2></div>
+   ${STR?`<div class="fs-head" style="--c:${STR.col}"><div><span class="label">${STR.sub}</span><p>${STR.d}</p></div><button class="btn ghost sm" onclick="fitUI.street='kast';render()">Kledingkast · ${OUTFITS.filter(o=>F.own[o.id]&&!fitIsCharm(o)).length}</button></div>
    <div class="fs-own" role="group" aria-label="Laat zien">${[['all','Alles'],['buy','Te koop'],['own','In bezit']].map(([k,n])=>`<button class="${fl===k?'on':''}" onclick="fitUI.own='${k}';render()">${n} <small>${pool.filter(o=>o.slot===tb&&(k==='all'||(k==='own'?F.own[o.id]:!F.own[o.id]))).length}</small></button>`).join('')}</div>`:''}
    <div class="fit-tabs2" role="tablist">${slots.map(sl=>`<button role="tab" class="${tb===sl.id?'on':''}" aria-selected="${tb===sl.id}" onclick="fitUI.tab='${sl.id}';render()">${sl.n}${F.wear[sl.id]?'<i></i>':''}</button>`).join('')}</div>
-   ${st==='geluk'?luckPanelHtml():''}<p class="fit-hint"><span class="hv">Ga met je muis over een stuk om het te passen.</span></p>
+   ${st==='geluk'?(tb==='zaken'?klemPanelHtml():luckPanelHtml()):''}<p class="fit-hint"><span class="hv">Ga met je muis over een stuk om het te passen.</span></p>
    ${items.length?`<div class="fit-grid">${items.map(card).join('')}</div>`:'<p class="fit-hint">Nog niets in je kast.</p>'}`
    :fitLobbyHtml()}</section>
  </div>`};
 // De winkelstraten als banners, plus geluk en je kast
-function fitLobbyHtml(){const ri=rankIdx(S.xp),F=fitS(),own=OUTFITS.filter(o=>F.own[o.id]&&o.slot!=='geluk').length;
+function fitLobbyHtml(){const ri=rankIdx(S.xp),F=fitS(),own=OUTFITS.filter(o=>F.own[o.id]&&!fitIsCharm(o)).length;
  const art=(col,u,kind)=>typeof bzArt==='function'?bzArt({id:'fs_'+u,col,icp:ICONS.look,kind:kind||'shop'},'fs'+u):'';
  const banner=s2=>{const L=OUTFITS.filter(o=>fitStreet(o)===s2.id),ok=ri>=s2.r[0],cnt=L.length,has=L.filter(o=>F.own[o.id]).length;
   return `<button class="bzb fsb ${ok?'':'pricey'}" style="--c:${s2.col}" onclick="fitUI.street='${s2.id}';render()">
@@ -374,7 +395,8 @@ function fitLobbyHtml(){const ri=rankIdx(S.xp),F=fitS(),own=OUTFITS.filter(o=>F.
  return `<button class="wd-entry" onclick="fitUI.street='kast';render()"><span class="wd-e-doll" aria-hidden="true">${dollSvg(F.wear)}</span><span class="wd-e-t"><span class="label">Je eigen spullen</span><b>Kledingkast</b><small>${own} kledingstuk${own===1?'':'ken'} in bezit${best?' · '+FIT_STYLES[best[0]].n+' '+best[1]+'/'+FIT_STYLE_SLOTS:''}</small><span class="wd-e-go">Openen en omkleden ›</span></span></button>
   <p class="fit-hint">Drie winkelstraten, van de markt tot de P.C. Hooftstraat. Iets boven je rang kun je al kopen, maar dan betaal je toeslag.</p>
   <div class="fit-streets">${FIT_STREETS.map(banner).join('')}
-   <button class="bzb fsb small" style="--c:#f2c230" onclick="fitUI.street='geluk';fitUI.tab='geluk';render()"><span class="bzb-art" aria-hidden="true">${diceSvg(fitItem('dob5'),1)}</span><span class="bzb-t"><span class="bzb-k">Geluk</span><b>Dobbelstenen</b><span class="bzb-d">Extra winst in de slots, 10 minuten per keer.</span><span class="bzb-go">Bekijken ›</span></span></button>
+</div>
+  ${charmLobbyHtml()}
 </div>`}
 Object.assign(act,{
  fitBuy(id){const o=fitItem(id),F=fitS();if(!o||F.own[id])return;if(o.hr&&tier()<2){toast('Alleen voor High rollers','bad');return}const pr=fitPrice(o);if(S.cash<pr){toast('Niet genoeg contant geld','bad');return}
@@ -385,6 +407,27 @@ Object.assign(act,{
   if(luckLeft()){toast('Je geluk loopt al','bad');return}if(luckWait()){toast('Je dobbelsteen moet nog '+fmtClock(luckWait())+' rusten','bad');return}
   S.luck={pct:o.luck,id:o.id,until:now()+LUCK_MIN*60000,ready:now()+LUCK_CD*60000};try{SFX.win&&SFX.win(2)}catch(e){}
   toast(`${o.n}: ${LUCK_MIN} minuten +${Math.round(o.luck*100)}% op je winst in de slots`,'lvl');log(`Geluk: ${o.n} gebruikt (+${Math.round(o.luck*100)}% in de slots, ${LUCK_MIN} min)`,'ok');save();render()}});
+// geldklem gebruiken: 2 uur meer inkomen van je bedrijven
+Object.assign(act,{klemUse(){const o=fitItem(fitS().wear.zaken);if(!o||!o.inc){toast('Neem eerst een geldklem mee (Outfit, Gelukspullen)','bad');return}
+  if(klemLeft()){toast('Je geldklem werkt al','bad');return}if(klemWait()){toast('Je geldklem moet nog '+bkDurL(klemWait())+' rusten','bad');return}
+  S.klem={pct:o.inc,id:o.id,until:now()+KLEM_MIN*60000,ready:now()+KLEM_CD*60000};try{SFX.win&&SFX.win(2)}catch(e){}
+  toast(`${o.n}: ${KLEM_MIN/60} uur +${Math.round(o.inc*100)}% inkomen van je bedrijven`,'lvl');log(`Geldklem: ${o.n} gebruikt (+${Math.round(o.inc*100)}% inkomen bedrijven, ${KLEM_MIN/60} uur)`,'ok');save();render()}});
+function klemState(){const o=fitItem(fitS().wear.zaken),L=klemLeft(),W=klemWait();return {o,L,W,ready:!!(o&&o.inc)&&!L&&!W}}
+function klemPanelHtml(){const {o,L,W,ready}=klemState(),inc=typeof income==='function'?income():0;
+ return `<div class="luck-p klem-p ${L?'on':''}">${o?klemSvg(o,1):''}<div class="luck-t"><span class="label">Geldklem</span><b>${o?esc(o.n)+' · +'+Math.round(o.inc*100)+'%':'Geen geldklem op zak'}</b>
+  <small>${L?`Actief: nog ${bkDurL(L)} meer inkomen van je bedrijven`:W?`Rust nog ${bkDurL(W)}`:o?(inc>0?`Klaar. Je bedrijven verdienen dan ${KLEM_MIN/60} uur ±${fmt(Math.round(inc*o.inc/2))} extra.`:'Klaar, maar je hebt nog geen bedrijven die iets opleveren.'):'Koop er een hieronder en neem hem mee. Hij werkt op het inkomen van al je bedrijven.'}</small></div>
+  ${o?`<button class="btn ${ready?'act-btn':'ghost'}" onclick="act.klemUse()" ${ready?'':'disabled'}>${L?'Actief':W?'Rust':'Gebruiken'}</button>`:''}</div>`}
+// Outfit-overzicht: de gelukspullen als brede banner met wat ze nu doen en meteen een knop
+function charmLobbyHtml(){const l=luckState(),k=klemState();
+ const row=(cls,col,svg,kicker,title,what,st,btn,tab)=>`<div class="ch-row ${cls}" style="--c:${col}"><button class="ch-open" onclick="fitUI.street='geluk';fitUI.tab='${tab}';render()"><span class="ch-ic">${svg}</span><span class="ch-tx"><span class="label">${kicker}</span><b>${title}</b><small>${what}</small></span></button><div class="ch-st">${st}${btn}</div></div>`;
+ const stx=(s,on)=>`<span class="ch-s ${on?'on':''}">${s}</span>`;
+ const lk=l.o?row(l.L?'on':'', '#f2c230',diceSvg(l.o,1),'Casino · op zak',esc(l.o.n),`+${Math.round(l.o.luck*100)}% op je winst in de slots, ${LUCK_MIN} min. Daarna een werkdag (${LUCK_CD/60} uur) rust.`,
+   l.L?stx('Actief · nog '+fmtClock(l.L),1):l.W?stx('Rust · nog '+bkDurL(l.W)):stx('Klaar',1),l.ready?`<button class="btn sm act-btn" onclick="act.luckUse()">Gebruiken</button>`:'','geluk')
+  :row('', '#f2c230',diceSvg(fitItem('dob5'),1),'Casino','Dobbelstenen',`Extra winst in de slots, ${LUCK_MIN} minuten per keer. Daarna een werkdag (${LUCK_CD/60} uur) rust.`,stx('Nog geen dobbelsteen op zak'),`<button class="btn sm ghost" onclick="fitUI.street='geluk';fitUI.tab='geluk';render()">Bekijken</button>`,'geluk');
+ const kl=k.o?row(k.L?'on':'', '#5fe08f',klemSvg(k.o,1),'Bedrijven · op zak',esc(k.o.n),`+${Math.round(k.o.inc*100)}% inkomen van al je bedrijven, ${KLEM_MIN/60} uur. Daarna een werkdag (${KLEM_CD/60} uur) rust.`,
+   k.L?stx('Actief · nog '+bkDurL(k.L),1):k.W?stx('Rust · nog '+bkDurL(k.W)):stx('Klaar',1),k.ready?`<button class="btn sm act-btn" onclick="act.klemUse()">Gebruiken</button>`:'','zaken')
+  :row('', '#5fe08f',klemSvg(fitItem('klem3'),1),'Bedrijven · nieuw','Geldklemmen',`Meer passief inkomen: ${KLEM_MIN/60} uur +10% tot +35% op al je bedrijven. Daarna een werkdag (${KLEM_CD/60} uur) rust.`,stx('Nog geen geldklem op zak'),`<button class="btn sm ghost" onclick="fitUI.street='geluk';fitUI.tab='zaken';render()">Bekijken</button>`,'zaken');
+ return `<section class="charms"><div class="charms-h"><div><span class="label">Gebruiken, niet dragen</span><h3>Gelukspullen</h3></div><button class="btn ghost sm" onclick="fitUI.street='geluk';fitUI.tab='geluk';render()">Alle gelukspullen ›</button></div>${lk}${kl}</section>`}
 // paneel bovenaan Geluk en in de casinobalk: wat je dobbelsteen nu kan
 function luckState(){const o=fitItem(fitS().wear.geluk),L=luckLeft(),W=luckWait();return {o,L,W,ready:!!(o&&o.luck)&&!L&&!W}}
 function luckPanelHtml(){const {o,L,W,ready}=luckState();
