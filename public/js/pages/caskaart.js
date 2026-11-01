@@ -18,7 +18,19 @@ const CC_CAT={kluis:'slot',vis:'slot',zoet:'slot',mines:'snel',avia:'snel',coin:
 const CC_CATN={slot:'Slots',snel:'Snel spel',tafel:'Tafels'};
 // cashback mag nooit boven het huisvoordeel uitkomen: per spel een plafond op de factor
 const CC_CBMAX={bj:1.5,coin:0};
-const ccS=()=>{if(!S.cc||typeof S.cc!=='object')S.cc={lv:0,p:{slot:0,snel:0,tafel:0}};S.cc.p=S.cc.p||{slot:0,snel:0,tafel:0};return S.cc};
+const ccS=()=>{if(!S.cc||typeof S.cc!=='object')S.cc={lv:0,p:{slot:0,snel:0,tafel:0}};S.cc.p=S.cc.p||{slot:0,snel:0,tafel:0};if(!S.cc.bf)ccBackfill(S.cc);return S.cc};
+// Eenmalig voor spelers van vóór de casinokaart: hun kaart bijwerken met wat ze al hebben ingezet.
+// Een totaal per ronde bestond nog niet, wel je casinowinst en -verlies (stats.won/lost, de netto uitkomst per ronde).
+// Bijna elke ronde draait om ongeveer je inzet, dus winst + verlies is een goede schatting van wat je hebt ingezet. Eén grote
+// jackpot zou dat opblazen, daarom telt de winst hooguit even zwaar als het verlies. Wat sinds de kaart al is bijgeschreven
+// (cc.tot) gaat eraf, zodat niets dubbel telt. Per soort was het niet bijgehouden: het bedrag vult de soorten aan in de
+// verhouding die de volgende kaart vraagt.
+function ccBackfill(C){C.bf=1;const st=S.stats||{},lost=Math.max(0,+st.lost||0),won=Math.max(0,+st.won||0);
+ let rem=Math.floor(lost+Math.min(won,lost)-(C.tot||0));if(!(rem>0))return;const from=C.lv|0;C.est=rem;
+ while(rem>0){const nx=CC[(C.lv|0)+1];if(!nx)break;const d={};let D=0;['slot','snel','tafel'].forEach(k=>{d[k]=Math.max(0,nx.need[k]-(C.p[k]||0));D+=d[k]});
+  if(rem>=D){rem-=D;C.lv=(C.lv|0)+1;C.p={slot:0,snel:0,tafel:0}}
+  else{['slot','snel','tafel'].forEach(k=>{C.p[k]=Math.floor((C.p[k]||0)+rem*d[k]/D)});rem=0}}
+ if(C.lv>from){const n=CC[C.lv].n;setTimeout(()=>{try{log(`Casinokaart bijgewerkt met wat je al had ingezet (±${fmt(C.est)}): ${n}`,'ok');toast(`Je casinokaart is bijgewerkt met wat je al had gespeeld: ${n}`,'lvl')}catch(e){}},1500)}}
 const ccLv=()=>Math.max(0,Math.min(CC.length-1,ccS().lv|0));
 const ccCard=()=>CC[ccLv()];
 const ccT=k=>(CC_T[k]||[1,1,1])[typeof tier==='function'?tier():0]||1;

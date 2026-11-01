@@ -612,6 +612,9 @@ Backup van de stand ervoor: branch `backup/2026-11-01-avond` (terugzetten = die 
   onder het huisvoordeel) en hoeveel aandacht zwart geld trekt (`eye`). Verdenking hangt af van het bedrag ten opzichte van de
   limiet van je kaart; gepakt worden kan een waarschuwing, ban of aangifte geven, en kost **40% van je voortgang**. VIP en High
   roller houden hun betere RTP en krijgen bovenop de kaart hogere limieten (`CC_T`). Rang telt in het casino niet mee.
+  **Bestaande spelers** krijgen eenmalig de kaart die past bij wat ze al hadden ingezet (`ccBackfill`): geschat uit casinowinst
+  en -verlies (winst telt hooguit even zwaar als verlies, zodat één jackpot het niet opblaast), verdeeld over de soorten in de
+  verhouding die de kaart vraagt.
   In de lobby staat je kaart met voortgang per soort en wat de volgende kaart geeft; in de casinobalk loopt je speeltijd.
 - **Menu**: nieuw kopje **Leven** (Verblijf, Training, Ontspannen). Macht: Families bovenaan, dan Wapens en Outfit.
 - **Werk en dealen** (Straat, `pages/werk.js`): **Klusjes**: 10 gewone baantjes voor wit geld (energie, wachttijd, XP).
