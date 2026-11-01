@@ -342,7 +342,7 @@ function casHudHtml(){const pend=window.slotPending||0,b=typeof bankNet==='funct
   <div class="ch-main"><i class="dm-ic">${ICO_CASH}</i><div><span class="label"><span class="l-lg">Saldo om mee te spelen</span><span class="l-sm">Speelsaldo</span></span><b id="casBal" title="${fmt(bal)}">${fmtFit(bal,fitN(12))}</b><span class="ch-now">${now_}</span></div></div>
   <div class="ch-pay" role="group" aria-label="Betalen met"><span class="label">Betalen met</span>
    <div class="ch-seg">${['auto','wit','zwart'].map(m=>`<button class="${m==='auto'?'a':m==='wit'?'w':'z'} ${pm===m?'on':''}" onclick="act.casPay('${m}')" aria-pressed="${pm===m}"><small>${m==='auto'?'Auto · zwart eerst':m==='wit'?'Wit · legaal':'Zwart · riskant'}</small><b>${fmt(m==='wit'?wn:m==='zwart'?zw:Math.max(0,S.cash-pend))}</b></button>`).join('')}</div></div>
-  <a class="ch-cell ch-bank" href="#bank"><i class="dm-ic">${ICO_BANK}</i><div><span class="label">Bank</span><b title="${fmt(b)}">${fmtFit(b,fitN(10))}</b></div></a>
+  <a class="ch-cell ch-bank" href="#bank"><i class="dm-ic">${ICO_BANK}</i><div><span class="label">Bank</span><b title="${fmt(b)}">${fmtFit(b,fitN(10))}</b>${typeof ccCard==='function'?`<span class="ch-ccm" style="--cc:${ccCard().col}"><i></i>${ccCard().n} <em class="cc-sess-t">${fmtClock(ccSessLeft())}</em></span>`:''}</div></a>
   ${typeof ccChip==='function'?ccChip():''}
   ${(t||(typeof ccLv==='function'&&ccLv()))?`<div class="ch-cell ch-cb" title="${typeof CB_RATE!=='undefined'?'Cashback op elke inzet: '+Object.keys(CB_RATE).map(k=>CB_NAME[k]+' '+(CB_RATE[k]*(typeof ccCbF==='function'?ccCbF(k):(TIER_CB[t]||1))*100).toLocaleString('nl-NL',{maximumFractionDigits:3})+'%').join(' · '):''}"><div><span class="label">Cashback · ${lid}</span><b id="cbAmt">${fmt(cb)}</b></div><button class="btn gold sm" id="cbBtn" onclick="act.claimCb()" ${cb<1?'disabled':''}>${cb>=1?'Claimen':'Nog niks'}</button></div>`:`<a class="ch-cell ch-up" href="#profiel"><span class="label">Gewoon lid</span><b>VIP: cashback en vaker bonus</b></a>`}
   ${hasLuck?`<div class="ch-cell ch-luck ${luck.L?'on':''}"><i class="dm-ic">${diceSvg(luck.o)}</i><div><span class="label">Geluk +${Math.round(luck.o.luck*100)}%</span><b>${luck.L?'Nog '+fmtClock(luck.L):luck.W?bkDurL(luck.W):'Klaar'}</b></div>${luck.ready?`<button class="btn gold sm" onclick="act.luckUse()">Gebruiken</button>`:''}</div>`:''}
@@ -357,6 +357,7 @@ const TI={en:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2L4 13
 const nameFs=(n,big,min)=>{const l=String(n||'').length;return l<=10?big:Math.max(min,Math.round(big-(l-10)*(big-min)/10))};
 let _casPrev=null;
 function renderTop(){
+  document.body.classList.toggle('cas-game',page==='casino'&&!!casinoTab&&!(typeof czBanLeft==='function'&&czBanLeft()));
   if(page==='casino'){const v=S.cash-(window.slotPending||0),el=$('#topbar');if(setHTML(el,casHudHtml())&&_casPrev!=null&&v!==_casPrev){const b=el.querySelector('#casBal');if(b)b.classList.add(v>_casPrev?'up':'dn')}_casPrev=v;return}
   _casPrev=null;window.casPayOpen=false;
   const ri=rankIdx(S.xp);const jt=Math.ceil((S.jailUntil-now())/1000);const pend=window.slotPending||0;

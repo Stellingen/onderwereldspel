@@ -66,5 +66,5 @@ function ccPanelHtml(){const lv=ccLv(),c=CC[lv],nx=CC[lv+1],C=ccS(),t=typeof tie
    ${perk('Cashback',val(c,'cb'),nx?val(nx,'cb'):null)}${perk('Aandacht voor zwart geld',Math.round(c.eye*100)+'%',nx?Math.round(nx.eye*100)+'%':null)}</div>
  </section>`}
 // kleine regel in de casinobalk: kaart en hoeveel speeltijd je nog hebt
-const ccChip=()=>{const c=ccCard(),l=ccSessLeft();return `<div class="ch-cell ch-card" style="--cc:${c.col}" title="Casinokaart ${c.n}: speeltijd ${ccMin(ccSessMs())}, daarna ${ccMin(ccCdMs())} pauze"><span class="cc-mini">${ccCardSvg(ccLv(),1)}</span><div><span class="label">Kaart ${c.n}</span><b id="ccSess">${fmtClock(l)}</b></div></div>`};
-setInterval(()=>{const e=document.getElementById('ccSess');if(e)e.textContent=fmtClock(ccSessLeft())},1000);
+const ccChip=()=>{const c=ccCard(),l=ccSessLeft();return `<div class="ch-cell ch-card" style="--cc:${c.col}" title="Casinokaart ${c.n}: speeltijd ${ccMin(ccSessMs())}, daarna ${ccMin(ccCdMs())} pauze"><span class="cc-mini">${ccCardSvg(ccLv(),1)}</span><div><span class="label">Kaart ${c.n}</span><b id="ccSess" class="cc-sess-t">${fmtClock(l)}</b></div></div>`};
+setInterval(()=>{const L=document.querySelectorAll('.cc-sess-t');if(L.length){const t=fmtClock(ccSessLeft());L.forEach(e=>{if(e.textContent!==t)e.textContent=t})}},1000);
