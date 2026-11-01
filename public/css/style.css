@@ -3494,3 +3494,14 @@ a.dv:hover{box-shadow:inset 0 0 0 1px var(--line2)}
  .vd.kk3 .kk-ctl .kk-go{min-height:72px!important}
  .vd.kk3 #vdConfirmBox,.vd.kk3 #vdPickBox,.vd.kk3 .kk-seed,.vd.kk3 #vdSeedBox{width:auto!important;margin:0!important}
 }
+/* smalle telefoon: Bonus kopen zonder AAN/UIT-labeltje (de schakelaar zegt het al), zodat niets over de snelheid valt */
+@media (max-width:400px){
+ body.cas-game .kk-buyt{grid-template-columns:auto auto;grid-template-areas:"i t";gap:6px;padding:4px 8px;font-size:11px;letter-spacing:.04em}
+ body.cas-game .kk-buyt small{display:none}
+ body.cas-game .kk-buyt i{width:34px!important;height:20px!important}
+ body.cas-game .kk-buyt i::after{width:14px!important;height:14px!important}
+ body.cas-game .kk-buyt.on i::after{transform:translateX(14px)!important}
+ body.cas-game .kk-small:has(>.spd + .kk-buyt),body.cas-game .sb-row:has(>.spd + .kk-buyt){grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:6px}
+ body.cas-game .spd{gap:4px;padding-left:6px;padding-right:6px}
+}
+@media (max-width:340px){body.cas-game .kk-buyt span{white-space:normal;line-height:1.05;text-align:left}}

@@ -284,3 +284,14 @@
 .dr-bt.ask .dr-bt-buy{background:linear-gradient(180deg,#ff6a55,#c62828);color:#fff}
 @container (max-width:700px){.dr-bt small{display:none}.dr-bt-ic{width:40px;height:40px}}
 @media (max-height:960px){.dr-bt small{display:none}.dr-bt-ic{width:42px;height:42px}}
+/* smalle telefoon: ladder smaller zodat de rollen groot blijven; logo kleiner zodat de geluidsknop past */
+@container (max-width:480px){
+ .dr-main{grid-template-columns:68px minmax(0,1fr)!important;gap:8px 6px!important}
+ .dr-main>.dr-lad{padding-top:46px;gap:6px}
+ .dr-lad-h{display:none}
+ .dr-lj{padding:5px 5px;gap:2px;border-radius:5px;width:calc(var(--w) + 7%);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 1.5px #c9a24a,0 0 0 3px #3a1208}
+ .dr-lj b,.dr-lj.mega b{font-size:12.5px}
+ .dr-lj em{font-size:10.5px}
+ .dr-lad-f{font-size:9px}
+}
+@container (max-width:330px){.dr-name{font-size:21px}.dr-lg-ic{width:24px;height:24px}.dr-head{gap:6px;padding:6px 6px 3px}.dr-snd{width:30px;height:30px}}
