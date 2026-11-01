@@ -3219,7 +3219,7 @@ a.dv:hover{box-shadow:inset 0 0 0 1px var(--line2)}
  body.cas-game .ch-main b{font-size:23px}
  body.cas-game .ch-main .dm-ic{width:26px}
  body.cas-game .chud>.ch-chips{padding:5px 6px}
- body.cas-game .cc{height:38px}
+ body.cas-game .cc{height:42px}
  body.cas-game .cas-bar{margin-bottom:8px}
  /* slots: inzet en Draaien in een balk boven de menubalk */
  body.cas-game #zbCtl,body.cas-game #kkCtl,body.cas-game #vdCtl{position:fixed;left:0;right:0;bottom:calc(62px + env(safe-area-inset-bottom,0px));z-index:55;margin:0;
@@ -3241,7 +3241,7 @@ a.dv:hover{box-shadow:inset 0 0 0 1px var(--line2)}
  /* het bord zit in een eigen laag (isolation); die laag boven de inhoud eronder leggen, anders schuift de uitbetalingstabel over de balk */
  body.cas-game .sb-stage,body.cas-game .kk-stage{position:relative;z-index:56}
  /* tafels: fiches en knoppen vast onderin */
- body.cas-game .table>.table-bar{position:fixed;left:0;right:0;bottom:calc(62px + env(safe-area-inset-bottom,0px));z-index:55;margin:0;gap:6px;
+ body.cas-game .table>.table-bar{flex-wrap:nowrap;position:fixed;left:0;right:0;bottom:calc(62px + env(safe-area-inset-bottom,0px));z-index:55;margin:0;gap:6px;
   padding:6px max(10px,env(safe-area-inset-left,0px)) 8px;background:rgba(10,24,18,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:0;border-top:1px solid rgba(201,162,74,.4);box-shadow:0 -12px 24px -14px rgba(0,0,0,.9)}
  body.cas-game .table.tcp>.table-bar{background:rgba(36,12,18,.96)}
  body.cas-game .table.th>.table-bar,body.cas-game .table.thx>.table-bar{background:rgba(10,18,40,.96)}
@@ -3250,11 +3250,13 @@ a.dv:hover{box-shadow:inset 0 0 0 1px var(--line2)}
  body.cas-game .table-bar .tray-l{display:none}
  body.cas-game .table-bar .tchip{flex:none;width:44px;height:44px;font-size:11px}
  body.cas-game .table-bar .tchip.on{transform:translateY(-2px)}
- body.cas-game .table-bar .tb-act{flex-wrap:nowrap;gap:6px}
+ body.cas-game .table-bar .tb-act{flex-wrap:wrap;gap:6px}
+ body.cas-game .table-bar .tb-act>.btn{flex:1 1 auto}
+ body.cas-game .table-bar .tb-act:not(.play):has(>.btn:nth-child(3))>.btn:last-child{flex-basis:100%}
  body.cas-game .table-bar .tb-act .btn{min-height:46px;padding:8px 8px;font-size:14px;min-width:0}
  body.cas-game .table-bar .tb-act.play{flex-wrap:wrap}
  body.cas-game .table-bar .tb-act.play .btn{flex:1 1 calc(50% - 6px);min-width:0;font-size:15px;min-height:48px}
- body.cas-game .table::after{content:'';display:block;height:var(--tb-pad,128px)}
+ body.cas-game .table::after{content:'';display:block;height:var(--tb-pad,176px)}
  body.cas-game .felt{padding-top:12px;gap:8px}
  body.cas-game .felt-rules span{display:none}
  body.cas-game .felt{padding:10px 8px 26px;gap:6px}

@@ -592,3 +592,36 @@ Backup van de stand ervoor: branch `backup/2026-11-01-voor-grote-update` (terugz
 - **Politiebureau**: nieuwe isometrische tekening (drie verdiepingen, POLITIE-band, ingang met blauwe lamp, mast met zwaailicht,
   helikopterplatform, vleugel met garage, vlag, lantaarns en een politieauto); "Sleep om te draaien" is weg.
 - **Ranglijst**: jouw plek met afstand tot de volgende en voorsprong op de plek erachter; vermogen telt woningen mee.
+
+## Update 2: rangen, casinokaart, werk en dealen (november 2026)
+
+Backup van de stand ervoor: branch `backup/2026-11-01-avond` (terugzetten = die branch naar `main`).
+
+- **20 rangen** (`data.js` `RANKS`): 8 tussenrangen erbij (Sjacheraar, Inbreker, Ritselaar, Handhaver, Luitenant, Kapitein,
+  Rechterhand, Schaduwbaas) en Peetvader vraagt nu 380.000 XP. `RK` zet een oude rangindex om naar de nieuwe, `rkPow(ri)` geeft
+  de "sterkte" op de oude schaal voor formules (buit, kans, prijzen), zodat niets uit balans raakt. `rkRemap` schuift klussen,
+  winkels, trainingen, woningen en outfits naar de nieuwe rangen; bij een gesplitste rang gaat de goedkoopste helft naar de
+  tussenrang eronder. **Niemand zakt**: oude saves (`S.rankV` ≠ 2) krijgen hun XP omgerekend naar dezelfde rang op de nieuwe
+  schaal (`rkMigXp`, ook voor NPC's); de server ziet die eenmalige sprong niet als valsspelen. Nieuwe rangcodes in `RANK_CODES`.
+- **Huur ×2,5** (`HOUSES`): van €180 tot €32.500 per speldag.
+- **Casinokaart** (`pages/caskaart.js`): 6 kaarten (Basis, Brons, Zilver, Goud, Platina, Zwart). Je kaart groeit door in te
+  zetten, wit en zwart geld tellen allebei, apart per soort: slots, snel spel (Mines, Hoogvlieger, Dubbel of niks) en tafels.
+  Brons vraagt 30k slots + 20k snel spel + 50k tafels (100k samen); elke volgende kaart ×5. De kaart bepaalt: max. inzet per soort
+  (Basis €500 slots / €1.000 tafel, Zwart €100k / €200k), side bets, roulette per nummer (tot €150k; als HR €250k),
+  speeltijd en pauze (Basis 30 min speeltijd en 15 min pauze, Zwart 4 uur en 5 min), cashback (Basis geen, Zwart ×1,25; VIP en HR krijgen hun eigen cashback erbovenop; altijd
+  onder het huisvoordeel) en hoeveel aandacht zwart geld trekt (`eye`). Verdenking hangt af van het bedrag ten opzichte van de
+  limiet van je kaart; gepakt worden kan een waarschuwing, ban of aangifte geven, en kost **40% van je voortgang**. VIP en High
+  roller houden hun betere RTP en krijgen bovenop de kaart hogere limieten (`CC_T`). Rang telt in het casino niet mee.
+  In de lobby staat je kaart met voortgang per soort en wat de volgende kaart geeft; in de casinobalk loopt je speeltijd.
+- **Menu**: nieuw kopje **Leven** (Verblijf, Training, Ontspannen). Macht: Families bovenaan, dan Wapens en Outfit.
+- **Werk en dealen** (Straat, `pages/werk.js`): **Klusjes**: 10 gewone baantjes voor wit geld (energie, wachttijd, XP).
+  **Dealen**: 6 niveaus in je netwerk, op reputatie en rang: loopjongen van Mo (verkopen voor een ander), eigen klantjes, vaste
+  lijn, groothandel, direct bij de bron en drugsbaron. Elk niveau geeft korting bij inkoop, meer per verkoop, meer opslag en
+  later dealers op straat (verkopen per speldag) en een eigen lab. Producten: vapes, wiet, hasj en miauw vanaf het begin,
+  daarna xtc, speed, keta, coke en uiteindelijk per kilo. Risico per verkoop (pakkans) met hitte; gepakt = die partij en de helft
+  van je voorraad kwijt. Alles per speldag afgerekend met een teller (`dlTick`).
+- **Casino op de telefoon**: compacte saldobalk tijdens een spel (kaarttijd bij de bank), en bij Suikerbaron, Kluiskraker en
+  Visdief staan inzet en **Draaien** vast onderin boven het menu; bij Blackjack, Three Card Poker en Texas Hold'em de fiches en
+  knoppen. Zo zie je het hele bord en de knop tegelijk (getest op 440 × 956, iPhone 17 Pro Max, en 320 px).
+- **Kluiskraker** kreeg een eigen kluisthema (staal met klinknagels, een kluisknop als logo die meedraait bij elke spin,
+  kluisjes als vakken); **Visdief** een doorgetrokken haventhema (sterren, water met golven, touwrand).
