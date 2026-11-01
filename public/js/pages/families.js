@@ -106,7 +106,7 @@ function famDetailHtml(id){const x=FAMILIES.find(f=>f.id===id),T=FAMILIES.indexO
   <button class="fm-back" onclick="famOpen(null)"><span>‹</span> Alle families</button>
   <section class="fmd-hero">
    <div class="crest" style="color:${x.col}">${x.m}</div>
-   <div class="fmd-id"><span class="label">${row.pos===1?'Heerst over de stad':'Plek '+row.pos+' van '+tab.length+' in de stad'}${d?` · ${d>0?'▲ '+d+' gestegen':'▼ '+(-d)+' gezakt'} sinds vorige periode`:''}</span><h1>${x.n}</h1>${L&&L.motto?`<p class="fmd-motto">“${esc(L.motto)}”</p>`:`<p class="fmd-motto">${x.d}</p>`}</div>
+   <div class="fmd-id"><span class="label">${row.pos===1?'Heerst over de stad':'Plek '+row.pos+' van '+tab.length+' in de stad'}${d?` · ${d>0?'▲ '+d+' gestegen':'▼ '+(-d)+' gezakt'} sinds vorige periode`:''}</span><h1 data-fit="18">${x.n}</h1>${L&&L.motto?`<p class="fmd-motto">“${esc(L.motto)}”</p>`:`<p class="fmd-motto">${x.d}</p>`}</div>
    <div class="fmd-facts">${fact('Wijk',L&&L.wijk)}${fact('Sinds',L&&L.sinds)}${fact('Baas',isBoss?'Jij':L&&L.baas)}${fact('Macht',Math.round(row.pow))}</div>
   </section>
   <div class="fmd-grid">
@@ -125,7 +125,7 @@ V.fam=()=>{const ri=rankIdx(S.xp),f=famBase();famDaily();
  if(!f)return `<h1>Families</h1>
   <section class="card hud fm-intro"><div><span class="label">Je hoort nog nergens bij</span><h2>Kies een familie</h2>
    <p>Met de juiste rang en genoeg straatcredit word je toegelaten. De vier zwaarste families nemen alleen Huurmoordenaars en hoger aan die al een aantal huurmoorden op hun naam hebben. Iedereen begint onderaan als Aspirant en klimt met eer op tot Erelid: als Aspirant krijg je de helft van de familiebonus en het eigen voordeel, elk level +10%, als Erelid alles (de getallen hieronder). Daarboven kun je Onderbaas worden en uiteindelijk de familie overnemen.</p></div>
-   <div class="fm-intro-k"><div><span class="label">Jouw straatcredit</span><b>${S.cred}</b></div><div><span class="label">Jouw rang</span><b>${RANKS[ri][0]}</b></div></div></section>
+   <div class="fm-intro-k"><div><span class="label">Jouw straatcredit</span><b>${S.cred}</b></div><div><span class="label">Jouw rang</span><b data-fit="12">${RANKS[ri][0]}</b></div></div></section>
   ${fwCityHtml()}
   <div class="tierhead"><h2>Alle families</h2><span>Klik op een naam voor het verhaal en de rangen</span></div>
   <div class="fm-grid">${FAMILIES.map(x=>famCard(x,pos[x.id])).join('')}</div>`;

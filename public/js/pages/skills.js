@@ -48,7 +48,7 @@ V.skills=()=>{
   const h=ready?'Train naar '+(l+1):poor?'Nog '+fmt(cost-S.cash):left?'Weer klaar over':'';
   return `<div class="tq ${cls}${trFx(t.id)}" style="--c:${t.col}">
    <button class="tq-go" onclick="trs.go('${t.id}')" ${ready?'':'disabled'} aria-label="${t.n}, level ${l}${ready?': trainen voor '+fmt(cost):': '+s}">
-    <span class="tq-r">${trRing(l,t.col)}<b>${l}</b></span><span class="tq-n">${t.n}</span>${h?`<span class="tq-h">${h}</span>`:''}<span class="tq-p">${s}</span></button>
+    <span class="tq-r">${trRing(l,t.col)}<b>${l}</b></span><span class="tq-n">${t.n}</span>${h?`<span class="tq-h">${h}</span>`:''}<span class="tq-p" data-fit="9.5">${s}</span></button>
    <button class="tq-i" onclick="${trGo(t.id)}" aria-label="Uitleg ${t.n}" title="Uitleg">${TQ_I}</button>
    ${left?`<i class="tq-cd" style="width:${Math.min(100,left/(t.cd*60000*waitK())*100).toFixed(1)}%"></i>`:''}</div>`}).join('');
  const buffs=[];
@@ -66,7 +66,7 @@ V.skills=()=>{
   const s=lock?'Vanaf '+RANKS[r.r][0]:inJail()?'Je zit vast':left?fmtClock(left):fmt(cost);
   return `<div class="tq tq-rx ${cls}${trFx('rx_'+r.id)}" style="--c:${r.col}">
    <button class="tq-go" onclick="trs.rx('${r.id}')" ${ready?'':'disabled'} aria-label="${r.n}${ready?': '+fmt(cost)+', '+fx.map(x=>x[1]).join(', '):': '+s}">
-    <span class="tq-r tq-ic">${svg(r.ic)}</span><span class="tq-n">${r.n}</span>${fx.length?`<span class="tq-e">${fx[0][1]}${fx.length>1?' <i>+'+(fx.length-1)+'</i>':''}</span>`:''}${poor?`<span class="tq-h">Nog ${fmt(cost-S.cash)}</span>`:''}<span class="tq-p">${s}</span></button>
+    <span class="tq-r tq-ic">${svg(r.ic)}</span><span class="tq-n">${r.n}</span>${fx.length?`<span class="tq-e">${fx[0][1]}${fx.length>1?' <i>+'+(fx.length-1)+'</i>':''}</span>`:''}${poor?`<span class="tq-h">Nog ${fmt(cost-S.cash)}</span>`:''}<span class="tq-p" data-fit="9.5">${s}</span></button>
    <button class="tq-i" onclick="trFocus('rx-${r.id}')" aria-label="Uitleg ${r.n}" title="Uitleg">${TQ_I}</button>
    ${left?`<i class="tq-cd" style="width:${Math.min(100,left/(r.cd*60000*waitK())*100).toFixed(1)}%"></i>`:''}</div>`}).join('');
  const now_=[['Energie',Math.floor(S.energy)+'/'+EN_MAX,S.energy/EN_MAX,'var(--ice)'],['Gezondheid',S.hp+'%',S.hp/100,'var(--green)'],['Hitte',S.heat+'%',S.heat/100,S.heat>60?'var(--red)':'var(--acc)']];

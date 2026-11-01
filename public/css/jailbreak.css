@@ -26,7 +26,7 @@
 .jb-big{width:100%;max-width:420px;height:64px;font-size:22px;background:linear-gradient(180deg,#1b2129,#141920);border-color:#3a4554}
 .jb-pad{display:grid;grid-template-columns:repeat(4,58px) 1fr;gap:8px;width:100%;max-width:440px}
 .jb-wait{font-size:15px}
-.jb-climbb{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:440px}
+.jb-climbb{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%;max-width:440px}
 .jb-climbb .jb-b{max-width:none}
 
 /* uitleg per fase */

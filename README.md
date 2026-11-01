@@ -465,6 +465,14 @@ public/js/*.js       spelmodules; public/js/pages/ bevat één bestand per tabbl
   telefoon, de casinobalk en het menublad; het volledige bedrag staat in de tooltip en op bank, dashboard, profiel en de rechterkolom.
   Lange namen worden niet afgekapt: de letter krimpt mee (`nameFs`). Geld staat op de telefoon altijd op een eigen rij (`.tb-br`).
   Gecontroleerd met een scanner op afgekapte of met … ingekorte bedragen en namen (360, 390, 768, 1440 px, 37,8 miljard, naam van 20 tekens).
+- **Tekst past altijd in zijn vak** (ui.js, `fitText`): elementen met `data-fit="<min px>"` en de selectors in `FIT_AUTO` (bedragen,
+  namen, korte labels die vroeger met … werden ingekort) krijgen een kleinere letter als de tekst breder is dan het vak; past het ook op
+  de kleinste letter niet, dan loopt de tekst door op een tweede regel. Draait na elke `render()`, `setHTML`, de deelverversingen van
+  Kluiskraker/Visdief, bij het openen van het menublad en voor losse vensters (MutationObserver op body). Gebruikt `!important`
+  in de inline stijl, zodat ook vaste maten in de css meegeven. Grids met één kolom zijn `minmax(0,1fr)` en `auto-fill`-grids
+  `minmax(min(Npx,100%),1fr)`, zodat een lang woord nooit de hele pagina breder maakt dan het scherm.
+  Gecontroleerd met de echte lettertypes op alle pagina's, tabbladen, de 9 casinospellen, het menublad, details en oefenvensters,
+  op 320, 360, 375, 390, 430, 768, 1024 en 1440 px, met de langste rangnamen (Huurmoordenaar, Straatschoffie, Consigliere).
 - **Casino**: klein onderaan elk casinoscherm "18+ · spel met virtueel spelgeld; geen echt geld inzetten, winnen of uitbetalen" (`casNote`).
 - **Bedrijven**: inkomen heet overal "per speldag" (4 echte uren).
 - **Beginnersdossier** op het dashboard (dashboard.js, `gidsHtml`): vijf stappen (eerste klus met een aanrader op laag risico, geld

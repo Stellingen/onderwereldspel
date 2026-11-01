@@ -12,7 +12,7 @@
 .fm-ladder li.lead{border-style:dashed}
 .fm-ladder li.lead:not(.now) b{color:color-mix(in srgb,var(--fc) 75%,var(--mute))}
 @container (max-width:1100px){.fm-ladder{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@container (max-width:820px){.fm-hero{grid-template-columns:1fr}}
+@container (max-width:820px){.fm-hero{grid-template-columns:minmax(0,1fr)}}
 
 /* leiding van de familie */
 .fm-lead{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:14px 20px;flex-wrap:wrap;padding:14px 16px;
@@ -42,7 +42,7 @@
 .fw-days i.war.past{background:rgba(255,61,82,.12)}
 .fw-mk{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--acc);box-shadow:0 0 10px var(--acc-glow);transform:translateX(-1px)}
 .fw-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(290px,1fr);gap:12px;align-items:start}
-@container (max-width:780px){.fw-grid{grid-template-columns:1fr}.fw-grid.mine .fw-side{order:-1}}
+@container (max-width:780px){.fw-grid{grid-template-columns:minmax(0,1fr)}.fw-grid.mine .fw-side{order:-1}}
 .fw-chainw{background:var(--panel);border:1px solid var(--line)}
 .fw-chain-h{display:flex;gap:10px;padding:9px 14px 7px;border-bottom:1px solid var(--line)}.fw-chain-h span:nth-child(2){flex:1;padding-left:28px}
 .fw-chain{list-style:none;margin:0;padding:5px}
@@ -50,8 +50,8 @@
 .fw-row:hover{background:var(--panel2);border-color:var(--line2)}
 .fw-pos{font-family:var(--f-mono);font-size:13px;color:var(--faint);text-align:right}
 .fw-row .crest{width:28px;height:32px;font-size:11px;color:var(--fc);background:var(--bg2)}
-.fw-nm{display:grid;min-width:0}.fw-nm b{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fw-nm small{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--fc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fw-nm{display:grid;min-width:0}.fw-nm b{font-size:14px;font-weight:600;overflow-wrap:break-word;line-height:1.2}
+.fw-nm small{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--fc);overflow-wrap:break-word}
 .fw-pw{height:6px;background:var(--bg2);border:1px solid var(--line);overflow:hidden}.fw-pw i{display:block;height:100%;background:var(--fc);opacity:.7}
 .fw-val{font-family:var(--f-mono);font-size:12.5px;text-align:right;color:var(--mute)}
 .fw-tr{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--faint);text-align:right}.fw-tr.up{color:var(--green)}.fw-tr.dn{color:var(--red)}
@@ -123,9 +123,9 @@
 .fmd-ladder li small{font-size:11.5px;color:var(--acc2)}
 .fmd-ladder li.lead{border-style:dashed;border-color:color-mix(in srgb,var(--fc) 45%,var(--line))}.fmd-ladder li.lead b{color:var(--fc)}
 .fmd-ladder li.now{border-color:var(--fc);border-style:solid;background:color-mix(in srgb,var(--fc) 10%,var(--panel))}.fmd-ladder li.got b{color:var(--mute)}
-@container (max-width:860px){.fmd-hero{grid-template-columns:auto minmax(0,1fr)}.fmd-facts{grid-column:1/-1;grid-template-columns:repeat(4,minmax(0,1fr))}.fmd-grid{grid-template-columns:1fr}
+@container (max-width:860px){.fmd-hero{grid-template-columns:auto minmax(0,1fr)}.fmd-facts{grid-column:1/-1;grid-template-columns:repeat(4,minmax(0,1fr))}.fmd-grid{grid-template-columns:minmax(0,1fr)}
  .fmd-side{grid-template-columns:repeat(2,minmax(0,1fr))}.fmd-side>.fmd-box:last-child{grid-column:1/-1}}
-@container (max-width:560px){.fmd-side{grid-template-columns:1fr}.fmd-hero{padding:16px;gap:12px 14px}.fmd-hero .crest{width:62px;height:70px;font-size:21px}.fmd-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+@container (max-width:560px){.fmd-side{grid-template-columns:minmax(0,1fr)}.fmd-hero{padding:16px;gap:12px 14px}.fmd-hero .crest{width:62px;height:70px;font-size:21px}.fmd-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
  .fmd-story{padding:16px 16px 18px}.fmd-story p{font-size:14.5px}.fmd-ladder ol{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* ---------- de slag (kaart) en de overname (duel) ---------- */

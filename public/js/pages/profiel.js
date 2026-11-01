@@ -5,7 +5,7 @@ V.profiel=()=>{
  const since=window.__SINCE__?new Date(window.__SINCE__).toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'}):null;
  const used=S.redeemed||[];
  const st=S.stats;
- const tile=(l,v,c)=>`<div class="pf-tile"><span class="label">${l}</span><b style="${c?'color:'+c:''}">${v}</b></div>`;
+ const tile=(l,v,c)=>`<div class="pf-tile"><span class="label" data-fit="8">${l}</span><b data-fit="14" style="${c?'color:'+c:''}">${v}</b></div>`;
  return `<h1>Profiel</h1>
  <div class="pf">
   <section class="card hud pf-id">

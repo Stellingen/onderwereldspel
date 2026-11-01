@@ -5,7 +5,7 @@
 .ch-sus b{color:var(--fg)}.ch-sus.warm b{color:var(--acc)}.ch-sus.hot b{color:var(--red)}
 .ch-sus .mini{display:block;height:3px;background:var(--line2);margin-top:3px}
 .ch-sus .mini i{display:block;height:100%;background:var(--acc)}.ch-sus.hot .mini i{background:var(--red)}
-.ww-hero{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);padding:0;margin-bottom:12px}
+.ww-hero{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);padding:0;margin-bottom:12px}
 .ww-bal{display:flex;align-items:center;gap:14px;padding:18px 20px;background:var(--panel)}
 .ww-bal .dm-ic{width:46px;height:46px;flex:none}
 .ww-bal.zw .dm-ic{filter:grayscale(1) brightness(.7)}
@@ -48,8 +48,8 @@
 .ww-row:first-of-type{border-top:0}
 .ww-row time{font-family:var(--f-mono);font-size:11px;color:var(--faint)}
 .ww-row b{font-family:var(--f-mono);font-size:12.5px;color:var(--green)}.ww-row.bust b{color:var(--red)}
-@media (min-width:1280px) and (max-width:1599px){.ww-grid{grid-template-columns:1fr 1fr}.ww-cas{grid-column:1/-1}}
-@media (max-width:900px){.ww-hero{grid-template-columns:1fr}.ww-grid{grid-template-columns:1fr}.ww-bal{padding:14px 16px}}
+@media (min-width:1280px) and (max-width:1599px){.ww-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ww-cas{grid-column:1/-1}}
+@media (max-width:900px){.ww-hero{grid-template-columns:minmax(0,1fr)}.ww-grid{grid-template-columns:minmax(0,1fr)}.ww-bal{padding:14px 16px}}
 /* minigame */
 .ww-box{width:min(620px,100%)}
 .ww-gh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
@@ -83,7 +83,7 @@
 .ww-bars b{font-family:var(--f-mono);font-size:12px;color:var(--mute)}
 .ww-go{margin-top:14px;width:100%}
 .chase-p.ok{color:var(--green)}.chase-p.warn{color:var(--acc)}.chase-p.bad{color:var(--red)}
-@media (max-width:620px){.ww-bars{grid-template-columns:1fr}.ww-shop{height:120px}}
+@media (max-width:620px){.ww-bars{grid-template-columns:minmax(0,1fr)}.ww-shop{height:120px}}
 
 /* casinobalk: niets afknippen op smallere schermen */
 .chud>*{flex:1 1 auto}
@@ -102,16 +102,19 @@
 .dm-v{display:flex;flex-direction:column;align-items:flex-end;min-width:0}
 .dm-v small.zw{font-family:var(--f-mono);font-size:9.5px;color:#aab0b9;white-space:nowrap}
 .dm-t{overflow:hidden}
-.dos-money .dm{grid-template-columns:34px minmax(56px,1fr) auto}
+.dos-money .dm{grid-template-columns:34px auto minmax(0,1fr)}
+.dos-money .dm b{min-width:0}
 
 /* Casinobalk op de telefoon: saldo groot links, bank rechts, daaronder knoppen die altijd passen */
 .ch-chips{display:none}
+.l-sm{display:none}
 @media (max-width:900px){
   .chud{display:grid;grid-template-columns:minmax(0,1fr) auto;overflow:visible}
   .chud>*{padding:9px 14px}
   .chud>.ch-cb,.chud>.ch-luck,.chud>.ch-sus,.chud>.ch-up,.chud>.ch-r{display:none}
   .ch-main{min-width:0;gap:11px;padding:9px 14px}
   .ch-main b{font-size:27px}
+  .ch-main .l-lg{display:none}.ch-main .l-sm{display:inline}
   .ch-bank{min-width:0;align-items:flex-end!important;text-align:right}
   .ch-bank>div{align-items:flex-end}
   .ch-bank b{font-size:15px}
@@ -126,6 +129,7 @@
   .cc i{display:block;width:13px;height:13px;flex:none}.cc i svg{width:100%;height:100%;display:block}
   .cc:disabled{opacity:1;cursor:default}
   .cc-cb b{color:#f2c230}
+  .cc-pay,.cc-cb,.cc-up{flex-grow:1.25}.cc-sus{flex-grow:.75}
   .cc-cb:disabled b{color:var(--mute)}
   .cc.can{background:#f2c230;box-shadow:none;color:#140f02;animation:ccPulse 2.4s ease-in-out infinite}
   .cc.can span,.cc.can b{color:#140f02}

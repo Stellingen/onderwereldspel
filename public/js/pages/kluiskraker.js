@@ -182,7 +182,7 @@ function kkSessHtml(){const x=kk.sess||{n:0,bet:0,won:0,best:0,bon:0},net=x.won-
 // Alleen de onderdelen bijwerken die veranderen (geen hele pagina, dus geen sprong naar boven op de telefoon)
 function kkRefreshUI(){const root=document.querySelector('.kk3');if(!root)return;const fs=kk.fs;
  root.classList.toggle('is-fs',!!fs);root.classList.toggle('is-super',!!(fs&&fs.kind==='super'));
- const set=(id,h)=>{const e=kkEl(id);if(e)e.innerHTML=h};
+ const set=(id,h)=>{const e=kkEl(id);if(e){e.innerHTML=h;fitText(e)}};
  set('kkSub',kkSubHtml());kkInfoRefresh();set('kkCtl',kkControls());set('kkPickBox','');set('kkConfirmBox',kk.buyMode&&!kk.busy?kkConfirm():'');set('kkSeedBox',kkSeedHtml());set('kkPayTab',kkPayTab());set('kkLeft',kkLeftHtml());set('kkSess',kkSessHtml());set('kkBetR',kkBetRHtml());
  if(!kk.busy){const st=kkEl('kkStage');if(st)st.classList.remove('vault-open')}}
 // Snelheid mag ook tijdens een spin of bonus om: de volgende val/tumble gebruikt meteen het nieuwe tempo.
@@ -202,7 +202,7 @@ const kkWait=ms=>new Promise(async r=>{if(kk.inBonus&&(!kkOn()||kk.paused))await
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&kk.paused&&page==='casino'&&casinoTab==='kluis')render()});
 const kkEl=id=>document.getElementById(id);
 function kkText(id,v){const el=kkEl(id);if(el)el.textContent=v}
-function kkInfoRefresh(){const el=kkEl('kkInfo');if(el)el.innerHTML=kkInfo()}
+function kkInfoRefresh(){const el=kkEl('kkInfo');if(el){el.innerHTML=kkInfo();fitText(el)}}
 function kkShow(g,anim){kk.grid=g;const el=kkEl('kkCells');if(el)el.innerHTML=kkCellsHtml(g,anim)}
 function kkShowSpots(sp,prev){kk.spots=sp;const el=kkEl('kkSpots');if(el)el.innerHTML=kkSpotsHtml(sp,prev)}
 function kkBanner(big,small,ms,cls){const el=kkEl('kkBanner');if(el)el.innerHTML=`<div class="kk-banner ${cls||''}"><div><b>${big}</b><span>${small||''}</span></div></div>`;

@@ -52,7 +52,7 @@ const vbRing=(k,off,center,sub,extra)=>`<div class="va-ring"><svg viewBox="0 0 1
 function vbHideCard(){const on=!!S.hide,heat=S.heat,rh=Math.round(hideRate('home')),ra=Math.round(hideRate('away')*10)/10;
  return `<article class="va hd ${on?'on':''} ${heat>=100?'hot':''}" style="--c:#b8a1ff">
   ${vbRing('hide',RING*(1-heat/100),heat+'%','hitte')}
-  <div class="va-b"><h3>Onderduiken</h3><p>${on?'Je bent ondergedoken. Luiken dicht, telefoon uit.':'Luiken dicht, telefoon uit. Of ga vermomd de straat op.'}</p>
+  <div class="va-b"><h3 data-fit="12">Onderduiken</h3><p>${on?'Je bent ondergedoken. Luiken dicht, telefoon uit.':'Luiken dicht, telefoon uit. Of ga vermomd de straat op.'}</p>
    <div class="va-eff"><div><span>Hier thuis</span><b>−${rh}%/min</b><i></i><em>bijna nooit herkend</em></div>
     <div><span>Vermomd elders</span><b>−${String(ra).replace('.',',')}%/min</b><i></i><em>${furnFx('hideRisk')?'minder kans herkend':'kans op herkenning'}</em></div>${S.wanted?'<div><span>Op de gezochtlijst</span><b>ja</b><i>→</i><em>nee bij 0%</em></div>':''}</div>
    <button class="btn ${on?'ghost':''}" onclick="${on?"hideStop('Je duikt weer op.')":'hideStart()'}" ${!on&&(inJail()||heat<=0)?'disabled':''}>${on?'Stoppen met onderduiken':inJail()?'Je zit vast':heat<=0?'Geen hitte':'Onderduiken'}</button>
@@ -85,7 +85,7 @@ function vbAct(k){const h=home(),active=stay.kind===k,other=stay.kind&&!active,c
  const note=k==='rest'?`Elke ${fmtClock(STAY.rest.cd())} min. Ga je eerder weg, dan houd je wat je had en wacht je naar verhouding.`:`+${docHp()}% gezondheid in ${DOC.dur} s, daarna ${fmtClock(STAY.doc.cd())} min wachten.`;
  return `<article class="va ${active?'on':''}" style="--c:${C[0]}">
   ${vbRing(k,off,center,sub,k==='doc'?'<svg class="ecg" viewBox="0 0 120 30"><path d="M0,15 L34,15 L40,15 L44,4 L50,26 L55,10 L59,15 L120,15"/></svg>':'')}
-  <div class="va-b"><h3>${C[1]}</h3><p>${C[2]}</p>
+  <div class="va-b"><h3 data-fit="12">${C[1]}</h3><p>${C[2]}</p>
    <div class="va-eff">${rows.map(r=>`<div><span>${r[0]}</span>${String(r[1]).startsWith('<b')?r[1]:`<b>${r[1]}</b>`}<i>→</i><em>${r[2]}</em></div>`).join('')}</div>
    <button class="btn ${active?'ghost':''}" onclick="${active?'stayStop(true)':`stayStart('${k}')`}" ${(!active&&(other||inJail()||cd||!useful))?'disabled':''}>${label}</button>
    <div class="va-note">${note}</div></div></article>`}

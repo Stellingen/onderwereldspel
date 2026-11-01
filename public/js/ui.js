@@ -71,7 +71,28 @@ function renderNav(){
 }
 // Alleen bijwerken als de inhoud echt veranderd is; scrollpositie binnen het element blijft staan.
 // (Elke seconde alles opnieuw tekenen zette op de telefoon het menu en de statusbalk steeds terug naar het begin.)
-function setHTML(el,h){if(!el||el._h===h)return false;const sl=el.scrollLeft,st=el.scrollTop;el.innerHTML=h;el._h=h;if(sl)el.scrollLeft=sl;if(st)el.scrollTop=st;return true}
+function setHTML(el,h){if(!el||el._h===h)return false;const sl=el.scrollLeft,st=el.scrollTop;el.innerHTML=h;el._h=h;if(sl)el.scrollLeft=sl;if(st)el.scrollTop=st;fitText(el);return true}
+// Lange woorden in grote letters (rang, namen, bedragen) passen altijd in hun vak. Elementen met data-fit="<min px>"
+// krijgen een kleinere letter als de tekst breder is dan het vak. Gemeten met het echte lettertype, dus ook goed na het laden ervan.
+// Bedragen, namen en korte labels die vroeger met … werden ingekort: die worden nu ook passend gemaakt.
+const FIT_AUTO=[['#kkBal,#vdBal,.bk-k b,.bk-flow b,.bk-tiers b,.kk-hud b,.kk-betv,.rtop li b,.rtop .lb-name,.pb-kpi b,.bz-stat b,.bz-u-id b,.bk-h-kpis b,.cr-s b,.pf-dos b,.kk-sess>div b,.hg-top>div:first-child b,.ord-t b,.bz-pt-t b,.gc-specs b,.kk-scpay b,.kk-info b,.kk-strip b,.fm-ladder b,.fit-worn b,.jl-rec b,.fwg-side b,.vh-sb b,.mq-step b,.cas-pick b,.bz-upall b,.pv-t b,.topbar>.chip.rank .rk-n,.bk-seg button b,.bz-u-btn b',10],
+ ['.bk-tiers i,.dos-rank em,.pv-t small,.cr-s small,.pf-dos small,.tr-tile>span,.tr-tile>em,.rgrid small,.od-n,.kl-hist>div span,.kr-buy-t small,.ht-card header .label,.ht-mc span,.vh-pl,.vh-sb em,.bk-flow .bk-zw,.atm-pct button small,.bz-done,.bz-u-btn span,.pr-lv button small,.kl-base,.ms-opt small,.dm-t small,.chud .label,.cp-o em,.dos-vit .rs>small',8]];
+const FIT_SEL='[data-fit],'+FIT_AUTO.map(x=>x[0]).join(',');
+function fitMin(el){if(el.dataset.fit)return +el.dataset.fit;for(const [q,m] of FIT_AUTO)if(el.matches(q))return m;return 10}
+function fitText(root,tries){const els=(root||document).querySelectorAll(FIT_SEL);if(!els.length)return;
+ for(const el of els){if(el._fs0===undefined){el._fs0=el.style.fontSize;el._ws0=el.style.whiteSpace;el._ow0=el.style.overflowWrap}
+  el.style.removeProperty('font-size');if(el._fs0)el.style.fontSize=el._fs0;el.style.whiteSpace=el._ws0;el.style.overflowWrap=el._ow0}
+ let hid=0;
+ for(const el of els){const w=el.scrollWidth,max=el.clientWidth;if(!max&&el.isConnected&&el.textContent.trim())hid++;if(!max||w<=max+1)continue;
+  const fs=parseFloat(getComputedStyle(el).fontSize),min=Math.min(fs,fitMin(el)),nf=Math.max(min,Math.floor(fs*max/w*20)/20-.25);el.style.setProperty('font-size',nf+'px','important');
+  // ook op de kleinste letter te breed (heel lange naam): dan liever over twee regels dan afgeknipt
+  if(nf===min&&el.scrollWidth>el.clientWidth+1){el.style.setProperty('white-space','normal','important');el.style.overflowWrap='anywhere'}}
+ // stond iets nog verborgen (pagina wordt net opgebouwd)? dan straks nog een keer
+ if(hid&&(tries||0)<2&&!fitText._t)fitText._t=setTimeout(()=>{fitText._t=0;fitText(root&&root.isConnected?root:null,(tries||0)+1)},450)}
+window.addEventListener('resize',()=>fitText(null,2));
+// vensters die los aan de pagina worden toegevoegd (oefenen, pop-ups): ook passend maken
+try{new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1)requestAnimationFrame(()=>fitText(n))}).observe(document.body,{childList:true})}catch(e){}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>fitText());
 // Is de speler net aan het scrollen of aanraken? Dan wachten we even met hertekenen.
 let _touching=false,_lastScroll=0;
 document.addEventListener('touchstart',()=>{_touching=true},{passive:true,capture:true});
@@ -108,7 +129,7 @@ function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('na
  const ri=rankIdx(S.xp);
  // het open menu niet hertekenen terwijl je erin scrollt of zoekt; bij openen wordt het vernieuwd
  if(sh.classList.contains('open')&&!sh._fresh)return;sh._fresh=false;
- const tile=k=>`<a class="ms-tile ${k===page?'on':''}" href="#${k}" data-close data-k="${msKey(name(k)+' '+navHint(k)+' '+(MS_PAGE_K[k]||''))}">${svg(k)}<b>${name(k)}</b><small>${k===page?'Je bent hier':navHint(k)}</small>${bd[k]?`<em class="${bd[k]==='●'?'ok':''}">${bd[k]==='●'?'vol':bd[k]}</em>`:''}</a>`;
+ const tile=k=>`<a class="ms-tile ${k===page?'on':''}" href="#${k}" data-close data-k="${msKey(name(k)+' '+navHint(k)+' '+(MS_PAGE_K[k]||''))}">${svg(k)}<b data-fit="10.5">${name(k)}</b><small>${k===page?'Je bent hier':navHint(k)}</small>${bd[k]?`<em class="${bd[k]==='●'?'ok':''}">${bd[k]==='●'?'vol':bd[k]}</em>`:''}</a>`;
  const rec=msRecent().filter(k=>k!==page&&PAGES.some(p=>p[0]===k)).slice(0,4);
  setHTML(sh,`<div class="ms-panel" role="dialog" aria-label="Alle pagina's"><div class="ms-grab"></div>
   <div class="ms-head"><div><b>${esc(S.name)}${vipTag()}</b><span class="ms-money">${RANKS[ri][0]} · <em class="w">${fmtS(witNu())} wit</em>${zwart()>=1?` · <em class="z">${fmtS(zwart())} zwart</em>`:''}</span></div><button class="ms-x" data-close aria-label="Sluiten">✕</button></div>
@@ -171,7 +192,7 @@ function msFirst(){const sh=$('#msheet'),a=sh&&sh.querySelector('.ms-opt:not([hi
 let _msLast=null;
 function msRecent(){try{return JSON.parse(localStorage.getItem('ow_recent')||'[]')}catch(e){return []}}
 function msTrack(){if(_msLast===page)return;_msLast=page;if(page==='dash')return;try{const r=msRecent().filter(k=>k!==page);r.unshift(page);localStorage.setItem('ow_recent',JSON.stringify(r.slice(0,6)))}catch(e){}}
-function mSheet(open){const sh=$('#msheet');if(!sh)return;if(open&&!sh.classList.contains('open')){sh._fresh=true;renderMbar();const p=sh.querySelector('.ms-panel');if(p)p.scrollTop=0}sh.classList.toggle('open',open);sh.setAttribute('aria-hidden',open?'false':'true');document.body.classList.toggle('ms-lock',open);
+function mSheet(open){const sh=$('#msheet');if(!sh)return;if(open&&!sh.classList.contains('open')){sh._fresh=true;renderMbar();const p=sh.querySelector('.ms-panel');if(p)p.scrollTop=0}sh.classList.toggle('open',open);sh.setAttribute('aria-hidden',open?'false':'true');if(open)requestAnimationFrame(()=>fitText(sh));document.body.classList.toggle('ms-lock',open);
  if(!open){const i=sh.querySelector('#msQ');if(i&&i.value){i.value='';msFilter('')}if(document.activeElement&&sh.contains(document.activeElement))document.activeElement.blur()}
  if(open){if(typeof SFX!=='undefined')SFX.click();setTimeout(()=>{const t=sh.querySelector('.ms-tile.on')||sh.querySelector('.ms-x');t&&t.focus({preventScroll:true})},60)}}
 window.addEventListener('hashchange',()=>mSheet(false));
@@ -270,9 +291,9 @@ function renderRail(){
 // Drie soorten geld, altijd apart: wit (schoon, op zak), zwart (uit klussen, eerst witwassen) en de bank (veilig)
 const witNu=(pend)=>Math.max(0,S.cash-(pend||0)-zwart());
 function moneyRows(pend){const zw=zwart(),bk=typeof bankNet==='function'?bankNet():S.bank;
- return `<a class="dm cash" href="#bank" title="Wit geld: schoon, je kunt het overal aan uitgeven en op de bank zetten. Het zit wel op zak: word je gepakt, dan kun je een deel kwijtraken."><i class="dm-ic">${ICO_CASH}</i><span class="dm-t"><span class="label">Wit geld</span><small>schoon</small></span><b>${fmt(witNu(pend))}</b></a>
-  <a class="dm zw ${zw<1?'nul':''}" href="#wit" title="Zwart geld: verdiend met klussen, auto's, huurmoorden en de familie. De bank en je zaken nemen het niet aan; eerst witwassen. In het casino en voor kleine uitgaven kun je het wel gebruiken."><i class="dm-ic">${ICO_ZWART}</i><span class="dm-t"><span class="label">Zwart geld</span><small>${zw>=1?'eerst witwassen ›':'niets op zak'}</small></span><b>${fmt(zw)}</b></a>
-  <a class="dm bank" href="#bank" title="Op de bank staat je geld veilig: spaarrekening, deposito's en beleggingen."><i class="dm-ic">${ICO_BANK}</i><span class="dm-t"><span class="label">Bank</span><small>veilig</small></span><b>${fmt(bk)}</b></a>`}
+ return `<a class="dm cash" href="#bank" title="Wit geld: schoon, je kunt het overal aan uitgeven en op de bank zetten. Het zit wel op zak: word je gepakt, dan kun je een deel kwijtraken."><i class="dm-ic">${ICO_CASH}</i><span class="dm-t"><span class="label">Wit geld</span><small>schoon</small></span><b data-fit="11">${fmt(witNu(pend))}</b></a>
+  <a class="dm zw ${zw<1?'nul':''}" href="#wit" title="Zwart geld: verdiend met klussen, auto's, huurmoorden en de familie. De bank en je zaken nemen het niet aan; eerst witwassen. In het casino en voor kleine uitgaven kun je het wel gebruiken."><i class="dm-ic">${ICO_ZWART}</i><span class="dm-t"><span class="label">Zwart geld</span><small>${zw>=1?'eerst witwassen ›':'niets op zak'}</small></span><b data-fit="11">${fmt(zw)}</b></a>
+  <a class="dm bank" href="#bank" title="Op de bank staat je geld veilig: spaarrekening, deposito's en beleggingen."><i class="dm-ic">${ICO_BANK}</i><span class="dm-t"><span class="label">Bank</span><small>veilig</small></span><b data-fit="11">${fmt(bk)}</b></a>`}
 // Statusbalk bovenaan: op de telefoon en op smallere schermen (zonder rechterkolom). In het casino: saldo en lidmaatschap.
 // Ogen van de beveiliging: dicht (ze zien je niet), open (ze kijken rond) of rood (ze kijken naar jouw tafel)
 const CZ_EYE_TXT=['Ogen dicht · ze zien je niet','Ze kijken rond','Ze kijken naar jouw tafel'];
@@ -294,13 +315,13 @@ function casHudHtml(){const pend=window.slotPending||0,b=typeof bankNet==='funct
  const chips=[
   `<button class="cc cc-pay ${pm} ${open?'open':''}" onclick="act.casPaySel()" aria-expanded="${open}" aria-label="Kies waarmee je betaalt"><span>Betalen met</span><b>${casPayIc(pm)}${pm==='auto'?'Auto':pm==='wit'?'Wit':'Zwart'} ▾</b></button>`,
   t?`<button class="cc cc-cb ${cb>=1?'can':''}" onclick="act.claimCb()" ${cb<1?'disabled':''} aria-label="Cashback claimen"><span>${cb>=1?'Claim nu':'Cashback'}</span><b>${fmt(cb)}</b></button>`
-   :`<a class="cc cc-up" href="#profiel"><span>Cashback</span><b>Alleen VIP ›</b></a>`,
+   :`<a class="cc cc-up" href="#profiel"><span>Cashback</span><b>Alleen VIP</b></a>`,
   hasLuck?(luck.ready?`<button class="cc cc-luck can" onclick="act.luckUse()" aria-label="Geluk +${Math.round(luck.o.luck*100)}% gebruiken"><span><i>${diceSvg(luck.o)}</i>+${Math.round(luck.o.luck*100)}%</span><b>Gebruik</b></button>`
    :`<a class="cc cc-luck ${luck.L?'on':''}" href="#look" aria-label="Geluk +${Math.round(luck.o.luck*100)}%"><span><i>${diceSvg(luck.o)}</i>Geluk +${Math.round(luck.o.luck*100)}%</span><b>${luck.L?fmtClock(luck.L):bkDurL(luck.W)}</b></a>`):'',
-  `<a class="cc cc-sus ${susC} e${e}" href="#wit" style="--v:${sus}%" title="Verdenking: ${CZ_EYE_TXT[e]}"><span>${czEyesSvg(e)}</span><b>${sus}%</b></a>`].join('');
+  `<a class="cc cc-sus ${susC} e${e}" href="#wit" style="--v:${sus}%" title="Verdenking: ${CZ_EYE_TXT[e]}"><span>${czEyesSvg(e)}</span><b>${sus}%</b></a>`].join('').replace(/<span>/g,'<span data-fit="7.5">').replace(/<b>/g,'<b data-fit="9.5">');
  const sel=`<div class="cp-sel" role="group" aria-label="Betalen met">${['auto','wit','zwart'].map(m=>`<button class="cp-o ${m} ${pm===m?'on':''}" onclick="act.casPay('${m}')" aria-pressed="${pm===m}">${casPayIc(m)}<span><b>${CAS_PAY[m][0]}</b><small>${CAS_PAY[m][1]}</small></span><em>${fmt(m==='wit'?wn:m==='zwart'?zw:Math.max(0,S.cash-pend))}</em></button>`).join('')}</div>`;
  return `<div class="chud v2 pay-${pm}">
-  <div class="ch-main"><i class="dm-ic">${ICO_CASH}</i><div><span class="label">Saldo om mee te spelen</span><b id="casBal" title="${fmt(bal)}">${fmtFit(bal,fitN(12))}</b><span class="ch-now">${now_}</span></div></div>
+  <div class="ch-main"><i class="dm-ic">${ICO_CASH}</i><div><span class="label"><span class="l-lg">Saldo om mee te spelen</span><span class="l-sm">Speelsaldo</span></span><b id="casBal" title="${fmt(bal)}">${fmtFit(bal,fitN(12))}</b><span class="ch-now">${now_}</span></div></div>
   <div class="ch-pay" role="group" aria-label="Betalen met"><span class="label">Betalen met</span>
    <div class="ch-seg">${['auto','wit','zwart'].map(m=>`<button class="${m==='auto'?'a':m==='wit'?'w':'z'} ${pm===m?'on':''}" onclick="act.casPay('${m}')" aria-pressed="${pm===m}"><small>${m==='auto'?'Auto · zwart eerst':m==='wit'?'Wit · legaal':'Zwart · riskant'}</small><b>${fmt(m==='wit'?wn:m==='zwart'?zw:Math.max(0,S.cash-pend))}</b></button>`).join('')}</div></div>
   <a class="ch-cell ch-bank" href="#bank"><i class="dm-ic">${ICO_BANK}</i><div><span class="label">Bank</span><b title="${fmt(b)}">${fmtFit(b,fitN(10))}</b></div></a>
@@ -324,9 +345,9 @@ function renderTop(){
   setHTML($('#topbar'),`
    <div class="chip rank"><small>Rang · lv ${rankLevel(S.xp)}</small><b><span class="rk-n">${RANKS[ri][0]}</span>${vipTag(1)}</b><div class="mini"><i style="width:${pct}%;background:var(--acc)"></i></div></div>
    <i class="tb-br" aria-hidden="true"></i>
-   <a class="chip cash" href="#bank" title="Wit geld: schoon, overal aan uit te geven"><small><i class="ci">${ICO_CASH}</i>Wit geld</small><b title="${fmt(witNu(pend))}">${fmtFit(witNu(pend),fitN(15))}</b></a>
-   <a class="chip zwc ${zwart()<1?'nul':''}" href="#wit" title="Zwart geld: eerst witwassen voor de bank of een zaak"><small><i class="ci">${ICO_ZWART}</i>Zwart geld</small><b title="${fmt(zwart())}">${fmtFit(zwart(),fitN(11))}</b></a>
-   <a class="chip bankc" href="#bank" title="Op de bank staat je geld veilig"><small><i class="ci">${ICO_BANK}</i>Bank</small><b title="${fmt(typeof bankNet==='function'?bankNet():S.bank)}">${fmtFit(typeof bankNet==='function'?bankNet():S.bank,fitN(11))}</b></a>
+   <a class="chip cash" href="#bank" title="Wit geld: schoon, overal aan uit te geven"><small><i class="ci">${ICO_CASH}</i>Wit geld</small><b data-fit="10" title="${fmt(witNu(pend))}">${fmtFit(witNu(pend),fitN(15))}</b></a>
+   <a class="chip zwc ${zwart()<1?'nul':''}" href="#wit" title="Zwart geld: eerst witwassen voor de bank of een zaak"><small><i class="ci">${ICO_ZWART}</i>Zwart geld</small><b data-fit="10" title="${fmt(zwart())}">${fmtFit(zwart(),fitN(11))}</b></a>
+   <a class="chip bankc" href="#bank" title="Op de bank staat je geld veilig"><small><i class="ci">${ICO_BANK}</i>Bank</small><b data-fit="10" title="${fmt(typeof bankNet==='function'?bankNet():S.bank)}">${fmtFit(typeof bankNet==='function'?bankNet():S.bank,fitN(11))}</b></a>
    <a class="chip sm en" href="#ontspannen" title="Energie bijvullen"><small>Energie</small><b style="color:var(--ice)"><i class="ti">${TI.en}</i>${Math.floor(S.energy)}<span class="emax">/${EN_MAX}</span></b><div class="mini"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div></a>
    <div class="chip sm cred"><small>Cred</small><b style="color:var(--violet)"><i class="ti">${TI.cred}</i>${S.cred}</b></div>
    <a class="chip sm hp" href="#verblijf" title="Dokter of rusten"><small>Gezondheid</small><b style="color:${S.hp>50?'var(--green)':'var(--red)'}"><i class="ti">${TI.hp}</i>${S.hp}%</b></a>

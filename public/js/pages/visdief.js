@@ -124,7 +124,7 @@ function visView(){const g=vd.grid||vdDemo(),fs=vd.fs;
    <div><span class="kk-mini key">␣</span><p><b>Spatiebalk</b> draait. Visdief is een slot met hoge volatiliteit: lastig in de bonus, maar de max win is ${VISD.MAX_WIN.toLocaleString('nl-NL')}× je inzet (€20 kan €200.000 worden). Daarvoor moet je ronde 4 (×10) halen en een reus vangen.${isVip()?` Als <b>${lidName()}</b> kom je vaker in de bonus (±1 op ${VD_TIER[tier()].b} in plaats van ±1 op ${VD_TIER[0].b}) en valt de Visdief iets vaker; lijnwinst in het basisspel is daarvoor ${Math.round((1-VISD.VIP_KT[tier()])*100)}% lager.`:` <b>VIP</b> komt ±15% vaker in de bonus, <b>High roller</b> ±40%.`}</p></div>
   </div></section></div>`}
 function vdRefresh(){const root=document.querySelector('.vd');if(!root)return;root.classList.toggle('is-fs',!!vd.fs);
- const set=(id,h)=>{const e=vdEl(id);if(e)e.innerHTML=h};
+ const set=(id,h)=>{const e=vdEl(id);if(e){e.innerHTML=h;fitText(e)}};
  set('vdSub',vdSubHtml());set('vdInfo',vdInfo());set('vdCtl',vdControls());set('vdFs',vdFsBar());
  set('vdPickBox','');set('vdConfirmBox',vd.buyMode&&!vd.busy?vdConfirm():'');set('vdSeedBox',vdSeedHtml());set('vdPayTab',vdPayTab())}
 function vdStepBet(d){if(vd.busy)return;vd.bi=Math.max(0,Math.min(kkBets().length-1,vd.bi+d));vd.confirm=false;SFX.chip();vdRefresh()}
