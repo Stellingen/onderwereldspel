@@ -3317,3 +3317,26 @@ a.dv:hover{box-shadow:inset 0 0 0 1px var(--line2)}
 .vd.kk3 .kk-betbox,.vd.kk3 .kk-small>*{border-radius:8px}
 .vd.kk3 .kk-small .kk-buyt,.vd.kk3 .kk-small .spd{background:#0b161e;box-shadow:inset 0 0 0 1px #24404f}
 @container (max-width:700px){.vd.kk3 .vd-stage::after{height:70px}}
+/* Casinokaart in de lobby: ingeklapt één regel, uitklappen voor voortgang per soort en wat de kaart geeft */
+.ccp{display:block;padding:0;overflow:hidden}
+.ccp-top{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;padding:10px 14px;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ccp-top:hover{background:rgba(255,255,255,.025)}
+.ccp-top:focus-visible{outline:2px solid var(--cc);outline-offset:-2px}
+.ccp-mini{width:58px;display:block}.ccp-mini svg{width:100%;display:block;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));transform:rotate(-4deg)}
+.ccp-tt{display:flex;flex-direction:column;gap:2px;min-width:0}.ccp-tt .label{margin:0}
+.ccp-tt b{font-family:var(--f-display);font-weight:900;font-size:24px;line-height:1;text-transform:uppercase;color:color-mix(in srgb,var(--cc) 70%,#fff)}
+.ccp-tp{display:flex;flex-direction:column;gap:5px;min-width:0;max-width:420px}
+.ccp-tp>span{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.ccp-tp .label{margin:0}
+.ccp-tp em{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--fg)}
+.ccp-tp>i{display:block;height:6px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden}
+.ccp-tp>i>i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,color-mix(in srgb,var(--cc) 60%,#000),var(--cc))}
+.ccp-tl{display:flex;align-items:center;gap:6px;font-family:var(--f-head);font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:7px 10px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line2)}
+.ccp-tl svg{width:16px;height:16px;transition:transform .2s}
+.ccp-less{display:none}.ccp.open .ccp-less{display:inline}.ccp.open .ccp-more{display:none}.ccp.open .ccp-tl svg{transform:rotate(180deg)}
+.ccp-body{display:none;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(0,1.15fr);gap:14px;padding:4px 16px 16px;border-top:1px solid var(--line)}
+.ccp.open .ccp-body{display:grid;padding-top:14px}
+@media (max-width:1200px){.ccp-body{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media (max-width:700px){.ccp-body{grid-template-columns:minmax(0,1fr);padding:12px}.ccp.open .ccp-body{padding-top:12px}
+ .ccp-top{grid-template-columns:auto minmax(0,1fr) auto;gap:6px 12px;padding:10px 12px}.ccp-mini{width:46px;grid-row:1/3}
+ .ccp-tt b{font-size:20px}.ccp-tp{grid-column:2/-1;max-width:none}.ccp-tl{grid-column:3;grid-row:1;padding:6px 8px}.ccp-tl .ccp-more,.ccp-tl .ccp-less{display:none!important}}
+@media (max-width:380px){.ch-ccm .ccm-n{display:none}}

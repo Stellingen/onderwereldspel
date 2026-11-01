@@ -52,7 +52,7 @@ const ccNeedTot=c=>c&&c.need?c.need.slot+c.need.snel+c.need.tafel:0;
 // speeltijd: hoe lang je nog mag in deze sessie
 function ccSessLeft(){const T=S.czT;if(!T||now()-T.last>ccCdMs())return ccSessMs();return Math.max(0,T.t0+ccSessMs()-now())}
 // de kaart zelf (plastic met chip, naam en niveau)
-function ccCardSvg(lv,small){const c=CC[lv],dark=lv===5,fg=dark?'#e8b923':lv===4?'#0d2333':lv===3?'#3a2700':'#15181d',uid='cc'+lv+(small?'s':'');
+function ccCardSvg(lv,small){const c=CC[lv],dark=lv===5,fg=dark?'#e8b923':lv===4?'#0d2333':lv===3?'#3a2700':'#15181d',uid='cc'+lv+(small?'s':'')+'_'+(ccCardSvg.n=(ccCardSvg.n||0)+1);
  return `<svg class="cc-svg" viewBox="0 0 172 108" aria-hidden="true"><defs><linearGradient id="${uid}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c.col}"/><stop offset=".55" stop-color="${dark?'#111115':c.col}" stop-opacity="${dark?1:.78}"/><stop offset="1" stop-color="${dark?'#2a2a31':'#fff'}" stop-opacity="${dark?1:.35}"/></linearGradient></defs>
   <rect x="1" y="1" width="170" height="106" rx="11" fill="url(#${uid}g)" stroke="rgba(255,255,255,.35)"/>
   <path d="M1 70 Q60 40 171 78 L171 96 Q171 107 160 107 L12 107 Q1 107 1 96Z" fill="rgba(0,0,0,.14)"/>
@@ -66,7 +66,13 @@ const ccMin=ms=>{const m=Math.round(ms/60000);return m>=60?(m%60?Math.floor(m/60
 function ccPanelHtml(){const lv=ccLv(),c=CC[lv],nx=CC[lv+1],C=ccS(),t=typeof tier==='function'?tier():0;
  const perk=(lab,a,b)=>`<div><span>${lab}</span><b>${a}</b>${b!=null?`<em>${b}</em>`:''}</div>`;
  const val=(cc,k)=>{const old=S.cc.lv;S.cc.lv=CC.indexOf(cc);const v=k==='sess'?ccMin(ccSessMs()):k==='cd'?ccMin(ccCdMs()):k==='cb'?(ccCbF('kluis')>0?(CB_RATE.kluis*ccCbF('kluis')*100).toLocaleString('nl-NL',{maximumFractionDigits:2})+'% slots':'geen'):fmt(casMax(k));S.cc.lv=old;return v};
- return `<section class="ccp" style="--cc:${c.col}">
+ const done=nx?['slot','snel','tafel'].reduce((a,k)=>a+Math.min(C.p[k]||0,nx.need[k]),0):0,pct=nx?Math.floor(done/ccNeedTot(nx)*100):100,open=ccpOpen();
+ return `<section class="ccp ${open?'open':''}" style="--cc:${c.col}">
+  <button class="ccp-top" onclick="ccpToggle(this)" aria-expanded="${open}" aria-controls="ccpBody"><span class="ccp-mini">${ccCardSvg(lv,1)}</span>
+   <span class="ccp-tt"><span class="label">Jouw casinokaart</span><b>${c.n}</b></span>
+   <span class="ccp-tp">${nx?`<span><span class="label">Op weg naar ${nx.n}</span><em>${pct}%</em></span><i><i style="width:${pct}%"></i></i>`:`<span><span class="label">Hoogste kaart</span><em>Zwart</em></span><i><i style="width:100%"></i></i>`}</span>
+   <span class="ccp-tl"><span class="ccp-more">Details</span><span class="ccp-less">Inklappen</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></button>
+  <div class="ccp-body" id="ccpBody">
   <div class="ccp-card">${ccCardSvg(lv)}<div class="ccp-id"><span class="label">Jouw casinokaart</span><b>${c.n}</b><small>${t?`${TIER_NAME[t]}: hogere limieten en langer spelen bovenop je kaart`:'Los van je rang: je groeit door te spelen'}</small></div></div>
   <div class="ccp-prog">${nx?`<div class="ccp-h"><span class="label">Op weg naar ${nx.n}</span><b>${fmt(['slot','snel','tafel'].reduce((a,k)=>a+Math.min(C.p[k]||0,nx.need[k]),0))} / ${fmt(ccNeedTot(nx))}</b></div>
    ${['slot','snel','tafel'].map(k=>{const p=Math.min(1,(C.p[k]||0)/nx.need[k]);return `<div class="ccp-bar ${p>=1?'ok':''}"><span>${CC_CATN[k]}</span><i><i style="width:${(p*100).toFixed(1)}%"></i></i><em>${fmt(Math.min(C.p[k]||0,nx.need[k]))} / ${fmt(nx.need[k])}</em></div>`}).join('')}
@@ -76,7 +82,10 @@ function ccPanelHtml(){const lv=ccLv(),c=CC[lv],nx=CC[lv+1],C=ccS(),t=typeof tie
    ${perk('Side bets',val(c,'side'),nx?val(nx,'side'):null)}${perk('Roulette per nummer',val(c,'rin'),nx?val(nx,'rin'):null)}
    ${perk('Speeltijd achter elkaar',val(c,'sess'),nx?val(nx,'sess'):null)}${perk('Pauze daarna',val(c,'cd'),nx?val(nx,'cd'):null)}
    ${perk('Cashback',val(c,'cb'),nx?val(nx,'cb'):null)}${perk('Aandacht voor zwart geld',Math.round(c.eye*100)+'%',nx?Math.round(nx.eye*100)+'%':null)}</div>
- </section>`}
+ </div></section>`}
+// in- en uitklappen; standaard ingeklapt zodat de spellen eronder meteen in beeld zijn (onthouden per browser)
+function ccpOpen(){try{return localStorage.getItem('ow_ccp')==='1'}catch(e){return !!window._ccpOpen}}
+function ccpToggle(b){const sec=b.closest('.ccp'),o=!sec.classList.contains('open');sec.classList.toggle('open',o);b.setAttribute('aria-expanded',o);window._ccpOpen=o;try{localStorage.setItem('ow_ccp',o?'1':'0')}catch(e){}if(o)requestAnimationFrame(()=>{try{fitText(sec)}catch(e){}})}
 // kleine regel in de casinobalk: kaart en hoeveel speeltijd je nog hebt
 const ccChip=()=>{const c=ccCard(),l=ccSessLeft();return `<div class="ch-cell ch-card" style="--cc:${c.col}" title="Casinokaart ${c.n}: speeltijd ${ccMin(ccSessMs())}, daarna ${ccMin(ccCdMs())} pauze"><span class="cc-mini">${ccCardSvg(ccLv(),1)}</span><div><span class="label">Kaart ${c.n}</span><b id="ccSess" class="cc-sess-t">${fmtClock(l)}</b></div></div>`};
 setInterval(()=>{const L=document.querySelectorAll('.cc-sess-t');if(L.length){const t=fmtClock(ccSessLeft());L.forEach(e=>{if(e.textContent!==t)e.textContent=t})}},1000);
