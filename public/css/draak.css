@@ -131,7 +131,7 @@
 .dr-ban{--rip:#ffd35a}
 /* layout: bediening onder het bord, even breed */
 .dr.kk3 .kk-stage{display:block}
-.dr.kk3 .kk-bar{width:min(100%,max(var(--drw,0px),780px));margin:12px auto 0}
+.dr.kk3 .kk-bar{width:min(100%,1100px);margin:12px auto 0}
 .dr.kk3 .kk-seed{max-width:980px;margin-left:auto;margin-right:auto}
 @container (min-width:1100px){
  .dr.kk3 .kk-bar{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1.5fr);gap:12px;align-items:stretch}
@@ -172,3 +172,24 @@
 .dr-cv{font-size:clamp(10px,2.4cqi,20px)}
 .dr-coin b{font-size:clamp(12px,3.2cqi,28px)}
 .dr-cell.coin.jp .dr-cv,.dr-coin.jp b{background:var(--jc);color:#10141a!important;box-shadow:0 0 0 1.5px #fff,0 0 12px var(--jc)}
+/* bonus kopen: twee knoppen naast elkaar, alles past (ook bij grote bedragen) */
+.dr-buys .kk-go{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;overflow:hidden;text-align:center}
+.dr-buys .kk-buy-l{font-size:13px;letter-spacing:.06em;white-space:nowrap;max-width:100%;overflow:hidden}
+.dr-buys .kk-buy-p{font-size:clamp(14px,1.5vw,22px);line-height:1;white-space:nowrap;max-width:100%}
+.dr-buys .kk-go small{white-space:nowrap;max-width:100%;overflow:hidden;font-size:10px}
+@container (min-width:1100px){
+ .dr.kk3.is-buy .kk-bar{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+ .dr.kk3.is-buy .kk-ctl{grid-template-columns:minmax(150px,1fr) minmax(230px,1.9fr) minmax(118px,.75fr)}
+}
+@container (min-width:701px) and (max-width:1099px){
+ .dr.kk3.is-buy .kk-bar{grid-template-columns:minmax(0,1fr)}
+ .dr.kk3.is-buy .kk-ctl{display:grid;grid-template-columns:minmax(150px,.8fr) minmax(0,2fr) minmax(120px,.9fr);gap:8px;align-items:stretch}
+ .dr.kk3.is-buy .kk-ctl>*{grid-column:auto!important;min-width:0}
+ .dr.kk3.is-buy .kk-ctl .kk-small{flex-direction:column}
+}
+@container (max-width:700px){.dr.kk3.is-buy .kk-ctl .dr-buys,.dr.kk3.is-buy .kk-ctl .kk-small{grid-column:1/-1}}
+@container (min-width:1100px){.dr.kk3 .kk-ctl .kk-buyt small{display:none}}
+
+.dr.kk3 .kk-betv{white-space:nowrap}
+.dr.kk3 .kk-small .kk-buyt span{white-space:nowrap}
+@container (min-width:701px) and (max-width:1099px){.dr.kk3:not(.is-fs) .kk-hud{grid-template-columns:1.6fr 1fr 1fr}}

@@ -71,8 +71,8 @@ function drSubHtml(){return dr.fs?'<span class="dr-tag">Reuzendraak</span> Rol 2
 function drControls(){const b=drBet(),fsC=b*DRAAK.FS_BUY,hsC=b*DRAAK.HS_BUY,dis=dr.busy||inJail();
  return `<div class="kk-betbox"><span class="label">Inzet</span>
    <div class="kk-bet"><button onclick="drStepBet(-1)" ${dr.busy?'disabled':''} aria-label="Lagere inzet">−</button><button class="kk-betv" onclick="slotBetPop('dr')" ${dr.busy?'disabled':''} aria-label="Inzet kiezen">${fmt(b)}</button><button onclick="drStepBet(1)" ${dr.busy?'disabled':''} aria-label="Hogere inzet">+</button></div></div>
-   ${dr.buyMode?`<div class="dr-buys"><button class="btn kk-go buy dr-bfs" onclick="act.drSpin('fs')" ${dis||casCash()<fsC?'disabled':''}><span class="kk-buy-l">Free spins</span><b class="kk-buy-p">${fmt(fsC)}</b><small>${DRAAK.FS_BUY}× · 10 spins met de Reuzendraak</small></button>
-    <button class="btn kk-go buy dr-bhs" onclick="act.drSpin('hs')" ${dis||casCash()<hsC?'disabled':''}><span class="kk-buy-l">Muntenbonus</span><b class="kk-buy-p">${fmt(hsC)}</b><small>${DRAAK.HS_BUY}× · start met 6 munten</small></button></div>`
+   ${dr.buyMode?`<div class="dr-buys"><button class="btn kk-go buy dr-bfs" onclick="act.drSpin('fs')" ${dis||casCash()<fsC?'disabled':''}><span class="kk-buy-l">Free spins</span><b class="kk-buy-p" data-fit="13" title="${fmt(fsC)}">${fsC>=1e6?fmtS(fsC):fmt(fsC)}</b><small>${DRAAK.FS_BUY}× · 10 spins</small></button>
+    <button class="btn kk-go buy dr-bhs" onclick="act.drSpin('hs')" ${dis||casCash()<hsC?'disabled':''}><span class="kk-buy-l">Munten</span><b class="kk-buy-p" data-fit="13" title="${fmt(hsC)}">${hsC>=1e6?fmtS(hsC):fmt(hsC)}</b><small>${DRAAK.HS_BUY}× · 6 munten</small></button></div>`
     :`<button class="btn kk-go" onclick="act.drSpin(false)" ${dis?'disabled':''}>${dr.busy?'Bezig…':'Draaien'}<small>spatie</small></button>`}
    <div class="kk-small">${slotSpdHtml()}
     <button class="kk-buyt ${dr.buyMode?'on':''}" onclick="dr.buyMode=!dr.buyMode;SFX.click();drRefresh()" ${dr.busy?'disabled':''} aria-pressed="${!!dr.buyMode}"><i></i><span>Bonus kopen</span><small>${dr.buyMode?'aan':'uit'}</small></button></div>`}
@@ -91,7 +91,7 @@ function drPayTab(){const b=drBet(),k=DRAAK.PAYK/DRAAK.LINES.length*(DRAAK.VIP_K
   <div><h3 class="vd-h">Jackpots in de Muntenbonus</h3><div class="dr-jps">${jp}</div>
   <h3 class="vd-h" style="margin-top:18px">Waarde van een munt</h3><div class="vd-fishv dr-coinv">${coins}</div></div></div>`}
 function draakView(){const g=dr.grid||drDemo(),fs=dr.fs,hs=dr.hs;
- return `<div class="kk kk3 dr ${fs?'is-fs':''} ${hs?'is-hs':''}">
+ return `<div class="kk kk3 dr ${fs?'is-fs':''} ${hs?'is-hs':''} ${dr.buyMode?'is-buy':''}">
  <div class="kk-stage dr-stage" id="drStage">
   <div class="dr-board" id="drBoard">${DR_SKY}<header class="dr-head">${DR_LOGO}<span id="drSub" class="dr-sub">${drSubHtml()}</span><button class="kk-snd dr-snd" onclick="SFX.toggle();this.textContent=SFX.on?'🔊':'🔇'" aria-label="Geluid aan of uit">${SFX.on?'🔊':'🔇'}</button></header>
    <div class="dr-deck"><div class="dr-frame"><div class="dr-reels ${fs?'fs':''}" id="drReels">${drReelsHtml(g,!!fs)}</div>${hs?drHsHtml():''}<svg class="dr-lines" id="drLines" viewBox="0 0 500 300" preserveAspectRatio="none"></svg><div class="dr-fx" id="drFx"></div></div></div>
@@ -107,7 +107,7 @@ function draakView(){const g=dr.grid||drDemo(),fs=dr.fs,hs=dr.hs;
    <div><span>${drSvg('parel')}</span><p><b>De drakenparel</b> is wild op rol 2, 3 en 4. In de free spins kan het hele grote blok een parel zijn: dan telt elke lijn met een symbool op rol 1 als vier op een lijn.</p></div>
    <div><span class="kk-mini key">␣</span><p><b>Spatiebalk</b> draait. RTP ±${DR_TIER[tier()].rtp}%. Bonus kopen: free spins ${DRAAK.FS_BUY}× of de Muntenbonus met 6 munten ${DRAAK.HS_BUY}× je inzet (±96%).${isVip()?` Als <b>${lidName()}</b> vallen gongs en munten vaker; lijnwinst in het basisspel is daarvoor ${Math.round((1-DRAAK.VIP_KT[tier()])*100)}% lager.`:` <b>VIP</b> en <b>High roller</b> komen vaker in de bonussen.`}</p></div>
   </div></section></div>`}
-function drRefresh(){const root=document.querySelector('.dr');if(!root)return;root.classList.toggle('is-fs',!!dr.fs);root.classList.toggle('is-hs',!!dr.hs);
+function drRefresh(){const root=document.querySelector('.dr');if(!root)return;root.classList.toggle('is-fs',!!dr.fs);root.classList.toggle('is-hs',!!dr.hs);root.classList.toggle('is-buy',!!dr.buyMode);
  const set=(id,h)=>{const e=drEl(id);if(e){e.innerHTML=h;fitText(e)}};
  set('drSub',drSubHtml());set('drInfo',drInfo());set('drCtl',drControls());set('drSeedBox',drSeedHtml());set('drPayTab',drPayTab())}
 function drStepBet(d){if(dr.busy)return;dr.bi=Math.max(0,Math.min(kkBets().length-1,dr.bi+d));SFX.chip();drRefresh()}
