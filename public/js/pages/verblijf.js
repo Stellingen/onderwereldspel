@@ -186,7 +186,7 @@ V.verblijf=()=>{const h=home();if(stay.kind&&vb.view)vb.view=null;
  </section>`};
 Object.assign(act,{moveHome(id,src){const i=HOMES.findIndex(h=>h.id===id),cur=HOMES.indexOf(home()),x=HOMES[i];
   if(i!==cur+1||rankIdx(S.xp)<x.r||stay.kind)return;
-  if(src==='bank'){if(S.bank<x.p){toast('Niet genoeg op de bank','bad');return}S.bank-=x.p}
+  if(src==='bank'){if(S.bank<x.p){toast('Niet genoeg op de bank','bad');return}S.bank-=x.p;typeof bkTx==='function'&&bkTx('pay',-x.p,'Woning: '+x.n)}
   else{if(wit()<x.p){toast(S.cash>=x.p?'Een woning koop je met wit geld. Was je zwarte geld eerst wit, of betaal van de bank.':'Niet genoeg contant geld','bad');return}spendWit(x.p)}
   S.home=id;const moved=furnNormalize();vb.sel=null;vb.edit=false;vb.view=null;
   SFX.big();toast('Verhuisd naar '+x.n+' ('+x.place+')'+(moved.length?'. '+moved.map(f=>f.n).join(' en ')+' '+(moved.length>1?'staan':'staat')+' in de opslag.':''),'lvl');

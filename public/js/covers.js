@@ -4,6 +4,7 @@ window.COV=(()=>{
 const GAMES=[
  {id:'kluis',slug:'kluiskraker',n:'Kluiskraker',col:'#ff7a1a',kind:'Cluster-slot · 10 × 10',short:'Vijf gelijke symbolen die elkaar raken, ontploffen. Op dezelfde plek weer winst? Dan wordt dat vakje x2, x4, x8.',tags:['Max 5.000×','RTP ±92,5%']},
  {id:'vis',slug:'visdief',n:'Visdief',col:'#5ad1ff',kind:'Video-slot · 5 × 4',short:'Elke vis heeft een prijskaartje. Valt de Visdief erbij, dan pakt hij ze allemaal.',tags:['Max 10.000×','RTP ±92%']},
+ {id:'zoet',slug:'zoete-buit',n:'Zoete Buit',col:'#ff4f9a',kind:'Snoepslot · 6 × 5',short:'Acht of meer van hetzelfde snoepje, waar ze ook liggen. In de bonus maken kauwgomballen je winst tot ×1.000 groter.',tags:['Max 5.000×','RTP ±95%']},
  {id:'mines',slug:'mines',n:'Mines',col:'#3fe395',kind:'Durfspel · 5 × 5',short:'Vijfentwintig vakjes en jij kiest hoeveel bommen. Elk veilig vakje is meer waard. Stop op tijd.',tags:['Max 10.000×','RTP tot 99,2%']},
  {id:'avia',slug:'hoogvlieger',n:'Hoogvlieger',col:'#a9dcff',kind:'Vluchtspel',short:'Een vliegtuigje boven zee. Pluspunten duwen hem omhoog, bommen halen hem neer. Land op het dek.',tags:['Vlucht ligt vast','RTP ±87%']},
  {id:'bj',slug:'blackjack',n:'Blackjack',col:'#1fd17a',kind:'Kaarttafel',short:'Zo dicht mogelijk bij 21 zonder eroverheen. Blackjack betaalt 3 tot 2, de dealer pakt tot 17.',tags:['3 : 2','2 side bets']},
@@ -48,7 +49,7 @@ function wheelSvg(cx,cy,R,uid,ballA){const n=37,step=Math.PI*2/n;let pk='',nums=
   <circle cx="${cx}" cy="${cy}" r="${R*.11}" fill="#e6c25a" stroke="#8a6a12"/>
   ${ballA===false?'':`<circle class="rl-ball" cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${R*.05}" fill="#fbfaf6" stroke="#9aa1ab" stroke-width=".6"/>`}`}
 
-function coverSvg(id,uid){uid=uid||('c'+id);const T='font-family="Big Shoulders Display,Impact,sans-serif" font-weight="900"';
+function coverSvg(id,uid){uid=uid||('c'+id);if(id==='zoet')return window.ZBA?ZBA.cover(uid):'';const T='font-family="Big Shoulders Display,Impact,sans-serif" font-weight="900"';
  const M='font-family="JetBrains Mono,monospace"';
  const svg=b=>`<svg viewBox="0 0 320 220" class="cov-svg" role="img" aria-hidden="true">${b}</svg>`;
  if(id==='kluis'){const bar=(x,y,w)=>`<path d="M${x} ${y}l4-11h${w-8}l4 11z" fill="url(#${uid}g)" stroke="#7a4504" stroke-width=".8"/><path d="M${x+4} ${y-11}h${w-8}l-2 3h${-(w-12)}z" fill="#fff4c2" opacity=".55"/>`;

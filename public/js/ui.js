@@ -83,10 +83,13 @@ function fitText(root,tries){const els=(root||document).querySelectorAll(FIT_SEL
  for(const el of els){if(el._fs0===undefined){el._fs0=el.style.fontSize;el._ws0=el.style.whiteSpace;el._ow0=el.style.overflowWrap}
   el.style.removeProperty('font-size');if(el._fs0)el.style.fontSize=el._fs0;el.style.whiteSpace=el._ws0;el.style.overflowWrap=el._ow0}
  let hid=0;
- for(const el of els){const w=el.scrollWidth,max=el.clientWidth;if(!max&&el.isConnected&&el.textContent.trim())hid++;if(!max||w<=max+1)continue;
-  const fs=parseFloat(getComputedStyle(el).fontSize),min=Math.min(fs,fitMin(el)),nf=Math.max(min,Math.floor(fs*max/w*20)/20-.25);el.style.setProperty('font-size',nf+'px','important');
+ const rg=document.createRange(),tw=el=>{rg.selectNodeContents(el);return rg.getBoundingClientRect().width};
+ for(const el of els){const cw=el.clientWidth;if(!cw){if(el.isConnected&&el.textContent.trim())hid++;continue}
+  // breedte op de subpixel nauwkeurig (scrollWidth rondt af, dan zou "…" net onopgemerkt blijven)
+  const cs=getComputedStyle(el),max=el.getBoundingClientRect().width-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-parseFloat(cs.borderLeftWidth)-parseFloat(cs.borderRightWidth),w=el.scrollWidth>cw+1?el.scrollWidth-(cw-max):tw(el);if(max<=0||w<=max+.05)continue;
+  const fs=parseFloat(cs.fontSize),min=Math.min(fs,fitMin(el)),nf=Math.max(min,Math.floor(fs*max/w*.985*20)/20);el.style.setProperty('font-size',nf+'px','important');
   // ook op de kleinste letter te breed (heel lange naam): dan liever over twee regels dan afgeknipt
-  if(nf===min&&el.scrollWidth>el.clientWidth+1){el.style.setProperty('white-space','normal','important');el.style.overflowWrap='anywhere'}}
+  if(nf===min&&tw(el)>max+.05){el.style.setProperty('white-space','normal','important');el.style.overflowWrap='anywhere'}}
  // stond iets nog verborgen (pagina wordt net opgebouwd)? dan straks nog een keer
  if(hid&&(tries||0)<2&&!fitText._t)fitText._t=setTimeout(()=>{fitText._t=0;fitText(root&&root.isConnected?root:null,(tries||0)+1)},450)}
 window.addEventListener('resize',()=>fitText(null,2));
@@ -113,7 +116,7 @@ function navBadges(){const b={};if(inJail())b.jail='!';if(typeof pbOpen==='funct
  if(typeof isVip==='function'&&isVip()&&typeof cbAvail==='function'&&cbAvail()>=1)b.casino='€';return b}
 function navHint(k){const jt=Math.ceil((S.jailUntil-now())/1000);
  return {dash:'Overzicht',verblijf:S.hide?'Ondergedoken':S.hp+'% gezond',crimes:Math.floor(S.energy)+' energie',hits:rankIdx(S.xp)<7?'Vanaf '+RANKS[7][0]:cdLeft('hit')?'Over '+fmtClock(cdLeft('hit')):((S.stats&&S.stats.hits)||0)+' gedaan',cars:S.cars.length+(S.cars.length===1?' auto':" auto's"),
-  casino:'9 spellen',biz:typeof income==='function'?fmtS(income())+'/speldag':'Bedrijven',bank:fmtS(typeof bankNet==='function'?bankNet():S.bank),shop:'Wapens',skills:'Trainen',
+  casino:(typeof CAS_LIST!=='undefined'?CAS_LIST.length:10)+' spellen',biz:typeof income==='function'?fmtS(income())+'/speldag':'Bedrijven',bank:fmtS(typeof bankNet==='function'?bankNet():S.bank),shop:'Wapens',skills:'Trainen',
   fam:S.family?fam().n:'Geen familie',jail:inJail()?'Vast, '+fmtTime(jt):'Vrij',politie:typeof pbOpen==='function'&&pbOpen().length?pbOpen().length+' dossier'+(pbOpen().length>1?'s':'')+' open':'Geld terugeisen',rank:'Spelers',profiel:'Codes en account',look:'Kleding',wit:typeof zwart==='function'&&zwart()>=1?fmtS(zwart())+' zwart':'Zwart geld wit maken'}[k]||''}
 function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('nav');bar.id='mbar';bar.className='mbar';bar.setAttribute('aria-label','Menu');document.body.appendChild(bar)}
  let sh=$('#msheet');if(!sh){sh=document.createElement('div');sh.id='msheet';sh.className='msheet';sh.setAttribute('aria-hidden','true');document.body.appendChild(sh);
@@ -156,6 +159,7 @@ const MS_FIND=[
  ['Ontspannen','Energie en gezondheid bijvullen','ontspannen','relax energie sauna massage spa'],
  ['Kluiskraker','Gokkast','casino:kluis','slot gokkast kluis loper bonus'],
  ['Visdief','Gokkast','casino:vis','slot gokkast vis vissen'],
+ ['Zoete Buit','Gokkast','casino:zoet','slot gokkast snoep snoepjes lolly kauwgom zoet candy'],
  ['Roulette','Tafelspel','casino:roulette','rood zwart tafel'],
  ['Blackjack','Kaartspel','casino:bj','21 kaarten eenentwintig'],
  ['Three Card Poker','Kaartspel','casino:tcp','poker kaarten'],

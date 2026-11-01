@@ -4,8 +4,8 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 
 - **Website** (`/`, `public/js/landing.js`): elk onderwerp heeft een eigen pagina en adres (History API; de server geeft
   bekende paden `index.html` met de juiste titel, onbekende paden een 404 met dezelfde pagina "Doodlopende steeg"): `/misdaden` (alle 60 klussen in een kans-tegen-buit grafiek, filter per rang en sorteren),
-  `/casino` en `/casino/<spel>` (elk spel een eigen illustratie, regels en uitbetalingen; de tabellen van Kluiskraker en Visdief
-  komen live uit `slot.js` en `vis.js`; oefendemo's van Mines, roulette en de munt), `/families` en `/families/<id>` (verhaal uit
+  `/casino` en `/casino/<spel>` (elk spel een eigen illustratie, regels en uitbetalingen; de tabellen van Kluiskraker, Visdief en Zoete Buit
+  komen live uit `slot.js`, `vis.js` en `zoet.js`; oefendemo's van Mines, roulette en de munt), `/families` en `/families/<id>` (verhaal uit
   `lore.js`, plek in de voedselketen, de machtsverhoudingen van nu uit `famwar.js`, doorgroeien tot Onderbaas en Baas), `/rangen`
   en `/training`. De voorpagina heeft een 3D-stadskaart met een meldkamer en een loopbaanlijn van Rookie tot Peetvader die je
   kunt slepen. Inloggen en account aanmaken werken zoals voorheen (`?login=1`, `?register=1`).
@@ -113,7 +113,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Straatcredit** krijg je voor geslaagde klussen: hoe beter uitgevoerd (perfect ×1,5, netjes ×1,2) en hoe beter je uitrusting
   (per soort je beste item, +4% per niveau), hoe meer. Families vragen nu veel meer cred (De Nieuwe Garde 30 … La Cupola 1.000).
 - **Witwassen**: elke route (je zaak, Ome Kees, het casino) heeft bovenaan een illustratie.
-- **Bezit**: elke zaak is een banner met een eigen gevel (winkelpui, garage, toren, haven of hangar; verlichte ramen = je vestigingen), tik erop voor de vestigingen en upgrades. Bovenaan **Jouw bezit** (een tegel per eigen zaak met vestigingen, level en inkomen), daarna **categorieën** met eigen banners: Winkels en diensten, Horeca en nachtleven, Auto's, Handel en transport en **Vastgoed** (Bovenwoningen, Winkelpanden, Bedrijfshallen, Vastgoedportefeuille: 20% meer huur, maar je kunt er niet door witwassen). Elke categorie is **in en uit te klappen**: dicht zie je welke zaken erin zitten (jouw zaken gekleurd, op slot vaag), open de banners van alle zaken; met Alles uitklappen open je ze allemaal. **Witwassen via een zaak kost tijd**: na de werkdag aan de kassa gaat het geld door de boeken: tot €50.000 2 minuten, daarboven 10 minuten, en hoe beter de zaak (som van de levels van die soort, 1 tot 50) hoe sneller, tot 8 en 25 seconden met alles op max. Eén ronde tegelijk per soort zaak; het geld staat zolang in de wasstraat. 17 soorten bedrijven, van Wasserette (€5.000, €1.250 per speldag) tot Privéjet-charter (€4 mln., €392.250 per speldag), elk vanaf een
+- **Bezit**: opent op **Mijn bezit**: je eigen zaken (een tegel per zaak met vestigingen, level en inkomen) en daaronder de knop **Koop meer zaken**. Die opent de winkel met tabbladen per categorie (met aantal en icoon): Winkels en diensten, Horeca en nachtleven, Auto's, Handel en transport en **Vastgoed** (Bovenwoningen, Winkelpanden, Bedrijfshallen, Vastgoedportefeuille: 20% meer huur, maar je kunt er niet door witwassen); met **Mijn bezit** ga je terug. Elke zaak is een banner met een eigen gevel (winkelpui, garage, toren, haven of hangar; verlichte ramen = je vestigingen), tik erop voor de vestigingen en upgrades. Hoe witwassen via een zaak werkt (belasting en snelheid per soort zaak) staat bij Zwart geld en witwassen. 17 soorten bedrijven, van Wasserette (€5.000, €1.250 per speldag) tot Privéjet-charter (€4 mln., €392.250 per speldag), elk vanaf een
   bepaalde rang. Klik op een bedrijf voor de details: tot 10 vestigingen per soort (elke volgende 25% duurder) en elke
   vestiging los upgraden van level 1 naar 5 (×1 / ×1,5 / ×2,2 / ×3,1 / ×4,3 inkomen) met eigen upgradenamen.
   **Bonus op al je inkomen**: +25% basis, +0,5% per vestiging en +0,25% per upgrade (samen tot +50%), +3% per rang, +0,5% per level.
@@ -185,7 +185,15 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   de rechercheur legt hem naast het origineel). Minstens 80% goed: het geld komt wit terug min 21% belasting (net als witwassen
   via je zaak). Minder, te laat of verversen tijdens een poging: het geld is weg. Hoe groter het bedrag naast je inkomen per
   speldag, hoe moeilijker. Bovenaan een 3D-model van het bureau (CSS 3D, sleep om te draaien).
-- **Bank** (`public/js/pages/bank.js`, koersen in `public/js/market.js`). Per lidmaatschap: spaarrente 0,10% / 0,12% / 0,15% per uur
+- **Bank** (`public/js/pages/bank.js`, koersen in `public/js/market.js`) is een **bank-app** (OnderBank): bovenaan je totaal bij
+  de bank, wat er per uur vanzelf bijkomt (rente, uitkering, lopende deposito's), de verdeling en een bankpas met je naam (kleur per
+  lidmaatschap), met vier snelknoppen: **Storten** en **Opnemen** openen de **pinautomaat** als venster over de app (toetsen,
+  je toetsenbord of het veld; 25% / 50% / 75% / Alles; OK, Corr, Stop; daarna een bevestiging en geld uit de gleuf; Esc of het
+  kruisje sluit), **Vastzetten** gaat naar een nieuw deposito en **Beleggen** naar de fondsen. Tabbladen: **Overzicht** (de drie
+  rekeningen als kaarten met eigen icoon en knoppen, transacties en wat je op zak hebt), **Rekening** (spaarrekening met
+  rekeningnummer, rente, vergelijking en de laatste 30 transacties), **Deposito's** en **Beleggen**. Transacties (`S.bkTx`, `bkTx`):
+  stortingen, opnames, deposito's, beleggingen, auto's verkocht naar de bank en betalingen van de bank (borg, woning, inrichting).
+  Per lidmaatschap: spaarrente 0,10% / 0,12% / 0,15% per uur
   (gewoon / VIP / High roller), 2 / 5 / 10 depositoplekken en in totaal €10.000 / €30.000 /
   €100.000 beleggen. Lopende deposito's en beleggingen boven die grens blijven gewoon staan. Alles bij de bank ben je niet kwijt als je gepakt wordt.
   - *Spaarrekening*: 0,10% rente per uur (VIP 0,12%), vrij opneembaar, ook offline tot 12 uur. (Was 1% per 10 minuten:
@@ -201,7 +209,7 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
     lopen door als je offline bent (vaste functie van de tijd, Brownse brug, dus geen server nodig). Kosten 0,25% tot 1% bij kopen
     en verkopen (VIP de helft). Kans op verlies na 24 uur: 0% / 13% / 30% / 37%, na 7 dagen 0% / 0% / 1% / 9%.
   - Max per deposito en per fonds: €250.000 × 2 per rang (Capo €64 mln., Peetvader €512 mln.).
-- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): bovenaan een **pinautomaat** (scherm met totaal, verdeling en wat je op zak hebt; kies **Opnemen** of **Storten**, toets het bedrag in met de toetsen op de automaat, je toetsenbord of het veld op het scherm, of kies 25% / 50% / 75% / Alles; OK bevestigt, Corr wist een cijfer, Stop gaat terug; daarna een bevestiging en geld uit de gleuf) met ernaast het menu Rekening, Deposito's en Beleggen. `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000), `spinnetje` (€25.000), `jackpot` (€1.000.000) `trainwreck` (€3.000.000; daarna kun je in Kluiskraker inzetten tot €500.000 per spin) en `highroller` (€50.000; ook te typen als "High Roller", spaties en streepjes tellen niet mee). De oude codes `m1` tot en met `m9` zijn weg en verdwijnen ook uit 'gebruikte codes'. Daarnaast is er een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
+- **Profiel** met codes inwisselen (één keer per account, vastgelegd in de database). Codes staan in `server.js` (`CODES`): `lotto` (€1.500), `welkom` (€500), `casino` (€5.000), `vip` (€20.000), `spinnetje` (€25.000), `jackpot` (€1.000.000) `trainwreck` (€3.000.000; daarna kun je in Kluiskraker inzetten tot €500.000 per spin) en `highroller` (€50.000; ook te typen als "High Roller", spaties en streepjes tellen niet mee). De oude codes `m1` tot en met `m9` zijn weg en verdwijnen ook uit 'gebruikte codes'. Daarnaast is er een **rangcode** per rang (de naam van de rang, bv. `straatschoffie` €150 tot `peetvader` €500.000), alleen geldig als je die rang hebt bereikt.
 - **Kluiskraker**: cluster-slot op **10×10** met 9 symbolen (5+ aangrenzende gelijke symbolen, uitbetaling per clustergrootte
   tot 20+), Loper als wild, vakjes die bij elke winst x2, x4 … tot **x4096** worden. **3 kluizen = 10 free spins, 4 = 12, 5 = 14,
   6+ = superbonus.** Extra kluizen **tumbelen erin**: zolang er winst valt vallen er nieuwe symbolen in, en liggen er al 3 kluizen,
@@ -270,11 +278,12 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   | Groen gat bij vluchten en kans om te ontsnappen | ×1,15 | ×1,40 |
   | Straatcredit | +15% | +40% |
   | Bank: rente / kosten beleggen / depositoplekken | +15% / −15% / +1 | +40% / −40% / +2 |
-  | Casino-cashback (Kluiskraker, Visdief, Mines, Hoogvlieger 0,5%, roulette 1%, poker 0,75%, blackjack 0,25%) | ×1 | ×1,5 |
+  | Casino-cashback (Kluiskraker, Visdief, Zoete Buit, Mines, Hoogvlieger 0,5%, roulette 1%, poker 0,75%, blackjack 0,25%) | ×1 | ×1,5 |
   | Huurmoorden: rustiger vizier / meer tijd | −7,5% / +15% | −20% / +40% |
   | Hoge inzetten in de slots | – | ja (ook met code `trainwreck`) |
   Casino, doorgerekend (gewoon / VIP / High roller): Kluiskraker (10×10, max 5.000×) bonus 1 op 400 / 350 / 300, RTP 92,5% / 94% / 95,5%, bonus kopen
-  ±93% / 94,5% / 96%; Visdief bonus 1 op 200 / 172 / 143, RTP 91,5% / 94% / 96,5%, kopen ±97%; Hoogvlieger landt 17% / 18% / 19%,
+  ±93% / 94,5% / 96%; Visdief bonus 1 op 200 / 172 / 143, RTP 91,5% / 94% / 96,5%, kopen ±97%; Zoete Buit (6×5, max 5.000×) bonus
+  1 op 330 / 300 / 250, RTP 94,9% / 95,7% / 96,2%, kopen ±95% / 96% / 97%; Hoogvlieger landt 17% / 18% / 19%,
   RTP 86% / 92% / 96%. Alles blijft onder 100%, ook met cashback.
 - **Huurmoorden** (`hits.js`): de drie niveaus (Straat, Professioneel, Elite) staan als banners met de doelwitten in het vizier; tik op een niveau voor de contracten. 9 contracten in drie niveaus (Straat, Professioneel vanaf Capo, Elite vanaf Onderbaas) en een
   reputatie in 6 niveaus (+3% beloning per niveau). Per contract kies je de methode: **mes** (sluipen, stilstaan als hij omkijkt,
@@ -327,6 +336,16 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   Breed bord (rollen breder dan hoog, houten kade, water in de rollen) met saldo, deze spin, laatste winst en de bediening
   eronder, even breed als het bord. Doorgerekend (`visim2.js`, 3 mln. spins per lidmaatschap, `vbuy2.js`): gewoon bonus ±1 op 200,
   RTP ±91,5%; VIP ±1 op 172, RTP ±94%; High roller ±1 op 143, RTP ±96,5%; bonus kopen ±97%.
+- **Zoete Buit** (6 × 5 snoep, uitbetaling overal; motor `public/js/zoet.js`, tekeningen `zoet-art.js`, scherm
+  `pages/zoetebuit.js`, stijl `css/zoet.css`): 8 of meer van hetzelfde snoepje waar dan ook betaalt (8–9, 10–11, 12–14, 15+),
+  winnende snoepjes knallen weg en er vallen nieuwe in (tumbles) zolang er winst valt. Negen snoepjes van drop (±0,45× bij 8)
+  tot snoeppot (±14,4× bij 8, ±216× bij 15+). **4 lolly's** (geteld na het tumbelen) = 10 free spins en de lolly's betalen zelf
+  3× / 5× / 100× (4 / 5 / 6+). In de bonus vallen **kauwgomballen** met ×2 tot ×1.000; valt er winst in een spin, dan worden
+  alle ballen opgeteld en keer de winst van die spin gedaan. 3 lolly's in de bonus = 5 extra spins. Bonus kopen 100×, max win
+  5.000× je inzet. Doorgerekend met een simulatie in Node per lidmaatschap (basisspel en bonus apart): gewoon RTP ±94,9%, bonus
+  ±1 op 330; VIP ±95,7%, ±1 op 300; High roller ±96,2%, ±1 op 250; bonus kopen ±95% / 96% / 97%. Een bonus geeft gemiddeld ±94×
+  (mediaan 65×); 5.000× zit er ±1 op 10.000–16.000 gekochte bonussen in. Eigen naam en tekeningen (geen kopie van een bestaand
+  spel). Lolly-spanning na 3 lolly's, confetti, snelheden en spatiebalk zoals bij de andere slots.
 - **Indeling (computer)**: vanaf 1280px breed staat alles over jou in de rechterkolom: naam, status (vrij, gezocht, cel,
   ondergedoken), rang en level met XP-balk, wit geld, zwart geld en bank (drie aparte regels met eigen kleur en icoon), energie, gezondheid, hitte en familie, daaronder wat er klaarstaat,
   een snelle klus, het logboek en de top 5 (met jouw plek als je er niet in staat). Klik op energie, gezondheid of hitte voor
@@ -352,8 +371,17 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   contant geld dat zwart is). Gewoon uitgeven (wapens, kleding, training, ontspannen, inrichting) gaat eerst van zwart. De bank
   (storten, deposito's, beleggen), zaken kopen en verbouwen en verhuizen kan alleen met wit geld. Witwassen kan op drie
   manieren: **via je zaken** (een werkdag aan de kassa: druk op een zwarte bon vlak nadat een echte klant afrekent, niet als de
-  inspecteur meekijkt; te opvallend = 30% in beslag en hitte; per speldag tot 2,5× je inkomen). Je betaalt altijd
-  21% belasting; een beter uitgebouwde zaak heeft meer klanten en minder bonnen nodig (12 tot 8) en wast sneller. **Via Ome
+  inspecteur meekijkt; te opvallend = 30% in beslag en hitte; daarna gaat het geld door de boeken van die zaak). Een beter uitgebouwde zaak heeft meer klanten en minder bonnen nodig (12 tot 8).
+  **Belasting per soort zaak**, zoals in Nederland (2026): btw 21% (wasserette, belwinkel, autogarage, shishalounge, club,
+  autodealer, onderdelenhandel, hotel: logies is sinds 2026 21%), btw 9% (snackbar, kapper), kansspelbelasting 37,8% (speelhal) en
+  vennootschapsbelasting 25,8% (haven en privéjets: internationaal vervoer is 0% btw). **Snelheid** hangt af van wat die zaak zelf
+  omzet: per minuut gaat er omzet per speldag ÷ 240 × M doorheen (M per zaak in `WW_PROF`: wasserette 40, kapper 35, club 55,
+  speelhal 70, haven 80, onderdelenhandel 90, jet 100, autodealer 120), plus 45 seconden voor de boekhouding. Per speldag kan er per
+  zaak maximaal 3× zijn eigen inkomen door. Twee wasserettes op level 10 doen zo ±€4.200 per minuut en ±€75.000 per dag; een
+  autodealer wast grote bedragen snel (één auto is meteen veel geld), de speelhal het snelst maar met 37,8% belasting. Per soort
+  zaak loopt één ronde tegelijk. Het witwaspaneel heeft tabbladen (Je zaken, Ome Kees, Casino); bij je zaken een kaart per route
+  (belasting, per minuut, wat er vandaag nog door kan, met de goedkoopste en snelste gemarkeerd) en een schuifbalk die
+  belasting, wat er wit uitkomt en hoe lang het duurt direct laat zien. **Via Ome
   Kees**: tot €500.000 meteen, daarboven 10 minuten. Hij begint op 60%; je band met hem (elke keer vanaf €5.000 telt, vol na 60
   keer: tot −20%) en je rang (tot −15%) halen dat omlaag tot minimaal 25%, dus altijd iets duurder dan je eigen zaak. Maximum
   per speldag groeit met je rang. **Via het casino**: wat je met zwart geld wint is wit; de verdenking loopt dan op, op 100%

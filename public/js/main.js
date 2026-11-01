@@ -32,7 +32,7 @@ if(S._admin){const A=S._admin;if(A.refill){S.energy=Math.max(S.energy,EN_MAX);S.
   if(T.length>=30){const iv=[];for(let i=T.length-30+1;i<T.length;i++)iv.push(T[i]-T[i-1]);const m=iv.reduce((a,b)=>a+b,0)/iv.length,sd=Math.sqrt(iv.reduce((a,b)=>a+(b-m)*(b-m),0)/iv.length);
    if(m<600&&sd<4){send(`30 klikken met een machinaal vast ritme: elke ${Math.round(m)} ms (afwijking ±${sd.toFixed(1)} ms)`);T.length=0}}},true)})();
 // een bonus die nog liep (verversen of ander apparaat): het geld staat al op je saldo, het spel biedt aan om hem verder af te spelen
-if(S.slotRun){const n=S.slotRun.g==='vis'?'Visdief':'Kluiskraker';setTimeout(()=>toast('Je bonus in '+n+' loopt nog. Het geld staat al op je saldo; open '+n+' om hem verder af te spelen.','lvl'),900)}
+if(S.slotRun){const n=S.slotRun.g==='vis'?'Visdief':S.slotRun.g==='zoet'?'Zoete Buit':'Kluiskraker';setTimeout(()=>toast('Je bonus in '+n+' loopt nog. Het geld staat al op je saldo; open '+n+' om hem verder af te spelen.','lvl'),900)}
 if(S._gearBack){toast('Uitrusting vernieuwd: per soort telt nu je beste item. Je krijgt '+fmt(S._gearBack)+' terug voor overbodige spullen.','lvl');log('Uitrusting: '+fmt(S._gearBack)+' terug voor overbodige spullen','ok');delete S._gearBack}
 // offline-inkomen bij openen
 // bij openen: wat je bedrijven offline verdienden (tot 12 uur) gaat in de kas; is er intussen een speldag voorbij, dan volgt de uitbetaling
@@ -52,7 +52,7 @@ window.addEventListener('hashchange',()=>{let p=location.hash.slice(1);if(p==='o
 let wasJail=inJail();
 setInterval(()=>{tick();renderTop();renderNav();if(!(window.kk&&kk.busy))renderRail();
   // casino: saldo van de slots live bijwerken (passief inkomen loopt door), knoppen opnieuw als je ineens wel/niet genoeg hebt
-  if(page==='casino'&&!userBusy()){[['kk','kkBal',()=>SLOT.BUY_COST,()=>kkBet(),()=>kkRefreshUI()],['vd','vdBal',()=>VISD.BUY_COST,()=>vdBet(),()=>vdRefresh()]].forEach(([g,id,bc,bt,ref])=>{const st=window[g],el=document.getElementById(id);if(!st||!el||st.busy)return;
+  if(page==='casino'&&!userBusy()){[['kk','kkBal',()=>SLOT.BUY_COST,()=>kkBet(),()=>kkRefreshUI()],['vd','vdBal',()=>VISD.BUY_COST,()=>vdBet(),()=>vdRefresh()],['zb','zbBal',()=>ZOET.BUY_COST,()=>zbBet(),()=>zbRefresh()]].forEach(([g,id,bc,bt,ref])=>{const st=window[g],el=document.getElementById(id);if(!st||!el||st.busy)return;
     el.textContent=fmt(S.cash);const ok=(S.cash>=bt())+'/'+(S.cash>=bt()*bc());if(st._ok!==ok){st._ok=ok;ref()}})}
   // verblijf: alleen opnieuw tekenen als je ineens wel/niet genoeg geld hebt voor inrichting of een woning (tafereel blijft rustig)
   if(page==='verblijf'&&!userBusy()&&typeof FURN!=='undefined'){const sig=FURN.map(f=>S.cash>=f.p?1:0).join('')+HOMES.map(h=>S.cash>=h.p?1:0).join('');if(window._vbSig!==sig){if(window._vbSig!=null&&!stay.kind)render();window._vbSig=sig}}

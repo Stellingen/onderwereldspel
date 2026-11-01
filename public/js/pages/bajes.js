@@ -31,7 +31,7 @@ function celAdd(sec){const left=Math.max(0,Math.ceil((S.jailUntil-now())/1000)),
  const L=S.cel&&S.cel.live;if(L)L.sent=Math.max(L.sent,nl);return nl-left}
 // betalen zoals de borg: eerst contant, daarna de bank
 const celCan=c=>S.cash+S.bank>=c;
-function celPay(c){if(!celCan(c))return false;const a=Math.min(S.cash,c);S.cash-=a;S.bank-=c-a;return true}
+function celPay(c){if(!celCan(c))return false;const a=Math.min(S.cash,c);S.cash-=a;S.bank-=c-a;if(c-a>0&&typeof bkTx==='function')bkTx('pay',-(c-a),'Gevangenis');return true}
 const celCred=n=>{S.cred=Math.max(0,S.cred+n)};
 
 // Gebeurtenissen: één of twee per straf (vanaf 1,5 minuut). v = waarden die vastliggen zodra het gebeurt.

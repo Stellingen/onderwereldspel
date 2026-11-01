@@ -61,7 +61,7 @@ const act={
   S.cash-=g.p;S.gear[id]=1;toast(g.n+' gekocht en uitgerust','ok');log(g.n+' gekocht ('+fmt(g.p)+')','info');save();pushState();render()},
  heal(){const c=healCost();if(S.cash<c){toast('Niet genoeg geld voor de dokter','bad');return}S.cash-=c;S.hp=100;toast('Volledig opgelapt');save();render()},
  bribe(){const c=bribeCost();if(S.cash<c){toast('Niet genoeg geld om om te kopen','bad');return}S.cash-=c;S.heat=0;toast('De politie kijkt even de andere kant op');save();render()},
- bail(){const c=bailCost();if(S.cash+S.bank<c)return;const fromCash=Math.min(S.cash,c);S.cash-=fromCash;S.bank-=c-fromCash;S.jailUntil=0;S.wanted=false;toast('Borg betaald. Je bent netjes vrij');log('Borg betaald: '+fmt(c),'info');save();render()},
+ bail(){const c=bailCost();if(S.cash+S.bank<c)return;const fromCash=Math.min(S.cash,c);S.cash-=fromCash;S.bank-=c-fromCash;if(c-fromCash>0&&typeof bkTx==='function')bkTx('pay',-(c-fromCash),'Borg');S.jailUntil=0;S.wanted=false;toast('Borg betaald. Je bent netjes vrij');log('Borg betaald: '+fmt(c),'info');save();render()},
  // Ontsnappen is een spel (jailbreak.js): tralies, gang en muur. Tijdens het spel staat S.pendingEsc; verversen of weggaan = betrapt.
  escape(){if(!inJail()||window.__chase||S.pendingEsc)return;const P=jbParams();S.pendingEsc={t:now(),lv:P.lv};save();if(typeof pushState==='function')pushState();
   jailBreakGame(P).then(ok=>{

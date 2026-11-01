@@ -396,8 +396,8 @@ function faqHtml(){return `<section class="blk faq" id="faq"><div class="sec-hea
   <div class="wrap rv"><div class="faq-list">${FAQ().map((f,i)=>`<details class="faq-q"${i===0?' open':''}><summary><span class="faq-n">${String(i+1).padStart(2,'0')}</span><b>${esc(f[0])}</b><i class="faq-x" aria-hidden="true"></i></summary><div class="faq-a"><p>${f[1]}</p></div></details>`).join('')}</div></div></section>`}
 function initFaq(){if(!window.owInstall){addEventListener('load',initFaq,{once:true});return}const s=q('[data-faq-app]');if(s&&window.owInstall&&owInstall.phone&&!owInstall.standalone()){s.innerHTML=' <button class="tlink" type="button" data-faq-install>Zo zet je hem op je beginscherm</button>';q('[data-faq-install]').onclick=()=>owInstall.open()}}
 function home(){return {title:BR+' · '+GENRE,cls:'pg-home',desc:'Gratis maffia-browsergame in het Nederlands. Begin als Rookie en werk je op tot Peetvader: '+CRIMES.length+' misdaden, '+FAMILIES.length+' families, een casino met spelgeld en een ranglijst. Speel in je browser of als app.',
- html:heroHtml()+careerHtml()+`<section class="blk cas-strip"><div class="sec-head wrap rv"><div><div class="kick"><span class="dot"></span>Casino</div><h2>Negen spellen.<br><em>Het huis wint.</em></h2></div>
-   <p>Echte regels en doorgerekende kansen. Twee eigen slots, een vliegtuigje boven zee en de klassiekers aan tafel. <a class="more-a" href="/casino" data-link>Naar het casino ${ic('arrow')}</a><small class="play-money">18+ · Alleen virtueel spelgeld, geen echt geld</small></p></div>
+ html:heroHtml()+careerHtml()+`<section class="blk cas-strip"><div class="sec-head wrap rv"><div><div class="kick"><span class="dot"></span>Casino</div><h2>Tien spellen.<br><em>Het huis wint.</em></h2></div>
+   <p>Echte regels en doorgerekende kansen. Drie eigen slots, een vliegtuigje boven zee en de klassiekers aan tafel. <a class="more-a" href="/casino" data-link>Naar het casino ${ic('arrow')}</a><small class="play-money">18+ · Alleen virtueel spelgeld, geen echt geld</small></p></div>
   <div class="wrap"><div class="covers">${GAMES.map((g,i)=>coverCard(g,i)).join('')}</div></div></section>`+chainHtml()
   +faqHtml()+(loggedIn?ctaHtml('Terug aan','het werk.','Je dashboard staat klaar met alles wat er is gebeurd terwijl je weg was.'):ctaHtml('De stad','wacht niet.','Terwijl jij twijfelt, klimt een rivaal een rang hoger.')),
  after(){initCity();initCareer();initTilt();initFaq()}}}
@@ -481,8 +481,8 @@ const rules=a=>`<ul class="rules">${a.map(r=>`<li>${r}</li>`).join('')}</ul>`;
 const payRows=(t,rows)=>`<div class="pay"><h3>${t}</h3><dl>${rows.map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('')}</dl></div>`;
 function casinoPage(){
  return {title:'Casino · '+BR,cls:'pg-casino',desc:"Kluiskraker, Visdief, Mines, Hoogvlieger, Blackjack, Three Card Poker, Texas Hold'em, Roulette en Dubbel of niks.",
- html:pageHead({kick:'Casino',title:'Negen spellen.<br><em>Eén huis.</em>',lede:'Twee eigen slots, een vliegtuigje boven zee, een veld vol bommen en de klassiekers aan tafel. Echte regels, doorgerekende kansen. Het huis heeft een klein voordeel, net als in elk casino.',
-   stats:[['Spellen',GAMES.length],['Eigen slots',2],['Hoogste win','10.000×'],['Uitkomst','vast bij je klik']]})
+ html:pageHead({kick:'Casino',title:'Tien spellen.<br><em>Eén huis.</em>',lede:'Drie eigen slots, een vliegtuigje boven zee, een veld vol bommen en de klassiekers aan tafel. Echte regels, doorgerekende kansen. Het huis heeft een klein voordeel, net als in elk casino.',
+   stats:[['Spellen',GAMES.length],['Eigen slots',GAMES.filter(g=>/slot/i.test(g.kind)).length],['Hoogste win','10.000×'],['Uitkomst','vast bij je klik']]})
  +`<section class="wrap"><div class="covers big">${GAMES.map((g,i)=>coverCard(g,i,'p')).join('')}</div></section>
   <section class="wrap facts-blk rv"><div class="facts"><div><h3>Geen voorproefje</h3><p>De uitkomst ligt vast op het moment dat je klikt en staat in je opslag. Verversen of weggaan verandert niets, en het spel laat niets zien voordat de animatie klaar is.</p></div>
    <div><h3>Doorgerekend</h3><p>Elke slot is miljoenen keren gesimuleerd. De terugbetaling blijft onder de 100%, dus op lange termijn wint het huis. Dubbel of niks is de enige zonder huisvoordeel.</p></div>
@@ -513,6 +513,14 @@ const GD={
    `Hoge volatiliteit: de meeste bonussen zijn klein, maar heel soms vang je een reus van 1.000× je inzet.`,
    `Bonus kopen kost ${(V&&V.BUY_COST)||66}× je inzet en geeft altijd drie boeien.`]},
   src:'/js/vis.js'},
+ zoet:{stats:Z=>[['Raster','6 × 5'],['Winst','8+ overal'],['Max win',nl(Z?Z.MAX_WIN:5000)+'×'],['Bonus kopen',(Z?Z.BUY_COST:100)+'×']],
+  rules:Z=>{const sp=(Z&&Z.SC_PAY)||{4:3,5:5,6:100};return [`Zes rollen, vijf rijen en geen lijnen: acht of meer van hetzelfde snoepje, waar ze ook liggen, is winst. Meer van hetzelfde betaalt meer.`,
+   `De winnende snoepjes knallen weg, de rest valt naar beneden en er vallen nieuwe in. Zolang er winst valt, gaat het door.`,
+   `Vier lolly's geven ${(Z&&Z.FS_START)||10} free spins. Ze betalen zelf ook: vier ${sp[4]}×, vijf ${sp[5]}× en zes of meer ${sp[6]}× je inzet.`,
+   `In de bonus vallen kauwgomballen van ×2 tot ×1.000. Valt er in een spin winst, dan tellen alle ballen op het bord bij elkaar op en gaat de winst van die spin keer het totaal.`,
+   `Drie lolly's in de bonus geven ${(Z&&Z.FS_RETRIG)||5} extra spins. De max win is ${nl((Z&&Z.MAX_WIN)||5000)}× je inzet per ronde.`,
+   `Bonus kopen kost ${(Z&&Z.BUY_COST)||100}× je inzet en geeft altijd vier lolly's.`]},
+  src:'/js/zoet.js'},
  mines:{stats:()=>[['Veld','5 × 5'],['Bommen','1 tot 24'],['RTP','95,5 – 99,2%'],['Max win','10.000×']],
   rules:()=>[`Kies hoeveel bommen er in het veld liggen, van 1 tot 24. Meer bommen is spannender en betaalt meer per vakje.`,
    `Klik vakjes open. Elk veilig vakje verhoogt je multiplier. Raak je een bom, dan ben je je inzet kwijt.`,
@@ -568,7 +576,7 @@ function gamePage(slug){const g=gameBy(slug);if(!g)return null;const D=GD[g.id],
   ${D.extra?`<section class="wrap rv">${D.extra()}</section>`:''}
   <nav class="gn wrap" aria-label="Andere spellen"><a href="/casino/${prev.slug}" data-link>${ic('back')}<span><small>Vorige</small><b>${prev.n}</b></span></a><a href="/casino/${next.slug}" data-link><span><small>Volgende</small><b>${next.n}</b></span>${ic('arrow')}</a></nav>`
   +moreHtml('casino'),
- after(){initTilt();const my=renderId;if(D.src)need(D.src).then(()=>{if(my!==renderId)return;const API=g.id==='kluis'?window.SLOT:window.VISD;if(!API)return;
+ after(){initTilt();const my=renderId;if(D.src)need(D.src).then(()=>{if(my!==renderId)return;const API=g.id==='kluis'?window.SLOT:g.id==='zoet'?window.ZOET:window.VISD;if(!API)return;
    const st=q('#gStats'),ru=q('#gRules');if(st)st.innerHTML=D.stats(API).map(s=>`<div><dt>${s[0]}</dt><dd>${s[1]}</dd></div>`).join('');if(ru)ru.innerHTML=rules(D.rules(API));demoReady(g.id)});
   demoInit(g.id)}}}
 route(/^\/casino\/([a-z0-9-]+)$/,gamePage);
@@ -578,6 +586,9 @@ function demoHtml(id){
  if(id==='kluis')return `<div class="demo"><div class="demo-h"><b>Zo valt het</b><span>Een voorbeeld op een kleiner veld.</span></div><div class="minislot" id="minislot" aria-hidden="true"></div></div>
   <div class="demo"><div class="demo-h"><b>Uitbetaling per cluster</b><span>Basisspel, gewoon lidmaatschap. In de bonus blijven de vakjes staan.</span></div>
    <div class="seg-s" id="kkBet" role="group" aria-label="Inzet">${[10,100,1000].map((b,i)=>`<button data-b="${b}" class="${i?'':'on'}">${eur(b)} inzet</button>`).join('')}</div><div id="kkPay" class="pt-w"><p class="muted">Tabel laden…</p></div><p class="pt-hint">Veeg opzij voor grotere clusters →</p></div>`;
+ if(id==='zoet')return `<div class="demo"><div class="demo-h"><b>Uitbetaling per snoepje</b><span>8 of meer, waar ze ook liggen. Gewoon lidmaatschap.</span></div>
+  <div class="seg-s" id="zbBet" role="group" aria-label="Inzet">${[10,100,1000].map((b,i)=>`<button data-b="${b}" class="${i?'':'on'}">${eur(b)} inzet</button>`).join('')}</div><div id="zbPay" class="pt-w"><p class="muted">Tabel laden…</p></div><p class="pt-hint">Veeg opzij voor 12+ en 15+ →</p>
+  <div class="vd-fish" id="zbBalls"></div></div>`;
  if(id==='vis')return `<div class="demo"><div class="demo-h"><b>Lijnwinst</b><span>Per lijn, bij de gekozen inzet. Gewoon lidmaatschap.</span></div>
   <div class="seg-s" id="vdBet" role="group" aria-label="Inzet">${[10,100,1000].map((b,i)=>`<button data-b="${b}" class="${i?'':'on'}">${eur(b)} inzet</button>`).join('')}</div><div id="vdPay" class="pt-w"><p class="muted">Tabel laden…</p></div><p class="pt-hint">Veeg opzij voor 4 en 5 op een lijn →</p>
   <div class="vd-fish" id="vdFish"></div></div>`;
@@ -612,6 +623,12 @@ function demoReady(id){
    return `<div class="pt" style="grid-template-columns:minmax(118px,1.4fr) repeat(${sizes.length},minmax(60px,1fr))"><span class="pt-c">Symbool</span>${sizes.map(n=>`<span class="pt-h">${n}${n===S.MAX_SIZE?'+':''}</span>`).join('')}
     ${S.SYMS.slice().reverse().map(s=>`<span class="pt-s">${kkSvg(s.id)}<em>${esc(s.n)}</em></span>${sizes.map(n=>`<span>${flo(s.pay[Math.min(n,S.MAX_SIZE)-S.MIN_CLUSTER]*k*bet)}</span>`).join('')}`).join('')}</div>`};
   box.innerHTML=tab(10);seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;segOn(seg,b);box.innerHTML=tab(+b.dataset.b)})}
+ if(id==='zoet'){const box=q('#zbPay'),seg=q('#zbBet'),Z=window.ZOET;if(!box||!Z)return;
+  const tab=bet=>{const k=Z.PAYK*((Z.VIP_KT&&Z.VIP_KT[0])||1)*bet;
+   return `<div class="pt" style="grid-template-columns:minmax(118px,1.4fr) repeat(4,minmax(60px,1fr))"><span class="pt-c">Snoepje</span>${['8–9','10–11','12–14','15+'].map(b=>`<span class="pt-h">${b}</span>`).join('')}
+    ${Z.SYMS.slice().reverse().map(s=>`<span class="pt-s">${window.ZBA?ZBA.svg(s.id):''}<em>${esc(s.n)}</em></span>${s.p.map(p=>`<span>${flo(p*k)}</span>`).join('')}`).join('')}</div>`};
+  box.innerHTML=tab(10);seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;segOn(seg,b);box.innerHTML=tab(+b.dataset.b)});
+  const f=q('#zbBalls');if(f&&Z.BOMB)f.innerHTML=`<span class="label">Kauwgomballen in de bonus</span><div class="fish-row">${Z.BOMB.vals.map(x=>`<em class="${x[0]>=100?'big':''}">×${nl(x[0])}</em>`).join('')}</div>`}
  if(id==='vis'){const box=q('#vdPay'),seg=q('#vdBet'),V=window.VISD;if(!box||!V)return;
   const tab=bet=>{const k=V.PAYK/V.LINES.length*((V.VIP_KT&&V.VIP_KT[0])||1)*bet;
    return `<div class="pt" style="grid-template-columns:minmax(118px,1.4fr) repeat(3,minmax(60px,1fr))"><span class="pt-c">Symbool</span><span class="pt-h">3</span><span class="pt-h">4</span><span class="pt-h">5</span>

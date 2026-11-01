@@ -8,16 +8,16 @@ function casBanView(){const L=czBanLeft(),t=typeof tier==='function'?tier():0;
   <div class="cas-ban-t"><span>Nog</span><b id="casBanT">${fmtClock(L)}</b></div>
   <small>${['Gewone spelers 30 minuten','VIP 20 minuten','High roller 10 minuten'][t]}. Daarna mag je terug en staat je verdenking weer op 0%. Met wit geld loopt de verdenking niet op, dat kun je verantwoorden.</small>
   <div class="cas-ban-b"><a class="btn ghost" href="#wit">Naar witwassen</a><a class="btn ghost" href="#dash">Naar je dashboard</a></div></div></section>`}
-const CAS_LIST=[['kluis','Kluiskraker'],['vis','Visdief'],['mines','Mines'],['avia','Hoogvlieger'],['bj','Blackjack'],['tcp','Three Card Poker','Poker'],['th',"Texas Hold'em","Hold'em"],['roulette','Roulette'],['coin','Dubbel of niks','Dubbel']];
+const CAS_LIST=[['kluis','Kluiskraker'],['vis','Visdief'],['zoet','Zoete Buit'],['mines','Mines'],['avia','Hoogvlieger'],['bj','Blackjack'],['tcp','Three Card Poker','Poker'],['th',"Texas Hold'em","Hold'em"],['roulette','Roulette'],['coin','Dubbel of niks','Dubbel']];
 const CAS_NAMES=Object.fromEntries(CAS_LIST.map(([k,n])=>[k,n]));
 const CAS_ICO_BACK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>';
 function casGameView(){
  return `<p class="sub cas-sub">Echte regels en eerlijke kansen. Het huis heeft een klein voordeel, net als in elk casino.</p>
  ${S.wanted?'<div class="card" style="border-color:var(--acc);margin-bottom:14px;color:var(--acc)">▲ Casino\'s hangen vol camera\'s. Als gezochte crimineel loop je hier extra risico op een controle.</div>':''}
  <div class="cas-bar"><button class="cas-back" onclick="casinoGo('')" aria-label="Terug naar alle spellen" title="Alle spellen">${CAS_ICO_BACK}<span>Alle spellen</span></button><button class="cas-pick" onclick="this.closest('.cas-bar').classList.toggle('open');this.setAttribute('aria-expanded',this.closest('.cas-bar').classList.contains('open'))" aria-expanded="false"><small>Spel</small><b>${CAS_NAMES[casinoTab]||'Casino'}</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="tabs">${CAS_LIST.map(([k,n,sh])=>`<button class="${casinoTab===k?'on':''}" onclick="casinoGo('${k}')" aria-pressed="${casinoTab===k}"><span class="t-lg">${n}</span><span class="t-sm">${sh||n}</span></button>`).join('')}</div></div>
- ${casinoTab==='kluis'?kkView():casinoTab==='vis'?visView():casinoTab==='bj'?bjTable():casinoTab==='tcp'?tpTable():casinoTab==='th'?thTable():casinoTab==='roulette'?rouletteView():casinoTab==='mines'?minesView():casinoTab==='avia'?aviaView():coinView()}`}
+ ${casinoTab==='kluis'?kkView():casinoTab==='vis'?visView():casinoTab==='zoet'?zoetView():casinoTab==='bj'?bjTable():casinoTab==='tcp'?tpTable():casinoTab==='th'?thTable():casinoTab==='roulette'?rouletteView():casinoTab==='mines'?minesView():casinoTab==='avia'?aviaView():coinView()}`}
 // Lobby: elk spel als banner met de illustratie erachter. Slots groot, daarna snelle spellen en de tafels.
-const CAS_GROUPS=[['Slots','Eigen gokkasten met bonusrondes',['kluis','vis']],['Snel spel','Eén klik, meteen uitslag of zelf stoppen',['mines','avia','coin']],['Aan tafel','Kaarten en het wiel, tegen de dealer',['bj','th','tcp','roulette']]];
+const CAS_GROUPS=[['Slots','Eigen gokkasten met bonusrondes',['kluis','vis','zoet']],['Snel spel','Eén klik, meteen uitslag of zelf stoppen',['mines','avia','coin']],['Aan tafel','Kaarten en het wiel, tegen de dealer',['bj','th','tcp','roulette']]];
 function casLobby(){const G=window.COV?COV.GAMES:[],by=id=>G.find(g=>g.id===id),run=S.slotRun;
  const card=(g,big)=>`<button class="cl-card${big?' big':''}" style="--c:${g.col}" onclick="casinoGo('${g.id}')" aria-label="${g.n} spelen">
    <span class="cl-art" aria-hidden="true">${COV.coverSvg(g.id,'lb'+g.id)}</span>
@@ -45,5 +45,5 @@ function bjView(){const b=window.bj;
   :`<div class="flex"><button class="btn" onclick="act.bjHit()">Kaart</button><button class="btn gold" onclick="act.bjStand()">Passen</button><button class="btn" onclick="act.bjDouble()" ${b.p.length>2||S.cash<b.bet?'disabled':''}>Verdubbelen</button></div>`}`}
 
 // Is er een spel bezig? Dan niet wisselen (een slotbonus mag wel op de achtergrond doorlopen).
-const casSwitchBusy=()=>(kk.busy&&!kk.inBonus)||(window.vd&&vd.busy)||(window.cf&&cf.flipping)||(window.av&&av.flying)||(window.rl&&rl.spinning)||['dealing','dealer'].includes(bt.phase)||tp.phase==='dealing'||tp.phase==='reveal'||(window.th&&['dealing','reveal'].includes(th.phase));
+const casSwitchBusy=()=>(kk.busy&&!kk.inBonus)||(window.vd&&vd.busy)||(window.zb&&zb.busy)||(window.cf&&cf.flipping)||(window.av&&av.flying)||(window.rl&&rl.spinning)||['dealing','dealer'].includes(bt.phase)||tp.phase==='dealing'||tp.phase==='reveal'||(window.th&&['dealing','reveal'].includes(th.phase));
 function casinoGo(k){if(czBanLeft()){render();return}if(casSwitchBusy()){toast('Wacht tot het spel klaar is','bad');return}casinoTab=k;render();window.scrollTo(0,0)}

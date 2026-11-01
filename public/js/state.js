@@ -96,7 +96,7 @@ function spendWit(x){zwWit=true;try{S.cash-=x}finally{zwWit=false}}
 // hebben). Kijkt de beveiliging (ogen open) dan telt het gewoon, kijken ze naar jouw tafel (rood) dan dubbel, ogen dicht
 // maar een kwart. Zakt 4% per minuut in het casino, 8% per minuut als je weg bent. Op 100%: verbannen (30 / 20 / 10 minuten), daarna begint het weer op 0%.
 const czLim=()=>20000*Math.pow(1.35,rankIdx(S.xp));
-const CZ_GAME={kluis:1.4,vis:1.4,roulette:1,bj:.85,tcp:.85,th:.85,coin:.8,mines:.55,avia:.55},CZ_TIER=[1,.65,.35],CZ_BAN=[30,20,10],CZ_EYE=[.25,1,2];
+const CZ_GAME={kluis:1.4,vis:1.4,zoet:1.4,roulette:1,bj:.85,tcp:.85,th:.85,coin:.8,mines:.55,avia:.55},CZ_TIER=[1,.65,.35],CZ_BAN=[30,20,10],CZ_EYE=[.25,1,2];
 // Betaalwijze (S.casPay): 'auto' (standaard) = eerst je zwarte geld, is dat op dan je witte; 'wit' = alleen wit; 'zwart' = alleen zwart.
 const casPayMode=()=>S.casPay==='zwart'?'zwart':S.casPay==='wit'?'wit':'auto';
 const casCash=()=>{const m=casPayMode();return m==='zwart'?zwart():m==='wit'?wit():S.cash};
@@ -232,14 +232,14 @@ function policeRaid(){
   arrest((S.wanted&&S.wanted.sec)||S.lastSentence+120,'Politiecontrole!','Agenten doen een controle '+(PLACES[page]||'op straat')+' en herkennen je van de gezochtlijst.',{mult:0.5,raid:true,flee:S.wanted&&S.wanted.lv>=3?4:3});return true}
 const fmtClock=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
 const fmtTime=s=>{s=Math.round(s);return s>=60?Math.floor(s/60)+'m '+String(s%60).padStart(2,'0')+'s':s+'s'};
-function showModal(t,m,btns){$('#modal').hidden=false;$('#modalT').textContent=t;$('#modalM').textContent=m;
+function showModal(t,m,btns){if(typeof atmClose==='function'&&typeof atm!=='undefined'&&atm.open)atmClose(true);$('#modal').hidden=false;$('#modalT').textContent=t;$('#modalM').textContent=m;
   btns=btns||[{l:'Begrepen',c:'red',f:closeModal}];const box=$('#modalB');box.innerHTML='';
   btns.forEach(b=>{const e=document.createElement('button');e.className='btn '+(b.c||'');e.textContent=b.l;e.onclick=b.f;box.appendChild(e)})}
 function closeModal(){$('#modal').hidden=true}
 // VIP en High roller: tag bij je naam, vaker de bonus in de slots en cashback op elke inzet (High roller ×1,5).
 // Cashback per spel, afgestemd op het huisvoordeel, zodat je er nooit structureel winst mee maakt. Direct te claimen.
-const CB_RATE={kluis:.005,vis:.005,mines:.005,avia:.005,roulette:.01,tcp:.0075,th:.005,bj:.0025,coin:0};
-const CB_NAME={kluis:'Kluiskraker',vis:'Visdief',mines:'Mines',avia:'Hoogvlieger',roulette:'Roulette',tcp:'Three Card Poker',th:"Texas Hold'em",bj:'Blackjack',coin:'Dubbel of niks'};
+const CB_RATE={kluis:.005,vis:.005,zoet:.005,mines:.005,avia:.005,roulette:.01,tcp:.0075,th:.005,bj:.0025,coin:0};
+const CB_NAME={kluis:'Kluiskraker',vis:'Visdief',zoet:'Zoete Buit',mines:'Mines',avia:'Hoogvlieger',roulette:'Roulette',tcp:'Three Card Poker',th:"Texas Hold'em",bj:'Blackjack',coin:'Dubbel of niks'};
 // Lidmaatschap: 0 = gewoon, 1 = VIP, 2 = High roller. Komt van je account (beheerder); oude VIP-code telt nog als VIP.
 const tier=()=>{const t=window.__TIER__;if(t!=null)return t;return (S&&S.redeemed&&S.redeemed.includes('vip'))?1:0};
 const isVip=()=>tier()>=1;

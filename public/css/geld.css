@@ -226,8 +226,181 @@
 .bk-flow .bk-zw{display:block;font-family:var(--f-mono);font-size:10.5px;color:var(--zw);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bk-flow .bk-zw a{color:var(--acc)}
 .bk-cash b span{white-space:nowrap}
-/* ================= Bank: pinautomaat met menu ================= */
-.bk-atm{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:14px;margin:0 0 14px;align-items:stretch}
+/* ================= Bank-app ================= */
+.ba-qa,.ba-tabs button,.ba-acct-h,.ba-acct-a button,.ba-link{font-family:var(--f-body);text-transform:none;letter-spacing:0}
+.ba-ov .ba-x{font-family:var(--f-body)}
+.ba{display:grid;gap:14px;margin:0 0 14px}
+.ba .up{color:var(--green)!important}.ba .dn{color:var(--red)!important}
+/* kop: totaal, bankpas en snelknoppen */
+.ba-hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"l r" "q q";gap:20px 32px;padding:24px 26px 20px;border-radius:22px;overflow:hidden;isolation:isolate;
+ background:radial-gradient(80% 130% at 100% 0%,rgba(125,134,255,.30),transparent 62%),radial-gradient(70% 120% at 0% 100%,rgba(169,220,255,.13),transparent 60%),linear-gradient(160deg,#131c2c,#0b0f17 72%);
+ box-shadow:inset 0 0 0 1px rgba(169,220,255,.15),0 30px 60px -42px #000}
+.ba-hero::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:repeating-linear-gradient(118deg,rgba(255,255,255,.022) 0 1px,transparent 1px 16px);-webkit-mask-image:linear-gradient(90deg,transparent,#000 55%);mask-image:linear-gradient(90deg,transparent,#000 55%)}
+.ba-hero-l{grid-area:l;display:flex;flex-direction:column;gap:4px;min-width:0}
+.ba-hero-r{grid-area:r;align-self:center;padding:6px 10px 6px 0}
+.ba-brand{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-bottom:12px}
+.ba-logo svg{width:34px;height:34px;display:block;filter:drop-shadow(0 6px 14px rgba(125,134,255,.35))}
+.ba-bn{font-family:var(--f-display);font-weight:900;font-size:24px;letter-spacing:.05em;text-transform:uppercase;color:#dde9f6;line-height:1}.ba-bn b{color:var(--ice)}
+.ba-hi{flex-basis:100%;font-size:14px;color:#9fb3c8}.ba-hi b{color:var(--fg);font-weight:600}
+.ba-hero .label{color:#7f97b0}
+.ba-total{font-family:var(--f-display);font-weight:900;font-size:clamp(40px,5.4vw,68px);line-height:.95;color:#f2f8ff;letter-spacing:.005em;text-shadow:0 0 34px rgba(169,220,255,.22);white-space:nowrap}
+.ba-sub{font-size:13.5px;color:#9fb3c8}.ba-sub em{font-style:normal;font-family:var(--f-mono);font-weight:700}
+.ba-hero .bk-dist{margin:12px 0 6px;max-width:560px;height:7px;border-radius:99px;background:rgba(255,255,255,.07)}
+.ba-leg{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:12.5px;color:#9fb3c8}.ba-leg span{display:flex;align-items:center;gap:7px}.ba-leg i{width:8px;height:8px;border-radius:2px}.ba-leg b{font-family:var(--f-mono);font-weight:500;color:#dde9f6}
+.ba-qas{grid-area:q;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.ba-qa{--c:var(--ice);display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:15px;text-align:left;min-width:0;color:var(--fg);
+ background:rgba(255,255,255,.035);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:transform .15s,background .2s,box-shadow .2s}
+.ba-qa:hover{transform:translateY(-2px);background:color-mix(in srgb,var(--c) 10%,rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 55%,transparent),0 14px 30px -22px var(--c)}
+.ba-qa:active{transform:translateY(0) scale(.98)}
+.ba-qa-ic{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 15%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 45%,transparent)}
+.ba-qa-ic svg{width:23px;height:23px}
+.ba-qa-t{display:flex;flex-direction:column;min-width:0}
+.ba-qa-t b{font-weight:700;font-size:15px;line-height:1.2}.ba-qa-t small{font-size:12px;color:#8ea3b9}
+/* de bankpas, kleur per lidmaatschap */
+.ba-card{position:relative;width:300px;aspect-ratio:1.586;border-radius:16px;padding:17px 19px 15px;display:flex;flex-direction:column;justify-content:space-between;color:#eaf3ff;overflow:hidden;isolation:isolate;
+ background:linear-gradient(135deg,#2f6596,#163657 46%,#0b1a2c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),0 26px 50px -24px rgba(0,0,0,.95),0 0 70px -24px rgba(169,220,255,.45);
+ transform:rotate(-4deg);transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.ba-hero:hover .ba-card{transform:rotate(-1.5deg) translateY(-4px)}
+.ba-card::before{content:"";position:absolute;inset:-40% -10% auto auto;width:120%;height:120%;z-index:-1;background:radial-gradient(closest-side,rgba(255,255,255,.22),transparent);transform:rotate(25deg)}
+.ba-card::after{content:"";position:absolute;inset:0;z-index:-1;background:repeating-radial-gradient(circle at 110% 120%,transparent 0 18px,rgba(255,255,255,.045) 18px 19px)}
+.ba-card.c1{background:linear-gradient(135deg,#7458e0,#3a2479 48%,#160d36);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 26px 50px -24px rgba(0,0,0,.95),0 0 70px -24px rgba(184,161,255,.55)}
+.ba-card.c2{background:linear-gradient(135deg,#34343a,#141417 48%,#050506);color:#f1dfae;box-shadow:inset 0 0 0 1px rgba(232,196,106,.38),0 26px 50px -24px rgba(0,0,0,.95),0 0 70px -24px rgba(232,196,106,.4)}
+.ba-card-t{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.ba-card-b{font-family:var(--f-display);font-weight:900;font-size:18px;letter-spacing:.09em;line-height:1}.ba-card-b b{color:var(--ice)}
+.ba-card.c1 .ba-card-b b,.ba-card.c2 .ba-card-b b{color:#e8c46a}
+.ba-card-tier{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:99px;background:rgba(255,255,255,.13);white-space:nowrap}
+.ba-card.c2 .ba-card-tier{background:rgba(232,196,106,.16);color:#e8c46a}
+.ba-card-m{display:flex;align-items:center;gap:10px}
+.ba-chip{position:relative;width:42px;height:31px;border-radius:7px;background:linear-gradient(135deg,#f6e2a6,#c99d3e 55%,#ecd08a);box-shadow:inset 0 0 0 1px rgba(0,0,0,.28)}
+.ba-chip::before{content:"";position:absolute;inset:6px 0;border-top:1px solid rgba(0,0,0,.28);border-bottom:1px solid rgba(0,0,0,.28)}
+.ba-chip::after{content:"";position:absolute;inset:0 14px;border-left:1px solid rgba(0,0,0,.28);border-right:1px solid rgba(0,0,0,.28)}
+.ba-nfc{width:22px;height:22px;opacity:.75}
+.ba-card-no{font-family:var(--f-mono);font-size:16px;letter-spacing:.13em;white-space:nowrap;text-shadow:0 1px 0 rgba(0,0,0,.45)}
+.ba-card-f{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}.ba-card-f span{display:flex;flex-direction:column;min-width:0}
+.ba-card-f span:last-child{flex:none;text-align:right}
+.ba-card-f small{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+.ba-card-f b{font-family:var(--f-mono);font-size:12.5px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+/* tabbladen zoals in een app */
+.ba-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:5px;border-radius:16px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line2)}
+.ba-tabs button{display:flex;align-items:center;justify-content:center;gap:9px;padding:11px 8px;border-radius:12px;color:var(--mute);font-weight:600;font-size:14.5px;min-width:0;transition:background .15s,color .15s}
+.ba-tabs button svg{width:20px;height:20px;flex:none}
+.ba-tabs button:hover{color:var(--fg);background:var(--panel2)}
+.ba-tabs button.on{color:#0b1424;background:linear-gradient(180deg,#d6efff,#a9dcff);box-shadow:0 10px 24px -14px rgba(169,220,255,.9)}
+/* rekeningen */
+.ba-accts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ba-acct{--c:var(--ice);position:relative;display:flex;flex-direction:column;gap:6px;padding:16px 16px 14px;border-radius:18px;min-width:0;overflow:hidden;
+ background:radial-gradient(110% 90% at 100% 0%,color-mix(in srgb,var(--c) 13%,transparent),transparent 60%),var(--panel);box-shadow:inset 0 0 0 1px var(--line2)}
+.ba-acct::before{content:"";position:absolute;left:16px;right:16px;top:0;height:2px;border-radius:0 0 2px 2px;background:linear-gradient(90deg,var(--c),transparent)}
+.ba-acct-h{display:flex;align-items:center;gap:12px;width:100%;text-align:left;color:var(--fg);min-width:0}
+.ba-acct-n{display:flex;flex-direction:column;min-width:0;flex:1}
+.ba-acct-n b{font-weight:700;font-size:15.5px;line-height:1.2}.ba-acct-n small{font-family:var(--f-mono);font-size:10.5px;color:var(--faint);letter-spacing:.03em}
+.ba-acct-h>i{font-style:normal;font-size:22px;line-height:1;color:var(--faint);transition:transform .2s,color .2s}
+.ba-acct-h:hover>i{transform:translateX(3px);color:var(--c)}
+.ba-acct-ic{flex:none;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 14%,var(--bg2));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 40%,transparent)}
+.ba-acct-ic svg{width:25px;height:25px}
+.ba-acct-v{font-family:var(--f-display);font-weight:900;font-size:clamp(28px,4.4cqi,40px);line-height:1;margin-top:10px;white-space:nowrap}
+.ba-acct-s{font-size:12.5px;color:var(--mute)}.ba-acct-s em{font-style:normal;font-family:var(--f-mono);color:var(--fg)}
+.ba-prog{height:6px;margin-top:4px;border-radius:99px;background:var(--bg2);overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.ba-prog i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 45%,transparent),var(--c))}
+.ba-spark{display:block;width:100%;height:38px;margin-top:2px}.ba-spark .l{fill:none;stroke-width:1.6;vector-effect:non-scaling-stroke}.ba-spark.up .l{stroke:var(--green)}.ba-spark.dn .l{stroke:var(--red)}
+.ba-spark.up .a{fill:rgba(63,227,149,.12)}.ba-spark.dn .a{fill:rgba(255,61,82,.12)}
+.ba-acct-a{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:12px}
+.ba-acct-a button{flex:1 1 100px;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:12px;min-width:0;color:var(--fg);font-weight:600;font-size:13.5px;
+ background:color-mix(in srgb,var(--c) 9%,var(--panel2));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 32%,transparent);transition:background .15s,transform .1s}
+.ba-acct-a button svg{width:18px;height:18px;flex:none;color:var(--c)}
+.ba-acct-a button:hover{background:color-mix(in srgb,var(--c) 20%,var(--panel2))}.ba-acct-a button:active{transform:scale(.98)}
+.ba-acct-a.big button{padding:13px 12px;font-size:15px}
+.ba-acct-a button.in{background:linear-gradient(180deg,#4ff0a3,#26b874);color:#05200f;box-shadow:0 10px 24px -14px rgba(63,227,149,.9)}.ba-acct-a button.in svg{color:#05200f}
+/* panelen: transacties, contant */
+.ba-row{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:12px;align-items:start}
+.ba-rek{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}
+.ba-panel{--c:var(--ice);background:var(--panel);border-radius:18px;padding:16px 18px;box-shadow:inset 0 0 0 1px var(--line2);min-width:0}
+.ba-ph{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 10px;margin-bottom:8px}
+.ba-ph h3{margin:0;font-family:var(--f-head);font-weight:800;font-size:19px;letter-spacing:.03em;text-transform:uppercase;line-height:1.1}
+.ba-link{padding:2px 0;color:var(--ice);font-weight:600;font-size:13px;text-align:left}.ba-link:hover{text-decoration:underline}
+.ba-cnt{font-family:var(--f-mono);font-size:11px;color:var(--faint)}
+.ba-badge{font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:99px;color:var(--green);background:rgba(63,227,149,.1);box-shadow:inset 0 0 0 1px rgba(63,227,149,.35);white-space:nowrap}
+.ba-badge.warn{color:#ffb35c;background:rgba(255,179,92,.1);box-shadow:inset 0 0 0 1px rgba(255,179,92,.35)}
+.ba-tx{list-style:none;margin:0;padding:0}
+.ba-tx li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.ba-tx li:first-child{border-top:0;padding-top:4px}
+.ba-tx-ic{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--mute);background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line2)}
+.ba-tx-ic svg{width:19px;height:19px}
+.ba-tx-ic.k-in,.ba-tx-ic.k-depin,.ba-tx-ic.k-sell,.ba-tx-ic.k-car{color:var(--green);background:rgba(63,227,149,.1);box-shadow:inset 0 0 0 1px rgba(63,227,149,.3)}
+.ba-tx-ic.k-out{color:var(--ice);background:rgba(169,220,255,.1);box-shadow:inset 0 0 0 1px rgba(169,220,255,.3)}
+.ba-tx-ic.k-dep,.ba-tx-ic.k-depbrk{color:var(--violet);background:rgba(184,161,255,.1);box-shadow:inset 0 0 0 1px rgba(184,161,255,.3)}
+.ba-tx-ic.k-buy{color:var(--acc);background:rgba(255,122,26,.1);box-shadow:inset 0 0 0 1px rgba(255,122,26,.3)}
+.ba-tx-ic.k-pay{color:#ff8f9c;background:rgba(255,61,82,.09);box-shadow:inset 0 0 0 1px rgba(255,61,82,.28)}
+.ba-tx-t{display:flex;flex-direction:column;min-width:0;flex:1}
+.ba-tx-t b{font-weight:600;font-size:14px;line-height:1.25}.ba-tx-t em{font-style:normal;font-size:12px;color:var(--faint);overflow-wrap:anywhere}
+.ba-tx-a{flex:none;font-family:var(--f-mono);font-size:14px;font-weight:700;white-space:nowrap}.ba-tx-a.nt{color:var(--mute)}
+.ba-tx-none{display:flex;flex-direction:column;align-items:center;gap:3px;padding:22px 10px;text-align:center;color:var(--mute);font-size:13px}.ba-tx-none svg{width:30px;height:30px;color:var(--faint);margin-bottom:4px}.ba-tx-none b{color:var(--fg)}
+.ba-cash-r{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+.ba-cash-r:first-of-type{border-top:0}
+.ba-cash-r i{flex:none;width:10px;height:10px;border-radius:3px}.ba-cash-r span{color:var(--mute)}
+.ba-cash-r b{margin-left:auto;font-family:var(--f-mono);font-size:15px;white-space:nowrap}
+.ba-cash .bk-note{margin:8px 0 0}
+.ba-cash-a{display:grid;gap:8px;margin-top:12px}
+.ba-iban{display:block;font-family:var(--f-mono);font-size:12px;color:var(--mute);letter-spacing:.04em}
+.ba-big{display:block;font-family:var(--f-display);font-weight:900;font-size:clamp(38px,4.2vw,56px);line-height:1;margin:8px 0 2px;white-space:nowrap}
+.ba-rek-main .ba-acct-a{margin:6px 0 14px;padding-top:6px}
+.ba-body .bk-sec:first-child{margin-top:0}
+@container (max-width:1060px){.ba-card{width:250px;padding:14px 16px 12px}.ba-card-no{font-size:13.5px}.ba-card-b{font-size:16px}.ba-chip{width:36px;height:27px}}
+@container (max-width:960px){.ba-qa-t small{display:none}}
+@container (max-width:760px){.ba-row,.ba-rek{grid-template-columns:minmax(0,1fr)}}
+@container (max-width:760px){.ba-accts{grid-template-columns:minmax(0,1fr)}.ba-acct{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:end}
+ .ba-acct>*{grid-column:1/-1}.ba-acct-v{grid-column:1;margin-top:6px}.ba-acct>.ba-spark{grid-column:2;grid-row:2;width:110px;align-self:end}
+ .ba-acct-a{padding-top:8px}}
+@container (max-width:700px){
+ .ba-hero{grid-template-columns:minmax(0,1fr);grid-template-areas:"l" "q";padding:18px 16px 14px;gap:16px;border-radius:18px}
+ .ba-hero-r{display:none}
+ .ba-brand{margin-bottom:8px}.ba-logo svg{width:30px;height:30px}.ba-bn{font-size:21px}
+ .ba-total{font-size:clamp(38px,11cqi,56px)}
+ .ba-qas{gap:6px}
+ .ba-qa{flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;padding:4px 2px;background:none;box-shadow:none;text-align:center}
+ .ba-qa:hover{background:none;box-shadow:none}
+ .ba-qa-ic{width:52px;height:52px;border-radius:50%}.ba-qa-ic svg{width:24px;height:24px}
+ .ba-qa-t b{font-size:12.5px;font-weight:600}
+ .ba-tabs{padding:4px;border-radius:14px}
+ .ba-tabs button{flex-direction:column;gap:3px;padding:8px 2px;font-size:11.5px;border-radius:10px}
+ .ba-tabs button svg{width:21px;height:21px}
+ .ba-panel{padding:14px;border-radius:16px}.ba-acct{padding:14px;border-radius:16px}
+ .ba-acct-v{font-size:clamp(28px,8.4cqi,36px)}
+ .ba-big{font-size:clamp(34px,10cqi,48px)}
+}
+@container (max-width:380px){.ba-qas{gap:2px}.ba-qa-t b{font-size:11.5px}.ba-qa-ic{width:48px;height:48px}.ba-tabs button{font-size:11px}.ba-acct>.ba-spark{display:none}.ba-tx-ic{width:34px;height:34px}.ba-tx li{gap:10px}}
+/* tabbladen in de app: afgeronde kaarten, net als de rest van de bank-app */
+.ba-body .card,.ba-body .bk-slot,.ba-body .bk-fund{border-radius:16px}
+.ba-body .bk-port{border-radius:16px;overflow:hidden}
+.ba-body .bk-term{clip-path:none;border-radius:12px;overflow:hidden}
+.ba-body .bk-rcpt,.ba-body .bk-from,.ba-body .bk-tiers,.ba-body .bk-rate,.ba-body .bk-brk{border-radius:12px;overflow:hidden}
+.ba-body .bk-chart{border-radius:12px 12px 0 0}.ba-body .bk-facts{border-radius:0 0 12px 12px;overflow:hidden}
+.ba-body .input{border-radius:12px}
+.ba-body .bk-quick button,.ba-body .bk-rng button,.ba-body .bk-seg button{border-radius:9px}
+.ba-body .btn{clip-path:none;border-radius:12px}
+.ba-panel .bk-tiers,.ba-panel .bk-rate{border-radius:12px;overflow:hidden}
+/* pinautomaat als venster over de app */
+.ba-ov{position:fixed;inset:0;z-index:62;display:flex;flex-direction:column;padding:20px 16px;overflow-y:auto;overscroll-behavior:contain;opacity:0;transition:opacity .2s}
+.ba-ov.open{opacity:1}
+.ba-ov-bg{position:fixed;inset:0;background:rgba(4,6,10,.8);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
+.ba-ov-box{position:relative;z-index:1;margin:auto;width:min(470px,100%);display:flex;flex-direction:column;gap:10px;transform:translateY(18px) scale(.98);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.ba-ov.open .ba-ov-box{transform:none}
+.ba-ov-h{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#cfe3f5;font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.ba-ov-h span{display:flex;align-items:center;gap:8px}.ba-ov-h span svg{width:18px;height:18px;color:var(--ice)}
+.ba-x{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--fg);background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);transition:background .15s}
+.ba-x:hover{background:rgba(255,255,255,.16)}.ba-x svg{width:18px;height:18px}
+.ba-ov-tip{margin:0;text-align:center;font-size:12px;color:#8b9bb0}
+.ba-ov .atm{box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px #3a3f47,0 40px 80px -30px #000}
+body.ba-lock{overflow:hidden}
+@media (pointer:coarse){.ba-ov-tip{display:none}}
+@media (max-width:520px){
+ .ba-ov{padding:10px 8px calc(10px + env(safe-area-inset-bottom,0px))}
+ .ba-ov-box{margin:auto 0 0}
+ .ba-ov .atm{padding:12px 12px 16px}
+ .ba-ov .atm-screen{min-height:0}.ba-ov .atm-pct small{display:none}.ba-ov .atm-p{height:44px}.ba-ov .atm-opts.big{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-height:760px) and (min-width:521px){.ba-ov .atm-screen{min-height:0}.ba-ov .atm-p{height:40px}}
+/* ---------- Pinautomaat ---------- */
 .atm{position:relative;padding:16px 18px 22px;border-radius:18px 18px 10px 10px;background:linear-gradient(180deg,#2b3038,#1a1d22 60%,#141619);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px #3a3f47,0 30px 60px -36px #000;display:flex;flex-direction:column;gap:12px}
 .atm-top{display:flex;align-items:center;justify-content:space-between}
 .atm-logo{font-family:var(--f-display);font-weight:900;font-size:18px;letter-spacing:.08em;color:#c9ced6}.atm-logo b{color:var(--ice)}
@@ -248,18 +421,6 @@
 .atm-k.ok{background:linear-gradient(180deg,#2bb877,#1f8d5b)}.atm-k.ok span{color:#d7ffe9}
 .atm-k:disabled{opacity:.45}
 .atm-slot{height:14px;margin:0 22%;border-radius:4px;background:#0a0b0d;box-shadow:inset 0 2px 4px #000}.atm-slot i{display:block;height:2px;margin:6px 14px 0;background:var(--green);opacity:.4}
-.bk-menu{display:grid;gap:10px;align-content:start}
-.bk-mi{--c:var(--acc);display:flex;align-items:center;gap:14px;padding:16px 18px;text-align:left;color:var(--fg);border-radius:14px;font-family:var(--f-body);text-transform:none;letter-spacing:0;font-weight:400;
- background:radial-gradient(120% 160% at 100% 0%,color-mix(in srgb,var(--c) 14%,#121419),#0f1114 70%);box-shadow:inset 0 0 0 1px var(--line2);transition:transform .15s,box-shadow .2s}
-.bk-mi:hover{transform:translateY(-2px);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 70%,transparent)}
-.bk-mi.on{box-shadow:inset 0 0 0 2px var(--c),0 18px 40px -28px var(--c)}
-.bk-mi-ic{flex:none;width:52px;height:52px;border-radius:12px;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 13%,var(--bg2));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 40%,transparent)}
-.bk-mi-ic svg{width:28px;height:28px}
-.bk-mi-t{display:flex;flex-direction:column;gap:2px;min-width:0}
-.bk-mi-t b{font-family:var(--f-display);font-weight:900;font-size:26px;line-height:1}
-.bk-mi-t em{font-style:normal;font-size:12.5px;color:var(--mute)}.bk-mi-t em .up{color:var(--green)}.bk-mi-t em .dn{color:var(--red)}
-@container (max-width:900px){.bk-atm{grid-template-columns:minmax(0,1fr)}}
-@container (max-width:760px){.atm{padding:12px 12px 18px}.atm-keys{grid-template-columns:repeat(2,minmax(0,1fr))}.bk-mi{padding:12px 14px}.bk-mi-ic{width:44px;height:44px}.bk-mi-t b{font-size:22px}}
 /* ---------- Pinautomaat: menu, bedrag, procenten en toetsen ---------- */
 .bk-grid.one{grid-template-columns:minmax(0,1fr)}
 .atm-screen{min-height:300px}
@@ -310,7 +471,6 @@
 .atm-slot.go.in .atm-bills{animation:atmIn 1.2s ease-in forwards}
 @keyframes atmOut{0%{height:0}35%{height:40px}75%{height:40px}100%{height:0;opacity:0}}
 @keyframes atmIn{0%{height:40px}100%{height:0}}
-@container (max-width:760px){.atm-screen{min-height:0}.atm-pct small{display:none}.atm-p{height:44px}.atm-opts.big{grid-template-columns:minmax(0,1fr)}}
 .atm-pad{width:100%;max-width:470px;margin:0 auto}
 .atm-p.okk{grid-row:span 2;height:auto}
 
@@ -333,3 +493,26 @@
 /* pinautomaat: hoofdwoord en klein woord op de toets niet over elkaar */
 .atm-p{line-height:1.05}
 .atm-p small{display:block;line-height:1.15;margin-top:4px}
+
+/* ===== Bezit: eerst je eigen zaken, kopen via een eigen scherm met categorieën ===== */
+.bz-more{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;margin:14px 0 0;padding:16px 18px;border:1px solid color-mix(in srgb,var(--green) 45%,var(--line2));
+ background:linear-gradient(90deg,rgba(63,227,149,.12),transparent 70%),var(--panel);color:var(--fg);text-align:left;cursor:pointer;font:inherit;transition:border-color .15s,background .15s}
+.bz-more:hover{border-color:var(--green);background:linear-gradient(90deg,rgba(63,227,149,.18),transparent 70%),var(--panel2)}
+.bz-more-ic{width:46px;height:46px;display:grid;place-items:center;color:var(--green);background:rgba(63,227,149,.12);clip-path:var(--cut-s)}.bz-more-ic svg{width:24px;height:24px}
+.bz-more-t{display:flex;flex-direction:column;gap:3px;min-width:0}.bz-more-t b{font-family:var(--f-head);font-weight:800;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:var(--green)}
+.bz-more-t small{font-size:12.5px;color:var(--mute)}
+.bz-more>i{font-style:normal;font-size:30px;color:var(--green);line-height:1}
+.bz-shop-h{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}.bz-shop-h h1{margin:0}.bz-shop-h .sub{margin:4px 0 0}
+.bz-ctabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(190px,100%),1fr));gap:8px;margin-bottom:12px}
+.bz-ctabs button{--c:var(--green);display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px 14px;border:1px solid var(--line2);background:var(--panel);color:var(--mute);text-align:left;cursor:pointer;font:inherit;min-width:0}
+.bz-ctabs button b{font-family:var(--f-head);font-weight:800;font-size:16px;text-transform:uppercase;letter-spacing:.03em;color:var(--fg);overflow-wrap:break-word}
+.bz-ctabs button small{font-family:var(--f-mono);font-size:10.5px;color:var(--faint)}
+.bz-ctabs button:hover{background:var(--panel2)}
+.bz-ctabs button.on{border-color:var(--c);background:linear-gradient(180deg,color-mix(in srgb,var(--c) 12%,transparent),transparent),var(--panel);box-shadow:inset 0 -3px 0 var(--c)}
+.bz-ctabs-ic{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}.bz-ctabs-ic i{display:block;opacity:.45}.bz-ctabs-ic i.own{opacity:1}.bz-ctabs-ic i.lk{opacity:.25}
+.bz-ctabs-ic .bz-ic{clip-path:none;border-radius:6px}
+.bz-cat-in{padding:16px 18px 6px}.bz-cat-in h2{margin:4px 0 4px;font-family:var(--f-display);font-weight:900;font-size:clamp(26px,3.4cqi,40px);text-transform:uppercase;line-height:1}
+.bz-cat-in p{margin:0 0 8px;color:var(--mute);font-size:14px}.bz-cat-in em{font-style:normal;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border:1px solid}
+.bz-cat-in em.ok{color:var(--green);border-color:rgba(63,227,149,.4)}.bz-cat-in em.no{color:var(--mute);border-color:var(--line2)}
+.bz-shop .bz-cat.ex .bzb-grid{padding:12px 18px 18px}
+@container (max-width:560px){.bz-ctabs{grid-template-columns:repeat(2,minmax(0,1fr))}.bz-ctabs button{padding:10px}.bz-ctabs button b{font-size:14px}.bz-more{padding:12px 14px;gap:10px}.bz-more-t b{font-size:17px}}
