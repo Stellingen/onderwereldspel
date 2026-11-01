@@ -129,10 +129,10 @@ const OUTFITS=[
  {id:'nvg',slot:'hoofd',st:'tac',n:'Pet met nachtkijker',d:'Een opklapbare nachtkijker op je pet. In het donker zie jij alles.',p:60000,r:9,fx:{kans:3,esc:.04,heat:-.02},look:{k:'pet',c:'#1d2430',nvg:1}},
  // geluk: gebruik je, niet dragen voor een setbonus. luck = extra op je winst in de slots, 10 minuten, daarna 5 uur rust.
  {id:'dob1',slot:'geluk',st:'geluk',n:'Gebroken dobbelsteen',d:'Een hoekje eraf en een barst erdoor. Een heel klein beetje geluk.',p:2500,r:0,luck:.04,dc:['#8a8f98','#5d626b','#454950']},
- {id:'dob2',slot:'geluk',st:'geluk',n:'Houten dobbelsteen',d:'Met de hand gesneden door een oude man in de Jordaan.',p:20000,r:2,luck:.05,dc:['#a8743f','#86582d','#6b4523']},
- {id:'dob5',slot:'geluk',st:'geluk',n:'Benen dobbelsteen',d:'Uit een speelhol in Marseille. Hij heeft vaker gewonnen dan verloren.',p:150000,r:4,luck:.08,dc:['#e8dcc2','#c9bb9b','#ab9e80']},
- {id:'dob8',slot:'geluk',st:'geluk',n:'Zilveren dobbelsteen',d:'Massief zilver, gewogen tot op de milligram.',p:750000,r:6,luck:.11,dc:['#dfe3e8','#b4bac3','#8f969f']},
- {id:'dob15',slot:'geluk',st:'geluk',n:'Gouden dobbelsteen',d:'Alleen voor High rollers. Het casino ziet hem liever niet.',p:5000000,r:0,hr:1,luck:.18,dc:['#f2c230','#d9a520','#b8890f']},
+ {id:'dob2',slot:'geluk',st:'geluk',n:'Houten dobbelsteen',d:'Met de hand gesneden door een oude man in de Jordaan.',p:20000,r:2,luck:.08,dc:['#a8743f','#86582d','#6b4523']},
+ {id:'dob5',slot:'geluk',st:'geluk',n:'Benen dobbelsteen',d:'Uit een speelhol in Marseille. Hij heeft vaker gewonnen dan verloren.',p:150000,r:4,luck:.12,dc:['#e8dcc2','#c9bb9b','#ab9e80']},
+ {id:'dob8',slot:'geluk',st:'geluk',n:'Zilveren dobbelsteen',d:'Massief zilver, gewogen tot op de milligram.',p:750000,r:6,luck:.15,dc:['#dfe3e8','#b4bac3','#8f969f']},
+ {id:'dob15',slot:'geluk',st:'geluk',n:'Gouden dobbelsteen',d:'Alleen voor High rollers. Het casino ziet hem liever niet.',p:5000000,r:0,hr:1,luck:.25,dc:['#f2c230','#d9a520','#b8890f']},
  // geldklem: gebruik je, dan verdienen je bedrijven een tijdje meer (passief inkomen). Daarna een werkdag rust.
  {id:'klem1',slot:'zaken',st:'zaken',n:'Koperen geldklem',d:'Van een marktkoopman die zweert dat hij er zijn eerste ton mee bij elkaar hield.',p:15000,r:1,inc:.10,dc:['#e0915a','#b8693a','#8a4a25']},
  {id:'klem2',slot:'zaken',st:'zaken',n:'Zilveren geldklem',d:'Gegraveerd met initialen die niet van jou zijn. De vorige eigenaar mist hem niet meer.',p:250000,r:4,inc:.15,dc:['#e6eaef','#b4bac3','#858c96']},
@@ -421,12 +421,12 @@ function klemPanelHtml(){const {o,L,W,ready}=klemState(),inc=typeof income==='fu
 function charmLobbyHtml(){const l=luckState(),k=klemState();
  const row=(cls,col,svg,kicker,title,what,st,btn,tab)=>`<div class="ch-row ${cls}" style="--c:${col}"><button class="ch-open" onclick="fitUI.street='geluk';fitUI.tab='${tab}';render()"><span class="ch-ic">${svg}</span><span class="ch-tx"><span class="label">${kicker}</span><b>${title}</b><small>${what}</small></span></button><div class="ch-st">${st}${btn}</div></div>`;
  const stx=(s,on)=>`<span class="ch-s ${on?'on':''}">${s}</span>`;
- const lk=l.o?row(l.L?'on':'', '#f2c230',diceSvg(l.o,1),'Casino · op zak',esc(l.o.n),`+${Math.round(l.o.luck*100)}% op je winst in de slots, ${LUCK_MIN} min. Daarna een werkdag (${LUCK_CD/60} uur) rust.`,
+ const lk=l.o?row(l.L?'on':'', '#f2c230',diceSvg(l.o,1),'Casino · op zak',esc(l.o.n),`+${Math.round(l.o.luck*100)}% op je winst in de slots, ${LUCK_MIN} min. Daarna een werkdag (${LUCK_CD/60} uur, 2 speldagen) rust.`,
    l.L?stx('Actief · nog '+fmtClock(l.L),1):l.W?stx('Rust · nog '+bkDurL(l.W)):stx('Klaar',1),l.ready?`<button class="btn sm act-btn" onclick="act.luckUse()">Gebruiken</button>`:'','geluk')
-  :row('', '#f2c230',diceSvg(fitItem('dob5'),1),'Casino','Dobbelstenen',`Extra winst in de slots, ${LUCK_MIN} minuten per keer. Daarna een werkdag (${LUCK_CD/60} uur) rust.`,stx('Nog geen dobbelsteen op zak'),`<button class="btn sm ghost" onclick="fitUI.street='geluk';fitUI.tab='geluk';render()">Bekijken</button>`,'geluk');
- const kl=k.o?row(k.L?'on':'', '#5fe08f',klemSvg(k.o,1),'Bedrijven · op zak',esc(k.o.n),`+${Math.round(k.o.inc*100)}% inkomen van al je bedrijven, ${KLEM_MIN/60} uur. Daarna een werkdag (${KLEM_CD/60} uur) rust.`,
+  :row('', '#f2c230',diceSvg(fitItem('dob5'),1),'Casino','Dobbelstenen',`Extra winst in de slots, ${LUCK_MIN} minuten per keer. Daarna een werkdag (${LUCK_CD/60} uur, 2 speldagen) rust.`,stx('Nog geen dobbelsteen op zak'),`<button class="btn sm ghost" onclick="fitUI.street='geluk';fitUI.tab='geluk';render()">Bekijken</button>`,'geluk');
+ const kl=k.o?row(k.L?'on':'', '#5fe08f',klemSvg(k.o,1),'Bedrijven · op zak',esc(k.o.n),`+${Math.round(k.o.inc*100)}% inkomen van al je bedrijven, ${KLEM_MIN/60} uur. Daarna een werkdag (${KLEM_CD/60} uur, 2 speldagen) rust.`,
    k.L?stx('Actief · nog '+bkDurL(k.L),1):k.W?stx('Rust · nog '+bkDurL(k.W)):stx('Klaar',1),k.ready?`<button class="btn sm act-btn" onclick="act.klemUse()">Gebruiken</button>`:'','zaken')
-  :row('', '#5fe08f',klemSvg(fitItem('klem3'),1),'Bedrijven · nieuw','Geldklemmen',`Meer passief inkomen: ${KLEM_MIN/60} uur +10% tot +35% op al je bedrijven. Daarna een werkdag (${KLEM_CD/60} uur) rust.`,stx('Nog geen geldklem op zak'),`<button class="btn sm ghost" onclick="fitUI.street='geluk';fitUI.tab='zaken';render()">Bekijken</button>`,'zaken');
+  :row('', '#5fe08f',klemSvg(fitItem('klem3'),1),'Bedrijven · nieuw','Geldklemmen',`Meer passief inkomen: ${KLEM_MIN/60} uur +10% tot +35% op al je bedrijven. Daarna een werkdag (${KLEM_CD/60} uur, 2 speldagen) rust.`,stx('Nog geen geldklem op zak'),`<button class="btn sm ghost" onclick="fitUI.street='geluk';fitUI.tab='zaken';render()">Bekijken</button>`,'zaken');
  return `<section class="charms"><div class="charms-h"><div><span class="label">Gebruiken, niet dragen</span><h3>Gelukspullen</h3></div><button class="btn ghost sm" onclick="fitUI.street='geluk';fitUI.tab='geluk';render()">Alle gelukspullen ›</button></div>${lk}${kl}</section>`}
 // paneel bovenaan Geluk en in de casinobalk: wat je dobbelsteen nu kan
 function luckState(){const o=fitItem(fitS().wear.geluk),L=luckLeft(),W=luckWait();return {o,L,W,ready:!!(o&&o.luck)&&!L&&!W}}
