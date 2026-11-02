@@ -1,0 +1,69 @@
+/* Venster "Begin je carrière" / "Welkom terug" (lp-auth.js). Zelfstandig: werkt naast lp.css (voorpagina) en landing.css (subpagina's). */
+.lp-auth{--a-bg:#0d0f12;--a-panel:#101216;--a-line:#2b3038;--a-fg:#ebe8e2;--a-soft:#c5c2bb;--a-mute:#8a8f98;--a-acc:#ff7a1a;--a-ok:#3fe395;--a-bad:#ff6b7c;
+  padding:0;border:0;margin:auto;width:min(960px,100vw);max-width:100vw;height:auto;max-height:100dvh;background:var(--a-bg);color:var(--a-fg);overflow:hidden auto;
+  font-family:"Schibsted Grotesk","SG-fb",system-ui,sans-serif;font-size:16px;line-height:1.5;display:none;grid-template-columns:1fr;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.lp-auth[open]{display:grid}
+.lp-auth::backdrop{background:rgba(4,5,6,.82)}
+html.auth-open{overflow:hidden}
+.lp-auth *{box-sizing:border-box}
+.lp-auth [hidden]{display:none!important}
+.lp-auth .ic{width:18px;height:18px;flex:none}
+.lp-auth :focus-visible{outline:2px solid var(--a-fg);outline-offset:3px}
+/* politiebordje: telefoon een strip van max 96 px, desktop links */
+.lp-auth__board{background:repeating-linear-gradient(180deg,#14171c 0 23px,#1a1e24 23px 24px);display:flex;align-items:center;justify-content:center;padding:14px 64px 14px 16px;max-height:96px;overflow:hidden}
+.lp-auth__placard{width:100%;max-width:320px;background:#0b0c0e;border:2px solid #2b3038;padding:8px 12px;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10.5px;color:var(--a-mute);transition:border-color .3s}
+.lp-auth__placard .pl-top{display:flex;justify-content:space-between;gap:8px}
+.lp-auth__placard .pl-name{font:900 26px/1.1 "Big Shoulders Display","BSD-fb",Impact,sans-serif;color:var(--a-fg);letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.lp-auth__placard .pl-rows{display:none}
+.lp-auth.ok .lp-auth__placard{border-color:var(--a-ok)}
+.lp-auth.ok #plStatus{color:var(--a-ok)}
+.lp-auth__side{position:static;padding:20px clamp(16px,4vw,40px) calc(24px + env(safe-area-inset-bottom,0px))}
+.lp-auth__x{position:absolute;z-index:2;right:6px;top:max(6px,env(safe-area-inset-top,0px));width:44px;height:44px;display:grid;place-items:center;color:var(--a-fg);background:transparent;border:0;cursor:pointer}
+.lp-auth__form{display:grid;gap:14px;max-width:440px}
+.lp-auth .lp-kicker{display:flex;align-items:center;gap:10px;margin:0;font:500 12px/1.3 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:none;color:var(--a-acc)}
+.lp-auth .lp-kicker::before{content:"";width:8px;height:8px;background:var(--a-acc)}
+.lp-auth__h{margin:0;font:900 clamp(36px,6vw,52px)/.9 "Big Shoulders Display","BSD-fb",Impact,sans-serif;text-transform:uppercase}
+.lp-auth__h:focus{outline:none}.lp-auth__h:focus-visible{outline:2px solid var(--a-fg)}
+.lp-auth__krijg{list-style:none;margin:0;padding:0;display:grid;gap:6px;color:var(--a-soft);font-size:15px}
+.lp-auth__krijg li{display:flex;gap:8px;align-items:flex-start}.lp-auth__krijg .ic{color:var(--a-ok);margin-top:2px}
+.lp-auth__msg{margin:0;padding:10px 12px;border-left:3px solid var(--a-acc);background:#16120e;color:var(--a-fg);font-size:15px}
+.lp-auth__fld{display:grid;gap:6px}
+.lp-auth__fld>label:not(.lp-auth__age){font:800 14px "Big Shoulders Text","BST-fb","Arial Narrow",sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--a-soft)}
+.lp-auth input[type=text],.lp-auth input:not([type]),.lp-auth input[type=password]{width:100%;min-height:50px;padding:12px 14px;background:var(--a-panel);border:1px solid var(--a-line);border-radius:8px;color:var(--a-fg);font:16px "Schibsted Grotesk","SG-fb",system-ui,sans-serif}
+.lp-auth input:focus{border-color:var(--a-acc);outline:none;box-shadow:0 0 0 2px rgba(255,122,26,.35)}
+.lp-auth input[aria-invalid=true]{border-color:var(--a-bad)}
+.lp-auth__pw{position:relative}
+.lp-auth__pw input{padding-right:84px!important}
+.lp-auth__peek{position:absolute;right:4px;top:50%;translate:0 -50%;min-width:64px;height:44px;padding:0 10px;background:none;border:0;color:var(--a-acc);font:800 14px "Big Shoulders Text","BST-fb",sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.lp-auth__hint{display:flex;gap:6px;align-items:flex-start;margin:0;font-size:13.5px;color:var(--a-mute)}
+.lp-auth__hint .ic{width:16px;height:16px;margin-top:2px}
+.lp-auth__hint.bad{color:var(--a-bad)}.lp-auth__hint.good{color:var(--a-ok)}
+.lp-auth__age{display:flex;align-items:center;gap:12px;min-height:48px;padding:6px 10px 6px 4px;cursor:pointer;color:var(--a-fg);font-size:16px}
+.lp-auth__age input{width:22px;height:22px;flex:none;margin:0;accent-color:var(--a-acc);cursor:pointer}
+.lp-auth__age input:focus-visible{outline:2px solid var(--a-fg);outline-offset:3px}
+.lp-auth__age:has(input[aria-invalid=true]) span{color:var(--a-bad)}
+.lp-auth__err{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border:1px solid var(--a-bad);border-radius:8px;color:var(--a-fg);background:#1c0f12;font-size:15px}
+.lp-auth__err .ic{color:var(--a-bad);margin-top:2px}
+.lp-auth .btn{display:flex;width:100%;align-items:center;justify-content:center;min-height:52px;padding:14px 24px;border:0;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));background:var(--a-acc);color:#0b0907;
+  font:800 18px/1 "Big Shoulders Text","BST-fb","Arial Narrow",sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.lp-auth .btn:hover{background:#ffad6b}.lp-auth .btn:active{transform:scale(.98)}
+.lp-auth .btn:focus-visible{clip-path:none;outline:2px solid var(--a-fg);outline-offset:3px}
+.lp-auth .btn:disabled{background:#2b3038;color:#80868f;cursor:wait}
+.lp-auth.ok .btn{background:var(--a-ok)}
+.lp-auth__klein{margin:0;font-size:13.5px;color:var(--a-mute)}
+.lp-auth__vergeten summary{display:inline-flex;align-items:center;min-height:44px;color:var(--a-acc);cursor:pointer;font-size:15px}
+.lp-auth__vergeten p{margin:0 0 4px;color:var(--a-soft);font-size:14.5px}
+.lp-auth__swap{margin:0;color:var(--a-mute);font-size:15px}
+.lp-auth__link{display:inline-flex;align-items:center;min-height:44px;padding:0 2px;background:none;border:0;color:var(--a-acc);font:inherit;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+@media (min-width:900px){
+  .lp-auth{grid-template-columns:minmax(0,5fr) minmax(0,7fr);border:1px solid var(--a-line);border-radius:14px;max-height:min(760px,94dvh)}
+  .lp-auth__board{max-height:none;padding:40px 28px;background:repeating-linear-gradient(180deg,#14171c 0 47px,#1a1e24 47px 48px)}
+  .lp-auth__placard{padding:16px 18px;font-size:11.5px}
+  .lp-auth__placard .pl-name{font-size:40px;margin:14px 0}
+  .lp-auth__placard .pl-rows{display:grid;gap:6px}.lp-auth__placard .pl-rows div{display:flex;justify-content:space-between;border-top:1px solid #20242b;padding-top:6px}
+  .lp-auth__placard .pl-rows b{color:var(--a-fg);font-weight:500}
+  .lp-auth__side{padding:40px 44px 36px}
+  .lp-auth__x{top:10px;right:10px}
+}
+@media (max-width:899px){.lp-auth{width:100vw;height:100dvh;max-height:100dvh;margin:0;align-content:start}}
+@media (prefers-reduced-motion:no-preference){.lp-auth[open]{animation:lpa-in .18s ease-out}@keyframes lpa-in{from{opacity:0;transform:translateY(8px)}}}

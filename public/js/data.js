@@ -21,6 +21,10 @@ const RANKS=[
 const RK=[0,1,2,4,6,8,10,12,14,16,18,19];
 const RKP=[0,1,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10,11];
 const rkPow=ri=>RKP[Math.max(0,Math.min(RKP.length-1,ri|0))];
+// Vaste spelregels op één plek: het spel (state.js, carjack.js, hits.js, autos.js) en de voorpagina (server, lp-views.js) lezen ze hier.
+// startCash = startgeld, enBase/enRegenS = basisenergie en seconden per energiepunt, jackR/hitR = rang-index waarop carjacken en
+// huurmoorden opengaan, garageMax = hoeveel plekken je garage maximaal heeft.
+const GAME_CONST={startCash:250,enBase:100,enRegenS:12,jackR:RK[4],hitR:RK[7],garageMax:10};
 // zet de rang (r) van spullen en klussen om naar de nieuwe indeling. split: de goedkopere helft van een rang gaat naar de
 // tussenrang eronder, zodat elke nieuwe rang ook iets opent.
 function rkRemap(arr,split,key){if(!arr||arr._rk)return arr;arr._rk=1;const k=key||'p';

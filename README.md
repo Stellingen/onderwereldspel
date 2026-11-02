@@ -7,14 +7,31 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   `/casino` en `/casino/<spel>` (elk spel een eigen illustratie, regels en uitbetalingen; de tabellen van Kluiskraker, Visdief en Suikerbaron
   komen live uit `slot.js`, `vis.js` en `zoet.js`; oefendemo's van Mines, roulette en de munt), `/families` en `/families/<id>` (verhaal uit
   `lore.js`, plek in de voedselketen, de machtsverhoudingen van nu uit `famwar.js`, doorgroeien tot Onderbaas en Baas), `/rangen`
-  en `/training`. De voorpagina heeft een 3D-stadskaart met een meldkamer en een loopbaanlijn van Rookie tot Peetvader die je
-  kunt slepen. Inloggen en account aanmaken werken zoals voorheen (`?login=1`, `?register=1`).
-  Bovenaan staat het genre en kort "gratis · in je browser of als app · alleen virtueel spelgeld"; de meldkamer is gelabeld als
-  sfeerimpressie (de meldingen zijn verzonnen, geen echte gebeurtenissen of spelers). Kansen op de voorpagina tonen de kans op de
-  rang zelf (basiskans + 2 per rang, net als `chanceRaw` in het spel) met de basiskans erbij, zodat ze kloppen met wat je in het
-  spel ziet (zonder training, spullen of familie). Onderaan **veelgestelde vragen** (`#faq`, uitklapbaar, ook met het toetsenbord):
-  gratis, downloaden/als app, echt geld (nee), leeftijd (casino 18+), voortgang, wachtwoord vergeten (geen herstel: er is geen
-  e-mailadres), ranglijst en meldkamer. In de footer klein: 18+ voor het casino, alleen virtueel spelgeld, niets uit te betalen.
+  en `/training`. De voorpagina staat hieronder beschreven (ronde 2). Inloggen en account aanmaken werken met `?login=1`, `?register=1` en `/start`.
+  Onderaan de voorpagina staan **veelgestelde vragen** (`#faq`, uitklapbaar). In de footer: 16+, casino in het spel 18+,
+  alleen virtueel spelgeld, niets te winnen of uit te betalen.
+- **Voorpagina (ronde 2, `/` en `/start`)**: de server maakt de HTML (`public/js/lp-views.js`, pure functies in dezelfde
+  `vm` als `data.js`, `covers.js` en `jb-core.js`) en zet hem in `<main id="app" data-ssr="/">`, met een echte H1. Alles is
+  leesbaar zonder JS en zonder scroll-animatie. Opbouw: hero met de klim (inline SVG: Berlagebrug → 20 rangstreepjes →
+  villa, iso-woningen uit `vhScene` als kaartjes; eenmalige intro als de klim in beeld komt, ambient als losse HTML-lagen met
+  pauzeknop, `.calm` bij saveData), cijferbalk, "Zo werkt het", vijf minigames (4 clips uit de echte spelcode + de gang van
+  Ontsnappen live met `jb-core.js`; er speelt er één tegelijk, laden vlak voor ze in beeld komen, niet bij reduced motion of
+  saveData), loopbaan (3 haltes + rail van 20 rangen als slider), Imperium (families + bezit), een smalle casinostrook (18+,
+  alleen spelgeld), "Wat je wel en niet krijgt" + FAQ, slot-CTA, sticky knop op de telefoon. Alle getallen komen uit de code
+  (`LPV.facts`); constanten die eerst los in spelbestanden stonden, staan nu in `GAME_CONST` (`data.js`).
+  Gedrag: `public/js/lp-home.js` (±7 KB gz; `landing.js`, `data.js` en `covers.js` laden niet op `/`). Stijl: `public/css/lp.css`.
+  Fonts self-hosted in `public/fonts/` (5 woff2 uit `@fontsource`, fallback met `size-adjust`); Google Fonts is weg uit `index.html`.
+  **Registreren/inloggen**: `public/js/lp-auth.js` + `public/css/lp-auth.css`, een `<dialog>` die pas bij de eerste klik wordt
+  geladen (ook op de subpagina's). Registreren = naam + wachtwoord + verplicht vinkje "Ik ben 16 jaar of ouder."; de server
+  eist `age16:true` (anders 400) en bewaart `users.age16_at`. `/start` opent het venster meteen (noindex, canonical `/`);
+  `/game` zonder token → `/start`, met verlopen token → `/?login=1&verlopen=1`.
+  **Beelden en clips** (uitvoer staat in de repo): `node scripts/lp-build.js <poort> <tokenbestand> [--og]` tekent woningen,
+  casinocovers, auto's (zonder merk), etalagepoppen en een zaak uit de spelcode naar `public/img/lp/` en maakt `public/og.jpg`;
+  `node scripts/lp-rec.js <poort> <tokenbestand>` speelt de minigames met een bot en codeert 6 s-clips (AV1 + H.264, ≤ 200 KB,
+  poster ≤ 10 KB) naar `public/media/lp/`; de gekozen takes staan in `scripts/lp-rec/takes/`. Alleen lokaal, nooit tegen live.
+  `npm run lp:facts` schrijft `public/lp/facts.json` (outfits, winkelstraten, `GAME_CONST`); `npm run lp:check` faalt als dat
+  of een getal op de voorpagina niet meer klopt met de code. **Server**: gzip via `compression`, bestanden met `?v=` krijgen
+  `Cache-Control: immutable` (1 jaar), HTML `no-cache`, `/api` `no-store`.
 - **Merknaam** staat op één plek: `brand.json` (`name`, `short`, `genre`, `tagline`, `url`). De server vult hem in `index.html`,
   `game.html` en `admin.html` in (`{{BRAND}}`, `{{TITLE}}`, `{{DESC}}`, `{{CANONICAL}}`, …), in het manifest, de sitemap en de
   deelgegevens, en geeft hem als `window.BRAND` aan de scripts (landing, installatie-uitleg). Tijdelijk overschrijven kan met

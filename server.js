@@ -5,10 +5,15 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
 const mountAdmin = require('./admin');
+const compression = require('compression');
 
 const app = express();
 app.set('trust proxy', 1);
+// gzip voor HTML, CSS, JS, JSON en SVG (compression slaat zelf al gecomprimeerde media zoals woff2, webp en video over)
+app.use(compression());
 app.use(express.json({ limit: '2mb' }));
+// API-antwoorden nooit cachen
+app.use((req, res, next) => { if (req.path.startsWith('/api/')) res.set('Cache-Control', 'no-store'); next(); });
 
 const PORT = process.env.PORT || 3000;
 const SECRET = process.env.JWT_SECRET || 'onderwereld-dev-secret-verander-mij';
@@ -42,14 +47,16 @@ app.get('/api/health', (req, res) => res.json({ ok: true, db: db.state.ready }))
 
 app.post('/api/register', limit, async (req, res) => {
   if (!db.state.ready) return need(res);
-  const { username, password } = req.body || {};
+  const { username, password, age16 } = req.body || {};
   if (!validName(username)) return res.status(400).json({ error: 'Gebruikersnaam: 3–20 letters, cijfers of _' });
   if (!validPass(password)) return res.status(400).json({ error: 'Wachtwoord moet minstens 6 tekens zijn' });
+  // het spel is voor 16+: de speler moet dat zelf bevestigen (vinkje bij registreren), ook als iemand de API direct aanroept
+  if (age16 !== true) return res.status(400).json({ error: 'Je moet 16 jaar of ouder zijn om te spelen.', field: 'age16' });
   try {
     const [ex] = await db.q('SELECT id FROM users WHERE username=?', [username.toLowerCase()]);
     if (ex.length) return res.status(409).json({ error: 'Die gebruikersnaam is al bezet' });
     const hash = await bcrypt.hash(password, 10);
-    const [r] = await db.q('INSERT INTO users(username,display,password_hash) VALUES(?,?,?)', [username.toLowerCase(), username, hash]);
+    const [r] = await db.q('INSERT INTO users(username,display,password_hash,age16_at) VALUES(?,?,?,NOW())', [username.toLowerCase(), username, hash]);
     const user = { id: r.insertId, display: username };
     res.json({ token: sign(user), username });
   } catch (e) { console.error(e); res.status(500).json({ error: 'Serverfout bij registreren' }); }
@@ -310,12 +317,22 @@ const SITE = String(process.env.SITE_URL || BRAND.url).replace(/\/+$/, '');
 // spelgegevens (zelfde bestanden als de browser) voor titels, de sitemap en welke adressen bestaan
 const GD = (() => {
   const ctx = { console, Math, Date, JSON }; ctx.window = ctx; vm.createContext(ctx);
-  for (const f of ['js/data.js', 'js/covers.js']) { try { vm.runInContext(fs.readFileSync(path.join(PUBLIC, f), 'utf8'), ctx, { filename: f }); } catch (e) { console.warn('Spelgegevens laden mislukt:', f, e.message); } }
+  for (const f of ['js/data.js', 'js/covers.js', 'js/jb-core.js', 'js/lp-views.js']) { try { vm.runInContext(fs.readFileSync(path.join(PUBLIC, f), 'utf8'), ctx, { filename: f }); } catch (e) { console.warn('Spelgegevens laden mislukt:', f, e.message); } }
   try {
-    return vm.runInContext(`({crimes:CRIMES.length,ranks:RANKS.length,trainings:TRAININGS.length,
+    const out = vm.runInContext(`({crimes:CRIMES.length,ranks:RANKS.length,trainings:TRAININGS.length,
       fams:FAMILIES.map(f=>({id:f.id,n:f.n,d:f.d})),games:COV.GAMES.map(g=>({slug:g.slug,n:g.n,d:g.short||''}))})`, ctx);
+    // voorpagina: alle getallen uit de code (data.js, covers.js, jb-core.js) plus public/lp/facts.json (outfits, winkelstraten)
+    try {
+      let facts = {}; try { facts = JSON.parse(fs.readFileSync(path.join(PUBLIC, 'lp', 'facts.json'), 'utf8')); } catch (e) { console.warn('public/lp/facts.json ontbreekt: draai npm run lp:facts'); }
+      ctx.__facts = facts; out.N = vm.runInContext('LPV.facts(__facts)', ctx); out.N.brand = BRAND.name;
+      out.lpPage = N => ctx.LPV.page(N);
+    } catch (e) { console.warn('Voorpagina kon niet gerenderd worden:', e.message); }
+    return out;
   } catch (e) { console.warn('Spelgegevens niet beschikbaar:', e.message); return { crimes: 60, ranks: 12, trainings: 9, fams: [], games: [] }; }
 })();
+// De voorpagina als HTML (één keer bij het opstarten; de getallen veranderen alleen met de code)
+let HOME_HTML = '';
+try { if (GD.lpPage) HOME_HTML = GD.lpPage(GD.N); } catch (e) { console.warn('Voorpagina renderen mislukt:', e.message); }
 const escH = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const TPL = {};
 function tplFile(f) { if (!TPL[f]) TPL[f] = fs.readFileSync(path.join(PUBLIC, f), 'utf8'); return TPL[f]; }
@@ -326,16 +343,24 @@ function page(file, m) {
   const brandJs = JSON.stringify({ name: BRAND.name, short: BRAND.short, genre: BRAND.genre, tagline: BRAND.tagline, url: SITE })
     .replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/</g, '\\u003c');
   const ld = m.ld ? `<script type="application/ld+json">${JSON.stringify(m.ld).replace(/</g, '\\u003c')}</script>` : '';
-  const map = { BRAND: escH(BRAND.name), BRAND_UP: escH(BRAND.name.toUpperCase()), BRAND_INITIAL: escH(BRAND.name.charAt(0).toUpperCase()), BRAND_SHORT: escH(BRAND.short),
+  const home = !!m.home, V = APP_VER;
+  const head = home ? `<link rel="stylesheet" href="/css/lp.css?v=${V}">` : `<link rel="stylesheet" href="/css/landing.css?v=${V}">`;
+  const scripts = home ? `<script src="/js/lp-home.js?v=${V}" defer></script>`
+    : ['data.js', 'lore.js', 'icons.js', 'zoet-art.js', 'covers.js', 'landing.js'].map(f => `<script src="/js/${f}?v=${V}"></script>`).join('\n');
+  const noJs = `<noscript><p class="lp-nojs">${m.start ? 'Het spel zelf heeft JavaScript nodig. Zet het aan om een account te maken.' : escH(BRAND.name) + ' heeft JavaScript nodig.'}</p></noscript>`;
+  const map = { HEAD: head, SCRIPTS: scripts, BODY_CLASS: home ? 'lp lp-home' : 'lp', MAIN_ATTR: home ? ` data-ssr="/" data-startcash="${+(GD.N && GD.N.startCash) || 0}" data-first="${escH((GD.N && GD.N.first) || 'Rookie')}"${m.start ? ' data-open="register"' : ''}` : '',
+    APP_HTML: home ? (m.start ? noJs : '') + HOME_HTML : noJs,
+    BRAND: escH(BRAND.name), BRAND_UP: escH(BRAND.name.toUpperCase()), BRAND_INITIAL: escH(BRAND.name.charAt(0).toUpperCase()), BRAND_SHORT: escH(BRAND.short),
     TAGLINE: escH(BRAND.tagline), GENRE: escH(BRAND.genre), SITE: escH(SITE), TITLE: escH(title), DESC: escH(desc), CANONICAL: escH(canon),
     ROBOTS: m.noindex ? 'noindex,nofollow' : 'index,follow', BRAND_JSON: brandJs, LD_JSON: ld, VER: APP_VER };
+  // één keer vervangen (geen tweede ronde over ingevoegde HTML)
   return tplFile(file).replace(/\{\{([A-Z_]+)\}\}/g, (all, k) => (k in map ? map[k] : all));
 }
 function sendPage(res, file, m, status) { res.status(status || 200).set('Cache-Control', 'no-cache').type('html').send(page(file, m)); }
 // publieke adressen van de voorpagina en hun titels (de voorpagina zet dezelfde titels in de browser)
 const famN = GD.fams.length, gameN = GD.games.length;
 const ROUTE_META = {
-  '/': { title: `${BRAND.name} · ${BRAND.genre}`, desc: `Gratis maffia-browsergame in het Nederlands. Begin als Rookie en werk je op tot Peetvader: ${GD.crimes} misdaden, ${famN} families, een casino met spelgeld en een ranglijst. Speel in je browser of als app.` },
+  '/': { title: `${BRAND.name} · Gratis maffiaspel in je browser`, desc: `Gratis Nederlands maffiaspel. Begin als Rookie onder de Berlagebrug en klim via ${GD.crimes} klussen, achtervolgingen en ${famN} families naar Peetvader. 16+, alleen spelgeld.`, home: !!HOME_HTML },
   '/misdaden': { title: `Misdaden · ${BRAND.name}`, desc: `Alle ${GD.crimes} klussen van ${BRAND.name}: buit, kans, energie en straf per rang.` },
   '/casino': { title: `Casino · ${BRAND.name}`, desc: `${gameN} casinospellen met virtueel spelgeld: ${GD.games.map(x => x.n).join(', ')}. Alleen spelgeld, geen echt geld.` },
   '/families': { title: `Families · ${BRAND.name}`, desc: `De ${famN} families van ${BRAND.name}: wie ze zijn, wie ze binnenlaten en hoe je bij ze opklimt.` },
@@ -343,6 +368,8 @@ const ROUTE_META = {
   '/training': { title: `Training · ${BRAND.name}`, desc: `${GD.trainings} plekken om te trainen en manieren om bij te komen in ${BRAND.name}.` }
 };
 function routeMeta(p) {
+  // /start: de voorpagina die meteen het venster "Begin je carrière" opent (campagnes, QR-codes); niet indexeren, canonical /
+  if (p === '/start') return Object.assign({}, ROUTE_META['/'], { path: '/', noindex: true, start: true });
   if (ROUTE_META[p]) return Object.assign({ path: p }, ROUTE_META[p]);
   let m = p.match(/^\/casino\/([a-z0-9-]+)$/);
   if (m) { const x = GD.games.find(y => y.slug === m[1]); return x ? { path: p, title: `${x.n} · Casino · ${BRAND.name}`, desc: `${x.n}: ${x.d} Speel met virtueel spelgeld.` } : null; }
@@ -351,7 +378,7 @@ function routeMeta(p) {
   return null;
 }
 const HOME_LD = { '@context': 'https://schema.org', '@type': 'VideoGame', name: BRAND.name, url: SITE + '/', inLanguage: 'nl', description: ROUTE_META['/'].desc,
-  genre: ['Browsergame', 'Maffiaspel', 'Rollenspel'], gamePlatform: 'Webbrowser', applicationCategory: 'Game', operatingSystem: 'Elke moderne webbrowser',
+  genre: 'Maffia, misdaad', gamePlatform: 'Web browser', applicationCategory: 'Game', operatingSystem: 'Elke moderne webbrowser', contentRating: '16+',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' } };
 app.get(['/index.html', '/index'], (req, res) => res.redirect(301, '/'));
 app.get(['/game', '/game.html'], (req, res) => sendPage(res, 'game.html', { title: `${BRAND.name} · Spelen`, path: '/game', noindex: true }));
@@ -374,9 +401,13 @@ app.get('*', (req, res, next) => {
   const p = (req.path.replace(/\/+$/, '') || '/').toLowerCase(), m = routeMeta(p);
   if (!m) return next();
   if (p === '/') m.ld = HOME_LD;
+  if (m.home) res.set('Vary', 'Accept-Encoding');
   sendPage(res, 'index.html', m);
 });
-app.use(express.static(PUBLIC, { extensions: ['html'], index: false }));
+// Caching: bestanden met ?v=<versie> (scripts, stijlen, fonts, beelden en clips van de voorpagina) veranderen nooit onder dezelfde
+// URL en mogen een jaar in de cache. Alle andere bestanden blijven zoals voorheen (opnieuw vragen, met ETag). HTML: no-cache, /api: no-store.
+app.use(express.static(PUBLIC, { extensions: ['html'], index: false, cacheControl: false,
+  setHeaders(res) { const req = res.req; res.setHeader('Cache-Control', req && req.query && req.query.v ? 'public, max-age=31536000, immutable' : 'public, max-age=0'); } }));
 // onbekend: API geeft JSON, de rest een nette 404-pagina (de voorpagina toont dan "Doodlopende steeg")
 app.use('/api', (req, res) => res.status(404).json({ error: 'Onbekend adres' }));
 app.use((req, res) => {

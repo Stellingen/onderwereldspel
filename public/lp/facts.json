@@ -1,0 +1,37 @@
+{
+ "outfits": 102,
+ "streets": [
+  {
+   "id": "laag",
+   "n": "Albert Cuypmarkt",
+   "r": [
+    0,
+    4
+   ]
+  },
+  {
+   "id": "midden",
+   "n": "Kalverstraat",
+   "r": [
+    6,
+    12
+   ]
+  },
+  {
+   "id": "hoog",
+   "n": "P.C. Hooftstraat",
+   "r": [
+    14,
+    19
+   ]
+  }
+ ],
+ "gameConst": {
+  "startCash": 250,
+  "enBase": 100,
+  "enRegenS": 12,
+  "jackR": 6,
+  "hitR": 12,
+  "garageMax": 10
+ }
+}

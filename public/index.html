@@ -25,101 +25,54 @@
 <meta property="og:image" content="{{SITE}}/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="De voorpagina van {{BRAND}}: een stad bij nacht met de tekst Van rookie tot peetvader">
+<meta property="og:image:alt" content="{{BRAND}}: van Rookie onder de Berlagebrug tot Peetvader in een villa, met de tekst Van Rookie tot Peetvader">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{TITLE}}">
 <meta name="twitter:description" content="{{DESC}}">
 <meta name="twitter:image" content="{{SITE}}/og.jpg">
 <script>try{window.BRAND=JSON.parse('{{BRAND_JSON}}')}catch(e){}</script>
 {{LD_JSON}}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Big+Shoulders+Text:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="/css/landing.css?v={{VER}}">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="preload" href="/fonts/big-shoulders-display-latin-900-normal.woff2?v=1" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/schibsted-grotesk-latin-400-normal.woff2?v=1" as="font" type="font/woff2" crossorigin>
+{{HEAD}}
 </head>
-<body class="lp">
+<body class="{{BODY_CLASS}}">
 <script src="/js/notap.js"></script>
 <a class="skip" href="#app">Naar de inhoud</a>
 
-<header class="mast" id="top">
-  <a class="logo" href="/" data-link aria-label="{{BRAND}}, voorpagina"><span class="mark">{{BRAND_INITIAL}}</span><span class="word">{{BRAND}}</span></a>
+<header class="mast lp-mast" id="mast">
+  <a class="logo" href="/"><span class="mark" aria-hidden="true">{{BRAND_INITIAL}}</span><span class="word">{{BRAND}}</span></a>
   <nav class="toplinks" aria-label="Hoofdmenu">
+    <a href="/#zo-werkt-het" data-nav="home">Het spel</a>
     <a href="/misdaden" data-link data-nav="misdaden">Misdaden</a>
-    <a href="/casino" data-link data-nav="casino">Casino</a>
-    <a href="/families" data-link data-nav="families">Families</a>
     <a href="/rangen" data-link data-nav="rangen">Rangen</a>
+    <a href="/families" data-link data-nav="families">Families</a>
     <a href="/training" data-link data-nav="training">Training</a>
+    <a href="/casino" data-link data-nav="casino">Casino</a>
   </nav>
-  <div class="topauth" id="topAuth"></div>
+  <div class="topauth" id="topAuth"><a class="tlink topauth__in" href="/?login=1" data-auth="login">Inloggen</a><a class="btn sm btn--sm" href="/start" data-auth="register" data-cta="mast">Speel gratis</a></div>
   <button class="burger" id="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mnav"><i></i><i></i></button>
 </header>
-<div class="mnav" id="mnav" hidden>
-  <nav class="mnav-links" id="mnavLinks" aria-label="Menu"></nav>
-  <div class="mnav-auth" id="mnavAuth"></div>
+<div class="mnav" id="mnav" role="dialog" aria-modal="true" aria-label="Menu" hidden>
+  <nav class="mnav-links" id="mnavLinks" aria-label="Menu">
+    <a href="/#zo-werkt-het"><b>Het spel</b></a><a href="/misdaden" data-link data-nav="misdaden"><b>Misdaden</b></a><a href="/rangen" data-link data-nav="rangen"><b>Rangen</b></a><a href="/families" data-link data-nav="families"><b>Families</b></a><a href="/training" data-link data-nav="training"><b>Training</b></a><a href="/casino" data-link data-nav="casino"><b>Casino</b></a><a href="/#faq"><b>Vragen</b></a>
+  </nav>
+  <div class="mnav-auth" id="mnavAuth"><a class="btn xl btn--lg btn--block" href="/start" data-auth="register" data-cta="menu">Speel gratis</a><p class="mnav-klein">16+ · Alleen spelgeld</p></div>
 </div>
 
-<main class="app" id="app" tabindex="-1"><noscript><p style="padding:120px 24px">{{BRAND}} heeft JavaScript nodig.</p></noscript></main>
+<main class="app" id="app" tabindex="-1"{{MAIN_ATTR}}>{{APP_HTML}}</main>
 
-<footer class="foot">
+<footer class="foot lp-foot">
   <div class="foot-in">
-    <a class="logo" href="/" data-link><span class="mark">{{BRAND_INITIAL}}</span><span class="word">{{BRAND}}</span></a>
-    <nav class="foot-links" aria-label="Onderdelen"><a href="/misdaden" data-link>Misdaden</a><a href="/casino" data-link>Casino</a><a href="/families" data-link>Families</a><a href="/rangen" data-link>Rangen</a><a href="/training" data-link>Training</a><a href="/#faq" data-link>Vragen</a><a href="/game.html">Spelen</a></nav>
+    <a class="logo" href="/"><span class="mark" aria-hidden="true">{{BRAND_INITIAL}}</span><span class="word">{{BRAND}}</span></a>
+    <nav class="foot-links" aria-label="Onderdelen"><a href="/#zo-werkt-het">Het spel</a><a href="/misdaden" data-link>Misdaden</a><a href="/rangen" data-link>Rangen</a><a href="/families" data-link>Families</a><a href="/training" data-link>Training</a><a href="/casino" data-link>Casino</a><a href="/#faq">Vragen</a><a href="/start" data-play>Spelen</a></nav>
   </div>
-  <p>Een fictief spel. Alle namen, families en buit zijn verzonnen.</p>
-  <p class="foot-legal"><span>18+ voor het casino</span><span>Alleen virtueel spelgeld, geen echt geld</span><span>Niets te winnen of uit te betalen</span></p>
+  <p>{{BRAND}} is een spel. Alle personen, families en gebeurtenissen zijn verzonnen.</p>
+  <p class="foot-legal"><span><abbr class="age" title="16 jaar en ouder">16+</abbr></span><span>Casino in het spel 18+</span><span>Alleen virtueel spelgeld, geen echt geld</span><span>Niets te winnen of uit te betalen</span></p>
 </footer>
 
-<div class="auth" id="auth" hidden>
-  <div class="auth-board" aria-hidden="true">
-    <div class="height" id="height"></div>
-    <div class="placard">
-      <div class="pl-top"><span>Politie · Eenheid Onderwereld</span><span id="plNo">Nr. 000000</span></div>
-      <div class="pl-name" id="plName">ONBEKEND</div>
-      <div class="pl-rows">
-        <div><span>Status</span><b id="plStatus">Nieuw dossier</b></div>
-        <div><span>Rang</span><b id="plRank">Rookie</b></div>
-        <div><span>Datum</span><b id="plDate">—</b></div>
-      </div>
-    </div>
-  </div>
-  <div class="auth-side">
-    <button class="auth-x" id="authClose" type="button" aria-label="Sluiten">Sluiten ✕</button>
-    <div class="auth-inner">
-      <div class="seg" role="tablist">
-        <button role="tab" id="tabLogin" type="button" data-mode="login">Inloggen</button>
-        <button role="tab" id="tabReg" type="button" data-mode="register">Account aanmaken</button>
-      </div>
-      <h2 class="auth-title" id="authTitle">Welkom terug</h2>
-      <p class="auth-hint" id="authHint">Log in en ga verder waar je gebleven was.</p>
-      <form id="authForm" novalidate>
-        <div class="fld">
-          <label for="authUser">Gebruikersnaam</label>
-          <input id="authUser" name="username" autocomplete="username" maxlength="20" spellcheck="false" required>
-          <div class="fhint" id="userHint">3 tot 20 tekens: letters, cijfers of _</div>
-        </div>
-        <div class="fld">
-          <label for="authPass">Wachtwoord</label>
-          <div class="pw"><input id="authPass" name="password" type="password" autocomplete="current-password" maxlength="100" required><button type="button" class="peek" id="peek">Toon</button></div>
-          <div class="meter" id="meter" hidden><i></i><i></i><i></i><i></i><span id="meterTxt"></span></div>
-        </div>
-        <div class="fld" id="pass2wrap" hidden>
-          <label for="authPass2">Herhaal wachtwoord</label>
-          <input id="authPass2" type="password" autocomplete="new-password" maxlength="100">
-          <div class="fhint" id="matchHint"></div>
-        </div>
-        <div class="aerr" id="authErr" role="alert" hidden></div>
-        <button class="btn xl" id="authSubmit" type="submit" style="width:100%">Inloggen</button>
-      </form>
-      <p class="auth-swap" id="authSwap"></p>
-    </div>
-  </div>
-</div>
-
-<script src="/js/data.js?v={{VER}}"></script>
-<script src="/js/lore.js?v={{VER}}"></script>
-<script src="/js/icons.js?v={{VER}}"></script>
-<script src="/js/zoet-art.js?v={{VER}}"></script>
-<script src="/js/covers.js?v={{VER}}"></script>
-<script src="/js/landing.js?v={{VER}}"></script>
+{{SCRIPTS}}
 <script src="/js/install.js" defer></script>
 </body>
 </html>

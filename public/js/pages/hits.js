@@ -8,7 +8,7 @@
 // Na een klus kun je gezocht worden: S.wanted={lv,until,t,sec}. Dan komen er controles (actions.js, main.js) en vanaf niveau 2
 // premiejagers. Het zakt met de tijd, drie keer zo snel als je ondergedoken bent. Ontsnapt uit de bajes = S.wanted=true (geen timer).
 // Verversen tijdens een contract telt als mislukt (resumePending in state.js).
-const HIT_RANK=RK[7],HIT_GUN=4; // HIT_GUN: Scherpschuttersgeweer of beter
+const HIT_RANK=GAME_CONST.hitR,HIT_GUN=4; // HIT_GUN: Scherpschuttersgeweer of beter
 const HIT_TIERS=[
  {id:'straat',n:'Straat',r:7,rep:0,col:'var(--acc)',d:'Verklikkers, koeriers en wanbetalers. Weinig bescherming, wel veel ogen op straat.'},
  {id:'pro',n:'Professioneel',r:8,rep:2,col:'var(--red)',d:'Mensen met geld, macht of een advocaat. Ze verwachten iemand zoals jij.'},

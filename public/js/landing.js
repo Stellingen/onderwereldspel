@@ -92,21 +92,12 @@ function need(src){if(loaded[src])return loaded[src];
   loaded[src]=new Promise(res=>{const s=document.createElement('script');s.src=src;s.onload=()=>res(true);s.onerror=()=>res(false);document.head.appendChild(s)});
   return loaded[src]}
 
-/* ---------- Verschijnen bij scrollen ---------- */
-function reveal(root){const els=qa('.rv',root||app);if(reduce||!('IntersectionObserver' in window)){els.forEach(e=>e.classList.add('in'));return}
-  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{rootMargin:'0px 0px -8% 0px',threshold:.05});
-  els.forEach(e=>io.observe(e));onLeave(()=>io.disconnect())}
-// Getallen tellen op als ze in beeld komen
-function countUp(root){qa('[data-count]',root||app).forEach(el=>{const to=+el.dataset.count;if(reduce||!to){el.textContent=nl(to);return}
-  let t0=0;const go=t=>{if(!t0)t0=t;const p=Math.min(1,(t-t0)/900),e=1-Math.pow(1-p,3);el.textContent=nl(Math.round(to*e));if(p<1&&el.isConnected)requestAnimationFrame(go)};
-  el.textContent='0';requestAnimationFrame(go)})}
-
 /* ---------- Kop, menu en navigatie ---------- */
-const top=q('#top');
-const onScroll=()=>top.classList.toggle('solid',scrollY>30||!app.classList.contains('pg-home'));
+const top=q('#mast');
+const onScroll=()=>top.classList.toggle('solid',true);
 addEventListener('scroll',onScroll,{passive:true});
 const burger=q('#burger'),mnav=q('#mnav');
-function menu(open){mnav.hidden=!open;burger.setAttribute('aria-expanded',String(open));document.body.classList.toggle('menu-open',open);if(open){const a=q('a',mnav);a&&a.focus({preventScroll:true})}}
+function menu(open){const was=!mnav.hidden;mnav.hidden=!open;burger.setAttribute('aria-expanded',String(open));document.body.classList.toggle('menu-open',open);if(open){const a=q('a',mnav);a&&a.focus({preventScroll:true})}else if(was)burger.focus({preventScroll:true})}
 burger.addEventListener('click',()=>menu(mnav.hidden));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!mnav.hidden)menu(false)});
 function setActive(path){const seg=path.split('/')[1]||'';
@@ -129,12 +120,12 @@ function render(path,opt){opt=opt||{};renderId++;curPath=path;
   setActive(path);onScroll();
   if(opt.pop)scrollTo(0,opt.y||0);else if(!opt.keep)scrollTo(0,0);
   if(out.after)out.after();
-  reveal();countUp();
   if(!opt.first&&!opt.pop){app.focus({preventScroll:true})}
 }
 const cleanPath=p=>(p.replace(/\/+$/,'')||'/').toLowerCase();
 function go(href){const u=new URL(href,location.href);if(u.origin!==location.origin){location.href=href;return}
   const p=cleanPath(u.pathname);
+  if(p==='/'||p==='/start'){location.href=u.pathname+u.search+u.hash;return}   // de voorpagina komt kant-en-klaar van de server
   try{history.replaceState(Object.assign({},history.state,{y:scrollY}),'')}catch(e){}
   if(p===cleanPath(location.pathname)&&!u.hash){scrollTo({top:0,behavior:reduce?'auto':'smooth'});return}
   history.pushState({y:0},'',p+u.hash);menu(false);render(p);
@@ -160,249 +151,15 @@ function pageHead(o){return `<section class="ph${o.cls?' '+o.cls:''}"><div class
 const PAGES=[['misdaden','Misdaden',()=>CRIMES.length+' klussen'],['casino','Casino',()=>GAMES.length+' spellen'],['families','Families',()=>FAMILIES.length+' families'],['rangen','Rangen',()=>RANKS.length+' rangen'],['training','Training',()=>TRAININGS.length+' plekken']];
 function moreHtml(skip){return `<section class="more-blk wrap rv"><div class="label">Verder kijken</div><nav class="more">${PAGES.filter(p=>p[0]!==skip).map(p=>`<a href="/${p[0]}" data-link><b>${p[1]}</b><span>${p[2]()}</span>${ic('arrow')}</a>`).join('')}</nav></section>`}
 function ctaHtml(t1,t2,lead){return `<section class="final wrap rv"><h2 class="mega small"><span>${t1}</span><span><em>${t2}</em></span></h2><p class="lede">${lead}</p>
-  <div class="hero-cta">${loggedIn?'<a class="btn xl" href="/game.html">Ga naar mijn dashboard</a>':'<button class="btn xl" data-auth="register">Maak je account aan</button><button class="btn ghost xl" data-auth="login">Inloggen</button>'}</div></section>`}
+  <div class="hero-cta">${loggedIn?'<a class="btn xl" href="/game">Verder spelen</a>':'<a class="btn xl" href="/start" data-auth="register">Speel gratis</a><a class="btn ghost xl" href="/?login=1" data-auth="login">Inloggen</a>'}</div></section>`}
 
 /* ================= Casino: de spellen en hun illustraties staan in covers.js ================= */
 const {GAMES,gameBy,SUIT,pcard,chip,RL_ORDER,RL_RED,arcSeg,wheelSvg,coverSvg}=COV;
-/* ================= Voorpagina ================= */
-const PLACES=['Damrak','Kalverstraat','Zeedijk','Rembrandtplein','Leidseplein','De Wallen','Haarlemmerdijk','Albert Cuypmarkt','Zuidas','Bijlmer','Oostelijke Handelskade','Museumplein','Vondelpark','Centraal Station','Westerpark','Nieuwmarkt','Spui','Waterlooplein','De Pijp','Jordaan'];
-const TYPES=[['Zakkenrollerij',0],['Fietsendiefstal',0],['Winkeldiefstal',0],['Autokraak',0],['Overval avondwinkel',1],['Inbraak woning',0],['Verdachte situatie',0],['Achtervolging',1],['Overval juwelier',1],['Fruitautomaat opengebroken',0],['Valse tickets',0],['Telefoonfraude gemeld',0],['Geldtransport onderschept',1],['Arrestatie',0],['Carjacking bij stoplicht',1],['Schoten gehoord',1]];
-
-function heroHtml(){const L=loggedIn;
- return `<section class="hero" id="hero">
-  <canvas id="city" aria-hidden="true"></canvas>
-  <div class="hero-grid wrap">
-   <div class="hero-copy">
-    <div class="kick" id="kick"><span class="dot"></span>${L?'Welkom terug, '+esc(userName):esc(GENRE)}</div>
-    <h1 class="mega" id="mega">${L?'<span>De stad</span><span><em>wacht op je.</em></span>':'<span>Van rookie</span><span>tot <em>peetvader</em>.</span>'}</h1>
-    <p class="lede" id="lede">${L?'Je imperium staat precies waar je het hebt achtergelaten. Je zaken hebben doorgedraaid en je rivalen hebben niet stilgezeten.':'Je begint met €250 en een open rugzak op de Dam. Hoe ver je komt, hangt af van je lef, je familie en hoe vaak je de politie te slim af bent.'}</p>
-    <div class="hero-cta" id="heroCta">${L?'<a class="btn xl" href="/game.html">Ga naar mijn dashboard</a><a class="btn ghost xl" href="#loopbaan">Wat er nog te halen valt</a>':'<button class="btn xl" data-auth="register">Begin je carrière</button><button class="btn ghost xl" data-auth="login">Inloggen</button>'}</div>
-    ${L?'':'<ul class="hero-facts" aria-label="In het kort"><li>Gratis</li><li>Speel in je browser of als app</li><li>Alleen virtueel spelgeld</li></ul>'}
-   </div>
-   <aside class="feed" aria-label="Meldkamer: sfeerimpressie, geen echte meldingen"><div class="feed-head"><span>Meldkamer <small>· sfeer</small></span><span id="clock">00:00:00</span></div><ol id="feed" aria-hidden="true"></ol><p class="feed-note">Sfeerimpressie van de stad, geen echte meldingen of spelers.</p></aside>
-  </div>
-  <nav class="stats wrap" aria-label="Onderdelen van het spel">
-   <a href="/rangen" data-link><b data-count="${RANKS.length}">${RANKS.length}</b><span>rangen</span>${ic('arrow')}</a>
-   <a href="/misdaden" data-link><b data-count="${CRIMES.length}">${CRIMES.length}</b><span>misdaden</span>${ic('arrow')}</a>
-   <a href="/families" data-link><b data-count="${FAMILIES.length}">${FAMILIES.length}</b><span>families</span>${ic('arrow')}</a>
-   <a href="/casino" data-link><b data-count="${GAMES.length}">${GAMES.length}</b><span>casinospellen</span>${ic('arrow')}</a>
-   <a href="/training" data-link><b data-count="${TRAININGS.length}">${TRAININGS.length}</b><span>trainingen</span>${ic('arrow')}</a>
-  </nav>
- </section>`}
-
-/* ---------- De stad in 3D: kaart met grachten, blokken, torens en meldingen die oplichten ---------- */
-function seeded(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function initCity(){
- const cv=q('#city'),hero=q('#hero');if(!cv)return;const g=cv.getContext('2d');
- const small=matchMedia('(max-width:760px)').matches,rnd=seeded(31102026);
- const RINGS=[.3,.42,.54,.66,.78],ROAD=1.5,STREETS=[];for(let k=1;k<15;k++)STREETS.push(k/15*Math.PI);
- const AMSTEL=1.32;
- // gebouwen in stadscoördinaten: centrum (Dam) op 0,0; negatieve z = richting kijker, het IJ ligt achter het centrum
- const B=[],k=small?1.8:1,tang=a=>Math.atan2(-Math.cos(a),-Math.sin(a));
- const add=(x,z,w,d,h,rot,kind)=>{const win=[];if(h>.045)for(let i=0;i<(kind==='tower'?12:4);i++)win.push([i%4,.12+rnd()*.76,.15+rnd()*.75,rnd()]);B.push({x,z,w,d,h,rot,win,zuid:kind==='tower'})};
- const onStreet=(a,r,m)=>STREETS.some(s=>Math.abs(s-a)*r<m)||Math.abs(a-AMSTEL)*r<m*1.6;
- // grachtengordel: twee rijen smalle grachtenpanden tussen elke twee grachten
- for(let i=0;i<RINGS.length-1;i++){[RINGS[i]+.034,RINGS[i+1]-.034].forEach(rr=>{let a=.05;
-   while(a<Math.PI-.05){const w=(.011+rnd()*.011)*k;a+=w/rr;if(!onStreet(a,rr,.018))add(Math.cos(a)*rr,-Math.sin(a)*rr,w,.019,.016+rnd()*.03,tang(a),'canal');a+=(w+.0035)/rr}})}
- // het centrum rond de Dam
- for(let i=0;i<(small?6:12);i++){const a=.2+rnd()*(Math.PI-.4),r=.1+rnd()*.14;add(Math.cos(a)*r,-Math.sin(a)*r,.02+rnd()*.015,.02+rnd()*.012,.02+rnd()*.03,tang(a),'block')}
- // de rest van de stad: blokken langs de straten, met torens op de Zuidas
- for(let rr=.9;rr<1.9;rr+=.085*k){if(Math.abs(rr-ROAD)<.05)continue;const step=.085*k/rr;
-  for(let a=.05;a<Math.PI-.05;a+=step){if(rnd()<.26)continue;const aa=a+(rnd()-.5)*step*.3,r2=rr+(rnd()-.5)*.02;if(onStreet(aa,r2,.03))continue;
-   add(Math.cos(aa)*r2,-Math.sin(aa)*r2,(.02+rnd()*.016)*k,(.02+rnd()*.016)*k,.024+rnd()*.05,tang(aa),'block')}}
- // torens aan de overkant van het IJ: de skyline rechtsboven
- for(let i=0;i<(small?7:13);i++){const x=.22+rnd()*.62,z=.48+rnd()*.42;add(x,z,.022+rnd()*.016,.022+rnd()*.016,.1+rnd()*.24,rnd()*.4,'tower')}
- // Noord, aan de overkant van het IJ: loodsen
- for(let x=-1.7;x<1.7;x+=.13*k)for(let z=.44;z<1.2;z+=.11*k){if(rnd()<.42||(x>.15&&x<.9&&z<.95))continue;add(x+(rnd()-.5)*.03,z+(rnd()-.5)*.03,.03+rnd()*.03,.018+rnd()*.012,.018+rnd()*.03,0,'block')}
- let W=0,H=0,dpr=1,F=1,yaw=0,pitch=.6,mx=null,my=null,tyaw=0,tp=0,run=true,frame=0,slow=small;
- const CAM={x:0,y:1.08,z:-.62},P={x:0,z:1.42};
- let L={x:.2,z:-.4},Lt={x:.2,z:-.4},pings=[],hot=-1,pid=0;
- function size(){dpr=Math.min(2,devicePixelRatio||1);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr;g.setTransform(dpr,0,0,dpr,0,0);
-  F=Math.max(W*.86,H*.78);P.x=W>900?.62:W>600?.3:.12;P.z=W>600?1.42:1.62}
- // stad → wereld (draaien rond het centrum) → scherm
- let cy=1,sy=0,cp=1,sp=0;
- const toW=(x,z)=>[x*cy-z*sy+P.x,x*sy+z*cy+P.z];
- function prj(wx,wy,wz){const X=wx-CAM.x,Y=wy-CAM.y,Z=wz-CAM.z,dep=-Y*sp+Z*cp;if(dep<.08)return null;const k=F/dep;return [W*.5+X*k,H*.5-(Y*cp+Z*sp)*k,dep]}
- const P3=(x,y,z)=>{const w=toW(x,z);return prj(w[0],y,w[1])};
- function ground(sx,sy2){const rx=(sx-W*.5)/F,uy=-(sy2-H*.5)/F,dx=rx,dy=-sp+uy*cp,dz=cp+uy*sp;if(dy>=-.01)return null;
-  const t=-CAM.y/dy,wx=CAM.x+t*dx,wz=CAM.z+t*dz,ux=wx-P.x,uz=wz-P.z;return {x:ux*cy+uz*sy,z:-ux*sy+uz*cy}}
- function poly(pts,fill,stroke){if(pts.some(p=>!p))return;g.beginPath();g.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)g.lineTo(pts[i][0],pts[i][1]);g.closePath();
-  if(fill){g.fillStyle=fill;g.fill()}if(stroke){g.strokeStyle=stroke;g.stroke()}}
- function band(r0,r1,a0,a1,fill,n){n=n||48;const pts=[];for(let i=0;i<=n;i++){const a=a0+(a1-a0)*i/n;pts.push(P3(Math.cos(a)*r1,0,-Math.sin(a)*r1))}
-  for(let i=n;i>=0;i--){const a=a0+(a1-a0)*i/n;pts.push(P3(Math.cos(a)*r0,0,-Math.sin(a)*r0))}poly(pts.filter(Boolean),fill)}
- const mix=(c,k)=>`rgb(${Math.round(c[0]+(255-c[0])*k*.55)},${Math.round(c[1]+(122-c[1])*k*.42)},${Math.round(c[2]+(26-c[2])*k*.3)})`;
- function addPing(){const a=pick(STREETS),r=.25+Math.random()*1.25,x=Math.cos(a)*r+(Math.random()-.5)*.05,z=-Math.sin(a)*r;
-  const t=pick(TYPES),p=pick(PLACES),id=++pid;pings.push({x,z,t0:performance.now(),hot:t[1],id,lab:t[0]+' · '+p});pings=pings.slice(-12);
-  const d=new Date(),hh=String(d.getHours()).padStart(2,'0'),mm=String(d.getMinutes()).padStart(2,'0');
-  const f=q('#feed');if(!f)return;const li=document.createElement('li');if(t[1])li.className='hot';li.dataset.p=id;
-  li.innerHTML=`<time>${hh}:${mm}</time><b>${esc(t[0])}</b><span>${esc(p)}</span>`;f.prepend(li);while(f.children.length>7)f.lastChild.remove()}
- function draw(t){
-  if(!run)return;requestAnimationFrame(draw);frame++;if(slow&&frame%2)return;
-  tyaw=(mx==null?0:(mx/W-.5)*.16);tp=(my==null?0:(my/H-.5)*.05);
-  yaw+=((reduce?0:Math.sin(t/9000)*.05)+tyaw-yaw)*.05;pitch+=(.6+tp-pitch)*.05;
-  cy=Math.cos(yaw);sy=Math.sin(yaw);cp=Math.cos(pitch);sp=Math.sin(pitch);
-  if(mx==null){Lt={x:Math.cos(t/5200)*.55,z:-.55+Math.sin(t/4100)*.35}}
-  L.x+=(Lt.x-L.x)*.06;L.z+=(Lt.z-L.z)*.06;
-  g.clearRect(0,0,W,H);
-  // water: het IJ en de Amstel
-  {const a=P3(-1.7,0,.08),b2=P3(1.9,0,.08),c2=P3(1.9,0,.32),d2=P3(-1.7,0,.32);if(a&&b2&&c2&&d2){const gr=g.createLinearGradient(a[0],0,b2[0],0);gr.addColorStop(0,'rgba(46,86,140,0)');gr.addColorStop(.35,'rgba(46,86,140,.11)');gr.addColorStop(.75,'rgba(46,86,140,.13)');gr.addColorStop(1,'rgba(46,86,140,0)');poly([a,b2,c2,d2],gr)}}
-  const am=[];for(let i=0;i<=20;i++){const r=.12+i/20*1.7,a=AMSTEL+Math.sin(i/3)*.03;am.push([r,a])}
-  g.lineCap='round';g.lineWidth=3;g.strokeStyle='rgba(70,130,190,.26)';g.beginPath();am.forEach(([r,a],i)=>{const p=P3(Math.cos(a)*r,0,-Math.sin(a)*r);if(p)i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])});g.stroke();
-  RINGS.forEach((r,i)=>band(r-.011,r+.011,.02,Math.PI-.02,`rgba(70,130,190,${.3-i*.03})`));
-  band(ROAD-.016,ROAD+.016,.02,Math.PI-.02,'rgba(235,232,226,.05)',64);
-  g.lineWidth=1;g.strokeStyle='rgba(235,232,226,.07)';
-  STREETS.forEach(a=>{const p0=P3(Math.cos(a)*.14,0,-Math.sin(a)*.14),p1=P3(Math.cos(a)*1.95,0,-Math.sin(a)*1.95);if(p0&&p1){g.beginPath();g.moveTo(p0[0],p0[1]);g.lineTo(p1[0],p1[1]);g.stroke()}});
-  // lichtbundel op de grond
-  const lc=P3(L.x,0,L.z),lx=P3(L.x+.5,0,L.z),lz=P3(L.x,0,L.z+.5);
-  if(lc&&lx&&lz){const rx=Math.max(8,Math.hypot(lx[0]-lc[0],lx[1]-lc[1])),ry=Math.max(4,Math.abs(lz[1]-lc[1]));
-   g.save();g.translate(lc[0],lc[1]);g.scale(1,ry/rx);const gr=g.createRadialGradient(0,0,0,0,0,rx);gr.addColorStop(0,'rgba(255,122,26,.22)');gr.addColorStop(1,'rgba(255,122,26,0)');
-   g.fillStyle=gr;g.beginPath();g.arc(0,0,rx,0,Math.PI*2);g.fill();g.restore()}
-  // gebouwen van ver naar dichtbij
-  const camC={x:0,z:0};{const ux=CAM.x-P.x,uz=CAM.z-P.z;camC.x=ux*cy+uz*sy;camC.z=-ux*sy+uz*cy}
-  const vis=[];
-  for(const b of B){const p=P3(b.x,0,b.z);if(!p||p[2]<.7)continue;if(p[0]<-120||p[0]>W+120||p[1]<-140||p[1]>H+200)continue;vis.push([p[2],b])}
-  vis.sort((a,b)=>b[0]-a[0]);
-  const tt=t/1000;
-  for(const [dep,b] of vis){const c=Math.cos(b.rot),s=Math.sin(b.rot);
-   const fp=[[-b.w,-b.d],[b.w,-b.d],[b.w,b.d],[-b.w,b.d]].map(([u,v])=>[b.x+u*c-v*s,b.z+u*s+v*c]);
-   const bot=fp.map(([x,z])=>P3(x,0,z)),tp2=fp.map(([x,z])=>P3(x,b.h,z));if(bot.some(v=>!v)||tp2.some(v=>!v))continue;
-   const lk=Math.max(0,1-Math.hypot(b.x-L.x,b.z-L.z)/.5),fade=Math.min(1,(dep-.7)/.45);
-   g.globalAlpha=fade;
-   for(let i=0;i<4;i++){const j=(i+1)%4,mxz=[(fp[i][0]+fp[j][0])/2,(fp[i][1]+fp[j][1])/2],n=[mxz[0]-b.x,mxz[1]-b.z],v=[camC.x-mxz[0],camC.z-mxz[1]];
-    if(n[0]*v[0]+n[1]*v[1]<=0)continue;
-    const shade=i%2?[15,17,21]:[20,23,28];poly([bot[i],bot[j],tp2[j],tp2[i]],mix(shade,lk),'rgba(235,232,226,.05)');
-    for(const w of b.win)if(w[0]===i){const on=(Math.sin(tt*.7+w[3]*40)>-.6)||b.zuid;if(!on)continue;
-     const bx=bot[i][0]+(bot[j][0]-bot[i][0])*w[1],by=bot[i][1]+(bot[j][1]-bot[i][1])*w[1],tx=tp2[i][0]+(tp2[j][0]-tp2[i][0])*w[1],ty=tp2[i][1]+(tp2[j][1]-tp2[i][1])*w[1];
-     g.fillStyle=b.zuid?`rgba(169,220,255,${.35+lk*.4})`:`rgba(255,173,107,${.45+lk*.4})`;g.fillRect(bx+(tx-bx)*w[2]-.8,by+(ty-by)*w[2]-.8,1.7,1.7)}}
-   poly(tp2,mix([30,34,41],lk),`rgba(235,232,226,${.07+lk*.12})`)}
-  g.globalAlpha=1;
-  // meldingen: ring op de grond, lichtzuil en een label bij de nieuwste
-  const now2=performance.now();g.globalCompositeOperation='lighter';
-  pings.forEach((p,idx)=>{const age=(now2-p.t0)/1000,col=p.hot?'255,61,82':'255,122,26',hi=p.id===hot;
-   for(let k=0;k<2;k++){const a2=(age+k*.9)%1.8,rr=.012+a2*.05*(hi?1.6:1),pts=[];for(let i=0;i<=24;i++){const an=i/24*Math.PI*2;pts.push(P3(p.x+Math.cos(an)*rr,0,p.z+Math.sin(an)*rr))}
-    if(pts.every(Boolean)){g.strokeStyle=`rgba(${col},${Math.max(0,.75-a2*.42)})`;g.lineWidth=1.4;g.beginPath();pts.forEach((v,i)=>i?g.lineTo(v[0],v[1]):g.moveTo(v[0],v[1]));g.stroke()}}
-   const b0=P3(p.x,0,p.z),b1=P3(p.x,hi?.42:.28,p.z);if(!b0||!b1)return;
-   const lg=g.createLinearGradient(b0[0],b0[1],b1[0],b1[1]);lg.addColorStop(0,`rgba(${col},${Math.max(.25,.9-age*.04)})`);lg.addColorStop(1,`rgba(${col},0)`);
-   g.strokeStyle=lg;g.lineWidth=hi?3:2;g.beginPath();g.moveTo(b0[0],b0[1]);g.lineTo(b1[0],b1[1]);g.stroke();
-   g.fillStyle=`rgba(${col},1)`;g.beginPath();g.arc(b0[0],b0[1],2.6,0,Math.PI*2);g.fill()});
-  g.globalCompositeOperation='source-over';
-  const last=pings[pings.length-1];
-  if(last&&!small){const age=(now2-last.t0)/1000;if(age<3.2){const b1=P3(last.x,.28,last.z);if(b1){const a=age<.3?age/.3:age>2.6?(3.2-age)/.6:1;
-   g.font='500 11px "JetBrains Mono",monospace';const tw=g.measureText(last.lab).width;let lx=b1[0]+8;if(lx+tw+22>W)lx=b1[0]-8-tw-14;g.globalAlpha=a;g.fillStyle='rgba(8,9,11,.85)';g.fillRect(lx,b1[1]-10,tw+14,20);
-   g.fillStyle=last.hot?'#ff6b7c':'#ffad6b';g.fillText(last.lab,lx+7,b1[1]+4);g.globalAlpha=1}}}
- }
- size();for(let i=0;i<5;i++)addPing();
- const onMove=e=>{const r=cv.getBoundingClientRect();mx=e.clientX-r.left;my=e.clientY-r.top;const gp=ground(mx,my);if(gp)Lt=gp};
- const onOut=()=>{mx=my=null};
- hero.addEventListener('pointermove',onMove);hero.addEventListener('pointerleave',onOut);
- const feed=q('#feed');feed.addEventListener('pointerover',e=>{const li=e.target.closest('li');hot=li?+li.dataset.p:-1});feed.addEventListener('pointerleave',()=>{hot=-1});
- let rt;const onR=()=>{clearTimeout(rt);rt=setTimeout(size,120)};addEventListener('resize',onR);
- const io='IntersectionObserver' in window?new IntersectionObserver(es=>{const v=es[0].isIntersecting;if(v&&!run){run=true;requestAnimationFrame(draw)}else if(!v)run=false}):null;
- io&&io.observe(hero);
- const onVis=()=>{if(document.hidden)run=false;else if(!run){run=true;requestAnimationFrame(draw)}};document.addEventListener('visibilitychange',onVis);
- if(reduce){run=true;draw(0);run=false}else requestAnimationFrame(draw);
- every(addPing,reduce?6000:2300);
- const clock=()=>{const d=new Date(),c=q('#clock');if(c)c.textContent=[d.getHours(),d.getMinutes(),d.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':')};clock();every(clock,1000);
- onLeave(()=>{run=false;removeEventListener('resize',onR);document.removeEventListener('visibilitychange',onVis);io&&io.disconnect()});
-}
-
-/* ---------- Je loopbaan: de lijn van Rookie naar Peetvader met een dashboard per rang ---------- */
-function careerHtml(){const n=RN.length-1;
- return `<section class="blk career" id="loopbaan">
-  <div class="sec-head wrap rv"><div><div class="kick"><span class="dot"></span>Je loopbaan</div><h2>Hoe het begint.<br><em>Waar het eindigt.</em></h2></div>
-   <p>Van een bekertje bij Centraal tot de goudreserve van een land. Sleep over de lijn of tik op een rang en zie wat je dan doet, waar je slaapt en wie je binnenlaat. Alles komt uit het echte spel.</p></div>
-  <div class="wrap rv"><div class="line-wrap" id="lineWrap"><div class="line" id="line" role="slider" tabindex="0" aria-label="Kies een rang" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="0" aria-valuetext="${RN[0]}">
-    <div class="line-track"><i class="line-fill" id="lineFill"></i></div>
-    ${RN.map((nm,i)=>`<button class="stop${i%2?' alt':''}" data-i="${i}" tabindex="-1" style="--x:${(i/n*100).toFixed(3)}%"><i></i><span>${nm}</span><small>${nl(RANKS[i][1])} XP</small></button>`).join('')}
-   </div></div>
-   <div class="line-ctl"><button class="btn ghost sm" id="linePlay" type="button">${ic('play')}<span>Speel je carrière af</span></button>
-    <button class="tlink sm" type="button" data-go="0">Het begin</button><button class="tlink sm" type="button" data-go="${n}">De top</button></div>
-   <div class="board" id="board" aria-live="polite"></div></div></section>`}
-function boardHtml(ri){
- const name=RN[ri],k=lootK(ri),lore=rankLore(name);
- const av=CRIMES.filter(c=>c.r<=ri),nw=CRIMES.filter(c=>c.r===ri);
- const best=av.map(c=>({c,ev:c.base/100*(c.min+c.max)/2})).sort((a,b)=>b.ev-a.ev)[0].c;
- const lo=Math.min(...av.map(c=>c.min))*k,hi=Math.max(...av.map(c=>c.max))*k;
- const fams=FAMILIES.filter(f=>f.r<=ri),nf=FAMILIES.filter(f=>f.r===ri);
- const nb=BIZ.filter(b=>b.r===ri),biz=BIZ.filter(b=>b.r<=ri);
- const home=(typeof HOMES!=='undefined'?HOMES.filter(h=>(h.r||0)<=ri).pop():null);
- const ntr=ri?TRAININGS.filter(t=>(t.r||0)===ri):TRAININGS.filter(t=>!(t.r||0));
- const nrx=RELAX.filter(x=>(x.r||0)===ri&&ri),ng=GEAR.filter(g=>g.r===ri),nsp=SPECIAL.filter(s=>s.r===ri);
- const rew=RANK_REWARD(ri);
- const maxs=RN.map((_,i)=>Math.max(...CRIMES.filter(c=>c.r<=i).map(c=>c.max))*lootK(i));
- const l0=Math.log10(maxs[0]),l1=Math.log10(maxs[maxs.length-1]);
- const chips=[...nsp.map(s=>[ic('bolt'),s.t,s.d]),...nw.map(c=>[ic('crimes'),c.n,'Klus · '+eur(c.min*k)+' tot '+eur(c.max*k)]),...nf.map(f=>[crest(f,'xs'),f.n,'Familie · vanaf '+f.cred+' cred']),
-  ...nb.map(b=>[ic('biz'),b.n,'Zaak · '+eur(b.p)]),...(home&&(home.r||0)===ri&&ri?[[ic('house'),home.n,'Woning · '+esc(home.place||'')]]:[]),
-  ...ntr.map(t=>[ic(t.ic in IC?t.ic:'skills'),t.n,'Training · '+t.place]),...nrx.map(x=>[ic(x.ic in IC?x.ic:'spa'),x.n,'Ontspannen · '+x.place]),...ng.map(x=>[ic('shop'),x.n,'Te koop · '+eur(x.p)])];
- return `<article class="bx b-rank"><div class="label">Rang ${ri+1} van ${RN.length}</div><h3 class="b-name">${name}</h3><p>${esc(lore)}</p>
-   <div class="b-seg" aria-hidden="true">${RN.map((_,i)=>`<i class="${i<=ri?'on':''}"></i>`).join('')}</div>
-   <dl class="b-kv"><div><dt>XP nodig</dt><dd>${nl(RANKS[ri][1])}</dd></div><div><dt>Buitbonus</dt><dd>+${Math.round((k-1)*100)}%</dd></div><div><dt>Beloning</dt><dd>${rew?eurS(rew):'—'}</dd></div></dl></article>
-  <article class="bx b-best"><div class="label">Beste klus op deze rang</div><h4>${esc(best.n)}</h4><p>${esc(best.d)}</p>
-   <dl class="b-kv"><div><dt>Buit</dt><dd>${eurS(best.min*k)} – ${eurS(best.max*k)}</dd></div><div><dt>Kans</dt><dd>${kansAt(best,ri)}%</dd></div><div><dt>Energie</dt><dd>${best.en}</dd></div></dl>
-   <div class="b-meter"><i style="width:${kansAt(best,ri)}%"></i></div><small class="b-kans">Kans op deze rang: basiskans ${best.base}% + ${ri*2} rangbonus. Training, spullen en je familie geven in het spel nog meer.</small></article>
-  <article class="bx b-home"><div class="label">Hier slaap je</div>${home?`<h4>${esc(home.n)}</h4><span class="b-place">${esc(home.place||'')}</span><p>${esc(home.d||'')}</p>`:'<h4>Op straat</h4>'}</article>
-  <article class="bx b-loot"><div class="label">Buit per klus</div><div class="b-big">${eurS(lo)} <span>tot</span> ${eurS(hi)}</div>
-   <div class="b-bars" role="img" aria-label="Hoogste buit per rang, van ${eurS(maxs[0])} tot ${eurS(maxs[maxs.length-1])}">${maxs.map((m,i)=>`<i class="${i<=ri?'on':''}${i===ri?' cur':''}" style="height:${(14+(Math.log10(m)-l0)/(l1-l0)*86).toFixed(1)}%" title="${RN[i]}: tot ${eurS(m)}"></i>`).join('')}</div>
-   <small>${av.length} van ${CRIMES.length} klussen open · ${biz.length} van ${BIZ.length} zaken te koop</small></article>
-  <article class="bx b-fam"><div class="label">Families die je binnenlaten</div><div class="b-big">${fams.length} <span>van ${FAMILIES.length}</span></div>
-   <div class="b-crests">${FAMILIES.map(f=>`<a href="/families/${f.id}" data-link class="${f.r<=ri?'on':''}" title="${esc(f.n)} · vanaf ${rk(f.r)}">${crest(f,'sm')}</a>`).join('')}</div>
-   <small>${fams.length?'Met genoeg straatcredit kun je kiezen.':'De eerste familie laat je toe vanaf '+rk(Math.min(...FAMILIES.map(f=>f.r)))+'.'}</small></article>
-  <article class="bx b-new"><div class="label">${ri?'Nieuw vanaf '+name:'Waar je mee begint'}</div>
-   ${chips.length?`<ul class="b-chips">${chips.map(c=>`<li>${c[0]}<div><b>${esc(c[1])}</b><span>${c[2]}</span></div></li>`).join('')}</ul>`:'<p class="b-none">Geen nieuwe klussen op deze rang. Alleen meer respect, een grotere buit en betere wapens.</p>'}</article>`}
-function initCareer(){const line=q('#line');if(!line)return;const wrap=q('#lineWrap'),fill=q('#lineFill'),board=q('#board'),stops=qa('.stop',line),n=RN.length-1,play=q('#linePlay');
- let cur=-1,timer=null;
- function set(i,scroll){i=clamp(i,0,n);if(i===cur)return;cur=i;fill.style.width=(i/n*100)+'%';
-  stops.forEach((s,k)=>{s.classList.toggle('on',k<=i);s.classList.toggle('cur',k===i)});
-  line.setAttribute('aria-valuenow',i);line.setAttribute('aria-valuetext',RN[i]);board.innerHTML=boardHtml(i);
-  if(scroll!==false&&wrap.scrollWidth>wrap.clientWidth){const s=stops[i];wrap.scrollTo({left:s.offsetLeft-wrap.clientWidth/2,behavior:reduce?'auto':'smooth'})}}
- const fromX=x=>{const r=q('.line-track',line).getBoundingClientRect();return Math.round(clamp((x-r.left)/r.width,0,1)*n)};
- let drag=false;
- line.addEventListener('pointerdown',e=>{if(e.button)return;stop();drag=true;line.setPointerCapture(e.pointerId);set(fromX(e.clientX),false)});
- line.addEventListener('pointermove',e=>{if(drag)set(fromX(e.clientX),false)});
- const end=()=>{if(drag){drag=false;const c=cur;cur=-1;set(c)}};line.addEventListener('pointerup',end);line.addEventListener('pointercancel',end);
- line.addEventListener('keydown',e=>{const k=e.key;let i=cur;if(k==='ArrowRight'||k==='ArrowUp')i++;else if(k==='ArrowLeft'||k==='ArrowDown')i--;else if(k==='Home')i=0;else if(k==='End')i=n;else return;e.preventDefault();stop();set(i)});
- qa('[data-go]').forEach(b=>b.addEventListener('click',()=>{stop();set(+b.dataset.go)}));
- function stop(){if(timer){clearInterval(timer);timer=null;play.innerHTML=ic('play')+'<span>Speel je carrière af</span>'}}
- play.addEventListener('click',()=>{if(timer){stop();return}if(cur>=n)set(0);play.innerHTML=ic('pause')+'<span>Pauze</span>';
-  timer=setInterval(()=>{if(cur>=n){stop();return}set(cur+1)},reduce?1400:900)});
- onLeave(stop);set(0,false)}
-
-/* ---------- Casino-strook en voedselketen op de voorpagina ---------- */
+/* ================= Voorpagina: komt van de server (lp-views.js) en wordt bediend door lp-home.js ================= */
+/* ---------- Casino-kaarten en de voedselketen (casino- en familiepagina's) ---------- */
 function coverCard(g,i,uid){return `<a class="cov rv" href="/casino/${g.slug}" data-link style="--c:${g.col};--d:${i*50}ms"><div class="cov-art"><div class="cov-in">${coverSvg(g.id,(uid||'h')+g.id)}<i class="cov-glare"></i></div></div>
  <div class="cov-txt"><span class="cov-k">${g.kind}</span><b>${g.n}</b><span class="cov-tags">${g.tags.map(t=>`<em>${t}</em>`).join('')}</span></div></a>`}
-function initTilt(root){if(!canHover||reduce)return;qa('.cov',root||app).forEach(c=>{const inn=q('.cov-in',c);
- c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
-  inn.style.transform=`rotateX(${(-y*9).toFixed(2)}deg) rotateY(${(x*12).toFixed(2)}deg) translateZ(0)`;inn.style.setProperty('--gx',(x*100+50)+'%');inn.style.setProperty('--gy',(y*100+50)+'%')});
- c.addEventListener('pointerleave',()=>{inn.style.transform=''})})}
 const chainSorted=()=>FAMILIES.slice().sort((a,b)=>a.r-b.r||a.cred-b.cred);
-function chainHtml(){const F=chainSorted(),n=F.length;
- return `<section class="blk chain-blk"><div class="sec-head wrap rv"><div><div class="kick"><span class="dot"></span>Families</div><h2>${n} families.<br><em>De voedselketen.</em></h2></div>
-   <p>Van de jonge honden uit West tot de oudste familie van Europa. Hoe hoger, hoe zwaarder de deur. Tik op een familie voor haar verhaal. <a class="more-a" href="/families" data-link>Alle families ${ic('arrow')}</a></p></div>
-  <div class="wrap rv"><div class="chain">${F.map((f,i)=>`<a class="ch" href="/families/${f.id}" data-link style="--fc:${f.col};--h:${(20+i/(n-1)*80).toFixed(1)}%;--i:${i}"><span class="ch-col"><span class="ch-top">${crest(f)}</span></span><b>${esc(f.n)}</b><small>${rk(f.r)}</small></a>`).join('')}</div></div></section>`}
-
-/* ---------- Veelgestelde vragen: alleen wat echt zo werkt in het spel ---------- */
-const FAQ=()=>[
- ['Wat is '+BR+'?',`Een ${esc(GENRE)}. Je begint als Rookie met €250 spelgeld en werkt je via ${RANKS.length} rangen op tot Peetvader: ${CRIMES.length} misdaden, auto's stelen, ${FAMILIES.length} families, eigen zaken, een woning, training en een casino. Alles is verzonnen.`],
- ['Kost het iets?','Nee. Spelen is gratis en er is niets te koop met echt geld. Codes en lidmaatschappen in het spel kosten geen echt geld.'],
- ['Moet ik iets downloaden?',`Nee. Je speelt in je browser, op de computer en op je telefoon. Op je telefoon kun je ${esc(BR)} ook op je beginscherm zetten, dan opent hij als een app.<span data-faq-app></span>`],
- ['Speel ik met echt geld?','Nee. Alle bedragen zijn virtueel spelgeld. Je kunt geen echt geld inzetten, winnen of uitbetalen, ook niet in het casino.'],
- ['Vanaf welke leeftijd?','Het casino is bedoeld voor spelers van 18 jaar en ouder. Het spel gaat over misdaad; alle namen, families en verhalen zijn verzonnen.'],
- ['Wordt mijn voortgang bewaard?','Ja. Je voortgang staat op de server bij je account, dus je kunt op een ander apparaat inloggen en verder spelen. Je speelt op één apparaat tegelijk: open je het spel ergens anders, dan gaat het daar verder.'],
- ['Wachtwoord vergeten?','Je geeft geen e-mailadres op, dus wachtwoordherstel bestaat nu nog niet. Kies een wachtwoord dat je onthoudt, of laat je browser het bewaren.'],
- ['Wie staan er op de ranglijst?','Echte spelers, tussen rivalen die het spel zelf laat meespelen. Echte spelers hebben in de ranglijst het label SPELER.'],
- ['Is de meldkamer bovenaan echt?','Nee, dat is een sfeerimpressie van de stad. Er komen geen echte meldingen of spelers in voor.']];
-function faqHtml(){return `<section class="blk faq" id="faq"><div class="sec-head wrap rv"><div><div class="kick"><span class="dot"></span>Vragen</div><h2>Goed om te weten.<br><em>Voor je begint.</em></h2></div>
-   <p>De korte antwoorden op wat nieuwe spelers het vaakst willen weten.</p></div>
-  <div class="wrap rv"><div class="faq-list">${FAQ().map((f,i)=>`<details class="faq-q"${i===0?' open':''}><summary><span class="faq-n">${String(i+1).padStart(2,'0')}</span><b>${esc(f[0])}</b><i class="faq-x" aria-hidden="true"></i></summary><div class="faq-a"><p>${f[1]}</p></div></details>`).join('')}</div></div></section>`}
-function initFaq(){if(!window.owInstall){addEventListener('load',initFaq,{once:true});return}const s=q('[data-faq-app]');if(s&&window.owInstall&&owInstall.phone&&!owInstall.standalone()){s.innerHTML=' <button class="tlink" type="button" data-faq-install>Zo zet je hem op je beginscherm</button>';q('[data-faq-install]').onclick=()=>owInstall.open()}}
-function home(){return {title:BR+' · '+GENRE,cls:'pg-home',desc:'Gratis maffia-browsergame in het Nederlands. Begin als Rookie en werk je op tot Peetvader: '+CRIMES.length+' misdaden, '+FAMILIES.length+' families, een casino met spelgeld en een ranglijst. Speel in je browser of als app.',
- html:heroHtml()+careerHtml()+`<section class="blk cas-strip"><div class="sec-head wrap rv"><div><div class="kick"><span class="dot"></span>Casino</div><h2>Tien spellen.<br><em>Het huis wint.</em></h2></div>
-   <p>Echte regels en doorgerekende kansen. Drie eigen slots, een vliegtuigje boven zee en de klassiekers aan tafel. <a class="more-a" href="/casino" data-link>Naar het casino ${ic('arrow')}</a><small class="play-money">18+ · Alleen virtueel spelgeld, geen echt geld</small></p></div>
-  <div class="wrap"><div class="covers">${GAMES.map((g,i)=>coverCard(g,i)).join('')}</div></div></section>`+chainHtml()
-  +faqHtml()+(loggedIn?ctaHtml('Terug aan','het werk.','Je dashboard staat klaar met alles wat er is gebeurd terwijl je weg was.'):ctaHtml('De stad','wacht niet.','Terwijl jij twijfelt, klimt een rivaal een rang hoger.')),
- after(){initCity();initCareer();initTilt();initFaq()}}}
-route(/^\/$/,home);
-
 /* ================= Misdaden: alle klussen, met een kaart van kans tegen buit ================= */
 const kansIn=c=>Math.min(95,Math.max(5,c.base+c.r*2));   // kans op de rang waarop de klus opengaat, zonder spullen of training
 const kansAt=(c,ri)=>Math.min(95,Math.max(5,c.base+ri*2)); // zelfde rekensom op een gekozen rang (in het spel: chanceRaw in state.js)
@@ -489,7 +246,7 @@ function casinoPage(){
    <div><h3>VIP en High roller</h3><p>Met een lidmaatschap kom je vaker in de bonus en krijg je cashback op elke inzet. Het basisspel betaalt dan net iets minder, zodat het eerlijk blijft.</p></div>
    <div><h3>Alleen spelgeld · 18+</h3><p>Je speelt met virtueel geld uit het spel. Je kunt geen echt geld inzetten, winnen of uitbetalen. Het casino is bedoeld voor spelers van 18 jaar en ouder.</p></div></div></section>`
  +moreHtml('casino')+ctaHtml('Fiches','klaar?','Je eerste inzet staat al op tafel.'),
- after(){initTilt()}}}
+}}
 route(/^\/casino$/,casinoPage);
 
 const GD={
@@ -584,7 +341,7 @@ function gamePage(slug){const g=gameBy(slug);if(!g)return null;const D=GD[g.id],
   ${D.extra?`<section class="wrap rv">${D.extra()}</section>`:''}
   <nav class="gn wrap" aria-label="Andere spellen"><a href="/casino/${prev.slug}" data-link>${ic('back')}<span><small>Vorige</small><b>${prev.n}</b></span></a><a href="/casino/${next.slug}" data-link><span><small>Volgende</small><b>${next.n}</b></span>${ic('arrow')}</a></nav>`
   +moreHtml('casino'),
- after(){initTilt();const my=renderId;if(D.src)need(D.src).then(()=>{if(my!==renderId)return;const API=g.id==='kluis'?window.SLOT:g.id==='zoet'?window.ZOET:g.id==='draak'?window.DRAAK:window.VISD;if(!API)return;
+ after(){const my=renderId;if(D.src)need(D.src).then(()=>{if(my!==renderId)return;const API=g.id==='kluis'?window.SLOT:g.id==='zoet'?window.ZOET:g.id==='draak'?window.DRAAK:window.VISD;if(!API)return;
    const st=q('#gStats'),ru=q('#gRules');if(st)st.innerHTML=D.stats(API).map(s=>`<div><dt>${s[0]}</dt><dd>${s[1]}</dd></div>`).join('');if(ru)ru.innerHTML=rules(D.rules(API));demoReady(g.id)});
   demoInit(g.id)}}}
 route(/^\/casino\/([a-z0-9-]+)$/,gamePage);
@@ -718,7 +475,7 @@ function famsPage(){const F=chainSorted(),top=F.slice().reverse(),rs=FAMILIES.ma
  after(){const my=renderId;power().then(P=>{if(!P||my!==renderId)return;const box=q('#power');if(!box)return;
    q('#pwTxt').textContent=P.txt;q('#pwList').innerHTML=P.rows.map(r=>{const d=r.prev-r.pos;return `<li><a href="/families/${r.f.id}" data-link style="--fc:${r.f.col}" class="${r.pos===1?'first':''}">
     <span class="pw-pos">${r.pos}</span>${crest(r.f,'sm')}<b>${esc(r.f.n)}</b><span class="pw-bar"><i style="width:${Math.round(r.pct*100)}%"></i></span>
-    <em class="${d>0?'up':d<0?'dn':''}" title="${d?'Vorige ronde plek '+r.prev:'Gelijk gebleven'}">${d>0?'▲ '+d:d<0?'▼ '+(-d):'–'}</em></a></li>`}).join('');box.hidden=false;reveal(box.parentNode)})}}}
+    <em class="${d>0?'up':d<0?'dn':''}" title="${d?'Vorige ronde plek '+r.prev:'Gelijk gebleven'}">${d>0?'▲ '+d:d<0?'▼ '+(-d):'–'}</em></a></li>`}).join('');box.hidden=false})}}}
 // De machtsstrijd van nu: zelfde berekening als in het spel (famwar.js), voor iedereen gelijk per ronde van vijf speldagen
 let powerP=null;
 function power(){if(powerP)return powerP.then(fresh);window.act=window.act||{};
@@ -820,14 +577,14 @@ function trainPage(){const L0=10;
   r.addEventListener('input',upd);r.style.setProperty('--p',(L0/TRAIN_MAX*100)+'%');onLeave(()=>cancelAnimationFrame(raf))}}}
 route(/^\/training$/,trainPage);
 
-/* ================= Account: kop, menu, inloggen en account aanmaken ================= */
-function buildMnav(){q('#mnavLinks').innerHTML=`<a href="/" data-link data-nav=""><b>Voorpagina</b><span>Van rookie tot peetvader</span></a>`
- +PAGES.map(p=>`<a href="/${p[0]}" data-link data-nav="${p[0]}"><b>${p[1]}</b><span>${p[2]()}</span></a>`).join('')}
+/* ================= Account: kop, inloggen en account aanmaken ================= */
+// Het venster (registreren met 16+-vinkje, inloggen) staat in lp-auth.js en wordt pas bij de eerste klik geladen.
 function updateAuthUI(){const n=esc(userName);
- q('#topAuth').innerHTML=loggedIn?`<span class="whoami">${n?'Ingelogd als <b>'+n+'</b>':'Ingelogd'}</span><button class="tlink" type="button" data-logout>Uitloggen</button><a class="btn sm" href="/game.html"><span class="lg">Mijn dashboard</span><span class="sm-t">Dashboard</span></a>`
-  :'<button class="tlink" type="button" data-auth="login">Inloggen</button><button class="btn sm" type="button" data-auth="register"><span class="lg">Account aanmaken</span><span class="sm-t">Spelen</span></button>';
- q('#mnavAuth').innerHTML=loggedIn?`<a class="btn xl" href="/game.html">Naar mijn dashboard</a><button class="btn ghost xl" type="button" data-logout>Uitloggen${n?' ('+n+')':''}</button>`
-  :'<button class="btn xl" type="button" data-auth="register">Account aanmaken</button><button class="btn ghost xl" type="button" data-auth="login">Inloggen</button>'}
+ q('#topAuth').innerHTML=loggedIn?`<span class="whoami">${n?'Ingelogd als <b>'+n+'</b>':'Ingelogd'}</span><button class="tlink" type="button" data-logout>Uitloggen</button><a class="btn sm" href="/game"><span class="lg">Verder spelen</span><span class="sm-t">Spelen</span></a>`
+  :'<a class="tlink" href="/?login=1" data-auth="login">Inloggen</a><a class="btn sm" href="/start" data-auth="register"><span class="lg">Speel gratis</span><span class="sm-t">Speel gratis</span></a>';
+ q('#mnavAuth').innerHTML=loggedIn?`<a class="btn xl" href="/game">Verder spelen</a><button class="btn ghost xl" type="button" data-logout>Uitloggen${n?' ('+n+')':''}</button>`
+  :'<a class="btn xl" href="/start" data-auth="register">Speel gratis</a><a class="btn ghost xl" href="/?login=1" data-auth="login">Inloggen</a><p class="mnav-klein">16+ · Alleen spelgeld</p>';
+ qa('[data-play]').forEach(a=>a.setAttribute('href',loggedIn?'/game':'/start'))}
 document.addEventListener('click',e=>{if(!e.target.closest('[data-logout]'))return;setToken(null);try{localStorage.removeItem('ow_lpname')}catch(x){}
  loggedIn=false;userName='';menu(false);updateAuthUI();render(curPath||'/',{keep:true})});
 function initSession(){const t=getToken();
@@ -835,66 +592,17 @@ function initSession(){const t=getToken();
  updateAuthUI();render(cleanPath(location.pathname),{first:true});
  if(!t)return Promise.resolve();
  return fetch('/api/me',{headers:{Authorization:'Bearer '+t}}).then(r=>{
-  if(r.ok)return r.json().then(j=>{const nm=String(j.username||'');const was=userName;userName=nm;loggedIn=true;try{localStorage.setItem('ow_lpname',nm)}catch(e){}
-   updateAuthUI();if(was!==nm){const k=q('#kick');if(k&&app.classList.contains('pg-home'))k.innerHTML='<span class="dot"></span>Welkom terug'+(nm?', '+esc(nm):'')}});
+  if(r.ok)return r.json().then(j=>{const nm=String(j.username||'');userName=nm;loggedIn=true;try{localStorage.setItem('ow_lpname',nm)}catch(e){}updateAuthUI()});
   if(r.status===401)setToken(null);
   loggedIn=false;userName='';updateAuthUI();render(curPath,{keep:true})}).catch(()=>{})}
-
-let mode='login';const auth=q('#auth'),form=q('#authForm'),err=q('#authErr');
-q('#plNo').textContent='Nr. '+String(R(100000,999999));
-{const d=new Date();q('#plDate').textContent=String(d.getDate()).padStart(2,'0')+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+d.getFullYear()}
-(function height(){let h='';for(let cm=220,i=0;cm>=120;cm-=5,i++){const maj=cm%25===0;h+=`<div class="${maj?'maj':''}" style="top:${i*(100/20)}%"><span>${maj?cm:''}</span><span>${maj?cm:''}</span></div>`}q('#height').innerHTML=h})();
-function setMode(m){mode=m;const reg=m==='register';
- q('#tabLogin').classList.toggle('on',!reg);q('#tabReg').classList.toggle('on',reg);q('#tabLogin').setAttribute('aria-selected',!reg);q('#tabReg').setAttribute('aria-selected',reg);
- q('#authTitle').textContent=reg?'Nieuw dossier':'Welkom terug';
- q('#authHint').textContent=reg?'Kies een naam die de straat zal onthouden. Een e-mailadres is niet nodig, dus onthoud je wachtwoord goed: herstellen kan nu nog niet.':'Log in en ga verder waar je gebleven was.';
- q('#authSubmit').textContent=reg?'Account aanmaken':'Inloggen';q('#pass2wrap').hidden=!reg;q('#meter').hidden=!reg;q('#userHint').hidden=!reg;
- q('#authPass').autocomplete=reg?'new-password':'current-password';q('#plStatus').textContent=reg?'Nieuw dossier':'Bekende';q('#plRank').textContent=reg?'Rookie':'?';
- q('#authSwap').innerHTML=reg?'Al een account? <button type="button" data-mode="login">Log in</button>':'Nog geen account? <button type="button" data-mode="register">Maak er een aan</button>';
- err.hidden=true;validate()}
-function openAuth(m){menu(false);setMode(m);auth.hidden=false;document.body.style.overflow='hidden';if(matchMedia('(min-width:761px)').matches)setTimeout(()=>q('#authUser').focus(),60);auth.scrollTop=0}
-function closeAuth(){auth.hidden=true;document.body.style.overflow=''}
-document.addEventListener('click',e=>{const a=e.target.closest('[data-auth]');if(a){e.preventDefault();openAuth(a.dataset.auth);return}
- const m=e.target.closest('[data-mode]');if(m&&auth.contains(m))setMode(m.dataset.mode)});
-q('#authClose').onclick=closeAuth;
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!auth.hidden)closeAuth()});
-q('#peek').onclick=()=>{const p=q('#authPass'),show=p.type==='password';p.type=show?'text':'password';q('#authPass2').type=p.type;q('#peek').textContent=show?'Verberg':'Toon'};
-const okName=v=>/^[a-zA-Z0-9_]{3,20}$/.test(v);
-function validate(){const u=q('#authUser').value.trim(),p=q('#authPass').value,p2=q('#authPass2').value,reg=mode==='register';
- const pl=q('#plName');pl.textContent=u?u.toUpperCase():'ONBEKEND';pl.classList.toggle('typing',document.activeElement===q('#authUser'));const uh=q('#userHint');
- if(reg){
-  if(!u){uh.textContent='3 tot 20 tekens: letters, cijfers of _';uh.className='fhint';q('#authUser').className=''}
-  else if(okName(u)){uh.textContent='Goede naam.';uh.className='fhint good';q('#authUser').className='good'}
-  else{uh.textContent=u.length<3?'Nog '+(3-u.length)+' teken'+(3-u.length>1?'s':'')+' te gaan.':u.length>20?'Maximaal 20 tekens.':'Alleen letters, cijfers en _ zijn toegestaan.';uh.className='fhint bad';q('#authUser').className='bad'}
-  let s=0;if(p.length>=6)s++;if(p.length>=10)s++;if(/[A-Z]/.test(p)&&/[a-z]/.test(p))s++;if(/\d/.test(p)&&/[^A-Za-z0-9]/.test(p))s++;if(p.length&&p.length<6)s=0;
-  const cols=['var(--red)','var(--red)','var(--acc)','var(--acc2)','var(--green)'];
-  qa('#meter i').forEach((i,k)=>{i.style.background=p&&k<Math.max(1,s)?cols[s]:'var(--line2)'});
-  q('#meterTxt').textContent=!p?'':p.length<6?'Te kort':['Te kort','Zwak','Redelijk','Sterk','IJzersterk'][s];
-  const mh=q('#matchHint');
-  if(!p2){mh.textContent='';mh.className='fhint';q('#authPass2').className=''}
-  else if(p2===p){mh.textContent='Wachtwoorden komen overeen.';mh.className='fhint good';q('#authPass2').className='good'}
-  else{mh.textContent='Nog niet gelijk.';mh.className='fhint bad';q('#authPass2').className='bad'}
- }else{q('#authUser').className='';q('#authPass2').className=''}}
-['#authUser','#authPass','#authPass2'].forEach(s=>{q(s).addEventListener('input',validate);q(s).addEventListener('focus',validate);q(s).addEventListener('blur',validate)});
-form.addEventListener('submit',async e=>{e.preventDefault();err.hidden=true;
- const username=q('#authUser').value.trim(),password=q('#authPass').value;
- const fail=m=>{err.textContent=m;err.hidden=false;const ai=q('.auth-inner');ai.classList.remove('shake');void ai.offsetWidth;ai.classList.add('shake')};
- if(!okName(username))return fail('Je gebruikersnaam moet 3 tot 20 tekens zijn: letters, cijfers of _.');
- if(password.length<6)return fail('Je wachtwoord moet minstens 6 tekens zijn.');
- if(mode==='register'&&password!==q('#authPass2').value)return fail('De twee wachtwoorden zijn niet gelijk.');
- const btn=q('#authSubmit'),label=btn.textContent;btn.disabled=true;btn.textContent=mode==='register'?'Dossier aanmaken…':'Controleren…';
- try{const r=await fetch('/api/'+(mode==='register'?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
-  let j={};try{j=await r.json()}catch(x){}
-  if(!r.ok){const er=new Error(j.error||'Er ging iets mis. Probeer het opnieuw.');er.banned=j.code==='banned';throw er}
-  setToken(j.token);try{localStorage.setItem('ow_lpname',String(j.username||username))}catch(x){}
-  q('.placard').classList.add('ok');q('#plStatus').textContent='Toegang';q('#plName').textContent=String(j.username||username).toUpperCase();
-  btn.textContent=mode==='register'?'Welkom in de onderwereld':'Welkom terug';setTimeout(()=>location.href='/game.html',700)}
- catch(x){if(x.banned){setMode('register');q('#authUser').value='';q('#authPass').value=''}
-  fail(x.message==='Failed to fetch'?'De server is niet bereikbaar. Controleer je verbinding en probeer het opnieuw.':x.message);btn.disabled=false;btn.textContent=label}});
+function openAuth(m,from,msg){menu(false);
+ need('/js/lp-auth.js?v='+((q('script[src*="landing.js"]')||{}).src||'').split('?v=')[1]).then(ok=>{if(ok&&window.LPAuth)LPAuth.open(m,from,{startCash:typeof GAME_CONST!=='undefined'?GAME_CONST.startCash:0,first:RN[0],msg});else location.href=m==='login'?'/?login=1':'/start'})}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-auth]');if(!a||e.button||e.metaKey||e.ctrlKey||e.shiftKey)return;e.preventDefault();
+ if(loggedIn){location.href='/game';return}openAuth(a.dataset.auth,a)});
 
 /* ================= Start ================= */
-buildMnav();setMode('login');
-initSession().then(()=>{const s=location.search;
- if(/[?&]register=1/.test(s)&&!loggedIn){openAuth('register');if(/[?&]banned=1/.test(s)){err.textContent='Je vorige profiel is verbannen. Maak hier een nieuw profiel aan en begin opnieuw.';err.hidden=false}}
- else if(/[?&]login=1/.test(s)&&!loggedIn)openAuth('login')});
+initSession().then(()=>{const s=location.search;if(loggedIn)return;
+ if(/[?&]verlopen=1/.test(s))openAuth('login',null,'Je bent uitgelogd. Log opnieuw in.');
+ else if(/[?&]register=1/.test(s))openAuth('register',null,/[?&]banned=1/.test(s)?'Je vorige profiel is verbannen. Maak hier een nieuw profiel aan en begin opnieuw.':'');
+ else if(/[?&]login=1/.test(s))openAuth('login')});
 })();

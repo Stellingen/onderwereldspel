@@ -1,6 +1,6 @@
 // Tab: Auto's — zoek de straat af, kom willekeurig een auto tegen en probeer hem te stelen. Daaronder je garage.
 // Garage: 2 plekken, uit te bouwen tot 10 (wit geld). Bestaande spelers met meer auto's krijgen meteen genoeg plek.
-const GARAGE_CAPS=[2,4,6,8,10],GARAGE_UP=[0,25000,90000,300000,900000],GARAGE_MAX=10;
+const GARAGE_CAPS=[2,4,6,8,10],GARAGE_UP=[0,25000,90000,300000,900000],GARAGE_MAX=GAME_CONST.garageMax;
 const garageLvl=()=>{if(S.garage==null){let l=0;while(l<GARAGE_CAPS.length-1&&GARAGE_CAPS[l]<S.cars.length)l++;S.garage=l}return S.garage};
 const garageCap=()=>GARAGE_CAPS[garageLvl()];
 const SEARCH_EN=2,SEARCH_MS=1700,FIND_MS=60000;
