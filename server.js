@@ -164,7 +164,7 @@ function checkJump(uid, prev, s, dt) {
       flag(uid, 'geld', `Vermogen ${fmtE(pnet)} → ${fmtE(net)} in ${dt} s; casino ${fmtE(won)} en bedrijven ${fmtE(kas)} verklaren daar ${fmtE(unexplained)} niet van`);
     const dxp = (+s.xp || 0) - (+prev.xp || 0);
     if (dxp > 8000 && !(s.rankV === 2 && ps.rankV !== 2)) flag(uid, 'xp', `+${Math.round(dxp).toLocaleString('nl-NL')} XP in ${dt} s (één klus geeft hooguit ±2.300)`);
-    if ((+s.energy || 0) > 600) flag(uid, 'energie', `Energie ${Math.round(+s.energy)} (normaal maximaal ±250)`);
+    if ((+s.energy || 0) > 700) flag(uid, 'energie', `Energie ${Math.round(+s.energy)} (normaal maximaal 500)`);
     const dcr = (+st.crimes || 0) - (+pst.crimes || 0);
     if (dcr > 30 && dt < 20) flag(uid, 'klussen', `${dcr} klussen in ${dt} s`);
   } catch (e) { /* kapotte oude opslag: niets doen */ }

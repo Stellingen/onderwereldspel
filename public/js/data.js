@@ -286,7 +286,7 @@ const TRAIN_MAX=50;
 const pctTxt=(v,sign,pt)=>{if(!v)return '0'+(pt?'%-punt':'%');const a=Math.abs(v),d=a>=10?0:a>=1?1:a>=.1?1:2;
  return sign+a.toLocaleString('nl-NL',{maximumFractionDigits:d,minimumFractionDigits:0})+(pt?'%-punt':'%')};
 // Effect per level (op level 50 haal je het maximum). Eén sessie = één level.
-const SK={conditie:{en:1,zone:.008},duur:{save:.006,regen:.006},ademhaling:{focus:.06,flee:.004},steal:{all:.4,zakken:.8},speed:{cd:.01,mark:.006},cars:{time:.01,price:.008},charisma:{talk:.9,bail:.008},
+const SK={conditie:{en:3,zone:.008},duur:{save:.006,regen:.006},ademhaling:{focus:.06,flee:.004},steal:{all:.4,zakken:.8},speed:{cd:.01,mark:.006},cars:{time:.01,price:.008},charisma:{talk:.9,bail:.008},
  schiet:{heavy:.5},hack:{loot:.5},handel:{inc:.4,fee:1},rechten:{jail:1,bail:.4}};
 const HEAVY_R=RK[5]; // zware klussen: vanaf Gangster
 // Prijs per sessie stijgt steil: level 1 kost een paar tientjes, de laatste levels honderdduizenden euro's.
@@ -389,11 +389,11 @@ const HOMES=[
  // rest = seconden rusten, cd = wachttijd tussen rustbeurten (s), en = extra max. energie, hp = gezondheid per rustbeurt, heat = minder hitte per rustbeurt,
  // slots = hoeveel spullen er staan (zie FURN)
  {id:'brug',n:'Onder de brug',place:'Berlagebrug',d:'Een vochtig matras, een vuurton en het geraas van de tram boven je hoofd. Het is niet veel, maar je kunt er even je ogen dicht doen.',p:0,r:0,rest:10,cd:300,en:0,hp:20,heat:0,slots:1},
- {id:'kraak',n:'Kraakpand',place:'Amsterdam-West',d:'Een leegstaand kantoor met een kapotte lift. Je hebt een deur die op slot kan.',p:2500,r:2,rest:9,cd:270,en:10,hp:25,heat:0,slots:2},
- {id:'kamer',n:'Huurkamer',place:'De Pijp',d:'Zestien vierkante meter, een eigen douche en een huisbaas die geen vragen stelt.',p:15000,r:4,rest:8,cd:240,en:20,hp:30,heat:0,slots:4},
- {id:'gracht',n:'Grachtenappartement',place:'Keizersgracht',d:'Hoge plafonds, uitzicht op het water. Niemand verwacht hier een crimineel.',p:80000,r:6,rest:7,cd:210,en:30,hp:40,heat:5,slots:6},
- {id:'penthouse',n:'Penthouse',place:'Zuidas',d:'Bovenste verdieping, eigen lift, bewaking in de lobby.',p:400000,r:8,rest:6,cd:180,en:40,hp:55,heat:10,slots:9},
- {id:'villa',n:'Villa',place:'Wassenaar',d:'Een hek, camera\'s, een zwembad en personeel. Zo slaapt een peetvader.',p:1500000,r:10,rest:5,cd:150,en:50,hp:70,heat:20,slots:13}];
+ {id:'kraak',n:'Kraakpand',place:'Amsterdam-West',d:'Een leegstaand kantoor met een kapotte lift. Je hebt een deur die op slot kan.',p:2500,r:2,rest:9,cd:270,en:20,hp:25,heat:0,slots:2},
+ {id:'kamer',n:'Huurkamer',place:'De Pijp',d:'Zestien vierkante meter, een eigen douche en een huisbaas die geen vragen stelt.',p:15000,r:4,rest:8,cd:240,en:40,hp:30,heat:0,slots:4},
+ {id:'gracht',n:'Grachtenappartement',place:'Keizersgracht',d:'Hoge plafonds, uitzicht op het water. Niemand verwacht hier een crimineel.',p:80000,r:6,rest:7,cd:210,en:60,hp:40,heat:5,slots:6},
+ {id:'penthouse',n:'Penthouse',place:'Zuidas',d:'Bovenste verdieping, eigen lift, bewaking in de lobby.',p:400000,r:8,rest:6,cd:180,en:80,hp:55,heat:10,slots:9},
+ {id:'villa',n:'Villa',place:'Wassenaar',d:'Een hek, camera\'s, een zwembad en personeel. Zo slaapt een peetvader.',p:1500000,r:10,rest:5,cd:150,en:100,hp:70,heat:20,slots:13}];
 // Inrichting: spullen voor je woning. Elke woning heeft een aantal plekken (HOMES.slots); wat neerstaat (S.furn) geeft een blijvend voordeel,
 // wat in de opslag staat (S.furnStore) niet. h = vanaf welke woning (index in HOMES), hmax = tot en met welke woning (spullen van de straat neem je niet mee).
 // fx: hpRegen/enRegen/heat = sneller herstel, focus = % slaagkans, en = max. energie, restHp = extra gezondheid per rustbeurt, restCd = kortere wachttijd rusten,
@@ -405,7 +405,7 @@ const FURN=[
  {id:'kaarsen',n:'Kaarsen en wierook',h:1,p:350,col:'#ffd166',d:'Licht dat niet van een zwaailicht komt.',fx:{focus:1}},
  {id:'sloten',n:'Extra sloten',h:1,p:1200,col:'#9aa3ad',d:'Drie sloten, een ketting en een stalen plaat op de deur.',fx:{hideRate:.2}},
  {id:'plant',n:'Planten',h:2,p:1500,col:'#3fe395',d:'Een hoek vol groen. Frisse lucht en een rustig hoofd.',fx:{hpRegen:.25,focus:2}},
- {id:'espresso',n:'Espressomachine',h:2,p:2500,col:'#ffad6b',d:'Elke ochtend een dubbele. Je gaat langer door.',fx:{en:10}},
+ {id:'espresso',n:'Espressomachine',h:2,p:2500,col:'#ffad6b',d:'Elke ochtend een dubbele. Je gaat langer door.',fx:{en:20}},
  {id:'ehbo',n:'EHBO-kist',h:2,p:3000,col:'#ff5c6c',d:'Verband, hechtpleisters en pijnstillers. Scheelt een ritje naar de huisartsenpost.',fx:{docHp:5,docCd:.2}},
  {id:'bed',n:'Goed bed',h:2,p:4000,col:'#a9dcff',d:'Pocketvering en een dekbed van ganzendons.',fx:{restHp:10,restCd:.15}},
  {id:'bokszak',n:'Bokszak',h:2,p:6000,col:'#ff7a1a',d:'Elke dag tien rondes. Je benen blijven sterk.',fx:{zone:.06}},
@@ -414,26 +414,26 @@ const FURN=[
  {id:'wapenkast',n:'Wapenkast',h:3,p:35000,col:'#d07a52',d:'Achter een vals paneel. Alles ligt klaar en niemand ziet het.',fx:{focus:3}},
  {id:'kluis',n:'Kluis in de muur',h:4,p:60000,col:'#c9a227',d:'Contant geld dat niet op straat ligt, raak je ook niet kwijt.',fx:{safe:.5}},
  {id:'bios',n:'Thuisbioscoop',h:4,p:90000,col:'#ff7fb3',d:'Leren stoelen en een scherm van drie meter.',fx:{enRegen:.15}},
- {id:'fitness',n:'Fitnesshoek',h:4,p:120000,col:'#5ce1c4',d:'Loopband, halters en een bank. Je houdt het langer vol.',fx:{en:10,zone:.05}},
+ {id:'fitness',n:'Fitnesshoek',h:4,p:120000,col:'#5ce1c4',d:'Loopband, halters en een bank. Je houdt het langer vol.',fx:{en:20,zone:.05}},
  {id:'sauna',n:'Eigen sauna',h:5,p:250000,col:'#ff3d52',d:'Een cederhouten sauna met uitzicht op de tuin.',fx:{hpRegen:.5,restCd:.15}},
  {id:'zen',n:'Japanse tuin',h:5,p:400000,col:'#e6e1d6',d:'Geharkt grind, drie stenen en een esdoorn. Stilte.',fx:{focus:5}},
  {id:'hek',n:'Hek met bewaking',h:5,p:600000,col:'#7fb8ff',d:'Een man in een hokje, twee honden en schijnwerpers. Je slaapt.',fx:{hideRate:.3,heat:.25}},
  // uitbreiding: meer voor gezondheid, energie, onderduiken, veiligheid, focus en vluchten (eigen tekening, staan op vrije plekken in je woning)
  {id:'meditatie',n:'Meditatiekussen',h:1,p:600,col:'#c9a2ff',d:'Tien minuten zitten en ademen. Je handen worden rustiger.',fx:{focus:2}},
- {id:'koelkast',n:'Koelkast vol energiedrank',h:1,p:900,col:'#5fe3a6',d:'Blikjes met namen die je niet kunt uitspreken. Ze werken wel.',fx:{en:6}},
+ {id:'koelkast',n:'Koelkast vol energiedrank',h:1,p:900,col:'#5fe3a6',d:'Blikjes met namen die je niet kunt uitspreken. Ze werken wel.',fx:{en:12}},
  {id:'medkast',n:'Medicijnkastje',h:1,p:1100,col:'#ff8f9c',d:'Pijnstillers, zalf en een rol tape. Kleine wonden heel je zelf.',fx:{hpRegen:.15,docHp:2}},
  {id:'schaak',n:'Schaaktafel',h:1,p:1400,col:'#e6d3a3',d:'Elke avond een potje tegen jezelf. Je leert drie zetten vooruit denken.',fx:{focus:2}},
  {id:'scanner',n:'Politiescanner',h:2,p:3500,col:'#ff5c6c',d:'Je hoort de meldkamer mee. Zodra ze je straat noemen, ben je al weg.',fx:{heat:.25,hideRisk:.1}},
- {id:'blender',n:'Smoothiebar',h:2,p:4500,col:'#ffad6b',d:'Spinazie, banaan en een schep eiwitpoeder. Vies, maar je gaat langer door.',fx:{en:8,enRegen:.05}},
+ {id:'blender',n:'Smoothiebar',h:2,p:4500,col:'#ffad6b',d:'Spinazie, banaan en een schep eiwitpoeder. Vies, maar je gaat langer door.',fx:{en:16,enRegen:.05}},
  {id:'daglamp',n:'Daglichtlamp',h:2,p:5500,col:'#ffe36b',d:'Een halfuur per ochtend en je lijf denkt dat het zomer is.',fx:{hpRegen:.15,enRegen:.08}},
  {id:'stadskaart',n:'Stadskaart met routes',h:2,p:7000,col:'#7cc4ff',d:'Elke steeg, elk hek en elke achteruitgang met rood aangestreept.',fx:{zone:.05,focus:1}},
  {id:'alarm',n:'Alarmsysteem',h:2,p:9000,col:'#ff7a1a',d:'Bewegingsmelders, een sirene en een knop naast je bed.',fx:{safe:.15,hideRate:.1}},
- {id:'spinning',n:'Spinningfiets',h:3,p:18000,col:'#4cc6ff',d:'Elke dag twintig minuten. Je conditie gaat omhoog en je energie raakt minder snel op.',fx:{en:10,enRegen:.1}},
+ {id:'spinning',n:'Spinningfiets',h:3,p:18000,col:'#4cc6ff',d:'Elke dag twintig minuten. Je conditie gaat omhoog en je energie raakt minder snel op.',fx:{en:20,enRegen:.1}},
  {id:'vermomming',n:'Vermommingskast',h:3,p:22000,col:'#b8a1ff',d:'Pruiken, petten, een nepsnor en drie jassen die je nooit draagt als jezelf.',fx:{hideRisk:.3}},
  {id:'massage',n:'Massagestoel',h:3,p:28000,col:'#d07a52',d:'Twaalf programma\'s en een stand die "Na een lange nacht" heet.',fx:{restHp:8,restCd:.1}},
  {id:'boekenkast',n:'Draaiende boekenkast',h:4,p:70000,col:'#a8794f',d:'Trek aan het rode boek en de kast draait open naar een kamertje.',fx:{hideRate:.25,hideRisk:.15}},
  {id:'klimmuur',n:'Klimmuur',h:4,p:85000,col:'#3fe395',d:'Grepen tot aan het plafond. Over een hek klimmen gaat je nu makkelijk af.',fx:{zone:.08}},
- {id:'capsule',n:'Powernap-capsule',h:4,p:110000,col:'#a9dcff',d:'Twintig minuten in een eitje met zacht licht en je bent weer fris.',fx:{enRegen:.2,en:5}},
+ {id:'capsule',n:'Powernap-capsule',h:4,p:110000,col:'#a9dcff',d:'Twintig minuten in een eitje met zacht licht en je bent weer fris.',fx:{enRegen:.2,en:10}},
  {id:'ijsbad',n:'IJsbad',h:4,p:130000,col:'#7fe0ff',d:'Drie minuten bij twee graden. Daarna voel je je onverwoestbaar.',fx:{enRegen:.12,hpRegen:.2}},
  {id:'hottub',n:'Bubbelbad',h:5,p:300000,col:'#5ad1ff',d:'Warm water, bubbels en een glas champagne op de rand.',fx:{hpRegen:.4,restHp:10}},
  {id:'paniekkamer',n:'Paniekkamer',h:5,p:750000,col:'#9aa3ad',d:'Stalen deur, eigen lucht en een kluis voor het geld. Hier komt niemand binnen.',fx:{safe:.4,heat:.25}}];

@@ -678,3 +678,11 @@ jade, waaier, lantaarn, gelukskat, draak; drakenparel = wild (rol 2–4); gong =
   −/+, onderregel met max win) staat nu ook in Visdief. Snelheid (`.spd`, icoon altijd zichtbaar) en Bonus kopen (`.kk-buyt`,
   schakelaar met AAN/UIT) staan naast elkaar op dezelfde hoogte (56 px, telefoon 44 px). Visdief heeft op brede schermen net
   als Kluiskraker en Suikerbaron het bord links en een paneel rechts.
+
+## Energie tot 500 (november 2026)
+Maximale energie (`EN_MAX` in `state.js`) = basis 100 + Conditie (+3 per level, 150 op 50) + woning (kraakpand 20 … villa 100)
++ inrichting (energiespullen verdubbeld, samen 98) + **rang** (nieuw, `rankEn`: +2 per rang, als Peetvader +3,5 per level
+erbij, samen 52). Alles op max = **500** (was ±249), zodat je bovenin eerst flink wat klussen achter elkaar kunt doen. Opladen
+blijft 1 per 12 s; rusten in je woning vult nog steeds helemaal. Het energievenster in de statusbalk laat zien waar je max
+vandaan komt (`enParts`). De serverwaarschuwing gaat nu pas af boven 700 energie.
+

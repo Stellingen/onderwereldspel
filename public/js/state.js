@@ -324,9 +324,12 @@ function addXp(x){if(x>0&&typeof page!=='undefined'&&page!=='casino')czTimeReset
 const EN_BASE=100,EN_REGEN_S=12; // 1 energie per 12 seconden (was 18), ook als je niks doet, in het casino zit of vastzit
 // In de cel rust je ook: je komt eruit met minstens 4% van je maximale energie per minuut erbij (5 minuten = +20%), nooit boven vol.
 const EN_JAIL=.04;
-// Maximale energie groeit met Conditie (sportschool): +5 per level
+// Maximale energie: basis 100 + Conditie (+3 per level, 150 op 50) + woning (villa +100) + inrichting (alles +98) + rang
+// (+2 per rang, als Peetvader +3,5 per level erbij: 52). Alles op max = 500.
+const rankEn=()=>{if(!S)return 0;const i=rankIdx(S.xp||0);return Math.round(i*2+(i>=RANKS.length-1?(rankLevel(S.xp)-1)*3.5:0))};
+const enParts=()=>[['Basis',EN_BASE],['Conditie',Math.round(SK.conditie.en*sk('conditie'))],['Woning',(S&&S.home)?home().en:0],['Inrichting',(S&&S.furn)?furnFx('en'):0],['Rang',rankEn()]];
 // S.home = id uit HOUSES (de woning waar je woont); home() = de soort (HOMES) met rust, energie en plekken, house() = de woning zelf
 const houseOf=id=>HOUSES.find(h=>h.id===id)||HOUSES[0];
 const house=()=>houseOf((S&&S.home)||'brug');
 const home=()=>HOMES.find(h=>h.id===house().t)||HOMES[0];
-Object.defineProperty(window,'EN_MAX',{get:()=>EN_BASE+Math.round(SK.conditie.en*((S&&S.skills&&S.skills.conditie)||0))+((S&&S.home)?home().en:0)+((S&&S.furn)?furnFx('en'):0),configurable:true});
+Object.defineProperty(window,'EN_MAX',{get:()=>EN_BASE+Math.round(SK.conditie.en*((S&&S.skills&&S.skills.conditie)||0))+((S&&S.home)?home().en:0)+((S&&S.furn)?furnFx('en'):0)+rankEn(),configurable:true});

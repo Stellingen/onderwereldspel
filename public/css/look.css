@@ -175,3 +175,10 @@
 .ch-st .btn{width:auto;min-width:120px;--c:var(--c)}
 .ch-row .act-btn{background:var(--c);color:#111}
 @media (max-width:620px){.ch-row{grid-template-columns:minmax(0,1fr)}.ch-st{flex-direction:row;justify-content:space-between;align-items:center}.ch-open{grid-template-columns:52px minmax(0,1fr)}.ch-ic svg{width:52px;height:52px}}
+/* smalle telefoon: status en knop mogen onder elkaar, niets valt buiten de kaart */
+@media (max-width:420px){
+ .charms-h{flex-wrap:wrap;align-items:flex-start}.charms-h>div{min-width:0;flex:1 1 160px}.charms-h .btn{flex:0 0 auto;max-width:100%}
+ .ch-st{flex-wrap:wrap;gap:6px 10px}.ch-s{white-space:normal;min-width:0;flex:1 1 130px}
+ .ch-st .btn{min-width:0;flex:0 0 auto}
+ .ch-row{padding:10px}
+}
