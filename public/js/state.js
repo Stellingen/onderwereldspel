@@ -326,7 +326,13 @@ const nextPayout=()=>dayStart(now())+DAY_MS;
 function bizPayTick(mins,t){S.kas=(S.kas||0)+income()/240*mins;const ds=dayStart(t);if(!S.kasDay)S.kasDay=ds;
  if(ds>S.kasDay){const pay=Math.floor(S.kas);S.kasDay=ds;S.kas=0;if(pay>0){S.cash+=pay;toast('Je bedrijven betalen uit: +'+fmt(pay),'lvl');log('Uitbetaling bedrijven: +'+fmt(pay),'ok')}}}
 
-function toast(msg,cls='ok'){const t=document.createElement('div');t.className='toast '+cls;t.textContent=msg;$('#toasts').prepend(t);setTimeout(()=>t.remove(),3200)}
+// meldingen: hooguit TOAST_MAX tegelijk (de oudste gaat weg), en dezelfde melding nog een keer telt op (×2) in plaats van te stapelen
+const TOAST_MAX=3;
+function toast(msg,cls='ok'){const box=$('#toasts');if(!box)return;
+ const same=[...box.children].find(e=>e.dataset.m===msg&&!e.classList.contains('out'));
+ if(same){const n=(+same.dataset.n||1)+1;same.dataset.n=n;same.textContent=msg+' (×'+n+')';clearTimeout(same._t);same._t=setTimeout(()=>same.remove(),3200);box.prepend(same);return}
+ const t=document.createElement('div');t.className='toast '+cls;t.textContent=msg;t.dataset.m=msg;box.prepend(t);t._t=setTimeout(()=>t.remove(),3200);
+ const all=[...box.children];all.slice(TOAST_MAX).forEach(e=>{clearTimeout(e._t);e.remove()})}
 // delay: de regel blijft verborgen tot de animatie klaar is (casino), zodat het logboek de uitslag niet verraadt
 function log(msg,cls='info',delay){const e={m:msg,c:cls,t:now()};if(delay)e.r=now()+delay;S.log.unshift(e);S.log=S.log.slice(0,40);return e}
 const logShown=()=>S.log.filter(l=>!(l.r>now()));

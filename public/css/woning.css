@@ -411,3 +411,14 @@
 .vg-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0}.vg-kv div{min-width:0}.vg-kv dt{font-size:10.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}.vg-kv dd{margin:2px 0 0;font-size:13px}.vg-kv small{color:var(--mute)}
 .vg-a{display:flex;gap:6px}.vg-a .btn{flex:1}
 @media (max-width:600px){.vg-sum{grid-template-columns:1fr 1fr}.vg-o{grid-template-columns:84px minmax(0,1fr)}.vg-u{grid-template-columns:minmax(0,1fr) auto}.vg-u .btn{grid-column:1/-1}}
+
+/* beleggingspanden per soort: samenvatting + twee knoppen, niets kan over elkaar vallen */
+.vg-own{grid-template-columns:repeat(auto-fill,minmax(min(330px,100%),1fr))}
+.vg-o{grid-template-columns:96px minmax(0,1fr);align-items:start}
+.vg-m{line-height:1.45;overflow-wrap:anywhere}
+.vg-sum2{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:6px 0 0}
+.vg-sum2 div{min-width:0;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.25)}
+.vg-sum2 dt{font-size:10px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vg-sum2 dd{margin:2px 0 0;font-family:var(--f-mono);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vg-sum2 small{color:var(--mute);font-size:10px}
+.vg-sell{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.vg-sell .btn{flex:1 1 140px;width:auto;white-space:nowrap}
+@media (max-width:600px){.vg-o{grid-template-columns:72px minmax(0,1fr)}.vg-sum2{grid-template-columns:1fr 1fr}.vg-sum2 div:last-child{grid-column:1/-1}}

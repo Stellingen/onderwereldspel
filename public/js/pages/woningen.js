@@ -101,8 +101,8 @@ Object.assign(act,{
   else{if(wit()<P){toast(S.cash>=P?'Vastgoed koop je met wit geld of van de bank.':'Niet genoeg wit geld','bad');return}spendWit(P)}
   if(!S.vgPaid)S.vgPaid=dayStart(now());vgList().push({id,b:P,t:now()});log('Belegging gekocht: '+L.n+' ('+L.place+') voor '+fmt(P),'ok');SFX.big();
   toast(L.n+' gekocht als belegging. Hij wordt verhuurd: '+fmt(Math.round(L.rent*VG_RENT))+' per speldag.','lvl');save();render()},
- vgSell(i){const u=vgList()[i];if(!u)return;const L=houseOf(u.id),get=Math.floor(mktPrice(u.id)*(1-HOUSE_FEE)),res=get-u.b;vgList().splice(i,1);S.bank+=get;
+ vgSell(i,quiet){const u=vgList()[i];if(!u)return;const L=houseOf(u.id),get=Math.floor(mktPrice(u.id)*(1-HOUSE_FEE)),res=get-u.b;vgList().splice(i,1);S.bank+=get;
   typeof bkTx==='function'&&bkTx('in',get,'Verkoop belegging: '+L.n);log(`Belegging verkocht: ${L.n} voor ${fmt(get)} (${res>=0?'winst':'verlies'} ${fmt(Math.abs(res))})`,res>=0?'ok':'bad');
-  SFX.chip();toast(L.n+' verkocht: '+fmt(get)+' op je bank ('+(res>=0?'+':'−')+fmt(Math.abs(res))+')',res>=0?'ok':'bad');save();render()},
+  if(quiet)return;SFX.chip();toast(L.n+' verkocht: '+fmt(get)+' op je bank ('+(res>=0?'+':'−')+fmt(Math.abs(res))+')',res>=0?'ok':'bad');save();render()},
  payRent(){const R=S.rent;if(!R||!(R.debt>0))return;const got=rentTake(R.debt,'Huurachterstand '+houseOf(R.id).n);if(!got){toast('Geen geld op de bank of wit op zak','bad');return}
   R.debt-=got;if(R.debt<=0){R.debt=0;R.late=0;toast('Achterstand betaald','ok')}else toast('Deels betaald, nog '+fmt(R.debt),'bad');save();render()}});
