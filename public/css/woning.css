@@ -422,3 +422,14 @@
 .vg-sum2 dd{margin:2px 0 0;font-family:var(--f-mono);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vg-sum2 small{color:var(--mute);font-size:10px}
 .vg-sell{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.vg-sell .btn{flex:1 1 140px;width:auto;white-space:nowrap}
 @media (max-width:600px){.vg-o{grid-template-columns:72px minmax(0,1fr)}.vg-sum2{grid-template-columns:1fr 1fr}.vg-sum2 div:last-child{grid-column:1/-1}}
+
+/* v3: plaatje + kop bovenaan, daaronder over de volle breedte de cijfers als regels (label links, bedrag rechts) en de knoppen */
+.vg-o{grid-template-columns:84px minmax(0,1fr);row-gap:8px}
+.vg-o>.vg-sum2,.vg-o>.vg-sell{grid-column:1/-1}
+.vg-sum2{grid-template-columns:1fr;gap:0;margin:0;padding:4px 10px;border-radius:8px;background:rgba(0,0,0,.25)}
+.vg-sum2 div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:5px 0;background:none;border-radius:0;border-bottom:1px solid rgba(255,255,255,.05)}
+.vg-sum2 div:last-child{border-bottom:0}
+.vg-sum2 dt{font-size:11px;overflow:visible;text-overflow:clip}
+.vg-sum2 dd{margin:0;font-size:13px;overflow:visible;text-overflow:clip;text-align:right}
+.vg-sell{margin-top:0}.vg-sell .btn{flex:1 1 150px}
+@media (max-width:600px){.vg-o{grid-template-columns:72px minmax(0,1fr)}.vg-sum2{grid-template-columns:1fr}.vg-sum2 div:last-child{grid-column:auto}}
