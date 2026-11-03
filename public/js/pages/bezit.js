@@ -87,7 +87,7 @@ function bzPlan(ids,budget){const M=bizMult().total;let c=budget,k=0,cost=0,gain
  for(;;){let best=null;ids.forEach(id=>{const b=BIZ.find(x=>x.id===id);v[id].forEach((l,i)=>{if(l<5){const x=bizUpCost(b,l);if(!best||x<best.x)best={id,i,x,b,l}}})});
   if(!best||best.x>c)break;c-=best.x;cost+=best.x;gain+=(bizIncRaw(best.b,best.l+1)-bizIncRaw(best.b,best.l))*M;v[best.id][best.i]++;k++}
  return {k,cost,gain}}
-V.biz=()=>bz.sel&&BIZ.find(b=>b.id===bz.sel)?bzDetail(BIZ.find(b=>b.id===bz.sel)):bz.mode==='shop'?bzShopView():bzOverview();
+V.biz=()=>bz.sel&&BIZ.find(b=>b.id===bz.sel)?bzDetail(BIZ.find(b=>b.id===bz.sel)):bz.mode==='shop'?bzShopView():bz.mode==='vg'?bzVgMarket():bzOverview();
 // Banner per zaak (zelfde stijl als de casino-lobby): illustratie rechts, naam, cijfers en wat je nu kunt doen
 function bzBanner(b){const u=bizUnits(b.id),n=u.length,lock=bzLock(b),price=bizPrice(b,n),up=bzCanUp(b),inc=bizIncome(b.id),can=wit()>=price,job=typeof wwJob==='function'&&wwJob(b.id);
  const facts=n?`<span class="bzb-f"><em><b>${fmt(inc)}</b>/speldag</em><em><b>${n}</b>/${BIZ_MAX} vestigingen</em>${up?`<em class="up"><b>${up}</b> upgrade${up>1?'s':''} klaar</em>`:''}${job?'<em class="ww">witwassen bezig</em>':''}${b.cat==='vastgoed'?'<em class="nw">huur · geen witwassen</em>':''}</span>`
@@ -135,6 +135,7 @@ function bzOverview(){const inc=income(),units=BIZ.reduce((a,b)=>a+bizUnits(b.id
   <div class="bz-port">${own.map(bzTile).join('')}</div>`
   :`<div class="bz-empty card"><b>Je hebt nog geen zaken.</b><span>${bzLock(BIZ[0])?`Je eerste zaak, een ${BIZ[0].n.toLowerCase()}, kun je kopen vanaf ${RANKS[BIZ[0].r][0]}.`:`Begin met een ${BIZ[0].n.toLowerCase()}: goedkoop, en hij verdient zichzelf in ruim drie speldagen (±13 uur) terug.`}</span></div>`}
  ${bzHomesHtml()}
+ ${bzVgHtml()}
  <button class="bz-more" onclick="bzShop()"><span class="bz-more-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l2-6h14l2 6M4 10h16v10H4zM9 20v-6h6v6"/></svg></span><span class="bz-more-t"><b>Koop meer zaken</b><small>${buy.length?buy.length+' soort'+(buy.length===1?'':'en')+' te koop':'Alles wat je rang toelaat, heb je al'}${lock.length?' · '+lock.length+' nog op slot':''} · per categorie: winkels, horeca, auto's, handel en vastgoed</small></span><i aria-hidden="true">›</i></button>
  </div>`}
 // Woningen in bezit: waarde, winst en verkopen (5% makelaar, geld naar de bank). Kopen en huren gaat via Verblijf → Huizenmarkt.
@@ -158,14 +159,14 @@ function bzSellHome(id){const L=houseOf(id);if(bz._sellAsk!==id){bz._sellAsk=id;
 // Zaken kopen: per categorie doorklikken. Bovenaan de categorieën als knoppen, daaronder de zaken van die categorie.
 function bzShop(cat){bz.mode='shop';if(cat)bz.cat=cat;SFX.chip();render();window.scrollTo(0,0)}
 function bzShopView(){const cats=BIZ_CATS;if(!bz.cat||!cats.find(c=>c.id===bz.cat)){const f=cats.find(c=>BIZ.some(b=>b.cat===c.id&&!bizUnits(b.id).length&&!bzLock(b)));bz.cat=(f||cats[0]).id}
- const c=cats.find(x=>x.id===bz.cat),it=BIZ.filter(b=>b.cat===c.id),own=it.filter(b=>bizUnits(b.id).length),open=it.filter(b=>!bizUnits(b.id).length&&!bzLock(b)),lock=it.filter(b=>!bizUnits(b.id).length&&bzLock(b));
+ const c=cats.find(x=>x.id===bz.cat),it=BIZ.filter(b=>b.cat===c.id),full=it.filter(b=>bizUnits(b.id).length>=BIZ_MAX),own=it.filter(b=>bizUnits(b.id).length&&bizUnits(b.id).length<BIZ_MAX),open=it.filter(b=>!bizUnits(b.id).length&&!bzLock(b)),lock=it.filter(b=>!bizUnits(b.id).length&&bzLock(b));
  return `<div class="bz bz-shop">
  <div class="bz-shop-h"><button class="vb-back" onclick="bz.mode=null;SFX.chip();render();window.scrollTo(0,0)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Mijn bezit</span></button>
   <div><h1>Zaken kopen</h1><p class="sub">Kies een categorie. Je betaalt met wit geld (je hebt nu ${fmt(wit())}). Elke volgende vestiging van dezelfde zaak kost 25% meer.</p></div></div>
- <div class="bz-ctabs" role="tablist">${cats.map(x=>{const n=BIZ.filter(b=>b.cat===x.id),o=n.filter(b=>bizUnits(b.id).length).length,t=n.filter(b=>!bizUnits(b.id).length&&!bzLock(b)).length;
+ <div class="bz-ctabs" role="tablist">${cats.map(x=>{const n=BIZ.filter(b=>b.cat===x.id),o=n.filter(b=>bizUnits(b.id).length).length,t=n.filter(b=>bizUnits(b.id).length<BIZ_MAX&&!bzLock(b)).length;
    return `<button role="tab" aria-selected="${x.id===c.id}" class="${x.id===c.id?'on':''}" style="--c:${BZ_CATC[x.id]}" onclick="bzShop('${x.id}')"><b>${x.n}</b><small>${o}/${n.length} in bezit${t?' · '+t+' te koop':''}</small><span class="bz-ctabs-ic">${n.map(b=>`<i class="${bizUnits(b.id).length?'own':bzLock(b)?'lk':''}">${bzIcon(b,22)}</i>`).join('')}</span></button>`}).join('')}</div>
  <section class="bz-cat ex" style="--c:${BZ_CATC[c.id]}"><div class="bz-cat-in"><span class="label">${it.length} zaken${open.length?' · '+open.length+' te koop':''}${lock.length?' · '+lock.length+' op slot':''}</span><h2>${c.n}</h2><p>${c.d}</p><em class="${c.nowash?'no':'ok'}">${c.nowash?'Geen witwassen':'Witwassen kan'}</em></div>
-  <div class="bzb-grid">${open.concat(own,lock).map(bzBanner).join('')}</div></section>
+  <div class="bzb-grid">${open.concat(own,lock).map(bzBanner).join('')}</div>${full.length?`<p class="bz-full">Alle ${BIZ_MAX} vestigingen al van jou: ${full.map(b=>b.n).join(', ')}. Die staan bij Mijn bezit.</p>`:''}${!open.length&&!own.length&&!lock.length?'<p class="bz-full">Alles in deze categorie is al helemaal van jou.</p>':''}</section>
  </div>`}
 
 // Kaart per bedrijf. Cijfers staan als regels (label links, bedrag rechts), zodat er bij geen enkele breedte iets over elkaar valt.
@@ -238,3 +239,30 @@ Object.assign(act,{
    if(!best||wit()<best.x)break;spendWit(best.x);spent+=best.x;S.biz2[best.id][best.i]++;k++}
   if(!k)return;bz.fx=null;addXp(Math.floor(Math.sqrt(spent)/6));SFX.big();toast(k+' upgrade'+(k>1?'s':'')+' voor '+fmt(spent)+' · +'+fmt(income()-before)+'/speldag');log(k+' upgrades voor '+fmt(spent),'info');save();render()},
  buyBiz(id){act.bizBuy(id)}});
+
+// ---------- Vastgoed als belegging ----------
+// Panden kopen tegen de marktprijs (zie mktPrice in woningen.js), verhuren per speldag, verkopen als de markt goed staat.
+const bzPct=x=>(x>=0?'+':'−')+Math.abs(x*100).toFixed(1).replace('.',',')+'%';
+function bzSpark(id,n){n=n||30;const P=[];for(let i=n;i>=0;i--)P.push(mktPrice(id,now()-i*DAY_MS));const mn=Math.min(...P),mx=Math.max(...P),r=mx-mn||1;
+ const pts=P.map((v,i)=>`${(i/n*100).toFixed(1)},${(28-(v-mn)/r*24).toFixed(1)}`).join(' '),up=P[P.length-1]>=P[0];
+ return `<svg class="vg-spark ${up?'up':'dn'}" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`}
+function bzVgHtml(){const L=vgList(),val=vgVal(),paid=L.reduce((a,u)=>a+u.b,0),rent=vgRentDay();
+ const groups={};L.forEach((u,i)=>{(groups[u.id]=groups[u.id]||[]).push(i)});
+ return `<div class="bz-sec"><h2>Vastgoed als belegging</h2><span>${L.length?L.length+' pand'+(L.length===1?'':'en')+' · waarde '+fmt(val)+' · '+(val>=paid?'+':'−')+fmt(Math.abs(val-paid))+' · huur '+fmt(rent)+' per speldag':'nog geen beleggingspanden'}</span></div>
+ ${L.length?`<div class="vg-own">${Object.entries(groups).map(([id,ix])=>{const H=houseOf(id),T=HOMES.find(t=>t.id===H.t),m=mktPrice(id),ch=mktChg(id,6);
+  return `<article class="vg-o"><span class="vg-th">${vhScene(T.id,{thumb:1,key:'vg'+id})}</span><div class="vg-ob"><span class="label">${H.place}</span><b>${H.n} <em>×${ix.length}</em></b>
+   <span class="vg-m">Marktprijs ${fmt(m)} <small class="${ch>=0?'up':'dn'}">${bzPct(ch)}</small> · huur ${fmt(Math.round(H.rent*VG_RENT)*ix.length)}/speldag</span>
+   <div class="vg-units">${ix.map(i=>{const u=vgList()[i],get=Math.floor(m*(1-HOUSE_FEE)),res=get-u.b;return `<div class="vg-u"><span>Gekocht ${fmt(u.b)}</span><b class="${res>=0?'up':'dn'}">${res>=0?'+':'−'}${fmt(Math.abs(res))}</b><button class="btn sm ghost" onclick="bzVgSell(${i})">Verkoop · ${fmt(get)}</button></div>`}).join('')}</div></div></article>`}).join('')}</div>`:''}
+ <button class="bz-more vg-more" onclick="bz.mode='vg';SFX.chip();render();window.scrollTo(0,0)"><span class="bz-more-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6"/></svg></span><span class="bz-more-t"><b>Naar de vastgoedmarkt</b><span>Koop panden als belegging: tot ${VG_MAX} per soort. De prijzen gaan op en neer; je verhuurt ze per speldag.</span></span><span class="bz-more-go">›</span></button>`}
+function bzVgSell(i){if(bz._vgAsk!==i){bz._vgAsk=i;const u=vgList()[i];toast('Nog een keer klikken om te verkopen voor '+fmt(Math.floor(mktPrice(u.id)*(1-HOUSE_FEE))),'info');setTimeout(()=>{if(bz._vgAsk===i)bz._vgAsk=null},4000);return}bz._vgAsk=null;act.vgSell(i)}
+function bzVgMarket(){const ri=rankIdx(S.xp),H=HOUSES.filter(h=>h.id!=='brug');
+ return `<div class="bz bz-shop vg-mkt">
+ <div class="bz-shop-h"><button class="vb-back" onclick="bz.mode=null;SFX.chip();render();window.scrollTo(0,0)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Mijn bezit</span></button>
+  <div><h1>Vastgoedmarkt</h1><p class="sub">Koop panden als belegging met wit geld of van de bank. De prijs volgt de markt: op lange termijn omhoog, maar hij kan ook flink zakken. Elk pand wordt verhuurd (${Math.round(VG_RENT*100)}% van de huurprijs per speldag, op je bank). Bij verkoop gaat er 5% naar de makelaar.</p></div></div>
+ <div class="vg-sum"><div><span class="label">Jouw panden</span><b>${vgList().length}</b></div><div><span class="label">Waarde</span><b>${fmt(vgVal())}</b></div><div><span class="label">Huur per speldag</span><b class="g">${fmt(vgRentDay())}</b></div><div><span class="label">Wit · bank</span><b>${fmtS(wit())} · ${fmtS(S.bank)}</b></div></div>
+ <div class="vg-grid">${H.map(L=>{const lock=ri<L.r,m=mktPrice(L.id),ch=mktChg(L.id,6),ch30=mktChg(L.id,30),n=vgN(L.id),T=HOMES.find(t=>t.id===L.t),full=n>=VG_MAX,rent=Math.round(L.rent*VG_RENT);
+  return `<article class="vg-c ${lock?'lock':''}"><div class="vg-ct"><span class="vg-th">${vhScene(T.id,{thumb:1,key:'vm'+L.id})}</span><div><span class="label">${L.place}</span><b>${L.n}</b><span class="vg-own-n">${n?n+' / '+VG_MAX+' in bezit':lock?'Vanaf '+RANKS[L.r][0]:'Nog niet in bezit'}</span></div></div>
+   <div class="vg-p"><b>${fmt(m)}</b><span class="${ch>=0?'up':'dn'}">${bzPct(ch)} <small>6 speldagen</small></span></div>${bzSpark(L.id,30)}
+   <dl class="vg-kv"><div><dt>30 speldagen</dt><dd class="${ch30>=0?'up':'dn'}">${bzPct(ch30)}</dd></div><div><dt>Huur</dt><dd>${fmt(rent)}<small>/speldag</small></dd></div><div><dt>Rendement</dt><dd>${(rent/m*100).toFixed(2).replace('.',',')}%<small>/speldag</small></dd></div></dl>
+   <div class="vg-a">${lock?`<button class="btn ghost sm" disabled>Vanaf ${RANKS[L.r][0]}</button>`:full?`<button class="btn ghost sm" disabled>Maximaal ${VG_MAX} in bezit</button>`:
+    `<button class="btn sm" onclick="act.vgBuy('${L.id}','cash')" ${wit()<m?'disabled':''}>Wit geld</button><button class="btn sm ghost" onclick="act.vgBuy('${L.id}','bank')" ${S.bank<m?'disabled':''}>Van de bank</button>`}</div></article>`}).join('')}</div></div>`}

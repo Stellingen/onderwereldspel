@@ -101,9 +101,14 @@ function klChParts(c){const ri=rankIdx(S.xp),up=crimeUp(c),fx=k=>typeof fitFx===
  const P=[['rang',rkPow(ri)*2],['lagere klus',up],['vakmanschap',mastLv(c.id)*2],['uitrusting',gearBonus()],['outfit',fx('kans')],['familie',fam().chance],
   ['vingervlugheid',S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)],['ademhaling',sk('ademhaling')*SK.ademhaling.focus],['schieten',c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0],['focus',focusPct()]].filter(x=>x[1]>0);
  const n=v=>(Math.round(v*10)/10).toLocaleString('nl-NL');
- let t='Basis '+c.base+'%'+P.map(([l,v])=>' + '+l+' '+n(v)).join('')+(heat>0?' − hitte '+heat:'');
+ const ex=crxBonus(c);let t='Basis '+c.base+'%'+(ex?(ex>0?' + ':' − ')+'ervaring '+CR_CATS[crCat(c)][0].toLowerCase()+' '+n(Math.abs(ex)):'')+P.map(([l,v])=>' + '+l+' '+n(v)).join('')+(heat>0?' − hitte '+heat:'');
  if(tierK())t+=' · daarna ×'+(1+tierK()).toLocaleString('nl-NL')+' als '+lidName();
- return {base:c.base,txt:t+' = '+chance(c)+'% (tussen 5% en '+(95+Math.min(3,up))+'%)'}}
+ return {base:c.base,txt:t+' = '+chance(c)+'% (tussen 5% en '+chanceCap(c)+'%)'}}
+// Ervaring per soort misdaad: zes tegels met level, voortgang en wat het je nu oplevert
+function crxPanel(){return `<section class="crx"><div class="crx-h"><h2>Ervaring per soort</h2><span>Elke klus telt mee voor zijn soort (gelukt 1, mislukt een half). Als beginner heb je −12% kans, als meester +12% en zak je bijna nooit meer door het ijs.</span></div>
+ <div class="crx-g">${Object.entries(CR_CATS).map(([k,[n,col,d]])=>{const v=crxN(k),l=crxLv(k),a=CRX_T[l],b=CRX_T[l+1],pc=b?Math.min(100,(v-a)/(b-a)*100):100,bo=Math.round((-12+l*2.4)*10)/10;
+  return `<div class="crx-t" style="--c:${col}"><div class="crx-top"><b>${n}</b><em>${l>=10?'Meester':'Level '+l}</em></div><div class="crx-bar"><i style="width:${pc}%"></i></div>
+   <div class="crx-f"><span class="${bo<0?'neg':'pos'}">${bo>0?'+':bo<0?'−':''}${String(Math.abs(bo)).replace('.',',')}% kans</span><span>${b?Math.floor(v).toLocaleString('nl-NL')+' / '+b:'max'}</span></div></div>`}).join('')}</div></section>`}
 // opbrengst en risico in gewone woorden
 function klVals(c){const m=lootMult()*mastLoot(c.id),ch=chance(c),cr=c.cr?Math.round(c.cr*credMult('')):0,crP=c.cr?Math.round(c.cr*credMult('perfect')):0;
  return {ch,lo:klM(c.min*m),hi:klM(c.max*m),xp:'+'+c.xp+' XP'+(cr?' · +'+cr+' cred':''),crT:cr?`Straatcredit: ${cr}, perfect uitgevoerd ${crP}`:'',jail:fmtTime(jailSec(c.jail))+' cel',fl:FLEE_LEVELS[c.flee]?FLEE_LEVELS[c.flee].label:''}}
@@ -169,6 +174,7 @@ V.crimes=()=>{
   <div class="kl-h"><span class="label">Hitte</span><b style="color:${S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--fg)'}">${S.heat}%</b><div class="bar"><i style="width:${S.heat}%;background:${S.heat>60?'var(--red)':'var(--acc)'}"></i></div><em>Elke 4% hitte = −1% kans</em></div>
  </section>
  ${typeof prButtons==='function'?prButtons(['flee']):''}
+ ${crxPanel()}
  <div class="cr-mast-how"><b>Vakmanschap</b><span>Elke klus die lukt telt mee voor die klus: na 10 keer <em>Brons</em>, 30 <em>Zilver</em>, 75 <em>Goud</em> en 150 <em>Meester</em>. Elk niveau geeft +2% kans en +5% buit op die klus.</span></div>
  ${best.length?`<div class="tierhead kl-besth"><h2>Beste voor jou</h2><span>Meeste buit per energiepunt, met jouw kans</span></div><div class="klb-grid n${best.length}">${best.map(klBest).join('')}</div>`:''}
  <div class="tierhead kl-besth"><h2>Klussen per rang</h2><span>${avail.length} van de ${CRIMES.length} vrijgespeeld · tik op een rang</span></div>

@@ -360,12 +360,32 @@ const HEIST_TIERS={1:{locks:1,len:4,per:1500,miss:2,rev:0},2:{locks:1,len:5,per:
  4:{locks:2,len:6,per:620,miss:0,rev:1},5:{locks:3,len:6,per:480,miss:0,rev:2},6:{locks:3,len:7,per:400,miss:0,rev:3}};
 const carTier=m=>m.leg?6:m.d;
 const secTxt=ms=>(ms/1000).toLocaleString('nl-NL',{maximumFractionDigits:1})+' s';
-// Ervaring als autodief: als groentje trillen je handen (minder tijd per pijl) en ziet vaker een voorbijganger je bezig.
-// Groeit met het aantal gestolen auto's en je rang.
-const CAR_LV=['Groentje','Leerling','Handig','Ervaren','Meesterdief'];
-const carNerve=()=>{const n=(S.stats&&S.stats.cars)||0,ri=rankIdx(S.xp),a=.6*Math.min(1,n/40),b=.4*Math.min(1,rkPow(ri)/6),lv=Math.min(1,a+b),i=Math.min(4,Math.floor(lv*5));
- return {lv,i,name:CAR_LV[i],time:.78+.22*lv,wit:Math.max(.05,.28-.23*lv)}};
-function heistParams(m){const sk=(S.skills&&S.skills.cars)||0,T=HEIST_TIERS[carTier(m)],N=carNerve();return {...T,per:Math.round(T.per*(1+sk*SK.cars.time+gearFx('car'))*N.time),d:m.d,wit:N.wit,nv:N}}
+// Steelervaring (S.carXp): een eigen level als autodief, los van de training Rijvaardigheid. Elke gestolen auto telt mee,
+// van de straat én bij het stoplicht (zeldzamer = meer punten, CXP_GAIN per zeldzaamheid). 10 levels (CXP_LV = punten).
+// Bestaande spelers beginnen met de punten van de auto's die ze al gestolen hadden (S.carDex, anders S.stats.cars).
+// Kracht (carPow, 0..1) = 80% ervaring + 20% rang: bepaalt hoe vaak je dure auto's tegenkomt (autos.js) en hoe rustig je handen zijn.
+// Elke zeldzaamheid heeft een aanbevolen level (CXP_REQ): zit je eronder, dan heb je veel minder tijd en meer rode pijlen;
+// zit je erboven, dan krijg je meer tijd, minder rode pijlen en mag je vaker een fout maken.
+const CXP_LV=[0,4,10,20,35,55,85,125,180,250];
+const CAR_LV=['Groentje','Leerling','Handig','Gevorderd','Ervaren','Vakman','Specialist','Expert','Meesterdief','Legende'];
+const CXP_GAIN={1:1,2:1,3:2,4:2,5:3,6:4},CXP_REQ={1:1,2:2,3:4,4:6,5:8,6:9};
+function carXp(){if(S.carXp==null){let p=0,n=0;Object.entries(S.carDex||{}).forEach(([id,d])=>{const m=CARS.find(k=>k.id===id),k=(d&&d[1])||0;if(m&&k){p+=k*CXP_GAIN[carTier(m)];n+=k}});
+  const st=(S.stats&&S.stats.cars)||0;S.carXp=p+Math.max(0,st-n)}return S.carXp}
+const cxpLvl=()=>{const x=carXp();let l=0;CXP_LV.forEach((t,i)=>{if(x>=t)l=i});return l+1};
+// level als kommagetal (1,0 .. 10,0): voor vloeiende kansen
+const cxpLvlF=()=>{const l=cxpLvl();if(l>=CXP_LV.length)return l;const a=CXP_LV[l-1],b=CXP_LV[l];return l+Math.min(1,(carXp()-a)/(b-a))};
+const cxpF=()=>Math.min(1,(cxpLvlF()-1)/(CXP_LV.length-1));
+const carPow=()=>Math.min(1,.8*cxpF()+.2*rankIdx(S.xp)/(RANKS.length-1));
+function cxpAdd(m){const before=cxpLvl();S.carXp=carXp()+CXP_GAIN[carTier(m)];const after=cxpLvl();
+ if(after>before){toast('Steelervaring: je bent nu '+CAR_LV[after-1]+' (level '+after+')','lvl');log('Steelervaring level '+after+': '+CAR_LV[after-1],'ok')}}
+const carNerve=()=>{const lv=carPow(),l=cxpLvl(),i=Math.min(4,Math.floor((l-1)/2));
+ return {lv,i,lvl:l,name:CAR_LV[l-1],time:.78+.22*lv,wit:Math.max(.04,.28-.24*lv)}};
+// hoe ver je boven (+) of onder (−) het aanbevolen level van deze auto zit
+const carRel=m=>cxpLvlF()-CXP_REQ[carTier(m)];
+const relTime=r=>Math.max(.5,Math.min(1.6,1+.1*r));
+function heistParams(m){const sk=(S.skills&&S.skills.cars)||0,T=HEIST_TIERS[carTier(m)],N=carNerve(),rel=carRel(m);
+ return {...T,per:Math.round(T.per*(1+sk*SK.cars.time+gearFx('car'))*N.time*relTime(rel)),rev:Math.max(0,T.rev-(rel>=2?1:0)-(rel>=4?1:0)+(rel<=-3&&T.len>4?1:0)),
+  miss:T.miss+(rel>=1?1:0)+(rel>=4?1:0),d:m.d,wit:N.wit,nv:N,rel,req:CXP_REQ[carTier(m)]}}
 function heistTxt(P){return [P.locks>1?P.locks+' sloten':'1 slot',P.len+' pijlen in '+secTxt(P.len*P.per),P.rev?P.rev+' rode per slot':null,P.miss?P.miss+'× fout mag':'geen fouten'].filter(Boolean).join(' · ')}
 function carHeist(sp){const m=CARS.find(k=>k.id===sp.id)||CARS[0];
  return new Promise(resolve=>{
@@ -375,7 +395,7 @@ function carHeist(sp){const m=CARS.find(k=>k.id===sp.id)||CARS[0];
     <div class="hx-car">${carSvg(m.b,sp.c,{hl:1})}<span class="plate">${sp.plate}</span></div>
     <div class="heist-top"><span class="rar" style="--rc:${R[1]}">${R[0]}</span><span class="label">${esc(m.n)}</span></div>
     <div class="hx-head"><h2 id="hT">Contact maken</h2><div class="hx-locks" id="hLocks" aria-label="Sloten">${Array.from({length:P.locks},()=>'<i></i>').join('')}</div></div>
-    ${P.nv.i<2?`<div class="hx-nerve">${P.nv.name}: je handen trillen (−${Math.round((1-P.nv.time)*100)}% tijd). Let op voorbijgangers.</div>`:''}
+    ${P.rel<=-1?`<div class="hx-nerve">Te zwaar voor jouw ervaring (${P.nv.name}, aanbevolen level ${P.req}): ${Math.round((1-relTime(P.rel)*P.nv.time)*100)}% minder tijd. Let op voorbijgangers.</div>`:P.nv.i<2?`<div class="hx-nerve">${P.nv.name}: je handen trillen (−${Math.round((1-P.nv.time)*100)}% tijd). Let op voorbijgangers.</div>`:''}
     <div class="hx-wit" id="hWit" hidden><i>👁</i><span>Een voorbijganger ziet je bezig en pakt zijn telefoon. Schiet op!</span></div>
     <p class="chase-p" id="hP">Toets de pijlen in deze volgorde in. ${P.rev?'<b class="rv">Rode pijl</b> = druk de andere kant op. ':''}${P.miss?'Je mag '+P.miss+'× fout.':'Eén fout en het alarm gaat af.'} Pijltjestoetsen, WASD of de knoppen.</p>
     <div class="heist-seq" id="hSeq">${'<i class="ghost"></i>'.repeat(P.len)}</div>

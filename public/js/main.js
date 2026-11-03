@@ -16,6 +16,7 @@ function tick(){
     if(Math.random()<mins*6*(1+furnFx('hpRegen')))S.hp=Math.min(100,S.hp+1);
     if(typeof bankTick==='function')bankTick(mins);
     if(typeof rentTick==='function')rentTick();
+    if(typeof vgTick==='function')vgTick();
     if(typeof dlTick==='function')dlTick();
     if(typeof famDaily==='function')famDaily();
     S.npcs.forEach((n,i)=>{n.xp+=mins*(4+i*3)*(0.5+Math.random());n.cash+=mins*(30+i*60)*(Math.random()*2-0.3)})}
@@ -34,7 +35,10 @@ if(S._admin){const A=S._admin;if(A.refill){S.energy=Math.max(S.energy,EN_MAX);S.
   if(T.length>=30){const iv=[];for(let i=T.length-30+1;i<T.length;i++)iv.push(T[i]-T[i-1]);const m=iv.reduce((a,b)=>a+b,0)/iv.length,sd=Math.sqrt(iv.reduce((a,b)=>a+(b-m)*(b-m),0)/iv.length);
    if(m<600&&sd<4){send(`30 klikken met een machinaal vast ritme: elke ${Math.round(m)} ms (afwijking ±${sd.toFixed(1)} ms)`);T.length=0}}},true)})();
 // een bonus die nog liep (verversen of ander apparaat): het geld staat al op je saldo, het spel biedt aan om hem verder af te spelen
-if(S.slotRun){const n=S.slotRun.g==='vis'?'Visdief':S.slotRun.g==='zoet'?'Suikerbaron':'Kluiskraker';setTimeout(()=>toast('Je bonus in '+n+' loopt nog. Het geld staat al op je saldo; open '+n+' om hem verder af te spelen.','lvl'),900)}
+// rondes die al vaststonden maar nog draaiden (roulette, hoogvlieger): nu in je sessie; een gedeelde hand aan tafel gaat verder
+if(typeof casSesFlush==='function')casSesFlush();
+if(typeof tbRestore==='function')try{tbRestore()}catch(e){console.error(e);delete S.tbRun}
+if(S.slotRun){const n=S.slotRun.g==='vis'?'Visdief':S.slotRun.g==='zoet'?'Suikerbaron':S.slotRun.g==='draak'?'Gouden Draak':'Kluiskraker';setTimeout(()=>toast('Je bonus in '+n+' loopt nog. Het geld staat al op je saldo; open '+n+' om hem verder af te spelen.','lvl'),900)}
 if(S._gearBack){toast('Uitrusting vernieuwd: per soort telt nu je beste item. Je krijgt '+fmt(S._gearBack)+' terug voor overbodige spullen.','lvl');log('Uitrusting: '+fmt(S._gearBack)+' terug voor overbodige spullen','ok');delete S._gearBack}
 // offline-inkomen bij openen
 // bij openen: wat je bedrijven offline verdienden (tot 12 uur) gaat in de kas; is er intussen een speldag voorbij, dan volgt de uitbetaling

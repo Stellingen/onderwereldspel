@@ -84,7 +84,7 @@ function thTable(){
    <div class="card"><h3>Zo speel je</h3><p class="sub">Zet je ante (en eventueel AA Bonus) en deel. Je ziet je twee kaarten en de flop. Meespelen kost 2× je ante; daarna komen de turn en de river en draait de dealer om. Jouw beste vijf uit zeven tegen die van de dealer.</p>${tbPayRow([['Dealer speelt','vanaf paar vieren'],['Gelijk','alles terug'],['Passen','ante kwijt']])}</div>
   </div>
  </div>`}
-async function thReveal(folded){const t=th;t.phase='reveal';t.rv=0;render();await tbWait(300);
+async function thReveal(folded){const t=th;t.phase='reveal';t.fold=!!folded;save();t.rv=0;render();await tbWait(300);
  while(t.b.length<5){t.b.push(thDraw());SFX.card();render();await tbWait(460)}
  t.rv=1;SFX.card();render();await tbWait(520);thFinish(folded)}
 function thFinish(folded){const t=th;t.phase='done';
@@ -108,7 +108,7 @@ Object.assign(act,{
  thNew(){Object.assign(th,{bets:{ante:0,aa:0},lines:null,phase:'bet',p:[],d:[],b:[],res:null,msg:'',net:0,call:0,rv:0});render()},
  async thDeal(){const t=th;if(t.phase!=='bet'||inJail())return;const tot=t.bets.ante+t.bets.aa;
   if(t.bets.ante<TB.MAIN_MIN){toast('Minimale ante is €'+TB.MAIN_MIN,'bad');return}if(tot>casCash()){toast(casShort(),'bad');return}
-  S.cash-=tot;t.last=Object.assign({},t.bets);if(typeof tbRemember==='function')tbRemember('th',t.bets);t.shoe=newShoe(1);t.p=[];t.d=[];t.b=[];t.res=null;t.msg='';t.call=0;t.rv=0;t.phase='dealing';
+  S.cash-=tot;t.last=Object.assign({},t.bets);if(typeof tbRemember==='function')tbRemember('th',t.bets);t.shoe=newShoe(1);t.p=[];t.d=[];t.b=[];t.res=null;t.msg='';t.call=0;t.rv=0;t.phase='dealing';save();
   for(let i=0;i<2;i++){t.p.push(thDraw());SFX.card();render();await tbWait(220);t.d.push(thDraw());SFX.card();render();await tbWait(220)}
   for(let i=0;i<3;i++){t.b.push(thDraw());SFX.card();render();await tbWait(240)}
   t.phase='decide';save();render()},

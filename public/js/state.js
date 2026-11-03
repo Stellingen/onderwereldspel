@@ -76,6 +76,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState!==
 // belangrijke momenten (casino, aankopen) meteen naar de server
 function pushSoon(){if(!window.__TOKEN__||window.__LOCKED__)return;clearTimeout(_pushTimer);_pushTimer=setTimeout(()=>pushState(),150)}
 function save(){
+  if(typeof tbPersist==='function')try{tbPersist()}catch(e){}
   S.savedAt=Math.max(Date.now(),(S.savedAt||0)+1);S._dev=DEV_ID;
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}
   if(!window.__TOKEN__)return;
@@ -129,6 +130,8 @@ const czShown=()=>czVal();
 // Sessie per spel (zolang je speelsessie in het casino loopt): rondes, ingezet, terug en je beste ronde
 function casSesAdd(g,stake,pay){if(!g||!(stake>0))return;const t0=S.czT&&S.czT.t0||now();if(!S.cses||S.cses.t0!==t0)S.cses={t0,g:{}};const G=S.cses.g[g]||(S.cses.g[g]={n:0,i:0,o:0,b:0});
  G.n++;G.i+=stake;G.o+=pay||0;G.b=Math.max(G.b,(pay||0)-stake)}
+// uitslag pas tonen als hij in beeld is: rondes die al vaststaan maar nog draaien (roulette, hoogvlieger) gaan pas bij de uitslag de sessie in
+function casSesFlush(g){if(!S.casPend||!S.casPend.length){delete S.casPend;return}S.casPend=S.casPend.filter(x=>{if(!g||x.g===g){casSesAdd(x.g,x.s,x.p);return false}return true});if(!S.casPend.length)delete S.casPend}
 function casSes(g){const t0=S.czT&&S.czT.t0;return S.cses&&S.cses.t0===t0&&S.cses.g[g]||{n:0,i:0,o:0,b:0}}
 function casSesHtml(g,cls){const G=casSes(g),net=G.o-G.i;
  return `<div class="cses ${cls||''}" title="Sinds het begin van je speelsessie in het casino"><span class="label">Deze sessie</span><span class="cs-n"><b>${G.n}</b> ronde${G.n===1?'':'s'}</span><span class="cs-i">Ingezet <b>${fmt(G.i)}</b></span><span class="cs-o">Terug <b>${fmt(G.o)}</b></span><span class="cs-net ${net>0?'up':net<0?'dn':''}">${net>0?'+':net<0?'−':''}${fmt(Math.abs(net))}</span>${G.b>0?`<span class="cs-b">Beste <b>+${fmt(G.b)}</b></span>`:''}</div>`}
@@ -204,8 +207,17 @@ const mastLoot=id=>1+mastLv(id)*.05;
 // Lagere misdaden dan je rang: +1% extra per rang erboven, de hitte telt minder mee (vakmensen blijven rustig)
 // en het plafond gaat van 95% naar maximaal 98%. Er blijft altijd 2% risico in het vak.
 const crimeUp=c=>Math.max(0,rankIdx(S.xp)-(c.r||0));
-const chanceRaw=c=>mastLv(c.id)*2+c.base+rankPow()*2+crimeUp(c)+gearBonus()+fitFx('kans')+fam().chance+S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)+sk('ademhaling')*SK.ademhaling.focus+(c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0)+focusPct()-Math.floor(S.heat/4*Math.max(.4,1-crimeUp(c)*.1));
-const chance=c=>Math.max(5,Math.min(95+Math.min(3,crimeUp(c)),Math.round(chanceRaw(c)*(1+tierK()))));
+// Ervaring per soort misdaad: als beginner (level 0) −12% kans, elk level +2,4%, als meester (level 10) +12%.
+// Meesters zakken bijna nooit meer door het ijs: het plafond gaat per 2 levels 1% omhoog, tot 99%.
+const crCat=c=>(typeof CR_CAT!=='undefined'&&CR_CAT[c.id])||'straat';
+const crxN=cat=>{if(!S.crx){S.crx={};if(S.mast)Object.entries(S.mast).forEach(([id,n])=>{const k=(typeof CR_CAT!=='undefined'&&CR_CAT[id])||'straat';S.crx[k]=(S.crx[k]||0)+n})}return S.crx[cat]||0};
+const crxLv=cat=>{const n=crxN(cat);let l=0;CRX_T.forEach((t,i)=>{if(n>=t)l=i});return l};
+const crxBonus=c=>Math.round((-12+crxLv(crCat(c))*2.4)*10)/10;
+function crxAdd(c,ok){const k=crCat(c),l0=crxLv(k);S.crx[k]=(S.crx[k]||0)+(ok?1:.5);const l1=crxLv(k);
+ if(l1>l0)setTimeout(()=>toast(`${CR_CATS[k][0]} level ${l1}: ${l1>=10?'meester van het vak':'je kans op deze klussen gaat omhoog'} (${crxBonus(c)>=0?'+':''}${String(crxBonus(c)).replace('.',',')}%)`,'lvl'),900)}
+const chanceRaw=c=>crxBonus(c)+mastLv(c.id)*2+c.base+rankPow()*2+crimeUp(c)+gearBonus()+fitFx('kans')+fam().chance+S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)+sk('ademhaling')*SK.ademhaling.focus+(c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0)+focusPct()-Math.floor(S.heat/4*Math.max(.4,1-crimeUp(c)*.1));
+const chanceCap=c=>Math.min(99,95+Math.min(3,crimeUp(c))+Math.floor(crxLv(crCat(c))/2));
+const chance=c=>Math.max(5,Math.min(chanceCap(c),Math.round(chanceRaw(c)*(1+tierK()))));
 // straf 30 s – 10 min, plus 30–60 s (hoe langer de straf, hoe meer) omdat je in de bajes kunt werken: 1 – 11 minuten
 const jailSec=sec=>{const b=Math.max(30,Math.min(600,Math.round(sec*(1-fam().jail/100)*(1-sk('rechten')*SK.rechten.jail/100)*(1-gearFx('jail')))));return b+Math.round(30+30*(b-30)/570)};
 function sendToJail(sec){sec=jailSec(sec);S.lastSentence=sec;S.jailUntil=now()+sec*1000;if(!S.jailIn)S.jailIn={t:now(),en:S.energy};if(typeof celNew==='function')celNew(sec);return sec}
@@ -293,7 +305,7 @@ const playerTags=t=>'<i class="spt" title="Echte speler">SPELER</i>'+lidTag(t);
 // tag bij je naam; kort = 'HR' voor smalle plekken (balk bovenin)
 const vipTag=short=>isHR()?`<i class="vipt hr" title="High roller">${short?'HR':'HIGH ROLLER'}</i>`:isVip()?'<i class="vipt" title="VIP-lid">VIP</i>':'';
 // Elke afgeronde casinoronde: inzet, wat je terugkreeg en welk spel. VIP spaart een vast percentage van de inzet op.
-function casinoRound(stake,pay,game){zwCasinoRound(stake,game);czTimeTick();casSesAdd(game,stake,pay);if(typeof ccAdd==='function')ccAdd(game,stake);if(typeof pushSoon==='function')setTimeout(pushSoon,0);const r=(CB_RATE[game]||0)*(typeof ccCbF==='function'?ccCbF(game):(TIER_CB[tier()]||0));if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
+function casinoRound(stake,pay,game,later){zwCasinoRound(stake,game);czTimeTick();if(later)(S.casPend=S.casPend||[]).push({g:game,s:stake,p:pay||0});else casSesAdd(game,stake,pay);if(typeof ccAdd==='function')ccAdd(game,stake);if(typeof pushSoon==='function')setTimeout(pushSoon,0);const r=(CB_RATE[game]||0)*(typeof ccCbF==='function'?ccCbF(game):(TIER_CB[tier()]||0));if(!r||!stake)return;S.cb=S.cb||{};S.cb.acc=(S.cb.acc||0)+stake*r;S.cb.tot=(S.cb.tot||0)+stake*r;
   const el=document.getElementById('cbAmt');if(el)el.textContent=fmt(cbAvail());const bt=document.getElementById('cbBtn');if(bt){bt.disabled=cbAvail()<1;bt.textContent=cbAvail()>=1?'Claimen':'Nog niks te claimen'}}
 const cbAvail=()=>S.cb?Math.floor(S.cb.acc||0):0;
 const crimeCd=c=>c.cd*1000*(1-S.skills.speed*SK.speed.cd)*(1-famPerk('cd'))*(1-fitFx('cd'))*waitK();

@@ -233,3 +233,16 @@ b.up+.kl-seg>i,span+.kl-seg>i{background:var(--acc)}
  .krb-ics i{width:24px;height:24px}.krb-ics svg{width:15px;height:15px}
  .klr-grid{grid-template-columns:minmax(0,1fr)}
 }
+
+/* ervaring per soort misdaad */
+.crx{margin:14px 0 4px;padding:14px;border-radius:14px;background:var(--panel);border:1px solid var(--line2)}
+.crx-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin-bottom:10px}.crx-h h2{margin:0;font-size:18px}.crx-h span{font-size:12.5px;color:var(--mute);flex:1 1 280px}
+.crx-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.crx-t{padding:9px 10px;border-radius:10px;background:rgba(0,0,0,.22);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 30%,transparent);border-left:3px solid var(--c)}
+.crx-top{display:flex;justify-content:space-between;align-items:baseline;gap:6px}.crx-top b{font-size:13.5px}.crx-top em{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--c)}
+.crx-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.08);margin:7px 0 6px;overflow:hidden}.crx-bar i{display:block;height:100%;background:var(--c);border-radius:3px}
+.crx-f{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--mute)}.crx-f .pos{color:var(--green)}.crx-f .neg{color:#ff8a8a}
+@media (max-width:420px){.crx-g{grid-template-columns:1fr 1fr}.crx-t{padding:8px}}
+.crx-g{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:700px){.crx-g{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.crx-top b{min-width:0;line-height:1.2}.crx-top em{flex:none;white-space:nowrap}

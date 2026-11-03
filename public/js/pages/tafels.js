@@ -125,8 +125,23 @@ async function btDealerPlay(){const b=bt;render();await tbWait(450);
  const live=b.hands.some(h=>bjTotal(h.cards).t<=21);
  while(live&&bjTotal(b.dealer).t<17){b.dealer.push(bjDraw());SFX.card();render();await tbWait(520)}
  btFinish()}
+// Een gedeelde hand ligt vast: de inzet is weg, en na verversen speel je verder waar je was (S.tbRun)
+const TB_LIVE=['dealing','play','dealer','decide','reveal'];
+function tbPersist(){const R={};[['bj',window.bt],['tp',window.tp],['th',window.th]].forEach(([g,T])=>{if(T&&TB_LIVE.includes(T.phase))R[g]=JSON.parse(JSON.stringify(T))});if(Object.keys(R).length)S.tbRun=R;else delete S.tbRun}
+function tbRestore(){const R=S.tbRun;if(!R)return;let g0=null;
+ if(R.bj){Object.assign(bt,R.bj);g0='bj';const b=bt;
+  if(b.phase==='dealing'){while(b.hands[0].cards.length<2)b.hands[0].cards.push(bjDraw());while(b.dealer.length<2)b.dealer.push(bjDraw());btSettleSide();b.phase='play';
+   const up=b.dealer[0],dBJ=bjTotal(b.dealer).t===21,pBJ=bjTotal(b.hands[0].cards).t===21;if((up.r===14||bjv(up)===10)&&dBJ){b.msg='Dealer kijkt… blackjack!';btFinish()}else if(pBJ)btFinish()}
+  else if(b.phase==='dealer')setTimeout(btDealerPlay,400)}
+ if(R.tp){Object.assign(tp,R.tp);g0=g0||'tcp';const t=tp;
+  if(t.phase==='dealing'){while(t.p.length<3)t.p.push(tpDraw());while(t.d.length<3)t.d.push(tpDraw());if(!t.bets.ante)tpSettle(false);else t.phase='decide'}
+  else if(t.phase==='reveal')setTimeout(()=>tpReveal(!!t.fold),400)}
+ if(R.th&&window.th&&typeof thReveal==='function'){Object.assign(th,R.th);g0=g0||'th';const t=th;
+  if(t.phase==='dealing'){while(t.p.length<2)t.p.push(thDraw());while(t.d.length<2)t.d.push(thDraw());while(t.b.length<3)t.b.push(thDraw());t.phase='decide'}
+  else if(t.phase==='reveal')setTimeout(()=>thReveal(!!t.fold),400)}
+ if(g0){const n={bj:'Blackjack',tcp:'Three Card Poker',th:"Texas Hold'em"}[g0];setTimeout(()=>toast('Je hand in '+n+' loopt nog. Je inzet staat al op tafel; open '+n+' om verder te spelen.','lvl'),900);if(typeof casinoTab!=='undefined'&&!casinoTab)casinoTab=g0}}
 const tbWait=ms=>new Promise(r=>setTimeout(r,(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)?0:ms));
-function btNext(){const b=bt;
+function btNext(){const b=bt;save();
  while(b.active<b.hands.length){const hd=b.hands[b.active],t=bjTotal(hd.cards).t;if(hd.done||t>=21||hd.splitAce&&hd.cards.length>=2){hd.done=true;b.active++}else break}
  if(b.active>=b.hands.length){b.phase='dealer';btDealerPlay()}else render()}
 
@@ -187,7 +202,7 @@ function tpTable(){
 }
 function tpDraw(){if(!tp.shoe||tp.shoe.length<10)tp.shoe=newShoe(1);return tp.shoe.pop()}
 // de dealer draait zijn kaarten één voor één om; pas daarna volgt de uitslag
-async function tpReveal(folded){const t=tp;t.phase='reveal';t.rv=0;render();await tbWait(300);
+async function tpReveal(folded){const t=tp;t.phase='reveal';t.fold=!!folded;save();t.rv=0;render();await tbWait(300);
  for(let i=0;i<t.d.length;i++){t.rv=i+1;SFX.card();render();await tbWait(480)}
  await tbWait(200);tpSettle(folded)}
 function tpSettle(folded){
@@ -237,7 +252,7 @@ Object.assign(act,{
  async btDeal(){const b=bt;if(b.phase!=='bet'||inJail())return;const tot=b.bets.main+b.bets.pp+b.bets.t21;
   if(b.bets.main<TB.MAIN_MIN){toast('Minimale inzet is €'+TB.MAIN_MIN,'bad');return}if(tot>casCash()){toast(casShort(),'bad');return}
   S.cash-=tot;b.last=Object.assign({},b.bets);tbRemember('bj',b.bets);b.msg='';b.net=0;b.side={};
-  b.hands=[{cards:[],bet:b.bets.main}];b.dealer=[];b.active=0;b.phase='dealing';
+  b.hands=[{cards:[],bet:b.bets.main}];b.dealer=[];b.active=0;b.phase='dealing';save();
   for(const who of ['p','d','p','d']){if(who==='p')b.hands[0].cards.push(bjDraw());else b.dealer.push(bjDraw());SFX.card();render();await tbWait(260)}
   btSettleSide();b.phase='play';
   const up=b.dealer[0],dBJ=bjTotal(b.dealer).t===21,pBJ=bjTotal(b.hands[0].cards).t===21;
@@ -254,7 +269,7 @@ Object.assign(act,{
  async tpDeal(){const t=tp;if(t.phase!=='bet'||inJail())return;const tot=t.bets.ante+t.bets.pp+t.bets.six;
   if(t.bets.ante&&t.bets.ante<TB.MAIN_MIN){toast('Minimale ante is €'+TB.MAIN_MIN,'bad');return}
   if(!tot){toast('Zet eerst een inzet','bad');return}if(tot>casCash()){toast(casShort(),'bad');return}
-  S.cash-=tot;t.last=Object.assign({},t.bets);tbRemember('tp',t.bets);t.shoe=newShoe(1);t.p=[];t.d=[];t.res=null;t.msg='';t.play=0;t.phase='dealing';
+  S.cash-=tot;t.last=Object.assign({},t.bets);tbRemember('tp',t.bets);t.shoe=newShoe(1);t.p=[];t.d=[];t.res=null;t.msg='';t.play=0;t.phase='dealing';save();
   for(let i=0;i<3;i++){t.p.push(tpDraw());t.d.push(tpDraw());SFX.card();render();await tbWait(220)}
   if(!t.bets.ante){tpSettle(false);return}
   t.phase='decide';save();render()},

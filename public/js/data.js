@@ -190,7 +190,26 @@ const CARS=[
  // exclusief (zeldzaam en veel waard): hypercars en topklassiekers
  ,{id:'p918',n:'Porsche 918 Spyder',b:'super',lo:300000,hi:520000,y:[2014,2015],d:5,w:.16},{id:'p1',n:'McLaren P1',b:'super4',lo:320000,hi:560000,y:[2013,2015],d:5,w:.14},
  {id:'spectre',n:'Rolls-Royce Spectre',b:'luxury',lo:230000,hi:400000,y:[2023,2024],d:5,w:.2},{id:'laf',n:'Ferrari LaFerrari',b:'super3',lo:650000,hi:1150000,y:[2013,2016],d:5,w:.04,leg:1},
- {id:'huayra',n:'Pagani Huayra',b:'hyper',lo:700000,hi:1250000,y:[2012,2022],d:5,w:.035,leg:1},{id:'amgone',n:'Mercedes-AMG One',b:'hyper2',lo:750000,hi:1350000,y:[2022,2024],d:5,w:.03,leg:1}];
+ {id:'huayra',n:'Pagani Huayra',b:'hyper',lo:700000,hi:1250000,y:[2012,2022],d:5,w:.035,leg:1},{id:'amgone',n:'Mercedes-AMG One',b:'hyper2',lo:750000,hi:1350000,y:[2022,2024],d:5,w:.03,leg:1}
+ // k = klasse (zie autos.js carClassW): 1 = de markt van Ritselaar t/m Huurmoordenaar, 2 = Kapitein t/m Peetvader.
+ // Hoe meer steelervaring, hoe vaker je ze tegenkomt; onder die rang zie je ze minder vaak. Zonder k: de gewone straatmarkt.
+ ,{id:'m5',n:'BMW M5 Competition',b:'sedan2',lo:22000,hi:42000,y:[2018,2024],d:3,w:3,k:1},{id:'rs7',n:'Audi RS7 Sportback',b:'liftback2',lo:24000,hi:45000,y:[2019,2024],d:3,w:2.8,k:1},
+ {id:'e63',n:'Mercedes-AMG E63 S',b:'sedan3',lo:24000,hi:44000,y:[2018,2023],d:3,w:2.8,k:1},{id:'gtr',n:'Nissan GT-R Nismo',b:'coupe',lo:26000,hi:52000,y:[2017,2023],d:3,w:2.4,k:1},
+ {id:'z06',n:'Chevrolet Corvette Z06',b:'sport',lo:28000,hi:55000,y:[2020,2024],d:3,w:2.2,k:1},{id:'cayenne',n:'Porsche Cayenne Turbo GT',b:'cross',lo:30000,hi:56000,y:[2021,2024],d:3,w:2.4,k:1},
+ {id:'lc500',n:'Lexus LC 500',b:'gt',lo:26000,hi:48000,y:[2018,2024],d:3,w:2.2,k:1},{id:'defender',n:'Land Rover Defender V8',b:'offroad',lo:25000,hi:48000,y:[2021,2024],d:3,w:2.6,k:1},
+ {id:'gt3rs',n:'Porsche 911 GT3 RS',b:'sport',lo:70000,hi:130000,y:[2019,2024],d:4,w:1.2,k:1},{id:'amggt',n:'Mercedes-AMG GT Black Series',b:'sport',lo:80000,hi:150000,y:[2020,2023],d:4,w:.9,k:1},
+ {id:'vantage',n:'Aston Martin Vantage',b:'gt3',lo:60000,hi:110000,y:[2019,2024],d:4,w:1.2,k:1},{id:'m8',n:'BMW M8 Competition',b:'gt',lo:55000,hi:100000,y:[2019,2024],d:4,w:1.3,k:1},
+ {id:'maybach',n:'Mercedes-Maybach S 680',b:'luxury',lo:75000,hi:140000,y:[2021,2024],d:4,w:1,k:1},{id:'ghost',n:'Rolls-Royce Ghost',b:'luxury',lo:90000,hi:165000,y:[2020,2024],d:4,w:.8,k:1},
+ {id:'emira',n:'Lotus Emira',b:'sport',lo:50000,hi:90000,y:[2022,2024],d:4,w:1.3,k:1},{id:'bentayga',n:'Bentley Bentayga Speed',b:'luxsuv',lo:70000,hi:130000,y:[2020,2024],d:4,w:1,k:1},
+ {id:'dbx',n:'Aston Martin DBX707',b:'supersuv',lo:75000,hi:135000,y:[2022,2024],d:4,w:.9,k:1},
+ {id:'f296',n:'Ferrari 296 GTB',b:'super3',lo:220000,hi:380000,y:[2022,2024],d:5,w:.3,k:2},{id:'revuelto',n:'Lamborghini Revuelto',b:'super2',lo:380000,hi:650000,y:[2023,2024],d:5,w:.18,k:2},
+ {id:'f812',n:'Ferrari 812 Competizione',b:'gt',lo:300000,hi:520000,y:[2021,2023],d:5,w:.2,k:2},{id:'senna',n:'McLaren Senna',b:'super4',lo:600000,hi:950000,y:[2018,2020],d:5,w:.1,k:2},
+ {id:'cullbb',n:'Rolls-Royce Cullinan Black Badge',b:'luxsuv',lo:260000,hi:420000,y:[2020,2024],d:5,w:.25,k:2},{id:'g650',n:'Mercedes-Maybach G 650 Landaulet',b:'offroad',lo:450000,hi:800000,y:[2017,2018],d:5,w:.12,k:2},
+ {id:'nevera',n:'Rimac Nevera',b:'hyper',lo:1000000,hi:1700000,y:[2021,2024],d:5,w:.04,leg:1,k:2},{id:'sl300',n:'Mercedes 300 SL Gullwing (1955)',b:'classic',lo:1100000,hi:1800000,y:[1954,1957],d:5,w:.035,leg:1,k:2},
+ {id:'miura',n:'Lamborghini Miura SV (1971)',b:'classic',lo:1500000,hi:2400000,y:[1971,1973],d:5,w:.03,leg:1,k:2},{id:'f40',n:'Ferrari F40',b:'super3',lo:1600000,hi:2600000,y:[1987,1992],d:5,w:.03,leg:1,k:2},
+ {id:'sp3',n:'Ferrari Daytona SP3',b:'super5',lo:1500000,hi:2500000,y:[2022,2024],d:5,w:.03,leg:1,k:2},{id:'utopia',n:'Pagani Utopia',b:'hyper',lo:1800000,hi:3000000,y:[2023,2024],d:5,w:.025,leg:1,k:2},
+ {id:'valkyrie',n:'Aston Martin Valkyrie',b:'hyper2',lo:2200000,hi:3500000,y:[2021,2024],d:5,w:.02,leg:1,k:2},{id:'speedtail',n:'McLaren Speedtail',b:'super4',lo:2000000,hi:3200000,y:[2020,2021],d:5,w:.02,leg:1,k:2},
+ {id:'divo',n:'Bugatti Divo',b:'hyper2',lo:2800000,hi:4200000,y:[2019,2021],d:5,w:.012,leg:1,k:2},{id:'mistral',n:'Bugatti Mistral',b:'hyper',lo:3000000,hi:4500000,y:[2024,2024],d:5,w:.01,leg:1,k:2}];
 const CAR_LEVEL=['','makkelijk','redelijk','lastig','moeilijk','extreem'];
 const CAR_RARITY=[null,['Gewoon','#9aa1ab'],['Ongewoon','#3fe395'],['Zeldzaam','#4d9dff'],['Episch','#b8a1ff'],['Legendarisch','#ffad6b']];
 const CAR_MYTH=['Mythisch','#ff3d52'];
@@ -284,6 +303,19 @@ const FLEE_LEVELS={
 
 // Training: blijvende skills via sessies met een wachttijd (tijdslot) per plek
 // need(l): aantal sessies om van level l naar l+1 te gaan; kosten per sessie stijgen per level
+// Soorten misdaad: per soort bouw je ervaring op (S.crx). Elke klus telt (gelukt 1, mislukt een half);
+// hoe meer ervaring in een soort, hoe hoger je kans op álle klussen van die soort (zie crxBonus in state.js).
+const CR_CATS={straat:['Straatwerk','#ffb36b','Zakkenrollen, stelen van de straat, klusjes'],kraak:['Inbraak en kraken','#ff7a1a','Inbreken, kluizen en grote kraken'],
+ geweld:['Overvallen','#ff5a5f','Overvallen, afpersen en transporten'],fraude:['Oplichting','#b8a1ff','Fraude, valse spullen en heling'],
+ smokkel:['Smokkel en handel','#5ce1c4','Havens, wapens, wiet en gokken'],invloed:['Witteboord en invloed','#f2c230','Omkopen, witwassen en invloed']};
+const CR_CAT={bedelen:'straat',zakken:'straat',winkeldief:'straat',fiets:'straat',pakket:'straat',flessen:'straat',deurbel:'straat',spuiten:'straat',envelop:'straat',koper:'straat',katalysator:'straat',scooter:'straat',horloge:'straat',
+ autokraak:'kraak',fruitautomaat:'kraak',inbraak:'kraak',pand:'kraak',parkeer:'kraak',ramkraak:'kraak',garagebox:'kraak',apotheek:'kraak',kasteel:'kraak',kunst:'kraak',diamant:'kraak',casino:'kraak',centralebank:'kraak',londen:'kraak',geneve:'kraak',kroon:'kraak',goudreserve:'kraak',
+ winkel:'geweld',snackbar:'geweld',juwelier:'geweld',vrachtwagen:'geweld',transport:'geweld',bank:'geweld',afpersing:'geweld',rivaal:'geweld',goud:'geweld',jet:'geweld',tanker:'geweld',stadion:'geweld',
+ telefoon:'fraude',tickets:'fraude',heling:'fraude',webshop:'fraude',veiling:'fraude',bouwfraude:'fraude',drukkerij:'fraude',datalek:'fraude',cryptobeurs:'fraude',scheepswerf:'fraude',
+ smokkel:'smokkel',container:'smokkel',wapenlading:'smokkel',stroom:'smokkel',gokhal:'smokkel',jacht:'smokkel',rotterdam:'smokkel',satelliet:'smokkel',
+ witwas:'invloed',havenbaas:'invloed',voorkennis:'invloed',aanbesteding:'invloed',matchfix:'invloed',renbaan:'invloed',rechter:'invloed',minister:'invloed',kaaiman:'invloed',kartelvrede:'invloed',olympisch:'invloed',wereldbank:'invloed'};
+// ervaring nodig per level (0 = nieuw, 10 = meester van het vak)
+const CRX_T=[0,5,15,35,70,120,200,320,500,750,1100];
 const TRAIN_MAX=50;
 // Percentages met passende precisie: kleine effecten (+0,4% of +0,08%) worden nooit als +0% getoond.
 // pt = procentpunten (iets dat direct bij een kans opgeteld wordt), anders gewoon procent.

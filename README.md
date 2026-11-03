@@ -703,3 +703,24 @@ erbij, samen 52). Alles op max = **500** (was ±249), zodat je bovenin eerst fli
 blijft 1 per 12 s; rusten in je woning vult nog steeds helemaal. Het energievenster in de statusbalk laat zien waar je max
 vandaan komt (`enParts`). De serverwaarschuwing gaat nu pas af boven 700 energie.
 
+## Rondes vast, ervaring, ontsnappen, vastgoed (november 2026)
+- **Casino: een ronde ligt vast zodra je klikt.** Roulette en Hoogvlieger: de uitslag staat bij het klikken vast en het saldo
+  verbergt de winst tot de uitslag in beeld is; de sessieregel ("Deze sessie") telt de ronde nu ook pas bij de uitslag
+  (`casinoRound(...,later)` zet hem in `S.casPend`, `casSesFlush` verwerkt hem; bij openen worden openstaande rondes verwerkt).
+  Blackjack, Three Card Poker en Hold'em: na het delen is de inzet weg en ligt de hand vast; wie ververst, gaat verder waar hij
+  was (`tbPersist` bij elke `save()`, `tbRestore` bij openen; een hand die halverwege het delen was, wordt afgedeeld).
+- **Menu**: Jij, Leven (verblijf, training, ontspannen), Geld (bank, bezit, casino, witwassen), Straat, Macht, Overig onderaan.
+- **Ervaring per soort misdaad** (`CR_CATS`/`CR_CAT`/`CRX_T` in `data.js`, `crxN`/`crxLv`/`crxBonus` in `state.js`): zes soorten
+  (straatwerk, inbraak en kraken, overvallen, oplichting, smokkel en handel, witteboord en invloed). Elke klus telt mee (gelukt 1,
+  mislukt een half; bestaande spelers krijgen hun vakmanschap als start). Level 0 = −12% kans, elk level +2,4%, level 10 = +12%;
+  het plafond gaat per 2 levels 1% omhoog (tot 99%). Zakkenrollen: beginner 73%, level 5 85%, meester 97%. Zichtbaar als
+  "Ervaring per soort" op Misdaden en in de kansopbouw van elke klus.
+- **Ontsnappen** (`jbParams` in `jailbreak.js`): je rang telt mee. Een rookie zit in een politiecel (bij gewone kans "Te doen"),
+  een peetvader in de zwaarst bewaakte vleugel ("Zwaar", met een lange straf "Bijna onmogelijk").
+- **Zaken kopen**: een zaak waarvan je alle 10 vestigingen hebt, staat niet meer tussen de zaken die te koop zijn.
+- **Vastgoedmarkt** (`woningen.js`, `bezit.js`): elke soort woning heeft een prijsindex die per speldag beweegt (vaste reeks voor
+  iedereen vanaf 1 november 2026; langzame trend omhoog, schommelingen groter bij dure panden, binnen 0,65×–1,15× de trend).
+  Woningen kopen en verkopen gaat tegen de marktprijs; woningen van vóór de markt houden minstens hun oude waarde. In Bezit
+  koop je panden als **belegging** (tot 5 per soort, `S.vg`): ze worden verhuurd (60% van de huurprijs per speldag op je bank,
+  `vgTick`) en je verkoopt ze tegen de marktprijs (−5% makelaar). Op de vastgoedmarkt zie je per pand de prijs, de verandering
+  over 6 en 30 speldagen, een lijntje van de laatste 30 speldagen, de huur en het rendement.

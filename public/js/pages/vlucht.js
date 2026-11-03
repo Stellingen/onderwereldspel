@@ -149,7 +149,7 @@ Object.assign(act,{
  avFly(){if(av.flying||inJail())return;const bet=avBet();if(casCash()<bet){toast(casShort(),'bad');return}
   const P=avPlan(tier()),pay=P.ok?Math.floor(bet*P.m):0;
   // uitkomst staat vast en wordt meteen verrekend
-  S.cash+=pay-bet;window.slotPending=pay;if(pay>bet)S.stats.won+=pay-bet;else S.stats.lost+=bet-pay;casinoRound(bet,pay,'avia');
+  S.cash+=pay-bet;window.slotPending=pay;if(pay>bet)S.stats.won+=pay-bet;else S.stats.lost+=bet-pay;casinoRound(bet,pay,'avia',1);
   av.prevHist=(S.avHist||[]).slice();S.avHist=[{m:P.m,ok:P.ok}].concat(S.avHist||[]).slice(0,14);save();
   const lg=log('Hoogvlieger: '+(P.ok?'geland op '+avX(P.m)+', '+fmt(pay):'niet geland ('+fmt(bet)+' kwijt)'),P.ok?'ok':'bad',60000);
   av.plan=P;av.res=null;av.flying=true;av.cur=1;av.shake=0;av.fx=[];render();SFX.spin();

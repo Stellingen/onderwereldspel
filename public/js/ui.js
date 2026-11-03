@@ -60,7 +60,8 @@ let casinoTab='',rankTab='xp',slotState=['7','7','7'],spinning=false;
 
 // Elke sectie heeft een eigen kleur, zodat je ziet waar je bent
 // 'Jij' (dashboard, ranglijst, profiel) staat apart bovenaan; daaronder de vier spelsecties
-const NAV_GROUPS=[['Jij',['dash','rank','profiel'],'#f2c230','242,194,48'],['Straat',['crimes','werk','hits','cars'],'#ff7a1a','255,122,26'],['Geld',['casino','biz','bank','wit'],'#3fe395','63,227,149'],['Macht',['fam','shop','look'],'#b8a1ff','184,161,255'],['Leven',['verblijf','skills','relax'],'#5ce1c4','92,225,196'],['Overig',['jail','politie'],'#a9dcff','169,220,255']];
+// volgorde in het menu: jij, leven, geld (bank eerst), straat, macht, overig onderaan
+const NAV_GROUPS=[['Jij',['dash','rank','profiel'],'#f2c230','242,194,48'],['Leven',['verblijf','skills','relax'],'#5ce1c4','92,225,196'],['Geld',['bank','biz','casino','wit'],'#3fe395','63,227,149'],['Straat',['crimes','werk','hits','cars'],'#ff7a1a','255,122,26'],['Macht',['fam','shop','look'],'#b8a1ff','184,161,255'],['Overig',['jail','politie'],'#a9dcff','169,220,255']];
 const groupOf=k=>NAV_GROUPS.find(g=>g[1].includes(k))||NAV_GROUPS[0];
 function applySection(){document.body.classList.toggle('wide-page',page==='casino');document.body.classList.toggle('no-rail',page==='dash');const g=groupOf(page),r=document.documentElement.style;r.setProperty('--sec',g[2]);r.setProperty('--sec-rgb',g[3])}
 function crumbHtml(){const g=groupOf(page);return `<div class="crumb"><i></i><span>${g[0]}</span>/ ${PAGES.find(p=>p[0]===page)[1]}</div>`+(typeof feudBar==='function'?feudBar():'')}

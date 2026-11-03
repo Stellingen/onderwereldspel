@@ -5,7 +5,8 @@
 //     een lichtkegel, dan ben je gezien. Haal de deur naar de binnenplaats voor de celtelling (beperkt aantal stappen).
 //  3. De muur: klim met links en rechts om de beurt. Het zoeklicht zwaait over de muur: zit het op jou, dan stilhouden.
 //     Wacht je te lang, dan zakt je grip en glijd je terug.
-// Moeilijkheid (jbParams): uit escChance() (lidmaatschap, familie, outfit 'esc') en de straf die nog over is. Een betere
+// Moeilijkheid (jbParams): uit escChance() (lidmaatschap, familie, outfit 'esc'), de straf die nog over is en je rang
+// (hoe hoger je staat, hoe zwaarder je bewaakt wordt). Een betere
 // kans geeft meer ruimte (bredere groene zone, kortere kegels, meer stappen, trager zoeklicht) in plaats van een gok.
 // jailBreakGame(P) geeft een Promise met true (ontsnapt) of false (gepakt). Tijdens het spel staat S.pendingEsc: wie
 // ververst of het venster sluit, is betrapt (zie escFail).
@@ -15,7 +16,10 @@ const JB_LV=['','Makkelijk','Te doen','Lastig','Zwaar','Bijna onmogelijk'];
 // ch/left optioneel (tests): kans zoals escChance() en resterende straf in seconden
 function jbParams(ch,left){if(ch==null)ch=typeof escChance==='function'?escChance():.35;const ease=Math.max(0,Math.min(1,(ch-.25)/.5));
  if(left==null)left=Math.max(0,((S.jailUntil||0)-now())/1000);const long=Math.max(0,Math.min(1,(left-60)/540));
- const d=Math.max(0,Math.min(1,(1-ease)*.66+long*.34)),lv=Math.min(5,1+Math.floor(d*4.99));
+// rang: een rookie zit in een politiecel met één bewaker, een peetvader in de zwaarst bewaakte vleugel.
+ // Rookie ±0,25 makkelijker dan vroeger, Peetvader ±0,15 zwaarder (zelfde kans en straf).
+ const rk=typeof rankIdx==='function'&&typeof S!=='undefined'&&S?Math.min(1,rankIdx(S.xp||0)/(RANKS.length-1)):.5;
+ const d=Math.max(0,Math.min(1,(1-ease)*.5+long*.2+rk*.4-.1)),lv=Math.min(5,1+Math.floor(d*4.99));
  return {d,lv,label:JB_LV[lv],
   // fase 1: breedte groene zone, slingersnelheid (rondes per seconde), slagen per tralie, lawaai per misser, hoe snel lawaai zakt,
   // om de hoeveel seconden de bewaker langskomt en hoe lang hij blijft
