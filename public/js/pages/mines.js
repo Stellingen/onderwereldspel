@@ -8,7 +8,7 @@ const MN_RTP={base:.955,bomb:.0015,click:.004,max:.992},MN_N=25,MN_MAX=10000;
 const mnRtp=(m,k)=>Math.min(MN_RTP.max,MN_RTP.base+MN_RTP.bomb*m+MN_RTP.click*Math.max(0,k-1));
 const MN_LEVELS=[['Makkelijk',3],['Normaal',5],['Moeilijk',10],['Expert',15],['Extreem',20],['Gekkenhuis',24]];
 const MN_BETS=[10,25,50,100,250,500,1000,2500,5000,10000,25000,50000];
-const mnBets=()=>{const m=typeof casMax==='function'?casMax('snel'):50000,L=MN_BETS.concat([75000,100000]).filter(v=>v<=m);return L.length?L:[MN_BETS[0]]};
+const mnBets=()=>{const m=typeof casMax==='function'?casMax('snel'):50000,L=MN_BETS.concat([75000,100000,150000,200000,250000,500000,750000,1000000]).filter(v=>v<=m);return L.length?L:[MN_BETS[0]]};
 window.mn=window.mn||{bi:3,m:5,fx:null};if(!mn.m)mn.m=5;
 const mnSetM=m=>{if(S.mines&&S.mines.st==='play')return;mn.m=Math.max(1,Math.min(24,m));SFX.chip();render()};
 const mnStepBet=d=>{if(S.mines&&S.mines.st==='play')return;mn.bi=Math.max(0,Math.min(mnBets().length-1,mn.bi+d));SFX.chip();render()};
@@ -43,7 +43,7 @@ function minesView(){const g=S.mines,play=!!(g&&g.st==='play'),m=g?g.m:mn.m,k=g?
    <button class="btn ghost" onclick="act.mnRandom()">Willekeurig vakje</button>`
   :`<div class="label">Inzet</div>
    <div class="kk-bet"><button onclick="mn.bi=Math.max(0,mn.bi-1);SFX.chip();render()" aria-label="Lagere inzet">−</button><b>${fmt(bet)}</b><button onclick="mn.bi=Math.min(mnBets().length-1,mn.bi+1);SFX.chip();render()" aria-label="Hogere inzet">+</button></div>
-   <div class="cf-quick">${mnBets().map((v,i)=>`<button class="${mn.bi===i?'on':''}" onclick="mn.bi=${i};SFX.chip();render()">${v>=1000?v/1000+'K':v}</button>`).join('')}</div>
+   <div class="cf-quick">${mnBets().map((v,i)=>`<button class="${mn.bi===i?'on':''}" onclick="mn.bi=${i};SFX.chip();render()">${v>=1e6?v/1e6+'M':v>=1000?v/1000+'K':v}</button>`).join('')}</div>
    <div class="mn-bh"><span class="label">Moeilijkheid</span><div class="kk-bet mn-bc"><button onclick="mnSetM(mn.m-1)" aria-label="Minder bommen">−</button><b>${mn.m} ${mn.m===1?'bom':'bommen'}</b><button onclick="mnSetM(mn.m+1)" aria-label="Meer bommen">+</button></div></div>
    <div class="mn-lv">${MN_LEVELS.map(([n,b])=>`<button class="${mn.m===b?'on':''}" onclick="mnSetM(${b})"><b>${n}</b><small>${b} bommen · 1e vakje ${mnX(mnMult(b,1))}</small></button>`).join('')}</div>
    <button class="btn gold xl mn-go" onclick="act.mnStart()" ${inJail()||casCash()<bet?'disabled':''}>${casCash()<bet?'Te weinig geld':(g?'Opnieuw':'Start')+' · '+fmt(bet)}</button>`}

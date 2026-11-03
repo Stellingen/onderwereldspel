@@ -10,14 +10,14 @@ const CC=[
  {id:'brons',n:'Brons',col:'#c27a3e',need:{slot:30000,snel:20000,tafel:50000},slot:2500,snel:2500,tafel:5000,side:250,rin:2500,sess:45,cd:12,cb:.25,eye:1.1,lim:60000},
  {id:'zilver',n:'Zilver',col:'#c9cfd8',need:{slot:150000,snel:100000,tafel:250000},slot:10000,snel:10000,tafel:20000,side:1000,rin:10000,sess:60,cd:10,cb:.5,eye:.9,lim:200000},
  {id:'goud',n:'Goud',col:'#e8b923',need:{slot:750000,snel:500000,tafel:1250000},slot:50000,snel:25000,tafel:50000,side:5000,rin:40000,sess:90,cd:8,cb:.75,eye:.7,lim:600000},
- {id:'platina',n:'Platina',col:'#a9dcff',need:{slot:3600000,snel:2400000,tafel:6000000},slot:200000,snel:50000,tafel:100000,side:20000,rin:100000,sess:150,cd:6,cb:1,eye:.5,lim:2000000},
- {id:'zwart',n:'Zwart',col:'#2a2a31',need:{slot:18000000,snel:12000000,tafel:30000000},slot:500000,snel:100000,tafel:150000,side:50000,rin:250000,sess:240,cd:5,cb:1.25,eye:.35,lim:6000000}];
+ {id:'platina',n:'Platina',col:'#a9dcff',need:{slot:3600000,snel:2400000,tafel:6000000},slot:200000,snel:100000,tafel:100000,side:20000,rin:100000,sess:150,cd:6,cb:1,eye:.5,lim:2000000},
+ {id:'zwart',n:'Zwart',col:'#2a2a31',need:{slot:18000000,snel:12000000,tafel:30000000},slot:500000,snel:250000,tafel:150000,side:50000,rin:250000,sess:240,cd:5,cb:1.25,eye:.35,lim:6000000}];
 // lidmaatschap bovenop de kaart: limieten (slots/snel, tafels, side bets, roulette-nummers), speeltijd, pauze
-// Zwart: slots €500k (VIP €750k, HR €1 mln), side bets €50k (VIP €75k, HR €100k). Snel spel, tafels en roulette hebben een
-// plafond voor iedereen (snel €100k, kaartspellen €150k, roulette €250k per nummer): VIP en HR zitten daar eerder aan.
+// Zwart: slots €500k (VIP €750k, HR €1 mln), snel spel €250k (VIP €500k, HR €1 mln), side bets €50k (VIP €75k, HR €100k).
+// Tafels en roulette hebben een plafond voor iedereen (kaartspellen €150k, roulette €250k per nummer): VIP en HR zitten daar eerder aan.
 // High rollers hebben daarnaast de High roller-tafel bij de kaartspellen: tot 3⅓× de gewone tafel, maximaal €500k.
-const CC_T={slot:[1,1.5,2],snel:[1,1.5,2],tafel:[1,1.25,1.5],side:[1,1.5,2],rin:[1,1.33,1.67],sess:[1,1.5,2],cd:[1,.8,.6],lim:[1,1.5,2]};
-const CC_CAP={snel:100000,tafel:150000,rin:250000,rout:500000,hrtafel:500000};
+const CC_T={slot:[1,1.5,2],snel:[1,2,4],tafel:[1,1.25,1.5],side:[1,1.5,2],rin:[1,1.33,1.67],sess:[1,1.5,2],cd:[1,.8,.6],lim:[1,1.5,2]};
+const CC_CAP={snel:1000000,tafel:150000,rin:250000,rout:500000,hrtafel:500000};
 const ccNice=v=>v>=10000?Math.round(v/1000)*1000:v>=1000?Math.round(v/100)*100:Math.round(v/10)*10;
 const CC_CAT={kluis:'slot',vis:'slot',zoet:'slot',draak:'slot',mines:'snel',avia:'snel',coin:'snel',roulette:'tafel',bj:'tafel',tcp:'tafel',th:'tafel'};
 const CC_CATN={slot:'Slots',snel:'Snel spel',tafel:'Tafels'};

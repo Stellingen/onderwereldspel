@@ -15,7 +15,7 @@ const AVC={free:420,a0:12,g:10,vt:4.5,drag:3,v0:32,hit:7,gap:[54,136],lo:6,hi:97
 // stoot omhoog per plusje, duw omlaag bij een bom
 const AV_LIFT={'+1':20,'+2':22,'+5':26,'+10':30},AV_BOMB=45;
 const AV_BETS=[10,25,50,100,250,500,1000,2500,5000,10000,25000,50000];
-const avBets=()=>{const m=typeof casMax==='function'?casMax('snel'):50000,L=AV_BETS.concat([75000,100000]).filter(v=>v<=m);return L.length?L:[AV_BETS[0]]};
+const avBets=()=>{const m=typeof casMax==='function'?casMax('snel'):50000,L=AV_BETS.concat([75000,100000,150000,200000,250000,500000,750000,1000000]).filter(v=>v<=m);return L.length?L:[AV_BETS[0]]};
 window.av=window.av||{bi:3,flying:false,plan:null,t0:0,raf:null,res:null,shake:0};
 const avBet=()=>{const B=avBets();if(av.bi>=B.length)av.bi=B.length-1;return B[av.bi]};
 const avR=()=>crypto.getRandomValues(new Uint32Array(1))[0]/4294967296;
@@ -59,7 +59,7 @@ function aviaView(){const h=(av.flying&&av.prevHist?av.prevHist:S.avHist)||[],be
  <section class="av-panel card">
   <div class="label">Inzet</div>
   <div class="kk-bet"><button onclick="av.bi=Math.max(0,av.bi-1);SFX.chip();render()" ${f?'disabled':''} aria-label="Lagere inzet">−</button><b>${fmt(bet)}</b><button onclick="av.bi=Math.min(avBets().length-1,av.bi+1);SFX.chip();render()" ${f?'disabled':''} aria-label="Hogere inzet">+</button></div>
-  <div class="cf-quick">${avBets().map((v,i)=>`<button class="${av.bi===i?'on':''}" onclick="av.bi=${i};SFX.chip();render()" ${f?'disabled':''}>${v>=1000?v/1000+'K':v}</button>`).join('')}</div>
+  <div class="cf-quick">${avBets().map((v,i)=>`<button class="${av.bi===i?'on':''}" onclick="av.bi=${i};SFX.chip();render()" ${f?'disabled':''}>${v>=1e6?v/1e6+'M':v>=1000?v/1000+'K':v}</button>`).join('')}</div>
   <button class="btn gold xl av-go" onclick="act.avFly()" ${f||inJail()||casCash()<bet?'disabled':''}>${f?'Vliegt…':casCash()<bet?'Te weinig geld':'Opstijgen · '+fmt(bet)}</button>
   ${slotSpdHtml('av-spd')}
   <div class="av-legend">

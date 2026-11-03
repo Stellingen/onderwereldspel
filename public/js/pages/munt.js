@@ -1,7 +1,7 @@
 // Casino: Dubbel of niks — een echte munt die opgegooid wordt. Precies 50% kans (crypto-random), geen huisvoordeel.
 // Win je, dan kies je: je pot pakken of nog een keer gooien voor het dubbele. Maximaal 10 keer achter elkaar.
 // De lopende pot (S.coin) staat in je opslag: verversen of weggaan verandert niets aan de uitkomst.
-const CF_BETS=[10,25,50,100,250,500,1000,2500,5000,10000,25000,50000,75000,100000],CF_MAX=10;
+const CF_BETS=[10,25,50,100,250,500,1000,2500,5000,10000,25000,50000,75000,100000,150000,200000,250000,500000,750000,1000000],CF_MAX=10;
 window.cf=window.cf||{bi:3,side:'kop',flipping:false,rot:0,hist:[],msg:null};
 const cfBets=()=>{const m=typeof casMax==='function'?casMax('snel'):50000,L=CF_BETS.filter(v=>v<=m);return L.length?L:[CF_BETS[0]]};
 const cfBet=()=>{const L=cfBets();if(cf.bi>=L.length)cf.bi=L.length-1;return L[cf.bi]};
@@ -37,7 +37,7 @@ function coinView(){const flip=cf.flipping,sh=flip&&cf.show,c=sh?sh.coin:S.coin,
    <button class="btn cf-cash" onclick="act.cfCash()" ${flip?'disabled':''}>Pak je geld · ${fmt(c.pot)}</button>`
   :`<div class="label">Inzet</div>
    <div class="kk-bet"><button onclick="cf.bi=Math.max(0,cf.bi-1);cf.msg=null;SFX.chip();render()" ${flip?'disabled':''} aria-label="Lagere inzet">−</button><b>${fmt(bet)}</b><button onclick="cf.bi=Math.min(cfBets().length-1,cf.bi+1);cf.msg=null;SFX.chip();render()" ${flip?'disabled':''} aria-label="Hogere inzet">+</button></div>
-   <div class="cf-quick">${cfBets().map((v,i)=>`<button class="${cf.bi===i?'on':''}" onclick="cf.bi=${i};SFX.chip();render()" ${flip?'disabled':''}>${v>=1000?v/1000+'K':v}</button>`).join('')}</div>
+   <div class="cf-quick">${cfBets().map((v,i)=>`<button class="${cf.bi===i?'on':''}" onclick="cf.bi=${i};SFX.chip();render()" ${flip?'disabled':''}>${v>=1e6?v/1e6+'M':v>=1000?v/1000+'K':v}</button>`).join('')}</div>
    <div class="label" style="margin:14px 0 6px">Jouw kant</div>${sideBtns}
    <button class="btn gold xl cf-go" onclick="act.cfFlip()" ${flip||inJail()||casCash()<bet?'disabled':''}>${casCash()<bet?'Te weinig geld':'Gooien · '+fmt(bet)}</button>
    ${ladder}`}

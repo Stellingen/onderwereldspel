@@ -626,7 +626,7 @@ Backup van de stand ervoor: branch `backup/2026-11-01-avond` (terugzetten = die 
 - **Casinokaart** (`pages/caskaart.js`): 6 kaarten (Basis, Brons, Zilver, Goud, Platina, Zwart). Je kaart groeit door in te
   zetten, wit en zwart geld tellen allebei, apart per soort: slots, snel spel (Mines, Hoogvlieger, Dubbel of niks) en tafels.
   Brons vraagt 30k slots + 20k snel spel + 50k tafels (100k samen); elke volgende kaart ×5. De kaart bepaalt: max. inzet per soort
-  (Basis €500 slots / €1.000 tafel, Zwart €100k / €200k), side bets, roulette per nummer (tot €150k; als HR €250k),
+  (Basis €500 slots / €1.000 tafel; snel spel met Zwart €250k, VIP €500k, HR €1 mln), side bets, roulette per nummer (tot €150k; als HR €250k),
   speeltijd en pauze (Basis 30 min speeltijd en 15 min pauze, Zwart 4 uur en 5 min), cashback (Basis geen, Zwart ×1,25; VIP en HR krijgen hun eigen cashback erbovenop; altijd
   onder het huisvoordeel) en hoeveel aandacht zwart geld trekt (`eye`). Verdenking hangt af van het bedrag ten opzichte van de
   limiet van je kaart; gepakt worden kan een waarschuwing, ban of aangifte geven, en kost **40% van je voortgang**. VIP en High
@@ -657,7 +657,7 @@ Backup van de stand ervoor: branch `backup/2026-11-01-avond` (terugzetten = die 
   dan de stad en de bendeoorlog, en onderaan een duidelijk blok om over te stappen (wie laat je toe) of de familie te verlaten,
   met de andere families en een filter. Zonder familie staan de families vóór de stad.
 - **Inzetlimieten per casinokaart** (`CC`, `CC_T`, `CC_CAP` in caskaart.js). Op de Zwarte kaart: slots €500.000 (VIP €750.000,
-  High roller €1 mln); snel spel tot €100.000, kaartspellen tot €150.000 en roulette tot €250.000 per nummer (€500.000 buiten);
+  High roller €1 mln); snel spel tot €250.000 (VIP €500.000, High roller €1 mln), kaartspellen tot €150.000 en roulette tot €250.000 per nummer (€500.000 buiten);
   side bets €50.000 (VIP €75.000, HR €100.000). VIP en HR halen de plafonds op een lagere kaart. **High roller-tafel** bij
   Blackjack, Three Card Poker en Texas Hold'em: alleen voor HR, hoofdinzet tot €500.000 (ook naar kaart). Nieuwe fiches van 25K en 100K.
 - **Bonus loopt altijd uit**: een fout in het geluid (een toon buiten de toonladder bij 5+ winlijnen in Visdief) brak de hele bonus
