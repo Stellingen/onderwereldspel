@@ -38,7 +38,7 @@ const RL_GROUPS=[
  {id:'orph',n:'Weesjes',d:'De 8 getallen die overblijven',bets:[[1],[6,9],[14,17],[17,20],[31,34]]},
  {id:'zero',n:'Nulspel',d:'7 getallen vlak bij de nul',bets:[[0,3],[12,15],[26],[32,35]]}];
 const rlTotal=()=>Object.values(rl.bets).reduce((a,b)=>a+b,0);
-const rlShort=v=>v>=1000?(v/1000).toLocaleString('nl-NL')+'K':v;
+const rlShort=v=>v>=1e6?(Math.round(v/1e4)/100).toLocaleString('nl-NL')+'M':v>=1000?(Math.round(v/10)/100).toLocaleString('nl-NL')+'K':v;
 // Tafelgeometrie: (u,v) in tafel-eenheden (u: 0-12 langs de getallen, v: 0-3 over de rijen) → % in het getallenvak
 const rlVert=()=>window.matchMedia&&matchMedia('(max-width:720px)').matches;
 const rlPos=(u,v,vert)=>vert?[(3-v)/3*100,u/12*100]:[u/12*100,v/3*100];
