@@ -6,8 +6,8 @@
 const JACK_R=GAME_CONST.jackR,JACK_EN=12,JACK_CD=4,JACK_HOT=.85,JACK_STEPS=['Portier open','Bestuurder eruit','Gas erop'];
 // Bij het stoplicht staan duurdere auto's dan op straat (meer lef): JACK_T0 als groentje, JACK_T1 als legende (steelervaring),
 // en de dure klassen (k in CARS) tellen ×1,3 zwaarder dan op straat.
-const JACK_T0={1:.34,2:.33,3:.21,4:.1,5:.02,6:0},JACK_T1={1:.06,2:.14,3:.3,4:.3,5:.16,6:.04},JACK_BOOST=1.3;
-const jackTier=p=>lerpT(JACK_T0,JACK_T1,p==null?carPow():p);
+const JACK_T0={1:.34,2:.33,3:.21,4:.1,5:.02,6:0},JACK_T1={1:.1,2:.16,3:.31,4:.29,5:.12,6:.02},JACK_BOOST=1.2;
+const jackTier=p=>lerpT(JACK_T0,JACK_T1,powK(p==null?carPow():p));
 const JACK_SPOTS=['Stoplicht op de Wibautstraat','Kruispunt bij het Museumplein','Afrit van de A10 bij de RAI','Stoplicht op de Coolsingel','Kruising bij het Malieveld','Rotonde in Amstelveen'];
 let carMode=null;
 const jackCd=()=>JACK_CD*60000*waitK();

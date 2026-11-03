@@ -1,1 +1,75 @@
 /* cars */
+/* Steelervaring (lobby, collectie) */
+.cxp{display:flex;flex-direction:column;gap:10px;margin:16px 0;padding:16px 18px;border-radius:14px;background:linear-gradient(135deg,rgba(127,209,199,.12),transparent 60%),var(--panel);border:1px solid rgba(127,209,199,.35)}
+.cxp.mini{margin:0 0 14px;padding:12px 16px;gap:8px}
+.cxp-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.cxp-h .label{flex-basis:100%;margin:0;color:#7fd1c7}
+.cxp-h b{font-family:var(--f-display);font-weight:900;font-size:30px;line-height:1;text-transform:uppercase;color:#c9f2ec}
+.cxp.mini .cxp-h b{font-size:22px}
+.cxp-h em{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--mute)}
+.cxp-steps{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
+.cxp-steps i{height:8px;border-radius:4px;background:rgba(255,255,255,.08)}
+.cxp-steps i.done{background:#4fae9f}.cxp-steps i.now{background:#7fd1c7;box-shadow:0 0 10px rgba(127,209,199,.6)}
+.cxp-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden}.cxp-bar i{display:block;height:100%;background:linear-gradient(90deg,#4fae9f,#c9f2ec)}
+.cxp-next,.cxp-note{margin:0;font-size:13.5px;color:var(--mute);line-height:1.45}.cxp-next b{color:var(--fg)}.cxp-note{font-size:12.5px}
+.cxp-odds{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.cxp-odds span{display:flex;flex-direction:column;gap:2px;padding:7px 10px;border-radius:8px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-top:2px solid var(--rc,var(--line2));min-width:0}
+.cxp-odds small{font-size:11px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cxp-odds b{font-family:var(--f-mono);font-size:15px}
+.cxp-odds .cxp-tot{border-top-color:#7fd1c7;background:rgba(127,209,199,.08)}
+@container (max-width:640px){.cxp-odds{grid-template-columns:repeat(2,minmax(0,1fr))}.cxp-odds .cxp-tot{grid-column:1/-1}.cxp-h b{font-size:24px}}
+.dex-note{margin:-4px 0 14px}
+.dex-cl{font-style:normal;color:#ffd166}.dex-cl.k2{color:#ff9f6b}
+/* zwaarte t.o.v. je ervaring */
+.sc-nerve.hard{border-left-color:var(--red);background:rgba(255,61,82,.06)}.sc-nerve.easy{border-left-color:var(--green)}
+/* Carjacken: je wapen */
+.jk-wp{display:grid;gap:2px;margin-top:10px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid #ff6b6b}
+.jk-wp b{font-family:var(--f-display);font-size:20px;letter-spacing:.03em;text-transform:uppercase}
+.jk-wp>span:not(.label){font-size:12.5px;color:var(--mute)}
+.jk-wp.none{border-left-color:var(--red);background:rgba(255,61,82,.07)}.jk-wp.none b{color:#ff8f9c}
+.jk-wp .btn{justify-self:start;width:auto;margin-top:6px;text-decoration:none}
+/* Heler: 7 niveaus, inhuren */
+.hl-steps.n7{grid-template-columns:repeat(7,minmax(0,1fr))}
+.hl-how{margin:0;font-size:12.5px;color:var(--mute);line-height:1.45}
+@container (max-width:900px){.hl-steps.n7 i span{display:none}.hl-steps.n7 i{justify-content:center}}
+.hire{display:flex;flex-direction:column;gap:8px;margin:0 0 16px;padding:14px 18px;border-radius:14px;background:var(--panel);border:1px dashed rgba(184,161,255,.45)}
+.hire.lock{opacity:.75}
+.hire-h{display:flex;flex-direction:column;gap:2px}.hire .label{margin:0}
+.hire b{font-family:var(--f-display);font-weight:800;font-size:22px;text-transform:uppercase;line-height:1.05}
+.hire p{margin:0;font-size:13.5px;color:var(--mute);line-height:1.45}.hire p b{font-family:inherit;font-size:inherit;color:var(--fg)}
+.hire-jobs{display:grid;gap:6px}
+.hire-job{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:8px 12px;border-radius:8px;background:rgba(184,161,255,.08);border:1px solid rgba(184,161,255,.3)}
+.hire-job b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hj-who{font-family:var(--f-mono);font-size:11.5px;color:#d6c9ff}
+.hire-job em{font-style:normal;font-size:12px;color:var(--mute);white-space:nowrap}.hire-job em b{font-family:var(--f-mono);font-size:13px;color:#d6c9ff}
+@container (max-width:520px){.hire-job{grid-template-columns:minmax(0,1fr)}.hire-job em{white-space:normal}}
+.ord-btns{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}
+.ord-btns .btn{width:auto}
+.ord-job{font-size:12px;color:#d6c9ff;padding:5px 8px;border-radius:6px;background:rgba(184,161,255,.1);border:1px solid rgba(184,161,255,.3)}.ord-job b{font-family:var(--f-mono)}
+.ord.busy{border-color:rgba(184,161,255,.45)}
+/* Autokerkhof: sloop-ervaring en bon */
+.slx{display:flex;flex-direction:column;gap:10px;margin:0 0 14px;padding:16px 18px;border-radius:14px;background:linear-gradient(135deg,rgba(201,162,39,.14),transparent 60%),var(--panel);border:1px solid rgba(201,162,39,.4)}
+.slx-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.slx-h .label{flex-basis:100%;margin:0;color:#e3c35a}
+.slx-h b{font-family:var(--f-display);font-weight:900;font-size:30px;line-height:1;text-transform:uppercase;color:#f5dd8c}
+.slx-h em{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--mute)}
+.slx-steps{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.slx-steps i{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;font-style:normal;background:rgba(0,0,0,.25);border:1px solid var(--line);min-width:0}
+.slx-steps i b{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-mono);font-size:11px;background:rgba(255,255,255,.08);color:var(--mute)}
+.slx-steps i span{font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slx-steps i.done b{background:#a8861f;color:#fff}.slx-steps i.now{border-color:#c9a227;background:rgba(201,162,39,.12)}.slx-steps i.now b{background:#e3c35a;color:#1c1606}.slx-steps i.now span{color:var(--fg)}
+.slx .hl-bar i{background:linear-gradient(90deg,#a8861f,#f5dd8c)}
+.slx-fx{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.slx-fx span{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,.25);border:1px solid var(--line);min-width:0}
+.slx-fx small{font-size:11px;color:var(--mute)}.slx-fx b{font-family:var(--f-mono);font-size:17px}.slx-fx span:last-child b{color:#f5dd8c}
+@container (max-width:760px){.slx-steps i span{display:none}.slx-steps i{justify-content:center}.slx-h b{font-size:24px}}
+@container (max-width:460px){.slx-fx{grid-template-columns:minmax(0,1fr)}.slx-fx span{flex-direction:row;justify-content:space-between;align-items:baseline}}
+.sl-bon{margin:0 0 14px;padding:14px 16px;border-radius:12px;border:1px solid rgba(63,227,149,.4);background:linear-gradient(135deg,rgba(63,227,149,.08),transparent 70%),var(--panel)}
+.sl-bon-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}.sl-bon-h .label{flex-basis:100%;margin:0;color:var(--green)}
+.sl-bon-h b{font-family:var(--f-display);font-weight:800;font-size:20px;text-transform:uppercase}.sl-bon-h em{font-style:normal;font-size:12px;color:var(--mute)}
+.sl-parts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.sl-parts span{display:flex;flex-direction:column;gap:1px;padding:7px 9px;border-radius:8px;background:rgba(0,0,0,.25);border:1px solid var(--line);min-width:0}
+.sl-parts small{font-size:11px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sl-parts b{font-family:var(--f-mono);font-size:14px}
+.sl-parts i{font-style:normal;font-size:11px;color:var(--mute)}.sl-parts i.bad{color:#ff8f9c}.sl-parts i.ok{color:var(--green)}
+.sl-parts .sl-cost b{color:#ff8f9c}
+.sl-tot{margin-top:10px;font-size:14px;color:var(--mute)}.sl-tot b{font-family:var(--f-mono);font-size:18px;color:var(--green)}
+@container (max-width:640px){.sl-parts{grid-template-columns:repeat(2,minmax(0,1fr))}}

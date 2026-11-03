@@ -382,7 +382,7 @@ const carNerve=()=>{const lv=carPow(),l=cxpLvl(),i=Math.min(4,Math.floor((l-1)/2
  return {lv,i,lvl:l,name:CAR_LV[l-1],time:.78+.22*lv,wit:Math.max(.04,.28-.24*lv)}};
 // hoe ver je boven (+) of onder (−) het aanbevolen level van deze auto zit
 const carRel=m=>cxpLvlF()-CXP_REQ[carTier(m)];
-const relTime=r=>Math.max(.5,Math.min(1.6,1+.1*r));
+const relTime=r=>Math.max(.5,Math.min(1.6,1+(r>0?.15:.1)*r));
 function heistParams(m){const sk=(S.skills&&S.skills.cars)||0,T=HEIST_TIERS[carTier(m)],N=carNerve(),rel=carRel(m);
  return {...T,per:Math.round(T.per*(1+sk*SK.cars.time+gearFx('car'))*N.time*relTime(rel)),rev:Math.max(0,T.rev-(rel>=2?1:0)-(rel>=4?1:0)+(rel<=-3&&T.len>4?1:0)),
   miss:T.miss+(rel>=1?1:0)+(rel>=4?1:0),d:m.d,wit:N.wit,nv:N,rel,req:CXP_REQ[carTier(m)]}}

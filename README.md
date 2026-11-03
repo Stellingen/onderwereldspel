@@ -724,3 +724,38 @@ vandaan komt (`enParts`). De serverwaarschuwing gaat nu pas af boven 700 energie
   koop je panden als **belegging** (tot 5 per soort, `S.vg`): ze worden verhuurd (60% van de huurprijs per speldag op je bank,
   `vgTick`) en je verkoopt ze tegen de marktprijs (−5% makelaar). Op de vastgoedmarkt zie je per pand de prijs, de verandering
   over 6 en 30 speldagen, een lijntje van de laatste 30 speldagen, de huur en het rendement.
+
+- **Autosysteem uitgebreid (november 2026)** (`carheist.js`, `pages/autos.js`, `pages/carjack.js`, `data.js` `CARS`, `css/cars.css`):
+  - **Steelervaring** (`S.carXp`, 10 levels van Groentje tot Legende, `CXP_LV` 0/4/10/20/35/55/85/125/180/250 punten): elke gestolen
+    auto telt, van de straat én bij het stoplicht (gewoon/ongewoon 1, zeldzaam/episch 2, legendarisch 3, mythisch 4 punten). Los van
+    de training Rijvaardigheid (die blijft meer tijd en een betere prijs geven). Bestaande spelers beginnen met de punten van hun al
+    gestolen auto's (`S.carDex`, anders `S.stats.cars`). Kracht als autodief (`carPow`) = 80% ervaring + 20% rang.
+  - **Duurdere vondsten met ervaring**: de kans per zeldzaamheid schuift van `FIND0` (groentje: episch of beter ±5%) naar `FIND1`
+    (legende: ±19%), licht progressief (p^1,3). De lobby toont een blok Steelervaring met de kansen voor jou nu; de collectie toont
+    per model jouw kans en per zeldzaamheid het aanbevolen level.
+  - **90 modellen** (33 nieuw): klasse `k:1` voor Ritselaar t/m Huurmoordenaar (o.a. M5, RS7, GT-R, Corvette Z06, 911 GT3 RS,
+    AMG GT Black Series, Vantage, Maybach S 680, Ghost, Bentayga, DBX707; €22.000 tot €165.000) en `k:2` voor Kapitein t/m
+    Peetvader (296 GTB, Revuelto, 812, Senna, Cullinan Black Badge, G 650 Landaulet en mythisch Nevera, 300 SL, Miura, F40,
+    Daytona SP3, Utopia, Valkyrie, Speedtail, Divo, Mistral; €220.000 tot €4,5 mln.). Je ziet ze vaker naarmate je ervarener bent;
+    onder de rang van de klasse veel minder vaak (×0,25 / ×0,1). Gewone straatauto's zie je als ervaren dief iets minder vaak.
+  - **Moeilijkheid naar ervaring**: elke zeldzaamheid heeft een aanbevolen level (`CXP_REQ` 1/2/4/6/8/9). Eronder heb je tot de
+    helft minder tijd per pijl en meer rode pijlen, erboven meer tijd (tot +60%), minder rode pijlen en een extra fout. Een
+    Bugatti Mistral als groentje: 0,16 s per pijl, 4 rood, geen fout; als legende 0,46 s, 3 rood, 1 fout (plus Rijvaardigheid en
+    gereedschap).
+  - **Carjacken**: duurdere auto's dan op straat (tot legendarisch en mythisch, dure klassen ×1,2). **Zonder wapen** kun je het
+    proberen, maar niemand stapt uit: de bestuurder rijdt weg. **Met wapen** telt de vuurkracht (Vlindermes 1 tot Machinegeweer 12):
+    groter groen stuk, minder kans dat de bestuurder weigert (`jackRefuse`) of terugvecht. Gelukt? Dan belt soms een omstander
+    **112** (6% tot 45%, meer bij dure auto's en hitte, minder met ervaring): je moet ontsnappen in **Plankgas!** (niveau =
+    zeldzaamheid, 2 tot 5). Gewonnen = de auto is van jou; verloren = gepakt (`jailFor`, cel) en de auto is weg. Verversen tijdens
+    de achtervolging telt als gepakt.
+  - **Het Autokerkhof: sloop-ervaring** (`S.sloopN`, Prutser 0, Sleutelaar 5, Monteur 15, Demonteur 35, Vakman 70,
+    Meestersloper 120): onderdelen zijn samen 80% van de waarde; per level minder schade (30% → 6%) en minder kosten (6% → 2%).
+    Netto ±50% als beginner, ±60% als Monteur, ±73% als Meestersloper (was vast 60%; wie het autokerkhof al had begint als
+    Demonteur, ±64%). Elke sloop toont een bon met per onderdeel de schade.
+  - **De heler: band** (`S.heler.b`): 7 niveaus (nieuw: Vertrouweling 120 en Bloedbroeder 200, tot 7 bestellingen, ×2,0 tot ×2,7,
+    50% wit, elke auto ×1,2). De band groeit per levering: +1, episch of beter +2, spoedorder +1 extra. Bestaande spelers: band =
+    aantal leveringen. Dure klassen komen pas op zijn lijst als je die rang hebt.
+  - **Inhuren** (vanaf Gangster, `S.helerJobs`): laat een kennis een bestelde auto stelen en afleveren. Jij krijgt 70% van wat de
+    heler betaalt. Wachttijd 6 min + 4 min per zeldzaamheid (× lidmaatschap), 5% + 2% per zeldzaamheid kans dat het misgaat (−1%
+    per niveau bij de heler, minimaal 3%); mislukt = niks, de bestelling blijft open. Eén tegelijk, vanaf Compagnon twee; niet voor
+    spoedorders. Telt als een halve band.

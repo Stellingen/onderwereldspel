@@ -23,12 +23,14 @@ const carEn=m=>4+m.d*2+(m.leg?4:0);
 // 80% steelervaring, 20% rang): FIND0 als groentje, FIND1 als legende. Binnen een groep telt het gewicht (w) van het model,
 // keer de klasse (carClassW): de dure klassen (k 1 en 2 in CARS) zie je vaker naarmate je ervarener bent; onder hun rang
 // (Ritselaar / Kapitein) minder vaak. Gewone straatauto's zie je als ervaren dief iets minder vaak (je loopt ze voorbij).
-const FIND0={0:.18,1:.47,2:.22,3:.085,4:.032,5:.011,6:.002},FIND1={0:.10,1:.22,2:.25,3:.21,4:.13,5:.07,6:.02};
+const FIND0={0:.18,1:.47,2:.22,3:.085,4:.032,5:.011,6:.002},FIND1={0:.10,1:.24,2:.26,3:.21,4:.12,5:.055,6:.015};
 const lerpT=(A,B,p)=>{const o={};for(const t in A)o[t]=A[t]+((B[t]||0)-A[t])*p;return o};
-const findTier=p=>lerpT(FIND0,FIND1,p==null?carPow():p);
+// de kracht telt licht progressief (p^1,3): de echte sprong naar dure auto's komt pas met veel ervaring
+const powK=p=>Math.pow(Math.max(0,p),1.3);
+const findTier=p=>lerpT(FIND0,FIND1,powK(p==null?carPow():p));
 const CLASS_R={1:RANKS.findIndex(r=>r[0]==='Ritselaar'),2:RANKS.findIndex(r=>r[0]==='Kapitein')};
 const CLASS_N={1:'Ritselaar t/m Huurmoordenaar',2:'Kapitein t/m Peetvader'};
-function carClassW(m,p,ri){const k=m.k||0;if(!k)return 1-.45*p;const gate=ri>=CLASS_R[k]?1:k===1?.35:.25;return (k===1?.12+1.5*p:.03+1.9*p*p)*gate}
+function carClassW(m,p,ri){const k=m.k||0;if(!k)return 1-.45*p;const gate=ri>=CLASS_R[k]?1:k===1?.25:.1;return (k===1?.12+1.5*p:.03+1.9*p*p)*gate}
 const tierName=t=>t===6?CAR_MYTH:CAR_RARITY[t];
 // kans per model voor jou nu (of voor een andere kracht p / rang ri / tabel T); boost = extra gewicht voor de dure klassen (carjacken)
 let _oddsC={};
