@@ -37,6 +37,9 @@ if(S._admin){const A=S._admin;if(A.refill){S.energy=Math.max(S.energy,EN_MAX);S.
 // een bonus die nog liep (verversen of ander apparaat): het geld staat al op je saldo, het spel biedt aan om hem verder af te spelen
 // rondes die al vaststonden maar nog draaiden (roulette, hoogvlieger): nu in je sessie; een gedeelde hand aan tafel gaat verder
 if(typeof casSesFlush==='function')casSesFlush();
+// een slot waar je middenin zat (verversen of weggeklikt): dat telt als betrapt
+if(S.pendingLock){const c=CRIMES.find(x=>x.id===S.pendingLock.id);delete S.pendingLock;if(c&&typeof crimeFail==='function'){S.stats.locks=(S.stats.locks||0)+1;S.stats.lockFail=(S.stats.lockFail||0)+1;setTimeout(()=>crimeFail(c,'Je liet het slot in de steek. '),600)}}
+if(typeof casSesFlush==='function')casSesFlush();
 if(typeof tbRestore==='function')try{tbRestore()}catch(e){console.error(e);delete S.tbRun}
 if(S.slotRun){const n=S.slotRun.g==='vis'?'Visdief':S.slotRun.g==='zoet'?'Suikerbaron':S.slotRun.g==='draak'?'Gouden Draak':'Kluiskraker';setTimeout(()=>toast('Je bonus in '+n+' loopt nog. Het geld staat al op je saldo; open '+n+' om hem verder af te spelen.','lvl'),900)}
 if(S._gearBack){toast('Uitrusting vernieuwd: per soort telt nu je beste item. Je krijgt '+fmt(S._gearBack)+' terug voor overbodige spullen.','lvl');log('Uitrusting: '+fmt(S._gearBack)+' terug voor overbodige spullen','ok');delete S._gearBack}

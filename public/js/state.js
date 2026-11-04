@@ -207,6 +207,19 @@ const mastLoot=id=>1+mastLv(id)*.05;
 // Lagere misdaden dan je rang: +1% extra per rang erboven, de hitte telt minder mee (vakmensen blijven rustig)
 // en het plafond gaat van 95% naar maximaal 98%. Er blijft altijd 2% risico in het vak.
 const crimeUp=c=>Math.max(0,rankIdx(S.xp)-(c.r||0));
+// Kalmte (S.kalm = punten uit ontspannen)
+const kalmN=()=>(S&&+S.kalm)||0;
+const kalmLv=()=>{const n=kalmN();let l=0;KALM_T.forEach((t,i)=>{if(n>=t)l=i});return l};
+const kalmEnK=()=>1+kalmLv()*.06;            // energie uit ontspannen
+const kalmPanic=()=>1-kalmLv()*.055;          // hoe snel paniek oploopt (×)
+function kalmAdd(n){const l0=kalmLv();S.kalm=kalmN()+n;const l1=kalmLv();if(l1>l0)setTimeout(()=>toast('Kalmte level '+l1+' · '+KALM_LV[l1]+': +'+Math.round((kalmEnK()-1)*100)+'% energie uit ontspannen, paniek loopt '+Math.round((1-kalmPanic())*100)+'% langzamer op','lvl'),700)}
+// Een slot op een klus: kans per klus (CR_LOCK) en de moeilijkheid uit je skills, je kalmte en de rang van de klus
+const lockChance=c=>(typeof CR_LOCK!=='undefined'&&CR_LOCK[c.id])||0;
+function lockParams(c,lv){const sl=sk('sloten'),ad=sk('ademhaling'),k=kalmLv(),r=c?(c.r||0):0;const d=lv!=null?(lv-1)/4:Math.min(1,r/16);
+ const pins=lv!=null?2+lv:r<4?3:r<9?4:r<14?5:6;
+ return {d,pins,zone:Math.max(.09,.26-.13*d+SK.sloten.zone*sl),speed:Math.max(.45,(.75+.55*d)*(1-SK.sloten.speed*sl)),
+  panicRate:(.055+.05*d)*kalmPanic(),panicMiss:(14+8*d)*kalmPanic(),breathTol:Math.min(.42,.18+.05*(1-d)+SK.ademhaling.adem*ad+k*.012),breathN:d>.66?4:3,time:28+pins*7,
+  label:['Simpel slot','Degelijk slot','Zwaar slot','Kluisdeur','Bankkluis'][Math.min(4,Math.floor(d*4.99))]}}
 // Ervaring per soort misdaad: als beginner (level 0) −12% kans, elk level +2,4%, als meester (level 10) +12%.
 // Meesters zakken bijna nooit meer door het ijs: het plafond gaat per 2 levels 1% omhoog, tot 99%.
 const crCat=c=>(typeof CR_CAT!=='undefined'&&CR_CAT[c.id])||'straat';

@@ -322,7 +322,7 @@ const TRAIN_MAX=50;
 const pctTxt=(v,sign,pt)=>{if(!v)return '0'+(pt?'%-punt':'%');const a=Math.abs(v),d=a>=10?0:a>=1?1:a>=.1?1:2;
  return sign+a.toLocaleString('nl-NL',{maximumFractionDigits:d,minimumFractionDigits:0})+(pt?'%-punt':'%')};
 // Effect per level (op level 50 haal je het maximum). Eén sessie = één level.
-const SK={conditie:{en:3,zone:.008},duur:{save:.006,regen:.006},ademhaling:{focus:.06,flee:.004},steal:{all:.4,zakken:.8},speed:{cd:.01,mark:.006},cars:{time:.01,price:.008},charisma:{talk:.9,bail:.008},
+const SK={conditie:{en:3,zone:.008},duur:{save:.006,regen:.006},ademhaling:{focus:.06,flee:.004,adem:.012},sloten:{zone:.0045,speed:.009,kans:.3},steal:{all:.4,zakken:.8},speed:{cd:.01,mark:.006},cars:{time:.01,price:.008},charisma:{talk:.9,bail:.008},
  schiet:{heavy:.5},hack:{loot:.5},handel:{inc:.4,fee:1},rechten:{jail:1,bail:.4}};
 const HEAVY_R=RK[5]; // zware klussen: vanaf Gangster
 // Prijs per sessie stijgt steil: level 1 kost een paar tientjes, de laatste levels honderdduizenden euro's.
@@ -361,9 +361,18 @@ const TRAININGS=[
  {id:'duur',place:'Hardloopclub langs de Amstel',n:'Uithouding',col:'#5fe3a6',ic:'run',base:90,cd:15,
   d:'Lange rondjes in een rustig tempo. Je lijf leert zuinig met energie om te gaan: elke klus kost minder en je laadt sneller op.',
   eff:l=>[['Energie per klus',pctTxt(SK.duur.save*100*l,'-')],['Energie laadt sneller op',pctTxt(SK.duur.regen*100*l,'+')]]},
- {id:'ademhaling',place:'Yogaschool in Oost',n:'Ademhaling',col:'#c9a2ff',ic:'spa',base:110,cd:15,r:1,
-  d:'Ademen in vier tellen, vasthouden, uitademen. Je hartslag blijft laag als het spannend wordt.',
-  eff:l=>[['Slaagkans alle klussen',pctTxt(SK.ademhaling.focus*l,'+',1)],['Meer ruimte bij vluchten',pctTxt(SK.ademhaling.flee*100*l,'+')]]}];
+ {id:'ademhaling',place:'Yogaschool in Oost',n:'Ademhaling',col:'#c9a2ff',ic:'spa',base:110,cd:15,r:1,game:'breath',
+  d:'Ademen in vier tellen, vasthouden, uitademen. Je hartslag blijft laag als het spannend wordt. Je traint het zelf: tik op het ritme van de ademhaling.',
+  eff:l=>[['Slaagkans alle klussen',pctTxt(SK.ademhaling.focus*l,'+',1)],['Ruimte bij paniek',pctTxt(SK.ademhaling.adem*100*l,'+')],['Meer ruimte bij vluchten',pctTxt(SK.ademhaling.flee*100*l,'+')]]},
+ {id:'sloten',place:'Werkplaats van een oud-inbreker',n:'Slotenkraken',col:'#ffd166',ic:'key',base:95,cd:15,r:1,game:'lock',
+  d:'Een gepensioneerde inbreker met een muur vol sloten. Je traint het zelf: zet de pinnen op het juiste moment. Hoe hoger je level, hoe groter het groene stuk en hoe rustiger de naald.',
+  eff:l=>[['Groen stuk bij een slot',pctTxt(SK.sloten.zone*100*l,'+')],['Naald trager',pctTxt(SK.sloten.speed*100*l,'−')],['Slaagkans bij een slot',pctTxt(SK.sloten.kans*l,'+',1)]]}];
+// Kalmte: groeit door te ontspannen (punten per ontspanning: kort 1, echt 3, luxe 8). Level 0–10 (KALM_T).
+// Hoe kalmer, hoe meer energie je uit ontspannen haalt, hoe langzamer de paniek oploopt bij een slot en hoe ruimer het ademvenster.
+const KALM_T=[0,4,12,25,45,70,100,140,190,250,320],KALM_PTS=[1,3,8];
+const KALM_LV=['Gespannen','Onrustig','Wat rustiger','Stabiel','Kalm','Heel kalm','Koelbloedig','IJskoud','Onverstoorbaar','Zen','Meester van de rust'];
+// Klussen waar een slot op kan zitten (kans per keer)
+const CR_LOCK={fiets:.35,scooter:.3,autokraak:.4,inbraak:.5,pand:.45,garagebox:.5,apotheek:.45,parkeer:.35,fruitautomaat:.4,ramkraak:.25,kasteel:.45,kunst:.45,diamant:.5,casino:.5,centralebank:.55,londen:.45,geneve:.55,kroon:.5,goudreserve:.55,koper:.25,drukkerij:.3,stroom:.3};
 // Oude saves telden sessies per level (2, 2, 3, 3, ...). Nu telt elke gedane sessie als één level.
 function migrateTrain(d){if(d.trainV===2)return;d.skills=d.skills||{};d.train=d.train||{};
  TRAININGS.forEach(t=>{const L=d.skills[t.id]||0;let n=d.train[t.id]||0;for(let l=0;l<L;l++)n+=2+Math.floor(l/2);d.skills[t.id]=Math.min(TRAIN_MAX,n)});d.train={};d.trainV=2}

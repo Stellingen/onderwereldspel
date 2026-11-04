@@ -9,7 +9,11 @@ const PRACTICE={
  contact:{n:'Contact maken',sub:'Een auto openbreken bij straat afzoeken',how:'Druk de pijlen in de goede volgorde, voordat de tijd op is. Rode pijlen druk je andersom in. Hoe zeldzamer de auto, hoe meer sloten en hoe minder tijd.',
   lv:()=>[1,2,3,4,5].map(t=>[t,(CAR_RARITY[t]||['Niveau '+t])[0]])},
  chase:{n:'Wegrijden',sub:'Vluchten met een gestolen auto',how:'Stuur met ← → (of vegen), rem en gebruik nitro. Ontwijk verkeer, laat je niet klem rijden en neem een zijstraat om ze kwijt te raken.',
-  lv:()=>[1,2,3,4,5].map(l=>[l,FLEE_LEVELS[l].label])}};
+  lv:()=>[1,2,3,4,5].map(l=>[l,FLEE_LEVELS[l].label])},
+ lock:{n:'Slotenkraken',sub:'Een slot op de deur tijdens een klus',how:'Druk (spatie, klik of tik) als de naald in het groene stuk staat: dan zit een pin. Mis je, dan loopt je paniek op. Is die vol, dan moet je eerst rustig ademen: tik als de cirkel het grootst is.',
+  lv:()=>[1,2,3,4,5].map(l=>[l,['Simpel slot','Degelijk slot','Zwaar slot','Kluisdeur','Bankkluis'][l-1]])},
+ breath:{n:'Ademhaling',sub:'Rustig blijven als het spannend wordt',how:'Een cirkel zwelt en krimpt. Tik (of spatie) precies als hij het grootst is. Zes ademhalingen, minstens vijf goed.',
+  lv:()=>[1,2,3,4,5].map(l=>[l,['Ruim venster','Gewoon','Krap','Heel krap','Flinterdun'][l-1]])}};
 const prCan=()=>!inJail()&&!window.__chase&&!S.pendingArrest&&!S.pendingHeist&&!S.pendingJack;
 function prWhy(){return inJail()?'Niet in de cel':window.__chase?'Eerst je achtervolging afmaken':S.pendingArrest?'Eerst je arrestatie afhandelen':''}
 // knoppen die een pagina kan tonen
@@ -39,12 +43,14 @@ function practiceOpen(kind,lv0){const P=PRACTICE[kind];if(!P)return;if(!prCan())
 // alleen de minigame, zonder de actie eromheen
 async function prRun(kind,lv){
  if(kind==='flee')return (await fleeGame(lv))===true;
+ if(kind==='lock')return (await lockGame(lockParams(null,lv),{title:'Oefenen · slot'}))===true;
+ if(kind==='breath')return (await breathGame(lockParams(null,lv),{title:'Oefenen · ademhaling',label:'Oefenen'}))===true;
  const pool=CARS.filter(m=>!m.leg&&carTier(m)===lv),m=pool[Math.floor(Math.random()*pool.length)]||CARS[0];
  if(kind==='contact'){const sp=spawnCar(m,'Oefenplaats');return (await carHeist(sp))===true}
  if(kind==='chase'){const c=(spawnCar(m,'Oefenplaats')||{}).c||'#8a929c';return (await carChaseGame(lv,{b:m.b,c,n:m.n}))===true}
  return false}
 function prResult(kind,lv,ok){const P=PRACTICE[kind],ov=document.createElement('div');ov.className='pr-ov';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-labelledby','prR');
- ov.innerHTML=`<div class="pr-box ${ok?'won':'lost'}"><span class="pr-tag">Oefening · telde niet mee</span><h2 id="prR">${ok?(kind==='contact'?'Gelukt!':'Ontkomen!'):(kind==='contact'?'Mislukt':'Gepakt')}</h2>
+ ov.innerHTML=`<div class="pr-box ${ok?'won':'lost'}"><span class="pr-tag">Oefening · telde niet mee</span><h2 id="prR">${ok?(kind==='contact'||kind==='lock'?'Gelukt!':kind==='breath'?'Rustig!':'Ontkomen!'):(kind==='contact'||kind==='lock'||kind==='breath'?'Mislukt':'Gepakt')}</h2>
   <p class="pr-sub">${P.n} · niveau ${lv}. ${ok?'Zo doe je het in het echt ook.':'Geen zorgen: er is niets veranderd aan je account.'}</p>
   <div class="pr-act"><button class="btn ghost" type="button" data-a="close">Klaar</button><button class="btn" type="button" data-a="again">Nog een keer</button></div></div>`;
  document.body.appendChild(ov);

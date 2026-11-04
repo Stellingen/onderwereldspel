@@ -759,3 +759,24 @@ vandaan komt (`enParts`). De serverwaarschuwing gaat nu pas af boven 700 energie
     heler betaalt. Wachttijd 6 min + 4 min per zeldzaamheid (× lidmaatschap), 5% + 2% per zeldzaamheid kans dat het misgaat (−1%
     per niveau bij de heler, minimaal 3%); mislukt = niks, de bestelling blijft open. Eén tegelijk, vanaf Compagnon twee; niet voor
     spoedorders. Telt als een halve band.
+
+## Slot, paniek, kalmte en speelbare trainingen (november 2026)
+- **Een slot op de klus** (`lockgame.js`, `lockParams`/`lockChance` in `state.js`, `CR_LOCK` in `data.js`): bij 22 inbraak-achtige
+  klussen (fietsendiefstal, autokraak, villa, kantoor, garagebox, kunst, kluizen …) zit er 25–55% van de keren een slot op. Dan
+  kraak je het zelf: een naald zwaait over een balk, druk (spatie, klik of tik) als hij in het groene stuk staat en een pin zit.
+  Mis = paniek erbij; twee missers op rij en een pin springt terug. De paniek loopt ook vanzelf op; is hij vol, dan moet je
+  eerst **rustig ademen**: een cirkel zwelt en krimpt, tik als hij het grootst is, 3 (zware sloten 4) keer goed op rij. Drie
+  keer mis = betrapt. Tijd op = iemand komt eraan. Lukt het slot, dan gaat de klus door met +3% kans (+0,3% per level
+  Slotenkraken) en +8% buit; mislukt het, dan is de klus mislukt (gewone arrestatie). Verversen of weggaan tijdens een slot
+  telt als betrapt (`S.pendingLock`, afgehandeld in `main.js`). Moeilijkheid: rang van de klus (3–6 pinnen, snellere naald,
+  kleiner groen stuk), je levels Slotenkraken en Ademhaling en je kalmte. Op Misdaden staat per klus "Slot: x% kans · soort ·
+  pinnen"; oefenen kan zonder gevolgen (knoppen Slotenkraken en Ademhaling naast Rennen).
+- **Trainingen die je zelf speelt**: nieuwe training **Slotenkraken** (werkplaats van een oud-inbreker, vanaf Straatschoffie;
+  per level groter groen stuk, tragere naald, meer kans bij een slot) en **Ademhaling** (yogaschool; per level ruimer
+  ademvenster, naast de bestaande slaagkans en vluchtruimte). Je speelt de oefening: lukt het, dan betaal je en ga je een
+  level omhoog; lukt het niet, dan betaal je niets en kun je na een derde van de wachttijd opnieuw. Vanaf level 10, 20, 30 en
+  40 wordt de oefening zwaarder. Tegels met een spel hebben het label "Spel".
+- **Kalmte** (`S.kalm`, `KALM_T`/`KALM_LV` in `data.js`, `kalmLv`/`kalmEnK`/`kalmPanic` in `state.js`): elke ontspanning geeft
+  punten (kort 1, echt 3, luxe 8), 11 levels van Gespannen tot Meester van de rust. Per level +6% energie uit ontspannen (tot
+  +60%), paniek loopt 5,5% per level langzamer op (tot 55%) en het ademvenster wordt ruimer. Paneel op Ontspannen met ring,
+  level, voortgang en effecten.

@@ -120,6 +120,7 @@ function klRow(c){const st=klState(c),v=klVals(c);
    ${(()=>{const cp=klChParts(c);return `<div class="kl-k kl-kans" title="${cp.txt}"><span>Kans</span><b class="${klChCls(v.ch)}">${v.ch}%</b>${klSeg(v.ch)}<em class="kl-base">basis ${cp.base}%${v.ch!==cp.base?' · '+(v.ch>cp.base?'+':'−')+Math.abs(v.ch-cp.base)+' bonus':''}</em><span class="sr-only">${cp.txt}</span></div>`})()}
    <div class="kl-k"><span>Opbrengst</span><b class="g">${v.lo} – ${v.hi}</b><em title="${v.crT}">${v.xp}</em></div>
    <div class="kl-k"><span>Mislukt</span><b>${v.jail}</b><em class="lv${c.flee}">${klPips(c.flee)}vluchten ${v.fl}</em></div>
+   ${lockChance(c)?`<div class="kl-k kl-slot" title="Soms zit er een slot op: dan kraak je het zelf (en houd je je ademhaling onder controle). Lukt dat, dan krijg je +${Math.round(sk('sloten')*SK.sloten.kans)+3}% kans en +8% buit."><span>Slot</span><b>${Math.round(lockChance(c)*100)}% kans</b><em>${lockParams(c).label} · ${lockParams(c).pins} pinnen</em></div>`:''}
   </div>
   ${klBtn(c,st)}
   ${st.left?`<div class="kl-cd" style="transform:scaleX(${Math.min(1,st.left/crimeCd(c)).toFixed(3)})"></div>`:''}</article>`}
@@ -173,7 +174,7 @@ V.crimes=()=>{
   <div class="kl-h"><span class="label">Energie</span><b style="color:var(--ice)">${Math.floor(S.energy)}/${EN_MAX}</b><div class="bar"><i style="width:${S.energy/EN_MAX*100}%;background:var(--ice)"></i></div><em>1 punt per ${EN_REGEN_S} s${S.energy<EN_MAX?' · <a href="#ontspannen">bijvullen</a>':''}</em></div>
   <div class="kl-h"><span class="label">Hitte</span><b style="color:${S.heat>60?'var(--red)':S.heat>30?'var(--acc)':'var(--fg)'}">${S.heat}%</b><div class="bar"><i style="width:${S.heat}%;background:${S.heat>60?'var(--red)':'var(--acc)'}"></i></div><em>Elke 4% hitte = −1% kans</em></div>
  </section>
- ${typeof prButtons==='function'?prButtons(['flee']):''}
+ ${typeof prButtons==='function'?prButtons(['flee','lock','breath']):''}
  ${crxPanel()}
  <div class="cr-mast-how"><b>Vakmanschap</b><span>Elke klus die lukt telt mee voor die klus: na 10 keer <em>Brons</em>, 30 <em>Zilver</em>, 75 <em>Goud</em> en 150 <em>Meester</em>. Elk niveau geeft +2% kans en +5% buit op die klus.</span></div>
  ${best.length?`<div class="tierhead kl-besth"><h2>Beste voor jou</h2><span>Meeste buit per energiepunt, met jouw kans</span></div><div class="klb-grid n${best.length}">${best.map(klBest).join('')}</div>`:''}

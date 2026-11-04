@@ -3,7 +3,7 @@
 // (window.trs, zodat de snelkoppelingen #trainen en #ontspannen in main.js het juiste deel kunnen openen)
 window.trs=window.trs||{tab:'train'};
 // klik op een tegel: trainen of ontspannen, en de tegel even laten oplichten als het gelukt is
-trs.go=id=>{const l=S.skills[id]||0;act.trainSession(id);if((S.skills[id]||0)>l){trs.fx=id;render();trs.fx=null}};
+trs.go=id=>{const l=S.skills[id]||0;Promise.resolve(act.trainSession(id)).then(()=>{if((S.skills[id]||0)>l){trs.fx=id;render();trs.fx=null}})};
 trs.rx=id=>{const c=S.cd['rx_'+id]||0;act.relax(id);if((S.cd['rx_'+id]||0)>c){trs.fx='rx_'+id;render();trs.fx=null}};
 // alleen bij de eerste tekening na de klik; het tikken van de klok tekent daarna zonder
 const trFx=id=>trs.fx===id?' fx':'';
@@ -27,7 +27,7 @@ V.skills=(rx)=>{if(!rx)trs.tab='train';
  const trainCard=t=>{const {l,lock,max,cost,left,ready}=st(t),next=TRAIN_MILES.find(m=>m>l),a=t.eff(l),b=t.eff(Math.min(TRAIN_MAX,l+1));
   return `<article class="tr-card ${lock?'lock':''} ${ready?'ready':''}" id="tr-${t.id}" style="--c:${t.col}">
    <header><div class="act-ic">${svg(t.ic)}</div><div class="tr-t"><span class="label">${t.place}</span><h3>${t.n}</h3></div><div class="tr-lv"><b>${l}</b><span>/${TRAIN_MAX}</span></div></header>
-   <p class="tr-d">${t.d}</p>
+   <p class="tr-d">${t.d}</p>${t.game?'<p class="tr-d tr-game"><b>Je speelt het zelf.</b> Lukt het, dan betaal je en ga je een level omhoog; lukt het niet, dan betaal je niets en kun je na een derde van de wachttijd opnieuw. Vanaf level 10, 20, 30 en 40 wordt de oefening zwaarder.</p>':''}
    ${pips(l,t.col)}
    <div class="tr-eff">${a.map((e,i)=>`<div><span>${e[0]}</span><b>${e[1]}</b>${max?'':`<em>→ ${b[i][1]}</em>`}</div>`).join('')}</div>
    <div class="tr-foot"><button class="btn act-btn" onclick="act.trainSession('${t.id}')" ${max||lock||inJail()||left||S.cash<cost?'disabled':''}>${lock?'Vanaf '+RANKS[t.r][0]:max?'Maximaal level':btnLabel(left,cost,'Trainen')}</button>
@@ -50,7 +50,7 @@ V.skills=(rx)=>{if(!rx)trs.tab='train';
   return `<div class="tq ${cls}${trFx(t.id)}" style="--c:${t.col}">
    <button class="tq-go" onclick="trs.go('${t.id}')" ${ready?'':'disabled'} aria-label="${t.n}, level ${l}${ready?': trainen voor '+fmt(cost):': '+s}">
     <span class="tq-r">${trRing(l,t.col)}<b>${l}</b></span><span class="tq-n">${t.n}</span>${h?`<span class="tq-h">${h}</span>`:''}<span class="tq-p" data-fit="9.5">${s}</span></button>
-   <button class="tq-i" onclick="${trGo(t.id)}" aria-label="Uitleg ${t.n}" title="Uitleg">${TQ_I}</button>
+   <button class="tq-i" onclick="${trGo(t.id)}" aria-label="Uitleg ${t.n}" title="Uitleg">${TQ_I}</button>${t.game?'<span class="tq-game" aria-hidden="true">Spel</span>':''}
    ${left?`<i class="tq-cd" style="width:${Math.min(100,left/(t.cd*60000*waitK())*100).toFixed(1)}%"></i>`:''}</div>`}).join('');
  const buffs=[];
  if(buffFocus())buffs.push(`<span style="--c:#ff3d52">Slaagkans +${buffFocus()}% · ${fmtClock(S.buffs.focus.until-now())}</span>`);
@@ -76,7 +76,8 @@ V.skills=(rx)=>{if(!rx)trs.tab='train';
     <div class="rx-now">${now_.map(([l,v,p,c])=>`<div><span>${l}</span><b style="color:${c}">${v}</b><div class="bar"><i style="width:${Math.min(100,p*100)}%;background:${c}"></i></div></div>`).join('')}</div>
     <p>${buffs.length?'Actief:':'Geen tijdelijk voordeel actief.'}${S.wanted?' <b style="color:var(--red)">Je staat op de gezochtlijst.</b>':''}</p>${buffs.length?`<div class="tr-buffs">${buffs.join('')}</div>`:''}
     <p class="tr-tip">Klik op een tegel en je doet het meteen.</p></div>
-   <div class="tr-tiles">${rxTiles}</div></section>`
+   <div class="tr-tiles">${rxTiles}</div></section>
+  ${kalmHtml()}`
   :`<section class="card hud tr-hero">
    <div class="tr-h-l"><span class="label">Jouw skills</span><div class="tr-h-big"><b>${tot}</b><span>/ ${TRAININGS.length*TRAIN_MAX} levels</span></div>
     <div class="bar"><i style="width:${tot/(TRAININGS.length*TRAIN_MAX)*100}%;background:var(--mc)"></i></div>
@@ -91,3 +92,9 @@ V.skills=(rx)=>{if(!rx)trs.tab='train';
  :`<div class="tr-band"><b>Ontspannen</b><span>Tijdelijke voordelen. Hoe beter de ontspanning, hoe duurder en hoe langer je daarna moet wachten. De prijs stijgt met je rang en je level in die rang.</span></div>
   ${RELAX_TIERS.map((n,i)=>`<div class="tierhead"><h2>${n}</h2><span>${['Kort en goedkoop','Sterker, langer wachten','Vanaf een hoge rang · alles tegelijk'][i]}</span></div><div class="tr-grid">${RELAX.filter(r=>r.tier===i).map(relaxCard).join('')}</div>`).join('')}`}</div>`;
 };
+
+// Kalmte: wat ontspannen je blijvend oplevert
+function kalmHtml(){const l=kalmLv(),n=kalmN(),a=KALM_T[l],b=KALM_T[l+1],p=b?(n-a)/(b-a):1;
+ return `<section class="kalm" id="kalm"><div class="kalm-ring" style="--p:${Math.round(p*100)}%"><b>${l}</b></div><div class="kalm-t"><span class="label">Kalmte · level ${l} van 10</span><h3>${KALM_LV[l]}</h3>
+  <p>Elke keer dat je ontspant, word je rustiger: kort +1, echt +3, luxe +8 punt. ${b?`Nog ${b-n} punt${b-n===1?'':'en'} tot level ${l+1}.`:'Rustiger dan dit wordt het niet.'} Hoe kalmer je bent, hoe meer energie je uit ontspannen haalt en hoe beter je presteert onder druk: bij een slot op een klus loopt je paniek langzamer op en is het ademvenster ruimer.</p>
+  <div class="kalm-fx"><span>Energie uit ontspannen +${Math.round((kalmEnK()-1)*100)}%</span><span>Paniek ${Math.round((1-kalmPanic())*100)}% langzamer</span><span>Ademvenster +${Math.round(l*1.2)}%-punt</span></div></div></section>`}
