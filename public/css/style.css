@@ -3511,3 +3511,21 @@ a.dv:hover{box-shadow:inset 0 0 0 1px var(--line2)}
 .rp-max .label{display:block;margin-bottom:5px}
 .rp-max>div{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--dim)}
 .rp-max b{color:var(--ice);font-weight:700}
+/* middelgrote schermen (paneel 700–1100 px breed, bv. een laptop met het menu open): inzet en Draaien naast elkaar,
+   daaronder snelheid en Bonus kopen over de volle breedte, zodat niets buiten het paneel valt */
+@container (min-width:701px) and (max-width:1099px){
+ .kk-ctl,.vd.kk3 .kk-ctl{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)!important;gap:8px}
+ .kk-ctl .kk-betbox,.kk-ctl .kk-go{grid-column:auto!important}
+ .kk-ctl .kk-small,.vd.kk3 .kk-ctl .kk-small{grid-column:1/-1!important;flex-direction:row}
+ .kk-ctl .kk-betv{min-height:48px;line-height:1.1}
+}
+/* profiel: de drie koppelingen (Skills, Uitrusting, Bezit) en de naam passen ook op een smaller paneel */
+.pf-dos{grid-template-columns:repeat(3,minmax(0,1fr))}
+.pf-dos a .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-dos a small{overflow-wrap:anywhere;min-width:0}
+.pf-name{font-size:clamp(32px,3.6vw,64px);overflow-wrap:anywhere}
+/* witwassen: hele grote bedragen krimpen in plaats van buiten het vak te lopen */
+.ww-bal>div{min-width:0}.ww-bal b{display:block;white-space:nowrap;line-height:1.15}
+.pf-dos{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+.pf-dos a{border-left:1px solid var(--line);border-top:1px solid var(--line)}
+.pf-dos a .label{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.2}

@@ -136,8 +136,8 @@ V.wit=()=>{const z=zwart(),w=wit(),W=wwS(),fr=wwFronts(),kl=wwKeesLeft(),kMax=Ma
  const cas=()=>`<div class="ww-kees2"><div class="ww-art" aria-hidden="true">${window.COV?COV.coverSvg('roulette','wwc'):''}</div><div class="ww-do"><div class="ww-do-h"><div><h3>Via het casino</h3><p>Kies in de casinobalk <b>zwart</b> en speel. Wat je wint, is wit. Maar de beveiliging kijkt mee: zwart geld kun je niet verantwoorden, dus daarmee loopt de verdenking op, vooral bij grote inzetten, de slots en als ze naar jouw tafel kijken. Met wit geld loopt er niks op. Op 100% word je verbannen (30 minuten, VIP 20, High roller 10).</p></div></div>${czBar()}<a class="btn xl ghost" href="#casino">Naar het casino</a></div></div>`;
  return `<h1>Witwassen</h1><p class="sub">Geld uit klussen, huurmoorden, auto's en de familie is zwart. Wapens, kleding en training betaal je er gewoon mee, maar de bank, je zaken en een nieuwe woning willen wit geld. Hoe je het witwast, bepaalt hoeveel er overblijft en hoe lang het duurt.</p>
  <section class="card hud ww-hero">
-  <div class="ww-bal zw"><i class="dm-ic">${ICO_CASH}</i><div><span class="label">Zwart geld op zak</span><b>${fmt(z)}</b><em>uit klussen, huurmoorden, auto's en de familie</em></div></div>
-  <div class="ww-bal wt"><i class="dm-ic">${ICO_CASH}</i><div><span class="label">Wit geld op zak</span><b>${fmt(w)}</b><em>mag naar de bank en in je zaken</em></div></div>
+  <div class="ww-bal zw"><i class="dm-ic">${ICO_CASH}</i><div><span class="label">Zwart geld op zak</span><b data-fit="12">${fmt(z)}</b><em>uit klussen, huurmoorden, auto's en de familie</em></div></div>
+  <div class="ww-bal wt"><i class="dm-ic">${ICO_CASH}</i><div><span class="label">Wit geld op zak</span><b data-fit="12">${fmt(w)}</b><em>mag naar de bank en in je zaken</em></div></div>
   <div class="ww-split" aria-hidden="true"><i style="width:${z/tot*100}%"></i></div>
  </section>
  ${Object.keys(wwJobs()).length?`<section class="card ww-jobs"><span class="label">Nu in de boeken</span>${Object.keys(wwJobs()).map(id=>wwJobHtml(id,id==='kees'?KEES_B:BIZ.find(b=>b.id===id)||KEES_B)).join('')}</section>`:''}
