@@ -26,7 +26,7 @@ const HITS=[
  {id:'peetvader',tier:'elite',d:6,r:11,n:'De oude peetvader',t:'Don Aurelio Basile',w:'Kerkplein na de zondagsmis',desc:'De laatste die nog boven jou staat. Lijfwachten, kerkgangers en maar één kans.',pay:[300000,550000],xp:1900,cr:56,en:56,cd:22,m:['geweer','mes','pistool']}];
 rkRemap(HIT_TIERS);rkRemap(HITS); // rangen naar de nieuwe indeling (20 rangen)
 const HIT_COLS=['#5b6b7c','#3f5a46','#6b5a44','#4a4f6b','#6b4a5a','#556070'];
-const hitWeapon=()=>{const g=gearBest('wapen');return g?GEAR.filter(x=>x.cat==='wapen').indexOf(g):-1};
+const hitWeapon=()=>{const g=gearBest('wapen');return g?(g.cls!=null?g.cls:GEAR.filter(x=>x.cat==='wapen').indexOf(g)):-1}; // cls: wapenklasse (data.js)
 // methodes: pay/cr = factor op beloning en cred, want = basiskans om gezocht te worden, feud = factor op de kans op wraak
 const HIT_M={
  mes:{n:'Mes',k:'Van dichtbij',d:'Sluip naar hem toe zonder dat hij je ziet en sla toe op het juiste moment.',pay:.9,cr:1.3,want:.42,feud:1.2,need:()=>hitWeapon()>=0,why:'Eerst een mes of ander wapen'},

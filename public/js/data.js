@@ -268,12 +268,12 @@ const GEAR_CATS=[
  {id:'comm',n:'Communicatie',d:'Je hoort de politie eerder aankomen: minder hitte na elke klus.',ic:'radio',col:'#b8a1ff'},
  {id:'vervoer',n:'Vervoer',d:'Iets om mee weg te komen. Als het misgaat, ben je sneller weg.',ic:'cars',col:'#7fd1c7'}];
 const GEAR=[
- {id:'mes',cat:'wapen',n:'Vlindermes',d:'Klein, snel en makkelijk weg te gooien.',p:800,r:0,kans:3,vk:1,ic:'knife'},
- {id:'pistool',cat:'wapen',n:'Glock 17',d:'Het standaardwerk. Betrouwbaar en niet te zwaar.',p:6000,r:2,kans:6,vk:3,ic:'gun'},
- {id:'uzi',cat:'wapen',n:'Uzi',d:'Compact en veel kogels in weinig tijd.',p:28000,r:4,kans:9,vk:5,ic:'gun'},
- {id:'ak',cat:'wapen',n:'AK-47',d:'Iedereen weet wat het is. Iedereen doet wat je zegt.',p:75000,r:5,kans:12,vk:7,ic:'rifle'},
- {id:'sniper',cat:'wapen',n:'Scherpschuttersgeweer',d:'Voor werk van een afstand.',p:320000,r:7,kans:15,vk:9,ic:'rifle'},
- {id:'mg',cat:'wapen',n:'Machinegeweer',d:'Voor als het echt niet anders kan.',p:1250000,r:9,kans:18,vk:12,ic:'rifle'},
+ {id:'mes',cat:'wapen',skin:true,n:'Vlindermes',d:'Klein, snel en makkelijk weg te gooien.',p:800,r:0,kans:3,vk:1,ic:'knife'},
+ {id:'pistool',cat:'wapen',skin:true,n:'Glock 17',d:'Het standaardwerk. Betrouwbaar en niet te zwaar.',p:6000,r:2,kans:6,vk:3,ic:'gun'},
+ {id:'uzi',cat:'wapen',skin:true,n:'Uzi',d:'Compact en veel kogels in weinig tijd.',p:28000,r:4,kans:9,vk:5,ic:'gun'},
+ {id:'ak',cat:'wapen',skin:true,n:'AK-47',d:'Iedereen weet wat het is. Iedereen doet wat je zegt.',p:75000,r:5,kans:12,vk:7,ic:'rifle'},
+ {id:'sniper',cat:'wapen',skin:true,n:'Scherpschuttersgeweer',d:'Voor werk van een afstand.',p:320000,r:7,kans:15,vk:9,ic:'rifle'},
+ {id:'mg',cat:'wapen',skin:true,n:'Machinegeweer',d:'Voor als het echt niet anders kan.',p:1250000,r:9,kans:18,vk:12,ic:'rifle'},
  {id:'jack',cat:'pantser',n:'Leren jack',d:'Beter dan niks, en het staat goed.',p:1500,r:0,kans:1,jail:3,ic:'vest'},
  {id:'vest',cat:'pantser',n:'Kogelvrij vest',d:'Onder je jas zie je het niet.',p:20000,r:3,kans:5,jail:8,ic:'vest'},
  {id:'helm',cat:'pantser',n:'Zwaar vest met helm',d:'Je loopt er niet mee over straat, maar bij een overval wel.',p:140000,r:6,kans:7,jail:12,ic:'helmet'},
@@ -555,3 +555,27 @@ BIZ_PLACES.push('Amstelveen','Haarlem','Almere','Hoofddorp','Purmerend');
  {id:'gcasino',cat:'horeca',n:'Grand Casino',d:'Roulette, blackjack en kroonluchters. Het huis wint altijd, en het huis ben jij.',p:9000000,r:19,col:'#d4af37',kind:'tower',up:['Pokerzaal','High-roller-salon','Hotel erbij','Privéjet voor gasten']}
 ].forEach(b=>{if(BIZ.some(x=>x.id===b.id))return;b.inc=Math.round(b.p*BIZ_DAY_RATE(b.p)*(b.cat==='vastgoed'?1.2:1)/10)*10;BIZ.push(b)});
 BIZ.sort((a,b)=>a.p-b.p);
+
+// ---------- Meer wapens (november 2026) ----------
+// Na de rangomzetting (r = nieuwe rang 0-19). Ze schuiven tussen de bestaande wapens in: per soort telt je beste item en de volgorde
+// in GEAR is de ladder, dus kans en vuurkracht lopen op en blijven binnen het oude plafond (Machinegeweer: +18% kans, vuurkracht 12).
+// skin:true = kan een wapenskin dragen (silhouet: gunSvg in gunart.js). cls = wapenklasse op de oude schaal (0 mes … 5 machinegeweer):
+// huurmoorden en straatcredit rekenen daarmee, zodat extra wapens niets aan de oude drempels veranderen.
+(function(){const W=(id,n,d,p,r,kans,vk,ic)=>({id,cat:'wapen',skin:true,n,d,p,r,kans,vk,ic});
+ const add=(after,list)=>{const i=GEAR.findIndex(g=>g.id===after);GEAR.splice(i+1,0,...list)};
+ const before=(id,list)=>{const i=GEAR.findIndex(g=>g.id===id);GEAR.splice(i,0,...list)};
+ before('mes',[W('knuppel','Honkbalknuppel','Niemand in Amsterdam speelt honkbal. Toch verkopen ze er genoeg.',250,0,2,1,'knife')]);
+ add('mes',[W('taser','Stroomstootwapen','Uit een webshop in Duitsland. Zeven seconden rust.',2200,1,4,1,'gun'),
+  W('revolver','Oude revolver','Zes kogels, geen hulsen op de grond. Ouderwets, maar netjes.',3800,1,5,2,'gun')]);
+ add('pistool',[W('gedempt','Glock met demper','Hetzelfde werk, maar de buren slapen door.',10000,3,7,3,'gun'),
+  W('deagle','Desert Eagle','Te zwaar, te luid en precies daarom gekocht.',16000,4,7,4,'gun'),
+  W('afgezaagd','Afgezaagd jachtgeweer','Van een boer uit de Achterhoek. Korter is enger.',21000,4,8,4,'rifle')]);
+ add('uzi',[W('mp5','MP5','Wat het arrestatieteam draagt. Nu ook aan jouw kant.',46000,6,10,6,'rifle')]);
+ add('ak',[W('pomp','Pompgeweer','Eén klik en de hele zaak luistert.',110000,8,12,8,'rifle'),
+  W('m4','M4-karabijn','Strak, licht en met een rail voor alles.',160000,9,13,8,'rifle'),
+  W('scar','SCAR-aanvalsgeweer','Belgisch vakwerk. Rechtstreeks uit een zoekgeraakte zending.',230000,10,14,8,'rifle')]);
+ add('sniper',[W('barrett','Barrett .50','Door een motorblok heen, van een kilometer afstand.',560000,13,16,10,'rifle'),
+  W('granaat','Granaatwerper','Zes schoten en daarna is er geen deur meer.',880000,14,17,11,'rifle')]);
+ const L=['mes','pistool','uzi','ak','sniper','mg'];let c=-1;
+ GEAR.filter(g=>g.cat==='wapen').forEach(g=>{const i=L.indexOf(g.id);c=i>=0?i:Math.max(0,Math.floor(c)+.5);g.cls=c})})();
+

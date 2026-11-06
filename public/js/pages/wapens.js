@@ -8,6 +8,11 @@ const GR_SHOPS=[
  {id:'elek',n:'Belwinkel De Lijn',sub:'Communicatie',d:'Prepaid, scanners en telefoons die niemand kan lezen. Contant, graag.',cats:['comm'],col:'#b8a1ff',ic:'radio',kind:'shop'},
  {id:'motor',n:'Motorhuis Snel',sub:'Vervoer om te vluchten',d:'Van een opgevoerde scooter tot een piloot die geen vragen stelt.',cats:['vervoer'],col:'#7fd1c7',ic:'moto',kind:'jet'}];
 window.gsel=window.gsel||{shop:null};
+// Lange ladders (wapens): toon je huidige item, één ervoor en de eerstvolgende; de rest achter een knop.
+function grRange(cat,items,bi,ri){const all=items.map((_,i)=>i);if(items.length<=8||(gsel.all&&gsel.all[cat]))return all;
+ const fl=items.findIndex(g=>ri<g.r),lo=Math.max(0,bi-1);let hi=fl<0?items.length:Math.min(items.length,fl+2);hi=Math.max(hi,Math.min(items.length,lo+4));return all.slice(lo,hi)}
+function grMore(cat,items,bi,ri){if(items.length<=8)return '';const open=gsel.all&&gsel.all[cat],n=items.length-grRange(cat,items,bi,ri).length;if(!open&&!n)return '';
+ return `<button class="gr-more" onclick="gsel.all=gsel.all||{};gsel.all['${cat}']=${open?0:1};render()">${open?'Minder tonen':`Alle ${items.length} tonen · nog ${n}`}</button>`}
 const grShopArt=(sh,u)=>typeof bzArt==='function'?bzArt({id:'gs_'+sh.id,col:sh.col,icp:ICONS[sh.ic],kind:sh.kind},u):'';
 function grShopBanner(sh){const items=GEAR.filter(g=>sh.cats.includes(g.cat)),ri=rankIdx(S.xp),best=sh.cats.map(c=>gearBest(c)).filter(Boolean);
  const can=items.filter(g=>{const b=gearBest(g.cat);return !S.gear[g.id]&&ri>=g.r&&(!b||items.indexOf(g)>items.indexOf(b)&&g.cat===b.cat||!b)&&S.cash>=g.p}).length;
@@ -27,13 +32,13 @@ V.shop=()=>{const ri=rankIdx(S.xp);const SH=GR_SHOPS.find(x=>x.id===gsel.shop);
     :`<button class="btn ${poor?'ghost':'act-btn'}" onclick="act.buyGear('${g.id}')" ${poor?'disabled':''}>${poor?'Te duur · ':'Koop · '}${fmt(g.p)}</button>`;
    const up=!isBest&&!lower&&!lock&&best?['kans','buit','car','heat','jail','vk','flee'].filter(k=>g[k]).map(k=>{const d=(g[k]||0)-(cur[k]||0);return d>0?(k==='vk'?'+'+d+' vuurkracht':(['heat','jail'].includes(k)?'−':'+')+d+'% '+({kans:'kans',buit:'buit',car:'auto',heat:'hitte',jail:'cel',flee:'vluchten'})[k]):null}).filter(Boolean).join(' · '):'';
    return `<article class="gr-item ${st}"><div class="gr-tier">T${i+1}</div>
-    <div class="gr-ic">${svg(g.ic)}</div><h4>${g.n}</h4><p>${g.d}</p>
+    ${g.cat==='wapen'&&typeof gunSvg==='function'?`<div class="gr-ic gun">${gunSvg(g.id,'currentColor')}</div>`:`<div class="gr-ic">${svg(g.ic)}</div>`}<h4>${g.n}</h4><p>${g.d}</p>
     <div class="gr-st">${grStats(g).map(([k,t])=>`<span class="${k}">${t}</span>`).join('')}</div>
     ${up?`<div class="gr-up">Ten opzichte van nu: ${up}</div>`:''}
     <div class="gr-btn">${btn}</div></article>`};
   return `<section class="gr-cat" style="--c:${c.col}"><header><div class="act-ic">${svg(c.ic)}</div><div><h2>${c.n}</h2><p>${c.d}</p></div>
    <div class="gr-cur"><span class="label">Uitgerust</span><b>${best?best.n:'Niets'}</b></div></header>
-   <div class="gr-ladder">${items.map(card).join('')}</div></section>`};
+   <div class="gr-ladder">${grRange(c.id,items,bi,ri).map(i=>card(items[i],i)).join('')}</div>${grMore(c.id,items,bi,ri)}</section>`};
  if(SH)return `<div class="vb-bar"><button class="vb-back" onclick="gsel.shop=null;render()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Winkelstraat</span></button><h2>${SH.n}</h2></div>
   <section class="gs-head" style="--c:${SH.col}"><div class="gs-art" aria-hidden="true">${grShopArt(SH,'gh'+SH.id)}</div><div class="gs-ht"><span class="label">${SH.sub}</span><p>${SH.d}</p>
    <div class="gr-tot">${tot.filter(([l,v,k])=>({wapen:['k','v'],pantser:['k','j'],tools:['b','c'],comm:['h'],vervoer:['f']})[SH.cats[0]].concat(SH.cats[1]?({pantser:['j']})[SH.cats[1]]||[]:[]).includes(k)).map(([l,v,k])=>`<div class="${k}"><span class="label">${l}</span><b>${v}</b></div>`).join('')}</div></div></section>

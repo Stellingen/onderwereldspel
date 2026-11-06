@@ -318,7 +318,7 @@ const TIER_LOOT=[0,.10,.25];const tierLoot=()=>TIER_LOOT[tier()]||0;
 const TIER_CB=[0,1,1.5];
 // Straatcredit: je krijgt het voor goed uitgevoerde klussen. Betere uitrusting = meer respect op straat.
 // Per soort telt je beste item: tier × 4% (alles op het hoogste = +76%). Perfect uitgevoerd ×1,5, netjes ×1,2.
-const gearCredK=()=>GEAR_CATS.reduce((a,c)=>{const g=gearBest(c.id);return a+(g?GEAR.filter(x=>x.cat===c.id).indexOf(g)+1:0)},0)*.04;
+const gearCredK=()=>GEAR_CATS.reduce((a,c)=>{const g=gearBest(c.id);return a+(g?(g.cls!=null?g.cls:GEAR.filter(x=>x.cat===c.id).indexOf(g))+1:0)},0)*.04; // wapens: klasse (cls), zodat extra wapens de credit niet opblazen
 const credMult=q=>(1+gearCredK())*(1+tierK())*(q==='perfect'?1.5:q==='netjes'?1.2:1);
 const credGain=(base,q)=>{const v=base*credMult(q);return Math.floor(v)+(Math.random()<v%1?1:0)};
 // ontsnappen uit de bajes: 35% basis × lidmaatschap, plus het familievoordeel
