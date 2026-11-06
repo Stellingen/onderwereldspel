@@ -27,7 +27,7 @@ V.shop=()=>{const ri=rankIdx(S.xp);const SH=GR_SHOPS.find(x=>x.id===gsel.shop);
     :`<button class="btn ${poor?'ghost':'act-btn'}" onclick="act.buyGear('${g.id}')" ${poor?'disabled':''}>${poor?'Te duur · ':'Koop · '}${fmt(g.p)}</button>`;
    const up=!isBest&&!lower&&!lock&&best?['kans','buit','car','heat','jail','vk','flee'].filter(k=>g[k]).map(k=>{const d=(g[k]||0)-(cur[k]||0);return d>0?(k==='vk'?'+'+d+' vuurkracht':(['heat','jail'].includes(k)?'−':'+')+d+'% '+({kans:'kans',buit:'buit',car:'auto',heat:'hitte',jail:'cel',flee:'vluchten'})[k]):null}).filter(Boolean).join(' · '):'';
    return `<article class="gr-item ${st}"><div class="gr-tier">T${i+1}</div>
-    <div class="gr-ic">${svg(g.ic)}</div><h4>${g.n}</h4><p>${g.d}</p>
+    ${typeof skGearIc==='function'&&skGearIc(g)||`<div class="gr-ic">${svg(g.ic)}</div>`}<h4>${g.n}</h4><p>${g.d}</p>
     <div class="gr-st">${grStats(g).map(([k,t])=>`<span class="${k}">${t}</span>`).join('')}</div>
     ${up?`<div class="gr-up">Ten opzichte van nu: ${up}</div>`:''}
     <div class="gr-btn">${btn}</div></article>`};

@@ -42,6 +42,7 @@ V.profiel=()=>{
    <div class="pf-used">${used.length?used.map(c=>`<span class="chipline" style="--c:var(--green)">${esc(codeShow(c))} ✓</span>`).join(''):'<span style="color:var(--faint);font-size:13px">Nog geen codes gebruikt.</span>'}</div>
   </section>
   ${typeof V.lid==='function'?`<section class="card pf-lid"><h3 style="margin:0">Lidmaatschap</h3>${vipTag()||'<i class="ld-free">GRATIS</i>'}<p>${isVip()?'Al je voordelen op een rij, en wat High roller nog meer geeft.':'Je speelt gratis. Bekijk wat VIP en High roller extra geven.'}</p><a class="btn ghost sm" href="#lid">${isHR()?'Mijn voordelen':'VIP en High roller'}</a></section>`:''}
+  ${typeof skProfHtml==='function'?skProfHtml():''}
   <section class="card pf-stats"><h3>Carrière</h3>
    <div class="pf-tiles">
     ${tile('Vermogen',fmt(S.cash+bankNet()+S.cars.reduce((a,c)=>a+c.v,0)),'var(--acc)')}
