@@ -34,24 +34,24 @@ function rkRemap(arr,split,key){if(!arr||arr._rk)return arr;arr._rk=1;const k=ke
  return arr}
 const CRIMES=[
  // r = minimale rang, en = energie, cd = wachttijd (s), jail = straf (s), cr = straatcredit
- {id:'bedelen',n:'Bedelen bij Centraal',d:'Een zielig verhaal en een bekertje. Weinig geld, weinig risico.',min:5,max:25,xp:3,base:95,cd:4,jail:30,r:0,cr:0,en:3,flee:1},
+ {id:'bedelen',n:'Bedelen bij Centraal',d:'Een zielig verhaal en een bekertje. Weinig geld, weinig risico.',min:5,max:25,xp:3,base:95,cd:4,jail:30,r:0,cr:0,en:3,flee:1,sev:'A'},
  {id:'zakken',n:'Zakkenrollen op de Dam',d:'Een toerist met een open rugzak is een cadeautje.',min:20,max:80,xp:8,base:85,cd:8,jail:30,r:0,cr:1,en:5,flee:1},
  {id:'winkeldief',n:'Winkeldiefstal bij de drogist',d:'Parfum en scheermesjes. Verkoopt altijd.',min:30,max:110,xp:10,base:80,cd:10,jail:40,r:0,cr:1,en:6,flee:2},
  {id:'fiets',n:'Fietsendiefstal bij het station',d:'Kniptang, één minuut, weg ben je.',min:40,max:140,xp:11,base:78,cd:12,jail:45,r:0,cr:1,en:6,flee:1},
  {id:'pakket',n:'Pakketjes van de stoep',d:'Volg de bezorgbus en wees sneller dan de bewoner.',min:50,max:180,xp:13,base:75,cd:14,jail:50,r:0,cr:1,en:7,flee:1},
- {id:'telefoon',n:'Telefoonfraude',d:'"Goedemiddag, u spreekt met de afdeling fraude van uw bank."',min:90,max:300,xp:18,base:72,cd:18,jail:60,r:1,cr:2,en:8,flee:1},
+ {id:'telefoon',n:'Beller voor een fraudebende',d:'Een script, een headset en een nummer dat op de bank lijkt. Jij belt, zij cashen.',min:110,max:360,xp:18,base:72,cd:18,jail:60,r:1,cr:2,en:8,flee:1},
  {id:'autokraak',n:'Autokraak in de parkeergarage',d:'Laptops op de achterbank. Mensen leren het nooit.',min:120,max:380,xp:20,base:70,cd:20,jail:70,r:1,cr:2,en:9,flee:2},
- {id:'winkel',n:'Avondwinkel overvallen',d:'Snel de kassa leeghalen voordat de eigenaar de knop vindt.',min:150,max:450,xp:22,base:68,cd:22,jail:80,r:1,cr:2,en:10,flee:3},
- {id:'fruitautomaat',n:'Fruitautomaat kraken',d:'Het café is leeg, de kast staat vol muntgeld.',min:250,max:700,xp:30,base:66,cd:28,jail:100,r:2,cr:2,en:11,flee:3},
+ {id:'winkel',n:'Avondwinkel overvallen',d:'Snel de kassa leeghalen voordat de eigenaar de knop vindt.',min:650,max:1750,xp:52,base:58,cd:52,jail:190,r:3,cr:3,en:15,flee:3},
+ {id:'fruitautomaat',n:'"Hoi mam, nieuw nummer"',d:'Een berichtje van "je zoon" met een rekening die vandaag nog betaald moet.',min:300,max:950,xp:32,base:65,cd:30,jail:105,r:2,cr:2,en:11,flee:1},
  {id:'tickets',n:'Valse festivaltickets',d:'Uitverkocht festival, wanhopige fans, mooie QR-codes.',min:300,max:900,xp:34,base:65,cd:32,jail:110,r:2,cr:3,en:12,flee:1},
- {id:'scooter',n:'Scooters voor de export',d:'Een vrachtwagen vol, morgen staan ze in Marokko.',min:400,max:1100,xp:38,base:63,cd:36,jail:120,r:2,cr:3,en:13,flee:2},
+ {id:'scooter',n:'E-bikes en fatbikes',d:'Een accuslot is ook maar een slot. De bestelbus staat om de hoek; morgen staan ze online.',min:400,max:1100,xp:38,base:63,cd:36,jail:120,r:2,cr:3,en:13,flee:2},
  {id:'inbraak',n:'Villa inbreken in Wassenaar',d:'De eigenaren zitten in Saint-Tropez. Hun kluis niet.',min:500,max:1500,xp:45,base:60,cd:45,jail:140,r:3,cr:3,en:14,flee:4},
- {id:'snackbar',n:'Beschermingsgeld bij snackbars',d:'Het zou zonde zijn als er iets met die frituur gebeurt.',min:700,max:1800,xp:50,base:60,cd:50,jail:150,r:3,cr:3,en:15,flee:2},
+ {id:'snackbar',n:'Beschermingsgeld bij snackbars',d:'Het zou zonde zijn als er iets met die frituur gebeurt.',min:700,max:1800,xp:50,base:60,cd:50,jail:210,r:3,cr:3,en:15,flee:2},
  {id:'pand',n:'Kantoor leeghalen op de Zuidas',d:'Servers, laptops en een kluis vol bedrijfsgeheimen.',min:1200,max:3200,xp:70,base:56,cd:70,jail:180,r:4,cr:4,en:17,flee:4},
- {id:'witwas',n:'Witwassen via een nagelstudio',d:'Tweehonderd klanten per dag, op papier.',min:1500,max:3800,xp:75,base:58,cd:80,jail:190,r:4,cr:4,en:18,flee:2},
+ {id:'witwas',n:'Valse facturen schrijven',d:'Facturen voor werk dat nooit gedaan is. De aannemer betaalt contant terug.',min:1500,max:3800,xp:75,base:58,cd:80,jail:180,r:4,cr:4,en:18,flee:2},
  {id:'smokkel',n:'Smokkelroute via de haven',d:'Een container die nooit gescand wordt.',min:2000,max:5000,xp:90,base:50,cd:90,jail:220,r:5,cr:5,en:20,flee:3},
  {id:'juwelier',n:'Juwelier in de P.C. Hooft',d:'Dertig seconden. Meer tijd krijg je niet.',min:3000,max:7000,xp:110,base:48,cd:110,jail:240,r:5,cr:6,en:22,flee:4},
- {id:'vrachtwagen',n:'Vrachtwagen kapen op de A15',d:'Vol met telefoons, op weg naar een distributiecentrum.',min:5000,max:11000,xp:150,base:45,cd:140,jail:280,r:6,cr:6,en:24,flee:3},
+ {id:'vrachtwagen',n:'Ladingdiefstal op een truckparking',d:'Een oplegger vol telefoons, een chauffeur die ligt te slapen en een mes door het zeil.',min:5000,max:11000,xp:150,base:45,cd:140,jail:280,r:6,cr:6,en:24,flee:3},
  {id:'transport',n:'Geldtransport onderscheppen',d:'Een gepantserde bus, een vaste route, een binnenman.',min:6500,max:14000,xp:170,base:43,cd:160,jail:300,r:6,cr:7,en:26,flee:3},
  {id:'bank',n:'Bankoverval',d:'Met je crew de kluis van een bank kraken.',min:8000,max:20000,xp:200,base:40,cd:180,jail:360,r:7,cr:8,en:28,flee:5},
  {id:'kunst',n:'Kunstroof uit het museum',d:'Een meesterwerk dat nooit meer aan de muur hangt.',min:12000,max:28000,xp:260,base:38,cd:220,jail:420,r:7,cr:9,en:30,flee:5},
@@ -63,11 +63,11 @@ const CRIMES=[
  {id:'envelop',n:'Envelop afleveren in Noord',d:'Niet openmaken, niet vragen. Gewoon brengen.',min:100,max:320,xp:17,base:74,cd:17,jail:55,r:1,cr:2,en:8,flee:1},
  {id:'heling',n:'Heling op Marktplaats',d:'"Nieuw in doos, cadeau gekregen." Iedereen gelooft het.',min:280,max:800,xp:32,base:66,cd:30,jail:100,r:2,cr:2,en:11,flee:1},
  {id:'koper',n:'Koperkabel van een bouwplaats',d:'De sloper is met vakantie. Het koper niet.',min:350,max:1000,xp:36,base:64,cd:34,jail:115,r:2,cr:3,en:12,flee:2},
- {id:'parkeer',n:'Parkeerautomaten legen',d:'Een hele straat vol muntgeld, en niemand die kijkt.',min:600,max:1600,xp:48,base:60,cd:48,jail:145,r:3,cr:3,en:14,flee:2},
+ {id:'parkeer',n:'Koplampen en airbags',d:'Een straat vol leaseauto\'s, en de onderdelen zijn meer waard dan de auto.',min:600,max:1700,xp:48,base:59,cd:48,jail:140,r:3,cr:3,en:14,flee:3},
  {id:'ramkraak',n:'Ramkraak bij een elektronicazaak',d:'Een gestolen bestelbus, een etalage en negentig seconden.',min:800,max:2100,xp:55,base:58,cd:55,jail:160,r:3,cr:4,en:15,flee:3},
  {id:'gokhal',n:'Illegale pokerkelder runnen',d:'Drie tafels, een portier en de pot gaat altijd naar het huis.',min:1400,max:3600,xp:72,base:57,cd:75,jail:185,r:4,cr:4,en:17,flee:2},
- {id:'horloge',n:'Horlogeroof op een terras',d:'Een Patek aan een pols in de zon. Even groeten en weg.',min:1800,max:4200,xp:80,base:54,cd:85,jail:200,r:4,cr:5,en:18,flee:3},
- {id:'afpersing',n:'Vastgoedbaron afpersen',d:'Hij heeft foto\'s die niemand mag zien. Jij nu ook.',min:2500,max:6000,xp:95,base:50,cd:95,jail:225,r:5,cr:5,en:20,flee:2},
+ {id:'horloge',n:'Horlogeroof op een terras',d:'Een Patek aan een pols in de zon. Even groeten en weg.',min:1800,max:4200,xp:80,base:54,cd:85,jail:270,r:4,cr:5,en:18,flee:3},
+ {id:'afpersing',n:'Een vastgoedbaron chanteren',d:'Hij heeft foto\'s die niemand mag zien. Jij nu ook.',min:2500,max:6000,xp:95,base:50,cd:95,jail:170,r:5,cr:5,en:20,flee:2},
  {id:'container',n:'Zeecontainer omleiden',d:'Een ander nummer in het systeem en de vracht staat in jouw loods.',min:2800,max:6500,xp:100,base:49,cd:100,jail:230,r:5,cr:6,en:21,flee:3},
  {id:'veiling',n:'Vervalste kunst veilen',d:'Een "vergeten" Karel Appel. De koper is dolblij.',min:5500,max:12000,xp:155,base:46,cd:145,jail:285,r:6,cr:6,en:24,flee:2},
  {id:'rivaal',n:'Opslag van een rivaal leeghalen',d:'Zij hebben het al gestolen. Jij steelt het nog een keer.',min:6000,max:13000,xp:165,base:44,cd:155,jail:295,r:6,cr:7,en:25,flee:4},
@@ -79,7 +79,7 @@ const CRIMES=[
  {id:'jet',n:'Privéjet vol cash onderscheppen',d:'De piloot werkt voor jou. De passagiers weten van niks.',min:35000,max:85000,xp:520,base:31,cd:370,jail:600,r:9,cr:12,en:36,flee:4},
  {id:'aanbesteding',n:'Een gemeentelijke aanbesteding',d:'Een nieuwe brug, drie wethouders en een factuur die nooit klopt.',min:40000,max:90000,xp:560,base:32,cd:390,jail:600,r:9,cr:13,en:36,flee:1},
  {id:'geneve',n:'Vrijhavenkluis in Genève',d:'Schilderijen, goud en horloges die nooit het daglicht zien.',min:45000,max:100000,xp:600,base:29,cd:410,jail:600,r:9,cr:13,en:38,flee:5},
- {id:'minister',n:'Een minister onder druk zetten',d:'Een dossier op het juiste bureau verandert hele wetten.',min:70000,max:160000,xp:820,base:27,cd:490,jail:600,r:10,cr:16,en:40,flee:2},
+ {id:'minister',n:'Een lobbyist op de loonlijst',d:'Hij weet welk amendement wanneer langskomt, en welke Kamerleden graag uit eten gaan.',min:70000,max:160000,xp:820,base:27,cd:490,jail:600,r:10,cr:16,en:40,flee:2},
  {id:'cryptobeurs',n:'Een cryptobeurs laten verdwijnen',d:'Op maandag is de website weg. Het geld ook.',min:80000,max:180000,xp:880,base:26,cd:510,jail:600,r:10,cr:17,en:41,flee:1},
  {id:'kaaiman',n:'Stichting op de Kaaimaneilanden',d:'Liefdadigheid op papier, een villa aan het strand in het echt.',min:90000,max:190000,xp:920,base:25,cd:530,jail:600,r:10,cr:17,en:42,flee:2},
  {id:'kartelvrede',n:'Vrede tussen twee kartels',d:'Jij zit aan het hoofd van de tafel. Iedereen betaalt.',min:120000,max:260000,xp:1100,base:24,cd:560,jail:600,r:11,cr:20,en:44,flee:3},
@@ -93,12 +93,12 @@ const CRIMES=[
  {id:'matchfix',n:'Een voetbalwedstrijd kopen',d:'Een keeper met schulden en een opvallende 0-3.',min:5800,max:12500,xp:160,base:45,cd:150,jail:290,r:6,cr:6,en:24,flee:1},
  {id:'kasteel',n:'Een kasteel in de Ardennen',d:'Familiezilver, oude meesters en een butler die alles vergeet.',min:10000,max:24000,xp:230,base:39,cd:200,jail:390,r:7,cr:8,en:29,flee:4},
  {id:'datalek',n:'Losgeld van een verzekeraar',d:'Twee miljoen dossiers en een directie die stilletjes betaalt.',min:21000,max:46000,xp:360,base:36,cd:285,jail:490,r:8,cr:10,en:32,flee:1},
- {id:'renbaan',n:'Een paardenrace beslissen',d:'Elf jockeys, en de winnaar staat al vast.',min:38000,max:88000,xp:540,base:31,cd:380,jail:600,r:9,cr:12,en:36,flee:2},
+ {id:'renbaan',n:'Illegaal online casino',d:'Een gokwebsite met een buitenlandse licentie en Nederlandse spelers.',min:32000,max:80000,xp:540,base:31,cd:380,jail:360,r:9,cr:12,en:36,flee:2},
  {id:'rechter',n:'Een rechter in je zak',d:'Een vrijspraak hier, een kwijtgeraakt dossier daar.',min:75000,max:170000,xp:850,base:26,cd:500,jail:600,r:10,cr:16,en:41,flee:1},
  {id:'goudreserve',n:'De goudreserve van een land',d:'Een land dat zijn eigen goud nooit meer terugziet.',min:200000,max:420000,xp:1550,base:20,cd:650,jail:600,r:11,cr:26,en:49,flee:5},
  // nieuw: een zesde klus voor elke rang
- {id:'flessen',n:'Statiegeld van andermans krat',d:'Een volle krat achter de supermarkt. Tien cent per fles, maar wel cash.',min:10,max:45,xp:5,base:92,cd:6,jail:30,r:0,cr:0,en:4,flee:1},
- {id:'deurbel',n:'Deurbelcamera\'s jatten',d:'Ze filmen alles, behalve wie ze meeneemt.',min:110,max:340,xp:19,base:72,cd:19,jail:60,r:1,cr:2,en:9,flee:2},
+ {id:'flessen',n:'Statiegeld van andermans krat',d:'Een volle krat achter de supermarkt. Tien cent per fles, maar wel cash.',min:10,max:45,xp:5,base:92,cd:6,jail:30,r:0,cr:0,en:4,flee:1,sev:'A'},
+ {id:'deurbel',n:'Je bankpas verhuren',d:'Vijftig euro voor je pas. Wat er op je rekening gebeurt, merk je later.',min:80,max:260,xp:17,base:74,cd:19,jail:55,r:1,cr:1,en:8,flee:1},
  {id:'katalysator',n:'Katalysatoren zagen',d:'Tien minuten onder een auto en je hebt platina in je tas.',min:330,max:950,xp:35,base:64,cd:33,jail:110,r:2,cr:3,en:12,flee:3},
  {id:'apotheek',n:'Apotheek na sluitingstijd',d:'Een achterdeur, een alarm van tien jaar oud en kasten vol pillen.',min:650,max:1700,xp:52,base:59,cd:52,jail:150,r:3,cr:3,en:15,flee:3},
  {id:'drukkerij',n:'Valse briefjes van vijftig',d:'Een drukpers in een schuur in Brabant. Het watermerk is bijna echt.',min:1600,max:3900,xp:78,base:55,cd:82,jail:195,r:4,cr:4,en:18,flee:2},
@@ -106,8 +106,8 @@ const CRIMES=[
  {id:'stroom',n:'Stroom aftappen voor een kwekerij',d:'Een kabel onder de stoep en een meter die stilstaat.',min:5200,max:11500,xp:155,base:46,cd:145,jail:285,r:6,cr:6,en:24,flee:2},
  {id:'stadion',n:'Stadionkassa op een topwedstrijd',d:'Vijftigduizend man, en de kassa wordt pas morgen geteld.',min:13000,max:29000,xp:270,base:38,cd:225,jail:425,r:7,cr:9,en:30,flee:4},
  {id:'scheepswerf',n:'Een megajacht op de werf',d:'Nog niet afgebouwd, wel al verkocht. Twee keer.',min:23000,max:50000,xp:380,base:34,cd:295,jail:505,r:8,cr:11,en:33,flee:3},
- {id:'satelliet',n:'Satellietbeelden verkopen',d:'Een hacker in Tallinn en een koper die je nooit te zien krijgt.',min:42000,max:95000,xp:580,base:30,cd:400,jail:600,r:9,cr:13,en:37,flee:1},
- {id:'olympisch',n:'Olympische bouwcontracten',d:'Een stadion dat drie keer te duur wordt. Het verschil is van jou.',min:85000,max:185000,xp:900,base:25,cd:520,jail:600,r:10,cr:17,en:42,flee:1},
+ {id:'satelliet',n:'Een eigen ondergrondse bank',d:'Geld dat de grens over gaat zonder ooit de grens over te gaan.',min:50000,max:120000,xp:580,base:28,cd:400,jail:480,r:9,cr:13,en:37,flee:1},
+ {id:'olympisch',n:'Vastgoed in Dubai',d:'Twintig appartementen, en niemand vraagt waar het geld vandaan kwam.',min:85000,max:190000,xp:900,base:25,cd:520,jail:450,r:10,cr:17,en:42,flee:2},
  {id:'wereldbank',n:'Een lening van de Wereldbank',d:'Een land dat niet bestaat, met een president die jij bent.',min:220000,max:450000,xp:1650,base:19,cd:680,jail:600,r:11,cr:28,en:49,flee:2}];
 // Rangbonus op elke buit: +6% per rang (Peetvader +66%)
 const RANK_LOOT=.06;
@@ -152,7 +152,7 @@ const FAM_HEISTS=[
  {n:'Overval de bank',d:'Het hoofdkantoor op de Zuidas. Binnen in vier minuten, anders is het te laat.',vk:7,need:['vest','jammer'],en:50,jail:240,loot:[350000,750000]},
  {n:'Kraak de kluis van een privébank',d:'Kluizen vol goud van mensen die liever niet zeggen waar het vandaan komt.',vk:9,need:['helm','laptop'],en:55,jail:270,loot:[700000,1500000]},
  {n:'Overval De Nederlandsche Bank',d:'De goudvoorraad van het land. Dit doet niemand twee keer.',vk:12,need:['mil','lans'],en:60,jail:300,loot:[1500000,3500000]},
- {n:'Haal een kroongetuige weg',d:'Een safehouse in de duinen, zes agenten en een getuige die morgen gaat praten.',vk:12,need:['mil','lans','crypto'],en:62,jail:330,loot:[2500000,5000000]},
+ {n:'Bevrijd een van jullie uit een gevangenentransport',d:'Een busje van de DJI, een vaste route over de A12 en een broeder die er vandaag uit moet. Niemand raakt gewond als het plan klopt.',vk:12,need:['mil','lans','crypto'],en:62,jail:330,loot:[2500000,5000000]},
  {n:'Kaap een vrachtvliegtuig op Schiphol',d:'Een pallet met bankbiljetten, vijf minuten tussen landen en de douane.',vk:12,need:['mil','lans','mol'],en:65,jail:360,loot:[4000000,8000000]},
  {n:'Beroof de diamantbeurs van Antwerpen',d:'Honderdzestig kluizen, één nacht en een alarm dat niemand ooit heeft gekraakt.',vk:12,need:['mg','mil','lans','mol'],en:68,jail:390,loot:[6000000,12000000]},
  {n:'Kraak de goudkluis onder Zürich',d:'Veertig meter onder de stad. Het goud van zeven landen, en geen weg terug.',vk:12,need:['mg','mil','lans','mol'],en:72,jail:420,loot:[10000000,20000000]}];
@@ -310,12 +310,12 @@ const FLEE_LEVELS={
 const CR_CATS={straat:['Straatwerk','#ffb36b','Zakkenrollen, stelen van de straat, klusjes'],kraak:['Inbraak en kraken','#ff7a1a','Inbreken, kluizen en grote kraken'],
  geweld:['Overvallen','#ff5a5f','Overvallen, afpersen en transporten'],fraude:['Oplichting','#b8a1ff','Fraude, valse spullen en heling'],
  smokkel:['Smokkel en handel','#5ce1c4','Havens, wapens, wiet en gokken'],invloed:['Witteboord en invloed','#f2c230','Omkopen, witwassen en invloed']};
-const CR_CAT={bedelen:'straat',zakken:'straat',winkeldief:'straat',fiets:'straat',pakket:'straat',flessen:'straat',deurbel:'straat',spuiten:'straat',envelop:'straat',koper:'straat',katalysator:'straat',scooter:'straat',horloge:'straat',
- autokraak:'kraak',fruitautomaat:'kraak',inbraak:'kraak',pand:'kraak',parkeer:'kraak',ramkraak:'kraak',garagebox:'kraak',apotheek:'kraak',kasteel:'kraak',kunst:'kraak',diamant:'kraak',casino:'kraak',centralebank:'kraak',londen:'kraak',geneve:'kraak',kroon:'kraak',goudreserve:'kraak',
- winkel:'geweld',snackbar:'geweld',juwelier:'geweld',vrachtwagen:'geweld',transport:'geweld',bank:'geweld',afpersing:'geweld',rivaal:'geweld',goud:'geweld',jet:'geweld',tanker:'geweld',stadion:'geweld',
- telefoon:'fraude',tickets:'fraude',heling:'fraude',webshop:'fraude',veiling:'fraude',bouwfraude:'fraude',drukkerij:'fraude',datalek:'fraude',cryptobeurs:'fraude',scheepswerf:'fraude',
- smokkel:'smokkel',container:'smokkel',wapenlading:'smokkel',stroom:'smokkel',gokhal:'smokkel',jacht:'smokkel',rotterdam:'smokkel',satelliet:'smokkel',
- witwas:'invloed',havenbaas:'invloed',voorkennis:'invloed',aanbesteding:'invloed',matchfix:'invloed',renbaan:'invloed',rechter:'invloed',minister:'invloed',kaaiman:'invloed',kartelvrede:'invloed',olympisch:'invloed',wereldbank:'invloed'};
+const CR_CAT={bedelen:'straat',zakken:'straat',winkeldief:'straat',fiets:'straat',pakket:'straat',flessen:'straat',deurbel:'fraude',spuiten:'straat',envelop:'straat',koper:'straat',katalysator:'straat',scooter:'straat',
+ autokraak:'kraak',horloge:'geweld',stadion:'kraak',inbraak:'kraak',pand:'kraak',parkeer:'kraak',ramkraak:'kraak',garagebox:'kraak',apotheek:'kraak',kasteel:'kraak',kunst:'kraak',diamant:'kraak',casino:'kraak',centralebank:'kraak',londen:'kraak',geneve:'kraak',kroon:'kraak',goudreserve:'kraak',
+ winkel:'geweld',snackbar:'geweld',juwelier:'geweld',vrachtwagen:'geweld',transport:'geweld',bank:'geweld',afpersing:'geweld',rivaal:'geweld',goud:'geweld',jet:'geweld',tanker:'geweld',
+ telefoon:'fraude',fruitautomaat:'fraude',tickets:'fraude',heling:'fraude',webshop:'fraude',veiling:'fraude',bouwfraude:'fraude',drukkerij:'fraude',datalek:'fraude',cryptobeurs:'fraude',scheepswerf:'fraude',
+ smokkel:'smokkel',container:'smokkel',wapenlading:'smokkel',stroom:'smokkel',gokhal:'smokkel',jacht:'smokkel',rotterdam:'smokkel',
+ witwas:'invloed',satelliet:'invloed',havenbaas:'invloed',voorkennis:'invloed',aanbesteding:'invloed',matchfix:'invloed',renbaan:'invloed',rechter:'invloed',minister:'invloed',kaaiman:'invloed',kartelvrede:'invloed',olympisch:'invloed',wereldbank:'invloed'};
 // ervaring nodig per level (0 = nieuw, 10 = meester van het vak)
 const CRX_T=[0,5,15,35,70,120,200,320,500,750,1100];
 const TRAIN_MAX=50;
@@ -377,7 +377,7 @@ const TRAININGS=[
 const KALM_T=[0,4,12,25,45,70,100,140,190,250,320],KALM_PTS=[1,3,8];
 const KALM_LV=['Gespannen','Onrustig','Wat rustiger','Stabiel','Kalm','Heel kalm','Koelbloedig','IJskoud','Onverstoorbaar','Zen','Meester van de rust'];
 // Klussen waar een slot op kan zitten (kans per keer)
-const CR_LOCK={fiets:.35,scooter:.3,autokraak:.4,inbraak:.5,pand:.45,garagebox:.5,apotheek:.45,parkeer:.35,fruitautomaat:.4,ramkraak:.25,kasteel:.45,kunst:.45,diamant:.5,casino:.5,centralebank:.55,londen:.45,geneve:.55,kroon:.5,goudreserve:.55,koper:.25,drukkerij:.3,stroom:.3};
+const CR_LOCK={fiets:.35,scooter:.3,autokraak:.4,inbraak:.5,pand:.45,garagebox:.5,apotheek:.45,parkeer:.35,ramkraak:.25,kasteel:.45,kunst:.45,diamant:.5,casino:.5,centralebank:.55,londen:.45,geneve:.55,kroon:.5,goudreserve:.55,koper:.25,stroom:.3};
 // Oude saves telden sessies per level (2, 2, 3, 3, ...). Nu telt elke gedane sessie als één level.
 function migrateTrain(d){if(d.trainV===2)return;d.skills=d.skills||{};d.train=d.train||{};
  TRAININGS.forEach(t=>{const L=d.skills[t.id]||0;let n=d.train[t.id]||0;for(let l=0;l<L;l++)n+=2+Math.floor(l/2);d.skills[t.id]=Math.min(TRAIN_MAX,n)});d.train={};d.trainV=2}

@@ -1,0 +1,121 @@
+/* Klus-spellen (crimegames.js). Bouwt op de overlay van het slot (.jb-box/.lk-box in jailbreak.css en lock.css). */
+.cg-box{height:min(680px,100%)}
+.cg-meters{grid-template-columns:auto 1fr}
+.cg-lives{display:flex;gap:5px;height:12px;align-items:center}
+.cg-lives i{width:12px;height:12px;border-radius:50%;background:#3fe395;box-shadow:0 0 8px -2px #3fe395}
+.cg-lives i.x{background:#3a1a1f;box-shadow:inset 0 0 0 1px #ff3d52}
+.cg-prog{display:flex;gap:4px}
+.cg-prog i{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.07)}
+.cg-prog i.on{background:var(--acc)}
+.cg-stage{display:flex;align-items:center;justify-content:center;padding:0;min-height:200px}
+.cg-stage.cg-shake{animation:cgShake .3s}
+@keyframes cgShake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.cg-svg{width:100%;height:100%;display:block}
+.cg-st{font-family:var(--f-display);font-weight:900;font-size:26px;letter-spacing:.06em}.cg-st.no{fill:#ff5c6c}.cg-st.go{fill:#3fe395}
+.cg-num{font-family:var(--f-mono);font-size:9px;fill:#9aa3ad}
+.cg-small{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;fill:#8a8f98}.cg-small.g{fill:#3fe395}.cg-small.r{fill:#ff8a95;font-size:9px}
+.cg-big2{font-family:var(--f-display);font-weight:900;font-size:30px;fill:#ffad6b}
+.cg-help{min-height:0;font-size:13px}
+.cg-ctl{flex-wrap:wrap}
+.cg-b{width:auto;min-height:52px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.cg-b kbd{font-family:var(--f-mono);font-size:10px;border:1px solid currentColor;opacity:.6;padding:0 4px;margin-right:2px}
+.cg-big{width:min(320px,100%)}
+/* tekst en effecten in het speelveld */
+.cg-fx{position:absolute;left:50%;top:14%;transform:translate(-50%,0);padding:6px 12px;border-radius:999px;font-family:var(--f-head);font-weight:800;font-size:15px;letter-spacing:.05em;text-transform:uppercase;pointer-events:none;opacity:0;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis;z-index:3}
+.cg-fx.show{animation:cgFx .9s ease-out forwards}
+.cg-fx.ok{background:rgba(63,227,149,.16);color:#3fe395;box-shadow:inset 0 0 0 1px rgba(63,227,149,.5)}
+.cg-fx.no{background:rgba(255,61,82,.16);color:#ff8a95;box-shadow:inset 0 0 0 1px rgba(255,61,82,.5)}
+@keyframes cgFx{0%{opacity:0;transform:translate(-50%,8px)}12%{opacity:1;transform:translate(-50%,0)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-6px)}}
+.cg-who,.cg-tag{position:absolute;left:10px;top:8px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);background:rgba(0,0,0,.45);padding:3px 7px;border-radius:6px;pointer-events:none}
+.cg-tag{top:auto;bottom:8px;left:0;transform:translateX(4px);color:#ffd166;max-width:46%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cg-tag.r{transform:translateX(calc(-100% - 4px))}
+.cg-intro{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px;text-align:center;background:rgba(5,7,9,.84);cursor:pointer}
+.cg-intro b{font-family:var(--f-display);font-weight:900;font-size:clamp(24px,5vw,34px);line-height:1;text-transform:uppercase;color:var(--acc2)}
+.cg-intro p{margin:0;max-width:440px;font-size:14px;line-height:1.45;color:#c9ced6}
+.cg-go{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.cg-introbar{display:block;width:min(200px,60%);height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}.cg-introbar>i{display:block;height:100%;width:0;background:var(--acc)}
+.cg-end{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px;text-align:center;background:rgba(5,7,9,.78);animation:tin .2s}
+.cg-end b{font-family:var(--f-display);font-weight:900;font-size:clamp(32px,7vw,46px);line-height:1;text-transform:uppercase}
+.cg-end.won b{color:var(--green)}.cg-end.lost b{color:#ff3d52}.cg-end span{color:#c9ced6;font-size:14px;max-width:420px}
+.cg-ring{display:block;height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}.cg-ring>i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff3d52,#ffd166 40%,#3fe395)}
+/* kluis */
+.cg-code{position:absolute;left:8px;bottom:8px;display:flex;gap:4px}
+.cg-code i{font-style:normal;font-family:var(--f-mono);font-size:13px;padding:3px 6px;border-radius:5px;background:#16191e;color:var(--faint);box-shadow:inset 0 0 0 1px var(--line2)}.cg-code i.on{color:#ffd166;box-shadow:inset 0 0 0 1px #ffd166}
+/* overval */
+.cg-alert{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(340px,86%);padding:14px 16px;border-radius:12px;background:rgba(20,10,12,.85);box-shadow:inset 0 0 0 1px var(--line2);text-align:center;display:flex;flex-direction:column;gap:10px}
+.cg-alert.on{box-shadow:inset 0 0 0 2px #ff3d52,0 0 40px -10px #ff3d52}
+.cg-alert b{font-family:var(--f-head);font-weight:800;font-size:clamp(18px,4.4vw,24px);letter-spacing:.03em;text-transform:uppercase;color:#fff}
+.cg-alert span{color:var(--mute);font-family:var(--f-mono);font-size:12px}
+.cg-pad4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:min(460px,100%)}
+.cg-pad4 .cg-b{width:100%;font-size:15px;padding:10px 8px}
+/* gesprek */
+.cg-talk{width:100%;height:100%;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px;align-items:center;padding:12px}
+.cg-npc{position:relative;height:100%;min-height:0;display:flex;align-items:center;justify-content:center}
+.cg-npcsvg{max-height:100%}
+.cg-mood{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:#1d2128;color:#fff;white-space:nowrap}
+.cg-mood:empty{display:none}
+.cg-mood.m0{background:#3d3214;color:#ffd166}.cg-mood.m1{background:#14263d;color:#a9dcff}.cg-mood.m2{background:#2e1a3d;color:#d7c4ff}.cg-mood.m3{background:#3d1419;color:#ff8a95}
+.cg-say{display:flex;flex-direction:column;gap:8px;min-width:0}
+.cg-whoT{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.cg-say p{margin:0;font-size:clamp(16px,3.6vw,21px);line-height:1.3;color:#f0ece4;font-weight:600}
+.cg-opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;max-width:640px}
+.cg-opts .cg-b{width:100%;font-size:13.5px;letter-spacing:.04em;padding:8px 6px;line-height:1.2}
+.cg-opts .cg-big{grid-column:1/-1;justify-self:center}
+.cg-leg{grid-column:auto;font-size:11.5px;color:var(--mute);text-align:center;padding:6px;border:1px dashed var(--line2);border-radius:8px}.cg-leg b{color:var(--fg)}
+/* geheugen */
+.cg-doc{width:min(420px,94%);max-height:94%;overflow:hidden;border-radius:12px;background:#f1ece0;color:#1a1c20;box-shadow:0 20px 50px -20px #000;display:flex;flex-direction:column}
+.cg-docH{display:flex;flex-direction:column;gap:6px;padding:10px 14px 8px;background:#e2dbc9}.cg-docH span{font-family:var(--f-head);font-weight:800;font-size:16px;text-transform:uppercase;letter-spacing:.04em}
+.cg-docH .cg-ring{background:rgba(0,0,0,.1)}
+.cg-docB{padding:10px 14px 14px;display:flex;flex-direction:column;gap:6px}.cg-docB .label{color:#6a6458;margin:0}
+.cg-fact{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px dashed #c9c1ad;font-size:14px}.cg-fact span{color:#6a6458}.cg-fact b{text-align:right}
+.cg-qq{margin:4px 0;font-size:clamp(16px,3.8vw,20px);font-weight:700;line-height:1.3}
+/* hacken */
+.cg-term{width:min(480px,94%);border-radius:10px;background:#050a07;box-shadow:inset 0 0 0 1px #1d3a2a,0 0 40px -16px #3fe395;padding:12px 14px;display:flex;flex-direction:column;gap:12px;font-family:var(--f-mono)}
+.cg-termH{display:flex;justify-content:space-between;gap:10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#3fe395;opacity:.8}.cg-termH em{font-style:normal;color:#8fdcb4;text-align:right}
+.cg-codeline{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.cg-codeline i{font-style:normal;font-size:clamp(20px,5.2vw,30px);width:1.15em;text-align:center;color:#2f6b4c;border-bottom:2px solid #16301f}
+.cg-codeline i.ok{color:#3fe395}.cg-codeline i.cur{color:#eafff3;border-bottom-color:#3fe395;animation:cgBlink 1s steps(2) infinite}
+@keyframes cgBlink{50%{border-bottom-color:transparent}}
+.cg-trace{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#ff8a95}
+.cg-hex{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;width:min(560px,100%)}
+.cg-hex .cg-b{width:100%;min-height:46px;padding:0;font-family:var(--f-mono);font-size:17px;letter-spacing:0}
+/* route */
+.cg-lr{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(420px,100%)}.cg-lr .cg-b{width:100%;min-height:58px}
+@media (max-width:700px){
+ .cg-ov{padding:0;place-items:stretch}
+ .cg-box{padding:12px 10px calc(10px + env(safe-area-inset-bottom,0px));height:100%;width:100%;border:0}
+ .cg-talk{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:6px;padding:8px}
+ .cg-npc{min-height:90px}
+ .cg-opts{grid-template-columns:1fr}.cg-opts .cg-b{min-height:46px}
+ .cg-hex{grid-template-columns:repeat(4,minmax(0,1fr))}.cg-hex .cg-b{min-height:40px}
+ .cg-pad4 .cg-b{min-height:56px}
+ .cg-meters{flex-basis:100%}
+}
+@media (prefers-reduced-motion:reduce){.cg-stage.cg-shake,.cg-fx.show,.cg-codeline i.cur{animation:none}.cg-fx.show{opacity:1}}
+
+/* ---------- Misdaden: spel, professionaliteit en snel uitvoeren op de kaart ---------- */
+.kl-game{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:7px;min-width:0}
+.kl-gt{display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 6px;border-radius:999px;background:rgba(255,122,26,.08);box-shadow:inset 0 0 0 1px rgba(255,122,26,.35);color:var(--acc2);font:inherit;cursor:pointer;touch-action:manipulation}
+.kl-gt svg{width:15px;height:15px;flex:none}.kl-gt b{font-family:var(--f-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.kl-gt:hover{background:rgba(255,122,26,.16)}
+.kl-pro{display:inline-flex;align-items:center;gap:6px;min-width:0}
+.kl-pro em{position:relative;width:54px;height:4px;border-radius:2px;background:var(--line2);flex:none;overflow:hidden}.kl-pro em i{position:absolute;inset:0 auto 0 0;background:var(--ice)}
+.kl-pro b{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--fg)}
+.kl-pro small{font-family:var(--f-mono);font-size:10.5px;color:var(--faint)}
+.kl-game.l1 .kl-pro em i{background:var(--green)}.kl-game.l2 .kl-pro em i{background:#ffd166}.kl-game.l3 .kl-pro em i{background:var(--acc)}.kl-game.l3 .kl-pro b{color:var(--acc)}
+.kl-lb{font-family:var(--f-mono);font-size:10.5px;color:var(--acc2)}
+.klb-m{display:flex;flex-direction:column;gap:2px;min-width:0}.klb-m .kl-game{margin-top:4px}
+.kl-gos{display:flex;flex-direction:column;gap:6px;min-width:0}
+.kl>.kl-gos{grid-area:go;align-self:center}
+.kl-gos .kl-go{width:100%}
+.kl-quick{min-height:38px;padding:5px 8px;flex-direction:column;gap:1px}
+.kl-quick b{font-size:12.5px;letter-spacing:.08em}.kl-quick small{font-family:var(--f-mono);font-size:10px;text-transform:none;letter-spacing:0;opacity:.75}
+.klb .kl-gos{margin-top:auto}
+@supports (grid-template-rows:subgrid){.klb .kl-gos{margin-top:0;align-self:end}}
+@container (max-width:599px){.kl-gos.q{flex-direction:row}.kl-gos.q .kl-go{flex:1.4}.kl-gos.q .kl-quick{flex:1;min-height:46px}}
+/* oefenen: kiezer */
+.cg-pick{width:min(620px,100%)}
+.cg-pickg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.cg-pickg button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px;border-radius:10px;background:var(--bg2);border:1px solid var(--line2);color:var(--fg);font:inherit;text-align:left;touch-action:manipulation}
+.cg-pickg button svg{width:22px;height:22px;color:var(--acc2)}.cg-pickg button b{font-family:var(--f-head);font-weight:800;font-size:15px;text-transform:uppercase;letter-spacing:.03em}
+.cg-pickg button small{font-size:11px;color:var(--faint)}.cg-pickg button.on,.cg-pickg button:hover{border-color:var(--acc)}
+@media (max-width:420px){.cg-pickg{grid-template-columns:repeat(2,minmax(0,1fr))}}

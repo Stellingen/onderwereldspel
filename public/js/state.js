@@ -232,7 +232,9 @@ function crxAdd(c,ok){const k=crCat(c),l0=crxLv(k);S.crx[k]=(S.crx[k]||0)+(ok?1:
  if(l1>l0)setTimeout(()=>toast(`${CR_CATS[k][0]} level ${l1}: ${l1>=10?'meester van het vak':'je kans op deze klussen gaat omhoog'} (${crxBonus(c)>=0?'+':''}${String(crxBonus(c)).replace('.',',')}%)`,'lvl'),900)}
 const chanceRaw=c=>crxBonus(c)+mastLv(c.id)*2+c.base+rankPow()*2+crimeUp(c)+gearBonus()+fitFx('kans')+fam().chance+S.skills.steal*(c.id==='zakken'?SK.steal.zakken:SK.steal.all)+sk('ademhaling')*SK.ademhaling.focus+(c.r>=HEAVY_R?sk('schiet')*SK.schiet.heavy:0)+focusPct()-Math.floor(S.heat/4*Math.max(.4,1-crimeUp(c)*.1));
 const chanceCap=c=>Math.min(99,95+Math.min(3,crimeUp(c))+Math.floor(crxLv(crCat(c))/2));
-const chance=c=>Math.max(5,Math.min(chanceCap(c),Math.round(chanceRaw(c)*(1+tierK()))));
+// Sinds de klus-spellen (crimegames.js): chance = verwachte kans als je het spel speelt (spel × dobbelsteen, zie crChance).
+// chanceRaw/oude som blijft als terugval als crimegames.js (nog) niet geladen is.
+const chance=c=>typeof crChance==='function'?crChance(c):Math.max(5,Math.min(chanceCap(c),Math.round(chanceRaw(c)*(1+tierK()))));
 // straf 30 s – 10 min, plus 30–60 s (hoe langer de straf, hoe meer) omdat je in de bajes kunt werken: 1 – 11 minuten
 const jailSec=sec=>{const b=Math.max(30,Math.min(600,Math.round(sec*(1-fam().jail/100)*(1-sk('rechten')*SK.rechten.jail/100)*(1-gearFx('jail')))));return b+Math.round(30+30*(b-30)/570)};
 function sendToJail(sec){sec=jailSec(sec);S.lastSentence=sec;S.jailUntil=now()+sec*1000;if(!S.jailIn)S.jailIn={t:now(),en:S.energy};if(typeof celNew==='function')celNew(sec);return sec}
@@ -252,8 +254,8 @@ function jailFor(pa,extra,why){const s=sendToJail(pa.sec*(extra||1));if(typeof s
   page='jail';try{history.replaceState(null,'','#jail')}catch(e){}render();toast('Opgepakt: '+fmtTime(s),'bad')}
 function arrest(sec,title,msg,opts){
   opts=opts||{};
-  // Lucchetti: een rechter van de familie seponeert de zaak (één keer gooien per arrestatie, ook na verversen)
-  if(!opts.rolled){opts.rolled=true;const p=famPerk('free');if(p&&Math.random()<p){S.pendingArrest=null;log('Zaak geseponeerd door een rechter van '+famBase().n,'ok');save();toast('Een rechter van de familie seponeert je zaak. Je bent vrij.','lvl');render();return}}const mult=opts.mult==null?1:opts.mult,raid=!!opts.raid;
+  // Lucchetti: een officier van justitie op de loonlijst seponeert de zaak (één keer gooien per arrestatie, ook na verversen)
+  if(!opts.rolled){opts.rolled=true;const p=famPerk('free');if(p&&Math.random()<p){S.pendingArrest=null;log('Zaak geseponeerd door een officier van justitie op de loonlijst van '+famBase().n,'ok');save();toast('Een officier van justitie op de loonlijst seponeert je zaak. Je bent vrij.','lvl');render();return}}const mult=opts.mult==null?1:opts.mult,raid=!!opts.raid;
   const pa={sec,title,msg,opts,fleeing:false};S.pendingArrest=pa;save();pushState();
   const ch=Math.round(talkChance()*mult);
   const plain=jailSec(sec);

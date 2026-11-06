@@ -34,7 +34,7 @@ const DRUGS=[
  {id:'wiet',n:'Wiet',u:'zakje',u2:'zakjes',buy:25,sell:[45,60],lv:0,risk:.03,heat:2,rep:1,k:1,col:'#3fe395',ic:'leaf'},
  {id:'hasj',n:'Hasj',u:'blokje',u2:'blokjes',buy:30,sell:[55,75],lv:1,risk:.03,heat:2,rep:1,k:1,col:'#c9a227',ic:'block'},
  {id:'xtc',n:'XTC-pillen',u:'pil',u2:'pillen',buy:3,sell:[8,12],lv:2,risk:.05,heat:3,rep:.5,k:4,col:'#ff7ab8',ic:'pill'},
- {id:'miauw',n:'Miauw (4-MMC)',u:'gram',u2:'gram',buy:12,sell:[25,40],lv:2,risk:.05,heat:3,rep:2,k:1,col:'#b8a1ff',ic:'crystal'},
+ {id:'miauw',n:'Miauw (3-MMC)',u:'gram',u2:'gram',buy:12,sell:[25,40],lv:2,risk:.05,heat:3,rep:2,k:1,col:'#b8a1ff',ic:'crystal'},
  {id:'speed',n:'Speed',u:'gram',u2:'gram',buy:6,sell:[15,22],lv:2,risk:.05,heat:3,rep:1.5,k:1.5,col:'#ffd36a',ic:'powder'},
  {id:'keta',n:'Ketamine',u:'gram',u2:'gram',buy:15,sell:[30,45],lv:3,risk:.06,heat:4,rep:2.5,k:1,col:'#a9dcff',ic:'vial'},
  {id:'coke',n:'Cocaïne',u:'gram',u2:'gram',buy:35,sell:[60,85],lv:3,risk:.07,heat:5,rep:4,k:1,col:'#f4f1ea',ic:'powder'},
