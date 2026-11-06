@@ -4,7 +4,7 @@
 // niveau, dan een expliciete startknop en een korte aftelling. Niet in de cel, niet tijdens een echte achtervolging of
 // arrestatie.
 const PRACTICE={
- flee:{n:'Rennen',sub:'Vluchten na een mislukte klus',how:'Wissel van baan met ← → (of vegen/tikken), spring met ↑ of spatie en buk met ↓. Ontwijk wat op je pad komt en haal de uitgang.',
+ flee:{n:'Rennen',sub:'Vluchten na een mislukte klus',how:'Wissel van baan met ← → (of vegen/tikken), spring met ↑ of spatie en buk met ↓. Ontwijk wat op je pad komt en haal de uitgang. Onderin zie je hoe dicht de agent zit en hoeveel adem je nog hebt; conditie, uithouding, ademhaling en snelheid uit de training helpen.',
   lv:()=>[1,2,3,4,5].map(l=>[l,FLEE_LEVELS[l].label])},
  contact:{n:'Contact maken',sub:'Een auto openbreken bij straat afzoeken',how:'Druk de pijlen in de goede volgorde, voordat de tijd op is. Rode pijlen druk je andersom in. Hoe zeldzamer de auto, hoe meer sloten en hoe minder tijd.',
   lv:()=>[1,2,3,4,5].map(t=>[t,(CAR_RARITY[t]||['Niveau '+t])[0]])},
