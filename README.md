@@ -989,3 +989,46 @@ het lidmaatschap blijft zoals de beheerder het geeft (Beheer → speler → Lidm
   dezelfde kaarten en tabel, vragen, en een venster "Binnenkort beschikbaar". Ingelogd ziet je je eigen lidmaatschap
   (`lp:me`-event uit lp-home.js). Op de voorpagina een rustig blok "Gratis. Of net iets meer." met link. FAQ en "Wel/Niet"
   aangepast: het spel blijft gratis, nu nog niets te koop, VIP/HR komen later en vrijwillig.
+
+### Gevolg per soort en de arrestatie (arrest.js)
+
+Een mislukte klus loopt niet meer altijd op de cel uit. Het gevolg hangt af van de soort:
+
+| Soort | Als het misgaat |
+|---|---|
+| Straatwerk, bagatellen (bedelen, statiegeld) | Boete of weggestuurd, geen cel |
+| Straatwerk (rest), Inbraak en kraken | Betrapt: vluchten, je eruit praten of het arrestatieverloop |
+| Overvallen | Straf ×1,75 (binnen het plafond van 10 minuten). Ontkom je, dan is er 50% kans op een signalement |
+| Oplichting | Geen arrestatie maar een aangifte. Na 1 speldag (4 uur) doet de politierechter uitspraak: een boete of cel. Ga je intussen niet opnieuw de fout in, dan scheelt dat 40%. Nieuwe aangiftes worden bij dezelfde zaak gevoegd |
+| Smokkel en handel | De partij is weg (boete van de helft van de gemiddelde buit) en je krijgt een locatieverbod: de klussen op die plek (haven, grens, wijk of jachthaven) zijn 1 speldag dicht |
+| Witteboord en invloed | Geen cel, wel het FIOD-dossier (0–100): +30 als het mislukt (een meester krijgt +15), +2 als het lukt. Het zakt 0,5 per minuut. Is het vol, dan volgt een inval: beslag op de helft van je zwarte en 10% van je witte contanten (samen hooguit 3× de buit van de klus), en daarna het arrestatieverloop |
+
+**Het arrestatieverloop.** Geef je je over, of mislukt je vlucht of je praatje, dan doorloop je vier stappen:
+
+1. **Politiecel.** Je kiest een advocaat:
+   - een gratis piketadvocaat: je wacht even, en die tijd telt als voorarrest;
+   - een betaalde strafpleiter: 15–25% kans op een vormfout, en dan seponeert de officier;
+   - geen advocaat: je gaat sneller door, maar het verhoor wordt zwaarder.
+2. **Verhoor.** Je kiest:
+   - zwijgen;
+   - een verklaring afleggen: als je verhaal klopt, zakt het bewijs, en anders stijgt het;
+   - bekennen: 20% minder straf.
+
+   De bewijsmeter begint per soort hoger of lager, en een hoge professionaliteit drukt hem.
+3. **De officier van justitie** beslist. De kansen staan in beeld:
+   - **sepot**: alleen mogelijk als het bewijs onder de 50 zit;
+   - **strafbeschikking**: vooral bij lichte zaken;
+   - **voorgeleiding**: de cel, zoals het nu ook gaat.
+4. **Strafbeschikking.** Je kiest hoe je die afdoet:
+   - een boete betalen;
+   - een taakstraf: 15 seconden graffiti weghalen;
+   - de vervangende hechtenis uitzitten.
+
+**Hoe lang je vastzit.** Je zit nooit langer vast dan je nu zou zitten. Met **"Laat de advocaat het regelen"** handel je alles in één klik af, met de gemiddelde uitkomst. Elke keuze wordt meteen opgeslagen. Ververs je midden in het verloop, dan krijg je de volle straf. Ververs je tijdens de taakstraf, dan krijg je de vervangende hechtenis.
+
+**Waar je het ziet.** De lopende zaak, het FIOD-dossier en een locatieverbod staan:
+- op de misdaadpagina, onder "Als het misgaat";
+- op het politiebureau, onder "Justitie";
+- op het dashboard.
+
+Op elke klus staat wat er gebeurt als hij mislukt.
