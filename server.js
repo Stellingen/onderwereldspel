@@ -317,7 +317,7 @@ const SITE = String(process.env.SITE_URL || BRAND.url).replace(/\/+$/, '');
 // spelgegevens (zelfde bestanden als de browser) voor titels, de sitemap en welke adressen bestaan
 const GD = (() => {
   const ctx = { console, Math, Date, JSON }; ctx.window = ctx; vm.createContext(ctx);
-  for (const f of ['js/data.js', 'js/covers.js', 'js/jb-core.js', 'js/lp-views.js']) { try { vm.runInContext(fs.readFileSync(path.join(PUBLIC, f), 'utf8'), ctx, { filename: f }); } catch (e) { console.warn('Spelgegevens laden mislukt:', f, e.message); } }
+  for (const f of ['js/data.js', 'js/covers.js', 'js/jb-core.js', 'js/lid-data.js', 'js/lp-views.js']) { try { vm.runInContext(fs.readFileSync(path.join(PUBLIC, f), 'utf8'), ctx, { filename: f }); } catch (e) { console.warn('Spelgegevens laden mislukt:', f, e.message); } }
   try {
     const out = vm.runInContext(`({crimes:CRIMES.length,ranks:RANKS.length,trainings:TRAININGS.length,
       fams:FAMILIES.map(f=>({id:f.id,n:f.n,d:f.d})),games:COV.GAMES.map(g=>({slug:g.slug,n:g.n,d:g.short||''}))})`, ctx);
@@ -326,6 +326,7 @@ const GD = (() => {
       let facts = {}; try { facts = JSON.parse(fs.readFileSync(path.join(PUBLIC, 'lp', 'facts.json'), 'utf8')); } catch (e) { console.warn('public/lp/facts.json ontbreekt: draai npm run lp:facts'); }
       ctx.__facts = facts; out.N = vm.runInContext('LPV.facts(__facts)', ctx); out.N.brand = BRAND.name;
       out.lpPage = N => ctx.LPV.page(N);
+      out.lpLid = N => ctx.LPV.lidPage(N);
     } catch (e) { console.warn('Voorpagina kon niet gerenderd worden:', e.message); }
     return out;
   } catch (e) { console.warn('Spelgegevens niet beschikbaar:', e.message); return { crimes: 60, ranks: 12, trainings: 9, fams: [], games: [] }; }
@@ -333,6 +334,9 @@ const GD = (() => {
 // De voorpagina als HTML (één keer bij het opstarten; de getallen veranderen alleen met de code)
 let HOME_HTML = '';
 try { if (GD.lpPage) HOME_HTML = GD.lpPage(GD.N); } catch (e) { console.warn('Voorpagina renderen mislukt:', e.message); }
+// /lidmaatschap: VIP en High roller (lid-data.js), zelfde opmaak als de voorpagina. Nog zonder betaling.
+let LID_HTML = '';
+try { if (GD.lpLid) LID_HTML = GD.lpLid(GD.N); } catch (e) { console.warn('Lidmaatschap renderen mislukt:', e.message); }
 const escH = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const TPL = {};
 function tplFile(f) { if (!TPL[f]) TPL[f] = fs.readFileSync(path.join(PUBLIC, f), 'utf8'); return TPL[f]; }
@@ -343,13 +347,13 @@ function page(file, m) {
   const brandJs = JSON.stringify({ name: BRAND.name, short: BRAND.short, genre: BRAND.genre, tagline: BRAND.tagline, url: SITE })
     .replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/</g, '\\u003c');
   const ld = m.ld ? `<script type="application/ld+json">${JSON.stringify(m.ld).replace(/</g, '\\u003c')}</script>` : '';
-  const home = !!m.home, V = APP_VER;
-  const head = home ? `<link rel="stylesheet" href="/css/lp.css?v=${V}">` : `<link rel="stylesheet" href="/css/landing.css?v=${V}">`;
+  const home = !!m.home, V = APP_VER, lpHtml = m.lid ? LID_HTML : HOME_HTML;
+  const head = home ? `<link rel="stylesheet" href="/css/lp.css?v=${V}"><link rel="stylesheet" href="/css/lp-lid.css?v=${V}">` : `<link rel="stylesheet" href="/css/landing.css?v=${V}">`;
   const scripts = home ? `<script src="/js/lp-home.js?v=${V}" defer></script>`
     : ['data.js', 'lore.js', 'icons.js', 'zoet-art.js', 'covers.js', 'landing.js'].map(f => `<script src="/js/${f}?v=${V}"></script>`).join('\n');
   const noJs = `<noscript><p class="lp-nojs">${m.start ? 'Het spel zelf heeft JavaScript nodig. Zet het aan om een account te maken.' : escH(BRAND.name) + ' heeft JavaScript nodig.'}</p></noscript>`;
-  const map = { HEAD: head, SCRIPTS: scripts, BODY_CLASS: home ? 'lp lp-home' : 'lp', MAIN_ATTR: home ? ` data-ssr="/" data-startcash="${+(GD.N && GD.N.startCash) || 0}" data-first="${escH((GD.N && GD.N.first) || 'Rookie')}"${m.start ? ' data-open="register"' : ''}` : '',
-    APP_HTML: home ? (m.start ? noJs : '') + HOME_HTML : noJs,
+  const map = { HEAD: head, SCRIPTS: scripts, BODY_CLASS: home ? 'lp lp-home' + (m.lid ? ' lp-lidpag' : '') : 'lp', MAIN_ATTR: home ? ` data-ssr="${m.lid ? '/lidmaatschap' : '/'}" data-startcash="${+(GD.N && GD.N.startCash) || 0}" data-first="${escH((GD.N && GD.N.first) || 'Rookie')}"${m.start ? ' data-open="register"' : ''}` : '',
+    APP_HTML: home ? (m.start ? noJs : '') + lpHtml : noJs,
     BRAND: escH(BRAND.name), BRAND_UP: escH(BRAND.name.toUpperCase()), BRAND_INITIAL: escH(BRAND.name.charAt(0).toUpperCase()), BRAND_SHORT: escH(BRAND.short),
     TAGLINE: escH(BRAND.tagline), GENRE: escH(BRAND.genre), SITE: escH(SITE), TITLE: escH(title), DESC: escH(desc), CANONICAL: escH(canon),
     ROBOTS: m.noindex ? 'noindex,nofollow' : 'index,follow', BRAND_JSON: brandJs, LD_JSON: ld, VER: APP_VER };
@@ -365,7 +369,8 @@ const ROUTE_META = {
   '/casino': { title: `Casino · ${BRAND.name}`, desc: `${gameN} casinospellen met virtueel spelgeld: ${GD.games.map(x => x.n).join(', ')}. Alleen spelgeld, geen echt geld.` },
   '/families': { title: `Families · ${BRAND.name}`, desc: `De ${famN} families van ${BRAND.name}: wie ze zijn, wie ze binnenlaten en hoe je bij ze opklimt.` },
   '/rangen': { title: `Rangen · ${BRAND.name}`, desc: `De ${GD.ranks} rangen van ${BRAND.name}, van Rookie tot Peetvader, en wat elke rang opent.` },
-  '/training': { title: `Training · ${BRAND.name}`, desc: `${GD.trainings} plekken om te trainen en manieren om bij te komen in ${BRAND.name}.` }
+  '/training': { title: `Training · ${BRAND.name}`, desc: `${GD.trainings} plekken om te trainen en manieren om bij te komen in ${BRAND.name}.` },
+  '/lidmaatschap': { title: `Lidmaatschap: VIP en High roller · ${BRAND.name}`, desc: `${BRAND.name} is gratis en blijft gratis. Bekijk wat VIP en High roller extra geven: alle voordelen naast elkaar, met de echte getallen uit het spel.`, home: !!LID_HTML, lid: true }
 };
 function routeMeta(p) {
   // /start: de voorpagina die meteen het venster "Begin je carrière" opent (campagnes, QR-codes); niet indexeren, canonical /

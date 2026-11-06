@@ -65,7 +65,7 @@ function session() {
   const t = getTok(); if (!t) return Promise.resolve();
   loggedIn = true; try { userName = localStorage.getItem('ow_lpname') || ''; } catch (e) {} authUI();
   return fetch('/api/me', { headers: { Authorization: 'Bearer ' + t } }).then(r => {
-    if (r.ok) return r.json().then(j => { const nm = String(j.username || ''); if (nm !== userName) { userName = nm; try { localStorage.setItem('ow_lpname', nm); } catch (e) {} authUI(); } });
+    if (r.ok) return r.json().then(j => { try { document.dispatchEvent(new CustomEvent('lp:me', { detail: { tier: +j.tier || 0 } })); } catch (e) {} const nm = String(j.username || ''); if (nm !== userName) { userName = nm; try { localStorage.setItem('ow_lpname', nm); } catch (e) {} authUI(); } });
     if (r.status === 401 || r.status === 403) { try { localStorage.removeItem('ow_token'); } catch (e) {} location.reload(); }
   }).catch(() => {});
 }

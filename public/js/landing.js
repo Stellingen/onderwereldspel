@@ -125,7 +125,7 @@ function render(path,opt){opt=opt||{};renderId++;curPath=path;
 const cleanPath=p=>(p.replace(/\/+$/,'')||'/').toLowerCase();
 function go(href){const u=new URL(href,location.href);if(u.origin!==location.origin){location.href=href;return}
   const p=cleanPath(u.pathname);
-  if(p==='/'||p==='/start'){location.href=u.pathname+u.search+u.hash;return}   // de voorpagina komt kant-en-klaar van de server
+  if(p==='/'||p==='/start'||p==='/lidmaatschap'){location.href=u.pathname+u.search+u.hash;return}   // de voorpagina komt kant-en-klaar van de server
   try{history.replaceState(Object.assign({},history.state,{y:scrollY}),'')}catch(e){}
   if(p===cleanPath(location.pathname)&&!u.hash){scrollTo({top:0,behavior:reduce?'auto':'smooth'});return}
   history.pushState({y:0},'',p+u.hash);menu(false);render(p);

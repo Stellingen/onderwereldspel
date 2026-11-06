@@ -289,8 +289,8 @@ function faqList(N) {
   return [
     ['Wat is ' + B + '?', `Een gratis Nederlands maffiaspel in je browser. Je begint als ${esc(N.first)} met ${eur(N.startCash)} spelgeld en werkt je via ${N.ranks} rangen op tot ${esc(N.last)}: ${N.crimes} klussen, vluchtpartijen die je zelf speelt, auto's, ${N.fams} families, zaken, een woning en training. Alles is verzonnen.`],
     ['Vanaf welke leeftijd?', 'Het spel is voor 16 jaar en ouder, want het gaat over misdaad. Het casino in het spel is voor 18+. Alle namen, families en verhalen zijn verzonnen.'],
-    ['Kost het iets?', 'Nee. Spelen is gratis en er is niets te koop met echt geld. Codes en lidmaatschappen in het spel kosten geen echt geld.'],
-    ['Is het pay-to-win?', 'Nee. Er is niets te koop met echt geld.'],
+    ['Kost het iets?', 'Nee. Spelen is gratis en blijft gratis. Binnenkort kun je er vrijwillig VIP of High roller bij nemen; betalen kan nu nog niet. Codes in het spel kosten geen echt geld.'],
+    ['Is het pay-to-win?', 'Nu is er niets te koop. Straks geven VIP en High roller voordelen in het spel, zoals meer slaagkans en kortere wachttijden (<a href="/lidmaatschap">alles op een rij</a>). Elke rang is ook gratis te halen, en alles blijft spelgeld.'],
     ['Speel ik met echt geld?', 'Nee. Alle bedragen zijn virtueel spelgeld. Je kunt geen echt geld inzetten, winnen of uitbetalen, ook niet in het casino.'],
     ['Moet ik iets downloaden?', `Nee. Je speelt in je browser, op de computer en op je telefoon. Op je telefoon kun je ${B} ook op je beginscherm zetten, dan opent hij als een app.<span data-faq-app></span>`],
     ['Wordt mijn voortgang bewaard?', 'Ja. Je voortgang staat op de server bij je account, dus je kunt op een ander apparaat inloggen en verder spelen. Je speelt op één apparaat tegelijk: open je het spel ergens anders, dan gaat het daar verder.'],
@@ -300,7 +300,7 @@ function faqList(N) {
 }
 function eerlijk(N) {
   const wel = ['Gratis spelen', 'Je voortgang op de server, op elk apparaat', 'Zonder download, ook als app op je beginscherm', `${N.crimes} klussen, ${N.ranks} rangen, ${N.fams} families`, 'Alleen een naam en wachtwoord, geen e-mail'];
-  const niet = ['Geen echt geld: niet inzetten, niet winnen, niet uitbetalen', 'Niets te koop met echt geld', 'Geen echte personen of gebeurtenissen'];
+  const niet = ['Geen echt geld: niet inzetten, niet winnen, niet uitbetalen', 'Nu niets te koop met echt geld; VIP en High roller komen later, vrijwillig', 'Geen echte personen of gebeurtenissen'];
   return `<section class="lp-sec lp-eerlijk" id="faq" aria-labelledby="h-eerlijk">
  <div class="lp-wrap">
   <div class="lp-sec__head">${kicker('Eerlijk is eerlijk')}<h2 class="lp-h2" id="h-eerlijk">Wat je wel en niet krijgt.</h2></div>
@@ -330,12 +330,90 @@ function slot(N) {
 </section>`;
 }
 
-function page(N, o) {
-  o = o || {};
-  return hero(N, o) + lus(N) + games(N) + loopbaan(N) + imperium(N) + casino(N) + eerlijk(N) + slot(N);
+
+/* ================= Lidmaatschap: VIP en High roller (lid-data.js) ================= */
+// Nog zonder betaling: de knoppen openen alleen een melding "Binnenkort beschikbaar" (script hieronder). Prijzen VOORLOPIG (lid-data.js).
+const LIDD = () => (typeof LID !== 'undefined' ? LID : (root.LID || null));
+const lidTag = (t, i) => i === 2 ? '<i class="lp-tag lp-tag--hr">HIGH ROLLER</i>' : i === 1 ? '<i class="lp-tag lp-tag--vip">VIP</i>' : '<i class="lp-tag">GRATIS</i>';
+function lidPlan(L, t, i, h) {
+  const paid = i > 0;
+  return `<article class="lp-plan lp-plan--${t.id}" data-tier="${i}">
+  <span class="lp-plan__jij" hidden>Jouw lidmaatschap</span>
+  <header>${lidTag(t, i)}<${h} class="lp-plan__n">${esc(t.n)}</${h}><p>${esc(t.line)}</p></header>
+  <p class="lp-plan__prijs"><b>${L.eur(t.price)}</b> <span>${paid ? 'per maand' : 'voor altijd'}</span>${paid && L.PRICE_VOORLOPIG ? '<em>voorlopige prijs</em>' : ''}</p>
+  <ul class="lp-plan__lijst">${i ? `<li class="lp-plan__alles">${ic('check')}<span>Alles van ${i === 2 ? 'VIP' : 'Gratis'}, plus:</span></li>` : ''}${t.key.map(k => `<li>${ic('check')}<span>${esc(k)}</span></li>`).join('')}</ul>
+  <div class="lp-plan__voet">${paid ? `<button class="btn btn--block lp-plan__koop" type="button" data-lid-koop="${i}" data-naam="${esc(t.n)}" data-prijs="${L.eur(t.price)}">${i === 2 ? 'Word High roller' : 'Word VIP'}</button><small>Betalen komt eraan</small>` : `<a class="btn btn--block lp-plan__gratis" href="/start" data-auth="register" data-cta="lid">Speel gratis</a><small>Geen account met betaalgegevens nodig</small>`}</div>
+ </article>`;
+}
+function lidScript() {
+  return `<dialog class="lp-lid-dlg" id="lidDlg" aria-labelledby="lidDlgT"><form method="dialog"><p class="lp-kicker" id="lidDlgK"></p><h2 class="lp-h2 lp-h2--s" id="lidDlgT">Binnenkort beschikbaar</h2>
+<p>Betalen komt eraan. Zodra het kan, neem je het lidmaatschap hier per maand. Tot die tijd gebeurt er niets: er wordt niets afgeschreven en je account blijft zoals hij is.</p><button class="btn btn--block" value="ok">Begrepen</button></form></dialog>
+<script>(function(){var d=document.getElementById('lidDlg');document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-lid-koop]');if(!b)return;e.preventDefault();
+document.getElementById('lidDlgK').textContent=b.getAttribute('data-naam')+' · '+b.getAttribute('data-prijs')+' per maand';d.className='lp-lid-dlg lp-lid-dlg--'+(b.getAttribute('data-lid-koop')==='2'?'hr':'vip');
+if(d.showModal)d.showModal();else alert('Binnenkort beschikbaar. Betalen komt eraan.')});
+d&&d.addEventListener('click',function(e){if(e.target===d)d.close()});
+document.addEventListener('lp:me',function(e){var t=+((e.detail&&e.detail.tier)||0);[].forEach.call(document.querySelectorAll('.lp-plan'),function(p){var i=+p.getAttribute('data-tier'),j=p.querySelector('.lp-plan__jij'),k=p.querySelector('[data-lid-koop]');
+if(i===t){p.classList.add('is-jij');j.hidden=false}if(k&&i<=t){k.disabled=true;k.textContent=i===t?'Dit heb je nu':'Inbegrepen';var s=k.nextElementSibling;if(s)s.hidden=true}});
+var a=document.querySelector('.lp-plan--gratis .lp-plan__gratis');if(a){a.href='/game';a.removeAttribute('data-auth');a.textContent='Verder spelen'}})})()</script>`;
+}
+// op de voorpagina: rustig blok met de drie lidmaatschappen en een link naar alles
+function lidTeaser(N) {
+  const L = LIDD(); if (!L) return '';
+  const top = { 0: ['Alle klussen, rangen en families', 'Alle minigames en het casino'], 1: ['Slaagkans ×1,15, +10% buit', 'Wachttijden 75%'], 2: ['Slaagkans ×1,4, +25% buit', 'Wachttijden 55%'] };
+  return `<section class="lp-sec lp-lidblok" id="lidmaatschap" aria-labelledby="h-lid">
+ <div class="lp-wrap">
+  <div class="lp-sec__head">${kicker('Lidmaatschap', 'jij')}<h2 class="lp-h2 lp-lidblok__h" id="h-lid">Gratis. <em>Of net iets meer.</em></h2>
+   <p class="lp-lede">${esc(N.brand || 'Onderwereld')} is gratis en blijft gratis. Binnenkort kun je er VIP of High roller bij nemen: sneller vooruit, meer ruimte. Betalen kan nog niet.</p></div>
+  <ul class="lp-lidrij">${L.TIERS.map((t, i) => `<li class="lp-lidmini lp-lidmini--${t.id}">${lidTag(t, i)}<b>${esc(t.n)}</b><span class="lp-lidmini__p">${L.eur(t.price)}<small>${i ? ' per maand' : ' voor altijd'}</small></span><ul>${top[i].map(x => `<li>${esc(x)}</li>`).join('')}</ul></li>`).join('')}</ul>
+  <p class="lp-lidblok__voet">${tlink('/lidmaatschap', 'Alle voordelen vergelijken')}<span class="lp-note">Prijzen voorlopig.</span></p>
+ </div>
+</section>`;
+}
+// eigen pagina /lidmaatschap (server-side, zelfde kop en voet als de voorpagina)
+function lidPage(N) {
+  const L = LIDD(); if (!L) return '';
+  const B = esc(N.brand || 'Onderwereld');
+  const vragen = [
+    ['Moet ik betalen om te spelen?', `Nee. ${B} is gratis en blijft gratis. Alle ${N.crimes} klussen, ${N.ranks} rangen, ${N.fams} families en de minigames zijn zonder lidmaatschap te spelen, en je kunt elke rang gratis halen.`],
+    ['Kan ik al betalen?', 'Nee, nog niet. De knoppen laten alleen zien hoe het straks werkt. Er wordt niets afgeschreven en er verandert niets aan je account. De prijzen zijn voorlopig.'],
+    ['Wat geeft een lidmaatschap precies?', 'Voordelen in het spel: meer slaagkans en buit, kortere wachttijden, meer straatcredit, betere rente en meer ruimte bij de bank, en meer plek voor je zaken en woningen. In de tabel hierboven staat alles, met de echte getallen uit het spel.'],
+    ['En in het casino?', 'Hogere inzetlimieten, langer spelen en cashback op je inzet. De kasten betalen gemiddeld iets meer terug (zie RTP in de tabel). Het casino is alleen spelgeld en voor 18+: je kunt niets winnen of uitbetalen, ook niet met een lidmaatschap.'],
+    ['Speel ik met een lidmaatschap om echt geld?', 'Nee. Alles in het spel blijft virtueel spelgeld. Een lidmaatschap verandert daar niets aan.']];
+  return `<section class="lp-lidhero" aria-labelledby="h1">
+ <div class="lp-wrap">
+  ${kicker('Lidmaatschap', 'jij')}
+  <h1 class="lp-h1 lp-lidhero__h" id="h1"><span>Gratis spelen.</span> <span><em>Of net iets meer.</em></span></h1>
+  <p class="lp-lede">${B} is gratis en blijft gratis. Wie wil, neemt straks VIP of High roller: alles gaat wat sneller en je hebt meer ruimte. Hieronder staat precies wat je krijgt.</p>
+  <div class="lp-lidhero__cta"><a class="btn btn--lg" id="heroCta" href="/start" data-auth="register" data-cta="lid-hero">Speel gratis</a> <a class="tlink" href="#vergelijking">Alles naast elkaar${ic('arrow')}</a></div>
+  <ul class="lp-feitjes" aria-label="In het kort"><li>Spel blijft gratis</li><li>Betalen kan nog niet</li><li>Alleen spelgeld</li><li>${age(16)}</li></ul>
+ </div>
+</section>
+<section class="lp-sec lp-lidplans" aria-label="De drie lidmaatschappen">
+ <div class="lp-wrap">
+  <div class="lp-plans">${L.TIERS.map((t, i) => lidPlan(L, t, i, 'h2')).join('')}</div>
+  <p class="lp-lidpay"><b>Betalen kan nog niet.</b> De prijzen zijn voorlopig, per maand en inclusief btw. Tik je op een knop, dan zie je alleen een melding.</p>
+ </div>
+</section>
+<section class="lp-sec lp-lidcmp" id="vergelijking" aria-labelledby="h-cmp">
+ <div class="lp-wrap">
+  <div class="lp-sec__head">${kicker('Alles naast elkaar', 'jij')}<h2 class="lp-h2" id="h-cmp">${L.nRows()} voordelen. <em>Echte getallen.</em></h2>
+   <p class="lp-lede">Rechtstreeks uit het spel: ${L.CATS.map(c => c.n.toLowerCase()).join(', ').replace(/, ([^,]*)$/, ' en $1')}.</p></div>
+  <div class="lp-lidtab">${L.tableHtml({})}</div>
+  <p class="lp-note">RTP = hoeveel van je inzet een kast gemiddeld teruggeeft, over heel veel spins. Het casino speelt alleen met spelgeld, is voor 18+ en blijft altijd onder 100%. “Nieuw” komt deze ronde in het spel.</p>
+  <h2 class="lp-h2 lp-h2--b" id="h-lidfaq">Vragen</h2>
+  <div class="faq-list">${vragen.map((f, i) => `<details class="faq-q"><summary><span class="faq-n">${String(i + 1).padStart(2, '0')}</span><b>${esc(f[0])}</b><i class="faq-x" aria-hidden="true"></i></summary><div class="faq-a"><p>${f[1]}</p></div></details>`).join('')}</div>
+ </div>
+</section>
+${slot(N)}
+${lidScript()}`;
 }
 
-const LPV = { facts, page, hero, lus, games, loopbaan, imperium, casino, eerlijk, slot, faqList, klimSvg, gangSvg, haltRows };
+function page(N, o) {
+  o = o || {};
+  return hero(N, o) + lus(N) + games(N) + loopbaan(N) + imperium(N) + casino(N) + lidTeaser(N) + eerlijk(N) + slot(N);
+}
+
+const LPV = { facts, page, lidPage, lidTeaser, hero, lus, games, loopbaan, imperium, casino, eerlijk, slot, faqList, klimSvg, gangSvg, haltRows };
 root.LPV = LPV;
 if (typeof module !== 'undefined' && module.exports) module.exports = LPV;
 })(typeof window !== 'undefined' ? window : this);

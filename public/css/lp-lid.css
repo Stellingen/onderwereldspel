@@ -1,0 +1,107 @@
+/* Website: lidmaatschap (blok op de voorpagina en de pagina /lidmaatschap). Tokens uit lp.css.
+   VIP goud en High roller paars, zoals de tags in het spel. Rustig: geen aftellers, geen "populairst"-labels. */
+@layer lp{
+:root{--vip:#f2c230;--vip2:#fff1b8;--hr:#a855f7;--hr2:#c084fc}
+.lp-tag{display:inline-block;font:900 11px/1 var(--f-head);letter-spacing:.14em;font-style:normal;padding:4px 7px 3px;color:var(--soft);background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line2)}
+.lp-tag--vip{color:#1a1206;background:linear-gradient(135deg,var(--vip2),var(--vip) 45%,#b8860b);box-shadow:0 0 12px -2px rgba(242,194,48,.55)}
+.lp-tag--hr{color:#fff;background:linear-gradient(135deg,#e9d5ff,var(--hr) 40%,#5b21b6);box-shadow:0 0 14px -2px rgba(168,85,247,.6)}
+
+/* ---------- blok op de voorpagina ---------- */
+.lp-lidrij{display:grid;gap:12px}
+.lp-lidmini{--lc:var(--deco);display:grid;gap:8px;align-content:start;justify-items:start;padding:18px;background:var(--panel);border:1px solid var(--line2);border-top:2px solid var(--lc);border-radius:var(--r)}
+.lp-lidmini--vip{--lc:var(--vip)}.lp-lidmini--hr{--lc:var(--hr)}
+.lp-lidmini>b{font:900 clamp(28px,3vw,36px)/.95 var(--f-display);text-transform:uppercase}
+.lp-lidmini--vip>b{color:var(--vip)}.lp-lidmini--hr>b{color:var(--hr2)}
+.lp-lidmini__p{font:900 24px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.lp-lidmini__p small{font:400 14px var(--f-body);color:var(--mute)}
+.lp-lidmini ul{display:grid;gap:4px;font-size:var(--t-small);color:var(--soft)}
+.lp-lidmini li li,.lp-lidmini ul li{position:relative;padding-left:14px}
+.lp-lidmini ul li::before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;background:var(--lc)}
+.lp-lidmini--gratis ul li::before{background:var(--w-geld)}
+.lp-lidblok__h{font-size:clamp(36px,5.4vw,60px)}
+.lp-lidblok__voet{display:flex;flex-wrap:wrap;align-items:center;gap:4px 18px;margin-top:16px}
+.lp-lidblok__voet .lp-note{margin:0}
+@media (min-width:700px){.lp-lidrij{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* ---------- pagina /lidmaatschap ---------- */
+.lp-lidhero{position:relative;padding:calc(var(--mast-h) + env(safe-area-inset-top,0px) + clamp(28px,6vw,72px)) 0 clamp(12px,3vw,24px);
+  background:radial-gradient(60% 70% at 85% 10%,rgba(168,85,247,.13),transparent 70%),radial-gradient(50% 60% at 60% 0,rgba(242,194,48,.08),transparent 70%),linear-gradient(180deg,#0b1018 0%,var(--bg) 85%)}
+.lp-lidhero__h{font-size:clamp(48px,10.5vw,112px);max-width:14ch}
+.lp-lidhero__h em{color:var(--vip)}
+.lp-lidhero .lp-lede{max-width:58ch}
+.lp-lidhero__cta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;margin:24px 0 8px}
+.lp-lidplans{padding-top:clamp(28px,4vw,48px)}
+.lp-plans{display:grid;gap:16px}
+.lp-plan{--lc:var(--deco);position:relative;display:flex;flex-direction:column;min-width:0;padding:22px 20px 20px;background:var(--panel);border:1px solid var(--line2);border-top:3px solid var(--lc);border-radius:var(--r);
+  background-image:radial-gradient(120% 55% at 50% 0,color-mix(in srgb,var(--lc) 10%,transparent),transparent 70%)}
+.lp-plan--gratis{background-image:none}
+.lp-plan--vip{--lc:var(--vip);border-color:color-mix(in srgb,var(--vip) 30%,var(--line2));border-top-color:var(--vip)}
+.lp-plan--hr{--lc:var(--hr);border-color:color-mix(in srgb,var(--hr) 36%,var(--line2));border-top-color:var(--hr);background-image:radial-gradient(120% 55% at 50% 0,rgba(168,85,247,.16),transparent 70%)}
+.lp-plan.is-jij{box-shadow:0 0 0 1px var(--lc),0 0 36px -12px var(--lc)}
+.lp-plan__jij{position:absolute;top:-2px;right:16px;transform:translateY(-50%);font:500 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding:5px 9px;background:var(--lc);color:#0b0907}
+.lp-plan--hr .lp-plan__jij{color:#fff}
+.lp-plan header{display:grid;gap:8px;justify-items:start}
+.lp-plan__n{font:900 clamp(36px,4vw,48px)/.92 var(--f-display);text-transform:uppercase;margin-top:4px}
+.lp-plan--vip .lp-plan__n{color:var(--vip)}.lp-plan--hr .lp-plan__n{color:var(--hr2)}
+.lp-plan header p{color:var(--mute);font-size:15px}
+.lp-plan__prijs{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:18px 0 16px;padding:14px 0;border-block:1px solid var(--line)}
+.lp-plan__prijs b{font:900 clamp(40px,4.4vw,52px)/1 var(--f-display);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lp-plan__prijs span{color:var(--mute)}
+.lp-plan__prijs em{flex-basis:100%;font:500 11px var(--f-mono);font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.lp-plan__lijst{display:grid;gap:10px;align-content:start;flex:1;margin-bottom:20px}
+.lp-plan__lijst li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:10px;font-size:15px;line-height:1.4;color:var(--soft)}
+.lp-plan__lijst .ic{width:17px;height:17px;margin-top:2px;color:var(--lc)}
+.lp-plan--gratis .lp-plan__lijst .ic{color:var(--w-geld)}
+.lp-plan__alles{color:var(--mute)!important;font-size:14px!important}.lp-plan__alles .ic{opacity:.55}
+.lp-plan__voet{display:grid;gap:8px;justify-items:center}
+.lp-plan__voet small{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:center}
+.lp-plan--gratis .btn{background:var(--panel2);color:var(--fg);box-shadow:inset 0 0 0 1px var(--line2)}
+.lp-plan--gratis .btn:hover{background:#1d2128}
+.lp-plan--vip .lp-plan__koop:not(:disabled){background:linear-gradient(135deg,var(--vip2),var(--vip) 45%,#b8860b);color:#1a1206}
+.lp-plan--hr .lp-plan__koop:not(:disabled){background:linear-gradient(135deg,#e9d5ff,var(--hr) 42%,#5b21b6);color:#fff}
+.lp-plan__koop:not(:disabled):hover{filter:brightness(1.07)}
+.lp-lidpay{margin-top:16px;padding:14px 16px;border:1px dashed var(--line2);border-radius:var(--r);color:var(--mute);font-size:var(--t-small);max-width:none}
+.lp-lidpay b{color:var(--fg)}
+@media (min-width:900px){.lp-plans{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.lp-lidcmp{padding-top:clamp(24px,4vw,56px)}
+
+/* vergelijkingstabel (zelfde HTML als in het spel: LID.tableHtml) */
+.lp-lidtab{background:var(--panel);border:1px solid var(--line2);border-radius:var(--r);padding:4px 18px 8px}
+.lt{width:100%;border-collapse:collapse;font-size:15px}
+.lt th,.lt td{text-align:left;padding:11px 12px;vertical-align:top}
+.lt thead th{font:800 16px/1.2 var(--f-head);letter-spacing:.06em;text-transform:uppercase;padding-top:14px;border-bottom:1px solid var(--line2);white-space:nowrap}
+.lt thead .lt-n{font:500 11px var(--f-mono);letter-spacing:.1em;color:var(--faint)}
+.lt .lt-n{width:40%}.lt .lt-v,.lt thead .lt-h{width:20%}
+.lt .lt-h.lt-gratis{color:var(--soft)}.lt .lt-h.lt-vip{color:var(--vip)}.lt .lt-h.lt-hr{color:var(--hr2)}
+.lt .lt-ch th{padding:24px 12px 8px;font:800 14px var(--f-head);letter-spacing:.12em;text-transform:uppercase;color:var(--acc2);border-bottom:1px solid var(--line)}
+.lt .lt-ch small{display:block;margin-top:3px;font:400 13px var(--f-body);letter-spacing:0;text-transform:none;color:var(--mute)}
+.lt-r{border-bottom:1px solid var(--line)}
+.lt-r th{font-weight:400}
+.lt-r th b{display:block;font-weight:600;color:var(--fg);line-height:1.3}
+.lt-r th small{display:block;margin-top:2px;font-size:13px;line-height:1.35;color:var(--mute)}
+.lt-new{display:inline-block;margin-top:4px;font:500 10px var(--f-mono);font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--w-geld);border:1px solid color-mix(in srgb,var(--w-geld) 45%,transparent);padding:1px 5px}
+.lt-v{font:500 14px var(--f-mono);font-variant-numeric:tabular-nums;color:var(--fg);overflow-wrap:anywhere}
+.lt-v.lt-vip{color:#ffe08a}.lt-v.lt-hr{color:#e3c8ff}
+.lt-dash{color:var(--deco)}.lt-yes{color:var(--w-geld)}
+.lt-rtp .lt-v,.lt-rtp th b{color:var(--mute);font-weight:400}
+@media (max-width:699px){
+  .lp-lidtab{padding:0 12px 6px;background:none;border:0;padding-inline:0}
+  .lt,.lt tbody{display:block}
+  .lt thead{display:none}
+  .lt tr.lt-ch{display:block}.lt .lt-ch th{display:block;padding:22px 2px 8px}
+  .lt tr.lt-r{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 6px;padding:12px 2px}
+  .lt tr.lt-r th{grid-column:1/-1;width:auto;padding:0 0 6px}
+  .lt tr.lt-r td{width:auto;padding:6px 7px 5px;font-size:13px;background:var(--panel);border-radius:6px}
+  .lt tr.lt-r td::before{content:attr(data-l);display:block;margin-bottom:2px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+  .lt tr.lt-r td.lt-vip::before{color:color-mix(in srgb,var(--vip) 70%,var(--faint))}.lt tr.lt-r td.lt-hr::before{color:color-mix(in srgb,var(--hr2) 70%,var(--faint))}
+}
+
+/* venster "Binnenkort beschikbaar" */
+.lp-lid-dlg{--lc:var(--vip);width:min(460px,calc(100vw - 32px));padding:0;border:1px solid var(--line2);border-top:3px solid var(--lc);border-radius:var(--r);background:var(--panel);color:var(--fg)}
+.lp-lid-dlg--hr{--lc:var(--hr)}
+.lp-lid-dlg::backdrop{background:rgba(4,5,7,.8);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.lp-lid-dlg form{display:grid;gap:12px;padding:24px 22px 22px;background:radial-gradient(120% 70% at 50% 0,color-mix(in srgb,var(--lc) 12%,transparent),transparent 70%)}
+.lp-lid-dlg .lp-kicker{--w:var(--lc);margin:0}
+.lp-lid-dlg p:not(.lp-kicker){color:var(--soft)}
+@media (prefers-reduced-motion:no-preference){.lp-lid-dlg[open]{animation:lpLidUp .2s ease-out}@keyframes lpLidUp{from{transform:translateY(8px);opacity:0}}}
+}
