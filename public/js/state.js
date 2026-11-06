@@ -258,7 +258,7 @@ function arrest(sec,title,msg,opts){
   const goJail=(extra,why)=>jailFor(pa,extra,why);
   const btns=[];
   if(opts.flee){const L=FLEE_LEVELS[opts.flee];
-    btns.push({l:(opts.chase?'Wegrijden · ':'Vluchten · ')+L.label,c:'',f:()=>{pa.fleeing=true;S.pendingArrest=pa;save();pushState();closeModal();(typeof escapeGame==='function'?escapeGame(opts.flee,opts):fleeGame(opts.flee)).then(ok=>{
+    btns.push({l:(opts.chase?'Wegrijden · ':'Vluchten · ')+L.label,c:'',f:()=>{pa.fleeing=true;S.pendingArrest=pa;save();pushState();closeModal();(typeof escapeGame==='function'?escapeGame(opts.flee,opts):fleeGame(opts.flee,opts)).then(ok=>{
       if(ok){S.pendingArrest=null;S.stats.fled=(S.stats.fled||0)+1;S.cred+=1;S.heat=Math.min(100,S.heat+5);addXp(3);
         if(opts.wanted&&!raid&&typeof setWanted==='function')setWanted(opts.wanted.lv,opts.wanted.t,opts.wanted.sec); // na een huurmoord: ontkomen, wel gezocht
         log(raid?'Politiecontrole ontvlucht. Je staat nog op de gezochtlijst':'Gevlucht en de politie kwijtgeraakt','ok');save();pushState();render();
@@ -267,7 +267,8 @@ function arrest(sec,title,msg,opts){
   }
   if(ch>0)btns.push({l:'Praat je eruit · '+ch+'%',c:'ghost',f:()=>{if(rnd(1,100)<=ch){S.pendingArrest=null;S.cred+=1;addXp(5);log('Uit een arrestatie gepraat','ok');save();pushState();closeModal();render();toast('Je praat je eruit. De agent laat je gaan.')}else goJail(1.25,'Praatje mislukt, de agent wordt boos (+25% straf)')}});
   btns.push({l:'Geef je over · '+fmtTime(plain),c:'red',f:()=>goJail()});
-  const hint=opts.flee?' Vlucht je en lukt het, dan ben je vrij. Mislukt het, dan krijg je 20% extra straf.':'';
+  const fr=opts.flee&&!opts.chase&&typeof fleeParams==='function'?fleeParams(opts.flee,opts).rate:null; // inschatting voor jou (flee.js)
+  const hint=opts.flee?' Vlucht je en lukt het, dan ben je vrij. Mislukt het, dan krijg je 20% extra straf.'+(fr?' Rennen is voor jou '+fr.txt+'.':''):'';
   showModal(title,msg+hint,btns);
 }
 // Na verversen: een open arrestatie komt terug; een afgebroken vlucht of autodiefstal telt als mislukt.

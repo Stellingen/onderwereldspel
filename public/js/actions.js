@@ -103,4 +103,4 @@ function crimeResolve(c,bonus){const roll=rnd(1,100),ch=Math.min(chanceCap(c),ch
 function crimeFail(c,pre){const lost=Math.floor(Math.min(Math.floor(S.cash*0.1),c.max*2)*(1-furnFx('safe'))); // verlies past bij de grootte van de klus
   S.cash-=lost;S.stats.fails++;crxN(crCat(c));crxAdd(c,0);S.hp=Math.max(10,S.hp-rnd(5,15));addHeat(rnd(5,10));
    addXp(Math.ceil(c.xp/4));log(c.n+' mislukt, '+fmt(lost)+' kwijt','bad');save();
-   arrest(c.jail,'Betrapt!',(pre||'')+c.n+' ging mis. '+FLEE_LEVELS[c.flee||2].where,{flee:c.flee||2});save();render()}
+   arrest(c.jail,'Betrapt!',(pre||'')+c.n+' ging mis. '+FLEE_LEVELS[c.flee||2].where,{flee:c.flee||2,cat:crCat(c)});save();render()}

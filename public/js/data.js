@@ -328,16 +328,19 @@ const HEAVY_R=RK[5]; // zware klussen: vanaf Gangster
 // Prijs per sessie stijgt steil: level 1 kost een paar tientjes, de laatste levels honderdduizenden euro's.
 const trainCost=(t,l)=>Math.round(t.base*Math.pow(1+l,1.9)*Math.pow(1.04,l)/10)*10;
 const TRAIN_MILES=[10,20,30,40,50];
+// Effect van training op het vluchtspel (Rennen!, flee.js FL_K), in % per level: conditie → adem gaat langzamer op,
+// snelheid → sneller van baan, ademhaling → minder adem kwijt bij struikelen, uithouding → sneller weer op snelheid
+const FLK_TXT={drain:1,lane:.6,hit:1,rec:.3};
 const TRAININGS=[
  {id:'conditie',place:'Sportschool',n:'Conditie',col:'#3fe395',ic:'gym',base:60,cd:12,
   d:'Krachttraining en cardio. Je hebt meer energie en houdt het langer vol als je moet vluchten.',
-  eff:l=>[['Max. energie','+'+Math.round(SK.conditie.en*l)],['Meer ruimte bij vluchten',pctTxt(SK.conditie.zone*100*l,'+')]]},
+  eff:l=>[['Max. energie','+'+Math.round(SK.conditie.en*l)],['Adem bij vluchten (Rennen!)',pctTxt(l*FLK_TXT.drain,'-')]]},
  {id:'steal',place:'Albert Cuypmarkt',n:'Vingervlugheid',col:'#a9dcff',ic:'hand',base:80,cd:15,
   d:'Oefenen tussen de kraampjes. Je handen worden sneller dan hun ogen.',
   eff:l=>[['Slaagkans alle klussen',pctTxt(SK.steal.all*l,'+',1)],['Bij zakkenrollen',pctTxt(SK.steal.zakken*l,'+',1)]]},
  {id:'speed',place:'Atletiekbaan',n:'Snelheid',col:'#b8a1ff',ic:'run',base:100,cd:15,
   d:'Sprinten en intervallen. Je bent sneller klaar en sneller weg.',
-  eff:l=>[['Kortere wachttijd',pctTxt(SK.speed.cd*100*l,'-')],['Trager tempo bij vluchten',pctTxt(SK.speed.mark*100*l,'-')]]},
+  eff:l=>[['Kortere wachttijd',pctTxt(SK.speed.cd*100*l,'-')],['Sneller van baan wisselen bij vluchten',pctTxt(l*FLK_TXT.lane,'-')]]},
  {id:'cars',place:'Circuit Zandvoort',n:'Rijvaardigheid',col:'#ffad6b',ic:'wheel',base:120,cd:20,
   d:'Rondjes op het circuit. Je hebt meer tijd bij het contact maken en weet beter wat een wagen waard is.',
   eff:l=>[['Meer tijd bij contact maken',pctTxt(SK.cars.time*100*l,'+')],['Verkoopwaarde gestolen auto',pctTxt(SK.cars.price*100*l,'+')]]},
@@ -360,10 +363,10 @@ const TRAININGS=[
  // nieuw: uithoudingsvermogen (minder energie per klus) en ademhaling (rustiger bij klussen en vluchten)
  {id:'duur',place:'Hardloopclub langs de Amstel',n:'Uithouding',col:'#5fe3a6',ic:'run',base:90,cd:15,
   d:'Lange rondjes in een rustig tempo. Je lijf leert zuinig met energie om te gaan: elke klus kost minder en je laadt sneller op.',
-  eff:l=>[['Energie per klus',pctTxt(SK.duur.save*100*l,'-')],['Energie laadt sneller op',pctTxt(SK.duur.regen*100*l,'+')]]},
+  eff:l=>[['Energie per klus',pctTxt(SK.duur.save*100*l,'-')],['Energie laadt sneller op',pctTxt(SK.duur.regen*100*l,'+')],['Sneller herstel bij vluchten',pctTxt(l*FLK_TXT.rec,'+')]]},
  {id:'ademhaling',place:'Yogaschool in Oost',n:'Ademhaling',col:'#c9a2ff',ic:'spa',base:110,cd:15,r:1,game:'breath',
   d:'Ademen in vier tellen, vasthouden, uitademen. Je hartslag blijft laag als het spannend wordt. Je traint het zelf: tik op het ritme van de ademhaling.',
-  eff:l=>[['Slaagkans alle klussen',pctTxt(SK.ademhaling.focus*l,'+',1)],['Ruimte bij paniek',pctTxt(SK.ademhaling.adem*100*l,'+')],['Meer ruimte bij vluchten',pctTxt(SK.ademhaling.flee*100*l,'+')]]},
+  eff:l=>[['Slaagkans alle klussen',pctTxt(SK.ademhaling.focus*l,'+',1)],['Ruimte bij paniek',pctTxt(SK.ademhaling.adem*100*l,'+')],['Adem kwijt bij struikelen (vluchten)',pctTxt(l*FLK_TXT.hit,'-')]]},
  {id:'sloten',place:'Werkplaats van een oud-inbreker',n:'Slotenkraken',col:'#ffd166',ic:'key',base:95,cd:15,r:1,game:'lock',
   d:'Een gepensioneerde inbreker met een muur vol sloten. Je traint het zelf: zet de pinnen op het juiste moment. Hoe hoger je level, hoe groter het groene stuk en hoe rustiger de naald.',
   eff:l=>[['Groen stuk bij een slot',pctTxt(SK.sloten.zone*100*l,'+')],['Naald trager',pctTxt(SK.sloten.speed*100*l,'−')],['Slaagkans bij een slot',pctTxt(SK.sloten.kans*l,'+',1)]]}];

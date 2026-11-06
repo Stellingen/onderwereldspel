@@ -23,7 +23,7 @@ function ccParams(level){const L=CC_LV[level]||CC_LV[2],sk=(S.skills&&S.skills.c
  const ease=(1+sk*.012+fx(()=>gearFx('flee'))+fx(()=>famPerk('flee'))+fx(()=>typeof fitFx==='function'?fitFx('flee'):0))*(1+fx(()=>tierK())*.6);
  return Object.assign({},L,{level,ease,gap:L.gap*Math.min(1.3,Math.sqrt(ease)),start:L.start*Math.min(1.5,ease),
   hitW:Math.max(.48,.62/Math.pow(ease,.3)),nitro:L.nitro+(sk>=10?1:0),label:(FLEE_LEVELS[level]||FLEE_LEVELS[2]).label})}
-function escapeGame(level,opts){return opts&&opts.chase&&typeof carChaseGame==='function'?carChaseGame(level,opts.chase):fleeGame(level)}
+function escapeGame(level,opts){return opts&&opts.chase&&typeof carChaseGame==='function'?carChaseGame(level,opts.chase):fleeGame(level,opts)}
 // De route in "ontmoet-tijden": rij i komt jou tegen op tijd T (bij gewoon gas). Rijdt hij zelf u m/s, dan begint hij op (V-u)·T.
 // Zo vallen auto's die langzamer rijden en versperringen die stilstaan altijd netjes na elkaar.
 function ccCourse(P){const rows=[],V=P.v,ex=[];for(let i=0;i<P.exits;i++)ex.push(P.time*(.24+i*(.62/Math.max(1,P.exits-1)))+(Math.random()-.5)*1.2);

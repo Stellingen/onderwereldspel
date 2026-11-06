@@ -1,0 +1,73 @@
+/* Rennen! (flee.js, versie 2): HUD met afstand tot de agent en adem, en de kaart vooraf met wat er meetelt.
+   Bouwt voort op .fl-box, .fl-stage, .fl-ctl en .fl-big uit crimes.css (die gebruikt de autoachtervolging ook). */
+.rn-stage{cursor:default}
+/* route bovenin: jij → de uitgang, met de deur naar buiten en de eindsprint */
+.rn-track{position:absolute;left:12px;right:12px;top:10px;display:flex;align-items:center;gap:10px;pointer-events:none;z-index:2}
+.rn-rail{position:relative;flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.14)}
+.rn-done{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:linear-gradient(90deg,rgba(255,122,26,.35),var(--acc))}
+.rn-you{position:absolute;top:50%;width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 2px #0b0907,0 0 12px var(--acc)}
+.rn-sp{position:absolute;top:-4px;width:2px;height:12px;margin-left:-1px;background:var(--red);box-shadow:0 0 6px var(--red)}
+.rn-door{position:absolute;top:-5px;width:8px;height:14px;margin-left:-4px;border-radius:2px;background:#16a34a;box-shadow:0 0 8px rgba(40,220,110,.7)}
+.rn-track b{font-family:var(--f-head);font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#06140c;background:var(--green);padding:4px 7px;line-height:1;white-space:nowrap;max-width:42%;overflow:hidden;text-overflow:ellipsis}
+/* onderin: afstand tot de agent (links) en je adem (rechts) */
+.rn-hud{position:absolute;left:10px;right:10px;bottom:10px;display:flex;justify-content:space-between;gap:10px;pointer-events:none;z-index:2}
+.rn-pill{width:min(172px,40%);min-width:0;padding:7px 10px 8px;border-radius:10px;background:rgba(8,9,12,.74);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 6px 18px rgba(0,0,0,.45);
+ display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:2px 8px;transition:box-shadow .2s}
+.rn-lab{display:flex;align-items:center;gap:6px;min-width:0;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);white-space:nowrap;overflow:hidden}
+.rn-pill b{font-family:var(--f-mono);font-size:16px;font-weight:700;color:var(--fg);font-variant-numeric:tabular-nums;line-height:1}
+.rn-pill em{grid-column:1/-1;display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:4px}
+.rn-pill em i{display:block;height:100%;width:100%;border-radius:3px;transition:width .15s linear,background .2s}
+.rn-cop em i{background:linear-gradient(90deg,var(--red),#ffb020 45%,var(--green))}
+.rn-st em i{background:linear-gradient(90deg,#5fe3a6,#3fe395)}
+.rn-siren{width:9px;height:9px;border-radius:2px;flex:none;background:linear-gradient(90deg,#ff3d52 50%,#4d7dff 50%);animation:rnSir .5s steps(2) infinite}
+@keyframes rnSir{50%{filter:hue-rotate(180deg) brightness(1.3)}}
+.rn-lung{width:9px;height:9px;border-radius:50%;flex:none;background:#5fe3a6;box-shadow:0 0 6px rgba(95,227,166,.7)}
+.rn-cop.mid b{color:#ffb020}
+.rn-cop.near{box-shadow:inset 0 0 0 1.5px var(--red),0 0 22px rgba(255,61,82,.5)}.rn-cop.near b{color:var(--red)}
+.rn-st.mid b{color:#ffb020}.rn-st.mid em i{background:#ffb020}.rn-st.mid .rn-lung{background:#ffb020;box-shadow:0 0 6px rgba(255,176,32,.7)}
+.rn-st.low{box-shadow:inset 0 0 0 1.5px #ff8a5c,0 0 18px rgba(255,90,60,.35)}.rn-st.low b{color:#ff8a5c}.rn-st.low em i{background:#ff5a3c}
+.rn-st.low .rn-lung{background:#ff5a3c;animation:rnPuff .7s ease-in-out infinite alternate}
+@keyframes rnPuff{to{transform:scale(1.35)}}
+/* korte meldingen midden in beeld */
+.rn-pop{position:absolute;left:50%;top:22%;transform:translate(-50%,6px);max-width:calc(100% - 24px);font-family:var(--f-head);font-weight:800;font-size:clamp(15px,3.4vw,22px);letter-spacing:.05em;text-transform:uppercase;
+ padding:6px 14px;background:rgba(8,9,11,.84);box-shadow:inset 0 0 0 1px var(--line2);opacity:0;transition:opacity .15s,transform .15s;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:3}
+.rn-pop.on{opacity:1;transform:translate(-50%,0)}
+.rn-pop.ok{color:var(--green);box-shadow:inset 0 0 0 1px var(--green)}.rn-pop.bad{color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}.rn-pop.cop{color:#ffb020;box-shadow:inset 0 0 0 1px #ffb020}
+.rn-box .fl-big{z-index:3}
+.rn-miss b{color:var(--acc)}.rn-miss b.ok{color:var(--green);letter-spacing:.04em}
+/* vooraf: "Politie! Staan blijven!" en wat er meetelt */
+.rn-cut{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:10px;padding:14px 12px 12px;overflow:hidden;cursor:pointer;transition:opacity .3s}
+.rn-cut.gone{opacity:0;pointer-events:none}
+.rn-cut-bg{position:absolute;inset:0;background:radial-gradient(55% 45% at 12% 100%,rgba(255,61,82,.35),transparent 70%),radial-gradient(55% 45% at 88% 100%,rgba(77,125,255,.35),transparent 70%),
+ linear-gradient(180deg,rgba(6,7,10,.55),rgba(6,7,10,.92) 60%);animation:rnCutSir .6s steps(2) infinite}
+.rn-cut.in .rn-cut-bg{background:radial-gradient(60% 45% at 50% 0,rgba(190,225,255,.18),transparent 70%),radial-gradient(55% 45% at 12% 100%,rgba(255,61,82,.3),transparent 70%),radial-gradient(55% 45% at 88% 100%,rgba(77,125,255,.3),transparent 70%),linear-gradient(180deg,rgba(8,9,12,.6),rgba(8,9,12,.94) 60%)}
+@keyframes rnCutSir{50%{filter:hue-rotate(160deg)}}
+.rn-cut-say{position:relative;margin-top:22px;padding:9px 14px;border-radius:12px;background:#f4f1ea;color:#16181c;font-family:var(--f-display);font-weight:900;font-size:clamp(18px,4.4vw,28px);text-transform:uppercase;letter-spacing:.02em;
+ box-shadow:0 8px 24px rgba(0,0,0,.5);animation:rnSay .3s .15s cubic-bezier(.2,1.5,.4,1) both;text-align:center;max-width:100%}
+.rn-cut-say::after{content:"";position:absolute;left:22%;bottom:-9px;border:9px solid transparent;border-top-color:#f4f1ea;border-bottom:0}
+@keyframes rnSay{from{transform:scale(.6);opacity:0}}
+.rn-pre{position:relative;width:min(460px,100%);display:flex;flex-direction:column;gap:9px;padding:13px 14px 12px;border-radius:12px;background:rgba(14,15,19,.92);box-shadow:inset 0 0 0 1px var(--line2),0 14px 34px rgba(0,0,0,.55)}
+.rn-pre-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.rn-pre-h span{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.rn-rate{font-family:var(--f-head);font-weight:800;font-size:17px;letter-spacing:.03em;text-transform:uppercase}
+.rn-rate.r0{color:var(--green)}.rn-rate.r1{color:#c8e36a}.rn-rate.r2{color:#ffb020}.rn-rate.r3{color:#ff8a5c}.rn-rate.r4{color:var(--red)}
+.rn-why{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.rn-why span{display:flex;flex-direction:column;gap:2px;padding:6px 7px;border-radius:8px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);min-width:0}
+.rn-why i{font-style:normal;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rn-why b{font-family:var(--f-mono);font-size:17px;font-weight:700;color:var(--mute);line-height:1}
+.rn-why .mid b{color:#ffd166}.rn-why .hi b{color:var(--green)}
+.rn-pre-x{margin:0;font-size:12.5px;line-height:1.4;color:var(--mute)}
+.rn-go{width:100%;height:48px;font-size:18px}
+.rn-auto{display:block;height:3px;border-radius:2px;background:rgba(255,255,255,.1);overflow:hidden;margin-top:-3px}
+.rn-auto i{display:block;height:100%;width:0;background:var(--acc);animation:rnAuto 6s linear forwards}
+@keyframes rnAuto{to{width:100%}}
+.rn-hint{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-align:center}
+@media (max-width:600px){
+ .rn-pill{padding:6px 8px 7px;width:min(150px,44%)}.rn-pill b{font-size:14px}.rn-lab{font-size:9.5px;letter-spacing:.08em}
+ .rn-why{grid-template-columns:repeat(2,minmax(0,1fr))}.rn-why b{font-size:15px}
+ .rn-pre{padding:11px 12px 10px;gap:8px}.rn-go{height:46px}
+ .rn-cut-say{margin-top:26px}
+ .rn-box .fl-keys{display:none}.rn-box .fl-tap{display:inline}
+}
+@media (max-height:700px) and (max-width:600px){.rn-cut-say{margin-top:22px;font-size:17px;padding:7px 12px}.rn-pre-x{font-size:11.5px}}
+@media (prefers-reduced-motion:reduce){.rn-cut-bg,.rn-siren,.rn-st.low .rn-lung,.rn-cut-say{animation:none!important}.rn-auto i{animation-duration:7s}}
