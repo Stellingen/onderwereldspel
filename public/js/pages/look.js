@@ -5,30 +5,31 @@
 // Visdief, daarna 5 uur rust. Andere casinospellen (roulette, blackjack, poker, mines, hoogvlieger, munt) houden de echte kansen.
 // Effecten (fitFx in state.js): kans = %-punten slaagkans, buit/inc/xp/bail/cd/flee/en/car/esc = fractie (.05 = 5%),
 // heat = minder hitte (negatief = opvallend, dus meer hitte).
-const FIT_SLOTS=[{id:'hoofd',n:'Hoofd'},{id:'kleding',n:'Kleding'},{id:'schoenen',n:'Schoenen'},{id:'nek',n:'Ketting'},{id:'pols',n:'Pols'},{id:'ring',n:'Ring'},{id:'geluk',n:'Geluk'},{id:'zaken',n:'Geldklem'}];
+const FIT_SLOTS=[{id:'hoofd',n:'Hoofd'},{id:'kleding',n:'Kleding'},{id:'broek',n:'Broek'},{id:'schoenen',n:'Schoenen'},{id:'nek',n:'Ketting'},{id:'pols',n:'Pols'},{id:'ring',n:'Ring'},{id:'geluk',n:'Geluk'},{id:'zaken',n:'Geldklem'}];
 // gelukspullen: gebruik je, ze tellen niet mee voor een set en staan niet in de kledingkast
 const FIT_CHARM=['geluk','zaken'];const fitIsCharm=o=>!!o&&FIT_CHARM.includes(o.slot);
-const FIT_STYLE_SLOTS=6; // geluk telt niet mee voor een set
+const FIT_STYLE_SLOTS=7; // geluk telt niet mee voor een set (sinds de broek: 7 plekken)
 const FIT_STYLES={
- stil:{n:'Grijze muis',d:'Onopvallend. Niemand die je herkent.',col:'#a9b3c1',set3:{kans:2,heat:.06},set5:{kans:4,heat:.12}},
+ stil:{n:'Grijze muis',d:'Onopvallend. Niemand die je herkent.',col:'#a9b3c1',set3:{kans:2,heat:.06,herken:.04},set5:{kans:4,heat:.12,herken:.08}},
  sport:{n:'Atleet',d:'Snel weg en lang fit.',col:'#a9dcff',set3:{flee:.08,en:.04},set5:{flee:.15,en:.08}},
  patser:{n:'Patser',d:'Je ziet er rijk uit. Dat levert geld op, en aandacht.',col:'#f2c230',set3:{buit:.04,inc:.04,heat:-.04},set5:{buit:.06,inc:.08,heat:-.06}},
  zaken:{n:'Zakenman',d:'Respect bij rechters, bankiers en oude families.',col:'#b8a1ff',set3:{inc:.05,bail:.08},set5:{inc:.08,bail:.15,xp:.03}},
  tac:{n:'Tactisch',d:'Gebouwd voor de klus: je slaagt vaker en komt overal uit.',col:'#9fe870',set3:{kans:2,esc:.08},set5:{kans:3,esc:.15,flee:.06}},
- nacht:{n:'Nachtvlinder',d:'Clubs, deuren en mensen gaan voor je open. Sneller weer aan de slag.',col:'#e879f9',set3:{cd:.05,xp:.03},set5:{cd:.1,xp:.05,heat:-.03}}};
+ nacht:{n:'Nachtvlinder',d:'Clubs, deuren en mensen gaan voor je open. Sneller weer aan de slag.',col:'#e879f9',set3:{cd:.05,xp:.03},set5:{cd:.1,xp:.05,heat:-.03}},
+ dief:{n:'Dievenpak',d:'Alles zwart. Getuigen zien een schim.',col:'#8fa0bd',set3:{herken:.08,heat:.03},set5:{herken:.15,heat:.05,esc:.04}}};
 const OUTFITS=[
  // hoofd
- {id:'pet',slot:'hoofd',st:'stil',n:'Zwarte pet',d:'Klep laag. Camera\'s zien alleen je kin.',p:150,r:0,fx:{heat:.05}},
+ {id:'pet',slot:'hoofd',st:'stil',n:'Zwarte pet',d:'Klep laag. Camera\'s zien alleen je kin.',p:150,r:0,fx:{heat:.05,herken:.03}},
  {id:'muts',slot:'hoofd',st:'sport',n:'Gebreide muts',d:'Warm op de scooter en niemand kijkt twee keer.',p:400,r:1,fx:{heat:.03,en:.03}},
  {id:'bril',slot:'hoofd',st:'patser',n:'Pilotenbril',d:'Spiegelglazen. Jij ziet alles, zij zien niks.',p:900,r:2,fx:{heat:.03,car:.03}},
- {id:'bivak',slot:'hoofd',st:'stil',n:'Bivakmuts',d:'Bij een overval weet niemand wie je bent. De rechter vindt het minder grappig.',p:2500,r:3,fx:{kans:3,bail:-.1}},
+ {id:'bivak',slot:'hoofd',st:'stil',n:'Bivakmuts',d:'Bij een overval weet niemand wie je bent. De rechter vindt het minder grappig.',p:2500,r:3,fx:{kans:3,bail:-.1,herken:.15}},
  {id:'hoed',slot:'hoofd',st:'zaken',n:'Borsalino',d:'Een hoed van vilt. Oude families nemen je serieuzer.',p:24000,r:7,fx:{xp:.04,inc:.03}},
  {id:'snapback',slot:'hoofd',st:'patser',n:'Snapback met platte klep',d:'Rood, gouden embleem. Iedereen weet dat je er bent.',p:400,r:1,fx:{buit:.02,heat:-.02}},
- {id:'helm',slot:'hoofd',st:'sport',n:'Motorhelm met donker vizier',d:'Op de scooter ziet niemand wie je bent, en je bent sneller weg.',p:2500,r:3,fx:{flee:.08,heat:.03}},
- {id:'pruik',slot:'hoofd',st:'stil',n:'Pruik en plaksnor',d:'Een ander kapsel en een snor. De camera ziet een vreemde.',p:12000,r:4,fx:{heat:.08,kans:1,bail:-.05}},
+ {id:'helm',slot:'hoofd',st:'sport',n:'Motorhelm met donker vizier',d:'Op de scooter ziet niemand wie je bent, en je bent sneller weg.',p:2500,r:3,fx:{flee:.08,heat:.03,herken:.08}},
+ {id:'pruik',slot:'hoofd',st:'stil',n:'Pruik en plaksnor',d:'Een ander kapsel en een snor. De camera ziet een vreemde.',p:12000,r:4,fx:{heat:.08,kans:1,bail:-.05,herken:.12}},
  {id:'grill',slot:'hoofd',st:'patser',n:'Gouden grill',d:'Goud over je tanden. Een lach die niemand vergeet.',p:24000,r:6,fx:{buit:.04,inc:.04,heat:-.04}},
  // kleding
- {id:'hoodie',slot:'kleding',st:'stil',n:'Grijze hoodie',d:'Capuchon op, handen in de buidel. Je bent iedereen en niemand.',p:250,r:0,fx:{kans:1,heat:.05}},
+ {id:'hoodie',slot:'kleding',st:'stil',n:'Grijze hoodie',d:'Capuchon op, handen in de buidel. Je bent iedereen en niemand.',p:250,r:0,fx:{kans:1,heat:.05,herken:.03}},
  {id:'trainingspak',slot:'kleding',st:'sport',n:'Trainingspak',d:'Rits tot boven. Je bent sneller weg dan zij uit de auto zijn.',p:700,r:1,fx:{flee:.08,en:.04}},
  {id:'werkjas',slot:'kleding',st:'stil',n:'Werkjas met reflectie',d:'Met een hesje loop je overal binnen. Niemand vraagt wat je komt doen.',p:1800,r:2,fx:{kans:2,car:.04}},
  {id:'designer',slot:'kleding',st:'patser',n:'Designerjas',d:'Felle kleuren, dure stof. Je ziet er rijk uit en dat merken ze aan de prijs. De politie ook.',p:14000,r:4,fx:{buit:.06,inc:.03,heat:-.06}},
@@ -58,7 +59,7 @@ const OUTFITS=[
  {id:'das',slot:'nek',st:'zaken',n:'Zijden das',d:'Donkerrood, strak geknoopt. Voor afspraken waar je niet te laat komt.',p:6000,r:4,fx:{inc:.04,bail:.08}},
  {id:'goud',slot:'nek',st:'patser',n:'Gouden ketting',d:'Dik en zwaar. Laat zien dat het je goed gaat, en dat trekt goede zaken aan.',p:16000,r:3,fx:{inc:.07,buit:.03,heat:-.04}},
  {id:'diamant',slot:'nek',st:'patser',n:'Ketting met diamanten',d:'Een hanger die het licht vangt in elke club van de stad.',p:250000,r:9,fx:{inc:.12,xp:.03,heat:-.06}},
- {id:'bandana',slot:'nek',st:'stil',n:'Bandana',d:'Om je nek, of over je neus als het moet.',p:1200,r:1,fx:{heat:.05}},
+ {id:'bandana',slot:'nek',st:'stil',n:'Bandana',d:'Om je nek, of over je neus als het moet.',p:1200,r:1,fx:{heat:.05,herken:.04}},
  {id:'dogtag',slot:'nek',st:'sport',n:'Hondenpenning',d:'Een kogelketting met je naam. Je bent niet zomaar iemand die opgeeft.',p:3000,r:2,fx:{esc:.04,flee:.04}},
  {id:'sjaal',slot:'nek',st:'zaken',n:'Kasjmier sjaal',d:'Zacht, grijs en duur. Mensen luisteren beter als je zachtjes praat.',p:16000,r:3,fx:{inc:.05,xp:.02}},
  {id:'medaillon',slot:'nek',st:'zaken',n:'Gouden medaillon',d:'Met een foto van je moeder erin. Familie gaat voor alles.',p:60000,r:6,fx:{xp:.04,esc:.03,bail:.05}},
@@ -141,6 +142,91 @@ const OUTFITS=[
  // beloningen voor VIP en High roller: je bedrijven verdienen 2 uur (een halve speldag) 1,5× of 2× zo snel
  {id:'klemv',slot:'zaken',st:'klem',n:'VIP-geldklem',d:'Alleen voor VIP en High roller. Met deze klem op zak gaat het geld in je zaken anderhalf keer zo snel.',p:30000000,r:0,vip:1,inc:.5,dc:['#ffd75e','#c9a227','#7a5a00']},
  {id:'klem5',slot:'zaken',st:'klem',n:'Diamanten geldklem',d:'Alleen voor High rollers. Elke diamant is een gunst die iemand je nog schuldig is: je zaken verdienen twee keer zo snel.',p:75000000,r:0,hr:1,inc:1,dc:['#c9f1ff','#7fd6f5','#3aa7d6']}];
+// ---------- Uiterlijk per stuk (contract met het vluchtspel) ----------
+// Elk draagbaar stuk heeft look:{kind,c,c2}: kind = soort per plek, c = hoofdkleur, c2 = tweede kleur.
+//  hoofd: skimask cap beanie hood hat none · kleding (bovenlijf): tee hoodie jacket suit tracksuit thief
+//  broek (benen): jeans track suit thief · schoenen: sneaker boot dress · sieraden: chain scarf tie phones watch band gloves ring
+// Kleding die ook je benen bedekt (pak, trainingspak, overall) heeft look.legs:{kind,c,c2}. Zie outfitLook() hieronder.
+// Oude stukken die de etalagepop met de hand tekent (zonder eigen look) staan in FIT_HAND; die tekening blijft zoals hij was.
+const FIT_HAND=new Set(OUTFITS.filter(o=>!o.look&&!FIT_CHARM.includes(o.slot)).map(o=>o.id));
+(()=>{const T=`pet:cap:111317:08090b muts:beanie:7d2632:6a1f2a bril:none:1b1d22:d9a520 bivak:skimask:0c0d10:2c3139 hoed:hat:2b2420:8c1d2c
+ snapback:cap:a3202f:e8b923 helm:skimask:1d2430:0a0d12 pruik:none:4a3524:3a2a1c grill:none:e8b923:b8890f bucket:hat:4d5a3c:3f4a31
+ durag:beanie:1d3f8f:3a64c4 panama:hat:d8c08a:1b1b1f zonnebril:none:0b0b0d:e8b923 diagrill:none:dff6ff:9ad6ef tacpet:cap:3d4a32:2f3a26
+ baret:beanie:3a1546:2a0f33 homburg:hat:15171c:3a2a1a nvg:cap:1d2430:9fe870
+ hoodie:hoodie:4b515b:cfd3d9 trainingspak:tracksuit:1b2a44:ff7a1a:track werkjas:jacket:f2a515:dfe3e8 designer:jacket:7b3ff2:14b8a6
+ jas:jacket:121418:2a2d34 pak:suit:262b35:e9e6df:suit velours:tracksuit:5e1a33:e8b923:track bomber:jacket:4b5a3a:ff7a1a
+ leer:jacket:17181c:4a4e57 trench:jacket:a08a63:7d6a4a bont:jacket:6b4f3a:8a6a50 smoking:suit:121317:f2efe8:suit
+ jeansjack:jacket:3b5b86:c9a227 voetbal:tee:1f3a78:ff7a1a colbert:suit:c9b48f:7d6a4a overjas:jacket:b08a5a:5a4128 kroko:jacket:2f4a2c:e8b923
+ tacvest:jacket:2f3a2a:55663f clubjas:jacket:22162e:e879f9 kevlar:tee:1d1f24:3a3e46 napels:suit:1b2233:c9a15a:suit
+ sneakers:sneaker:e9e6df:bdb9b0 kisten:boot:121316:2c2f35 renners:sneaker:ff7a1a:f4f1ea instappers:dress:5a3a22:3b2513 laarzen:boot:7a6644:3a2f1e
+ slippers:sneaker:111214:efece6 basket:sneaker:e9e6df:c43a3a werkschoen:boot:8a6a2e:3a2c12 gympen:sneaker:18191d:55595f brogues:dress:4a2f1c:2a1a0f
+ canvas:sneaker:22324f:e9e6df limited:sneaker:ff7a1a:14b8a6 gesp:dress:121316:e8b923 lak:dress:08080a:2a2b31 tackist:boot:2b2a22:0e0e0c
+ studs:dress:140b1a:e879f9 oxford:dress:2a1810:120a06 goudsneak:sneaker:d9a520:f6e7b0
+ kruisje:chain:c9cdd3:d9dde3 koptel:phones:111318:ff7a1a zilver:chain:d0d4da:d0d4da das:tie:8c1d2c:7a1626 goud:chain:e8b923:fff3b0
+ diamant:chain:e8b923:bfefff bandana:scarf:7a1a24:e9e6df dogtag:chain:b8bdc5:c9ced6 sjaal:scarf:8c8f96:7d8087 medaillon:chain:e8b923:b8890f
+ cuban:chain:e8b923:fff3b0 platkruis:chain:e5e7eb:f1f3f5 iced:chain:e8fbff:9ad6ef tackoord:chain:5b7038:5b7038 neon:chain:e879f9:e879f9
+ digitaal:watch:16181c:9fd8a8 duik:watch:9aa1ab:1d2b44 goudhorloge:watch:d9a520:f6e7b0 zwitsers:watch:d9a520:16233f armband:band:6b4a2e:6b4a2e
+ smartwatch:watch:16181c:3fe395 chrono:watch:9aa1ab:1b1d22 tennis:band:e8fbff:e8fbff rubber:band:ff7a1a:3fe395 zilverarm:band:d0d4da:d0d4da
+ skelet:watch:5a3a22:e8b923 president:watch:e8b923:efe1b5 icedw:watch:e8fbff:cfefff tacwatch:watch:2f3a2a:9fe870 bangle:band:e8b923:e8b923
+ hartslag:watch:1b1d22:3fe395 stappen:band:7d838c:7d838c
+ trouwring:ring:e8b923:e8b923 zegel:ring:c9ced6:c9ced6 kampioen:ring:e8b923:4d7dff pinkring:ring:e8b923:d12b3f famring:ring:d9a520:7a1626
+ zwartdiamant:ring:dfe3e8:0b0b0d duim:ring:b8bdc5:b8bdc5 kampdiam:ring:e8b923:e8fbff diazegel:ring:e5e7eb:e8fbff tacring:ring:8a9099:8a9099
+ onyx:ring:e8b923:141414 zilverband:ring:c9cdd3:c9cdd3 silicoon:ring:3fe395:3fe395`;
+ T.trim().split(/\s+/).forEach(r=>{const [id,kind,c,c2,lg]=r.split(':'),o=OUTFITS.find(x=>x.id===id);if(!o)return;
+  const L=o.look||(o.look={});L.kind=kind;if(!L.c)L.c='#'+c;if(!L.c2)L.c2='#'+c2;if(lg)L.legs={kind:lg,c:L.pants||'#'+c,c2:lg==='track'?'#'+c2:(L.pants||'#'+c)}})})();
+// Erbij in november 2026: meer keus, eigen merken (Zwaluw, Kwiek, Asfalt, Kade 13, Noorderzon, Grachtwerk, Casa Bruno,
+// Maison Lupo, Nachtwacht), het Dievenpak (alles zwart: moeilijker te herkennen) en pakken vanaf Onderbaas.
+// r = rang-index in RANKS (nieuwe schaal, 0..19, NIET omgezet met rkRemap). dr = de pop tekent dit stuk met look.kind.
+const FIT_NEW=[
+ // Dievenpak: zwart van top tot teen. Elk stuk iets minder herkenbaar; de set doet de rest.
+ {id:'zbeanie',slot:'hoofd',st:'dief',n:'Zwarte beanie',d:'Strak over je oren. Geen haar te zien.',p:600,r:2,fx:{herken:.05,heat:.02},look:{kind:'beanie',c:'#15161a',c2:'#0c0d10'}},
+ {id:'skimask',slot:'hoofd',st:'dief',n:'Skimasker',d:'Drie gaten, verder niks. Een getuige ziet alleen ogen.',p:3800,r:4,fx:{herken:.18,kans:1},look:{kind:'skimask',c:'#17191e',c2:'#33363e'}},
+ {id:'nekwarmer',slot:'nek',st:'dief',n:'Zwarte nekwarmer',d:'Trek hem op tot je neus.',p:1200,r:3,fx:{herken:.04,heat:.02},look:{kind:'scarf',c:'#1a1c21',c2:'#33363e'}},
+ {id:'zhoodie',slot:'kleding',st:'dief',n:'Zwarte hoodie',d:'Geen logo, geen print. Capuchon op.',p:1500,r:3,fx:{herken:.06,kans:1},look:{kind:'hoodie',c:'#1a1c21',c2:'#3a3e47'}},
+ {id:'handschoen',slot:'pols',st:'dief',n:'Zwarte handschoenen',d:'Dun leer. Geen vingerafdrukken.',p:2400,r:4,fx:{herken:.04,kans:1},look:{kind:'gloves',c:'#15171b',c2:'#33363e'}},
+ {id:'zcargo',slot:'broek',st:'dief',n:'Zwarte cargobroek',d:'Zakken voor tang en zaklamp.',p:2600,r:4,fx:{herken:.05,esc:.02},look:{kind:'thief',c:'#181a1f',c2:'#33363e'}},
+ {id:'matring',slot:'ring',st:'dief',n:'Matzwarte ring',d:'Vangt geen licht, ook niet van een camera.',p:4200,r:5,fx:{herken:.03,esc:.03},look:{kind:'ring',c:'#1b1c20',c2:'#1b1c20'}},
+ {id:'zwaluwzwart',slot:'schoenen',st:'dief',n:'Zwaluw Tag Stealth',d:'Helemaal zwart, zachte zool. Je hoort ze niet.',p:7500,r:5,fx:{herken:.06,flee:.04},look:{kind:'sneaker',c:'#16181c',c2:'#3a3e47',sole:'#26292f'}},
+ {id:'dievenpak',slot:'kleding',st:'dief',n:'Nachtwacht dievenpak',d:'Zwarte overall met riem en vakken. Gemaakt voor de nacht.',p:18000,r:5,fx:{herken:.12,kans:1,flee:.03},look:{kind:'thief',c:'#181a1f',c2:'#363a43',legs:{kind:'thief',c:'#181a1f',c2:'#363a43'}}},
+ // hoofd
+ {id:'kadecap',slot:'hoofd',st:'sport',n:'Kade 13 cap',d:'Wit met oranje klep.',p:350,r:1,fx:{flee:.02,en:.02},look:{kind:'cap',c:'#e9e6df',c2:'#ff7a1a'}},
+ {id:'bontmuts',slot:'hoofd',st:'patser',n:'Bontmuts',d:'Hoog en zwaar. Uit Moskou, zegt de verkoper.',p:80000,r:13,fx:{buit:.04,inc:.04,heat:-.03},look:{kind:'hat',c:'#6b4f3a',c2:'#8a6a50'}},
+ {id:'gleufhoed',slot:'hoofd',st:'zaken',n:'Gleufhoed van Maison Lupo',d:'Grijs vilt, zwarte band.',p:320000,r:16,fx:{xp:.04,inc:.04,bail:.04},look:{kind:'hat',c:'#3a3d44',c2:'#0e0f12'}},
+ // kleding
+ {id:'windjack',slot:'kleding',st:'stil',n:'Kade 13 windjack',d:'Donkergrijs, kraag omhoog.',p:600,r:1,fx:{heat:.03,herken:.03},look:{kind:'jacket',c:'#3a3f48',c2:'#22262c'}},
+ {id:'overall',slot:'kleding',st:'stil',n:'Grachtwerk overall',d:'Blauwe werkoverall. Je bent de monteur.',p:6000,r:6,fx:{kans:2,car:.03,herken:.03},look:{kind:'jacket',c:'#2b4a7a',c2:'#f2a515',legs:{kind:'jeans',c:'#2b4a7a',c2:'#1f3658'}}},
+ {id:'noorderzon',slot:'kleding',st:'sport',n:'Noorderzon trainingspak',d:'Groen met witte strepen.',p:9000,r:7,fx:{flee:.08,en:.04,cd:.02},look:{kind:'tracksuit',c:'#0f5c4a',c2:'#e9e6df',legs:{kind:'track',c:'#0f5c4a',c2:'#e9e6df'}}},
+ {id:'krijtstreep',slot:'kleding',st:'zaken',n:'Driedelig krijtstreep van Casa Bruno',d:'Antraciet met krijtstreep en gilet.',p:450000,r:16,fx:{inc:.08,bail:.1,xp:.03},look:{kind:'suit',c:'#2a2e36',c2:'#8c1d2c',legs:{kind:'suit',c:'#2a2e36',c2:'#3a3f49'}}},
+ {id:'witpak',slot:'kleding',st:'patser',n:'Wit pak van Casa Bruno',d:'Gebroken wit linnen. Niemand mist je.',p:600000,r:16,fx:{buit:.07,inc:.06,heat:-.05},look:{kind:'suit',c:'#e9e4d8',c2:'#c9a227',legs:{kind:'suit',c:'#e9e4d8',c2:'#cfc8b8'}}},
+ {id:'nachtpak',slot:'kleding',st:'nacht',n:'Fluwelen nachtpak',d:'Nachtblauw fluweel met satijnen revers.',p:800000,r:17,fx:{cd:.06,xp:.04,inc:.03},look:{kind:'suit',c:'#1b1f4a',c2:'#e879f9',legs:{kind:'suit',c:'#1b1f4a',c2:'#2a2f66'}}},
+ {id:'lupopak',slot:'kleding',st:'zaken',n:'Zijden pak van Maison Lupo',d:'Met de hand gesneden. Wachtlijst van een jaar.',p:950000,r:17,fx:{inc:.1,bail:.1,xp:.04},look:{kind:'suit',c:'#1d2433',c2:'#c9a15a',legs:{kind:'suit',c:'#1d2433',c2:'#2b3448'}}},
+ {id:'peetpak',slot:'kleding',st:'zaken',n:'Peetvaderpak',d:'Zwart, roos op de revers. Er wordt gezwegen als je binnenkomt.',p:2500000,r:19,fx:{inc:.13,bail:.12,xp:.05},look:{kind:'suit',c:'#0e0f12',c2:'#b3243a',legs:{kind:'suit',c:'#0e0f12',c2:'#24262c'}}},
+ // broek
+ {id:'spijker',slot:'broek',st:'stil',n:'Spijkerbroek',d:'Blauw, recht model. Iedereen heeft er een.',p:120,r:0,fx:{heat:.02},look:{kind:'jeans',c:'#2a3a55',c2:'#4a5e80'}},
+ {id:'jogging',slot:'broek',st:'sport',n:'Grijze joggingbroek',d:'Elastiek in de taille, klaar om te rennen.',p:150,r:0,fx:{en:.02},look:{kind:'track',c:'#5b616b',c2:'#7d838c'}},
+ {id:'velbroek',slot:'broek',st:'patser',n:'Velours broek',d:'Bordeaux met gouden bies.',p:900,r:2,fx:{buit:.02,heat:-.01},look:{kind:'track',c:'#5e1a33',c2:'#e8b923'}},
+ {id:'tacbroek',slot:'broek',st:'tac',n:'Tactische broek',d:'Olijfgroen, verstevigde knieen.',p:5500,r:6,fx:{kans:1,esc:.03},look:{kind:'thief',c:'#3d4a32',c2:'#55663f'}},
+ {id:'pantalon',slot:'broek',st:'zaken',n:'Wollen pantalon',d:'Grijs, met een vouw als een mes.',p:14000,r:8,fx:{bail:.04,inc:.02},look:{kind:'suit',c:'#4a4f58',c2:'#5d636d'}},
+ {id:'leerbroek',slot:'broek',st:'nacht',n:'Leren broek',d:'Zwart leer, strak. Voor de late uurtjes.',p:22000,r:10,fx:{cd:.03,xp:.02},look:{kind:'jeans',c:'#141416',c2:'#2e2f34'}},
+ {id:'lupobroek',slot:'broek',st:'zaken',n:'Zijden pantalon van Maison Lupo',d:'Valt perfect over je schoen.',p:160000,r:16,fx:{inc:.05,bail:.05,xp:.02},look:{kind:'suit',c:'#1d2433',c2:'#2b3448'}},
+ // schoenen
+ {id:'zwaluwtag',slot:'schoenen',st:'sport',n:'Zwaluw Tag',d:'Wit met een zwarte vleugel. De klassieker.',p:1200,r:2,fx:{flee:.05,en:.02},look:{kind:'sneaker',c:'#f1efe9',c2:'#16171a'}},
+ {id:'kwiek',slot:'schoenen',st:'sport',n:'Kwiek Runner 9',d:'Blauw en oranje, zool als een veer.',p:12000,r:8,fx:{flee:.09,en:.03,cd:.02},look:{kind:'sneaker',c:'#2b6cff',c2:'#ff7a1a'}},
+ {id:'chelsea',slot:'schoenen',st:'nacht',n:'Chelsea boots',d:'Bruin suede met elastiek.',p:16000,r:9,fx:{cd:.03,car:.02},look:{kind:'boot',c:'#5a3a22',c2:'#2a1a0f'}},
+ {id:'asfalt',slot:'schoenen',st:'patser',n:'Asfalt Air Hi',d:'Goudgeel, hoog model, luchtbel in de hak.',p:48000,r:12,fx:{buit:.03,flee:.05,heat:-.03},look:{kind:'sneaker',c:'#f2c230',c2:'#16171a'}},
+ {id:'lupoloafer',slot:'schoenen',st:'zaken',n:'Loafers van Maison Lupo',d:'Zwart kalfsleer, met de hand genaaid.',p:300000,r:17,fx:{inc:.05,bail:.06,xp:.03},look:{kind:'dress',c:'#0c0c0e',c2:'#2a2b31'}}];
+FIT_NEW.forEach(o=>{o.dr=1});
+// outfitLook(wear?): wat de speler draagt, per plek {kind,c,c2,id}. Altijd alle vier de plekken gevuld (standaard als er
+// niets of iets zonder look zit). benen = de broek, anders de benen van een pak/trainingspak/overall, anders een spijkerbroek.
+// Plus herken = fitFx('herken') (0..0,6). Voor het vluchtspel (runnerLook in flee.js) en andere tekeningen. Stabiele API.
+const FIT_LOOK_DEF={hoofd:{kind:'none',c:'#3a414c',c2:'#2c3139'},bovenlijf:{kind:'tee',c:'#30353e',c2:'#454b55'},benen:{kind:'jeans',c:'#1d2531',c2:'#2c3a4d'},schoenen:{kind:'sneaker',c:'#3a3f48',c2:'#24282f'}};
+function outfitLook(wear){let w=wear;if(!w){try{w=fitS().wear}catch(e){w={}}}w=w||{};
+ const it=sl=>{const o=OUTFITS.find(x=>x.id===w[sl]);return o&&o.slot===sl&&o.look&&o.look.kind?o:null};
+ const def=k=>Object.assign({id:null},FIT_LOOK_DEF[k]);
+ const one=(o,k)=>o?{kind:o.look.kind,c:o.look.c||FIT_LOOK_DEF[k].c,c2:o.look.c2||o.look.c||FIT_LOOK_DEF[k].c2,id:o.id}:def(k);
+ const top=it('kleding'),br=it('broek'),lg=top&&top.look.legs;
+ let hk=0;try{hk=wear?Math.min(FIT_CAP.herken,fitTotals(FIT_SLOTS.map(s=>OUTFITS.find(x=>x.id===w[s.id])).filter(o=>o&&FIT_STYLES[o.st])).herken||0):outfitFx('herken')}catch(e){}
+ return {hoofd:one(it('hoofd'),'hoofd'),bovenlijf:one(top,'bovenlijf'),benen:br?one(br,'benen'):lg?{kind:lg.kind,c:lg.c,c2:lg.c2||lg.c,id:top.id}:def('benen'),schoenen:one(it('schoenen'),'schoenen'),herken:hk}}
 const LUCK_MIN=15,LUCK_CD=8*60; // minuten actief, minuten rust (een werkdag)
 const klemLab=v=>v>=.5?'Inkomen ×'+(1+v).toLocaleString('nl-NL'):'Inkomen +'+Math.round(v*100)+'%';
 const KLEM_MIN=120,KLEM_CD=8*60; // geldklem: 2 uur meer inkomen, daarna rust tot een werkdag na gebruik
@@ -155,8 +241,19 @@ function luckBonus(pay,isBuy){if(isBuy||!(pay>0))return 0;const pct=luckPct();if
  const x=Math.min(Math.floor(pay*pct*100)/100,Math.floor(luckRest()*100)/100);if(x>0)S.luck.got=(S.luck.got||0)+x;return x>0?x:0}
 const luckLeft=()=>S.luck?Math.max(0,S.luck.until-now()):0;
 const luckWait=()=>S.luck?Math.max(0,S.luck.ready-now()):0;
-const FIT_FX={kans:['kans',1],buit:['buit',0],inc:['inkomen bedrijven',0],xp:['XP',0],bail:['borg',0,1],cd:['wachttijd klussen',0,1],flee:['makkelijker vluchten',0],
- en:['sneller energie',0],car:['waarde auto\'s',0],esc:['ontsnappen uit de bajes',0],heat:['hitte',0,1]};
+const FIT_FX={kans:['kans',1],buit:['buit',0],inc:['inkomen',0],xp:['XP',0],bail:['borg',0,1],cd:['wachttijd',0,1],flee:['vluchten',0],
+ en:['energie',0],car:['autowaarde',0],esc:['ontsnappen',0],heat:['hitte',0,1],herken:['herkend',0,1]};
+// herken: fractie minder kans om herkend te worden (signalement, startbewijs in het verhoor, iets minder hitte; zie arrest.js
+// en addHeat in state.js). Nooit meer dan 0,6, hoeveel zwart je ook draagt.
+const FIT_CAP={herken:.6};
+// kleine iconen bij elk effect (24×24, lijn)
+const FIT_IC={kans:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',buit:'<path d="M6 9h12l-1.2 11H7.2z"/><path d="M9 9a3 3 0 016 0"/>',
+ inc:'<path d="M4 20h16M6 20V9l6-4 6 4v11M10 20v-5h4v5"/>',xp:'<path d="M12 3.5l2.5 5.3 5.8.7-4.3 4 1.1 5.7L12 16.4l-5.1 2.8 1.1-5.7-4.3-4 5.8-.7z"/>',
+ bail:'<path d="M14.6 3.4l6 6M13.5 4.5l-5 5 6 6 5-5M11 12.5l-7.5 7.5"/>',cd:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+ flee:'<path d="M5 6l6 6-6 6M12 6l6 6-6 6"/>',en:'<path d="M13 2.5L5.5 13.5h6l-1 8 8-11.5h-6z"/>',car:'<path d="M3.5 16v-4l2-5h13l2 5v4z"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/>',
+ esc:'<path d="M6 21V4h10v17M3.5 21h17"/><path d="M13 12.5h.5"/>',heat:'<path d="M12 3c3 4 6 6 6 11a6 6 0 01-12 0c0-3 2-5 3-7 1 2 2 3 3 3 0-3-1-5 0-7z"/>',
+ herken:'<path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"/><circle cx="12" cy="12" r="2.5"/><path d="M4.5 19.5l15-15"/>'};
+const fitIc=k=>FIT_IC[k]?`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${FIT_IC[k]}</svg>`:'';
 const fitS=()=>S.fit&&S.fit.own?S.fit:(S.fit={own:{},wear:{}});
 const fitItem=id=>OUTFITS.find(o=>o.id===id);
 const fitWorn=()=>FIT_SLOTS.map(s=>fitItem(fitS().wear[s.id])).filter(o=>o&&FIT_STYLES[o.st]);
@@ -164,26 +261,47 @@ function fitSets(list){const c={};(list||fitWorn()).forEach(o=>{if(FIT_STYLES[o.
 function fitTotals(list){const t={};const add=fx=>Object.entries(fx||{}).forEach(([k,v])=>{t[k]=(t[k]||0)+v});const L=list||fitWorn();L.forEach(o=>add(o.fx));
  const c=fitSets(L);Object.entries(c).forEach(([st,n])=>{const S_=FIT_STYLES[st];if(n>=5)add(S_.set5);else if(n>=3)add(S_.set3)});return t}
 let _fitCache=null,_fitKey='';
-function outfitFx(k){const key=JSON.stringify(S.fit&&S.fit.wear||{});if(key!==_fitKey){_fitKey=key;_fitCache=fitTotals()}return _fitCache[k]||0}
+function outfitFx(k){const key=JSON.stringify(S.fit&&S.fit.wear||{});if(key!==_fitKey){_fitKey=key;_fitCache=fitTotals()}const v=_fitCache[k]||0;return FIT_CAP[k]!=null?Math.min(FIT_CAP[k],v):v}
 // gezocht (huurmoorden): onopvallende kleding maakt het minder waarschijnlijk dat je gezocht wordt of gecontroleerd; opvallende kleding juist meer
 function wantMod(){return Math.max(.6,Math.min(1.4,1-outfitFx('heat')))}
 // tekst van één effect: kans in punten, de rest in procenten. inv = minder is beter (borg, wachttijd, hitte)
-function fitFxTxt(k,v){const f=FIT_FX[k];if(!f||!v)return null;const pct=Math.round(Math.abs(v)*(f[1]?1:100));const good=v>0;
- const sign=f[2]?(good?'−':'+'):(good?'+':'−');return {t:`${sign}${pct}% ${f[0]}`,good}}
+function fitFxTxt(k,v){const f=FIT_FX[k];if(!f||!v)return null;if(FIT_CAP[k]!=null&&v>FIT_CAP[k])v=FIT_CAP[k];const pct=Math.round(Math.abs(v)*(f[1]?1:100));const good=v>0;
+ const sign=f[2]?(good?'−':'+'):(good?'+':'−');return {t:`${sign}${pct}% ${f[0]}`,good,k}}
 const fitFxStrs=fx=>Object.entries(fx||{}).map(([k,v])=>fitFxTxt(k,v)).filter(Boolean);
-const fitChips=fx=>fitFxStrs(fx).map(x=>`<span class="${x.good?'g':'b'}">${x.t}</span>`).join('');
+// totaal herkenning boven de cap: laat zien dat het maximum bereikt is
+const fitChips=fx=>fitFxStrs(fx).map(x=>`<span class="${x.good?'g':'b'}${x.k==='herken'?' hk':''}" title="${esc(FIT_TIP[x.k]||'')}">${fitIc(x.k)}${x.t}${x.k==='herken'&&fx.herken>=FIT_CAP.herken?' <small>max</small>':''}</span>`).join('');
+const FIT_TIP={kans:'Slaagkans van klussen (procentpunten)',buit:'Meer buit',inc:'Inkomen van je bedrijven',xp:'Meer XP',bail:'Lagere borg',cd:'Kortere wachttijd tussen klussen',
+ flee:'Makkelijker vluchten',en:'Sneller energie terug',car:'Meer geld voor auto\'s',esc:'Ontsnappen uit de bajes',heat:'Minder hitte',herken:'Minder kans om herkend te worden: minder signalementen, minder bewijs en iets minder hitte'};
 
 // ---------- De etalagepop ----------
 // Eén SVG met lagen; elk kledingstuk tekent zijn eigen stukje. Kleuren gedempt, zodat de pop past bij de rest van het spel.
 const DOLL={body:'#2c3139',body2:'#3a414c',tee:'#30353e',jeans:'#1d2531'};
 const ARM_L='M64 104 L53 166 L48 218',ARM_R='M136 104 L147 166 L152 218',LEG_L='M88 198 L86 276 L85 346',LEG_R='M112 198 L114 276 L115 346';
+// bovenlijf op soort (look.kind) voor de stukken van november 2026
+function dollTop(l,arms,sleeves,torso){const c=l.c,c2=l.c2||l.c,dk='rgba(0,0,0,.28)';
+ if(l.kind==='hoodie')return {back:`<path d="M74 70 Q100 30 126 70 L130 100 L70 100Z" fill="${c}" opacity=".92"/>`,top:arms+sleeves(c,212,18)+torso(c,206)+`<path d="M78 160h44l-4 26H82z" fill="${dk}"/><path d="M95 98v20M105 98v20" stroke="${c2}" stroke-width="1.5"/>`};
+ if(l.kind==='tracksuit')return {top:arms+sleeves(c,212,18)+torso(c,202)+`<path d="M100 92v110" stroke="${dk}" stroke-width="2"/><path d="M58 112 L52 166 L47 210M142 112 L148 166 L153 210" stroke="${c2}" stroke-width="2.4" fill="none"/><path d="M86 92 L100 104 L114 92" stroke="${c2}" stroke-width="2" fill="none"/>`};
+ if(l.kind==='suit')return {top:arms+sleeves(c,214,17)+torso(c,206)+`<path d="M86 93 L100 140 L114 93Z" fill="#e9e6df"/><path d="M97 99h6l2.4 32-5.4 6-5.4-6z" fill="${c2}"/><path d="M84 93 L99 142 L90 160M116 93 L101 142 L110 160" stroke="${dk}" stroke-width="3" fill="none"/><circle cx="100" cy="166" r="2" fill="${dk}"/><circle cx="100" cy="184" r="2" fill="${dk}"/><path d="M117 124h11" stroke="${c2}" stroke-width="3"/>`};
+ if(l.kind==='thief')return {top:arms+sleeves(c,212,18)+torso(c,204)+`<path d="M86 92 Q100 100 114 92 L112 88 Q100 95 88 88Z" fill="${c2}"/><path d="M100 96v100" stroke="${c2}" stroke-width="1.6"/><path d="M63 190h74v8H63z" fill="${c2}"/><rect x="70" y="186" width="10" height="14" rx="1.5" fill="${dk}" stroke="${c2}"/><rect x="120" y="186" width="10" height="14" rx="1.5" fill="${dk}" stroke="${c2}"/><path d="M66 128h16M118 128h16" stroke="${c2}" stroke-width="1.2"/>`};
+ if(l.kind==='tee')return {top:arms+sleeves(c,132,18)+torso(c,202)+`<path d="M88 92 Q100 102 112 92" stroke="${c2}" stroke-width="3" fill="none"/>`};
+ // jacket (standaard)
+ return {top:arms+sleeves(c,212,19)+torso(c,202)+`<path d="M100 94v108" stroke="${c2}" stroke-width="2"/><path d="M84 90 L96 106M116 90 L104 106" stroke="${c2}" stroke-width="3.5"/><path d="M68 150h14M118 150h14" stroke="${dk}" stroke-width="3"/>`}}
+// broek op soort
+function dollLegs(l){const c2=l.c2||l.c;
+ if(l.kind==='track')return `<path d="M77 202 L75 346M123 202 L125 346" stroke="${c2}" stroke-width="2.4"/>`;
+ if(l.kind==='suit')return `<path d="M88 206 L86 340M112 206 L114 340" stroke="${c2}" stroke-width="1.4"/>`;
+ if(l.kind==='thief')return `<rect x="74" y="232" width="9" height="16" rx="1.5" fill="${c2}"/><rect x="117" y="232" width="9" height="16" rx="1.5" fill="${c2}"/><path d="M78 270h15M107 270h15" stroke="${c2}" stroke-width="7" stroke-linecap="round"/>`;
+ return `<path d="M80 200 L78 344M120 200 L122 344" stroke="${c2}" stroke-width="1" stroke-dasharray="3 2"/><path d="M78 198h10M112 198h10" stroke="${c2}" stroke-width="1.4"/>`}
 function dollParts(w){const g=id=>w.includes(id);const o={back:'',legs:'',shoes:'',top:'',neck:'',head:'',face:'',wrist:'',ring:''};
  // nieuwere stukken tekenen we met een vaste vorm per soort en hun eigen kleuren (o.look)
- const LK=sl=>{for(const id of w){const it=OUTFITS.find(x=>x.id===id);if(it&&it.slot===sl&&it.look)return it.look}return null};
+ const LK=sl=>{for(const id of w){const it=OUTFITS.find(x=>x.id===id);if(it&&it.slot===sl&&it.look&&!it.dr&&!FIT_HAND.has(id))return it.look}return null};
+ // stukken van november 2026 (dr): getekend op soort (look.kind) met hun eigen kleuren
+ const DR=sl=>{for(const id of w){const it=OUTFITS.find(x=>x.id===id);if(it&&it.slot===sl&&it.dr&&it.look)return it.look}return null};
  // broek: hoort bij het pak of het trainingspak, anders een donkere spijkerbroek
- const pants=(LK('kleding')&&LK('kleding').pants)||(g('pak')?'#262b35':g('smoking')?'#121317':g('trainingspak')?'#1b2a44':g('velours')?'#5e1a33':DOLL.jeans);
+ const PB=DR('broek')||(DR('kleding')||{}).legs||null;
+ const pants=PB?PB.c:(LK('kleding')&&LK('kleding').pants)||(g('pak')?'#262b35':g('smoking')?'#121317':g('trainingspak')?'#1b2a44':g('velours')?'#5e1a33':DOLL.jeans);
  o.legs=`<path d="${LEG_L}" stroke="${pants}" stroke-width="23" stroke-linecap="round" fill="none"/><path d="${LEG_R}" stroke="${pants}" stroke-width="23" stroke-linecap="round" fill="none"/>
-  <path d="M74 190h52v22H74z" fill="${pants}"/>${g('trainingspak')?`<path d="M77 202 L75 346M123 202 L125 346" stroke="#ff7a1a" stroke-width="2"/>`:''}${g('pak')?`<path d="M88 206 L86 340M112 206 L114 340" stroke="#323845" stroke-width="1"/>`:''}${g('smoking')?`<path d="M88 206 L86 340M112 206 L114 340" stroke="#2a2b31" stroke-width="2"/>`:''}`;
+  <path d="M74 190h52v22H74z" fill="${pants}"/>${PB?dollLegs(PB):g('trainingspak')?`<path d="M77 202 L75 346M123 202 L125 346" stroke="#ff7a1a" stroke-width="2"/>`:''}${g('pak')?`<path d="M88 206 L86 340M112 206 L114 340" stroke="#323845" stroke-width="1"/>`:''}${g('smoking')?`<path d="M88 206 L86 340M112 206 L114 340" stroke="#2a2b31" stroke-width="2"/>`:''}`;
  // schoenen
  const shoe=(c,sole,h)=>`<path d="M74 ${352-h} L95 ${352-h} L97 362 L62 362 Q62 354 74 350Z" fill="${c}"/><path d="M126 ${352-h} L105 ${352-h} L103 362 L138 362 Q138 354 126 350Z" fill="${c}"/>${sole?`<path d="M62 362h35M103 362h35" stroke="${sole}" stroke-width="3"/>`:''}`;
  o.shoes=g('sneakers')?shoe('#e9e6df','#bdb9b0',0):g('renners')?shoe('#ff7a1a','#f4f1ea',0)+`<path d="M70 354h16M114 354h16" stroke="#f4f1ea" stroke-width="1.6"/>`:g('kisten')?shoe('#121316','#000',14)+`<path d="M78 342h14M108 342h14" stroke="#2c2f35" stroke-width="1.5"/>`
@@ -226,8 +344,10 @@ function dollParts(w){const g=id=>w.includes(id);const o={back:'',legs:'',shoes:
   else if(l.k==='vest')o.top=arms+sleeves('#30343b',190,17)+torso('#30343b',202)+`<path d="M64 102 L136 102 L138 196 L62 196Z" fill="${l.c}"/><path d="M70 126h24v18H70zM106 126h24v18h-24zM70 154h24v18H70zM106 154h24v18h-24z" fill="${l.c2}"/><path d="M70 130h24M106 130h24M70 158h24M106 158h24" stroke="#1d241a" stroke-width="2"/><path d="M100 102v94" stroke="#1d241a" stroke-width="2"/>`;
   else o.top=arms+sleeves(l.c,212,18)+torso(l.c,202)+`<path d="M100 92v110" stroke="${l.c2}" stroke-width="2"/><path d="M84 92 L100 112 L116 92" stroke="${l.c2}" stroke-width="2.4" fill="none"/><path d="M58 112 L52 166 L47 210M142 112 L148 166 L153 210" stroke="${l.c2}" stroke-width="1.6" fill="none" opacity=".8"/>`}
  else o.top=arms+sleeves(DOLL.tee,132,18)+torso(DOLL.tee,202);
- // handen
- o.top+=`<circle cx="48" cy="222" r="7" fill="${DOLL.body2}"/><circle cx="152" cy="222" r="7" fill="${DOLL.body2}"/>`;
+ {const l=DR('kleding');if(l){const T=dollTop(l,arms,sleeves,torso);o.top=T.top;if(T.back)o.back+=T.back}}
+ // handen (met handschoenen in hun kleur)
+ const glv=DR('pols'),hc=glv&&glv.kind==='gloves'?glv.c:DOLL.body2;
+ o.top+=`<circle cx="48" cy="222" r="7" fill="${hc}"/><circle cx="152" cy="222" r="7" fill="${hc}"/>`;
  // nek
  if(g('das'))o.neck=g('pak')||g('smoking')?`<path d="M95 95h10l-2 6h-6z" fill="#8c1d2c"/><path d="M97 101h6l2.4 32-5.4 6-5.4-6z" fill="#7a1626"/>`:`<path d="M95 96h10l-2 6h-6z" fill="#8c1d2c"/><path d="M97 102h6l4 64-7 9-7-9z" fill="#7a1626"/>`;
  if(g('kruisje'))o.neck+=`<path d="M90 92 Q100 122 110 92" stroke="#c9cdd3" stroke-width="1" fill="none"/><path d="M100 118v12M96 122h8" stroke="#d9dde3" stroke-width="2"/>`;
@@ -261,6 +381,12 @@ function dollParts(w){const g=id=>w.includes(id);const o={back:'',legs:'',shoes:
   if(l.k==='pet')o.head=`<path d="M80 46 Q80 22 100 22 Q120 22 120 46Z" fill="${l.c}"/><path d="M78 44 Q100 54 122 44 L124 50 Q100 60 76 50Z" fill="${l.c}" opacity=".85"/><rect x="104" y="30" width="10" height="7" rx="1" fill="rgba(0,0,0,.35)"/>`+(l.nvg?`<rect x="86" y="14" width="28" height="12" rx="3" fill="#0f1217"/><circle cx="93" cy="20" r="4" fill="#1e2a12" stroke="#9fe870" stroke-width="1"/><circle cx="107" cy="20" r="4" fill="#1e2a12" stroke="#9fe870" stroke-width="1"/>`:'');
   else if(l.k==='muts')o.head=`<path d="M79 48 Q79 18 100 18 Q121 18 121 48Z" fill="${l.c}"/><path d="M78 42h44v9H78z" fill="${l.c2||l.c}"/><ellipse cx="111" cy="24" rx="12" ry="6" fill="${l.c}" transform="rotate(-18 111 24)"/>`;
   else if(l.k==='hoed'){o.back+=`<ellipse cx="100" cy="37" rx="33" ry="6" fill="${l.c}"/>`;o.head=`<path d="M81 38 L84 17 Q100 10 116 17 L119 38Z" fill="${l.c}"/><path d="M92 14 Q100 20 108 14" stroke="rgba(0,0,0,.5)" stroke-width="2" fill="none"/><path d="M82 32h36v5H82z" fill="${l.c2}"/>`}}}
+ {const l=DR('hoofd');if(l){
+  if(l.kind==='skimask'){o.face='';o.head=`<path d="M80 52 Q78 24 100 24 Q122 24 120 52 L119 74 Q100 84 81 74Z" fill="${l.c}"/><path d="M84 32 Q100 26 116 32M82 40 Q100 34 118 40" stroke="${l.c2}" stroke-width="1.2" fill="none"/>
+   <ellipse cx="92" cy="51" rx="5.5" ry="3.6" fill="${DOLL.body2}"/><ellipse cx="108" cy="51" rx="5.5" ry="3.6" fill="${DOLL.body2}"/><circle cx="92.5" cy="51" r="1.4" fill="#0b0b0d"/><circle cx="108.5" cy="51" r="1.4" fill="#0b0b0d"/><ellipse cx="100" cy="64" rx="4.2" ry="2.6" fill="${DOLL.body2}"/>`}
+  else if(l.kind==='beanie')o.head=`<path d="M79 46 Q79 19 100 19 Q121 19 121 46Z" fill="${l.c}"/><path d="M78 40h44v9H78z" fill="${l.c2}"/><path d="M84 41v7M90 41v7M96 41v7M102 41v7M108 41v7M114 41v7" stroke="${l.c}" stroke-width="1.2"/>`;
+  else if(l.kind==='cap')o.head=`<path d="M80 46 Q80 22 100 22 Q120 22 120 46Z" fill="${l.c}"/><path d="M78 44 Q100 54 122 44 L124 50 Q100 60 76 50Z" fill="${l.c2}"/><circle cx="100" cy="23" r="2" fill="${l.c2}"/>`;
+  else if(l.kind==='hat'){o.back+=`<ellipse cx="100" cy="37" rx="34" ry="6.5" fill="${l.c}"/>`;o.head=`<path d="M81 38 L84 16 Q100 9 116 16 L119 38Z" fill="${l.c}"/><path d="M92 14 Q100 20 108 14" stroke="rgba(0,0,0,.45)" stroke-width="2" fill="none"/><path d="M82 31h36v6H82z" fill="${l.c2}"/>`}}}
  // pols (linker hand van de pop = rechts in beeld)
  const watch=(band,face,dial)=>`<path d="M144 206 l14 2" stroke="${band}" stroke-width="7" stroke-linecap="round"/><circle cx="151" cy="207" r="5.5" fill="${face}"/><circle cx="151" cy="207" r="3.6" fill="${dial}"/>`;
  o.wrist=g('digitaal')?`<path d="M144 206 l14 2" stroke="#16181c" stroke-width="7" stroke-linecap="round"/><rect x="146" y="202" width="10" height="9" rx="1.5" fill="#16181c"/><rect x="148" y="204" width="6" height="4" fill="#9fd8a8"/>`
@@ -281,6 +407,11 @@ function dollParts(w){const g=id=>w.includes(id);const o={back:'',legs:'',shoes:
   :g('diazegel')?ring('#e5e7eb')+`<rect x="44.5" y="222" width="6" height="4.2" rx=".8" fill="#e8fbff" stroke="#9ad6ef" stroke-width=".5"/>`:g('zwartdiamant')?ring('#dfe3e8','#0b0b0d')+`<path d="M50 221 l.6 1.4 1.4 .6 -1.4 .6 -.6 1.4 -.6 -1.4 -1.4 -.6 1.4 -.6z" fill="#fff" class="fit-spark2"/>`:'';
  {const l=LK('ring');if(l)o.ring=ring(l.m,l.st)}
  {const l=LK('schoenen');if(l)o.shoes=shoe(l.c,l.sole,l.h||0)}
+ {const l=DR('schoenen');if(l){const h=l.kind==='boot'?14:0;o.shoes=shoe(l.c,l.kind==='sneaker'?(l.sole||'#f1efe9'):l.c2,h)+(l.kind==='sneaker'?`<path d="M70 352 q8 -5 17 -1M113 351 q9 -4 17 1" stroke="${l.c2}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`
+  :l.kind==='boot'?`<path d="M76 342h16M108 342h16" stroke="${l.c2}" stroke-width="3"/>`:`<path d="M70 353h10M120 353h10" stroke="rgba(255,255,255,.4)" stroke-width="1.6"/>`)}}
+ {const l=DR('nek');if(l&&l.kind==='scarf')o.neck+=`<path d="M88 78h24v18q-12 5 -24 0z" fill="${l.c}"/><path d="M90 83h20M90 88h20M90 93h20" stroke="${l.c2}" stroke-width="1"/>`}
+ {const l=DR('ring');if(l)o.ring=ring(l.c,l.c2&&l.c2!==l.c?l.c2:null)}
+ {const l=DR('pols');if(l&&l.kind==='gloves')o.wrist=`<path d="M43 213l10 1.5M157 213l-10 1.5" stroke="${l.c2}" stroke-width="6" stroke-linecap="round"/>`}
  {const l=LK('nek');if(l)o.neck+=`<path d="M87 92 Q100 128 113 92" stroke="${l.c}" stroke-width="${l.w||2}" fill="none"/>`}
  return o}
 function dollSvg(wear,opts){opts=opts||{};const w=Object.values(wear||{}).filter(Boolean),P=dollParts(w);
@@ -291,7 +422,7 @@ function dollSvg(wear,opts){opts=opts||{};const w=Object.values(wear||{}).filter
   <path d="M93 72h14v22H93z" fill="${DOLL.body}"/>
   <ellipse cx="100" cy="50" rx="19" ry="23" fill="${DOLL.body2}"/><path d="M84 40 Q100 28 116 40" stroke="${DOLL.body}" stroke-width="3" fill="none" opacity=".6"/>
   ${P.face}${P.head}${P.neck}${P.wrist}${P.ring}</svg>`}
-const FIT_VB={hoofd:'60 6 80 80',kleding:'34 76 132 156',schoenen:'52 318 96 52',nek:'66 78 68 72',pols:'128 186 46 46',ring:'31 207 34 34'};
+const FIT_VB={broek:'30 186 140 170',hoofd:'60 6 80 80',kleding:'34 76 132 156',schoenen:'52 318 96 52',nek:'66 78 68 72',pols:'128 186 46 46',ring:'31 207 34 34'};
 // geluksdobbelsteen: een kubus in drie tinten, met ogen op de bovenkant en de zijkanten; de gebroken heeft een barst
 function diceSvg(o,big){const [t,l,r]=o.dc||['#ddd','#bbb','#999'],pip=o.id==='dob15'?'#7a4b00':o.id==='dob8'?'#4a5058':'#1b1d22';
  return `<svg class="dice${big?' big':''}" viewBox="0 0 64 64" role="img" aria-label="${esc(o.n)}"><ellipse cx="32" cy="57" rx="20" ry="4" fill="rgba(0,0,0,.4)"/>
@@ -319,17 +450,18 @@ const FIT_STREETS=[
  {id:'laag',n:'Albert Cuypmarkt',sub:'Lage klasse · Rookie tot Dief',d:'Kraampjes, nepmerken en een man die alles voor een tientje regelt.',r:[0,3],col:'#7fd1c7',ic:'look'},
  {id:'midden',n:'Kalverstraat',sub:'Middenklasse · Boef tot Huurmoordenaar',d:'Ketens, sneakerwinkels en een juwelier die geen vragen stelt.',r:[4,7],col:'#ffad6b',ic:'look'},
  {id:'hoog',n:'P.C. Hooftstraat',sub:'Hoge klasse · Capo tot Peetvader',d:'Portiers, champagne bij het passen en prijzen die niet op het kaartje staan.',r:[8,11],col:'#f2c230',ic:'look'}];
-rkRemap(OUTFITS,1);FIT_STREETS.forEach(x=>{if(!x._rk){x._rk=1;x.r=[RK[x.r[0]],RK[x.r[1]]]}});
+rkRemap(OUTFITS,1);FIT_NEW.forEach(o=>{if(!OUTFITS.some(x=>x.id===o.id))OUTFITS.push(o)});FIT_STREETS.forEach(x=>{if(!x._rk){x._rk=1;x.r=[RK[x.r[0]],RK[x.r[1]]]}});
 const fitStreet=o=>fitIsCharm(o)?'geluk':o.r<=RK[3]?'laag':o.r<=RK[7]?'midden':'hoog';
 const fitPrice=o=>{const ri=rankIdx(S.xp);return ri>=o.r?o.p:Math.round(o.p*(1.4+.25*(rkPow(o.r)-rkPow(ri)))/100)*100};
 const fitExtra=o=>{const ri=rankIdx(S.xp);return ri>=o.r?0:Math.round((.4+.25*(rkPow(o.r)-rkPow(ri)))*100)};
 const fitUI={tab:'kleding',prev:null,street:null};
-function fitPreview(id){fitUI.prev=id;const el=document.getElementById('fitDoll');if(!el)return;const w=Object.assign({},fitS().wear);if(id){const o=fitItem(id);if(o)w[o.slot]=o.id}
- el.innerHTML=dollSvg(w);el.classList.toggle('try',!!id)}
+function fitPreview(id){fitUI.prev=id;const w=Object.assign({},fitS().wear);if(id){const o=fitItem(id);if(o&&!fitIsCharm(o))w[o.slot]=o.id}
+ ['fitDoll','fitDollM'].forEach(k=>{const el=document.getElementById(k);if(!el)return;el.innerHTML=dollSvg(w);el.classList.toggle('try',!!id)})}
 // wat verandert er als je dit stuk aantrekt (tegenover wat je nu draagt), inclusief setbonussen
 function fitDiff(o){if(!o||fitIsCharm(o))return {};const w=Object.assign({},fitS().wear,{[o.slot]:o.id}),L=FIT_SLOTS.map(sl=>fitItem(w[sl.id])).filter(x=>x&&FIT_STYLES[x.st]);
  const a=fitTotals(),b=fitTotals(L),d={};new Set([...Object.keys(a),...Object.keys(b)]).forEach(k=>{const v=+((b[k]||0)-(a[k]||0)).toFixed(4);if(Math.abs(v)>1e-6)d[k]=v});return d}
-const fitDiffHtml=o=>{const F=fitS();if(F.wear[o.slot]===o.id)return '';const d=fitChips(fitDiff(o));return `<div class="fit-diff"><span>Als je hem aantrekt</span>${d||'<em>niets anders</em>'}</div>`};
+const fitDiffHtml=o=>{const F=fitS();if(F.wear[o.slot]===o.id)return '';const d=fitChips(fitDiff(o));if(d&&d===fitChips(o.fx))return ''; // niets extra's: niet dubbel tonen
+return `<div class="fit-diff"><span>Als je hem aantrekt</span>${d||'<em>niets anders</em>'}</div>`};
 // setbanner: welke set je draagt, hoe ver je bent en wat de volle set geeft
 function fitSetHud(){const c=fitSets(),best=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];
  if(!best)return `<div class="fit-hud none"><b>Geen set</b><span>Draag 3 stukken in dezelfde stijl voor een setbonus, 5 voor de volle bonus.</span></div>`;
@@ -346,7 +478,7 @@ function fitWardrobe(){const F=fitS(),sl=fitUI.wslot||'kleding',own=OUTFITS.filt
  <div class="wd">
   <section class="wd-left card">
    ${fitSetHud()}
-   <div class="wd-stage"><div class="wd-col">${S6.slice(0,3).map(slotBtn).join('')}</div><div class="wd-doll" id="fitDoll">${dollSvg(F.wear)}</div><div class="wd-col">${S6.slice(3).map(slotBtn).join('')}</div></div>
+   <div class="wd-stage"><div class="wd-col">${S6.slice(0,4).map(slotBtn).join('')}</div><div class="wd-doll" id="fitDoll">${dollSvg(F.wear)}</div><div class="wd-col">${S6.slice(4).map(slotBtn).join('')}</div></div>
    <div class="fit-sum"><span class="label">Wat je outfit je nu geeft</span><div class="fit-chips">${fitChips(t)||'<em>Nog niks. Trek iets aan.</em>'}</div></div>
   </section>
   <section class="wd-right">
@@ -378,13 +510,13 @@ V.look=()=>{const ri=rankIdx(S.xp),F=fitS(),tab=fitUI.tab,worn=F.wear[tab];
    <div class="fit-b"><div class="fit-t"><h4>${o.n}</h4><span class="fit-st">${s.n}</span></div><p>${o.d}</p><div class="fit-chips">${fxH}</div>${use||on?'':fitDiffHtml(o)}</div>
    <div class="fit-btn">${on?`<span class="fit-on">${use?'Op zak':'Draag je'}</span>`:own?'<span class="fit-own">In je kast</span>':''}${btn}</div></article>`};
  const luckPanel=tab==='geluk'?luckPanelHtml():'';
- return `<h1>Outfit</h1><p class="sub">Wat je draagt bepaalt hoe de straat naar je kijkt. Elk stuk geeft een voordeel, en drie of meer stukken in dezelfde stijl geven een setbonus. Vaak kies je tussen stukken van dezelfde prijs met een ander voordeel. Wat je koopt blijft in je kast; omkleden is gratis.</p>
+ return `<h1>Outfit</h1><p class="sub">Elk stuk geeft een voordeel. Drie of meer in dezelfde stijl: setbonus. Omkleden is gratis.</p>
  <div class="fit">
   <section class="card fit-left"><div class="fit-stage" id="fitDoll">${dollSvg(F.wear)}</div>
    <div class="fit-worn">${FIT_SLOTS.map(sl=>{const o=fitItem(F.wear[sl.id]);return `<button class="${tab===sl.id?'on':''}" onclick="fitUI.tab='${sl.id}';fitUI.street=${FIT_CHARM.includes(sl.id)}?'geluk':(fitUI.street&&fitUI.street!=='geluk'?fitUI.street:'kast');render()"><span class="label">${sl.n}</span><b>${o?o.n:'Niets'}</b></button>`}).join('')}</div>
    ${fitSetHud()}${fitSumHtml()}</section>
   <section class="fit-right">${st?`<div class="vb-bar"><button class="vb-back" onclick="fitUI.street=null;render()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Winkelstraten</span></button><h2>${STR?STR.n:st==='kast'?'Je kast':'Gelukspullen'}</h2></div>
-   ${STR?`<div class="fs-head" style="--c:${STR.col}"><div><span class="label">${STR.sub}</span><p>${STR.d}</p></div><button class="btn ghost sm" onclick="fitUI.street='kast';render()">Kledingkast · ${OUTFITS.filter(o=>F.own[o.id]&&!fitIsCharm(o)).length}</button></div>
+   ${STR?`<div class="fs-head" style="--c:${STR.col}"><div class="fs-doll" id="fitDollM" aria-hidden="true">${dollSvg(F.wear)}</div><div class="fs-tx"><span class="label">${STR.sub}</span><p>${STR.d}</p></div><button class="btn ghost sm" onclick="fitUI.street='kast';render()">Kledingkast · ${OUTFITS.filter(o=>F.own[o.id]&&!fitIsCharm(o)).length}</button></div>
    <div class="fs-own" role="group" aria-label="Laat zien">${[['all','Alles'],['buy','Te koop'],['own','In bezit']].map(([k,n])=>`<button class="${fl===k?'on':''}" onclick="fitUI.own='${k}';render()">${n} <small>${pool.filter(o=>o.slot===tb&&(k==='all'||(k==='own'?F.own[o.id]:!F.own[o.id]))).length}</small></button>`).join('')}</div>`:''}
    <div class="fit-tabs2" role="tablist">${slots.map(sl=>`<button role="tab" class="${tb===sl.id?'on':''}" aria-selected="${tb===sl.id}" onclick="fitUI.tab='${sl.id}';render()">${sl.n}${F.wear[sl.id]?'<i></i>':''}</button>`).join('')}</div>
    ${st==='geluk'?(tb==='zaken'?klemPanelHtml():luckPanelHtml()):''}<p class="fit-hint"><span class="hv">Ga met je muis over een stuk om het te passen.</span></p>

@@ -171,9 +171,11 @@ const gearBonus=()=>gearSum('kans');
 const gearFx=k=>gearSum(k)/100;
 // outfit (kleding en sieraden, zie pages/look.js): voordelen per stuk plus setbonus
 const fitFx=k=>typeof outfitFx==='function'?outfitFx(k):0;
+// herkenning (fitFx('herken'), 0..0,6): wie moeilijk te herkennen is krijgt iets minder hitte (bij 0,6: −15%)
+const FIT_HK_HEAT=.25;
 const gearVk=()=>gearSum('vk');
 // hitte erbij, minder met communicatiemiddelen (kansrekening voor de rest, zodat kleine getallen ook tellen)
-function addHeat(h){h*=(1-gearFx('heat'))*(1-famPerk('heat'))*(1-fitFx('heat'));S.heat=Math.min(100,S.heat+Math.floor(h)+(Math.random()<h%1?1:0))}
+function addHeat(h){h*=(1-gearFx('heat'))*(1-famPerk('heat'))*(1-fitFx('heat'))*(1-FIT_HK_HEAT*fitFx('herken'));S.heat=Math.min(100,S.heat+Math.floor(h)+(Math.random()<h%1?1:0))}
 // Familie: je begint onderaan (Aspirant) en klimt met eer. Familiebonus en eigen voordeel groeien van 50% naar 100%.
 const famBase=()=>FAMILIES.find(f=>f.id===S.family)||null;
 const famTier=()=>{const f=famBase();return f?FAMILIES.indexOf(f):0};

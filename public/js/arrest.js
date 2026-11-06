@@ -27,6 +27,10 @@ const AR_FIOD_FAIL=30,AR_FIOD_PRO=15,AR_FIOD_OK=2,AR_FIOD_DECAY=.5,AR_FIOD_AFTER
 const AR_ZAAK_MS=DAY_MS,AR_ZAAK_FINE=.6,AR_ZAAK_CLEAN=.6,AR_ZAAK_MAX=8;
 const AR_B0={straat:55,kraak:62,geweld:72,invloed:60},AR_PRO=30;
 const AR_ADV={piket:-6,pleiter:-15,zelf:12},AR_VK=[-20,15],AR_BEK=.8,AR_SB=.5;
+// herkenning door je outfit (fitFx('herken'), 0..0,6): minder kans op een signalement, minder startbewijs (bij 0,6: −12)
+const AR_HK_B=20;
+const arHk=()=>typeof fitFx==='function'?Math.max(0,Math.min(.6,+fitFx('herken')||0)):0;
+const arHkB=()=>Math.round(AR_HK_B*arHk());
 
 const arCatOf=pa=>(pa&&pa.opts&&pa.opts.cat)||'straat';
 const arC=id=>CRIMES.find(x=>x.id===id);
@@ -52,7 +56,7 @@ function arToJail(){page='jail';try{history.replaceState(null,'','#jail')}catch(
 // heterdaad-klussen (straatwerk, inbraak, overvallen): straf en opties voor arrest()
 function arHeist(c){const k=crCat(c),gw=k==='geweld',sec=Math.round(c.jail*(gw?AR_GW:1));
  const o={flow:true,id:c.id,P:typeof crP==='function'?crP(c):0};
- if(gw&&Math.random()<AR_GW_WANT)o.wanted={lv:1,t:'je overval',sec,why:'na een mislukte overval'};
+ if(gw&&Math.random()<AR_GW_WANT*(1-arHk()))o.wanted={lv:1,t:'je overval',sec,why:'na een mislukte overval'};
  return {sec,o}}
 function arFailBase(c,heat){S.stats.fails++;crxN(crCat(c));crxAdd(c,0);addXp(Math.ceil(c.xp/4));addHeat(heat)}
 // fraude, smokkel en witteboord: geen arrestatie. true = afgehandeld
@@ -123,7 +127,7 @@ function arFailTxt(c){const k=crCat(c);
 // =====================================================================================================================
 // B. Het arrestatieverloop
 // =====================================================================================================================
-function arB0(pa){const k=arCatOf(pa),P=+(pa.opts&&pa.opts.P)||0;return Math.round(Math.max(5,Math.min(95,(AR_B0[k]||60)-AR_PRO*P+((pa.flow&&pa.flow.ex||1)>1?8:0))))}
+function arB0(pa){const k=arCatOf(pa),P=+(pa.opts&&pa.opts.P)||0;return Math.round(Math.max(5,Math.min(95,(AR_B0[k]||60)-AR_PRO*P-arHkB()+((pa.flow&&pa.flow.ex||1)>1?8:0))))}
 // kans per beslissing van de officier van justitie: sepot bij weinig bewijs, strafbeschikking bij lichte zaken
 function arProbs(pa,B,bek){const s=bek?0:Math.max(0,Math.min(.8,(50-B)/50));let w=Math.max(.05,Math.min(.85,1.3-pa.sec/150));if(bek)w=Math.min(.9,w+.25);
  return {s,sb:(1-s)*w,vg:(1-s)*(1-w)}}
@@ -139,7 +143,7 @@ const arWait=f=>Math.max(8,Math.min(25,Math.round(f.full*.1)));
 function arExpect(pa){const f=pa.flow;let B=f.B;const g=Object.assign({},f);if(f.st==='adv'){B+=AR_ADV.piket;g.adv=null}
  const P=arProbs(pa,B,false);return Math.round(P.vg*arVg(g,false)+P.sb*arSbSec(g,false))}
 function arStart(pa,extra,why){closeModal();pa.fleeing=false;const full=jailSec(pa.sec*(extra||1));
- pa.flow={st:'adv',full,ex:extra||1,why:why||pa.title,nr:arNr(),t:now()};pa.flow.B=pa.flow.B0=arB0(pa);
+ pa.flow={st:'adv',full,ex:extra||1,why:why||pa.title,nr:arNr(),t:now(),hk:arHkB()};pa.flow.B=pa.flow.B0=arB0(pa);
  S.pendingArrest=pa;S.stats.arrests=(S.stats.arrests||0)+1;save();pushState();return pa}
 // vanuit arrest(): overgeven, vlucht of praatje mislukt
 function arFlow(pa,extra,why){arStart(pa,extra,why);arShow(pa)}
@@ -188,7 +192,7 @@ function arShow(pa){const f=pa.flow;if(!f)return;const qa={quick:()=>arQuick(pa)
  if(f.st==='adv'){const W=arWait(f),cost=arPleiter(f),vf=Math.round(arVormfout()*100);
   arOverlay(`<div class="ar-box">${arTop('Aangehouden · '+f.nr,0)}<div class="ar-body">
    <div class="ar-hd">${arIc('cell')}<div><span class="label">${esc(f.why)}</span><h2 id="arT">Politiecel</h2></div></div>
-   <p>Je zit op het bureau. Voor het verhoor heb je recht op een advocaat. Je mag ook zwijgen.</p>${arMeter(f.B)}
+   <p>Je zit op het bureau. Voor het verhoor heb je recht op een advocaat. Je mag ook zwijgen.</p>${arMeter(f.B)}${f.hk?`<p class="ar-hk">Je outfit: lastig te herkennen, bewijs −${f.hk}.</p>`:''}
    <div class="ar-opts">${arOp('piket','Piketadvocaat','Gratis. Wel even wachten: ±'+W+' s (telt als voorarrest).','bewijs '+sgn(AR_ADV.piket))}
     ${arOp('pleiter','Eigen strafpleiter','Kost '+fmt(cost)+'. '+vf+'% kans dat hij een vormfout vindt: dan seponeert de officier.','bewijs '+sgn(AR_ADV.pleiter),!arCanPay(cost))}
     ${arOp('zelf','Afzien van een advocaat','Meteen door. Het verhoor wordt zwaarder.','bewijs '+sgn(AR_ADV.zelf))}</div>
