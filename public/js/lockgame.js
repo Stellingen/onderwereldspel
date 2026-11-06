@@ -27,19 +27,19 @@ function lockGame(P,opts){opts=opts||{};return new Promise(resolve=>{
  const pinsHtml=()=>`<div class="lk-pins">${Array.from({length:P.pins},(_,i)=>`<i class="${i<set?'on':''}"></i>`).join('')}</div>`;
  const paintLock=()=>{stage.innerHTML=`<div class="lk-lock">${pinsHtml()}
    <div class="lk-track"><i class="lk-zone" style="left:${((center-P.zone/2)*100).toFixed(1)}%;width:${(P.zone*100).toFixed(1)}%"></i><b class="lk-needle" id="lkNeedle"></b></div>
-   <div class="lk-hint">${fx||'Druk als de naald in het groene stuk staat'}</div></div>`;
-  help.innerHTML='<b>Spatie</b>, klik of tik op het slot zet een pin. Mis je, dan loopt je paniek op; twee missers op rij en een pin springt terug.';
+   <div class="lk-hint">${fx||'Druk als de naald in het groen staat'}</div></div>`;
+  help.innerHTML=opts.intro?'':'<b>Spatie</b>, klik of tik op het slot zet een pin. Mis je, dan loopt je paniek op; twee missers op rij en een pin springt terug.';
   ctl.innerHTML='<button class="btn lk-go" type="button" id="lkBtn">Zet pin <small>spatie</small></button>';ov.querySelector('#lkBtn').onpointerdown=e=>{e.preventDefault();press()}};
  const paintBreath=()=>{stage.innerHTML=`<div class="lk-breath"><div class="lk-ring-w"><i class="lk-ring" id="lkRing"></i><span class="lk-ring-t" id="lkRingT">Adem in</span></div>
    <div class="lk-streak" id="lkStreak"></div><div class="lk-hint" id="lkBHint">Tik als de cirkel het grootst is · ${breath.need} keer goed op rij</div></div>`;
-  help.innerHTML='Je raakt in paniek. <b>Tik</b> (of spatie) precies als de cirkel het grootst is. Drie keer mis en je raakt het kwijt.';
+  help.innerHTML=opts.intro?'':'Je raakt in paniek. <b>Tik</b> (of spatie) precies als de cirkel het grootst is. Drie keer mis en je raakt het kwijt.';
   ctl.innerHTML='<button class="btn lk-go breath" type="button" id="lkBtn">Nu <small>spatie</small></button>';ov.querySelector('#lkBtn').onpointerdown=e=>{e.preventDefault();press()};streakPaint()};
  const streakPaint=()=>{const e=ov.querySelector('#lkStreak');if(e)e.innerHTML=Array.from({length:breath.need},(_,i)=>`<i class="${i<breath.hit?'on':''}"></i>`).join('')+`<em>${breath.bad?breath.bad+' mis':''}</em>`};
  const startBreath=()=>{mode='breath';breath={hit:0,bad:0,t0:performance.now(),period:2600,need:P.breathN||3};paintBreath();lkSnd('lose')};
- const endBreath=ok=>{if(ok){panic=Math.max(0,Math.min(panic,38));mode='lock';fx='Rustig. Terug naar het slot.';paintLock();setTimeout(()=>{fx=null},1200);lkSnd('win')}else finish(false,'Je raakte in paniek')};
+ const endBreath=ok=>{if(ok){panic=Math.max(0,Math.min(panic,38));mode='lock';fx='Rustig. Verder.';paintLock();setTimeout(()=>{fx=null},1200);lkSnd('win')}else finish(false,'Je raakte in paniek')};
  let press=()=>{if(done)return;
   if(mode==='lock'){if(Math.abs(x-center)<=P.zone/2){set++;misses=0;lkSnd('click');fx=null;if(set>=P.pins){finish(true);return}newZone();paintLock()}
-   else{misses++;missT++;panic=Math.min(100,panic+P.panicMiss);lkSnd('tick');if(P.maxMiss!=null&&missT>P.maxMiss){finish(false,'Te veel herrie: iemand hoorde je');return}fx='Mis'+(misses%2===0&&set>0?' · een pin springt terug':'')+(P.maxMiss!=null?' · nog '+(P.maxMiss-missT)+' fout'+(P.maxMiss-missT===1?'':'en')+' over':'');if(misses%2===0&&set>0)set--;paintLock();if(panic>=100)startBreath()}}
+   else{misses++;missT++;panic=Math.min(100,panic+P.panicMiss);lkSnd('tick');if(P.maxMiss!=null&&missT>P.maxMiss){finish(false,'Te veel herrie: iemand hoorde je');return}fx='Mis'+(misses%2===0&&set>0?' · pin springt terug':'')+(P.maxMiss!=null?' · nog '+(P.maxMiss-missT)+' over':'');if(misses%2===0&&set>0)set--;paintLock();if(panic>=100)startBreath()}}
   else{const ph=((performance.now()-breath.t0)/breath.period)%1,dist=Math.min(Math.abs(ph-.5),1);// grootst op ph=.5
    if(dist<=P.breathTol/2){breath.hit++;lkSnd('click');if(breath.hit>=breath.need){endBreath(true);return}}
    else{breath.bad++;breath.hit=0;lkSnd('tick');if(breath.bad>=3){endBreath(false);return}}
@@ -59,7 +59,7 @@ function lockGame(P,opts){opts=opts||{};return new Promise(resolve=>{
   const el=(t-t0)/1000,left=Math.max(0,1-el/P.time);tim.style.width=(left*100).toFixed(1)+'%';tim.classList.toggle('hot',left<.25);
   if(el>=P.time){finish(false);return}
   raf=requestAnimationFrame(tick)};
- paintLock();const run=()=>{raf=requestAnimationFrame(t=>{last=t;t0=t;tick(t)})};
+ if(opts.intro)help.style.display='none';paintLock();const run=()=>{raf=requestAnimationFrame(t=>{last=t;t0=t;tick(t)})};
  if(opts.intro&&typeof cgIntro==='function'){let live=false;const k0=press;press=()=>{if(live)k0()};cgIntro(ov.querySelector('.jb-box'),opts.intro,()=>{live=true;run()})}else run()})}
 
 // ---------- ademhaling (training en oefenen) ----------

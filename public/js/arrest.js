@@ -172,6 +172,7 @@ const AR_I={gavel:'<path d="M14.6 3.4l6 6M12.4 5.6l6 6M13.5 4.5l-5 5 6 6 5-5M11 
  ban:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'};
 const arIc=k=>`<svg class="ar-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${AR_I[k]}</svg>`;
 const AR_STEPS=['Politiecel','Verhoor','Officier','Afdoening'];
+const AR_VQ=['Waar was jij vanavond om tien uur?','We hebben je op camera. Wat deed je daar?','Je vingerafdrukken zitten erop. Hoe kan dat?','Een getuige herkent je. Wat zeg je daarop?'];
 function arTop(lbl,step){return `<div class="ar-top"><span class="label">${lbl}</span>${step!=null?`<ol class="ar-steps" aria-label="Stap ${step+1} van 4">${AR_STEPS.map((s,i)=>`<li class="${i<step?'done':i===step?'now':''}"${i===step?' aria-current="step"':''}>${s}</li>`).join('')}</ol>`:''}</div>`}
 function arMeter(B,B2){const v=Math.round(B2==null?B:B2);return `<div class="ar-meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${v}" aria-label="Bewijs"><div class="ar-m-h"><span>Bewijsmeter</span><b class="${v<50?'ok':v>=75?'bad':''}">${v}</b></div>
  <div class="ar-m-bar"><i style="width:${v}%"></i><u style="left:50%"></u></div><small>${v<50?'Onder de 50: de officier kan seponeren':'Vanaf 50 is sepot uitgesloten'}</small></div>`}
@@ -209,13 +210,13 @@ function arShow(pa){const f=pa.flow;if(!f)return;const qa={quick:()=>arQuick(pa)
    <div class="ar-foot">${arQuickBtn(pa)}${arMax(f)}</div></div></div>`,Object.assign({},qa,{go:()=>{if(now()<f.wT)return;f.st='vh';arSave(pa);arShow(pa)}}));
   const iv=setInterval(()=>{const l=f.wT-now(),w=ov.querySelector('#arW'),b=ov.querySelector('#arWb');if(!w){clearInterval(iv);return}
    w.textContent=Math.max(0,Math.ceil(l/1000))+'s';b.style.width=Math.min(100,(1-l/(f.W*1000))*100)+'%';if(l<=0){clearInterval(iv);const g=ov.querySelector('#arGo');g.disabled=false;w.textContent='Daar is ze';g.focus({preventScroll:true})}},250);ov._stop=()=>clearInterval(iv);return}
- if(f.st==='vh'){const pv=Math.round(arVkP(pa)*100),P=Math.round((+(pa.opts&&pa.opts.P)||0)*100);
+ if(f.st==='vh'){const pv=Math.round(arVkP(pa)*100);if(!f.vq){f.vq=AR_VQ[Math.floor(Math.random()*AR_VQ.length)];arSave(pa)}
   arOverlay(`<div class="ar-box">${arTop('Verhoor · '+f.nr,1)}<div class="ar-body">
    <div class="ar-hd">${arIc('chat')}<div><span class="label">${f.adv==='zelf'?'Zonder advocaat':f.adv==='pleiter'?'Met je strafpleiter':'Met de piketadvocaat'}</span><h2 id="arT">Verhoor</h2></div></div>
-   <p>Je bent niet verplicht te antwoorden. Je professionaliteit (${P}%) heeft al minder sporen achtergelaten.</p>${arMeter(f.B)}
-   <div class="ar-opts">${arOp('zwijg','Zwijgen','Je beroept je op je zwijgrecht. Het bewijs blijft wat het is.','bewijs ±0')}
-    ${arOp('verklaar','Een verklaring afleggen',pv+'% kans dat je verhaal klopt. Zo niet, dan wordt het erger.','bewijs '+sgn(AR_VK[0])+' of '+sgn(AR_VK[1]))}
-    ${arOp('beken','Bekennen','20% minder straf en meer kans op een strafbeschikking. Sepot kan dan niet meer.','straf −20%')}</div>
+   <div class="ar-vq"><span>Rechercheur</span><p>${esc(f.vq)}</p></div>${arMeter(f.B)}
+   <div class="ar-opts" role="group" aria-label="Wat doe je?">${arOp('zwijg','Zwijgen','“Geen commentaar.” Het bewijs blijft gelijk.','bewijs ±0')}
+    ${arOp('verklaar','Een verhaal ophangen','“Ik was gewoon thuis.” '+pv+'% kans dat ze je geloven.','bewijs '+sgn(AR_VK[0])+' / '+sgn(AR_VK[1]))}
+    ${arOp('beken','Bekennen','“Oké, ik was het.” Minder straf, maar geen sepot meer.','straf −20%')}</div>
    <div class="ar-foot">${arQuickBtn(pa)}${arMax(f)}</div></div></div>`,Object.assign({},qa,{
     zwijg:()=>{f.vh='zwijg';arDecide(pa)},
     verklaar:()=>{const ok=Math.random()<arVkP(pa);f.vh=ok?'ok':'nee';f.B=Math.max(0,Math.min(100,f.B+AR_VK[ok?0:1]));arDecide(pa)},
@@ -258,10 +259,10 @@ const AR_TK={dur:15000,every:720,life:1550,need:.6};
 function arTaak(pa){const f=pa.flow,cols=['#ff5a5f','#5ce1c4','#f2c230','#b8a1ff','#ffad6b'];
  const ov=arOverlay(`<div class="ar-box mid">${arTop('Taakstraf · '+f.nr,3)}<div class="ar-body">
   <div class="ar-hd">${arIc('brush')}<div><span class="label">Werkstraf · gemeente</span><h2 id="arT">Graffiti weghalen</h2></div></div>
-  <p class="ar-tk-how">Tik op elke tag voordat hij indroogt. Toetsen 1-9 werken ook. Minstens 60% weghalen.</p>
+  <p class="ar-tk-how">Tik elke tag weg voordat hij indroogt. Haal er minstens 60% weg.</p>
   <div class="ar-tk-h"><span>Weg <b id="arTkOk">0</b></span><span>Ingedroogd <b id="arTkNo">0</b></span><span id="arTkT">15s</span></div>
   <div class="ar-m-bar ar-tk-bar"><i id="arTkB" style="width:100%"></i></div>
-  <div class="ar-wall" id="arWall">${Array.from({length:9},(_,i)=>`<button type="button" class="ar-tile" data-i="${i}" aria-label="Muurvak ${i+1}"><kbd>${[7,8,9,4,5,6,1,2,3][i]}</kbd></button>`).join('')}</div>
+  <div class="ar-wall" id="arWall">${Array.from({length:9},(_,i)=>`<button type="button" class="ar-tile" data-i="${i}" aria-label="Muurvak ${i+1}"></button>`).join('')}</div>
   <div class="ar-acts" id="arTkA"><button class="btn" data-a="start">Begin</button></div></div></div>`,{start:()=>go()},e=>{const m={7:0,8:1,9:2,4:3,5:4,6:5,1:6,2:7,3:8}[e.key];if(m!=null&&run){e.preventDefault();hit(m)}});
  const tiles=[...ov.querySelectorAll('.ar-tile')],T=[];let run=false,t0=0,last=0,ok=0,no=0,raf=0,done=false;
  const tag=c=>`<svg viewBox="0 0 60 40" aria-hidden="true"><path d="M6 30c6-16 10-20 14-8s8 10 12-6 10-10 12 4 6 8 10-6" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round"/></svg>`;
@@ -269,7 +270,7 @@ function arTaak(pa){const f=pa.flow,cols=['#ff5a5f','#5ce1c4','#f2c230','#b8a1ff
  function hit(i){const x=T[i];if(!x||!run)return;T[i]=null;ok++;tiles[i].classList.remove('on');tiles[i].classList.add('clean');setTimeout(()=>tiles[i].classList.remove('clean'),220);ov.querySelector('#arTkOk').textContent=ok;try{SFX.tick()}catch(e){}}
  function go(){if(run||done)return;run=true;ov.querySelector('#arTkA').innerHTML='';ov.querySelector('.ar-tk-how').classList.add('dim');t0=last=performance.now();raf=requestAnimationFrame(loop)}
  function loop(t){if(!run)return;const el=t-t0;
-  if(t-last>=AR_TK.every&&el<AR_TK.dur-600){last=t;const free=tiles.map((_,i)=>i).filter(i=>!T[i]);if(free.length){const i=free[Math.floor(Math.random()*free.length)];T[i]={t};tiles[i].innerHTML=tag(cols[Math.floor(Math.random()*cols.length)])+tiles[i].querySelector('kbd').outerHTML;tiles[i].classList.add('on')}}
+  if(t-last>=AR_TK.every&&el<AR_TK.dur-600){last=t;const free=tiles.map((_,i)=>i).filter(i=>!T[i]);if(free.length){const i=free[Math.floor(Math.random()*free.length)];T[i]={t};tiles[i].innerHTML=tag(cols[Math.floor(Math.random()*cols.length)]);tiles[i].classList.add('on')}}
   T.forEach((x,i)=>{if(x&&t-x.t>AR_TK.life){T[i]=null;no++;tiles[i].classList.remove('on');tiles[i].classList.add('dry');setTimeout(()=>tiles[i].classList.remove('dry'),260);ov.querySelector('#arTkNo').textContent=no}});
   ov.querySelector('#arTkB').style.width=Math.max(0,100-el/AR_TK.dur*100)+'%';ov.querySelector('#arTkT').textContent=Math.max(0,Math.ceil((AR_TK.dur-el)/1000))+'s';
   if(el>=AR_TK.dur){finish();return}raf=requestAnimationFrame(loop)}

@@ -102,3 +102,7 @@
 @media (max-width:900px){.ar-gv-l{grid-template-columns:repeat(2,minmax(0,1fr))}.ar-sts{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:420px){.ar-gv-l{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){.ar-ov{animation:none}.ar-m-bar>i,.ar-tile svg{transition:none}.ar-ov.out{transition:none}}
+/* verhoor: de vraag van de rechercheur als tekstballon (ronde 3) */
+.ar-vq{position:relative;display:flex;flex-direction:column;gap:3px;align-self:flex-start;max-width:100%;padding:10px 14px 11px;border-radius:14px 14px 14px 4px;background:#16202f;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ac) 35%,transparent)}
+.ar-vq span{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#9fc0ff}
+.ar-vq p{margin:0;font-size:17px;font-weight:600;line-height:1.3;color:#f0f3f8}
