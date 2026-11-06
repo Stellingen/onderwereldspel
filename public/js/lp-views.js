@@ -230,7 +230,7 @@ function games(N) {
     ['rennen', 'Rennen!', 'Betrapt? Weg door de steeg. Wissel van baan, spring en buk, en struikel niet te vaak.', 'Na een mislukte klus', 'straat'],
     ['plankgas', 'Plankgas!', 'Met een gestolen auto door de stad. Ontwijk het verkeer, geef nitro en neem een zijstraat.', "Bij auto's stelen", 'straat'],
     ['gang', 'Ontsnappen', 'Vijl de tralies in het ritme, sluip door de gang langs de lichtkegels en klim over de muur.', 'Als je vastzit', 'politie'],
-    ['carjacken', 'Carjacken', 'Auto voor rood. Portier open, bestuurder eruit, gas erop. Voordat het groen wordt.', 'Vanaf ' + esc(N.jackRank), 'straat'],
+    ['carjacken', 'Carjacken', 'Tankstation, stoplicht, parkeergarage of een valse aanrijding. Kies je auto uit drie, speel je aanpak en rij weg.', 'Vanaf ' + esc(N.jackRank), 'straat'],
     ['contact', 'Contact maken', 'Een geparkeerde auto starten zonder sleutel: toets de pijlen in de goede volgorde voor de tijd op is. Een rode pijl druk je andersom.', 'Bij straat afzoeken', 'straat']];
   const media = (g) => g[0] === 'gang'
     ? `<div class="lp-game__media lp-game__live" data-live="gang">${gangSvg(N)}<span class="lp-game__hud">Live · de echte gang</span><button class="lp-game__pauze" type="button" aria-pressed="true" aria-label="Gang van Ontsnappen: afspelen" hidden>${ic('pause')}</button></div>`

@@ -1,114 +1,120 @@
-// Auto's: carjacken bij het stoplicht. Een andere manier om aan een auto te komen dan de straat afzoeken:
-// geen zoektocht, meteen een auto, maar meer risico en een lagere prijs (de auto is "heet").
-// Er stopt een auto voor rood. Druk drie keer op het juiste moment (portier open, bestuurder eruit, gas erop) voordat het licht
-// op groen springt. Het groene stuk is groter met ervaring, Conditie, Rijvaardigheid en een zwaarder wapen; duurdere auto's gaan sneller.
-// Mis je, dan rijdt hij soms gewoon weg, vecht de bestuurder soms terug (gezondheid), en soms staat er politie om de hoek.
-const JACK_R=GAME_CONST.jackR,JACK_EN=12,JACK_CD=4,JACK_HOT=.85,JACK_STEPS=['Portier open','Bestuurder eruit','Gas erop'];
-// Bij het stoplicht staan duurdere auto's dan op straat (meer lef): JACK_T0 als groentje, JACK_T1 als legende (steelervaring),
-// en de dure klassen (k in CARS) tellen ×1,3 zwaarder dan op straat.
-const JACK_T0={1:.34,2:.33,3:.21,4:.1,5:.02,6:0},JACK_T1={1:.1,2:.16,3:.31,4:.29,5:.12,6:.02},JACK_BOOST=1.2;
-const jackTier=p=>lerpT(JACK_T0,JACK_T1,powK(p==null?carPow():p));
-const JACK_SPOTS=['Stoplicht op de Wibautstraat','Kruispunt bij het Museumplein','Afrit van de A10 bij de RAI','Stoplicht op de Coolsingel','Kruising bij het Malieveld','Rotonde in Amstelveen'];
+// Auto's: carjacken. Zes aanpakken (tankstation, bezorger, stoplicht, parkeergarage, valse aanrijding, oprit 's nachts),
+// elk met een eigen spel (jackgames.js), eigen buit en eigen risico.
+// 1. Kies een aanpak en ga op de loer (energie + afkoelen). 2. Je ziet drie auto's: klasse, waarde, beveiliging en jouw kans.
+// 3. Kies er één en speel het spel. Gewonnen = de auto is van jou (garage, heler). Getuigen geven extra hitte en de auto
+//    wordt als gestolen gemeld. Verloren: hij rijdt weg, de bestuurder vecht terug, of de politie komt (arrestatie met vluchten,
+//    vanuit de auto via de achtervolging "Plankgas!" in carchase.js).
+// Bewaard: S.jackScout = {ap, t, until, list:[doelwitten]} (3 minuten geldig), S.stats.jackAp = {aanpak:[pogingen, gelukt]}.
+// Oude saves: beide velden ontbreken gewoon; S.cd.jack, S.stats.jacks en S.pendingJack werken zoals voorheen.
+const JACK_R=GAME_CONST.jackR,JACK_EN=8,JACK_HOT=.85,JACK_SCOUT=3*60000;
 let carMode=null;
-const jackCd=()=>JACK_CD*60000*waitK();
-const jackPick=()=>pickCar(jackTier(),JACK_BOOST);
-// Wapen: zonder wapen stapt niemand uit. Hoe zwaarder (vuurkracht vk, Vlindermes 1 tot Machinegeweer 12), hoe groter het groene
-// stuk, hoe minder kans dat de bestuurder weigert of terugvecht.
-const jackWeapon=()=>{const g=gearBest('wapen');return g?GEAR.filter(x=>x.cat==='wapen').indexOf(g):-1};
+const JACK_SPOTS={tank:['Shell aan de A10','Tango in Osdorp','Esso bij de Ring','Tankstation Zeeburg'],bezorger:['Flat in de Bijlmer','Portiek in De Pijp','Galerijflat in Slotervaart','Nieuwbouw op IJburg'],
+ licht:['Wibautstraat','Museumplein','Afrit RAI','Coolsingel','Malieveld','Rotonde Amstelveen'],garage:['Q-Park Zuidas','Garage Arena','Parkeerkelder Oostpoort','Garage Museumplein'],
+ tik:['Stadhouderskade','IJtunnel-afrit','Ring Zuid','Weesperstraat'],oprit:['Villa in het Gooi','Oud-Zuid','Wassenaar','Blaricum','Aerdenhout']};
 const jackGun=()=>gearBest('wapen');
 const jackWpow=()=>{const g=jackGun();return g?Math.min(1,(g.vk||1)/12):0};
-// kans dat de bestuurder bij "Bestuurder eruit" weigert en gas geeft (duurdere auto = stoerder of met chauffeur)
-const jackRefuse=m=>Math.max(0,Math.min(.6,.1+.06*carTier(m)-.5*jackWpow()-.1*carPow()));
-// kans dat iemand 112 belt als het gelukt is: dan volgt een achtervolging (Plankgas!) die je moet winnen
-const jackPolice=m=>Math.max(.06,Math.min(.45,.14+carTier(m)*.04-carPow()*.12-gearFx('heat')*.1+(S.heat||0)/500));
-function jackParams(m){const N=carNerve(),d=carTier(m),rel=typeof carRel==='function'?carRel(m):0,wp=jackWpow();
- const zone=Math.max(.06,Math.min(.34,.17-d*.012+rel*.012+wp*.07+sk('conditie')*.0012+sk('cars')*.0012));
- return {zone,speed:.55+d*.1-Math.max(-.2,Math.min(.2,rel*.025)),time:6500,d,nv:N,rel,wp}}
+const jackApR=ap=>JACK_R+(ap.rank||0);
+const jackApS=id=>{const s=S.stats.jackAp=S.stats.jackAp||{};return s[id]||(s[id]=[0,0])};
+// vakmanschap per aanpak (zie jackgames.js voor de formule)
+function jackProf(ap){const tr=ap.sk.reduce((a,k)=>a+Math.min(TRAIN_MAX,sk(k)),0)/ap.sk.length/TRAIN_MAX,rout=Math.min(1,Math.sqrt((S.stats.jacks||0)/60));
+ return {E:cxpF(),R:rankIdx(S.xp)/(RANKS.length-1),T:tr,X:ap.wp?.6*jackWpow()+.4*rout:rout,lvl:cxpLvlF()}}
+const jackG=(ap,m,sec)=>jgG(ap,carTier(m),sec,jackProf(ap));
+// kans per zeldzaamheid voor deze aanpak, schuift mee met je kracht als autodief (zoals op straat)
+function jackT(ap){const p=powK(carPow()),o={};for(let t=1;t<=6;t++)o[t]=(ap.T0[t]||0)+((ap.T1[t]||0)-(ap.T0[t]||0))*p;return o}
+function jackPickM(ap,T,ex){const p=carPow(),ri=rankIdx(S.xp);let r=Math.random(),t=1;for(let k=1;k<=6;k++){r-=T[k]||0;if(r<=0){t=k;break}t=k}
+ const W=m=>m.w*carClassW(m,p,ri)*(m.k?ap.boost:1)*((ap.bw||{})[String(m.b).replace(/\d+$/,'')]||1)*(ex.includes(m.id)?.02:1);
+ let pool=CARS.filter(m=>carTier(m)===t);if(!pool.length)pool=CARS.filter(m=>carTier(m)===1);let w=Math.random()*pool.reduce((a,m)=>a+W(m),0);
+ for(const m of pool){w-=W(m);if(w<=0)return m}return pool[0]}
+// beveiliging: 0 geen alarm, 1 alarm, 2 alarm + tracker (duurder = vaker zwaar)
+function jackSecRoll(m){const t=carTier(m),r=Math.random(),p2=Math.min(.6,.04+.1*(t-1)),p1=.38;return r<p2?2:r<p2+p1?1:0}
+const JACK_SECN=['Geen alarm','Alarm','Alarm + tracker'];
+// verwachte kans bij deze aanpak (gemiddeld over de auto's die je er tegenkomt)
+function jackAvg(ap){const T=jackT(ap),pr=jackProf(ap);let s=0,n=0;for(let t=1;t<=6;t++){if(!T[t])continue;s+=T[t]*jgG(ap,t,.8,pr);n+=T[t]}return n?s/n:0}
+const jackVal=(ap,x)=>Math.round(carSell(x.v)*ap.val/10)*10;
+function jackScoutTick(){const s=S.jackScout;if(s&&(!s.until||s.until<now()||!Array.isArray(s.list))){S.jackScout=null;return true}return false}
+function jackWhy(ap){const ri=rankIdx(S.xp);if(ri<jackApR(ap))return 'Vanaf '+RANKS[jackApR(ap)][0];if(inJail())return 'Je zit vast';if(ap.wp&&!jackGun())return 'Wapen nodig';
+ if(S.cars.length>=garageCap())return 'Garage vol';if(cdLeft('jack'))return 'Afkoelen · <span class="js-jcd">'+fmtClock(cdLeft('jack'))+'</span>';if(S.energy<ap.en)return 'Te moe · '+ap.en+' energie';return ''}
 
-function jackSection(){const ri=rankIdx(S.xp),left=cdLeft('jack'),full=S.cars.length>=garageCap(),wp=jackWeapon()>=0,lock=ri<JACK_R,N=carNerve(),G=jackGun();
- const ok=!lock&&!left&&!full&&!inJail()&&S.energy>=JACK_EN;
- const label=lock?'Vanaf '+RANKS[JACK_R][0]:inJail()?'Je zit vast':full?'Garage vol, verkoop eerst':left?'Even afkoelen · <span id="jackCd">'+fmtClock(left)+'</span>':S.energy<JACK_EN?'Te moe · '+JACK_EN+' energie':(wp?'Op de loer bij het stoplicht · ':'Zonder wapen proberen · ')+JACK_EN+' energie';
- const z=Math.round(jackParams({d:2,w:1}).zone*100),JT=jackTier(),T3=JT[3]+JT[4]+JT[5]+JT[6],ref=m=>Math.round(jackRefuse(m)*100);
- return `<section class="hunt jk">
-  <div class="hunt-scene jk-scene"><div class="jk-road"><i></i><i></i><i></i></div><div class="jk-light"><i class="r on"></i><i class="a"></i><i class="g"></i></div>
-   <div class="hs-ghost">${carSvg('sedan','#2a2f38')}</div>
-   <div class="hs-msg"><span class="label">Carjacken</span><b>Wacht tot hij stopt voor rood</b><p>Drie keer op het juiste moment drukken, voordat het licht op groen springt.</p></div></div>
-  <div class="hunt-body"><div class="hunt-tip"><h3>Hoe werkt het?</h3><ul>
-   <li>Geen zoektocht: er stopt meteen een auto. Hier staan duurdere auto's dan op straat. Voor jou nu: <b>${Math.round(T3*100)}%</b> kans op zeldzaam of beter.</li>
-   <li>Druk op <b>spatie</b> of <b>Nu!</b> als de streep in het groene stuk staat: portier open, bestuurder eruit, gas erop.</li>
-   <li><b>Zonder wapen stapt niemand uit</b>: de bestuurder rijdt gewoon weg. Hoe zwaarder je wapen, hoe groter het groene stuk en hoe minder vaak hij weigert.</li>
-   <li>Gelukt? Soms belt een omstander <b>112</b>. Dan moet je de politie eruit rijden. Verlies je de achtervolging, dan word je gepakt en ben je de auto kwijt.</li>
-   <li>Een gejatte auto is <b>heet</b>: hij is ${Math.round((1-JACK_HOT)*100)}% minder waard en je krijgt meer hitte dan bij gewoon stelen. Hij telt wel mee voor je steelervaring.</li></ul></div>
-   <div class="jk-wp ${G?'':'none'}"><span class="label">Je wapen</span><b>${G?esc(G.n):'Geen wapen'}</b><span>${G?`Vuurkracht ${G.vk} · weigert bij een gewone auto ${ref({d:2})}%, bij een supercar ${ref({d:5})}%`:'Niemand stapt voor je uit. Koop eerst een wapen bij Het Arsenaal.'}</span>${G?'':`<a class="btn sm ghost" href="#shop" onclick="if(window.gsel)gsel.shop='arsenaal'">Naar Het Arsenaal ›</a>`}</div>
-   <div class="sc-nerve n${N.i}"><span class="label">Jouw steelervaring · level ${N.lvl}</span><b>${N.name}</b><span>Groen stuk ±${z}% van de balk bij een gewone auto · ±${Math.round(jackPolice({d:2})*100)}% kans dat iemand 112 belt · groter met ervaring, Conditie, Rijvaardigheid en een zwaarder wapen</span></div>
-   ${typeof carGotHtml==='function'?carGotHtml('jack'):''}<div class="hunt-btns"><button class="btn xl" onclick="act.jackCar()" ${ok?'':'disabled'}>${label}</button></div></div></section>`}
+// ---------- tekening ----------
+const jxBars=(n,c)=>`<i class="jx-m ${c}">${[1,2,3,4,5].map(i=>`<b class="${i<=n?'on':''}"></b>`).join('')}</i>`;
+function jxArt(ap){const car=(b,c,x,y,w,f)=>typeof jgCar==='function'?jgCar(b,c,x,y,w,{flip:f}):'';
+ const bg=`<rect width="200" height="100" fill="#0d1016"/>`;let s='';
+ if(ap.id==='tank')s=`<rect y="10" width="200" height="8" fill="#20252d"/><rect y="18" width="200" height="2" fill="#ff7a1a"/><rect x="38" y="46" width="12" height="38" rx="2" fill="#c8202f"/><rect x="40" y="50" width="8" height="7" fill="#0d0f13"/>${car('hatch','#4d6f9a',62,88,128)}`;
+ if(ap.id==='bezorger')s=`<rect x="6" y="8" width="56" height="80" fill="#1b1f28"/>${[0,1,2,3].map(f=>`<rect x="26" y="${70-f*18}" width="14" height="10" fill="${f===3?'#ffd78c':'#2a2f38'}"/>`).join('')}${car('van','#d9dde2',66,90,128)}`;
+ if(ap.id==='licht')s=`<rect x="170" y="10" width="16" height="40" rx="4" fill="#07080a" stroke="#2b2f37"/><circle cx="178" cy="20" r="5" fill="#ff3d52"/><circle cx="178" cy="31" r="5" fill="#1b1d22"/><circle cx="178" cy="42" r="5" fill="#1b1d22"/><rect x="176" y="50" width="4" height="40" fill="#2a2e36"/>${car('sedan2','#2f6fe0',14,90,140)}`;
+ if(ap.id==='garage')s=`<rect width="200" height="12" fill="#22262d"/><rect x="30" y="12" width="40" height="3" fill="#dff3ff"/><rect x="120" y="12" width="40" height="3" fill="#dff3ff"/><rect x="176" y="12" width="14" height="80" fill="#1c1f25"/><rect x="164" y="20" width="12" height="6" rx="1" fill="#3a3f48"/><circle cx="166" cy="23" r="1.6" fill="#ff3d52"/>${car('sport','#e8c547',14,90,144)}`;
+ if(ap.id==='tik')s=`${car('hatch','#3b414b',0,90,96)}${car('suv','#1c3d6e',90,90,110)}<path d="M96 52l3 7 7-3-4 6 6 4-7 1v7l-5-5-5 5 1-7-8-1 7-4-5-6 7 3z" fill="#ffd35a"/>`;
+ if(ap.id==='oprit')s=`<circle cx="176" cy="18" r="8" fill="#e9e6da" opacity=".85"/><path d="M4 90V44l44-24 44 24v46z" fill="#1b1f28"/><rect x="38" y="60" width="18" height="30" fill="#0d0f13"/><rect x="14" y="54" width="14" height="12" fill="#f6c46a" opacity=".35"/>${car('luxsuv','#2b2f3a',84,92,116)}`;
+ return `<svg viewBox="0 0 200 100" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${bg}${s}<rect y="90" width="200" height="10" fill="#15171c"/></svg>`}
+function jackTop(){const G=jackGun(),N=carNerve(),cd=cdLeft('jack');
+ return `<div class="jx-top">
+  <div class="jx-chip"><span class="label">Steelervaring</span><b>${N.name}</b><em>level ${N.lvl}</em></div>
+  <div class="jx-chip ${G?'':'bad'}"><span class="label">Wapen</span><b>${G?esc(G.n):'Geen'}</b>${G?`<em>vuurkracht ${G.vk}</em>`:`<a href="#shop" onclick="if(window.gsel)gsel.shop='arsenaal'">Naar het Arsenaal ›</a>`}</div>
+  <div class="jx-chip"><span class="label">Energie</span><b>${Math.floor(S.energy)}</b><em>${S.cars.length}/${garageCap()} in garage</em></div>
+  <div class="jx-chip ${cd?'wait':'go'}"><span class="label">Op pad</span><b class="js-jcd">${cd?fmtClock(cd):'Klaar'}</b></div></div>`}
+function jackAps(){const ri=rankIdx(S.xp);
+ return `<div class="jx-aps">${JG_APS.map(ap=>{const why=jackWhy(ap),lock=ri<jackApR(ap),k=Math.round(jackAvg(ap)*100),st=jackApS(ap.id);
+  return `<article class="jx-ap ap-${ap.id} ${lock?'lock':''}">
+   <div class="jx-art">${jxArt(ap)}${ap.wp?'<span class="jx-wp">Wapen</span>':''}</div>
+   <div class="jx-b"><h3>${ap.n}</h3><p>${ap.sub}</p>
+    <div class="jx-ms"><span><small>Buit</small>${jxBars(ap.loot,'loot')}</span><span><small>Risico</small>${jxBars(ap.risk,'risk')}</span><span class="jx-k ${lock?'':k>=60?'hi':k>=35?'mid':'lo'}"><small>Kans</small><b>${lock?'–':'±'+k+'%'}</b></span></div>
+    ${st[0]?`<span class="jx-rec">${st[1]} van ${st[0]} gelukt</span>`:''}
+    <button class="btn ${why?'ghost':''}" onclick="act.jackScout('${ap.id}')" ${why?'disabled':''}>${why||'Op de loer · '+ap.en+' energie'}</button></div></article>`}).join('')}</div>`}
+function jackTargets(sc){const ap=jgAp(sc.ap),left=Math.max(0,sc.until-now());
+ return `<section class="jx-scout ap-${ap.id}"><div class="jx-sh"><div class="jx-sh-art">${jxArt(ap)}</div><div class="jx-sh-t"><span class="label">${ap.n} · ${esc(sc.spot||'')}</span><h2>Kies je doelwit</h2></div>
+   <span class="jx-left">nog <b id="jxLeft">${fmtClock(left)}</b></span></div>
+  <div class="jx-tgs">${sc.list.map((x,i)=>{const m=CARS.find(k=>k.id===x.id)||CARS[0],R=carRarity(m),t=carTier(m),k=Math.round(jackG(ap,m,x.sec)*100),o=helerWants(m.id);
+   return `<button type="button" class="jx-tg t${t}" style="--rc:${R[1]}" onclick="act.jackGo(${i})">
+    <span class="jx-tg-st">${carSvg(m.b,x.c,{reflect:1})}<span class="plate">${x.plate}</span>${o?'<i class="jx-hl">Heler zoekt hem</i>':''}</span>
+    <span class="jx-tg-h"><span class="rar" style="--rc:${R[1]}">${R[0]}</span><b>${esc(m.n)}</b><small>${CAR_KIND(m.b)} · ${x.year}</small></span>
+    <span class="jx-tg-r"><span class="jx-tg-v"><small>Waarde</small><b>${fmt(jackVal(ap,x))}</b></span>
+     <span class="jx-sec s${x.sec}"><small>Beveiliging</small><span><i></i><i></i><i></i></span><em>${JACK_SECN[x.sec]}</em></span></span>
+    <span class="jx-odds ${k>=60?'hi':k>=35?'mid':'lo'}"><small>Jouw kans</small><b>${k}%</b><i><s style="width:${k}%"></s></i></span>
+    <span class="jx-go">Pak deze</span></button>`}).join('')}</div>
+  <div class="jx-foot"><button class="btn ghost sm" onclick="act.jackSkip()">Laat lopen</button></div></section>`}
+function jackView(){jackScoutTick();const sc=S.jackScout;
+ return `${carBack('Carjacken')}${jackTop()}${typeof carGotHtml==='function'?carGotHtml('jack'):''}${sc?jackTargets(sc):jackAps()}${typeof prButtons==='function'?prButtons(['chase']):''}`}
+// klokjes bijwerken zonder alles opnieuw te tekenen; verlopen doelwitten weghalen
+setInterval(()=>{if(typeof S==='undefined'||!S||typeof page==='undefined'||page!=='cars'||carMode!=='jack'||window.__chase)return;
+ if(jackScoutTick()){save();render();return}const s=S.jackScout,a=document.getElementById('jxLeft');if(a&&s)a.textContent=fmtClock(s.until-now());
+ const cd=cdLeft('jack');document.querySelectorAll('.js-jcd').forEach(e=>e.textContent=cd?fmtClock(cd):'Klaar')},1000);
 
-// opts (van jackCar): noWp = geen wapen (niemand stapt uit), refuse = de bestuurder weigert bij stap 2, gun = naam van je wapen
-function jackGame(m,car,opts){const O=opts||{};return new Promise(resolve=>{
- const P=jackParams(m),R=carRarity(m);window.__chase=true;
- const ov=document.createElement('div');ov.className='chase-ov';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
- ov.innerHTML=`<div class="chase-box heist jk-box t${carTier(m)}" style="--rc:${R[1]}">
-  <div class="hx-car">${carSvg(m.b,car.c,{hl:1})}<span class="plate">${car.plate}</span><div class="jk-light sm"><i class="r on"></i><i class="a"></i><i class="g"></i></div></div>
-  <div class="heist-top"><span class="rar" style="--rc:${R[1]}">${R[0]}</span><span class="label">${esc(m.n)} · ${esc(car.spot)}</span></div>
-  ${typeof helerBadge==='function'?helerBadge(m.id):''}
-  <div class="hx-head"><h2 id="jkT">Carjacken</h2><div class="jk-steps" id="jkSteps">${JACK_STEPS.map(s=>`<span>${s}</span>`).join('')}</div></div>
-  <p class="chase-p" id="jkP">Druk op <b>spatie</b> of <b>Nu!</b> als de streep in het groene stuk staat.</p>
-  <div class="jk-bar" id="jkBar"><i class="jk-zone" id="jkZone"></i><i class="jk-mk" id="jkMk"></i></div>
-  <div class="hx-time"><i id="jkTime"></i></div>
-  <button class="btn xl jk-now" id="jkNow">Nu!</button></div>`;
- document.body.appendChild(ov);
- const q=s=>ov.querySelector(s);let step=0,pos=0,dir=1,speed=P.speed,zone={a:0,w:P.zone},done=false,t0=0,last=0,raf=0;
- const place=()=>{zone.a=.06+Math.random()*(.88-zone.w);const z=q('#jkZone');z.style.left=(zone.a*100)+'%';z.style.width=(zone.w*100)+'%'};
- const pills=()=>q('#jkSteps').querySelectorAll('span').forEach((e,i)=>{e.className=i<step?'ok':i===step&&!done?'cur':''});
- const loop=t=>{if(done)return;const dt=Math.min(.05,(t-last)/1000);last=t;pos+=dir*speed*dt;if(pos>1){pos=1;dir=-1}if(pos<0){pos=0;dir=1}
-  q('#jkMk').style.left=(pos*100)+'%';const p=(t-t0)/P.time;const bar=q('#jkTime');bar.style.width=Math.max(0,100-p*100)+'%';bar.classList.toggle('low',p>.7);
-  if(p>.72){ov.querySelector('.jk-light .r').classList.remove('on');ov.querySelector('.jk-light .a').classList.add('on')}
-  if(p>=1)return finish('gone','Het licht springt op groen. Hij rijdt weg.');raf=requestAnimationFrame(loop)};
- const press=()=>{if(done||!t0)return;const inZ=pos>=zone.a&&pos<=zone.a+zone.w;
-  if(inZ){step++;try{SFX.tick()}catch(e){}pills();
-   if(O.noWp&&step===1)return finish('nowp','Je rukt het portier open, maar zonder wapen stapt niemand uit. Hij geeft gas en is weg.');
-   if(O.refuse&&step===2)return finish('refuse','De bestuurder kijkt naar je '+(O.gun?O.gun.toLowerCase():'wapen')+', lacht en trapt het gas in.');
-   if(step>=JACK_STEPS.length)return finish(true,'Hij staat op de stoep en jij rijdt weg.');
-   speed*=1.18;zone.w=Math.max(.08,zone.w*.92);place();q('#jkP').textContent=JACK_STEPS[step]+'…';return}
-  const r=Math.random(),fp=.45*(1-.7*(P.wp||0));finish(r<fp?'fight':r<.8?'gone':'police',r<fp?'De bestuurder vecht terug en je moet het opgeven.':r<.8?'Te vroeg. Hij geeft gas en is weg.':'Verkeerd moment, en er staat politie om de hoek.')};
- const key=e=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();if(!e.repeat)press()}};
- document.addEventListener('keydown',key);q('#jkNow').addEventListener('pointerdown',e=>{e.preventDefault();press()});q('#jkBar').addEventListener('pointerdown',e=>{e.preventDefault();press()});
- function finish(res,msg){done=true;cancelAnimationFrame(raf);document.removeEventListener('keydown',key);const box=q('.chase-box');box.classList.add(res===true?'won':'lost');pills();
-  q('#jkT').textContent=res===true?'Gelukt!':res==='police'?'Politie!':res==='fight'?'Verzet!':res==='nowp'?'Geen wapen':'Weg!';q('#jkP').textContent=msg;q('#jkNow').disabled=true;
-  if(res===true){box.querySelector('.hx-car').classList.add('drive');try{SFX.win(3)}catch(e){}}else{try{SFX.lose()}catch(e){}}
-  setTimeout(()=>{ov.classList.add('out');setTimeout(()=>{ov.remove();window.__chase=false;resolve(res)},220)},1500)}
- place();pills();setTimeout(()=>{t0=last=performance.now();raf=requestAnimationFrame(loop)},700);
-})}
+// ---------- afhandeling ----------
+const JACK_FIGHT={tank:'De eigenaar komt de shop uit rennen en grijpt je vast.',bezorger:'De bezorger komt de trap af en slaat je met zijn pakket.',licht:'De bestuurder vecht terug.',
+ garage:'Een bewaker duwt je tegen een pilaar.',tik:'De bestuurder is sterker dan hij eruitziet.',oprit:'De hond van de buren hangt aan je broek.'};
+const JACK_GONE={tank:'Hij ziet je en rijdt weg.',bezorger:'De bezorger is terug en rijdt weg.',licht:'Groen licht. Hij is weg.',garage:'Het slot geeft niet mee. Je loopt door.',
+ tik:'Hij rijdt door. Geen tikje waard.',oprit:'Het signaal valt weg. Je laat hem staan.'};
+const JACK_COP={tank:['Gezien!','De pompbediende heeft de politie gebeld.'],bezorger:['Betrapt!','De bezorger roept om hulp. Er fietst net een agent langs.'],
+ licht:['Politie!','Een agent zag je aan het portier trekken.'],garage:['Alarm!','Het alarm loeit door de garage. De beveiliging komt eraan.'],
+ tik:['Politie!','De bestuurder belt 112 terwijl jij nog in de auto zit.'],oprit:['Alarm!','Buitenlampen aan, alarm aan. De bewoner belt de politie.']};
+function jackKeep(m,nc,ap,wit){S.cars.push(nc);carGot={car:nc,src:'jack',t:now()};S.stats.cars++;
+ S.carDex=S.carDex||{};const d=S.carDex[m.id]||[1,0];d[1]++;S.carDex[m.id]=d;if(typeof famEv==='function')famEv('car',{v:nc.v});
+ toast(`${m.n} is van jou · ${fmt(nc.v)}${wit?' · getuigen':''}`,carTier(m)>=4?'lvl':'ok');log(`Carjacking (${ap.n.toLowerCase()}): ${m.n} (${fmt(nc.v)})${wit?', er waren getuigen':''}`,'ok');
+ save();render();if(typeof carGotShow==='function')carGotShow()}
+function jackWin(ap,m,x){const pr=jackProf(ap),hk=Math.min(.6,Math.max(0,fitFx('herken')||0)),wit=Math.random()<Math.max(.03,ap.wit*(1-.5*jgP(pr))*(1-hk));
+ const rep=ap.own||wit||(x.sec===2&&Math.random()<.5)?1:0,v=jackVal(ap,x);
+ const nc={id:m.id,n:m.n,v,b:m.b,c:x.c,year:x.year,km:x.km,staat:x.staat,hot:ap.own?1:0,rep};
+ S.stats.jacks=(S.stats.jacks||0)+1;jackApS(ap.id)[1]++;cxpAdd(m);S.cred+=carTier(m)>=3?2:1;addHeat(ap.heat+m.d*2+(wit?4+m.d:0));addXp(8+m.d*m.d*4);
+ jackKeep(m,nc,ap,wit)}
+function jackFail(ap,m,x){const wp=jackWpow();let [g,f,p]=ap.fail;f*=1-.6*wp;p=p*(1+.25*x.sec)+(S.heat||0)/400;const s=g+f+p,r=Math.random()*s,t=carTier(m);
+ if(r<g){addHeat(2);toast(JACK_GONE[ap.id],'bad');log(`Carjacking mislukt (${ap.n.toLowerCase()}): ${m.n}`,'bad');save();render();return 'gone'}
+ if(r<g+f){const h=Math.max(3,Math.round((rnd(6,12)+m.d*2)*(1-.4*wp)));S.hp=Math.max(5,S.hp-h);addHeat(3);toast(`${JACK_FIGHT[ap.id]} −${h}% gezondheid`,'bad');
+  log(`Carjacking mislukt (${ap.n.toLowerCase()}): ${m.n}, −${h}% gezondheid`,'bad');save();render();return 'fight'}
+ addHeat(ap.heat+m.d*2);log(`Carjacking mislukt (${ap.n.toLowerCase()}): politie bij de ${m.n}`,'bad');save();render();
+ const C=JACK_COP[ap.id],lv=ap.car?Math.min(5,Math.max(2,t)):({tank:2,bezorger:1,garage:3}[ap.id]||2);
+ arrest(40+m.d*25,C[0],C[1],ap.car?{flee:lv,chase:{b:m.b,c:x.c,n:m.n}}:{flee:lv});return 'police'}
 
 Object.assign(act,{
- async jackCar(){if(typeof carGot!=='undefined')carGot=null;if(window.__chase||inJail()||cdLeft('jack')||rankIdx(S.xp)<JACK_R)return;
-  if(S.cars.length>=garageCap()){toast('Garage vol, verkoop eerst iets','bad');return}if(S.energy<JACK_EN){toast('Te moe','bad');return}
-  S.energy-=JACK_EN;S.cd.jack=now()+jackCd();const m=jackPick(),spot=JACK_SPOTS[Math.floor(Math.random()*JACK_SPOTS.length)],car=spawnCar(m,spot),G=jackGun();
-  const opts={noWp:!G,refuse:!!G&&Math.random()<jackRefuse(m),gun:G&&G.n};
-  S.pendingJack={id:m.id};save();pushState();
-  const r=await jackGame(m,car,opts);S.pendingJack=null;S.stats.jackTries=(S.stats.jackTries||0)+1;S.carDex=S.carDex||{};const dx=S.carDex[m.id]||[0,0];dx[0]++;S.carDex[m.id]=dx;
-  if(r===true){const v=Math.round(carSell(car.v)*JACK_HOT/10)*10,nc={id:m.id,n:m.n,v,b:m.b,c:car.c,year:car.year,km:car.km,staat:car.staat,hot:1,rep:1};S.stats.jacks=(S.stats.jacks||0)+1;cxpAdd(m);
-   S.cred+=carTier(m)>=3?2:1;addHeat(6+m.d*2);addXp(8+m.d*m.d*4);
-   if(Math.random()<jackPolice(m)){jackChase(m,car,nc);return}
-   jackKeep(m,nc);return}
-  else if(r==='nowp'){addHeat(1);toast(`Zonder wapen stapt niemand uit. De ${m.n} rijdt weg.`,'bad');log(`Carjacking mislukt: zonder wapen stapte de bestuurder van de ${m.n} niet uit`,'bad')}
-  else if(r==='refuse'){addHeat(2);toast(`De bestuurder van de ${m.n} is niet onder de indruk van je ${(opts.gun||'wapen').toLowerCase()} en rijdt weg.`,'bad');log(`Carjacking mislukt: de bestuurder van de ${m.n} weigerde`,'bad')}
-  else if(r==='fight'){const h=rnd(8,18);S.hp=Math.max(5,S.hp-h);addHeat(3);toast(`De bestuurder van de ${m.n} vecht terug. −${h}% gezondheid`,'bad');log(`Carjacking mislukt: de bestuurder vocht terug (−${h}% gezondheid)`,'bad')}
-  else if(r==='gone'){addHeat(2);toast(`De ${m.n} rijdt weg. Geen politie, wel energie kwijt.`,'bad');log(`Carjacking mislukt: de ${m.n} reed weg`,'bad')}
-  else{addHeat(6+m.d*2);log(`Carjacking mislukt: politie bij de ${m.n}`,'bad');save();render();
-   arrest(40+m.d*25,'Politie!','Een agent zag je bij de '+m.n+' aan het portier trekken. De motor draait nog.',{flee:Math.min(5,Math.max(1,m.d)),chase:{b:m.b,c:car.c,n:m.n}});return}
-  save();render()}});
-// Gelukt en geen politie (of de achtervolging gewonnen): de auto gaat je garage in
-function jackKeep(m,nc,chased){S.cars.push(nc);if(typeof carGot!=='undefined')carGot={car:nc,src:'jack',t:now()};S.stats.cars++;
- const d=S.carDex[m.id]||[1,0];d[1]++;S.carDex[m.id]=d;if(typeof famEv==='function')famEv('car',{v:nc.v});
- toast(chased?`Ontkomen! De ${m.n} is van jou. Waarde ${fmt(nc.v)} (heet)`:`${m.n} gejat bij het stoplicht! Waarde ${fmt(nc.v)} (heet)`,chased?'lvl':'ok');log(`Carjacking: ${m.n} (${fmt(nc.v)})${chased?', na een achtervolging':''}`,'ok');
- save();render();if(typeof carGotShow==='function')carGotShow()}
-// Iemand belde 112: achtervolging in Plankgas! (carchase.js). Winnen = auto houden, verliezen = de cel in (bestaande jailFor) en de auto kwijt.
-// De arrestatie staat al open (S.pendingArrest, fleeing): wie ververst of wegklikt, telt als gepakt (+20%, resumePending).
-function jackChase(m,car,nc){const lv=Math.min(5,Math.max(2,carTier(m))),ch={b:m.b,c:car.c,n:m.n},L=FLEE_LEVELS[lv];
- const pa={sec:40+m.d*25,title:'Achtervolging verloren',msg:'',opts:{flee:lv,chase:ch},fleeing:true};S.pendingArrest=pa;S.stats.jackChases=(S.stats.jackChases||0)+1;addHeat(4);
- log(`Carjacking: een omstander belde 112 over de ${m.n}`,'bad');save();pushState();render();
- showModal('112 gebeld!',`Je zit in de ${m.n}, maar een omstander heeft de politie gebeld. Zwaailichten in je spiegel. Rijd ze eruit (${L.label}): lukt het, dan is de auto van jou. Verlies je, dan word je gepakt en ben je hem kwijt.`,
-  [{l:'Plankgas! · '+L.label,c:'',f:()=>{closeModal();(typeof carChaseGame==='function'?carChaseGame(lv,ch):fleeGame(lv)).then(ok=>{
-   if(ok){S.pendingArrest=null;S.stats.fled=(S.stats.fled||0)+1;S.stats.jackEsc=(S.stats.jackEsc||0)+1;S.cred+=1;addHeat(5);addXp(3);jackKeep(m,nc,1)}
-   else jailFor(pa,1,`Klem gereden in de gejatte ${m.n}. De auto gaat terug naar de eigenaar`)})}}])}
+ jackScout(id){const ap=jgAp(id);if(window.__chase||S.jackScout&&!jackScoutTick())return;const why=jackWhy(ap);if(why){toast(why.replace(/<[^>]+>/g,''),'bad');return}
+  if(typeof carGot!=='undefined')carGot=null;S.energy-=ap.en;S.cd.jack=now()+ap.cd*60000*waitK();
+  const T=jackT(ap),list=[],ex=[];for(let i=0;i<3;i++){const m=jackPickM(ap,T,ex);ex.push(m.id);const c=spawnCar(m,'');list.push({id:m.id,c:c.c,year:c.year,km:c.km,staat:c.staat,v:c.v,plate:c.plate,sec:jackSecRoll(m)})}
+  S.carDex=S.carDex||{};list.forEach(x=>{const d=S.carDex[x.id]||[0,0];d[0]++;S.carDex[x.id]=d});
+  const sp=JACK_SPOTS[ap.id]||[''];S.jackScout={ap:ap.id,t:now(),until:now()+JACK_SCOUT,spot:sp[Math.floor(Math.random()*sp.length)],list};
+  try{SFX.click()}catch(e){}save();render();window.scrollTo({top:0,behavior:'smooth'})},
+ jackSkip(){S.jackScout=null;save();render()},
+ async jackGo(i){const sc=S.jackScout;if(!sc||window.__chase||inJail()||jackScoutTick()){render();return}const x=sc.list[i];if(!x)return;
+  if(S.cars.length>=garageCap()){toast('Garage vol, verkoop eerst iets','bad');return}
+  const ap=jgAp(sc.ap),m=CARS.find(k=>k.id===x.id)||CARS[0];if(typeof carGot!=='undefined')carGot=null;
+  S.jackScout=null;S.pendingJack={id:m.id,ap:ap.id};S.stats.jackTries=(S.stats.jackTries||0)+1;jackApS(ap.id)[0]++;save();pushState();
+  const r=await jgPlay({ap,m,car:x,G:jackG(ap,m,x.sec),k:ap.game==='lock'?3+x.sec:undefined});S.pendingJack=null;
+  if(r.win)jackWin(ap,m,x);else jackFail(ap,m,x)}});
