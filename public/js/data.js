@@ -243,6 +243,8 @@ const BIZ_CATS=[
  {id:'auto',n:"Auto's",d:'Garages en showrooms. Grote bedragen per klant en weinig vragen.'},
  {id:'handel',n:'Handel en transport',d:'De haven en vliegtuigen. Duur, maar daar gaat het grote geld doorheen.'},
  {id:'vastgoed',n:'Vastgoed',d:'Huur komt vanzelf binnen, 20% meer dan een zaak van dezelfde prijs. Witwassen kan hier niet: er gaat niks over de toonbank.',nowash:1}];
+// Maximaal aantal vestigingen per zaak hangt af van je lidmaatschap: gewoon 10, VIP 12, High roller 15 (tier() staat in state.js).
+const BIZ_MAX_TIER=[10,12,15];const bizMax=()=>BIZ_MAX_TIER[typeof tier==='function'?tier():0]||BIZ_MAX_TIER[0];
 const BIZ_MAX=10,BIZ_LVL=['Basis','Opgeknapt','Uitgebreid','Topzaak','Imperium'],BIZ_MULT=[1,1.5,2.2,3.1,4.3],BIZ_UPK=[.6,1.1,1.9,3.2];
 const BIZ_PLACES=['De Pijp','Oost','Noord','West','Zuidoost','Jordaan','Zaandam','Rotterdam','Den Haag','Utrecht'];
 const bizPrice=(b,n)=>Math.floor(b.p*Math.pow(1.25,n));
@@ -491,3 +493,41 @@ const DOC={dur:10,cd:600,hp:20};
 
 // rangen omzetten naar de nieuwe indeling (20 rangen)
 rkRemap(CRIMES,1,'max');rkRemap(FAMILIES);rkRemap(BIZ,1);rkRemap(GEAR,1);rkRemap(TRAININGS);rkRemap(RELAX,1,'base');rkRemap(HOUSES);rkRemap(HOMES);
+
+// ---------- Meer zaken (november 2026) ----------
+// Na de rangomzetting: r is hier al de nieuwe rang (0-19). kind = soort gevel op de banner (zie bezit-extra.js).
+// Inkomen volgt dezelfde formule als de rest (BIZ_DAY_RATE, vastgoed +20%); daarna staat BIZ weer op prijs.
+BIZ_CATS.splice(2,0,{id:'toer',n:'Toerisme',d:'Amsterdam leeft van toeristen. Ze betalen contant, vragen geen bon en zijn morgen weer weg.'});
+BIZ_PLACES.push('Amstelveen','Haarlem','Almere','Hoofddorp','Purmerend');
+[{id:'fiets',cat:'toer',n:'Fietsverhuur',d:'Huurfietsen voor toeristen die nog nooit een tramrail hebben gezien.',p:4000,r:1,col:'#ffd166',up:['Elektrische fietsen','Bakfietsen','Fietstours','Eigen stalling']},
+ {id:'markt',cat:'handel',n:'Marktkraam',d:'Een kraam op de Albert Cuyp. Zonnebrillen, hoesjes en merktassen die bijna echt zijn.',p:6500,r:1,col:'#ff9f43',kind:'stall',up:['Tweede kraam','Partytent','Opslagbusje','Hoekplek bij de ingang']},
+ {id:'avond',cat:'dienst',n:'Avondwinkel',d:'Bier, chips en vloei tot diep in de nacht. Niemand vraagt om een bonnetje.',p:8000,r:2,col:'#7ee081',up:['Koelwand','Pinautomaat','Bezorgen per scooter','Dag en nacht open']},
+ {id:'garagebox',cat:'vastgoed',n:'Garageboxen',d:'Een rij boxen achter de flat. De huur komt contant, wat erin staat gaat je niks aan.',p:10000,r:2,col:'#b7a58f',kind:'garage',up:['Nieuwe kanteldeuren','Stroom in elke box','Camera bij de poort','Tweede rij']},
+ {id:'nagel',cat:'dienst',n:'Nagelstudio',d:'Gellak, wimpers en een pinautomaat die altijd net stuk is.',p:15000,r:3,col:'#f472b6',up:['Extra tafels','Wimperhoek','Pedicurestoelen','Eigen academie']},
+ {id:'souvenir',cat:'toer',n:'Souvenirwinkel',d:'Klompen, tulpen en magneetjes. Alles contant, en de klant komt nooit meer terug.',p:17000,r:3,col:'#ff5d73',up:['Klompen op maat','Kaashoek','Kaartjesbalie','Plek aan het Damrak']},
+ {id:'wasstraat',cat:'auto',n:'Autowasstraat',d:'Wassen, poetsen, en in de kofferbak kijkt niemand.',p:24000,r:3,col:'#5ec8ff',kind:'garage',up:['Tweede borstelstraat','Handwasploeg','Poetsabonnementen','Truckwasplaats']},
+ {id:'pizza',cat:'horeca',n:'Pizzeria',d:'Een houtoven, bezorgers op scooters en een kassa die ook pizza\'s verkoopt die nooit gebakken zijn.',p:26000,r:4,col:'#ff6f3c',up:['Tweede houtoven','Bezorgvloot','Terras','Eigen bezorgapp']},
+ {id:'taxi',cat:'auto',n:'Taxibedrijf',d:'Twintig zwarte Priussen en een centrale die alles hoort.',p:42000,r:4,col:'#ffd400',kind:'garage',up:['Meer wagens','Eigen centrale','Ritten naar Schiphol','Limousines']},
+ {id:'bruin',cat:'horeca',n:'Bruin café',d:'Jenever, een biljart en vaste klanten die alles zien en niks zeggen.',p:48000,r:5,col:'#c08552',kind:'canal',up:['Biljarttafel','Terras aan de gracht','Achterzaaltje','Eigen jenever']},
+ {id:'koerier',cat:'handel',n:'Koeriersdienst',d:'Pakjes door de hele stad. Wat erin zit, weet de bezorger niet.',p:55000,r:5,col:'#f59e0b',kind:'garage',up:['Bakfietsen','Bestelbusjes','Nachtbezorging','Eigen sorteercentrum']},
+ {id:'coffeeshop',cat:'toer',n:'Coffeeshop',d:'Gedoogd aan de voordeur. Hoe het spul binnenkomt, is een ander verhaal.',p:85000,r:7,col:'#5bd96b',kind:'canal',up:['Rookruimte','Tweede toonbank','Toeristenmenu','Eigen kweker']},
+ {id:'studenten',cat:'vastgoed',n:'Studentenkamers',d:'Kamers van negen vierkante meter voor negenhonderd euro. Er staat een rij voor de deur.',p:95000,r:7,col:'#c9b28f',kind:'row',up:['Kamers splitsen','Gedeelde keukens','Zolder verbouwd','Heel blok']},
+ {id:'sport',cat:'dienst',n:'Sportschool',d:'Gewichten, eiwitshakes en jongens die geen vragen stellen.',p:120000,r:9,col:'#ef4444',up:['Nieuwe apparaten','Boksring','Sauna','Eigen supplementen']},
+ {id:'groothandel',cat:'handel',n:'Groothandel',d:'Pallets vol frisdrank, sigaretten en wat er onderop ligt.',p:180000,r:10,col:'#60a5fa',kind:'garage',up:['Heftrucks','Koelhal','Eigen vrachtwagens','Import uit het buitenland']},
+ {id:'rondvaart',cat:'toer',n:'Rondvaartboot',d:'Een glazen boot door de grachten. Toeristen kijken naar buiten, niet naar de kas.',p:210000,r:10,col:'#7dd3fc',kind:'boat',up:['Tweede boot','Avondvaart met diner','Eigen steiger','Partyboot']},
+ {id:'restaurant',cat:'horeca',n:'Grachtenrestaurant',d:'Witte tafelkleden, uitzicht op de Herengracht en rekeningen van vier cijfers.',p:280000,r:12,col:'#e9c46a',kind:'canal',up:['Sterrenchef','Wijnkelder','Terras op het water','Privékamer']},
+ {id:'hostel',cat:'toer',n:'Hostel',d:'Stapelbedden, lockers en elke week een nieuwe lading backpackers.',p:340000,r:12,col:'#a78bfa',kind:'canal',up:['Extra slaapzalen','Bar in de kelder','Fietsen aan de balie','Dakterras']},
+ {id:'wissel',cat:'dienst',n:'Wisselkantoor',d:'Euro\'s, dollars en roebels. De koers is wat jij zegt dat hij is.',p:420000,r:13,col:'#34d399',up:['Tweede loket','Crypto-automaat','Goud en zilver','Loket op Schiphol']},
+ {id:'verhuur',cat:'auto',n:'Luxe autoverhuur',d:'Lamborghini\'s per dag, de borg in een envelop.',p:520000,r:13,col:'#f97316',kind:'garage',up:['Meer supercars','Chauffeurs','Bezorgen aan huis','Filiaal in Monaco']},
+ {id:'parkeer',cat:'vastgoed',n:'Parkeergarage',d:'Duizend plekken in het centrum. Elke slagboom is een kassa.',p:750000,r:13,col:'#94a3b8',kind:'tower',up:['Kentekencamera\'s','Laadpalen','Valetservice','Extra verdieping']},
+ {id:'transport',cat:'handel',n:'Transportbedrijf',d:'Dertig trucks naar Polen en terug. Lege kilometers bestaan hier niet.',p:800000,r:14,col:'#3b82f6',kind:'garage',up:['Nieuwe trekkers','Koeltrailers','Eigen distributiecentrum','Vaste lijn naar het oosten']},
+ {id:'juwelier',cat:'dienst',n:'Juwelier',d:'Horloges, ringen en kettingen in de P.C. Hooftstraat. Eén klant per uur is genoeg.',p:1400000,r:17,col:'#fde68a',up:['Kluis','Eigen goudsmid','Privéshowroom','Horlogeveilingen']},
+ {id:'importeur',cat:'auto',n:'Sportwagenimporteur',d:'Hele containers vol Duitse en Italiaanse sportwagens. De papieren komen later.',p:1700000,r:17,col:'#dc2626',kind:'port',up:['Eigen kade','Keuringsstation','Exportlijn naar Dubai','Exclusief dealerschap']},
+ {id:'beach',cat:'horeca',n:'Beachclub',d:'Een paviljoen in Bloemendaal. Bedden van duizend euro en champagne met sterretjes.',p:2500000,r:18,col:'#fbbf24',kind:'beach',up:['Groter terras','Bekende DJ\'s','VIP-strandbedden','Eigen festival']},
+ {id:'diamant',cat:'handel',n:'Diamanthandel',d:'Amsterdamse stenen, Antwerpse papieren. Klein, duur en makkelijk mee te nemen.',p:2800000,r:18,col:'#bae6fd',kind:'canal',up:['Slijperij','Kluis in de kelder','Kantoor in Antwerpen','Lijn naar Dubai']},
+ {id:'galerie',cat:'toer',n:'Kunstgalerie',d:'Een doek van een onbekende schilder gaat voor drie ton weg. Niemand vraagt waarom.',p:3200000,r:18,col:'#f0abfc',kind:'canal',up:['Tweede zaal','Eigen kunstenaars','Veilinghuis','Opslag in de vrijhaven']},
+ {id:'kantoor',cat:'vastgoed',n:'Kantoortoren Zuidas',d:'Twintig verdiepingen vol advocaten en bankiers. Die betalen de huur altijd op tijd.',p:5500000,r:19,col:'#cbd5e1',kind:'tower',up:['Nieuwe lobby','Dakterras','Parkeerkelder','Tweede toren']},
+ {id:'rederij',cat:'handel',n:'Rederij',d:'Eigen containerschepen. Wat er aan boord gaat, staat nergens op papier.',p:7000000,r:19,col:'#0ea5e9',kind:'port',up:['Tweede schip','Eigen terminal','Route naar Zuid-Amerika','Vlag van gemak']},
+ {id:'gcasino',cat:'horeca',n:'Grand Casino',d:'Roulette, blackjack en kroonluchters. Het huis wint altijd, en het huis ben jij.',p:9000000,r:19,col:'#d4af37',kind:'tower',up:['Pokerzaal','High-roller-salon','Hotel erbij','Privéjet voor gasten']}
+].forEach(b=>{if(BIZ.some(x=>x.id===b.id))return;b.inc=Math.round(b.p*BIZ_DAY_RATE(b.p)*(b.cat==='vastgoed'?1.2:1)/10)*10;BIZ.push(b)});
+BIZ.sort((a,b)=>a.p-b.p);
