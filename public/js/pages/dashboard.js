@@ -65,7 +65,8 @@ V.dash=()=>{
   const td=todoItems();
   const segs=Array.from({length:RANK_SUB},(_,k)=>`<i class="${k<lv-1?'done':k===lv-1?'now':''}"></i>`).join('');
   return `
-  ${S.wanted?`<div class="card alert"><b>▲ Je staat op de gezochtlijst</b><span>${S.wanted.lv&&typeof WANT_LV!=='undefined'?`${WANT_LV[S.wanted.lv].n} na de huurmoord op ${esc(S.wanted.t||'je doelwit')}, nog ${fmtClock(S.wanted.until-now())}. Bij elke actie kan de politie een controle doen. <a href="#verblijf">Onderduiken</a> laat het drie keer zo snel zakken.`:'Je bent ontsnapt. Bij elke actie kan de politie een controle doen en je herkennen. Je straf wordt dan langer.'}</span></div>`:''}
+  ${S.wanted?`<div class="card alert"><b>▲ Je staat op de gezochtlijst</b><span>${S.wanted.lv&&typeof WANT_LV!=='undefined'?`${WANT_LV[S.wanted.lv].n} ${S.wanted.why?esc(S.wanted.why):'na de huurmoord op '+esc(S.wanted.t||'je doelwit')}, nog ${fmtClock(S.wanted.until-now())}. Bij elke actie kan de politie een controle doen. <a href="#verblijf">Onderduiken</a> laat het drie keer zo snel zakken.`:'Je bent ontsnapt. Bij elke actie kan de politie een controle doen en je herkennen. Je straf wordt dan langer.'}</span></div>`:''}
+  ${typeof arDashHtml==='function'?arDashHtml():''}
   ${gidsHtml()}
   <div class="dash dash2">
    <section class="card hud d-hero dh2">

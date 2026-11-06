@@ -99,8 +99,8 @@ const klPips=lv=>`<span class="kl-pips l${lv}" aria-hidden="true"><i></i><i></i>
 const klM=v=>v>=1e6?fmtK(v):fmt(v);
 const klChCls=ch=>ch>60?'up':ch>35?'':'dn';
 const klSeg=ch=>`<i class="kl-seg" aria-hidden="true"><i style="width:${ch}%"></i></i>`;
-function klState(c){const lock=rankIdx(S.xp)<c.r,left=cdLeft(c.id),tired=S.energy<crEn(c),jail=inJail();return {lock,left,tired,jail,ok:!lock&&!left&&!tired&&!jail}}
-function klBtn(c,st){const [b,s]=st.lock?['Vanaf '+RANKS[c.r][0],'nog '+Math.ceil(RANKS[c.r][1]-S.xp).toLocaleString('nl-NL')+' XP']:st.jail?['Je zit vast','eerst vrijkomen']:st.left?['Nog '+fmtClock(st.left),'even afkoelen']:st.tired?['Te moe',crEn(c)+' energie nodig']:['Uitvoeren',crEn(c)+' energie'];
+function klState(c){const lock=rankIdx(S.xp)<c.r,left=cdLeft(c.id),tired=S.energy<crEn(c),jail=inJail(),ban=typeof arBanLeft==='function'?arBanLeft(c):0;return {lock,left,tired,jail,ban,ok:!lock&&!left&&!tired&&!jail&&!ban}}
+function klBtn(c,st){const [b,s]=st.lock?['Vanaf '+RANKS[c.r][0],'nog '+Math.ceil(RANKS[c.r][1]-S.xp).toLocaleString('nl-NL')+' XP']:st.jail?['Je zit vast','eerst vrijkomen']:st.ban?['Locatieverbod','nog '+arDur(st.ban)]:st.left?['Nog '+fmtClock(st.left),'even afkoelen']:st.tired?['Te moe',crEn(c)+' energie nodig']:['Uitvoeren',crEn(c)+' energie'];
  const q=!st.lock&&typeof crCanQuick==='function'&&crCanQuick(c);
  return `<div class="kl-gos${q?' q':''}"><button class="btn kl-go" onclick="act.crime('${c.id}')" ${st.ok?'':'disabled'}><b>${b}</b><small>${s}</small></button>${q?`<button class="btn ghost kl-quick" onclick="act.crime('${c.id}',true)" ${st.ok?'':'disabled'} title="Zonder spel, met een iets lagere kans en zonder bonus voor een schone klus"><b>Snel</b><small>${crQuick(c)}% · geen spel</small></button>`:''}</div>`}
 // kansopbouw in gewone woorden: dezelfde onderdelen als crPro/crDiceParts/crChance in crimegames.js, alleen uitgeschreven.
@@ -120,25 +120,25 @@ function crxPanel(){return `<section class="crx"><div class="crx-h"><h2>Ervaring
    <div class="crx-f"><span class="${bo<0?'neg':'pos'}">${bo>0?'+':bo<0?'−':''}${String(Math.abs(bo)).replace('.',',')}${typeof crxFrac==='function'?' van 25 prof.':'% kans'}</span><span>${b?Math.floor(v).toLocaleString('nl-NL')+' / '+b:'max'}</span></div></div>`}).join('')}</div></section>`}
 // opbrengst en risico in gewone woorden
 function klVals(c){const m=lootMult()*(typeof crLootK==='function'?crLootK(c):mastLoot(c.id)),ch=chance(c),cr=c.cr?Math.round(c.cr*credMult('')):0,crP=c.cr?Math.round(c.cr*credMult('perfect')):0;
- return {ch,lo:klM(c.min*m),hi:klM(c.max*m),xp:'+'+c.xp+' XP'+(cr?' · +'+cr+' cred':''),crT:cr?`Straatcredit: ${cr}, perfect uitgevoerd ${crP}`:'',jail:fmtTime(jailSec(c.jail))+' cel',fl:FLEE_LEVELS[c.flee]?FLEE_LEVELS[c.flee].label:''}}
+ return {ch,lo:klM(c.min*m),hi:klM(c.max*m),xp:'+'+c.xp+' XP'+(cr?' · +'+cr+' cred':''),crT:cr?`Straatcredit: ${cr}, perfect uitgevoerd ${crP}`:'',jail:fmtTime(jailSec(c.jail))+' cel',fl:FLEE_LEVELS[c.flee]?FLEE_LEVELS[c.flee].label:'',...(typeof arFailTxt==='function'?(F=>({jail:F.b,nf:F.nf||''}))(arFailTxt(c)):{})}}
 // spel-type, professionaliteit en buitbonus van een klus (tik op het spel = oefenen)
 function klGame(c){if(typeof crPro!=='function')return '';const t=cgType(c),T=CG_TYPES[t],R=crPro(c),li=cgLvIdx(R.P),lb=Math.round((crLootK(c)-1)*100);
  return `<div class="kl-game l${li}"><button type="button" class="kl-gt" onclick="practiceOpen('cg_${t}')" title="Spel: ${T.n}. Tik om te oefenen (telt niet mee)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${KL_IC[T.ic]||''}</svg><b>${T.lbl}</b></button>
   <span class="kl-pro" title="Professionaliteit ${Math.round(R.P*100)}%: vakmanschap ${Math.round(R.M*100)}%, ervaring ${Math.round(R.X*100)}%, training ${Math.round(R.T*100)}%, rang ${Math.round(R.R*100)}%"><em><i style="width:${Math.round(R.P*100)}%"></i></em><b>${cgLvName(R.P)}</b><small>${Math.round(R.P*100)}%</small></span>${lb?`<span class="kl-lb">+${lb}% buit</span>`:''}</div>`}
 function klRow(c){const st=klState(c),v=klVals(c);
- return `<article class="kl ${st.lock?'locked':''} ${st.left?'cool':''}">
+ return `<article class="kl ${st.lock?'locked':''} ${st.left?'cool':''}${st.ban?' ban':''}">
   <div class="kl-ic">${klIc(c)}</div>
   <div class="kl-id"><h3>${c.n}</h3><p>${c.d}</p>${st.lock?'':mastHtml(c)}${klGame(c)}</div>
   <div class="kl-st">
    ${(()=>{const cp=klChParts(c);return `<div class="kl-k kl-kans" title="${cp.txt}"><span>Kans</span><b class="${klChCls(v.ch)}">${v.ch}%</b>${klSeg(v.ch)}<em class="kl-base">spel ${cp.g}% × ${cp.d}%</em><span class="sr-only">${cp.txt}</span></div>`})()}
    <div class="kl-k"><span>Opbrengst</span><b class="g">${v.lo} – ${v.hi}</b><em title="${v.crT}">${v.xp}</em></div>
-   <div class="kl-k"><span>Mislukt</span><b>${v.jail}</b><em class="lv${c.flee}">${klPips(c.flee)}vluchten ${v.fl}</em></div>
+   <div class="kl-k"><span>Mislukt</span><b>${v.jail}</b>${v.nf?`<em>${v.nf}</em>`:`<em class="lv${c.flee}">${klPips(c.flee)}vluchten ${v.fl}</em>`}</div>
   </div>
   ${klBtn(c,st)}
   ${st.left?`<div class="kl-cd" style="transform:scaleX(${Math.min(1,st.left/crimeCd(c)).toFixed(3)})"></div>`:''}</article>`}
 // Beste voor jou: groter, met de opbrengst per energiepunt waar de volgorde op gebaseerd is
 function klBest(c){const st=klState(c),v=klVals(c),ev=crEv(c);
- return `<article class="klb ${st.left?'cool':''} ${st.lock?'locked':''}">
+ return `<article class="klb ${st.left?'cool':''} ${st.lock?'locked':''}${st.ban?' ban':''}">
   <header><div class="kl-ic">${klIc(c)}</div><div><h3>${c.n}</h3><p>${c.d}</p></div></header>
   ${(()=>{const cp=klChParts(c);return `<div class="klb-ch" title="${cp.txt}"><b class="${klChCls(v.ch)}">${v.ch}%</b><span>kans</span>${klSeg(v.ch)}<em class="kl-base">spel ${cp.g}% × daarna ${cp.d}%</em><span class="sr-only">${cp.txt}</span></div>`})()}
   <dl class="klb-dl">
@@ -146,7 +146,7 @@ function klBest(c){const st=klState(c),v=klVals(c),ev=crEv(c);
    <div><dt>Per energie</dt><dd>≈ ${fmtK(ev)}</dd></div>
    <div><dt>Erbij</dt><dd title="${v.crT}">${v.xp}</dd></div>
    <div><dt>Mislukt</dt><dd>${v.jail}</dd></div>
-   <div><dt>Vluchten</dt><dd class="lv${c.flee}">${klPips(c.flee)}${v.fl}</dd></div>
+   ${v.nf?`<div><dt>Daarna</dt><dd>${v.nf}</dd></div>`:`<div><dt>Vluchten</dt><dd class="lv${c.flee}">${klPips(c.flee)}${v.fl}</dd></div>`}
   </dl>
   <div class="klb-m">${st.lock?'<div class="cr-m"><small>Nog niet vrijgespeeld</small></div>':mastHtml(c)+klGame(c)}</div>
   ${klBtn(c,st)}
@@ -188,8 +188,9 @@ V.crimes=()=>{
  </section>
  ${typeof prButtons==='function'?prButtons(['cg','flee','breath']):''}
  ${crxPanel()}
+ ${typeof arCrimesPanel==='function'?arCrimesPanel():''}
  <div class="cr-mast-how"><b>Professionaliteit</b><span>Elke klus heeft een eigen spel. Je professionaliteit per klus komt uit <em>vakmanschap</em> (hoe vaak gelukt, 40%; vol na 150 keer), <em>ervaring in de soort</em> (25%), <em>training</em> die bij het spel past (20%) en je <em>rang</em> (15%). Hoe hoger, hoe makkelijker het spel, hoe groter je kans daarna en hoe meer buit (tot +60%). Als nieuweling haal je ±30%, als meester bijna altijd; vanaf <em>Meester</em> (80%) mag je ook <em>snel uitvoeren</em> zonder spel. Geen fout in het spel = schone klus: +8% buit.</span></div>
  ${best.length?`<div class="tierhead kl-besth"><h2>Beste voor jou</h2><span>Meeste buit per energiepunt, met jouw kans</span></div><div class="klb-grid n${best.length}">${best.map(klBest).join('')}</div>`:''}
  <div class="tierhead kl-besth"><h2>Klussen per rang</h2><span>${avail.length} van de ${CRIMES.length} vrijgespeeld · tik op een rang</span></div>
  <div class="krb-grid">${tiers.filter(t=>t<=ri+1).slice().reverse().map(t=>klRankBanner(t,ri)).join('')}</div>
- <p class="kr-foot">Mislukt een klus, dan kun je vluchten of ga je de cel in. Hogere rangen verschijnen hier zodra je dichtbij bent.</p></div>`};
+ <p class="kr-foot">Mislukt een klus, dan hangt het gevolg af van de soort: zie "Als het misgaat". Hogere rangen verschijnen hier zodra je dichtbij bent.</p></div>`};
