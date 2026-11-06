@@ -1,14 +1,19 @@
 // Alle acties (klikken) en de politiecontroles
 const act={
- async crime(id){const c=CRIMES.find(x=>x.id===id);if(inJail()||cdLeft(id)||rankIdx(S.xp)<c.r||window.__chase||S.pendingLock)return;if(S.energy<crEn(c)){toast('Te moe. Je hebt '+crEn(c)+' energie nodig','bad');return}S.energy-=crEn(c);S.cd[id]=now()+crimeCd(c);
-  // soms zit er een slot op: dan eerst slotenkraken (en bij paniek je ademhaling). Verversen tijdens het slot = betrapt (zie main.js)
-  let bonus=0;
-  if(typeof lockGame==='function'&&Math.random()<lockChance(c)){S.pendingLock={id,t:now()};save();render();
-   let ok=false;try{ok=await lockGame(lockParams(c),{title:'Er zit een slot op',sub:c.n})}catch(e){console.error(e)}
-   delete S.pendingLock;S.stats.locks=(S.stats.locks||0)+1;
-   if(!ok){S.stats.lockFail=(S.stats.lockFail||0)+1;crimeFail(c,'Het slot ging niet open. ');return}
-   bonus=Math.round(sk('sloten')*SK.sloten.kans)+3;S.stats.lockOk=(S.stats.lockOk||0)+1}
-  crimeResolve(c,bonus)},
+ async crime(id,quick){const c=CRIMES.find(x=>x.id===id);if(!c||inJail()||cdLeft(id)||rankIdx(S.xp)<c.r||window.__chase||S.pendingLock||S.pendingGame)return;if(S.energy<crEn(c)){toast('Te moe. Je hebt '+crEn(c)+' energie nodig','bad');return}
+  // elke klus heeft een spel (crimegames.js; bij inbraak-klussen het slot uit lockgame.js). Meesters kunnen het overslaan
+  // (snel uitvoeren, iets lagere kans). Verversen tijdens het spel = betrapt (S.pendingGame, zie main.js)
+  if(quick&&!(typeof crCanQuick==='function'&&crCanQuick(c)))return;
+  S.energy-=crEn(c);S.cd[id]=now()+crimeCd(c);
+  if(typeof cgPlay!=='function'){crimeResolve(c);return}
+  if(quick){S.stats.quick=(S.stats.quick||0)+1;crimeResolve(c,{quick:true});return}
+  S.pendingGame={id,t:now()};save();render();
+  let r=null;try{r=await cgPlay(c)}catch(e){console.error(e);r=null}
+  delete S.pendingGame;S.stats.games=(S.stats.games||0)+1;
+  if(!r){crimeResolve(c);return} // spel kon niet starten: gewoon de verwachte kans, niemand de dupe
+  if(!r.ok){S.stats.gameFail=(S.stats.gameFail||0)+1;crimeFail(c,(r.why?r.why.replace(/\.?$/,'. '):''));return}
+  if(!r.miss)S.stats.clean=(S.stats.clean||0)+1;
+  crimeResolve(c,{game:r})},
  async trainSession(id){const t=TRAININGS.find(x=>x.id===id);const l=S.skills[id]||0;if(!t||l>=TRAIN_MAX||inJail()||cdLeft('tr_'+id)||rankIdx(S.xp)<(t.r||0)||window.__chase)return;
   const cost=trainCost(t,l);if(S.cash<cost){toast('Niet genoeg contant geld','bad');return}
   // trainingen met een spel (slotenkraken, ademhaling): eerst spelen. Lukt het, dan betaal je en ga je een level omhoog;
@@ -89,18 +94,32 @@ const act={
  Object.keys(act).forEach(k=>{if(skip.includes(k))return;const fn=act[k];act[k]=function(...a){
   if(depth===0&&S.wanted&&!inJail()&&Math.random()<(page==='casino'?0.2:0.12)*(S.hide?.4:1)*(typeof wantedK==='function'?wantedK():1)){policeRaid();return}
   depth++;try{return fn.apply(this,a)}finally{depth--}}})})();
-// Uitkomst van een klus: de dobbelsteen (met een bonus als je een slot open kreeg: + kans en +8% buit), buit, ervaring, hitte
-function crimeResolve(c,bonus){const roll=rnd(1,100),ch=Math.min(chanceCap(c),chance(c)+(bonus||0));
-  if(roll<=ch){const g=Math.floor(rnd(c.min,c.max)*lootMult()*mastLoot(c.id)*(bonus?1.08:1));S.cash+=g;addZwart(g);S.stats.crimes++;
+// Uitkomst van een klus. o.game = uitslag van het klus-spel (dan de dobbelsteen crDice), o.quick = snel uitvoeren (crQuick),
+// anders de verwachte kans (chance). Buit: × rang/familie/… (lootMult) × professionaliteit (crLootK, tot +60%) × schone klus (+8%/+4%).
+function crimeResolve(c,o){o=o&&typeof o==='object'?o:{bonus:+o||0};const cg=typeof crDice==='function';
+  const P0=cg?crP(c):0,roll=rnd(1,100),ch=Math.min(chanceCap(c),cg?(o.quick?crQuick(c):o.game?crDice(c):chance(c)):chance(c)+(o.bonus||0));
+  if(roll<=ch){const clean=o.game?cgCleanK(o.game.miss):1,g=Math.floor(rnd(c.min,c.max)*lootMult()*(cg?crLootK(c):mastLoot(c.id))*clean*(o.bonus?1.08:1));S.cash+=g;addZwart(g);S.stats.crimes++;
    crxN(crCat(c));crxAdd(c,1);const ml0=mastLv(c.id);S.mast=S.mast||{};S.mast[c.id]=(S.mast[c.id]||0)+1;const ml1=mastLv(c.id);
-   if(ml1>ml0)setTimeout(()=>toast(`Vakmanschap ${MAST[ml1][1]}: ${c.n} (+${ml1*2}% kans, +${ml1*5}% buit)`,'lvl'),600);
-   // hoe ruim je slaagde bepaalt hoe goed het werd: perfect (ruim binnen je kans) of netjes
-   const q=roll<=ch*.3?'perfect':roll<=ch*.65?'netjes':'',cr=c.cr?credGain(c.cr,q):0;S.cred+=cr;if(q==='perfect')S.stats.perfect=(S.stats.perfect||0)+1;
+   if(cg){const P1=crP(c),l0=cgLvIdx(P0),l1=cgLvIdx(P1);if(l1>l0)setTimeout(()=>toast(`${c.n}: je bent nu ${cgLvName(P1)} (${Math.round(P1*100)}%)${P1>=CG_QUICK_P?' · snel uitvoeren kan nu':''}`,'lvl'),700);
+    else if(ml1>ml0)setTimeout(()=>toast(`Vakmanschap ${MAST[ml1][1]}: ${c.n} (professionaliteit ${Math.round(P1*100)}%)`,'lvl'),600)}
+   else if(ml1>ml0)setTimeout(()=>toast(`Vakmanschap ${MAST[ml1][1]}: ${c.n} (+${ml1*2}% kans, +${ml1*5}% buit)`,'lvl'),600);
+   // hoe goed het ging: met een spel telt hoe netjes je speelde (geen fout = perfect), anders hoe ruim je slaagde
+   const q=o.game?(o.game.miss===0?'perfect':o.game.miss===1?'netjes':''):roll<=ch*.3?'perfect':roll<=ch*.65?'netjes':'',cr=c.cr?credGain(c.cr,q):0;S.cred+=cr;if(q==='perfect')S.stats.perfect=(S.stats.perfect||0)+1;
    addHeat(crimeUp(c)>=2?rnd(2,3):rnd(1,4));addXp(c.xp);if(typeof famEv==='function')famEv('crime',{r:c.r,g,cr});
-   toast(c.n+(q==='perfect'?' perfect uitgevoerd':q==='netjes'?' netjes gedaan':' gelukt')+': +'+fmt(g)+(cr?' · +'+cr+' straatcredit':''),q==='perfect'?'lvl':'ok');log(c.n+' gelukt'+(q?' ('+q+')':'')+', buit '+fmt(g)+(cr?', +'+cr+' cred':''),'ok')}
-  else crimeFail(c,'');
+   const how=o.game?(o.game.miss===0?' schone klus':o.game.miss===1?' netjes gedaan':' gelukt'):o.quick?' snel gedaan':q==='perfect'?' perfect uitgevoerd':q==='netjes'?' netjes gedaan':' gelukt';
+   toast(c.n+how+': +'+fmt(g)+(clean>1?' (+'+Math.round((clean-1)*100)+'% schoon)':'')+(cr?' · +'+cr+' straatcredit':''),q==='perfect'?'lvl':'ok');log(c.n+' gelukt'+(o.quick?' (snel)':q?' ('+q+')':'')+', buit '+fmt(g)+(cr?', +'+cr+' cred':''),'ok')}
+  else crimeFail(c,o.game?'Het spel ging goed, maar toch: ':'');
   save();render()}
-function crimeFail(c,pre){const lost=Math.floor(Math.min(Math.floor(S.cash*0.1),c.max*2)*(1-furnFx('safe'))); // verlies past bij de grootte van de klus
+function crimeFail(c,pre){
+  // Bagatel (c.sev 'A': bedelen, statiegeld): geen cel en geen vlucht. Haak voor het latere gevolg per ernstklasse.
+  if(c.sev==='A'){crimeFailMinor(c,pre);return}
+  const lost=Math.floor(Math.min(Math.floor(S.cash*0.1),c.max*2)*(1-furnFx('safe'))); // verlies past bij de grootte van de klus
   S.cash-=lost;S.stats.fails++;crxN(crCat(c));crxAdd(c,0);S.hp=Math.max(10,S.hp-rnd(5,15));addHeat(rnd(5,10));
    addXp(Math.ceil(c.xp/4));log(c.n+' mislukt, '+fmt(lost)+' kwijt','bad');save();
    arrest(c.jail,'Betrapt!',(pre||'')+c.n+' ging mis. '+FLEE_LEVELS[c.flee||2].where,{flee:c.flee||2});save();render()}
+// Klasse A: weggestuurd (je mag hier even niet terugkomen: 3× de wachttijd) of een boete (APV), geen arrestatie.
+function crimeFailMinor(c,pre){S.stats.fails++;S.stats.minor=(S.stats.minor||0)+1;crxN(crCat(c));crxAdd(c,0);addXp(Math.ceil(c.xp/4));addHeat(1);
+  if(Math.random()<.5&&S.cash>=1){const f=Math.min(Math.floor(S.cash),Math.max(50,Math.round(c.max*2)));S.cash-=f;
+   log(c.n+' mislukt: boete van '+fmt(f),'bad');toast((pre||'')+'Een handhaver schrijft je op: '+fmt(f)+' boete.','bad')}
+  else{S.cd[c.id]=now()+crimeCd(c)*3;log(c.n+' mislukt: weggestuurd','bad');toast((pre||'')+'Weggestuurd. Hier mag je even niet terugkomen.','bad')}
+  save();pushState();render()}

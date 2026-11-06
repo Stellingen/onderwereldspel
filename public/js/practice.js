@@ -14,12 +14,12 @@ const PRACTICE={
   lv:()=>[1,2,3,4,5].map(l=>[l,['Simpel slot','Degelijk slot','Zwaar slot','Kluisdeur','Bankkluis'][l-1]])},
  breath:{n:'Ademhaling',sub:'Rustig blijven als het spannend wordt',how:'Een cirkel zwelt en krimpt. Tik (of spatie) precies als hij het grootst is. Zes ademhalingen, minstens vijf goed.',
   lv:()=>[1,2,3,4,5].map(l=>[l,['Ruim venster','Gewoon','Krap','Heel krap','Flinterdun'][l-1]])}};
-const prCan=()=>!inJail()&&!window.__chase&&!S.pendingArrest&&!S.pendingHeist&&!S.pendingJack;
+const prCan=()=>!inJail()&&!window.__chase&&!S.pendingArrest&&!S.pendingHeist&&!S.pendingJack&&!S.pendingGame;
 function prWhy(){return inJail()?'Niet in de cel':window.__chase?'Eerst je achtervolging afmaken':S.pendingArrest?'Eerst je arrestatie afhandelen':''}
 // knoppen die een pagina kan tonen
 function prButtons(kinds){const why=prWhy();
  return `<div class="pr-strip"><span class="pr-tag">Oefenen · telt niet mee</span>${kinds.map(k=>`<button class="btn ghost sm pr-btn" type="button" onclick="practiceOpen('${k}')" ${why?'disabled':''}>${PRACTICE[k].n}</button>`).join('')}${why?`<em>${why}</em>`:''}</div>`}
-function practiceOpen(kind,lv0){const P=PRACTICE[kind];if(!P)return;if(!prCan()){toast(prWhy()||'Nu niet','bad');return}
+function practiceOpen(kind,lv0){const P=PRACTICE[kind];if(!P)return;if(!prCan()){toast(prWhy()||'Nu niet','bad');return}if(P.open)return P.open(lv0);
  const lvs=P.lv();let lv=lv0||lvs[0][0];
  const ov=document.createElement('div');ov.className='pr-ov';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-labelledby','prT');
  const paint=()=>{ov.innerHTML=`<div class="pr-box"><span class="pr-tag">Oefenen · telt niet mee</span><h2 id="prT">${P.n}</h2><p class="pr-sub">${P.sub}</p>
@@ -42,6 +42,7 @@ function practiceOpen(kind,lv0){const P=PRACTICE[kind];if(!P)return;if(!prCan())
  document.addEventListener('keydown',key);paint();document.body.appendChild(ov)}
 // alleen de minigame, zonder de actie eromheen
 async function prRun(kind,lv){
+ if(kind.indexOf('cg_')===0&&typeof cgPracticeRun==='function')return (await cgPracticeRun(kind.slice(3),lv))===true; // klus-spellen (crimegames.js)
  if(kind==='flee')return (await fleeGame(lv))===true;
  if(kind==='lock')return (await lockGame(lockParams(null,lv),{title:'Oefenen · slot'}))===true;
  if(kind==='breath')return (await breathGame(lockParams(null,lv),{title:'Oefenen · ademhaling',label:'Oefenen'}))===true;
@@ -50,7 +51,7 @@ async function prRun(kind,lv){
  if(kind==='chase'){const c=(spawnCar(m,'Oefenplaats')||{}).c||'#8a929c';return (await carChaseGame(lv,{b:m.b,c,n:m.n}))===true}
  return false}
 function prResult(kind,lv,ok){const P=PRACTICE[kind],ov=document.createElement('div');ov.className='pr-ov';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-labelledby','prR');
- ov.innerHTML=`<div class="pr-box ${ok?'won':'lost'}"><span class="pr-tag">Oefening · telde niet mee</span><h2 id="prR">${ok?(kind==='contact'||kind==='lock'?'Gelukt!':kind==='breath'?'Rustig!':'Ontkomen!'):(kind==='contact'||kind==='lock'||kind==='breath'?'Mislukt':'Gepakt')}</h2>
+ ov.innerHTML=`<div class="pr-box ${ok?'won':'lost'}"><span class="pr-tag">Oefening · telde niet mee</span><h2 id="prR">${ok&&P.ok?P.ok:!ok&&P.no?P.no:ok?(kind==='contact'||kind==='lock'?'Gelukt!':kind==='breath'?'Rustig!':'Ontkomen!'):(kind==='contact'||kind==='lock'||kind==='breath'?'Mislukt':'Gepakt')}</h2>
   <p class="pr-sub">${P.n} · niveau ${lv}. ${ok?'Zo doe je het in het echt ook.':'Geen zorgen: er is niets veranderd aan je account.'}</p>
   <div class="pr-act"><button class="btn ghost" type="button" data-a="close">Klaar</button><button class="btn" type="button" data-a="again">Nog een keer</button></div></div>`;
  document.body.appendChild(ov);

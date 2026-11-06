@@ -38,6 +38,7 @@ if(S._admin){const A=S._admin;if(A.refill){S.energy=Math.max(S.energy,EN_MAX);S.
 // rondes die al vaststonden maar nog draaiden (roulette, hoogvlieger): nu in je sessie; een gedeelde hand aan tafel gaat verder
 if(typeof casSesFlush==='function')casSesFlush();
 // een slot waar je middenin zat (verversen of weggeklikt): dat telt als betrapt
+if(S.pendingGame){const c=CRIMES.find(x=>x.id===S.pendingGame.id);delete S.pendingGame;if(c&&typeof crimeFail==='function'){S.stats.games=(S.stats.games||0)+1;setTimeout(()=>crimeFail(c,'Je liet de klus halverwege liggen. '),600)}}
 if(S.pendingLock){const c=CRIMES.find(x=>x.id===S.pendingLock.id);delete S.pendingLock;if(c&&typeof crimeFail==='function'){S.stats.locks=(S.stats.locks||0)+1;S.stats.lockFail=(S.stats.lockFail||0)+1;setTimeout(()=>crimeFail(c,'Je liet het slot in de steek. '),600)}}
 if(typeof casSesFlush==='function')casSesFlush();
 if(typeof tbRestore==='function')try{tbRestore()}catch(e){console.error(e);delete S.tbRun}

@@ -21,7 +21,7 @@ const lkLvOf=d=>Math.min(5,1+Math.floor(d*4.99));
 function lockGame(P,opts){opts=opts||{};return new Promise(resolve=>{
  window.__chase=true;const ov=lkOverlay(opts.title||'Een slot',lkLvOf(P.d),P.label),stage=ov.querySelector('#lkStage'),help=ov.querySelector('#lkHelp'),ctl=ov.querySelector('#lkCtl'),sub=ov.querySelector('#lkSub');
  const pan=ov.querySelector('#lkPanic'),tim=ov.querySelector('#lkTime');sub.textContent=opts.sub||(P.pins+' pinnen · zet ze alle '+P.pins);
- let set=0,misses=0,panic=opts.panic0||0,mode='lock',done=false,t0=performance.now(),last=t0,center=.5,dir=1,x=0,fx=null,raf=0;
+ let set=0,misses=0,missT=0,panic=opts.panic0||0,mode='lock',done=false,t0=performance.now(),last=t0,center=.5,dir=1,x=0,fx=null,raf=0;
  let breath=null;const reduce=lkReduce(),speed=P.speed*(reduce?.75:1);
  const newZone=()=>{center=.18+Math.random()*.64};newZone();
  const pinsHtml=()=>`<div class="lk-pins">${Array.from({length:P.pins},(_,i)=>`<i class="${i<set?'on':''}"></i>`).join('')}</div>`;
@@ -39,12 +39,12 @@ function lockGame(P,opts){opts=opts||{};return new Promise(resolve=>{
  const endBreath=ok=>{if(ok){panic=Math.max(0,Math.min(panic,38));mode='lock';fx='Rustig. Terug naar het slot.';paintLock();setTimeout(()=>{fx=null},1200);lkSnd('win')}else finish(false,'Je raakte in paniek')};
  const press=()=>{if(done)return;
   if(mode==='lock'){if(Math.abs(x-center)<=P.zone/2){set++;misses=0;lkSnd('click');fx=null;if(set>=P.pins){finish(true);return}newZone();paintLock()}
-   else{misses++;panic=Math.min(100,panic+P.panicMiss);lkSnd('tick');fx='Mis'+(misses%2===0&&set>0?' · een pin springt terug':'');if(misses%2===0&&set>0)set--;paintLock();if(panic>=100)startBreath()}}
+   else{misses++;missT++;panic=Math.min(100,panic+P.panicMiss);lkSnd('tick');if(P.maxMiss!=null&&missT>P.maxMiss){finish(false,'Te veel herrie: iemand hoorde je');return}fx='Mis'+(misses%2===0&&set>0?' · een pin springt terug':'')+(P.maxMiss!=null?' · nog '+(P.maxMiss-missT)+' fout'+(P.maxMiss-missT===1?'':'en')+' over':'');if(misses%2===0&&set>0)set--;paintLock();if(panic>=100)startBreath()}}
   else{const ph=((performance.now()-breath.t0)/breath.period)%1,dist=Math.min(Math.abs(ph-.5),1);// grootst op ph=.5
    if(dist<=P.breathTol/2){breath.hit++;lkSnd('click');if(breath.hit>=breath.need){endBreath(true);return}}
    else{breath.bad++;breath.hit=0;lkSnd('tick');if(breath.bad>=3){endBreath(false);return}}
    streakPaint()}};
- const finish=(ok,why)=>{if(done)return;done=true;cancelAnimationFrame(raf);document.removeEventListener('keydown',key);stage.onpointerdown=null;
+ const finish=(ok,why)=>{if(done)return;done=true;cancelAnimationFrame(raf);if(opts.onEnd)try{opts.onEnd({misses:missT,set})}catch(e){}document.removeEventListener('keydown',key);stage.onpointerdown=null;
   stage.innerHTML=`<div class="lk-end ${ok?'won':'lost'}"><b>${ok?'Open!':'Betrapt'}</b><span>${ok?'Alle pinnen zitten. Snel verder.':(why||'De tijd is op: iemand komt eraan.')}</span></div>`;help.textContent='';ctl.innerHTML='';
   lkSnd(ok?'win':'lose');setTimeout(()=>{ov.classList.add('out');setTimeout(()=>{ov.remove();window.__chase=false;resolve(ok)},200)},ok?700:1100)};
  const key=e=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();press()}};document.addEventListener('keydown',key);
