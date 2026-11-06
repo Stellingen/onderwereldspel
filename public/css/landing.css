@@ -211,7 +211,7 @@ body.menu-open{overflow:hidden}
 .cr-kv dt{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
 .cr-kv dd{margin:3px 0 0;font-family:var(--f-mono);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cr-kv dd b{font-weight:500}
-.cr-m{display:block;height:3px;background:var(--line2);margin-top:5px;max-width:110px}.cr-m i{display:block;height:100%;background:var(--acc)}
+.cr-m{display:block;position:relative;height:3px;background:var(--line2);margin-top:5px;max-width:110px}.cr-m i{position:absolute;left:0;top:0;height:100%;background:var(--acc)}.cr-m i.t{opacity:.35}
 
 /* Casino */
 .facts-blk{margin-top:70px}

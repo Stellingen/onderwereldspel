@@ -287,7 +287,7 @@ const GEAR=[
  {id:'scanner',cat:'comm',n:'Politiescanner',d:'Je hoort de meldkamer mee.',p:12000,r:2,heat:25,ic:'radio'},
  {id:'crypto',cat:'comm',n:'Versleutelde telefoon',d:'Berichten die niemand kan lezen.',p:85000,r:5,heat:40,ic:'phone'},
  {id:'mol',cat:'comm',n:'Mol bij de politie',d:'Een agent die je op tijd belt.',p:600000,r:8,heat:55,ic:'ear'},
- {id:'scooter',cat:'vervoer',n:'Opgevoerde scooter',d:'Haalt zeventig in de binnenstad en past door elke steeg.',p:1200,r:0,flee:6,ic:'moto'},
+ {id:'scooter',cat:'vervoer',n:'Opgevoerde fatbike',d:'Haalt vijftig in de binnenstad, zonder trappen, en past door elke steeg.',p:1200,r:0,flee:6,ic:'moto'},
  {id:'cross',cat:'vervoer',n:'Crossmotor',d:'Over stoepen, door parken en dwars door het Vondelpark.',p:9500,r:2,flee:10,ic:'moto'},
  {id:'sedan',cat:'vervoer',n:'Grijze sedan met valse platen',d:'Niemand kijkt om, maar onder de motorkap zit een beest.',p:48000,r:4,flee:14,heat:5,ic:'cars'},
  {id:'speedboot',cat:'vervoer',n:'Speedboot in de haven',d:'Via de grachten naar het IJ, en dan ben je weg.',p:210000,r:6,flee:18,heat:5,ic:'yacht'},

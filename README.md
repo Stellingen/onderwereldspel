@@ -59,18 +59,71 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
   Niveau 1-5 (CC_LV): sneller, drukker, meer versperringen en politie, minder voorsprong en nitro. Rijvaardigheid, uitrusting,
   outfit, familie en lidmaatschap geven meer ruimte en voorsprong. Elke rij is haalbaar: het vrije gat ligt hooguit één baan
   naast het vorige en er zit altijd tijd tussen om een auto voorbij te gaan. Getest met een speelbot (`ov._cc()` test-hook).
-- **Vluchtspel** (`flee.js`): gaat een klus mis, dan ren je weg door een steeg of een gebouw (2.5D): wissel van baan met
-  pijltjes/A-D, vegen of tikken, spring met omhoog of spatie, ontwijk obstakels en agenten. Op straat is dat makkelijk, in een
-  afgesloten gebouw bijna onmogelijk. Sinds de ombouw: een korte intro (de agent betrapt je, jij rent weg; tik om over te slaan),
-  je eigen outfit op de renner, **bukken** onder steigers en rolluiken (↓, S, omlaag vegen of de knop), regen buiten, de zaklamp van
-  de agent die dichterbij komt, en een langere, snellere route (±25% langer, krappere gaten). Getest met een bot (reactie 0,3 s):
-  niveau 1 tot 4 te halen, niveau 5 alleen met snelle reacties. Elke achtervolging loopt op van makkelijk naar moeilijk: eerst losse obstakels met
-  ruimte ertussen, dan hekken, auto's en mensen of honden die oversteken, en na de rode streep op de route de **eindsprint**:
-  rijen vlak na elkaar (slalom), overstekers en bewakers die met je meeschuiven. Ongeveer 35% meer rijen en meer obstakels per rij, in ongeveer dezelfde tijd, met
-  nieuwe soorten (container, vuilniszakken, dranghek, natte-vloerbord, printer, bureaustoel, schoonmaker, hond). De tijd tussen
-  twee rijen zakt van ±1,05× naar ±0,6× het tempo van het niveau, nooit onder een halve seconde. Conditie, vervoer, outfit,
-  familie en woning maken het makkelijker. Lukt het: vrij en niet gezocht. Mislukt het: cel met 20% extra straf.
-- **Misdaden** (`misdaden.js`): klussen onder je rang gaan makkelijker: per rang erboven +1% extra kans, de hitte drukt minder op je kans en het plafond gaat van 95% naar 98% (er blijft altijd 2% risico). Lukt zo'n klus (2+ rangen eronder), dan stijgt je hitte 2 tot 3. elke klus heeft een eigen icoon en een balk met kans, opbrengst (plus XP en cred) en wat er
+- **Vluchtspel "Rennen!"** (`flee.js`, opmaak in `css/rennen.css`, versie 2, november 2026): gaat een klus mis en kies je
+  vluchten, dan ren je weg met de agent achter je aan (2,5D, camera achter je, 15 tot 24 seconden). Aanroep onveranderd:
+  `fleeGame(level, opts)` geeft een Promise met true (ontkomen) of false (gepakt); `arrest()` en `escapeGame()` geven nu de
+  opts van de arrestatie mee, `crimeFail` zet `opts.cat` (soort klus). Bij een autodiefstal blijft het de autoachtervolging
+  (`carchase.js`); te voet is het altijd Rennen!.
+  - **De plek past bij de klus** (`fleeCtx`): straatwerk = langs de gracht (grachtenpanden met trap-, klok- en halsgevels,
+    bomen, fietsen, bruggen met lichtjes, de Westertoren in de verte), in een steeg of door de winkelstraat; inbraak = eerst
+    door de gang, dan de steeg in; overvallen = tussen de schappen van de winkel door, dan de winkelstraat; oplichting en
+    invloed = door het kantoor (glazen wanden, bureaus), dan langs de gracht; smokkel = over de kade tussen de containers
+    (bij niveau 4-5 eerst door een loods); huurmoord = steeg of gracht; politiecontrole = winkelstraat of gracht. Zonder soort
+    kiest het niveau (1 gracht, 2 winkelstraat, 3 gang → steeg, 4 kantoor → gracht, 5 kantoor met alarm → steeg). Hoe zwaarder
+    het niveau, hoe langer het stuk binnen. Heb je vervoer van Motorhuis Snel, dan staat dat bij de uitgang klaar.
+  - **Besturing**: ← → / A-D, vegen of links/rechts tikken = baan; ↑ / W / spatie, omhoog vegen of midden tikken = springen
+    (springen kun je vlak voor de landing al indrukken); ↓ / S, omlaag vegen of de knop = bukken. Vier knoppen onder het beeld.
+    Niets hoeft ingedrukt gehouden te worden.
+  - **Wat je ziet**: de route bovenin (met de deur naar buiten en de eindsprint), linksonder **Agent: 8 m** (balk van rood
+    naar groen, rood kader als hij binnen 3,5 m zit), rechtsonder **Adem** in % (oranje onder 35%: je hijgt, wolkjes en een
+    rode gloed). Komt de agent dichterbij, dan zie je hem onderin achter je aan rennen (POLITIE op zijn rug) en wordt het
+    zwaailicht feller. Meldingen: Gestruikeld!, Hij zet aan!, Hij zit vlak achter je!, Bukken!, Springen!, Eindsprint!,
+    Naar buiten!. Steigers, rolluiken en slagbomen hebben een blauw "BUKKEN", hekken en linten een geel "SPRING".
+  - **Vooraf** (6 s of tik/spatie/Enter): "Politie! Staan blijven!" en een kaart met wat meetelt: niveau, je levels
+    Conditie, Uithouding, Ademhaling en Snelheid, je extra voorsprong (woning, familie, uitrusting, outfit, lidmaatschap) en
+    een inschatting **Voor jou: te doen / pittig / zwaar / heel zwaar / bijna kansloos** (`fleeRate`, gekalibreerd op de
+    bot: kans van een gemiddelde speler). Die inschatting staat ook in de arrestatiemelding ("Rennen is voor jou zwaar").
+  - **Gepakt** als de agent je inhaalt (afstand 0) of als je struikelt terwijl hij binnen 2 m zit. Elke agent is net iets
+    anders (±3% tempo), dus ook perfect spelen is nooit helemaal zeker. Ontkomen: vrij (+5 hitte, +1 cred). Gepakt: cel met
+    20% extra straf. **Verversen tijdens het rennen = gepakt** (zoals voorheen: `S.pendingArrest.fleeing`, `resumePending`).
+  - **Moeilijkheid** (`FL_LV` per niveau, `FL_K` formule-constanten, `fleeParams`):
+
+    | Niveau | duur | tempo | tijd tussen rijen | voorsprong | agent t.o.v. jou | adem/s |
+    |---|---|---|---|---|---|---|
+    | 1 makkelijk | 16 s | 8,8 m/s | 1,10 → 0,78 s | 8 m | 98,5% | 2,6% |
+    | 2 redelijk | 18 s | 9,4 | 1,00 → 0,70 | 10 m | 99% | 2,8% |
+    | 3 lastig | 20 s | 10 | 0,93 → 0,63 | 12,5 m | 100% | 3,1% |
+    | 4 moeilijk | 22 s | 10,6 | 0,88 → 0,58 | 13 m | 100,5% | 3,4% |
+    | 5 bijna onmogelijk | 24 s | 11,2 | 0,83 → 0,54 | 13 m | 101% | 3,7% |
+
+    Hogere niveaus: meer rijen met twee banen dicht, slalom, overstekers, bewakers die met je meeschuiven en 1-2 keer dat de
+    agent aanzet (1,6 s 12% sneller). Struikelen: je zakt naar 25% tempo en komt met 1,7/s weer op snelheid (±4,4 m kwijt).
+    Training (0-50; c, u, a, s = Conditie, Uithouding, Ademhaling, Snelheid gedeeld door 50):
+    topsnelheid ×(1 + 0,006c + 0,004s) · adem gaat ×(1 − 0,5c) op · Uithouding: +2%·u adem per seconde terug en ×(1 + 0,15u)
+    sneller overeind · Ademhaling: onder 35% adem zak je tot (95 + 3a)% tempo (in plaats van 95%) en struikelen kost 12%×(1 − 0,5a)
+    adem · Snelheid: baan wisselen in 0,15 s×(1 − 0,3s). Extra's (som E van woning `furnFx('zone')`, familie `famPerk('flee')`,
+    uitrusting `gearFx('flee')`, outfit `fitFx('flee')`): k = 1 − e^(−1,1E), voorsprong ×(1 + 0,35k), botsing ×(1 − 0,06k).
+    Lidmaatschap (VIP 0,15, High roller 0,40 = t): voorsprong ×(1 + 0,4t), adem ×(1 + 0,5t) zuiniger. Op de trainingspagina
+    staan de nieuwe effecten (Conditie: adem bij vluchten −1% per level, Snelheid: sneller van baan −0,6%, Ademhaling: adem
+    kwijt bij struikelen −1%, Uithouding: sneller herstel +0,3%).
+  - **Gemeten** (`node scripts/fleesim.js 600`, bot met reactie 0,3 s en 8% fout per rij = goed, 0,45 s en 12% = gemiddeld,
+    0,6 s en 20% = slecht; fouten vaker bij rijen vlak na elkaar):
+
+    | Niveau | nieuw, slecht | nieuw, gemiddeld | nieuw, goed | alles 25, gem. | alles 50, gem. | alles 50, goed | max + extra's + HR, goed |
+    |---|---|---|---|---|---|---|---|
+    | 1 | 67% | 90% | 94% | 95% | 96% | 99% | 100% |
+    | 2 | 27% | 71% | 86% | 82% | 89% | 92% | 98% |
+    | 3 | 6% | 36% | 70% | 59% | 70% | 86% | 97% |
+    | 4 | 0% | 7% | 35% | 23% | 34% | 67% | 85% |
+    | 5 | 0% | 2% | 11% | 5% | 11% | 43% | 66% |
+
+    Ook in de browser gespeeld met dezelfde bot die echte toetsaanslagen stuurt (6 potjes per vakje, training 0 of alles 50):
+    niveau 1: goed 6/6 en 6/6, slecht 3/6 en 5/6 · niveau 3: goed 5/6 en 5/6, slecht 0/6 en 0/6 · niveau 5: goed 0/6 en 4/6,
+    slecht 0/6 en 0/6 (klopt binnen de ruis met de simulatie). Verder getest: de arrestatie (knop Vluchten → uitkomst, cel of vrij),
+    verversen tijdens het rennen (= gepakt, +20%), oefenen per niveau via `practice.js` (account blijft gelijk) en tikken en
+    vegen op een telefoon.
+  - Test-hook: `document.querySelector('.rn-ov')._fl()` geeft `{C, P, X, go}` (C = de kern van `fleeCore`, los van het tekenen).
+- **Misdaden** (`misdaden.js`; sinds november 2026 komt de kans uit het klus-spel en je professionaliteit, zie *Klus-spellen en professionaliteit*): klussen onder je rang gaan makkelijker: per rang erboven +1% extra kans, de hitte drukt minder op je kans en het plafond gaat van 95% naar 98% (er blijft altijd 2% risico). Lukt zo'n klus (2+ rangen eronder), dan stijgt je hitte 2 tot 3. elke klus heeft een eigen icoon en een balk met kans, opbrengst (plus XP en cred) en wat er
   gebeurt als het misgaat (straf en hoe moeilijk vluchten is). Bovenaan de drie beste klussen voor jou, met opbrengst per energie.
 - **Training** met tijdsloten (11 plekken; nieuw: **Uithouding**, elke klus kost tot 30% minder energie en je laadt tot 30% sneller op,
   en **Ademhaling**, tot +3%-punt slaagkans en meer ruimte bij vluchten): elke sessie is één level, tot level 50. Elk level is duurder (conditie: €60 voor level 1,
@@ -135,8 +188,8 @@ Een maffia-klikspel in de browser met accounts. Begin als Rookie en werk je op t
 - **Straatcredit** krijg je voor geslaagde klussen: hoe beter uitgevoerd (perfect ×1,5, netjes ×1,2) en hoe beter je uitrusting
   (per soort je beste item, +4% per niveau), hoe meer. Families vragen nu veel meer cred (De Nieuwe Garde 30 … La Cupola 1.000).
 - **Witwassen**: elke route (je zaak, Ome Kees, het casino) heeft bovenaan een illustratie.
-- **Bezit**: opent op **Mijn bezit**: je eigen zaken (een tegel per zaak met vestigingen, level en inkomen) en daaronder de knop **Koop meer zaken**. Die opent de winkel met tabbladen per categorie (met aantal en icoon): Winkels en diensten, Horeca en nachtleven, Auto's, Handel en transport en **Vastgoed** (Bovenwoningen, Winkelpanden, Bedrijfshallen, Vastgoedportefeuille: 20% meer huur, maar je kunt er niet door witwassen); met **Mijn bezit** ga je terug. Elke zaak is een banner met een eigen gevel (winkelpui, garage, toren, haven of hangar; verlichte ramen = je vestigingen), tik erop voor de vestigingen en upgrades. Hoe witwassen via een zaak werkt (belasting en snelheid per soort zaak) staat bij Zwart geld en witwassen. 17 soorten bedrijven, van Wasserette (€5.000, €1.250 per speldag) tot Privéjet-charter (€4 mln., €392.250 per speldag), elk vanaf een
-  bepaalde rang. Klik op een bedrijf voor de details: tot 10 vestigingen per soort (elke volgende 25% duurder) en elke
+- **Bezit**: opent op **Mijn bezit**: je eigen zaken (een tegel per zaak met vestigingen, level en inkomen) en daaronder de knop **Koop meer zaken**. Die opent de winkel met tabbladen per categorie (met aantal en icoon): Winkels en diensten, Horeca en nachtleven, Auto's, Handel en transport en **Vastgoed** (Bovenwoningen, Winkelpanden, Bedrijfshallen, Vastgoedportefeuille: 20% meer huur, maar je kunt er niet door witwassen); met **Mijn bezit** ga je terug. Elke zaak is een banner met een eigen gevel (winkelpui, garage, toren, haven of hangar; verlichte ramen = je vestigingen), tik erop voor de vestigingen en upgrades. Hoe witwassen via een zaak werkt (belasting en snelheid per soort zaak) staat bij Zwart geld en witwassen. 47 soorten bedrijven (sinds november 2026, zie *Meer zaken*), van Wasserette (€5.000, €1.250 per speldag) tot Privéjet-charter (€4 mln., €392.250 per speldag), elk vanaf een
+  bepaalde rang. Klik op een bedrijf voor de details: tot 10 vestigingen (VIP 12, High roller 15) per soort (elke volgende 25% duurder) en elke
   vestiging los upgraden van level 1 naar 5 (×1 / ×1,5 / ×2,2 / ×3,1 / ×4,3 inkomen) met eigen upgradenamen.
   **Bonus op al je inkomen**: +25% basis, +0,5% per vestiging en +0,25% per upgrade (samen tot +50%), +3% per rang, +0,5% per level.
   Zo levert elk bedrijf meer op naarmate je imperium groeit en je hoger in rang komt (Bezit toont de verdeling).
@@ -780,3 +833,159 @@ vandaan komt (`enParts`). De serverwaarschuwing gaat nu pas af boven 700 energie
   punten (kort 1, echt 3, luxe 8), 11 levels van Gespannen tot Meester van de rust. Per level +6% energie uit ontspannen (tot
   +60%), paniek loopt 5,5% per level langzamer op (tot 55%) en het ademvenster wordt ruimer. Paneel op Ontspannen met ring,
   level, voortgang en effecten.
+
+## Grote ronde november 2026: klus-spellen, rennen, inrichting, zaken, huurmoorden, lidmaatschap
+
+- **Voorpagina: grinden loont** (`lp-views.js` `grind`, opmaak in `lp.css`): sectie "Van een op de drie. Naar bijna altijd." met de
+  kans en extra buit per niveau van professionaliteit (zelfde som als `crimegames.js`), waar professionaliteit uit bestaat
+  (40/25/20/15) en wat grinden nog meer oplevert. Op /misdaden staat per klus de kans als beginner → meester en het
+  diagram is rang tegen buit; op /rangen staat "Klussen open" in plaats van de oude kansbonus.
+
+### Klus-spellen en professionaliteit (november 2026)
+
+- **Elke klus heeft een spel** (`public/js/crimegames.js`, `public/css/crimegames.css`). Elf soorten, elk met een eigen
+  tekening (SVG/CSS), bediening met spatie, klik of tik (keuzespellen ook met 1–4, hacken met het toetsenbord, route met ← →),
+  4–20 seconden spelen plus een korte uitleg vooraf (tik of spatie om meteen te beginnen):
+  | Spel | Hoe | Klussen |
+  |---|---|---|
+  | Grijpen | grijp zodra hij wegkijkt (reactie) | zakkenrollen, pakketjes, horlogeroof, stadionkassa |
+  | Sluipen | pakken duurt even: begin net als de lichtkegel wegdraait | drogist, statiegeld, taggen, kasteel, museum, Londen, kroonjuwelen, rivaal, ladingdiefstal |
+  | Slot | het bestaande slot (`lockgame.js`) met pinnen, paniek en ademhaling | fiets, e-bikes, autokraak, villa, koplampen/airbags, garagebox, apotheek |
+  | Kluis | draaischijf: druk als het gevoel-lampje het felst gloeit | bank, diamant, casino, Centrale Bank, Genève, goudreserve |
+  | Overval | er gebeurt steeds iets: kies op tijd de juiste reactie (4 knoppen) | avondwinkel, ramkraak, juwelier, geldtransport, goud, privéjet |
+  | Praten | lees de stemming, kies de aanpak die past (één keer mis mag). Oplichting gebruikt alleen algemene tonen (zakelijk, vriendelijk, snel), geen belscripts | bedelen, snackbar, chanteren, havenbaas, aanbesteding, keeper, rechter, lobbyist, kartelvrede, fraudebeller, "Hoi mam", bankpas verhuren |
+  | Onthouden | gegevens onthouden en daarna de vragen goed beantwoorden (papierspoor) | nepwebshop, bouwfraude, scheepswerf, Kaaiman, Wereldbank, valse facturen, ondergrondse bank |
+  | Hacken | code overtypen voor de trace-balk leeg is | tickets, kantoor Zuidas, datalek, cryptobeurs, containernummer, stroom, online casino |
+  | Route | wissel op tijd naar de vrije baan langs controles | envelop, smokkelroute, wapenlading, superjacht, Rotterdam, olietanker |
+  | Dealen | stop de wijzer in het groene stuk van de prijs | heling, veiling, pokerkelder, voorkennis, vastgoed in Dubai |
+  | Ritme | druk op de maat aan het eind van elke slag | koperkabel, katalysator, drukgang (valse briefjes) |
+- **Professionaliteit P (0–100%) per klus** = 0,40 × vakmanschap (√(keer gelukt/150)) + 0,25 × ervaring in de soort
+  (level 0–10 met tussenstand) + 0,20 × de training die bij het spel hoort (bv. Vingervlugheid bij grijpen, Slotenkraken en
+  Ademhaling bij slot en kluis, Hacken bij hacken, Rijvaardigheid bij route) + 0,15 × rang t.o.v. de klus (3 rangen erboven,
+  of Peetvader level 5, = vol). Niveaus: Beginner, Gevorderd (30%), Professional (55%), Meester (80%).
+- **Kans** = spel × dobbelsteen. Het spel is zo afgesteld dat een gemiddelde speler het haalt in 50% (P=0), ±83% (P=½) en
+  99% (P=1) van de keren; de ruimte per poging (venster, reactie- of antwoordtijd) wordt daaruit teruggerekend met een model
+  van een gemiddelde speler (timingfout 70 ms, reactie 0,42 ± 0,09 s). Daarna de dobbelsteen: 58 + 38 × P + (basiskans − 50)
+  × 0,2 + uitrusting, outfit, familie, Vingervlugheid, Ademhaling, Schieten (zware klussen) en focus − hitte, × lidmaatschap,
+  plafond zoals vroeger (95% tot 99%). Op de kaart staat de verwachte kans ("spel 61% × daarna 87%"); de titel en
+  schermlezertekst geven de hele som. Nieuweling: ±26–34%, halverwege ±72–80%, alles maximaal: 98%.
+- **Buit**: × (1 + 0,6 × P^1,5), dus een meester +60% (vervangt de +5% per vakmanschapsniveau). Geen fout in het spel =
+  schone klus: +8% buit (één fout +4%) en perfecte straatcredit. Rangbonus en de rest van `lootMult` blijven zoals ze waren.
+- **Snel uitvoeren** voor meesters (P ≥ 80%): zonder spel, met kans dobbelsteen × (spelkans − 6%), zonder schone-klusbonus
+  (maximaal 92% tegen 98% met spel).
+- **Slot**: de losse slotkans (`CR_LOCK`) is opgenomen in de spellen: klussen met het spel Slot krijgen altijd het slot (met
+  P als moeilijkheid, hooguit 2 fouten), andere klussen nooit nog een extra slot erbovenop.
+- **Verversen tijdens een spel = betrapt** (`S.pendingGame`, afgehandeld in `main.js`; oude `S.pendingLock` blijft werken).
+- **Oefenen** per spel zonder gevolgen: knop "Klus-spellen" op Misdaden (kies spel en niveau) of tik op het spel-label op een
+  klus. Niveau 1 = Meester tot 5 = Nieuweling.
+- **Bagatellen** (`sev:'A'` in `CRIMES`: bedelen en statiegeld): mislukt = weggestuurd (3× de wachttijd) of een APV-boete
+  (2× de max-buit, minstens €50); geen cel en geen vlucht (`crimeFailMinor` in `actions.js`, haak voor het latere
+  gevolg per ernstklasse).
+- **Klussen aangepast (politieadvies)**: `fruitautomaat` → "Hoi mam, nieuw nummer" (oplichting), `parkeer` → Koplampen en
+  airbags (slot), `deurbel` → Je bankpas verhuren (oplichting), `witwas` → Valse facturen schrijven, `satelliet` → Een eigen
+  ondergrondse bank (witteboord), `olympisch` → Vastgoed in Dubai, `renbaan` → Illegaal online casino, `telefoon` → Beller
+  voor een fraudebende (meer buit), `vrachtwagen` → Ladingdiefstal op een truckparking, `afpersing` → Een vastgoedbaron
+  chanteren (cel 170 s), `snackbar` cel 210 s, `horloge` → Overvallen (cel 270 s), `winkel` → Dief (€650–1.750, cel 190 s),
+  `stadion` → Inbraak en kraken, `drukkerij` zonder slot, `minister` → Een lobbyist op de loonlijst, `scooter` → E-bikes en
+  fatbikes. De ids bleven gelijk (vakmanschap en saves blijven kloppen). Familieklus "Haal een kroongetuige weg" → "Bevrijd een
+  van jullie uit een gevangenentransport". Miauw is 3-MMC; bij Lucchetti seponeert "een officier van justitie op de loonlijst".
+- Getest met een speelbot (Playwright) die elk spel goed en slecht speelt (goed: altijd gehaald, slecht: nooit), en een
+  simulatie van 800 rondes per spel/niveau met een gemiddelde speler (gemiddeld 49% / 82% / 99% bij P = 0 / ½ / 1).
+
+### Meer zaken en vestigingen
+
+- **Meer zaken** (`data.js` blok 'Meer zaken', `pages/bezit-extra.js`): 47 soorten in plaats van 17. 30 nieuwe zaken, van straatniveau
+  tot de top, plus een nieuwe categorie **Toerisme** (Fietsverhuur, Souvenirwinkel, Coffeeshop, Rondvaartboot, Hostel, Kunstgalerie).
+  Nieuw per categorie: Winkels en diensten (Avondwinkel, Nagelstudio, Sportschool, Wisselkantoor, Juwelier), Horeca (Pizzeria,
+  Bruin café, Grachtenrestaurant, Beachclub, Grand Casino), Auto's (Autowasstraat, Taxibedrijf, Luxe autoverhuur,
+  Sportwagenimporteur), Handel (Marktkraam, Koeriersdienst, Groothandel, Transportbedrijf, Diamanthandel, Rederij), Vastgoed
+  (Garageboxen, Studentenkamers, Parkeergarage, Kantoortoren Zuidas). Van Fietsverhuur (€4.000, Straatschoffie) tot Grand Casino
+  (€9 mln., Peetvader); rangen die niks openden (Ritselaar, Handhaver, Kapitein, Schaduwbaas) openen nu ook een zaak. Inkomen volgt
+  dezelfde formule (`BIZ_DAY_RATE`, vastgoed +20%), elk met vier eigen upgradenamen, een eigen icoon en een gevel. Nieuwe gevels:
+  grachtenpanden, rondvaartboot met brug, marktkramen en een strandpaviljoen (`BZ_ART`, naast winkelpui/garage/toren/haven/hangar).
+  Elke zaak (behalve vastgoed) heeft een eigen witwasprofiel met Nederlandse belasting (bv. taxi, rondvaart, sportschool 9% btw;
+  wisselkantoor en transport vennootschapsbelasting; Grand Casino kansspelbelasting) en bonnetjes voor het politieverhoor.
+  BIZ staat op prijs; de klanttempo-'tier' in het kassaspel komt nu uit de prijs van de zaak in plaats van de plek in de lijst.
+- **Vestigingen per lidmaatschap**: maximaal 10 per zaak, **VIP 12**, **High roller 15** (`BIZ_MAX_TIER`, `bizMax()` in data.js).
+  Bezit toont "n / 12 vestigingen" met de uitleg (gewoon 10, VIP 12, HR 15), de vestigingsplekken groeien mee, en de kooplijst
+  verbergt een zaak pas als je het maximum van jouw lidmaatschap hebt. Elke volgende vestiging blijft 25% duurder, dus vestiging
+  11-15 verdienen zich pas in 30-73 speldagen terug: voordeel, geen geldmachine. Wie VIP verliest, houdt zijn vestigingen maar
+  kan niet bijkopen. Witwassen: "level x/60" (of /75); de snelheidsbonus blijft gemeten tegen 10 vestigingen. Extra plaatsnamen
+  voor vestiging 11-15: Amstelveen, Haarlem, Almere, Hoofddorp, Purmerend.
+
+### Inrichting: meer plekken, 50 spullen, plafonds (november 2026)
+
+- **Plekken per woning** (`data.js` `HOUSES[].slots`, `inrichting.js` `houseSlots`/`furnSlots`): elke woning heeft nu een
+  eigen aantal, oplopend met de prijs: Onder de brug 2, Kraakpand 3, Lekke woonboot 4, Zolderkamer 5, Studio 6,
+  Grachtenappartement 7, Herenhuisetage 8, Penthouse 10, Penthouse IJ-oever 11, Toppenthouse 12, Villa 14, Landgoed 15
+  (was per soort 1, 2, 4, 6, 9, 13; niemand heeft er minder dan eerst). `HOMES[].slots` is nu het aantal van de goedkoopste
+  woning van die soort.
+- **Lidmaatschap** (`TIER_SLOTS=[0,2,5]`): VIP heeft in elke woning altijd **2 plekken extra**, High roller altijd **5**
+  (los van rang of level; via `tier()`). Landgoed als High roller = 20 plekken. De extra plekken hebben in de plekkenbalk een
+  gouden rand en een tag (+2 VIP / +5 HR). Raak je je lidmaatschap kwijt, dan gaan de goedkoopste spullen die niet meer passen
+  naar de opslag (niets verdwijnt). Bij het laden zonder lidmaatschap van de server wordt niets weggezet.
+- **50 spullen** (was 37). Nieuw, elk met een eigen isometrische tekening (`VH_GEN`): matras van de stoep, campingstoel,
+  transistorradio, campinggasstel, hangmat, laptop met VPN, roeitrainer, kunstwerk, wijnklimaatkast, biljarttafel,
+  beveiligingsruimte, behandelkamer en vluchttunnel. Duurdere stukken doen twee of drie dingen tegelijk (bijv. behandelkamer:
+  dokter +8% en −20% wachttijd, plus sneller herstel; beveiligingsruimte: minder verlies, hitte zakt sneller, minder kans
+  herkend). Alleen bestaande effecten; geen nieuwe max. energie.
+- **Plafonds per effect** (`FURN_CAP`, toegepast in `furnFx`; `furnFxRaw` = zonder plafond): herstel gezondheid +200%,
+  energie laden +75%, hitte zakken +150%, focus +20%, max. energie +98, per rustbeurt +30%, wachttijd rusten −45%, vluchten
+  +30%, verlies bij mislukken −75% (was te stapelen tot boven 100%), dokter +15% en −40%, onderduiken +100%, herkend −80%.
+  In de winkel staat "max" bij een effect waar je al op zit; bij Je spullen ook.
+- **Energie blijft 500**: alle energiespullen samen geven nog steeds +98 (plafond 98). Alles op max: basis 100 + Conditie
+  150 + Landgoed 100 + inrichting 98 + rang 52 = **500** (getest).
+- **Tafereel**: vrije plekken (`VH_SPOT`) per soort zo uitgerekend dat ze niet overlappen met elkaar, met de vaste meubels of
+  met de vaste plek van een ander spul, ook als High roller alles vol staat (villa 24, penthouse 21, gracht 18, kraakpand 14,
+  huurkamer 13, brug 6). Ze vullen zich verspreid over de kamer. In de kleine huurkamer staan de spullen op 85% (`VH_SPOT_K`).
+- **Winkel overzichtelijk**: bovenaan **In huis** als compacte kaarten (naam, effecten, Opbergen op één regel), dan Te koop
+  (met hoeveel plekken vrij, of "alles vol · berg eerst iets op"), Opslag, en **Nog op slot** ingeklapt (tik om te openen,
+  per soort woning met het aantal plekken). Filters per soort blijven.
+- Kleine reparaties: marktprijs in de bezichtiging liep op de telefoon over het vakje ernaast; tafereel-animaties staan stil
+  bij prefers-reduced-motion.
+
+### Huurmoorden
+
+- **Huurmoorden: soepeler en drukker** (`public/js/pages/hits.js`, `public/css/hits.css`):
+  - **Oorzaak van het stroeve kraanspel** (gemeten met Playwright): de spellaag had `backdrop-filter: blur`, die elk frame opnieuw
+    over de hele pagina werd berekend: op desktop ~15 fps (67 ms per frame, pieken tot 300 ms), en omdat de natuurkunde per
+    frame liep, ging het spel ook in slow motion. Nu: dekkende laag zonder blur, de pagina eronder tekent niet mee, canvas max.
+    ~2,6 MP. Desktop van 7–11 naar 32–49 fps onder dezelfde belasting (headless, zonder GPU); telefoon 60 fps.
+  - **Kraan**: natuurkunde in vaste stapjes van 1/120 s; de kat volgt muis/vinger kritisch gedempt (300 px in ~0,7 s, was
+    1,6 s); ← → sturen de kat direct en hij stopt bij loslaten (schoof eerst nog 3,8 s / ~380 px door); slingeren max ~30–40°
+    (was tot 86°). Een pijltje boven de giek laat meteen zien waar de kat heen gaat, een **gele ring** op de stoep waar de
+    lading nu zou landen (zo breed als hij raakt), met stippelboog; tijdens de val groeit zijn schaduw. Los blijft tikbaar:
+    tik je terwijl er geen lading hangt, dan schudt de knop en staat er waarom. Elke invoer (toets, muis, touch) is binnen één
+    frame zichtbaar; dubbele triggers via focus/spatie zijn uitgesloten.
+  - **Publiek bij geweer en pistool** schaalt met het doelwit: geweer 2 / 3 / 6 / 8 / 10 / 13 omstanders (moeilijkheid 1–6),
+    pistool 1 / 2 / 4 / 5 / 6 / 8. Drie stroken diepte: achter het doelwit, naast hem, en vóór hem langs (0–5 mensen); vanaf
+    moeilijkheid 3 blijven voorbijgangers soms vóór hem staan en lopen mensen met hem mee, lijfwachten stappen soms vóór hem.
+    Wie vooraan staat vangt het schot (omstander geraakt = mislukt, zoals altijd). Zwaardere doelwitten krijgen iets meer tijd
+    (+0,8 s per voorbijganger vooraan). De romp van de peetvader is ~40% van de tijd bedekt, van de verklikker ~1%.
+  - **Nieuwe figuren**: jas met schouders, broek, schoenen, armen die meezwaaien, huidskleuren, haar, pet/muts, sjaal, tas;
+    het doelwit blijft de man in de rode jas met hoed, lijfwachten in donker pak met zonnebril.
+  - Sluip (mes) en Adem (geweer) kun je ingedrukt houden óf kort aantikken (aan/uit). Mes op een smalle telefoon: de camera
+    houdt het doelwit in beeld, anders een pijl met zijn **!** aan de rand.
+  - Doelwitten "De wethouder" en "De kroongetuige" zijn vervangen door **De vastgoedbaron** (Frits "De Huisbaas" Mulder) en
+    **De overloper** (Vincent "De Vos" Hoekstra); zelfde id's, moeilijkheid, rang en beloning.
+
+### Lidmaatschap: koopmenu VIP en High roller (november 2026, nog zonder betaling)
+Een koopmenu voor VIP en High roller in het spel en op de website. **Er is nog geen betaling**: de koopknoppen tonen alleen
+"Binnenkort beschikbaar · Betalen komt eraan". Er wordt niets gekocht, betaald of geactiveerd en er is geen betaalprovider;
+het lidmaatschap blijft zoals de beheerder het geeft (Beheer → speler → Lidmaatschap).
+- **Eén bron**: `public/js/lid-data.js` (`LID`): prijzen (VOORLOPIG: VIP €4,99 en High roller €9,99 per maand, incl. btw),
+  de drie kaarten (kernvoordelen) en de volledige vergelijking in 6 categorieën (Misdaad, Geld, Casino, Woning, Zaken, Overig;
+  37 voordelen), plus `LID.tableHtml()` voor de tabel. Gebruikt door het spel én door de server (vm, zoals lp-views.js).
+- **Alles uit de code**: in het spel controleert `lidCheck()` (pages/lid.js) elke waarde tegen de echte constanten (TIER_K,
+  TIER_LOOT, TIER_WAIT, TIER_CB, CZ_TIER, CZ_BAN, SRCH_MAX/CD, SEIZE_KEEP, BANK_T, DEP_TERMS, DEP_SLOTS_T, INV_CAP_T, CC_T,
+  KK/VD/ZB/DR_TIER, FAM_INT_CD, geldklemmen en gouden dobbelsteen in OUTFITS, BIZ_MAX). Verschil = waarschuwing in de console.
+  Hoogvlieger-RTP komt uit deze README. Nieuw deze ronde (label "nieuw"): woningen +2 / +5 plekken, zaken 12 / 15 vestigingen.
+- **Spel** (`#lid`, `js/pages/lid.js`, `css/lid.css`): drie kaarten Gratis / VIP (goud) / High roller (paars) met prijs,
+  kernvoordelen en koopknop; je huidige lidmaatschap is gemarkeerd ("Jouw lidmaatschap", knoppen "Dit heb je nu" /
+  "Inbegrepen bij …"). Daaronder een uitklapbare volledige vergelijking (op smalle schermen per rij een kaartje met
+  GRATIS / VIP / HR). Bereikbaar via het menu (groep Jij, onder Ranglijst/Profiel; op de telefoon in Meer), zoeken ("vip"),
+  een blok op Profiel, een tik op je eigen VIP/HR-tag (menu, statusbalk, profiel) en de slotknop op VIP/HR-items in Outfit.
+- **Website** (`/lidmaatschap`, server-side gerenderd met `LPV.lidPage`, stijl van de voorpagina, in de sitemap; `css/lp-lid.css`):
+  dezelfde kaarten en tabel, vragen, en een venster "Binnenkort beschikbaar". Ingelogd ziet je je eigen lidmaatschap
+  (`lp:me`-event uit lp-home.js). Op de voorpagina een rustig blok "Gratis. Of net iets meer." met link. FAQ en "Wel/Niet"
+  aangepast: het spel blijft gratis, nu nog niets te koop, VIP/HR komen later en vrijwillig.

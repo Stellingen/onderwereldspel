@@ -27,7 +27,12 @@ function facts(F) {
   const slots = COV.GAMES.filter(g => /slot/i.test(g.kind)).length;
   const fams = FAMILIES.slice().sort((a, b) => a.r - b.r || a.cred - b.cred).map(f => ({ id: f.id, n: f.n, m: f.m, col: f.col, rank: rk(f.r) }));
   const map = typeof jbMap === 'function' ? jbMap(1, 2) : null, path = map ? jbPath(map) : null;
+  // Grinden loont: kans en buit per niveau van professionaliteit (zelfde som als crimegames.js: spel × dobbelsteen, zonder spullen)
+  const cgg = P => .5 + .49 * (1 - Math.pow(1 - P, 1.6));
+  const grind = [[0, 'Beginner'], [.3, 'Gevorderd'], [.55, 'Professional'], [.8, 'Meester'], [1, 'Alles maximaal']].map(([P, n]) =>
+    ({ n, P: Math.round(P * 100), kans: Math.round(cgg(P) * Math.min(P >= 1 ? 99 : 95, 58 + 38 * P)), buit: Math.round(.6 * Math.pow(P, 1.5) * 100) }));
   return {
+    grind, crimeGames: 11,
     ranks: R.length, crimes: CRIMES.length, fams: FAMILIES.length, biz: BIZ.length, houses: HOUSES.length, cars: CARS.length,
     games: COV.GAMES.length, slots, outfits: F.outfits || 0, streets: ST.map(s => s.n),
     startCash: G.startCash, energyFullMin: Math.round(G.enBase * G.enRegenS / 60), garageMax: G.garageMax,
@@ -155,16 +160,39 @@ function hero(N, o) {
 /* ================= Zo werkt het ================= */
 function lus(N) {
   const S = [
-    ['crimes', 'straat', 'Doe een klus.', 'Zakkenrollen op de Dam, fietsen bij het station, later een geldtransport. Elke klus kost energie en levert geld en XP op.', N.crimes + ' klussen'],
+    ['crimes', 'straat', 'Doe een klus.', 'Zakkenrollen op de Dam, fietsen bij het station, later een geldtransport. Elke klus is een kort spelletje: grijpen, sluipen, een slot of een kluis kraken.', N.crimes + ' klussen'],
     ['run', 'politie', 'Betrapt? Rennen.', 'Gaat het fout, dan vlucht je zelf: te voet door de steeg of met plankgas door de stad.', 'Je speelt het zelf'],
     ['jail', 'politie', 'Gepakt? Ontsnap.', 'De bajes is geen game over. Werk tijd van je straf af, betaal borg of vijl de tralies door.', 'Drie fases'],
-    ['xp', 'straat', 'Stijg in rang.', 'Elke rang opent nieuwe klussen, families, woningen en winkels.', N.ranks + ' rangen']];
+    ['xp', 'straat', 'Word er beter in.', 'Hoe vaker je een klus doet, hoe makkelijker het spel en hoe groter de buit. Elke rang opent nieuwe klussen, families en woningen.', N.ranks + ' rangen']];
   return `<section class="lp-sec lp-lus" id="zo-werkt-het" aria-labelledby="h-lus">
  <div class="lp-wrap">
   <div class="lp-sec__head">${kicker('Zo werkt het', 'straat')}<h2 class="lp-h2" id="h-lus">Zo kom je boven.</h2></div>
   <ol class="lp-stappen">${S.map((s, i) => `<li class="lp-stap kaart rv" style="--w:var(--w-${s[1]})"><span class="lp-stap__n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>${ic(s[0], 'lp-stap__ic')}<h3>${s[2]}</h3><p>${s[3]}</p><span class="chip">${s[4]}</span></li>`).join('')}</ol>
   <p class="lp-note">Je energie is in ${N.energyFullMin} minuten weer vol. Even spelen kan altijd.</p>
   ${cijfersHtml(N, ' lp-cijfers--tel')}
+ </div>
+</section>`;
+}
+
+/* ================= Grinden loont ================= */
+function grind(N) {
+  const L = N.grind || [], w = ['straat', 'straat', 'geld', 'jij', 'jij'];
+  const WAT = [['40%', 'Vaker doen', 'Elke gelukte klus maakt je handiger. Na zo\'n 150 keer ken je hem blind.'],
+    ['25%', 'Ervaring in de soort', 'Wie veel steelt, steelt overal beter. Inbraak, oplichting en smokkel tellen elk apart.'],
+    ['20%', 'Training', 'In de sportschool en op de schietbaan. Vingervlugheid helpt bij zakkenrollen, Ademhaling bij een kluis.'],
+    ['15%', 'Rang', 'Een klus onder je rang gaat je makkelijker af. En je rang geeft je buit een zetje.']];
+  return `<section class="lp-sec lp-grind" id="grinden" aria-labelledby="h-grind">
+ <div class="lp-wrap">
+  <div class="lp-sec__head">${kicker('Grinden loont', 'jij')}<h2 class="lp-h2" id="h-grind">Van een op de drie. <em>Naar bijna altijd.</em></h2>
+   <p class="lp-lede">Elke klus is een van ${N.crimeGames} spelletjes. Als beginner is het spel krap en lukt ongeveer een op de drie. Hoe professioneler je wordt, hoe ruimer het spel, hoe groter je kans en hoe dikker de buit.</p></div>
+  <div class="lp-grind__grid">
+   <figure class="lp-ladder kaart" style="--w:var(--w-jij)"><figcaption><span>Per klus</span><span>kans · extra buit</span></figcaption>
+    <ol>${L.map((x, i) => `<li style="--c:var(--w-${w[i]})"><span class="lp-ladder__n">${esc(x.n)}<small>${x.P}% professioneel</small></span><span class="lp-ladder__bar" aria-hidden="true"><i style="width:${x.kans}%"></i></span><b class="num">${x.kans}%</b><em class="num">${x.buit ? '+' + x.buit + '%' : '—'}</em></li>`).join('')}</ol>
+    <p class="lp-ladder__voet">Kans van een gemiddelde speler, zonder spullen, outfit of familie. Speel je foutloos, dan krijg je er nog tot 8% buit bij.</p></figure>
+   <div class="lp-grind__wat"><h3 class="lp-grind__h">Waar professionaliteit uit bestaat</h3>
+    <ul>${WAT.map(x => `<li class="kaart"><b class="num">${x[0]}</b><div><h4>${x[1]}</h4><p>${x[2]}</p></div></li>`).join('')}</ul></div>
+  </div>
+  <ul class="lp-grind__chips" aria-label="Wat grinden nog meer oplevert"><li class="chip">Meester? Klus snel uitvoeren zonder spel</li><li class="chip">Getraind rennen: lastige vlucht 36% → 70%</li><li class="chip">Kalmte: minder paniek onder druk</li><li class="chip">Nooit 100%: de straat blijft de straat</li></ul>
  </div>
 </section>`;
 }
@@ -212,7 +240,7 @@ function games(N) {
   return `<section class="lp-sec lp-games" id="minigames" aria-labelledby="h-games">
  <div class="lp-wrap">
   <div class="lp-sec__head">${kicker('Geen dobbelsteen', 'straat')}<h2 class="lp-h2" id="h-games">Je rent, rijdt en <em>ontsnapt zelf.</em></h2>
-   <p class="lp-lede">Gaat een klus mis, dan begint het pas. Wat er daarna gebeurt, hangt van jou af, niet van een percentage.</p></div>
+   <p class="lp-lede">Elke klus speel je zelf, en gaat hij mis, dan begint het pas. Wat er daarna gebeurt, hangt van jou af, niet van een percentage.</p></div>
  </div>
  <ul class="lp-games__rij" tabindex="0" aria-label="Vijf minigames">${G.map((g, i) => `<li class="lp-game" style="--w:var(--w-${g[4]})" data-i="${i}">${media(g)}<h3>${g[1]}</h3><p>${g[2]}</p><span class="chip">${g[3]}</span></li>`).join('')}</ul>
  <div class="lp-wrap"><p class="lp-games__hint" aria-hidden="true"><span data-teller>1 / ${G.length}</span> · veeg →</p>
@@ -410,10 +438,10 @@ ${lidScript()}`;
 
 function page(N, o) {
   o = o || {};
-  return hero(N, o) + lus(N) + games(N) + loopbaan(N) + imperium(N) + casino(N) + lidTeaser(N) + eerlijk(N) + slot(N);
+  return hero(N, o) + lus(N) + grind(N) + games(N) + loopbaan(N) + imperium(N) + casino(N) + lidTeaser(N) + eerlijk(N) + slot(N);
 }
 
-const LPV = { facts, page, lidPage, lidTeaser, hero, lus, games, loopbaan, imperium, casino, eerlijk, slot, faqList, klimSvg, gangSvg, haltRows };
+const LPV = { facts, page, lidPage, lidTeaser, hero, lus, grind, games, loopbaan, imperium, casino, eerlijk, slot, faqList, klimSvg, gangSvg, haltRows };
 root.LPV = LPV;
 if (typeof module !== 'undefined' && module.exports) module.exports = LPV;
 })(typeof window !== 'undefined' ? window : this);

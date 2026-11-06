@@ -161,8 +161,11 @@ function coverCard(g,i,uid){return `<a class="cov rv" href="/casino/${g.slug}" d
  <div class="cov-txt"><span class="cov-k">${g.kind}</span><b>${g.n}</b><span class="cov-tags">${g.tags.map(t=>`<em>${t}</em>`).join('')}</span></div></a>`}
 const chainSorted=()=>FAMILIES.slice().sort((a,b)=>a.r-b.r||a.cred-b.cred);
 /* ================= Misdaden: alle klussen, met een kaart van kans tegen buit ================= */
-const kansIn=c=>Math.min(95,Math.max(5,c.base+c.r*2));   // kans op de rang waarop de klus opengaat, zonder spullen of training
-const kansAt=(c,ri)=>Math.min(95,Math.max(5,c.base+ri*2)); // zelfde rekensom op een gekozen rang (in het spel: chanceRaw in state.js)
+// Kans sinds de klus-spellen (zelfde som als crimegames.js): spel G(P) × dobbelsteen (58 + 38·P + (basis−50)·0,2), zonder spullen.
+// Beginner = professionaliteit 0 op de rang waarop de klus opengaat; meester = professionaliteit 100%.
+const cgGl=P=>.5+.49*(1-Math.pow(1-P,1.6));
+const kansP=(c,P,cap)=>Math.max(1,Math.round(cgGl(P)*Math.max(5,Math.min(cap,58+38*P+(c.base-50)*.2))));
+const kansIn=c=>kansP(c,0,95), kansTop=c=>kansP(c,1,99);
 const avgLoot=c=>(c.min+c.max)/2;
 const fleeTxt=c=>{const f=typeof FLEE_LEVELS!=='undefined'&&FLEE_LEVELS[c.flee];return f?f.label:'—'};
 const fleeWhere=c=>{const f=typeof FLEE_LEVELS!=='undefined'&&FLEE_LEVELS[c.flee];return f?f.where:''};
@@ -171,40 +174,41 @@ function crimesPage(){
  const maxL=Math.max(...CRIMES.map(c=>c.max)),maxJ=Math.max(...CRIMES.map(c=>c.jail)),heavy=CRIMES.filter(c=>c.r>=heavyR).length;
  return {title:'Misdaden · '+BR,cls:'pg-crimes',desc:'Alle '+CRIMES.length+' klussen van '+BR+': buit, kans, energie en straf per rang.',
  html:pageHead({kick:'Misdaden',title:`${CRIMES.length} klussen.<br><em>Kies je risico.</em>`,
-   lede:'Van een bekertje bij Centraal tot de goudreserve van een land. Elke klus kost energie en heeft een slaagkans. Gaat het mis, dan kun je nog vluchten: op straat lukt dat makkelijker dan in een afgesloten gebouw.',
+   lede:'Van een bekertje bij Centraal tot de goudreserve van een land. Elke klus is een spelletje dat makkelijker wordt naarmate je hem vaker doet: als beginner lukt ongeveer een op de drie, als meester bijna alles, met tot 60% meer buit. Gaat het mis, dan kun je nog vluchten.',
    stats:[['Klussen',CRIMES.length],['Zwaar',heavy+' vanaf '+rk(heavyR)],['Hoogste buit',eurS(maxL)],['Langste straf',dur(maxJ)]]})
  +`<section class="wrap cx">
    <div class="cx-bar rv"><div class="cx-ranks" role="group" aria-label="Filter op rang"><button class="on" data-r="-1">Alle</button>${RN.map((n,i)=>`<button data-r="${i}">${n}</button>`).join('')}</div>
     <label class="cx-sort"><span class="label">Sorteer</span><select id="cxSort">${CX_SORT.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join('')}</select></label></div>
-   <figure class="cx-chart rv"><figcaption><b>Kans tegen buit</b><span class="cx-leg"><i class="a"></i><em id="cxLegA">Alle klussen</em><i class="b" id="cxLegB" hidden></i><em id="cxLegC" hidden>Overige</em></span></figcaption>
-    <div class="cx-plot" id="cxPlot"><svg id="cxSvg" role="img" aria-label="Spreidingsdiagram: slaagkans tegen gemiddelde buit van alle klussen"></svg><div class="cx-tip" id="cxTip" hidden></div></div>
-    <p class="cx-note">Horizontaal de kans op de rang waarop de klus opengaat, zonder training, spullen of familie. Verticaal de gemiddelde buit, zonder rangbonus (+${Math.round((lootK(1)-1)*100)}% per rang). Tik op een stip voor de klus.</p></figure>
+   <figure class="cx-chart rv"><figcaption><b>Rang tegen buit</b><span class="cx-leg"><i class="a"></i><em id="cxLegA">Alle klussen</em><i class="b" id="cxLegB" hidden></i><em id="cxLegC" hidden>Overige</em></span></figcaption>
+    <div class="cx-plot" id="cxPlot"><svg id="cxSvg" role="img" aria-label="Spreidingsdiagram: rang tegen gemiddelde buit van alle klussen"></svg><div class="cx-tip" id="cxTip" hidden></div></div>
+    <p class="cx-note">Horizontaal de rang waarop de klus opengaat. Verticaal de gemiddelde buit voor een beginner, zonder rangbonus (+${Math.round((lootK(1)-1)*100)}% per rang). Tik op een stip voor de klus.</p></figure>
    <div class="cx-list" id="cxList"></div></section>`+moreHtml('misdaden')+ctaHtml('Eerste klus','vandaag nog.','Bedelen bij Centraal is pas het begin.'),
  after(){initCrimes()}}}
 route(/^\/misdaden$/,crimesPage);
 
-function crimeRow(c){const k=kansIn(c);
+function crimeRow(c){const k=kansIn(c),kt=kansTop(c);
  return `<article class="cr" id="cr-${c.id}" data-id="${c.id}"><div class="cr-main"><span class="cr-rank">${rk(c.r)}${c.r>=heavyR?' · zwaar':''}</span><h3>${esc(c.n)}</h3><p>${esc(c.d)}</p></div>
   <dl class="cr-kv"><div class="w"><dt>Buit</dt><dd>${eur(c.min)} – ${eur(c.max)}</dd></div>
-   <div class="w" title="Kans op ${rk(c.r)}: basiskans ${c.base}% plus ${c.r*2} rangbonus, zonder training, spullen of familie"><dt>Kans op rang</dt><dd><b>${k}%</b><span class="cr-m"><i style="width:${k}%"></i></span>${k!==c.base?`<small class="cr-base">basis ${c.base}% + ${k-c.base}% rangbonus</small>`:''}</dd></div>
+   <div class="w" title="Verwachte kans als beginner en als meester (spel en dobbelsteen samen), zonder spullen, outfit of familie"><dt>Kans</dt><dd><b>${k}%</b> → <b>${kt}%</b><span class="cr-m"><i class="t" style="width:${kt}%"></i><i style="width:${k}%"></i></span><small class="cr-base">beginner → meester · buit tot +60%</small></dd></div>
    <div><dt>Energie</dt><dd>${c.en}</dd></div><div><dt>XP</dt><dd>${c.xp}</dd></div><div><dt>Cred</dt><dd>${c.cr}</dd></div>
    <div><dt>Wachttijd</dt><dd>${dur(c.cd)}</dd></div><div><dt>Celstraf</dt><dd>${dur(c.jail)}</dd></div><div title="${esc(fleeWhere(c))}"><dt>Vluchten</dt><dd>${fleeTxt(c)}</dd></div></dl></article>`}
 function initCrimes(){const list=q('#cxList'),svg=q('#cxSvg'),plot=q('#cxPlot'),tip=q('#cxTip'),sortSel=q('#cxSort');
  let rf=-1,sort='rang',sel=null;
  function rows(){let a=CRIMES.filter(c=>rf<0||c.r===rf);
-  const by={rang:(x,y)=>x.r-y.r||x.min-y.min,buit:(x,y)=>avgLoot(y)-avgLoot(x),kans:(x,y)=>kansIn(y)-kansIn(x),xp:(x,y)=>y.xp/y.en-x.xp/x.en,straf:(x,y)=>x.jail-y.jail}[sort];
+  const by={rang:(x,y)=>x.r-y.r||x.min-y.min,buit:(x,y)=>avgLoot(y)-avgLoot(x),kans:(x,y)=>kansTop(y)-kansTop(x)||kansIn(y)-kansIn(x),xp:(x,y)=>y.xp/y.en-x.xp/x.en,straf:(x,y)=>x.jail-y.jail}[sort];
   a=a.slice().sort(by);
   if(sort==='rang'){let h='',cur=-1;a.forEach(c=>{if(c.r!==cur){cur=c.r;h+=`<div class="cr-h"><b>${rk(cur)}</b><span>${nl(RANKS[cur][1])} XP</span><em>${esc(rankLore(rk(cur)))}</em></div>`}h+=crimeRow(c)});return h}
   return a.map(crimeRow).join('')}
  function drawList(){list.innerHTML=rows()}
  // spreidingsdiagram
- const X0=15,X1=100,Y0=1,Y1=Math.log10(Math.max(...CRIMES.map(avgLoot))*1.5);
+ const X0=-.6,X1=RANKS.length-.4,Y0=1,Y1=Math.log10(Math.max(...CRIMES.map(avgLoot))*1.5);
  let pts=[];
  function draw(){const w=plot.clientWidth,h=w<560?260:340,m={l:w<560?44:56,r:16,t:14,b:30};svg.setAttribute('viewBox',`0 0 ${w} ${h}`);svg.setAttribute('width',w);svg.setAttribute('height',h);
   const sx=v=>m.l+(v-X0)/(X1-X0)*(w-m.l-m.r),sy=v=>h-m.b-(Math.log10(v)-Y0)/(Y1-Y0)*(h-m.t-m.b);
   let s='';[10,100,1000,10000,100000].forEach(v=>{if(Math.log10(v)>Y1)return;const y=sy(v);s+=`<line x1="${m.l}" x2="${w-m.r}" y1="${y}" y2="${y}" class="gl"/><text x="${m.l-8}" y="${y+3.5}" text-anchor="end" class="ax">${v>=1000?'€'+nl(v/1000)+'k':'€'+v}</text>`});
-  [20,40,60,80,100].forEach(v=>{const x=sx(v);s+=`<line x1="${x}" x2="${x}" y1="${m.t}" y2="${h-m.b}" class="gl"/><text x="${x}" y="${h-m.b+18}" text-anchor="${v===100?'end':'middle'}" class="ax">${v===100?'100% kans':v+'%'}</text>`});
-  pts=CRIMES.map(c=>({c,x:sx(kansIn(c)),y:sy(avgLoot(c))}));
+  const step=w<560?3:1;RANKS.forEach((_,v)=>{if(v!==RANKS.length-1&&(v%step||v>RANKS.length-1-step*(w<560?1.5:2)))return;const x=sx(v);s+=`<line x1="${x}" x2="${x}" y1="${m.t}" y2="${h-m.b}" class="gl"/><text x="${x}" y="${h-m.b+18}" text-anchor="${v===RANKS.length-1?'end':v===0?'start':'middle'}" class="ax">${v===RANKS.length-1?rk(v):v+1}</text>`});
+  const byR={};CRIMES.forEach(c=>{(byR[c.r]=byR[c.r]||[]).push(c)});
+  pts=CRIMES.map(c=>{const g=byR[c.r],j=g.length>1?(g.indexOf(c)/(g.length-1)-.5)*.5:0;return {c,x:sx(c.r+j),y:sy(avgLoot(c))}});
   const on=p=>rf<0||p.c.r===rf;
   pts.filter(p=>!on(p)).forEach(p=>{s+=`<circle cx="${p.x}" cy="${p.y}" r="4.5" class="dt off"/>`});
   pts.filter(on).forEach(p=>{s+=`<circle cx="${p.x}" cy="${p.y}" r="5" class="dt${sel===p.c.id?' sel':''}"/>`});
@@ -217,7 +221,7 @@ function initCrimes(){const list=q('#cxList'),svg=q('#cxSvg'),plot=q('#cxPlot'),
  function near(ev){const r=svg.getBoundingClientRect(),x=ev.clientX-r.left,y=ev.clientY-r.top;let best=null,bd=22*22;
   pts.forEach(p=>{const d=(p.x-x)**2+(p.y-y)**2;if(d<bd&&(rf<0||p.c.r===rf||d<64)){bd=d;best=p}});return best}
  function showTip(p){if(!p){tip.hidden=true;return}const c=p.c;tip.hidden=false;
-  tip.innerHTML=`<b>${esc(c.n)}</b><span>${rk(c.r)} · kans ${kansIn(c)}%</span><span>${eur(c.min)} – ${eur(c.max)} · ${c.en} energie</span>`;
+  tip.innerHTML=`<b>${esc(c.n)}</b><span>${rk(c.r)} · kans ${kansIn(c)}% → ${kansTop(c)}%</span><span>${eur(c.min)} – ${eur(c.max)} · ${c.en} energie</span>`;
   const w=plot.clientWidth,tw=tip.offsetWidth;tip.style.left=clamp(p.x-tw/2,4,w-tw-4)+'px';tip.style.top=Math.max(4,p.y-tip.offsetHeight-14)+'px'}
  svg.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;const p=near(e);showTip(p);svg.style.cursor=p?'pointer':'default'});
  svg.addEventListener('pointerleave',()=>{tip.hidden=true});
@@ -529,12 +533,12 @@ function rankInfo(i){const name=rk(i),k=lootK(i),rew=RANK_REWARD(i);
  const body=grp('Speciaal',sp.map(s=>li(s.t,esc(s.d))))+grp('Klussen',cr.map(c=>li(c.n,eur(c.min*k)+' – '+eur(c.max*k))))+grp('Families',fm.map(f=>`<li><a href="/families/${f.id}" data-link>${crest(f,'xs')}<b>${esc(f.n)}</b><span>${nl(f.cred)} cred${f.hits?' · '+f.hits+' huurmoorden':''}</span></a></li>`))
   +grp('Woning',hm.map(h=>li(h.n,esc(h.place||''))))+grp('Zaken',bz.map(b=>li(b.n,eur(b.p))))+grp('Training',tr.map(t=>li(t.n,esc(t.place))))+grp('Ontspannen',rx.map(x=>li(x.n,esc(x.place))))+grp('Te koop',gr.map(g=>li(g.n,eur(g.p))));
  return `<div class="label">Rang ${i+1} van ${RN.length}</div><h2 class="ri-name">${name}</h2><p class="ri-lore">${esc(rankLore(name))}</p>
-  <dl class="ri-kv"><div><dt>XP nodig</dt><dd>${nl(RANKS[i][1])}</dd></div><div><dt>Buitbonus</dt><dd>+${Math.round((k-1)*100)}%</dd></div><div><dt>Kansbonus</dt><dd>+${i*2}%</dd></div><div><dt>Beloning</dt><dd>${rew?eurS(rew):'—'}</dd></div></dl>
+  <dl class="ri-kv"><div><dt>XP nodig</dt><dd>${nl(RANKS[i][1])}</dd></div><div><dt>Buitbonus</dt><dd>+${Math.round((k-1)*100)}%</dd></div><div><dt>Klussen open</dt><dd>${CRIMES.filter(c=>c.r<=i).length}</dd></div><div><dt>Beloning</dt><dd>${rew?eurS(rew):'—'}</dd></div></dl>
   ${body||'<p class="ri-none">Hier ga je met lege handen in. Je begint met €250, 100 energie en een stad vol kansen.</p>'}`}
 function ranksPage(){const top=RANKS[RANKS.length-1][1];
  return {title:'Rangen · '+BR,cls:'pg-ranks',desc:'De '+RANKS.length+' rangen van '+BR+', van Rookie tot Peetvader, en wat elke rang opent.',
  html:pageHead({kick:'Rangen',title:`${RANKS.length} rangen.<br><em>Iedereen begint onderaan.</em>`,lede:'Je klimt met XP. Elke rang opent nieuwe klussen, families, zaken en plekken om te trainen, en geeft je buit en je kans een zetje.',
-   stats:[['Start','0 XP'],['Top',nl(top)+' XP'],['Buitbonus top','+'+Math.round((lootK(RANKS.length-1)-1)*100)+'%'],['Kansbonus top','+'+(RANKS.length-1)*2+'%']]})
+   stats:[['Start','0 XP'],['Top',nl(top)+' XP'],['Buitbonus top','+'+Math.round((lootK(RANKS.length-1)-1)*100)+'%'],['Klussen',CRIMES.length]]})
  +`<section class="wrap rk"><div class="rk-wall rv" id="rkWall" role="listbox" aria-label="Rangen" tabindex="0">
    ${RANKS.map((r,i)=>i).reverse().map(i=>`<button class="wl" role="option" data-i="${i}" aria-selected="false"><span class="wl-xp">${nl(RANKS[i][1])}</span><span class="wl-r">${RN[i]}</span><span class="wl-u">${CRIMES.filter(c=>c.r===i).length} klussen${FAMILIES.some(f=>f.r===i)?' · familie':''}</span></button>`).join('')}
   </div><aside class="rk-info" id="rkInfo" aria-live="polite"></aside></section>`+moreHtml('rangen')+ctaHtml('Begin','onderaan.','Rookie is de enige rang die je krijgt zonder er iets voor te doen.'),

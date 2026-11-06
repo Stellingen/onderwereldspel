@@ -468,3 +468,31 @@ body.has-sticky{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 
 /* Geen content-visibility:auto: dan blijven secties leeg in schermafbeeldingen van de hele pagina en bij sommige crawlers. */
 }
+
+/* ================= Grinden loont ================= */
+.lp-grind__grid{display:grid;gap:16px;min-width:0}
+.lp-ladder{margin:0;padding:18px;min-width:0}
+.lp-ladder figcaption{display:flex;justify-content:space-between;gap:12px;margin-bottom:12px}
+.lp-ladder figcaption span{font:500 var(--t-label)/1.3 var(--f-mono);color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
+.lp-ladder ol{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.lp-ladder li{display:grid;grid-template-columns:minmax(0,1fr) 46px 52px;grid-template-areas:"n k b" "bar bar bar";gap:6px 10px;align-items:baseline;min-width:0}
+.lp-ladder__n{grid-area:n;font-weight:700;min-width:0;overflow-wrap:anywhere}
+.lp-ladder__n small{display:block;font:500 var(--t-label)/1.3 var(--f-mono);color:var(--mute);font-weight:500}
+.lp-ladder li b{grid-area:k;text-align:right;font:800 20px/1 var(--f-display);color:var(--c)}
+.lp-ladder li em{grid-area:b;text-align:right;font:500 13px/1 var(--f-mono);font-style:normal;color:var(--w-geld)}
+.lp-ladder__bar{grid-area:bar;display:block;height:8px;border-radius:4px;background:var(--line2);overflow:hidden}
+.lp-ladder__bar i{display:block;height:100%;border-radius:4px;background:var(--c);transform-origin:left}
+.lp-ladder__voet{margin-top:14px;font-size:var(--t-small);color:var(--mute);line-height:1.45}
+.lp-grind__h{font:800 18px/1.2 var(--f-display);text-transform:uppercase;margin:0 0 10px}
+.lp-grind__wat ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.lp-grind__wat li{--w:var(--w-jij);display:grid;grid-template-columns:58px minmax(0,1fr);gap:12px;padding:14px 16px;align-items:start}
+.lp-grind__wat li>b{font:900 24px/1 var(--f-display);color:var(--w-jij)}
+.lp-grind__wat h4{margin:0 0 4px;font-size:16px}
+.lp-grind__wat p{margin:0;color:var(--soft);font-size:14.5px;line-height:1.45}
+.lp-grind__chips{list-style:none;margin:18px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.lp-grind__chips .chip{white-space:normal;max-width:100%}
+@media (min-width:900px){.lp-grind__grid{grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:24px;align-items:start}.lp-ladder{padding:24px}}
+@media (min-width:1200px){.lp-grind__wat ul{grid-template-columns:1fr 1fr}.lp-grind__wat li{grid-template-columns:1fr;gap:6px}}
+@media (prefers-reduced-motion:no-preference){@supports (animation-timeline:view()){
+ .lp-ladder__bar i{animation:lpBarIn linear both;animation-timeline:view();animation-range:entry 10% cover 35%}
+ @keyframes lpBarIn{from{transform:scaleX(0)}to{transform:scaleX(1)}}}}
