@@ -44,7 +44,7 @@ const cgCleanK=miss=>miss==null?1:1+(CG_CLEAN[miss]||0);
 
 // ---------- 2. model van een gemiddelde speler en de rekensom per poging ----------
 // timing: drukfout ~ N(0, sig) s · reactie (iets opent onverwacht): N(rt, rts) s · keuze: N(mu, s) s plus kans e op een fout antwoord
-const CG_HUM={sig:.07,rt:.42,rts:.09};
+const CG_HUM={sig:.07,rt:.55,rts:.12}; // reactietijd op een telefoon (zien + tikken), ruimer dan een labtest
 const cgErfinv=x=>{const a=.147,l=Math.log(1-x*x),t=2/(Math.PI*a)+l/2;return Math.sign(x)*Math.sqrt(Math.sqrt(t*t-l/a)-t)};
 const cgNinv=p=>Math.SQRT2*cgErfinv(2*Math.max(1e-6,Math.min(1-1e-6,p))-1);
 // kans om het spel te halen bij kans p per poging: k keer goed voordat je meer dan m fouten maakt
@@ -90,43 +90,43 @@ const CG_TYPES={
   tick(G,dt){G.th0=((G.th0+G.dir*G.om*dt)%1+1)%1;const d=this.delta(G);G.prox=Math.max(0,1-Math.abs(d)/.1);
    G.hint={kind:'timing',aim:(d>=0?d:d+1)/G.om}},
   press(G){const d=this.delta(G);if(Math.abs(d)<=G.hw){G.code.push(Math.round(G.tg*100)%100);G.dir=-G.dir;G.hit('Klik');if(!G.done)this.next(G)}else G.bad(d>0?'Te vroeg: verkeerd getal':'Te laat: verkeerd getal')}},
- heist:{n:'Overval',lbl:'Overval',ic:'smash',sk:['schiet','ademhaling'],kind:'choice',mu:.75,s:.18,e:[.015,.04],km:w=>[5+Math.round(2*w),2],
+ heist:{n:'Overval',lbl:'Overval',ic:'smash',sk:['schiet','ademhaling'],kind:'choice',mu:1.7,s:.4,e:[.015,.04],km:w=>[5+Math.round(2*w),2],
   how:'Houd de boel onder controle: er gebeurt steeds iets. Kies op tijd de juiste reactie (tik, of toets 1 tot 4).',
-  init(G){G.acts=G.th.acts||CG_DEF.heist.acts;G.Tc=cgChoiceT(G.p,this.mu,this.s,G.e)*G.slow;G.q=null;G.gap=cgU(.5,.9);G.qid=0;G.last=-1},
-  tick(G,dt){if(G.q){G.q.left-=dt;if(G.q.left<=0){const a=G.acts[G.q.ans];G.q=null;G.gap=cgU(.35,.8);G.dirty=1;G.bad('Te laat: '+a[1].toLowerCase())}}
+  init(G){G.acts=G.th.acts||CG_DEF.heist.acts;G.Tc=cgChoiceT(G.p,this.mu,this.s,G.e)*G.slow;G.q=null;G.gap=cgU(.9,1.3);G.qid=0;G.last=-1},
+  tick(G,dt){if(G.q){G.q.left-=dt;if(G.q.left<=0){const a=G.acts[G.q.ans];G.q=null;G.gap=cgU(.8,1.2);G.dirty=1;G.bad('Te laat: '+a[1].toLowerCase())}}
    else{G.gap-=dt;if(G.gap<=0){let a;do{a=Math.floor(Math.random()*4)}while(a===G.last);G.last=a;G.q={ans:a,left:G.Tc,id:++G.qid};G.dirty=1}}
    G.hint={kind:'choice',id:G.q?G.q.id:0,ans:G.q?G.q.ans:null,n:4}},
-  press(G,a){if(!G.q||a==null||a==='go')return;const ok=+a===G.q.ans,A=G.acts[G.q.ans];G.q=null;G.gap=cgU(.35,.8);G.dirty=1;if(ok)G.hit(A[0]);else G.bad('Verkeerde reactie')}},
- talk:{n:'Gesprek',lbl:'Praten',ic:'handshake',sk:['charisma','handel'],kind:'choice',mu:1.35,s:.35,e:[.02,.05],km:w=>[3+Math.round(w),1],
+  press(G,a){if(!G.q||a==null||a==='go')return;const ok=+a===G.q.ans,A=G.acts[G.q.ans];G.q=null;G.gap=cgU(.7,1.1);G.dirty=1;if(ok)G.hit(A[0]);else G.bad('Verkeerde reactie')}},
+ talk:{n:'Gesprek',lbl:'Praten',ic:'handshake',sk:['charisma','handel'],kind:'choice',mu:2.7,s:.6,e:[.02,.05],km:w=>[3+Math.round(w),1],
   how:'Kijk hoe de ander erbij zit en kies op tijd de aanpak die past. Eén keer mis mag.',
-  init(G){G.set=CG_MOODS[G.th.set||'std'];G.Tc=cgChoiceT(G.p,this.mu,this.s,G.e)*G.slow;G.q=null;G.gap=.4;G.qid=0;G.lastM=-1},
-  tick(G,dt){if(G.q){G.q.left-=dt;if(G.q.left<=0){G.q=null;G.gap=.6;G.dirty=1;G.bad('Je twijfelde te lang')}}
+  init(G){G.set=CG_MOODS[G.th.set||'std'];G.Tc=cgChoiceT(G.p,this.mu,this.s,G.e)*G.slow;G.q=null;G.gap=.8;G.qid=0;G.lastM=-1},
+  tick(G,dt){if(G.q){G.q.left-=dt;if(G.q.left<=0){G.q=null;G.gap=1;G.dirty=1;G.bad('Je twijfelde te lang')}}
    else{G.gap-=dt;if(G.gap<=0){let mi;do{mi=Math.floor(Math.random()*G.set.length)}while(mi===G.lastM&&G.set.length>1);G.lastM=mi;
     const opts=cgShuffle([mi].concat(cgShuffle(G.set.map((_,i)=>i).filter(i=>i!==mi)).slice(0,2)));G.q={mood:mi,opts,ans:opts.indexOf(mi),line:cgPick(G.set[mi][3]),left:G.Tc,id:++G.qid};G.dirty=1}}
    G.hint={kind:'choice',id:G.q?G.q.id:0,ans:G.q?G.q.ans:null,n:3}},
-  press(G,a){if(!G.q||a==null||+a>=G.q.opts.length)return;const ok=+a===G.q.ans,m=G.set[G.q.mood];G.q=null;G.gap=.6;G.dirty=1;if(ok)G.hit(m[2]+': werkt');else G.bad('Verkeerde toon')}},
- memory:{n:'Geheugen',lbl:'Onthouden',ic:'doc',sk:['charisma','rechten'],kind:'choice',mu:1.25,s:.3,e:[.02,.06],km:w=>[3+Math.round(w),1],
+  press(G,a){if(!G.q||a==null||+a>=G.q.opts.length)return;const ok=+a===G.q.ans,m=G.set[G.q.mood];G.q=null;G.gap=1;G.dirty=1;if(ok)G.hit(m[2]+': werkt');else G.bad('Verkeerde toon')}},
+ memory:{n:'Geheugen',lbl:'Onthouden',ic:'doc',sk:['charisma','rechten'],kind:'choice',mu:2.5,s:.5,e:[.02,.06],km:w=>[3+Math.round(w),1],
   how:'Eerst zie je een paar gegevens: onthoud ze. Daarna vraagt iemand ernaar. Kies op tijd het juiste antwoord.',
   init(G){const th=G.th,n=G.k+1;G.Tc=cgChoiceT(G.p,this.mu,this.s,G.e)*G.slow;
    if(th.pool){const labs=cgShuffle(th.labels).slice(0,n),vals=cgShuffle(th.pool).slice(0,n);G.facts=labs.map((l,i)=>[l,vals[i],th.pool])}
    else G.facts=cgShuffle(th.facts).slice(0,n).map(f=>[f[0],cgPick(f[1]),f[1]]);
-   G.show=(2+n*(.75+.5*(1-G.d)))*G.slow;G.showT=G.show;G.order=cgShuffle(G.facts.map((_,i)=>i)).slice(0,G.k+G.m+1);G.oi=0;G.q=null;G.gap=0;G.qid=0;G.dirty=1},
+   G.show=(4+n*(1.6+.8*G.d))*G.slow;G.showT=G.show;G.order=cgShuffle(G.facts.map((_,i)=>i)).slice(0,G.k+G.m+1);G.oi=0;G.q=null;G.gap=0;G.qid=0;G.dirty=1},
   ask(G){const f=G.facts[G.order[G.oi++%G.order.length]],wrong=cgShuffle(f[2].filter(v=>v!==f[1])).slice(0,2),opts=cgShuffle([f[1]].concat(wrong));
    G.q={f,opts,ans:opts.indexOf(f[1]),left:G.Tc,id:++G.qid};G.dirty=1},
   tick(G,dt){if(G.show>0){G.show-=dt;if(G.show<=0){G.show=0;G.dirty=1;this.ask(G)}G.hint={kind:'choice',id:0,ans:null,n:3};return}
-   if(G.q){G.q.left-=dt;if(G.q.left<=0){G.q=null;G.gap=.5;G.dirty=1;G.bad('Te lang nagedacht')}}else{G.gap-=dt;if(G.gap<=0)this.ask(G)}
+   if(G.q){G.q.left-=dt;if(G.q.left<=0){G.q=null;G.gap=.9;G.dirty=1;G.bad('Te lang nagedacht')}}else{G.gap-=dt;if(G.gap<=0)this.ask(G)}
    G.hint={kind:'choice',id:G.q?G.q.id:0,ans:G.q?G.q.ans:null,n:3}},
-  press(G,a){if(G.show>0){if(a==='go'){G.show=0;G.dirty=1;this.ask(G)}return}if(!G.q||a==null||a==='go'||+a>=3)return;const ok=+a===G.q.ans;G.q=null;G.gap=.45;G.dirty=1;if(ok)G.hit('Klopt');else G.bad('Dat klopte niet')}},
- hack:{n:'Hacken',lbl:'Hacken',ic:'chip',sk:['hack'],kind:'choice',mu:.62,s:.16,e:[.01,.03],km:w=>[8+Math.round(4*w),2],
+  press(G,a){if(G.show>0){if(a==='go'){G.show=0;G.dirty=1;this.ask(G)}return}if(!G.q||a==null||a==='go'||+a>=3)return;const ok=+a===G.q.ans;G.q=null;G.gap=.8;G.dirty=1;if(ok)G.hit('Klopt');else G.bad('Dat klopte niet')}},
+ hack:{n:'Hacken',lbl:'Hacken',ic:'chip',sk:['hack'],kind:'choice',mu:1.15,s:.3,e:[.01,.03],km:w=>[8+Math.round(4*w),2],
   how:'Typ de code over voordat de trace-balk leeg is: met het toetsenbord of de knoppen. Een typfout telt als fout.',
-  init(G){const ch='0123456789ABCDEF';G.code=Array.from({length:G.k},()=>ch[Math.floor(Math.random()*16)]).join('');G.i=0;G.Tc=cgChoiceT(G.p,this.mu,this.s,G.e)*G.slow;G.left=G.Tc+.6;G.qid=1;G.dirty=1},
+  init(G){const ch='0123456789ABCDEF';G.code=Array.from({length:G.k},()=>ch[Math.floor(Math.random()*16)]).join('');G.i=0;G.Tc=cgChoiceT(G.p,this.mu,this.s,G.e)*G.slow;G.left=G.Tc+1.2;G.qid=1;G.dirty=1},
   tick(G,dt){G.left-=dt;if(G.left<=0){G.left=G.Tc;G.qid++;G.dirty=1;G.bad('Te traag: de trace komt dichterbij')}G.hint={kind:'choice',id:G.qid,ans:G.code[G.i],n:16}},
   press(G,a){if(a==null||a==='go')return;a=String(a).toUpperCase();if(!/^[0-9A-F]$/.test(a))return;G.qid++;G.left=G.Tc;G.dirty=1;if(a===G.code[G.i]){G.i++;G.hit(a)}else G.bad('Typfout')}},
  route:{n:'Route',lbl:'Route',ic:'truck',sk:['cars','speed'],kind:'react',km:w=>[5+Math.round(2*w),2],
   how:'Er komen controles op je af. Wissel op tijd naar de vrije baan: ← → (of A/D), de knoppen of tik links/rechts.',
-  init(G){G.lane=1;G.cp=null;G.gap=.8;G.wid=0;G.scroll=0},
-  spawn(G){const free=cgPick([0,1,2].filter(l=>l!==G.lane)),nm=Math.abs(free-G.lane);G.cp={free,y:0,W:cgReact(G.p,.45+.2*(nm-1),.1)*G.slow,ctl:[0,1,2].map(()=>cgPick(G.th.ctl||['Controle']))};G.wid++;G.dirty=1},
-  tick(G,dt){G.scroll+=dt;if(G.cp){G.cp.y+=dt/G.cp.W;if(G.cp.y>=1){const ok=G.lane===G.cp.free,nm=G.cp.ctl[G.lane];G.cp=null;G.gap=cgU(.45,.8);G.dirty=1;if(ok)G.hit('Erdoor');else G.bad(nm+': je moet stoppen')}}
+  init(G){G.lane=1;G.cp=null;G.gap=1;G.wid=0;G.scroll=0;G.cpW=cgReact(G.p,.95,.15)*G.slow},
+  spawn(G){const free=cgPick([0,1,2].filter(l=>l!==G.lane)),nm=Math.abs(free-G.lane);G.cp={free,y:0,W:cgReact(G.p,.85+.3*(nm-1),.15)*G.slow,ctl:[0,1,2].map(()=>cgPick(G.th.ctl||['Controle']))};G.wid++;G.dirty=1},
+  tick(G,dt){G.scroll+=dt;if(G.cp){G.cp.y+=dt/G.cp.W;if(G.cp.y>=1){const ok=G.lane===G.cp.free,nm=G.cp.ctl[G.lane];G.cp=null;G.gap=cgU(.6,1);G.dirty=1;if(ok)G.hit('Erdoor');else G.bad(nm+': je moet stoppen')}}
    else{G.gap-=dt;if(G.gap<=0)this.spawn(G)}G.hint={kind:'react',id:G.cp?G.wid:0,on:!!G.cp,lane:G.lane,free:G.cp?G.cp.free:null}},
   press(G,a){if(a==='L'&&G.lane>0){G.lane--;G.dirty=1}else if(a==='R'&&G.lane<2){G.lane++;G.dirty=1}}},
  deal:{n:'Onderhandelen',lbl:'Dealen',ic:'chart',sk:['handel','charisma'],kind:'timing',km:w=>[4+Math.round(w),1],btn:'Deal',
@@ -223,6 +223,41 @@ const cgW=c=>Math.min(1,(c.r||0)/(RANKS.length-1));
 // voor de oefenstand: een klus van elk type om het thema van te lenen
 const cgSample=t=>{const id=Object.keys(CG_OF).find(k=>CG_OF[k].t===t);return CRIMES.find(c=>c.id===id)};
 
+// ---------- uitleg vooraf (per spel) ----------
+// Elk spel opent met een uitlegscherm: wat je moet halen, hoe het werkt in drie stappen en de bediening. De tijd loopt pas
+// na Start (en een korte 3-2-1). {who} wordt het thema (bv. "Toerist").
+const CG_TAP='ontouchstart' in window||navigator.maxTouchPoints>0;
+const CG_CTL={one:['Tik op de grote knop of op het beeld','spatie of Enter'],four:['Tik op een knop','toetsen 1 tot 4'],three:['Tik op een antwoord','toetsen 1 tot 3'],
+ hex:['Tik de tekens op het toetsenbord in beeld','typ 0-9 en A-F'],lr:['Tik links of rechts in beeld, of op de pijlen','← → of A en D']};
+const CG_INFO={
+ grab:{noun:'keer grijpen',ctl:'one',steps:['Kijk naar {who}. Rood en <b>KIJKT</b>: niets doen.','Draait hij weg en wordt het groen (<b>NU!</b>), druk dan meteen op <b>Grijp</b>.','Groen duurt maar kort. Te vroeg of te laat is een fout.']},
+ sneak:{noun:'spullen pakken',ctl:'one',steps:['Een lichtkegel ({who}) zwaait heen en weer over het schap.','Druk op <b>Pak</b> net nadat de kegel van je spullen wegdraait. Pakken duurt even: de groene ring loopt vol.','Komt de kegel terug voordat de ring vol is, of pak je in het licht, dan is het een fout.']},
+ safe:{noun:'getallen van de code',ctl:'one',steps:['De draaischijf draait vanzelf. Jij klikt alleen op het goede moment.','Hoe dichter bij het juiste getal, hoe feller de gloed rond de schijf en hoe voller de <b>gevoel</b>-meter.','Klik als hij het felst is. Daarna draait de schijf terug voor het volgende getal.']},
+ heist:{noun:'keer goed reageren',ctl:'four',steps:['Er gebeurt steeds iets: dat zie je in de rode melding.','Onder elke knop staat bij welke melding hij hoort. Druk op de knop die past.','De balk in de melding is je tijd. Te laat of de verkeerde knop is een fout.']},
+ talk:{noun:'goede antwoorden',ctl:'three',steps:['{who} zegt iets. Het label boven de zin zegt hoe hij erbij zit.','Kies de aanpak die bij die stemming past. Welke aanpak waarbij hoort, staat op het spiekbriefje in beeld.','Te lang twijfelen of de verkeerde toon is een fout.']},
+ memory:{noun:'vragen goed',ctl:'three',steps:['Eerst zie je een lijstje gegevens. Lees rustig; ben je klaar, druk dan op <b>Onthouden</b>.','Daarna vraagt iemand ernaar. Kies het juiste antwoord uit drie.','Een fout antwoord of te lang wachten is een fout.']},
+ hack:{noun:'tekens',ctl:'hex',steps:['Bovenaan staat een code. Typ hem teken voor teken over.','Elk teken heeft zijn eigen tijd: de <b>trace</b>-balk. Bij elk goed teken begint hij opnieuw.','Een typfout of een lege balk is een fout.']},
+ route:{noun:'controles door',ctl:'lr',steps:['Je rijdt over drie banen. Er komen afzettingen op je af.','Eén baan is vrij (groen, <b>VRIJ</b>). Ga op tijd naar die baan.','Zit je in een dichte baan als de afzetting bij je is, dan is het een fout.']},
+ deal:{noun:'deals',ctl:'one',steps:['De wijzer schuift heen en weer over de prijs.','Druk op <b>Deal</b> als de wijzer in het groene vak staat.','Links is te goedkoop, rechts is te duur: allebei een fout.']},
+ saw:{noun:'slagen',ctl:'one',steps:['Het blad gaat heen en weer.','Druk precies als het aan het eind van zijn slag is (die kant licht groen op). Eén keer per slag.','Te vroeg, te laat of twee keer op dezelfde slag is een fout.']},
+ lock:{noun:'pinnen',ctl:'one',steps:['Een naald gaat heen en weer over het slot.','Druk als de naald in het groene stuk staat: dan zit een pin. Zet ze allemaal.','Mis je, dan stijgt je paniek. Is de paniekbalk vol, dan eerst rustig ademen: tik als de cirkel het grootst is.']}};
+// het uitlegscherm. I = {title, tag, goal:[chips], type, who, practice}. onGo wordt aangeroepen na Start + 3-2-1.
+function cgIntro(box,I,onGo){const inf=CG_INFO[I.type]||{steps:[],ctl:'one'},c=CG_CTL[inf.ctl]||CG_CTL.one,who=cgEsc(I.who||'het doelwit');
+ const el=document.createElement('div');el.className='cg-in';el.setAttribute('role','group');el.setAttribute('aria-label','Uitleg');
+ el.innerHTML=`<div class="cg-in-c"><span class="cg-in-tag">${cgEsc(I.tag||'')}</span><h3>${cgEsc(I.title||'')}</h3>
+  <ul class="cg-in-goal">${(I.goal||[]).map(g=>`<li>${g}</li>`).join('')}</ul>
+  <h4>Zo werkt het</h4><ol class="cg-in-steps">${inf.steps.map(x=>`<li><span>${x.replace(/\{who\}/g,'<b>'+who+'</b>')}</span></li>`).join('')}</ol>
+  <p class="cg-in-ctl"><b>Bediening</b><span>${CG_TAP?c[0]:c[0]+' · toetsenbord: '+c[1]}</span></p>
+  <button type="button" class="btn lk-go cg-in-go">Start<small>${CG_TAP?'de tijd loopt pas na start':'spatie of Enter · de tijd loopt pas na start'}</small></button></div>`;
+ box.appendChild(el);let gone=false;const btn=el.querySelector('.cg-in-go');
+ const go=()=>{if(gone)return;gone=true;document.removeEventListener('keydown',key,true);el.classList.add('out');setTimeout(()=>el.remove(),180);cgCount(box,onGo)};
+ const key=e=>{if(e.code==='Space'||e.key==='Enter'){e.preventDefault();e.stopPropagation();if(!e.repeat)go()}};
+ document.addEventListener('keydown',key,true);btn.addEventListener('click',go);setTimeout(()=>{try{btn.focus({preventScroll:true})}catch(e){}},60);return {go}}
+// 3-2-1 boven het speelveld
+function cgCount(box,onGo){const st=box.querySelector('.jb-stage');const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(!st){onGo();return}const el=document.createElement('div');el.className='cg-cnt';st.appendChild(el);let n=3;
+ const step=()=>{if(n===0){el.remove();onGo();return}el.innerHTML=`<b>${n}</b>`;try{if(window.SFX&&SFX.tick)SFX.tick()}catch(e){}n--;setTimeout(step,reduce?380:450)};step()}
+
 // ---------- 4. het spel spelen ----------
 function cgNew(type,P,w,th){const T=CG_TYPES[type],[k,m]=T.km(w||0),p=cgSolve(cgG(P),k,m);
  const G={type,P,d:1-P,w:w||0,k,m,p,hits:0,miss:0,t:0,done:false,th:th||{},slow:1,dirty:1,fx:null,e:T.e?T.e[0]+T.e[1]*(1-P):0};
@@ -232,8 +267,8 @@ function cgNew(type,P,w,th){const T=CG_TYPES[type],[k,m]=T.km(w||0),p=cgSolve(cg
  return G}
 // tijd: ruim genoeg voor een gemiddelde speler; op = mislukt
 function cgTime(G){const T=CG_TYPES[G.type],n=G.k+G.m;switch(G.type){
- case 'grab':return 6+n*(1.2+G.L);case 'sneak':return 6+n*G.Pd*1.7;case 'safe':return 5+n*(.75/G.om);case 'heist':return 4+n*(G.Tc*.7+.7);
- case 'talk':return 3+n*(G.Tc*.75+.8);case 'memory':return 2+G.show+n*(G.Tc*.75+.6);case 'hack':return 4+n*(G.Tc*.75+.25);case 'route':return 4+n*1.9;
+ case 'grab':return 6+n*(1.2+G.L);case 'sneak':return 6+n*G.Pd*1.7;case 'safe':return 5+n*(.75/G.om);case 'heist':return 5+n*(G.Tc*.7+1.15);
+ case 'talk':return 4+n*(G.Tc*.75+1.15);case 'memory':return 3+G.show+n*(G.Tc*.75+1);case 'hack':return 5+n*(G.Tc*.75+.3);case 'route':return 5+n*(2.3+G.cpW);
  case 'deal':return 5+n*2.6/G.v;case 'saw':return 4+n*G.tb*1.6}return 20}
 // spel voor een klus (of oefenen: c = null, P en type gegeven). Geeft {ok, miss, why}
 async function cgPlay(c,o){o=o||{};const type=o.type||cgType(c),P=o.P!=null?o.P:crP(c),w=o.w!=null?o.w:cgW(c),th=o.th||cgTheme(c);
@@ -241,16 +276,16 @@ async function cgPlay(c,o){o=o||{};const type=o.type||cgType(c),P=o.P!=null?o.P:
  const T=CG_TYPES[type],G=cgNew(type,P,w,th),reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;G.slow=reduce?1.15:1;T.init(G);G.T=cgTime(G);G.c=c;G.practice=!!o.practice;
  return new Promise(resolve=>{window.__chase=true;window.__cg=G;
   const ov=cgOverlay(G,o),stage=ov.querySelector('#cgStage'),ctl=ov.querySelector('#cgCtl'),tim=ov.querySelector('#cgTime');
-  let raf=0,last=0,started=false,introT=0;
+  let raf=0,last=0,started=false,intro=null;
   const snd=k=>{try{if(window.SFX&&SFX[k])SFX[k]()}catch(e){}};
   G.onFx=ok=>{snd(ok?'click':'tick');paintLives();const st=ov.querySelector('.cg-stage');if(st&&!ok){st.classList.remove('cg-shake');void st.offsetWidth;st.classList.add('cg-shake')}};
   const paintLives=()=>{const l=ov.querySelector('#cgLives');if(l)l.innerHTML=Array.from({length:G.m+1},(_,i)=>`<i class="${i<G.miss?'x':''}"></i>`).join('');
    const pr=ov.querySelector('#cgProg');if(pr)pr.innerHTML=Array.from({length:G.k},(_,i)=>`<i class="${i<G.hits?'on':''}"></i>`).join('')};
   const V=CG_VIEW[type];
-  const press=a=>{if(G.done)return;if(!started){if(a==null||a==='go')go();return}T.press(G,a);if(G.done)finish()};
-  const go=()=>{if(started)return;started=true;const it=ov.querySelector('.cg-intro');if(it)it.remove();G.dirty=1;snd('click')};
+  const press=a=>{if(G.done||!started)return;T.press(G,a);if(G.done)finish()};
+  const go=()=>{if(intro)intro.go()};const begin=()=>{started=true;G.dirty=1;snd('click')};
   const key=e=>{if(e.repeat)return;const k=e.key;
-   if(e.code==='Space'||k==='Enter'){e.preventDefault();if(!started){go();return}if(V.space)press(V.space(G))}
+   if(e.code==='Space'||k==='Enter'){e.preventDefault();if(!started)return;if(V.space)press(V.space(G))}
    else if(/^[1-4]$/.test(k)&&(type==='heist'||type==='talk'||type==='memory')){e.preventDefault();press(+k-1)}
    else if(type==='route'&&(k==='ArrowLeft'||k==='a'||k==='A')){e.preventDefault();press('L')}
    else if(type==='route'&&(k==='ArrowRight'||k==='d'||k==='D')){e.preventDefault();press('R')}
@@ -258,18 +293,19 @@ async function cgPlay(c,o){o=o||{};const type=o.type||cgType(c),P=o.P!=null?o.P:
    else if(k==='Escape'){e.preventDefault()}};
   document.addEventListener('keydown',key);
   ov.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-a]');if(b){e.preventDefault();press(b.dataset.a==='go'?'go':isNaN(+b.dataset.a)?b.dataset.a:+b.dataset.a);return}
-   if(e.target.closest('.cg-stage')){e.preventDefault();if(!started){go();return}
+   if(e.target.closest('.cg-in'))return;if(e.target.closest('.cg-stage')){e.preventDefault();if(!started)return;
     if(type==='route'){const r=stage.getBoundingClientRect();press(e.clientX<r.left+r.width/2?'L':'R')}else if(V.space)press(V.space(G))}});
   const finish=()=>{if(finish.d)return;finish.d=1;G.done=true;cancelAnimationFrame(raf);document.removeEventListener('keydown',key);
    const box=ov.querySelector('.cg-box');box.classList.add(G.ok?'won':'lost');
    stage.insertAdjacentHTML('beforeend',`<div class="cg-end ${G.ok?'won':'lost'}"><b>${G.ok?(G.miss?'Gelukt':'Schone klus'):'Betrapt'}</b><span>${G.ok?(G.miss?G.miss+' fout'+(G.miss>1?'en':'')+', maar je bent binnen':'Geen fout gemaakt: extra buit'):cgEsc(G.why||'De tijd is op: iemand komt eraan')}</span></div>`);
    ctl.innerHTML='';snd(G.ok?'win':'lose');window.__cg=null;
    setTimeout(()=>{ov.classList.add('out');setTimeout(()=>{ov.remove();window.__chase=false;resolve({ok:!!G.ok,miss:G.miss,why:G.why||'De tijd was op.',hits:G.hits})},200)},G.ok?850:1250)};
-  stage.innerHTML=V.stage(G)+`<div class="cg-intro"><b>${cgEsc(th.n||T.n)}</b><p>${T.how}</p><span class="cg-go">${'ontouchstart' in window?'Tik om te beginnen':'Spatie of klik om te beginnen'}</span><i class="cg-introbar"><i></i></i></div>`;
-  ctl.innerHTML=V.ctl(G);paintLives();
+  stage.innerHTML=V.stage(G);ctl.innerHTML=V.ctl(G);paintLives();
+  const inf=CG_INFO[type]||{},sec=Math.round(G.T);
+  intro=cgIntro(ov.querySelector('.cg-box'),{type,title:th.n||T.n,who:th.who,tag:(o.practice?'Oefenen · ':'')+T.n+' · '+cgLvName(G.P),
+   goal:[`<b>${G.k}×</b> ${cgEsc(inf.noun||'goed')}`,`<b>${G.m}</b> fout${G.m===1?'':'en'} mag`,`<b>${sec}</b> seconden`]},begin);
   const tick=t=>{if(G.done){finish();return}const dt=Math.min(.05,(t-last)/1000);last=t;
-   if(!started){introT+=dt;const ib=ov.querySelector('.cg-introbar>i');if(ib)ib.style.width=Math.min(100,introT/2.6*100)+'%';if(introT>=2.6)go()}
-   else{G.t+=dt;T.tick(G,dt);if(G.t>=G.T&&!G.done)G.end(false,th.timeout||'De tijd is op: iemand komt eraan');
+   if(started){G.t+=dt;T.tick(G,dt);if(G.t>=G.T&&!G.done)G.end(false,th.timeout||'De tijd is op: iemand komt eraan');
     const left=Math.max(0,1-G.t/G.T);tim.style.width=(left*100).toFixed(1)+'%';tim.classList.toggle('hot',left<.25)}
    V.paint(G,ov);G.dirty=0;if(G.done){finish();return}raf=requestAnimationFrame(tick)};
   V.paint(G,ov);raf=requestAnimationFrame(t=>{last=t;tick(t)})})}
@@ -279,7 +315,7 @@ function cgOverlay(G,o){const T=CG_TYPES[G.type],th=G.th,ov=document.createEleme
  ov.innerHTML=`<div class="jb-box lk-box cg-box cgt-${G.type}"><div class="jb-top"><div class="jb-tt"><h2><span id="cgT">${cgEsc(o.title||th.n||T.n)}</span><span class="jb-lv lv${lv}">${o.practice?'Oefenen · ':''}${T.lbl} · ${cgLvName(G.P)}</span></h2><p id="cgSub">${cgEsc(o.sub||(G.c?G.c.n:'Telt niet mee'))}</p></div>
   <div class="lk-meters cg-meters"><div class="lk-m"><span class="label">Fouten over</span><div class="cg-lives" id="cgLives"></div></div><div class="lk-m lk-m-t"><span class="label">Tijd</span><div class="lk-bar t"><i id="cgTime" style="width:100%"></i></div></div></div></div>
   <div class="cg-prog" id="cgProg" aria-label="Voortgang"></div>
-  <div class="jb-stage lk-stage cg-stage" id="cgStage"></div><div class="jb-help cg-help" id="cgHelp">${T.how}</div><div class="jb-ctl cg-ctl" id="cgCtl"></div></div>`;
+  <div class="jb-stage lk-stage cg-stage" id="cgStage"></div><div class="jb-help cg-help" id="cgHelp">${((CG_INFO[G.type]||{}).steps||[T.how])[1].replace(/\{who\}/g,cgEsc(th.who||'het doelwit'))}</div><div class="jb-ctl cg-ctl" id="cgCtl"></div></div>`;
  document.body.appendChild(ov);return ov}
 // het bestaande slot (lockgame.js) met moeilijkheid uit P; pinnen naar de zwaarte van de klus
 function cgLockP(P,w){const d=1-P,pins=5+Math.round(w*2),p=cgSolve(cgG(P),pins,2),speed=.42+.38*d,h=cgHalfWin(p)*CG_LOCK_K,zone=Math.min(.6,2*h*speed);
@@ -288,7 +324,7 @@ function cgLockP(P,w){const d=1-P,pins=5+Math.round(w*2),p=cgSolve(cgG(P),pins,2
   maxMiss:2,label:'Slot · '+cgLvName(P)}}
 const CG_LOCK_K=1; // correctie na simulatie (zie scripts in de rapportage)
 async function cgLock(c,P,w,th,o){if(typeof lockGame!=='function')return {ok:true,miss:0};const LP=cgLockP(P,w),st={misses:0};
- const ok=await lockGame(LP,{title:o.title||th.n||'Slot',sub:o.sub||((th.sub?th.sub+' · ':'')+(o.practice?'Oefenen · ':'')+LP.pins+' pinnen · hooguit '+LP.maxMiss+' fouten'),onEnd:x=>Object.assign(st,x)});
+ const ok=await lockGame(LP,{intro:{type:'lock',title:o.title||th.n||'Slot',tag:(o.practice?'Oefenen · ':'')+'Slot · '+cgLvName(P),goal:[`<b>${LP.pins}</b> pinnen`,`<b>${LP.maxMiss}</b> fouten mag`,`<b>${Math.round(LP.time)}</b> seconden`]},title:o.title||th.n||'Slot',sub:o.sub||((th.sub?th.sub+' · ':'')+(o.practice?'Oefenen · ':'')+LP.pins+' pinnen · hooguit '+LP.maxMiss+' fouten'),onEnd:x=>Object.assign(st,x)});
  return {ok:!!ok,miss:Math.min(2,st.misses||0),why:ok?'':'Het slot ging niet open.'}}
 
 // ---------- 5. tekeningen (SVG) per spel ----------
@@ -332,26 +368,27 @@ const CG_VIEW={
   stage:G=>{const ticks=Array.from({length:100},(_,i)=>{const a=i/100*Math.PI*2,r1=i%10?86:80;return `<line x1="${(Math.sin(a)*r1).toFixed(1)}" y1="${(-Math.cos(a)*r1).toFixed(1)}" x2="${(Math.sin(a)*92).toFixed(1)}" y2="${(-Math.cos(a)*92).toFixed(1)}" stroke="${i%10?'#5b626d':'#c9d1da'}" stroke-width="${i%10?1:2}"/>${i%10?'':`<text x="${(Math.sin(a)*68).toFixed(1)}" y="${(-Math.cos(a)*68+4).toFixed(1)}" text-anchor="middle" class="cg-num">${i}</text>`}`}).join('');
    return CG_SVG(`<rect width="400" height="240" fill="#0b0d10"/><rect x="60" y="6" width="280" height="228" rx="14" fill="#1a1d23" stroke="#2b3038" stroke-width="2"/>
     <circle cx="200" cy="124" r="104" fill="#121419" stroke="#3a404a" stroke-width="3"/><g id="cgDial" transform="translate(200 124)"><circle r="96" fill="#20242b" stroke="#4a515c"/>${ticks}<circle r="30" fill="#2b3038" stroke="#5b626d"/><rect x="-4" y="-30" width="8" height="18" rx="2" fill="#5b626d"/></g>
-    <path d="M200 14l-8-12h16z" fill="#ffd166"/><circle id="cgGlow" cx="356" cy="44" r="16" fill="#ffd166" opacity=".1"/><text x="356" y="80" text-anchor="middle" class="cg-small">GEVOEL</text>`)+'<div class="cg-fx" id="cgFx"></div><div class="cg-code" id="cgCode"></div>'},
+    <circle id="cgRim" cx="200" cy="124" r="101" fill="none" stroke="#ffd166" stroke-width="7" opacity="0"/><path d="M200 14l-8-12h16z" fill="#ffd166"/>`)+'<div class="cg-feel"><span>Gevoel</span><i><i id="cgFeel"></i></i></div><div class="cg-fx" id="cgFx"></div><div class="cg-code" id="cgCode"></div>'},
   ctl:()=>cgBig('Klik'),
   paint(G,ov){const d=ov.querySelector('#cgDial');if(d)d.setAttribute('transform',`translate(200 124) rotate(${(-G.th0*360).toFixed(1)})`);
-   const g=ov.querySelector('#cgGlow');if(g){const p=G.prox||0;g.setAttribute('opacity',(.08+.92*p*p).toFixed(2));g.setAttribute('r',(12+8*p).toFixed(1))}
+   const p=G.prox||0,g=ov.querySelector('#cgRim');if(g)g.setAttribute('opacity',(p*p).toFixed(2));const f=ov.querySelector('#cgFeel');if(f){f.style.width=(p*100).toFixed(1)+'%';f.classList.toggle('hot',p>.8)}
    if(G.dirty){const c=ov.querySelector('#cgCode');if(c)c.innerHTML=Array.from({length:G.k},(_,i)=>`<i class="${i<G.code.length?'on':''}">${i<G.code.length?String(G.code[i]).padStart(2,'0'):'··'}</i>`).join('')}cgFxPaint(G,ov)}},
  heist:{
   stage:G=>CG_SVG(`<rect width="400" height="240" fill="#0f0d0d"/><path d="M0 170h400M40 170V60h120v110M240 170V40h130v130" stroke="#2b2222" stroke-width="3" fill="none"/><rect x="60" y="80" width="80" height="40" fill="#1d1717"/><rect x="260" y="60" width="90" height="60" fill="#1d1717"/>
    <circle id="cgAlarm" cx="380" cy="20" r="8" fill="#ff3d52" opacity=".2"/>`)+'<div class="cg-alert" id="cgAlert"></div><div class="cg-fx" id="cgFx"></div>',
-  ctl:G=>`<div class="cg-pad4">${G.acts.map((a,i)=>cgBtn(i,`<kbd>${i+1}</kbd>${cgEsc(a[0])}`,'ghost')).join('')}</div>`,
-  paint(G,ov){const a=ov.querySelector('#cgAlert');if(a&&G.dirty){a.innerHTML=G.q?`<b>${cgEsc(G.acts[G.q.ans][1])}</b><i class="cg-ring"><i id="cgQt"></i></i>`:'<span>Rustig houden…</span>';a.classList.toggle('on',!!G.q)}
+  ctl:G=>`<div class="cg-pad4">${G.acts.map((a,i)=>cgBtn(i,`<span class="cg-act-t"><kbd>${i+1}</kbd>${cgEsc(a[0])}</span><small>als: ${cgEsc(a[1].toLowerCase())}</small>`,'ghost cg-act c'+i)).join('')}</div>`,
+  paint(G,ov){const a=ov.querySelector('#cgAlert');if(a&&G.dirty){a.innerHTML=G.q?`<span class="cg-al-k">Let op</span><b>${cgEsc(G.acts[G.q.ans][1])}</b><i class="cg-ring"><i id="cgQt"></i></i>`:'<span>Rustig houden… wacht op de volgende melding</span>';a.className='cg-alert'+(G.q?' on c'+G.q.ans:'')}
    const q=ov.querySelector('#cgQt');if(q&&G.q)q.style.width=(G.q.left/G.Tc*100).toFixed(1)+'%';
    const al=ov.querySelector('#cgAlarm');if(al)al.setAttribute('opacity',G.q?(.3+.7*((G.t*4)%1<.5)).toFixed(2):'.2');cgFxPaint(G,ov)}},
  talk:{
   stage:G=>`<div class="cg-talk"><div class="cg-npc">${CG_SVG(`<circle cx="200" cy="120" r="110" fill="#15181d"/><path d="M110 240c0-60 40-86 90-86s90 26 90 86z" fill="#2f3542"/><circle cx="200" cy="100" r="48" fill="#c99872"/><path d="M152 92c4-34 26-46 48-46s44 12 48 46c-14-14-30-18-48-18s-34 4-48 18z" fill="#2a1f18"/>
    <g id="cgFace"><path id="cgBrowL" d="M176 88l16 4" stroke="#2a1f18" stroke-width="4" stroke-linecap="round"/><path id="cgBrowR" d="M224 88l-16 4" stroke="#2a1f18" stroke-width="4" stroke-linecap="round"/><circle cx="184" cy="100" r="4" fill="#111"/><circle cx="216" cy="100" r="4" fill="#111"/><path id="cgMouth" d="M186 124q14 6 28 0" stroke="#5a2a1a" stroke-width="4" fill="none" stroke-linecap="round"/></g>`,'cg-npcsvg')}<span class="cg-mood" id="cgMood"></span></div>
-   <div class="cg-say"><span class="cg-whoT">${cgEsc(G.th.who||'')}</span><p id="cgLine">…</p><i class="cg-ring"><i id="cgQt"></i></i></div></div><div class="cg-fx" id="cgFx"></div>`,
+   <div class="cg-say"><span class="cg-whoT">${cgEsc(G.th.who||'')}</span><p id="cgLine">…</p><i class="cg-ring"><i id="cgQt"></i></i>
+    <div class="cg-cheat" aria-label="Spiekbriefje"><span class="label">Spiekbriefje</span>${G.set.map((x,i)=>`<span class="m${i}"><b>${x[1]} ${cgEsc(x[0])}</b><em>→ ${cgEsc(x[2])}</em></span>`).join('')}</div></div></div><div class="cg-fx" id="cgFx"></div>`,
   ctl:()=>'<div class="cg-opts" id="cgOpts"></div>',
   paint(G,ov){if(G.dirty){const q=G.q,m=q?G.set[q.mood]:null,ln=ov.querySelector('#cgLine'),md=ov.querySelector('#cgMood'),op=ov.querySelector('#cgOpts');
     if(ln)ln.textContent=q?'"'+q.line+'"':'…';if(md){md.textContent=m?m[1]+' '+m[0]:'';md.className='cg-mood m'+(q?q.mood:'')}
-    if(op)op.innerHTML=q?q.opts.map((mi,i)=>cgBtn(i,`<kbd>${i+1}</kbd>${cgEsc(G.set[mi][2])}`,'ghost')).join(''):G.set.map(s=>`<span class="cg-leg"><b>${s[1]}</b> ${s[0]} → ${s[2]}</span>`).join('');
+    if(op)op.innerHTML=q?q.opts.map((mi,i)=>cgBtn(i,`<kbd>${i+1}</kbd>${cgEsc(G.set[mi][2])}`,'ghost')).join(''):'<span class="cg-wait">Even luisteren…</span>';
     const mo=ov.querySelector('#cgMouth'),bl=ov.querySelector('#cgBrowL'),br=ov.querySelector('#cgBrowR'),k=q?q.mood:-1;
     const F=[['M186 122q14 8 28 0','M176 86l16 4','M224 86l-16 4'],['M188 128q12-8 24 0','M176 90l16-6','M224 90l-16-6'],['M184 122q16 10 32 0','M176 84l16 0','M224 84l-16 0'],['M186 126h28','M176 84l16 8','M224 84l-16 8']];
     const f=F[k%4]||F[0];if(mo)mo.setAttribute('d',f[0]);if(bl)bl.setAttribute('d',f[1]);if(br)br.setAttribute('d',f[2])}
@@ -370,13 +407,23 @@ const CG_VIEW={
   paint(G,ov){if(G.dirty){const l=ov.querySelector('#cgLine');if(l)l.innerHTML=G.code.split('').map((ch,i)=>`<i class="${i<G.i?'ok':i===G.i?'cur':''}">${ch}</i>`).join('')}
    const qt=ov.querySelector('#cgQt');if(qt)qt.style.width=Math.max(0,Math.min(1,G.left/G.Tc))*100+'%';cgFxPaint(G,ov)}},
  route:{
-  stage:G=>{const w=G.th.water;return CG_SVG(`<rect width="400" height="240" fill="${w?'#08131c':'#0e1013'}"/><rect x="80" width="240" height="240" fill="${w?'#0b1b28':'#16191e'}"/>
-   <g id="cgDash" stroke="${w?'#1d3a50':'#3a404a'}" stroke-width="4" stroke-dasharray="16 18">${w?'<path d="M100 0v240M300 0v240" stroke-dasharray="4 22"/>':'<path d="M160 0v240M240 0v240"/>'}</g>
-   <g id="cgCp"></g><g id="cgVeh">${CG_VEH[G.th.veh||'truck']}</g>`,'cg-route','slice')+'<div class="cg-fx" id="cgFx"></div>'},
+  stage:G=>{const w=G.th.water,side=w?'#071019':'#0e1013';
+   // zijkanten: gebouwen (of kade) die meeschuiven; weg met drie banen
+   const blds=Array.from({length:8},(_,i)=>{const h=30+(i*37)%40,c=['#1b2029','#20242c','#191d24'][i%3];return w?`<rect x="${i%2?348:4}" y="${i*60-30}" width="48" height="40" rx="3" fill="#0f2233"/>`:`<rect x="${i%2?330:6}" y="${i*60-30}" width="64" height="${h+20}" fill="${c}"/><rect x="${i%2?338:14}" y="${i*60-20}" width="10" height="8" fill="#ffd166" opacity=".25"/>`}).join('');
+   return CG_SVG(`<rect width="400" height="240" fill="${side}"/><g id="cgSide">${blds}${blds.replace(/y="(-?\d+)"/g,(m,v)=>`y="${+v+480}"`)}</g>
+   <rect x="78" width="244" height="240" fill="${w?'#0b1b28':'#16191e'}"/>${w?'':'<rect x="74" width="6" height="240" fill="#2b3038"/><rect x="320" width="6" height="240" fill="#2b3038"/>'}
+   <g id="cgDash" stroke="${w?'#1d3a50':'#c9d1da'}" stroke-opacity="${w?1:.35}" stroke-width="4" stroke-dasharray="18 22">${w?'<path d="M160 0v240M240 0v240" stroke-dasharray="4 26"/>':'<path d="M160 0v240M240 0v240"/>'}</g>
+   <g id="cgCp"></g><g id="cgVeh">${CG_VEH[G.th.veh||'truck']}</g>`,'cg-route','meet').replace('viewBox="0 0 400 240"','viewBox="62 0 276 240"')+'<div class="cg-fx" id="cgFx"></div><div class="cg-who">'+cgEsc(G.th.n||'')+'</div>'},
   ctl:()=>`<div class="cg-lr">${cgBtn('L','<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>','ghost')}${cgBtn('R','<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>','ghost')}</div>`,
-  paint(G,ov){const lx=l=>120+l*80,v=ov.querySelector('#cgVeh');if(v){v._x=v._x==null?lx(G.lane):v._x+(lx(G.lane)-v._x)*.35;v.setAttribute("transform",`translate(${v._x.toFixed(1)} 190)`)}
-   const ds=ov.querySelector('#cgDash');if(ds)ds.setAttribute('stroke-dashoffset',(-G.scroll*120%34).toFixed(1));
-   const cp=ov.querySelector('#cgCp');if(cp){if(G.cp){const y=-20+G.cp.y*210;if(G.dirty||!cp.firstChild)cp.innerHTML=[0,1,2].map(l=>l===G.cp.free?`<rect x="${lx(l)-34}" y="-14" width="68" height="28" rx="4" fill="#3fe395" opacity=".18"/><text x="${lx(l)}" y="5" text-anchor="middle" class="cg-small g">VRIJ</text>`:`<rect x="${lx(l)-36}" y="-12" width="72" height="24" fill="#2a1216" stroke="#ff3d52"/><path d="M${lx(l)-36} -12l72 24" stroke="#ff3d52" stroke-width="2" opacity=".5"/><text x="${lx(l)}" y="4" text-anchor="middle" class="cg-small r">${cgEsc(G.cp.ctl[l]).toUpperCase()}</text>`).join('');cp.setAttribute('transform',`translate(0 ${y.toFixed(1)})`)}else cp.innerHTML=''}
+  paint(G,ov){const lx=l=>120+l*80,v=ov.querySelector('#cgVeh');if(v){const tx=lx(G.lane);v._x=v._x==null?tx:v._x+(tx-v._x)*.3;const tilt=Math.max(-14,Math.min(14,(tx-v._x)*.25));v.setAttribute("transform",`translate(${v._x.toFixed(1)} 196) rotate(${tilt.toFixed(1)})`)}
+   const ds=ov.querySelector('#cgDash');if(ds)ds.setAttribute('stroke-dashoffset',(-G.scroll*160%40).toFixed(1));
+   const sd=ov.querySelector('#cgSide');if(sd)sd.setAttribute('transform',`translate(0 ${(G.scroll*90%480).toFixed(1)})`);
+   const cp=ov.querySelector('#cgCp');if(cp){if(G.cp){const y=-24+G.cp.y*196,blink=(G.t*3)%1<.5;
+    if(G.dirty||!cp.firstChild)cp.innerHTML=[0,1,2].map(l=>l===G.cp.free
+     ?`<g><rect x="${lx(l)-36}" y="-18" width="72" height="36" rx="6" fill="#3fe395" opacity=".14" stroke="#3fe395" stroke-opacity=".6" stroke-dasharray="6 5"/><path d="M${lx(l)-8} 2l8-10 8 10" stroke="#3fe395" stroke-width="3" fill="none" stroke-linecap="round"/><text x="${lx(l)}" y="14" text-anchor="middle" class="cg-small g">VRIJ</text></g>`
+     :`<g><rect x="${lx(l)-38}" y="-6" width="76" height="12" rx="2" fill="url(#cgBar)"/><rect x="${lx(l)-38}" y="-6" width="76" height="12" rx="2" fill="none" stroke="#ff3d52"/><circle class="cg-bl" cx="${lx(l)-30}" cy="-12" r="5" fill="#3d7bff"/><circle class="cg-bl b" cx="${lx(l)+30}" cy="-12" r="5" fill="#ff3d52"/><text x="${lx(l)}" y="22" text-anchor="middle" class="cg-small r">${cgEsc(G.cp.ctl[l]).toUpperCase()}</text></g>`).join('')
+      +'<defs><pattern id="cgBar" width="14" height="12" patternUnits="userSpaceOnUse" patternTransform="skewX(-35)"><rect width="7" height="12" fill="#f1ece0"/><rect x="7" width="7" height="12" fill="#ff3d52"/></pattern></defs>';
+    cp.setAttribute('transform',`translate(0 ${y.toFixed(1)})`);cp.querySelectorAll('.cg-bl').forEach(b=>b.setAttribute('opacity',(b.classList.contains('b')?!blink:blink)?'1':'.25'))}else cp.innerHTML=''}
    cgFxPaint(G,ov)}},
  deal:{space:()=>'go',
   stage:G=>CG_SVG(`<rect width="400" height="240" fill="#0d0f12"/>${G.th.chart?`<path id="cgChart" d="" stroke="#3a4b6a" stroke-width="3" fill="none"/>`:''}
@@ -390,17 +437,21 @@ const CG_VIEW={
     const ch=ov.querySelector('#cgChart');if(ch){let d='M30 90';for(let i=1;i<=20;i++)d+=` L${30+i*17} ${(90-Math.sin(i*.7+G.zc*9)*14-i*1.2).toFixed(1)}`;ch.setAttribute('d',d)}}
    const pr=ov.querySelector('#cgPrice');if(pr){const c=G.c||{min:100,max:1000};pr.textContent=fmt((c.min+(c.max-c.min)*1.4*(G.nx||0))*(G.th.chart?1:1))}cgFxPaint(G,ov)}},
  saw:{space:()=>'go',
-  stage:G=>CG_SVG(`<rect width="400" height="240" fill="#0d0f12"/>${G.th.print?'<rect x="60" y="40" width="280" height="150" fill="#e9e3cf" opacity=".9"/><rect id="cgInk" x="60" y="40" width="0" height="150" fill="#5ce1c4" opacity=".35"/>':'<rect x="0" y="150" width="400" height="22" fill="#b87333"/><rect x="0" y="150" width="400" height="6" fill="#d9965a"/><rect id="cgCut" x="196" y="150" width="8" height="0" fill="#0d0f12"/>'}
-   <rect id="cgEndL" x="24" y="40" width="44" height="100" fill="#3fe395" opacity=".08"/><rect id="cgEndR" x="332" y="40" width="44" height="100" fill="#3fe395" opacity=".08"/>
-   <g id="cgBlade"><rect x="-40" y="70" width="80" height="54" rx="6" fill="#4a515c" stroke="#8a929c" stroke-width="2"/><path d="M-40 124h80l-4 8h-72z" fill="#c9d1da"/><rect x="-10" y="48" width="20" height="24" fill="#2b3038"/></g>`)+'<div class="cg-fx" id="cgFx"></div>',
+  stage:G=>CG_SVG(`<rect width="400" height="240" fill="#0d0f12"/>
+   <rect id="cgEndL" x="40" y="34" width="56" height="112" rx="8" fill="#3fe395" opacity=".06" stroke="#3fe395" stroke-opacity=".35" stroke-dasharray="5 5"/><rect id="cgEndR" x="304" y="34" width="56" height="112" rx="8" fill="#3fe395" opacity=".06" stroke="#3fe395" stroke-opacity=".35" stroke-dasharray="5 5"/>
+   <text x="68" y="28" text-anchor="middle" class="cg-small g">EIND</text><text x="332" y="28" text-anchor="middle" class="cg-small g">EIND</text>
+   ${G.th.print?`<rect x="70" y="160" width="260" height="62" rx="3" fill="#e9e3cf"/><rect id="cgInk" x="70" y="160" width="0" height="62" fill="#3fa98a" opacity=".55"/><text x="200" y="197" text-anchor="middle" class="cg-small" style="fill:#1a1c20">€ 50 · € 50 · € 50</text>`
+    :`<rect x="0" y="168" width="400" height="22" rx="4" fill="#b87333"/><rect x="0" y="168" width="400" height="6" fill="#d9965a"/><rect x="0" y="186" width="400" height="4" fill="#7a4a20"/><rect id="cgCut" x="194" y="168" width="12" height="0" fill="#0d0f12"/>`}
+   <g id="cgBlade"><rect x="-56" y="78" width="112" height="10" rx="2" fill="#2b3038"/><path d="M-56 88h112v40h-112z" fill="#c9d1da"/><path d="M-56 128${Array.from({length:14},(_,i)=>`l4 6l4-6`).join('')}" fill="#8a929c"/><rect x="-74" y="70" width="22" height="34" rx="6" fill="#ff7a1a"/><circle id="cgSpark" cx="0" cy="${G.th.print?160:168}" r="0" fill="#ffd166"/></g>`)+'<div class="cg-fx" id="cgFx"></div>',
   ctl:()=>cgBig(G=>G),
-  paint(G,ov){const b=ov.querySelector('#cgBlade'),x=70+(G.mx||0)*260;if(b)b.setAttribute('transform',`translate(${x.toFixed(1)} 0)`);
-   const nearL=(G.mx||0)<.08,nearR=(G.mx||0)>.92;['L','R'].forEach(s=>{const e=ov.querySelector('#cgEnd'+s);if(e)e.setAttribute('opacity',(s==='L'?nearL:nearR)?'.35':'.08')});
-   const c=ov.querySelector('#cgCut');if(c)c.setAttribute('height',(22*G.hits/G.k).toFixed(1));const ink=ov.querySelector('#cgInk');if(ink)ink.setAttribute('width',(280*G.hits/G.k).toFixed(1));cgFxPaint(G,ov)}}};
+  paint(G,ov){const b=ov.querySelector('#cgBlade'),x=68+(G.mx||0)*264;if(b)b.setAttribute('transform',`translate(${x.toFixed(1)} 0)`);
+   const nearL=(G.mx||0)<.1,nearR=(G.mx||0)>.9;['L','R'].forEach(s=>{const e=ov.querySelector('#cgEnd'+s);if(e)e.setAttribute('opacity',(s==='L'?nearL:nearR)?'.32':'.06')});
+   const sp=ov.querySelector('#cgSpark');if(sp){const a=G.fx&&G.fx.ok&&G.t-G.fx.t<.25?1-(G.t-G.fx.t)/.25:0;sp.setAttribute('r',(a*16).toFixed(1));sp.setAttribute('opacity',a.toFixed(2))}
+   const c=ov.querySelector('#cgCut');if(c)c.setAttribute('height',(22*G.hits/G.k).toFixed(1));const ink=ov.querySelector('#cgInk');if(ink)ink.setAttribute('width',(260*G.hits/G.k).toFixed(1));cgFxPaint(G,ov)}}};
 CG_VIEW.saw.ctl=G=>cgBig(G.th.ok||'Nu');
-const CG_VEH={truck:'<rect x="-16" y="-30" width="32" height="56" rx="4" fill="#ff7a1a"/><rect x="-14" y="-28" width="28" height="14" rx="2" fill="#2b3038"/><rect x="-18" y="-6" width="36" height="34" fill="#c9d1da"/>',
- bike:'<rect x="-3" y="-26" width="6" height="52" rx="3" fill="#c9d1da"/><rect x="-14" y="-18" width="28" height="5" rx="2" fill="#ff7a1a"/><circle cx="0" cy="-2" r="8" fill="#2b3038"/>',
- boat:'<path d="M0 -36c14 12 18 30 16 62h-32c-2-32 2-50 16-62z" fill="#e9e3cf"/><rect x="-8" y="-6" width="16" height="16" rx="2" fill="#2b3038"/><path d="M-14 30q14 10 28 0" stroke="#5ce1c4" stroke-width="2" fill="none" opacity=".6"/>'};
+const CG_VEH={truck:'<ellipse cx="0" cy="30" rx="22" ry="6" fill="#000" opacity=".45"/><rect x="-20" y="-34" width="40" height="66" rx="8" fill="#e9e3cf"/><rect x="-17" y="-30" width="34" height="14" rx="4" fill="#24303c"/><rect x="-18" y="-12" width="36" height="40" rx="3" fill="#d6d0c0"/><rect x="-21" y="-26" width="4" height="8" rx="1" fill="#2b3038"/><rect x="17" y="-26" width="4" height="8" rx="1" fill="#2b3038"/><rect x="-16" y="-36" width="8" height="3" rx="1" fill="#ffd166"/><rect x="8" y="-36" width="8" height="3" rx="1" fill="#ffd166"/>',
+ bike:'<ellipse cx="0" cy="28" rx="12" ry="4" fill="#000" opacity=".45"/><rect x="-6" y="-30" width="12" height="16" rx="5" fill="#1a1d23"/><rect x="-6" y="14" width="12" height="16" rx="5" fill="#1a1d23"/><rect x="-2" y="-18" width="4" height="34" fill="#ff7a1a"/><rect x="-15" y="-16" width="30" height="4" rx="2" fill="#c9d1da"/><ellipse cx="0" cy="2" rx="12" ry="9" fill="#3a4b6a"/><circle cx="0" cy="-2" r="7" fill="#d9a77c"/><path d="M-7 -3a7 7 0 0114 0z" fill="#ffd166"/>',
+ boat:'<path d="M0 -40c16 14 20 34 18 68h-36c-2-34 2-54 18-68z" fill="#f1ece0"/><path d="M-10 -6h20v18h-20z" fill="#24303c"/><path d="M-18 28q18 14 36 0" stroke="#5ce1c4" stroke-width="3" fill="none" opacity=".6"/><path d="M-14 36q14 10 28 0" stroke="#5ce1c4" stroke-width="2" fill="none" opacity=".35"/>'};
 
 // ---------- 6. oefenen (practice.js) ----------
 const CG_PR_LV=[[1,'Meester'],[2,'Professional'],[3,'Gevorderd'],[4,'Beginner'],[5,'Nieuweling']];

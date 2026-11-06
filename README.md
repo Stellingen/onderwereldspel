@@ -892,6 +892,17 @@ vandaan komt (`enParts`). De serverwaarschuwing gaat nu pas af boven 700 energie
 - Getest met een speelbot (Playwright) die elk spel goed en slecht speelt (goed: altijd gehaald, slecht: nooit), en een
   simulatie van 800 rondes per spel/niveau met een gemiddelde speler (gemiddeld 49% / 82% / 99% bij P = 0 / ½ / 1).
 
+- **Klus-spellen, ronde 2 (november 2026)**: elk spel opent met een **uitlegscherm** (`cgIntro` in `crimegames.js`, ook voor
+  het slot via `lockGame(P,{intro})`): wat je moet halen (aantal goed, fouten die mogen, seconden), drie stappen "Zo werkt het"
+  (`CG_INFO`), de bediening (tikken of toetsenbord) en een Startknop. De tijd loopt pas na Start en een 3-2-1. Ruimere tijden
+  met een realistischer model van een gemiddelde speler (`CG_HUM` rt 0,55 s; overval 1,7 s, gesprek 2,7 s, geheugen 2,5 s,
+  hacken 1,15 s per teken, route 0,85 s + 0,3 per extra baan; langere pauzes tussen vragen; langer lezen bij Geheugen). De
+  kans per niveau verandert niet (het venster wordt uit G(P) teruggerekend). Beginner krijgt nu bv. ±1,9 s per melding bij een
+  overval (was ±0,8 s) en ±3 s per antwoord in een gesprek. Overval: elke knop heeft een eigen kleur en de melding waar hij bij
+  hoort; gesprek: spiekbriefje (stemming → aanpak) altijd in beeld; kluis: gloed rond de schijf en een gevoelmeter; route:
+  nieuwe tekening (gebouwen, slagbomen met zwaailicht, busje/fatbike/boot) en op de telefoon zijn alle drie de banen in beeld;
+  ritme: zaag met eindvakken en vonken.
+
 ### Meer zaken en vestigingen
 
 - **Meer zaken** (`data.js` blok 'Meer zaken', `pages/bezit-extra.js`): 47 soorten in plaats van 17. 30 nieuwe zaken, van straatniveau
