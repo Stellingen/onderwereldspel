@@ -415,33 +415,36 @@ const LIVE_CODES={lotto:1500,welkom:500,casino:5000,vip:20000,spinnetje:25000,ja
 // Verblijf: je begint onder de brug. Rusten vult je energie in `rest` seconden, maar alleen zolang je blijft.
 // Huizenmarkt: ±12 woningen. t = soort (HOMES hieronder: bepaalt rust, energie, plekken en het tafereel), p = koopprijs,
 // rent = huur per speldag (4 uur), r = vanaf welke rang, g = waardestijging per speldag, cap = hoogste waarde (× aankoopprijs).
+// slots = plekken voor spullen in deze woning (Onder de brug 2 … Landgoed 15); VIP +2 en High roller +5 erbij (TIER_SLOTS).
 // Hoe beter de woning, hoe sneller hij in waarde stijgt. Verkopen kost 5% makelaarskosten.
 const HOUSES=[
- {id:'brug',t:'brug',n:'Onder de brug',place:'Berlagebrug',d:'Een vochtig matras, een vuurton en het geraas van de tram boven je hoofd.',p:0,rent:0,r:0,g:0,cap:1},
- {id:'kraak',t:'kraak',n:'Kraakpand',place:'Amsterdam-West',d:'Een leegstaand kantoor met een kapotte lift. Je hebt een deur die op slot kan.',p:6500,rent:180,r:2,g:.0012,cap:1.12},
- {id:'boot',t:'kraak',n:'Lekke woonboot',place:'Houthavens',d:'Een roestige woonboot aan een vergeten steiger. Bij harde wind deint je bed mee.',p:11000,rent:280,r:2,g:.0014,cap:1.14},
- {id:'kamer',t:'kamer',n:'Zolderkamer',place:'De Pijp',d:'Zestien vierkante meter, een eigen douche en een huisbaas die geen vragen stelt.',p:38000,rent:720,r:4,g:.0025,cap:1.22},
- {id:'studio',t:'kamer',n:'Studio',place:'Oost',d:'Een studio boven een kapperszaak. Klein, maar alles is van jou.',p:55000,rent:980,r:4,g:.0028,cap:1.25},
- {id:'gracht',t:'gracht',n:'Grachtenappartement',place:'Keizersgracht',d:'Hoge plafonds, uitzicht op het water. Niemand verwacht hier een crimineel.',p:260000,rent:3750,r:6,g:.0045,cap:1.32},
- {id:'jordaan',t:'gracht',n:'Herenhuisetage',place:'Jordaan',d:'De bel-etage van een herenhuis uit 1680, met een tuin aan de achterkant.',p:340000,rent:4750,r:6,g:.005,cap:1.35},
- {id:'penthouse',t:'penthouse',n:'Penthouse',place:'Zuidas',d:'Bovenste verdieping, eigen lift, bewaking in de lobby.',p:850000,rent:11250,r:8,g:.0065,cap:1.42},
- {id:'ijpent',t:'penthouse',n:'Penthouse IJ-oever',place:'Amsterdam-Noord',d:'Glazen wanden boven het IJ. Je ziet de pont, de stad en iedereen die eraan komt.',p:1250000,rent:15000,r:8,g:.007,cap:1.45},
- {id:'omval',t:'penthouse',n:'Toppenthouse',place:'De Omval',d:'De top van de hoogste woontoren van de stad, met een dakterras rondom.',p:1800000,rent:17500,r:9,g:.0075,cap:1.48},
- {id:'villa',t:'villa',n:'Villa',place:'Wassenaar',d:'Een hek, camera\'s, een zwembad en personeel. Zo slaapt een peetvader.',p:2600000,rent:22500,r:10,g:.008,cap:1.5},
- {id:'gooi',t:'villa',n:'Landgoed',place:'Het Gooi',d:'Een landhuis achter een bos, met een oprijlaan van vierhonderd meter en een eigen helikopterplatform.',p:3900000,rent:32500,r:11,g:.0085,cap:1.55}];
+ {id:'brug',t:'brug',n:'Onder de brug',place:'Berlagebrug',d:'Een vochtig matras, een vuurton en het geraas van de tram boven je hoofd.',p:0,rent:0,r:0,g:0,cap:1,slots:2},
+ {id:'kraak',t:'kraak',n:'Kraakpand',place:'Amsterdam-West',d:'Een leegstaand kantoor met een kapotte lift. Je hebt een deur die op slot kan.',p:6500,rent:180,r:2,g:.0012,cap:1.12,slots:3},
+ {id:'boot',t:'kraak',n:'Lekke woonboot',place:'Houthavens',d:'Een roestige woonboot aan een vergeten steiger. Bij harde wind deint je bed mee.',p:11000,rent:280,r:2,g:.0014,cap:1.14,slots:4},
+ {id:'kamer',t:'kamer',n:'Zolderkamer',place:'De Pijp',d:'Zestien vierkante meter, een eigen douche en een huisbaas die geen vragen stelt.',p:38000,rent:720,r:4,g:.0025,cap:1.22,slots:5},
+ {id:'studio',t:'kamer',n:'Studio',place:'Oost',d:'Een studio boven een kapperszaak. Klein, maar alles is van jou.',p:55000,rent:980,r:4,g:.0028,cap:1.25,slots:6},
+ {id:'gracht',t:'gracht',n:'Grachtenappartement',place:'Keizersgracht',d:'Hoge plafonds, uitzicht op het water. Niemand verwacht hier een crimineel.',p:260000,rent:3750,r:6,g:.0045,cap:1.32,slots:7},
+ {id:'jordaan',t:'gracht',n:'Herenhuisetage',place:'Jordaan',d:'De bel-etage van een herenhuis uit 1680, met een tuin aan de achterkant.',p:340000,rent:4750,r:6,g:.005,cap:1.35,slots:8},
+ {id:'penthouse',t:'penthouse',n:'Penthouse',place:'Zuidas',d:'Bovenste verdieping, eigen lift, bewaking in de lobby.',p:850000,rent:11250,r:8,g:.0065,cap:1.42,slots:10},
+ {id:'ijpent',t:'penthouse',n:'Penthouse IJ-oever',place:'Amsterdam-Noord',d:'Glazen wanden boven het IJ. Je ziet de pont, de stad en iedereen die eraan komt.',p:1250000,rent:15000,r:8,g:.007,cap:1.45,slots:11},
+ {id:'omval',t:'penthouse',n:'Toppenthouse',place:'De Omval',d:'De top van de hoogste woontoren van de stad, met een dakterras rondom.',p:1800000,rent:17500,r:9,g:.0075,cap:1.48,slots:12},
+ {id:'villa',t:'villa',n:'Villa',place:'Wassenaar',d:'Een hek, camera\'s, een zwembad en personeel. Zo slaapt een peetvader.',p:2600000,rent:22500,r:10,g:.008,cap:1.5,slots:14},
+ {id:'gooi',t:'villa',n:'Landgoed',place:'Het Gooi',d:'Een landhuis achter een bos, met een oprijlaan van vierhonderd meter en een eigen helikopterplatform.',p:3900000,rent:32500,r:11,g:.0085,cap:1.55,slots:15}];
+// extra plekken voor spullen per lidmaatschap (gewoon / VIP / High roller), in elke woning, los van je rang
+const TIER_SLOTS=[0,2,5];
 // oude woningprijzen (vóór de huizenmarkt): wat bestaande spelers ervoor betaalden, voor de waarde van hun woning
 const HOME_OLD_P={kraak:2500,kamer:15000,gracht:80000,penthouse:400000,villa:1500000};
 const HOUSE_FEE=.05;
 const HOMES=[
  // rest = seconden rusten, cd = wachttijd tussen rustbeurten (s), en = extra max. energie, hp = gezondheid per rustbeurt, heat = minder hitte per rustbeurt,
- // slots = hoeveel spullen er staan (zie FURN)
- {id:'brug',n:'Onder de brug',place:'Berlagebrug',d:'Een vochtig matras, een vuurton en het geraas van de tram boven je hoofd. Het is niet veel, maar je kunt er even je ogen dicht doen.',p:0,r:0,rest:10,cd:300,en:0,hp:20,heat:0,slots:1},
- {id:'kraak',n:'Kraakpand',place:'Amsterdam-West',d:'Een leegstaand kantoor met een kapotte lift. Je hebt een deur die op slot kan.',p:2500,r:2,rest:9,cd:270,en:20,hp:25,heat:0,slots:2},
- {id:'kamer',n:'Huurkamer',place:'De Pijp',d:'Zestien vierkante meter, een eigen douche en een huisbaas die geen vragen stelt.',p:15000,r:4,rest:8,cd:240,en:40,hp:30,heat:0,slots:4},
- {id:'gracht',n:'Grachtenappartement',place:'Keizersgracht',d:'Hoge plafonds, uitzicht op het water. Niemand verwacht hier een crimineel.',p:80000,r:6,rest:7,cd:210,en:60,hp:40,heat:5,slots:6},
- {id:'penthouse',n:'Penthouse',place:'Zuidas',d:'Bovenste verdieping, eigen lift, bewaking in de lobby.',p:400000,r:8,rest:6,cd:180,en:80,hp:55,heat:10,slots:9},
- {id:'villa',n:'Villa',place:'Wassenaar',d:'Een hek, camera\'s, een zwembad en personeel. Zo slaapt een peetvader.',p:1500000,r:10,rest:5,cd:150,en:100,hp:70,heat:20,slots:13}];
-// Inrichting: spullen voor je woning. Elke woning heeft een aantal plekken (HOMES.slots); wat neerstaat (S.furn) geeft een blijvend voordeel,
+ // slots = plekken voor de goedkoopste woning van deze soort (elke woning in HOUSES heeft zijn eigen aantal, zie houseSlots)
+ {id:'brug',n:'Onder de brug',place:'Berlagebrug',d:'Een vochtig matras, een vuurton en het geraas van de tram boven je hoofd. Het is niet veel, maar je kunt er even je ogen dicht doen.',p:0,r:0,rest:10,cd:300,en:0,hp:20,heat:0,slots:2},
+ {id:'kraak',n:'Kraakpand',place:'Amsterdam-West',d:'Een leegstaand kantoor met een kapotte lift. Je hebt een deur die op slot kan.',p:2500,r:2,rest:9,cd:270,en:20,hp:25,heat:0,slots:3},
+ {id:'kamer',n:'Huurkamer',place:'De Pijp',d:'Zestien vierkante meter, een eigen douche en een huisbaas die geen vragen stelt.',p:15000,r:4,rest:8,cd:240,en:40,hp:30,heat:0,slots:5},
+ {id:'gracht',n:'Grachtenappartement',place:'Keizersgracht',d:'Hoge plafonds, uitzicht op het water. Niemand verwacht hier een crimineel.',p:80000,r:6,rest:7,cd:210,en:60,hp:40,heat:5,slots:7},
+ {id:'penthouse',n:'Penthouse',place:'Zuidas',d:'Bovenste verdieping, eigen lift, bewaking in de lobby.',p:400000,r:8,rest:6,cd:180,en:80,hp:55,heat:10,slots:10},
+ {id:'villa',n:'Villa',place:'Wassenaar',d:'Een hek, camera\'s, een zwembad en personeel. Zo slaapt een peetvader.',p:1500000,r:10,rest:5,cd:150,en:100,hp:70,heat:20,slots:14}];
+// Inrichting: spullen voor je woning. Elke woning heeft een aantal plekken (HOUSES.slots, + TIER_SLOTS); wat neerstaat (S.furn) geeft een blijvend voordeel,
 // wat in de opslag staat (S.furnStore) niet. h = vanaf welke woning (index in HOMES), hmax = tot en met welke woning (spullen van de straat neem je niet mee).
 // fx: hpRegen/enRegen/heat = sneller herstel, focus = % slaagkans, en = max. energie, restHp = extra gezondheid per rustbeurt, restCd = kortere wachttijd rusten,
 // zone = meer ruimte bij vluchten, safe = minder verlies bij mislukken, docHp/docCd = dokter, hideRate = sneller onderduiken, hideRisk = minder kans herkend te worden
@@ -483,7 +486,25 @@ const FURN=[
  {id:'capsule',n:'Powernap-capsule',h:4,p:110000,col:'#a9dcff',d:'Twintig minuten in een eitje met zacht licht en je bent weer fris.',fx:{enRegen:.2,en:10}},
  {id:'ijsbad',n:'IJsbad',h:4,p:130000,col:'#7fe0ff',d:'Drie minuten bij twee graden. Daarna voel je je onverwoestbaar.',fx:{enRegen:.12,hpRegen:.2}},
  {id:'hottub',n:'Bubbelbad',h:5,p:300000,col:'#5ad1ff',d:'Warm water, bubbels en een glas champagne op de rand.',fx:{hpRegen:.4,restHp:10}},
- {id:'paniekkamer',n:'Paniekkamer',h:5,p:750000,col:'#9aa3ad',d:'Stalen deur, eigen lucht en een kluis voor het geld. Hier komt niemand binnen.',fx:{safe:.4,heat:.25}}];
+ {id:'paniekkamer',n:'Paniekkamer',h:5,p:750000,col:'#9aa3ad',d:'Stalen deur, eigen lucht en een kluis voor het geld. Hier komt niemand binnen.',fx:{safe:.4,heat:.25}},
+ // uitbreiding (november 2026): van de stoep tot het landgoed. Duurdere spullen doen vaak twee of drie dingen tegelijk; geen extra max. energie
+ // (inrichting blijft samen +98, zie FURN_CAP), wel sneller opladen. Alles staat op een vrije plek (VH_SPOT, tekening in VH_GEN).
+ {id:'matras',n:'Matras van de stoep',h:0,hmax:2,p:120,col:'#8fb4d9',d:'Stond bij het grofvuil. Er zit een vlek op die je liever niet uitlegt, maar hij is zacht.',fx:{restHp:3,hpRegen:.05}},
+ {id:'campingstoel',n:'Campingstoel',h:0,hmax:3,p:60,col:'#3fa36b',d:'Groen, inklapbaar en met een bekerhouder. Even zitten en je kop is weer helder.',fx:{restCd:.05,focus:1}},
+ {id:'radio',n:'Transistorradio',h:0,p:220,col:'#e2b23a',d:'Op de lokale zender hoor je waar de controles staan, lang voordat jij erlangs moet.',fx:{heat:.1,hideRisk:.05}},
+ {id:'gasstel',n:'Campinggasstel',h:1,hmax:3,p:450,col:'#4d9dff',d:'Een blik soep, een pan en een blauw vlammetje. Warm eten doet wonderen.',fx:{enRegen:.05,hpRegen:.05}},
+ {id:'hangmat',n:'Hangmat',h:2,p:2800,col:'#e07a5f',d:'Tussen twee palen in je kamer. Je ligt er na tien minuten zo diep in dat de wereld even weg is.',fx:{restCd:.08,hpRegen:.1}},
+ {id:'laptop',n:'Laptop met VPN',h:2,p:6500,col:'#5fe3a6',d:'Drie VPN\'s, een stapel prepaid simkaarten en een script dat je sporen wist.',fx:{heat:.15,hideRisk:.08}},
+ {id:'roeier',n:'Roeitrainer',h:3,p:20000,col:'#4cc6ff',d:'Twintig minuten op het water zonder nat te worden. Je longen worden groter, je benen sneller.',fx:{enRegen:.1,zone:.04}},
+ {id:'kunst',n:'Kunstwerk',h:3,p:32000,col:'#d9a441',d:'Een bronzen beeld op een sokkel. Niemand weet wat het voorstelt, maar je wordt er rustig van.',fx:{focus:2,restHp:4}},
+ {id:'wijnkast',n:'Wijnklimaatkast',h:4,p:65000,col:'#a8324a',d:'Achtenveertig flessen op de juiste temperatuur. Eén glas na een lange nacht en je slaapt als een roos.',fx:{restCd:.1,restHp:5}},
+ {id:'biljart',n:'Biljarttafel',h:4,p:95000,col:'#2f8a4a',d:'Groen laken, zware ballen. Wie elke bal drie stoten vooruit ziet, ziet ook een klus drie stappen vooruit.',fx:{focus:3,restCd:.05}},
+ {id:'meldkamer',n:'Beveiligingsruimte',h:4,p:160000,col:'#7fb8ff',d:'Een muur vol schermen, een eigen server en een knop die alles wist. Hier zie je ze aankomen.',fx:{safe:.15,heat:.2,hideRisk:.05}},
+ {id:'kliniek',n:'Behandelkamer',h:5,p:350000,col:'#3fe395',d:'Een behandeltafel, een infuus en een arts die op afroep komt en nooit iets opschrijft.',fx:{docHp:8,docCd:.2,hpRegen:.15}},
+ {id:'tunnel',n:'Vluchttunnel',h:5,p:550000,col:'#9a7b5a',d:'Onder het tapijt een luik, daaronder tweehonderd meter tunnel naar de garage van de buren.',fx:{zone:.06,hideRate:.25}}];
+// Plafonds per effect: hoeveel alle spullen samen maximaal doen. Meer stapelen helpt daarboven niet (staat bij in de winkel).
+// en = 98: met alles op max blijft je max. energie 500 (zie EN_MAX). safe < 1, anders zou mislukken geld opleveren.
+const FURN_CAP={hpRegen:2,enRegen:.75,heat:1.5,focus:20,en:98,restHp:30,restCd:.45,zone:.3,safe:.75,docHp:15,docCd:.4,hideRate:1,hideRisk:.8};
 const FURN_FX={hpRegen:['Gezondheid herstelt',v=>'+'+Math.round(v*100)+'% sneller'],enRegen:['Energie laadt op',v=>'+'+Math.round(v*100)+'% sneller'],heat:['Hitte zakt',v=>'+'+Math.round(v*100)+'% sneller'],
  focus:['Rust in je hoofd',v=>'+'+v+'% slaagkans'],en:['Max. energie',v=>'+'+v],restHp:['Per rustbeurt',v=>'+'+v+'% gezondheid'],restCd:['Wachttijd rusten',v=>'-'+Math.round(v*100)+'%'],
  zone:['Groen gat bij vluchten',v=>'+'+Math.round(v*100)+'%'],safe:['Verlies bij mislukken',v=>'-'+Math.round(v*100)+'%'],

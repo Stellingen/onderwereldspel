@@ -1,5 +1,5 @@
 // Woning (Verblijf): elke woning als isometrisch tafereeltje (SVG) en inrichten met spullen.
-// Plekken per woning: HOMES[i].slots. Neergezet = S.furn (geeft voordeel via furnFx), opgeborgen = S.furnStore (doet niets).
+// Plekken per woning: houseSlots(id) = HOUSES[i].slots + TIER_SLOTS (VIP +2, High roller +5). Neergezet = S.furn (geeft voordeel via furnFx), opgeborgen = S.furnStore (doet niets).
 // Spullen met hmax (slaapzak, winkelwagen) passen niet in een betere woning en gaan bij verhuizen naar de opslag.
 
 /* ---------- isometrische tekenhulp ---------- */
@@ -474,10 +474,16 @@ const VH_ITEM={
 // fr(g,x,y,yy,s) = tekening op de voorkant van een blok (vlak y = yy), lokaal: x loopt mee, y = −hoogte
 const vhFront=(g,yy,s)=>`<g transform="${g.wr(yy)}">${s}</g>`;
 const vhSide=(g,xx,yr,s)=>`<g transform="${g.wl(xx,yr)}">${s}</g>`;
-const VH_SPOT={kraak:[[1.0,3.6],[5.5,5.3],[2.2,5.3],[8.0,3.2]],kamer:[[5.8,4.4],[0.5,4.5],[4.2,4.7],[6.0,2.4]],
- gracht:[[8.7,6.5],[6.8,6.6],[9.2,5.9],[7.4,.3],[.6,6.6],[5.3,6.7]],
- penthouse:[[2.4,7.2],[5.4,1.6],[4.0,7.4],[11.0,7.4],[2.2,3.4],[7.6,2.4],[11.0,3.4],[3.3,5.4],[1.4,5.0]],
- villa:[[2.4,5.4],[1.3,3.3],[3.4,6.8],[9.4,9.2],[13.1,7.0],[11.3,2.2],[3.6,9.4],[4.4,4.4],[1.2,6.6],[9.0,2.6]]};
+// Plekken per woning, in volgorde van gebruik (verspreid over het tafereel). Uitgerekend zodat niets overlapt: niet met elkaar,
+// niet met vaste meubels en niet met de vaste plek van een ander spul (VH_AT), ook niet met de maximale plekken van een High roller.
+// In de kleine huurkamer staan de spullen iets kleiner (VH_SPOT_K), anders passen er geen 11.
+const VH_SPOT={brug:[[0,0],[3,0],[1.8,1.3],[4.1,0],[3,1.1],[7.1,0]],
+ kraak:[[0,1.9],[4.3,0],[2.2,1.9],[5.4,0],[0,3],[4.6,1.1],[1.1,1.9],[5.7,1.4],[2.2,4],[1.1,3],[3.3,4],[1.1,4.1],[1.1,5.2],[2.2,5.1]],
+ kamer:[[1.8,.9],[4.8,1],[1.8,2.5],[5.8,3.4],[5.8,.9],[2.8,1],[3.8,3.7],[5.8,4.4],[2.8,2],[4.8,4.4],[4.8,3.4],[3.8,2.7],[3.8,1.7]],
+ gracht:[[1.4,.8],[7.1,0],[.6,3.7],[6.4,1.1],[2.5,.8],[1.1,6.3],[7.5,1.1],[3.7,3.3],[1.4,1.9],[8.6,.8],[4.8,3.3],[2.5,1.9],[6.4,2.2],[1.7,3],[3.7,4.4],[5.9,3.3],[4.8,4.4],[3.7,5.5]],
+ penthouse:[[4.9,1.6],[.9,3.5],[7.1,1.6],[1.1,7.4],[6,1.6],[1.1,4.6],[8.2,2.7],[3.9,7.1],[2,3.5],[4.9,2.7],[2.4,5.7],[6,2.7],[2.2,7.4],[3.1,3.5],[8,3.8],[2.2,4.6],[7.1,2.7],[3.3,4.6],[4.4,3.8],[3.5,5.7],[4.6,4.9]],
+ villa:[[0,3.1],[3.9,1.1],[7.8,1.1],[.5,5.6],[8.6,7.7],[0,8.7],[8.9,1.3],[1.3,4.2],[9.7,7.7],[3.5,4.2],[10,1.9],[1.6,5.3],[8.6,8.8],[1.3,7.5],[2.4,4.2],[9.7,8.8],[2.7,5.3],[1.1,8.7],[1.6,6.4],[3.8,5.3],[2.7,6.4],[2.4,7.5],[3.8,6.4],[3.5,7.5]]};
+const VH_SPOT_K={kamer:.85};
 const VH_GEN={
  meditatie(g,x,y){return g.ell(x+.5,y+.5,0,.42,'#4a3466')+g.ell(x+.5,y+.5,.08,.4,'#c9a2ff')+g.ell(x+.5,y+.5,.12,.22,'#e2ccff')+g.cyl(x+.95,y+.2,0,.05,.35,'#6b4a2a')+g.glow(x+.95,y+.2,.45,.4,'#ffb15a',.4)},
  koelkast(g,x,y){const w=.7,d=.6,h=1.6;let s=g.box(x,y,0,w,d,h,'#dfe7ee');
@@ -530,7 +536,69 @@ const VH_GEN={
   return s+g.glow(x+.5,y+.5,.6,.9,'#5ad1ff',.4)},
  paniekkamer(g,x,y){const w=1.1,d=1.0,h=2.1;let s=g.box(x,y,0,w,d,h,'#6a717c');
   s+=vhFront(g,y+d,`<rect x="${vhR(x+.2)}" y="${-h+.25}" width=".7" height="${vhR(h-.3)}" rx=".05" fill="#4f5560" stroke="#8a919c" stroke-width=".03"/><circle cx="${vhR(x+.55)}" cy="-1.05" r=".18" fill="none" stroke="#c9ced6" stroke-width=".05"/><path d="M${vhR(x+.37)} -1.05H${vhR(x+.73)}M${vhR(x+.55)} -1.23V-.87" stroke="#c9ced6" stroke-width=".04"/>`);
-  return s+`<circle class="vh-blink" cx="${g.P(x+.9,y+d,1.9)[0]}" cy="${g.P(x+.9,y+d,1.9)[1]}" r="2.4" fill="#5fe3a6"/>`}};
+  return s+`<circle class="vh-blink" cx="${g.P(x+.9,y+d,1.9)[0]}" cy="${g.P(x+.9,y+d,1.9)[1]}" r="2.4" fill="#5fe3a6"/>`},
+ // ---- uitbreiding november 2026 ----
+ matras(g,x,y){let s=g.box(x+.05,y+.08,0,.9,.86,.18,'#b7c3cf');
+  s+=`<g transform="${g.fl(.18)}"><rect x="${vhR(x+.05)}" y="${vhR(y+.08)}" width=".9" height=".86" fill="#dfe6ec"/>${[.15,.35,.55,.75].map(f=>`<path d="M${vhR(x+.05+.9*f)} ${vhR(y+.1)}V${vhR(y+.92)}" stroke="#8fb4d9" stroke-width=".06"/>`).join('')}<ellipse cx="${vhR(x+.62)}" cy="${vhR(y+.6)}" rx=".2" ry=".13" fill="#b9a77a" opacity=".5"/></g>`;
+  return s+g.box(x+.12,y+.16,.18,.28,.7,.1,'#f2f4f6')},
+ campingstoel(g,x,y){const c='#2f7a4a',m='#9aa3ad';let s='';
+  [y+.28,y+.72].forEach(yy=>s+=g.pl([[x+.25,yy,0],[x+.75,yy,.4]],m,1.3)+g.pl([[x+.75,yy,0],[x+.25,yy,.4]],m,1.3));
+  s+=g.pl([[x+.22,y+.25,0],[x+.22,y+.25,.98]],m,1.3)+g.pl([[x+.78,y+.25,0],[x+.78,y+.25,.98]],m,1.3);
+  s+=g.poly([[x+.22,y+.25,.98],[x+.78,y+.25,.98],[x+.78,y+.25,.44],[x+.22,y+.25,.44]],vhDrk(c,.12))+g.poly([[x+.22,y+.25,.44],[x+.78,y+.25,.44],[x+.78,y+.76,.4],[x+.22,y+.76,.4]],c);
+  s+=g.pl([[x+.22,y+.25,.64],[x+.22,y+.76,.62]],m,1.4)+g.pl([[x+.78,y+.25,.64],[x+.78,y+.76,.62]],m,1.4);
+  return s+g.cyl(x+.84,y+.66,.5,.06,.12,'#1c1d22')+g.cyl(x+.84,y+.66,.56,.035,.12,'#c0392b')},
+ radio(g,x,y){let s=g.box(x+.15,y+.2,0,.7,.6,.45,'#7a5b37')+vhFront(g,y+.8,`<path d="M${vhR(x+.15)} -.15H${vhR(x+.85)}M${vhR(x+.15)} -.3H${vhR(x+.85)}" stroke="#5a4228" stroke-width=".03"/>`);
+  s+=g.box(x+.25,y+.35,.45,.5,.25,.32,'#2a2c31')+vhFront(g,y+.6,`<circle cx="${vhR(x+.4)}" cy="-.61" r=".09" fill="#55585e"/><circle cx="${vhR(x+.4)}" cy="-.61" r=".05" fill="#1a1b1f"/><rect x="${vhR(x+.55)}" y="-.7" width=".15" height=".06" fill="#e2b23a"/><rect x="${vhR(x+.55)}" y="-.59" width=".04" height=".04" fill="#c9ced4"/><rect x="${vhR(x+.63)}" y="-.59" width=".04" height=".04" fill="#c9ced4"/>`);
+  s+=g.pl([[x+.72,y+.4,.77],[x+.98,y+.4,1.4]],'#c9ced4',.8);
+  return s+g.at(x+.45,y+.45,.85,'<text class="vh-spark" x="-2" y="-4" font-size="7" fill="#e2b23a">♪</text><text class="vh-spark s2" x="3" y="-2" font-size="6" fill="#ffd166">♫</text>')},
+ gasstel(g,x,y){let s=g.box(x+.2,y+.25,0,.55,.5,.12,'#3a3b40')+g.cyl(x+.47,y+.5,.12,.07,.05,'#1c1d22');
+  s+=g.cyl(x+.85,y+.78,0,.1,.32,'#2f6fc9',{top:'#5a8fe0'})+g.pl([[x+.78,y+.72,.06],[x+.7,y+.62,.08]],'#1c1d22',1.2);
+  s+=g.at(x+.47,y+.5,.17,'<g class="vh-flame"><path d="M-4 0q4-6 8 0z" fill="#4d9dff"/><path d="M-2 0q2-4 4 0z" fill="#bfe1ff"/></g>');
+  s+=g.cyl(x+.47,y+.5,.2,.22,.17,'#9aa3ad',{top:'#4a3020'})+g.pl([[x+.69,y+.5,.33],[x+.98,y+.5,.36]],'#2a2c31',1.6);
+  return s+g.at(x+.47,y+.5,.4,'<path class="vh-steam" d="M0 0c-2-3 2-5 0-8s2-5 0-8" stroke="rgba(255,255,255,.4)" fill="none" stroke-width="1.1"/>')+g.glow(x+.47,y+.5,.2,.5,'#4d9dff',.35)},
+ hangmat(g,x,y){const c='#e07a5f',w='#6b4a2a';let s=g.box(x,y+.45,0,1,.1,.06,w)+g.box(x,y+.3,0,.08,.4,.05,w)+g.box(x+.92,y+.3,0,.08,.4,.05,w);
+  s+=g.pl([[x+.04,y+.5,.06],[x+.14,y+.5,1.05]],w,2.2)+g.pl([[x+.96,y+.5,.06],[x+.86,y+.5,1.05]],w,2.2);
+  const A=g.P(x+.18,y+.36,.92),B=g.P(x+.82,y+.36,.92),C=g.P(x+.82,y+.64,.92),D=g.P(x+.18,y+.64,.92),m1=g.P(x+.5,y+.36,.2),m2=g.P(x+.5,y+.64,.2);
+  s+=g.pl([[x+.14,y+.5,1.02],[x+.18,y+.36,.92]],'#d9c9a6',.6)+g.pl([[x+.14,y+.5,1.02],[x+.18,y+.64,.92]],'#d9c9a6',.6)+g.pl([[x+.86,y+.5,1.02],[x+.82,y+.36,.92]],'#d9c9a6',.6)+g.pl([[x+.86,y+.5,1.02],[x+.82,y+.64,.92]],'#d9c9a6',.6);
+  s+=`<path d="M${A}Q${m1} ${B}L${C}Q${m2} ${D}Z" fill="${c}"/><path d="M${D}Q${m2} ${C}" fill="none" stroke="${vhDrk(c,.3)}" stroke-width="1.6"/><path d="M${A}Q${m1} ${B}" fill="none" stroke="#f2c230" stroke-width=".8" opacity=".7"/>`;
+  return s},
+ laptop(g,x,y){let s='';[[x+.15,y+.25],[x+.8,y+.25],[x+.15,y+.75],[x+.8,y+.75]].forEach(([a,b])=>s+=g.box(a,b,0,.05,.05,.6,'#2a2c31'));
+  s+=g.box(x+.1,y+.2,.6,.85,.65,.05,'#4a4d55')+g.box(x+.3,y+.38,.65,.45,.3,.02,'#1c1d22');
+  s+=g.poly([[x+.3,y+.38,.67],[x+.75,y+.38,.67],[x+.75,y+.33,.98],[x+.3,y+.33,.98]],'#121317')+g.poly([[x+.33,y+.375,.7],[x+.72,y+.375,.7],[x+.72,y+.335,.95],[x+.33,y+.335,.95]],'#0b2418');
+  [.9,.85,.8,.75].forEach((z,i)=>s+=g.pl([[x+.36,y+.36,z],[x+.4+((i*.13)%.25),y+.36,z]],'#5fe3a6',.6));
+  s+=g.box(x+.82,y+.55,.65,.09,.15,.02,'#1a1b1f')+g.box(x+.84,y+.72,.65,.09,.15,.02,'#2a2c31')+g.box(x+.14,y+.62,.65,.12,.12,.03,'#e2b23a');
+  return s+g.glow(x+.52,y+.4,.85,.8,'#5fe3a6',.35)},
+ roeier(g,x,y){const c='#4cc6ff';let s=g.box(x,y+.4,0,.12,.2,.12,'#1c1d22')+g.box(x+.05,y+.44,.12,.9,.12,.04,'#9aa3ad');
+  s+=g.box(x+.28,y+.38,.16,.26,.24,.08,'#2a2c31')+g.box(x+.6,y+.3,.05,.12,.12,.05,'#2a2c31')+g.box(x+.6,y+.58,.05,.12,.12,.05,'#2a2c31');
+  s+=g.box(x+.75,y+.32,0,.25,.36,.42,'#1c1d22')+vhFront(g,y+.68,`<circle cx="${vhR(x+.87)}" cy="-.27" r=".13" fill="#2a2c31" stroke="${c}" stroke-width=".03"/><circle cx="${vhR(x+.87)}" cy="-.27" r=".03" fill="${c}"/>`);
+  return s+g.pl([[x+.68,y+.32,.5],[x+.68,y+.68,.5]],c,1.8)+g.pl([[x+.68,y+.5,.5],[x+.78,y+.5,.38]],'#55585e',.6)},
+ kunst(g,x,y){let s=g.box(x+.25,y+.25,0,.5,.5,.7,'#e6e1d6')+g.cyl(x+.5,y+.5,.7,.12,.06,'#5a4020');
+  s+=g.at(x+.5,y+.5,.76,'<path d="M0 0c-6-4-7-12-2-18c4-5 10-3 9 3c-1 5-8 4-7 0" fill="none" stroke="#c9963a" stroke-width="3.2" stroke-linecap="round"/><path d="M0 0c-6-4-7-12-2-18" fill="none" stroke="#f0c46a" stroke-width="1" stroke-linecap="round" opacity=".6"/><circle cx="3" cy="-23" r="3.2" fill="#d9a441"/>');
+  return s+g.glow(x+.5,y+.5,1.0,.7,'#ffd59a',.3)},
+ wijnkast(g,x,y){const w=.7,d=.5,h=1.5;let s=g.box(x+.15,y+.25,0,w,d,h,'#2a1d1f'),b='';
+  for(let r=0;r<6;r++)for(let c=0;c<4;c++)b+=`<circle cx="${vhR(x+.26+c*.14)}" cy="${vhR(-h+.25+r*.2)}" r=".05" fill="${(r+c)%3?'#5a1424':'#2d4a1e'}"/>`;
+  s+=vhFront(g,y+.25+d,`<rect x="${vhR(x+.19)}" y="${vhR(-h+.08)}" width="${vhR(w-.08)}" height="${vhR(h-.2)}" fill="#1a0f12"/>${b}<rect x="${vhR(x+.19)}" y="${vhR(-h+.08)}" width="${vhR(w-.08)}" height="${vhR(h-.2)}" fill="#ffcf8a" opacity=".1"/><rect x="${vhR(x+.19)}" y="${vhR(-h+.08)}" width="${vhR(w-.08)}" height="${vhR(h-.2)}" fill="none" stroke="#6b5a4a" stroke-width=".03"/><rect x="${vhR(x+w+.05)}" y="${vhR(-h/2-.15)}" width=".03" height=".3" fill="#c9ced4"/>`);
+  return s+g.glow(x+.5,y+.8,.9,.7,'#ff8a5a',.25)},
+ biljart(g,x,y){let s='';[[x+.08,y+.2],[x+.86,y+.2],[x+.08,y+.74],[x+.86,y+.74]].forEach(([a,b])=>s+=g.box(a,b,0,.07,.07,.55,'#3a2416'));
+  s+=g.box(x,y+.12,.55,1,.76,.2,'#4a2c18')+`<g transform="${g.fl(.75)}"><rect x="${vhR(x+.07)}" y="${vhR(y+.19)}" width=".86" height=".62" fill="#2f8a4a"/>${[[.07,.19],[.5,.19],[.93,.19],[.07,.81],[.5,.81],[.93,.81]].map(([a,b])=>`<circle cx="${vhR(x+a)}" cy="${vhR(y+b)}" r=".045" fill="#0d0d0f"/>`).join('')}</g>`;
+  [[.3,.42,'#f4f0e6'],[.62,.5,'#c0392b'],[.68,.4,'#f2c230'],[.72,.6,'#1c1c20'],[.78,.5,'#2f6a9a']].forEach(([a,b,c])=>s+=g.at(x+a,y+b,.75,`<circle cy="-1" r="1.4" fill="${c}"/>`));
+  return s+g.pl([[x+.12,y+.62,.8],[x+.55,y+.38,.84]],'#c9a27a',1.1)},
+ meldkamer(g,x,y){let s=g.box(x+.05,y+.15,0,.9,.4,.6,'#22252b')+g.box(x+.05,y+.1,.6,.9,.5,.04,'#33373f')+g.box(x+.08,y+.12,.64,.84,.06,.9,'#15171c'),m='';
+  [[0,0],[1,0],[0,1],[1,1]].forEach(([c,r])=>{const x0=x+.13+c*.4,v0=-1.48+r*.42;m+=`<rect x="${vhR(x0)}" y="${vhR(v0)}" width=".36" height=".36" fill="#0b1520"/><rect x="${vhR(x0+.03)}" y="${vhR(v0+.03)}" width=".3" height=".3" fill="${['#2a4a6a','#1f3a2a','#3a2a4a','#2a3a4a'][c+r*2]}"/><rect x="${vhR(x0+.06)}" y="${vhR(v0+.2)}" width=".12" height=".1" fill="#7fb8ff" opacity=".5"/><rect class="vh-scr" x="${vhR(x0+.03)}" y="${vhR(v0+.03)}" width=".3" height=".3" fill="#fff"/>`});
+  s+=vhFront(g,y+.18,m+`<circle class="vh-blink" cx="${vhR(x+.88)}" cy="-1.52" r=".03" fill="#ff3d52"/>`);
+  s+=g.box(x+.3,y+.75,0,.06,.06,.4,'#1c1d22')+g.box(x+.15,y+.62,.4,.36,.32,.06,'#2a2c31')+g.box(x+.15,y+.9,.46,.36,.05,.42,'#2a2c31');
+  return s+g.glow(x+.5,y+.3,1.2,.9,'#7fb8ff',.35)},
+ kliniek(g,x,y){let s=g.box(x+.1,y+.35,0,.8,.4,.08,'#9aa3ad')+g.box(x+.15,y+.5,.08,.06,.06,.4,'#c9ced4')+g.box(x+.79,y+.5,.08,.06,.06,.4,'#c9ced4');
+  s+=g.box(x+.05,y+.32,.48,.9,.46,.08,'#dfe5ea')+g.box(x+.08,y+.35,.56,.84,.4,.05,'#e9eef2')+g.box(x+.4,y+.34,.61,.55,.42,.03,'#3fe395',{edge:false})+g.box(x+.1,y+.38,.61,.22,.34,.06,'#f6f8fa');
+  s+=g.pl([[x+.12,y+.15,0],[x+.12,y+.15,1.35]],'#c9ced4',1.1)+g.pl([[x+.12,y+.15,1.35],[x+.22,y+.15,1.35]],'#c9ced4',1)+g.box(x+.16,y+.12,1.05,.12,.06,.2,{t:'#e9f8ff',l:'rgba(220,240,255,.75)',r:'rgba(200,225,240,.7)'});
+  s+=g.pl([[x+.22,y+.15,1.05],[x+.35,y+.45,.66]],'rgba(220,240,255,.6)',.6)+g.pl([[x+.85,y+.15,0],[x+.85,y+.15,.9]],'#55585e',1.2)+g.box(x+.7,y+.08,.9,.3,.08,.24,'#1c1d22');
+  s+=vhFront(g,y+.16,`<rect x="${vhR(x+.72)}" y="-1.12" width=".26" height=".2" fill="#06140c"/><path d="M${vhR(x+.73)} -1.02h.06l.03-.07l.04.13l.03-.06h.08" stroke="#3fe395" stroke-width=".015" fill="none"/>`);
+  return s+g.glow(x+.85,y+.2,1.0,.5,'#3fe395',.3)},
+ tunnel(g,x,y){let s=`<g transform="${g.fl(0)}"><rect x="${vhR(x+.18)}" y="${vhR(y+.25)}" width=".64" height=".62" fill="#5a4a3a"/><rect x="${vhR(x+.24)}" y="${vhR(y+.31)}" width=".52" height=".5" fill="#060505"/>
+   <path d="M${vhR(x+.36)} ${vhR(y+.32)}V${vhR(y+.8)}M${vhR(x+.64)} ${vhR(y+.32)}V${vhR(y+.8)}" stroke="#7a6a5a" stroke-width=".03"/>${[.42,.54,.66,.78].map(f=>`<path d="M${vhR(x+.36)} ${vhR(y+f)}H${vhR(x+.64)}" stroke="#7a6a5a" stroke-width=".025" opacity="${vhR(1.2-f)}"/>`).join('')}</g>`;
+  s+=g.glow(x+.5,y+.6,-.1,.35,'#ffcf8a',.35)+g.poly([[x+.18,y+.25,0],[x+.82,y+.25,0],[x+.82,y+.15,.6],[x+.18,y+.15,.6]],'#6b5640');
+  s+=g.pl([[x+.18,y+.2,.3],[x+.82,y+.2,.3]],'#4a3a2a',.8)+g.box(x+.45,y+.17,.36,.1,.04,.06,'#9aa3ad');
+  return s+g.box(x+.08,y+.9,0,.84,.1,.1,'#8a2a2a')+g.box(x+.08,y+.9,.1,.84,.05,.02,'#c9a227',{edge:false})}};
 const VH_AT={
  brug:{slaapzak:{x:.42,y:2.0,z:.2,dx:1.2,dy:1.8,dir:'y'},kar:{x:6.2,y:.9,dx:.8,dy:1.3},hond:{x:3.1,y:3.7}},
  kraak:{slaapzak:{x:1.3,y:.42,z:.22,dx:1.92,dy:1.26,dir:'x'},kar:{x:7.2,y:2.5,dx:.8,dy:1.3},hond:{x:3.6,y:3.6},kaarsen:{x:3.62,y:.52,z:.55},sloten:{door:1}},
@@ -556,7 +624,9 @@ function vhScene(hid,o){o=o||{};const g=vhIso('v'+hid+(o.key||'')+'_'),F=o.furn|
  // nieuwe spullen op de vrije plekken: eerst wat je hebt, daarna (in de winkel) wat je zou kunnen neerzetten
  const sp=VH_SPOT[hid]||[],gen=FURN.filter(f=>VH_GEN[f.id]&&!(VH_AT[hid]&&VH_AT[hid][f.id])),mine=gen.filter(f=>F[f.id]),maybe=GH?gen.filter(f=>!F[f.id]&&furnFits(f,hi)):[];
  mine.concat(maybe).slice(0,sp.length).forEach((f,i)=>{const [x,y]=sp[i],own=!!F[f.id];
-  L.obj.push({k:x+y+1,s:`<g class="vh-it${own?'':' vh-ghost'}" data-it="${f.id}">${g.ell(x+.5,y+.5,0,.55,'rgba(0,0,0,.28)')}${VH_GEN[f.id](g,x,y,f)}</g>`})});
+  // kleiner tekenen = schalen rond het midden van het vak (de isometrie is lineair); binnenste groep, zodat de val-animatie blijft werken
+  const k=VH_SPOT_K[hid]||1,c=g.P(x+.5,y+.5,0),body=g.ell(x+.5,y+.5,0,.55,'rgba(0,0,0,.28)')+VH_GEN[f.id](g,x,y,f);
+  L.obj.push({k:x+y+1,s:`<g class="vh-it${own?'':' vh-ghost'}" data-it="${f.id}">${k<1?`<g transform="translate(${c[0]} ${c[1]}) scale(${k}) translate(${-c[0]} ${-c[1]})">${body}</g>`:body}</g>`})});
  const pad=16,vb=[bx.x0-pad,bx.y0-pad,bx.x1-bx.x0+pad*2,bx.y1-bx.y0+pad*2].map(vhR).join(' ');
  const zz=L.bed&&!o.thumb?(p=>`<g class="vh-zz" transform="translate(${p[0]} ${p[1]})"><text x="0" y="0">z</text><text x="7" y="-9">z</text><text x="15" y="-20">Z</text></g>`)(g.P(L.bed[0],L.bed[1],L.bed[2])):'';
  return `<svg class="vh-svg${o.thumb?' vh-thumb':''}" viewBox="${vb}" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs>${g.defs.join('')}</defs>${L.walls.join('')}${L.wall.join('')}${L.floor.join('')}${L.obj.sort((a,b)=>a.k-b.k).map(x=>x.s).join('')}${L.front.join('')}${zz}</svg>`}
@@ -565,15 +635,30 @@ function vhScene(hid,o){o=o||{};const g=vhIso('v'+hid+(o.key||'')+'_'),F=o.furn|
 const furnHi=()=>HOMES.indexOf(home());
 const furnFits=(f,hi)=>hi>=f.h&&(f.hmax==null||hi<=f.hmax);
 const furnPlaced=()=>FURN.filter(f=>S.furn&&S.furn[f.id]);
-const furnFree=()=>Math.max(0,(home().slots||0)-furnPlaced().length);
+// Plekken: elke woning (HOUSES) heeft zijn eigen aantal (Onder de brug 2 … Landgoed 15), plus altijd +2 voor VIP en +5 voor High roller.
+const tierSlots=()=>(typeof TIER_SLOTS!=='undefined'&&TIER_SLOTS[tier()])||0;
+const houseSlotsBase=id=>{const L=houseOf(id);return L.slots||(HOMES.find(t=>t.id===L.t)||HOMES[0]).slots||0};
+const houseSlots=id=>houseSlotsBase(id)+tierSlots();
+const furnSlots=()=>houseSlots((S&&S.home)||'brug');
+// plekken van een soort woning (van de goedkoopste tot de duurste van die soort), voor 'nog op slot'
+const typeSlots=t=>{const L=HOUSES.filter(x=>x.t===t).map(x=>houseSlots(x.id));return L.length?[Math.min(...L),Math.max(...L)]:[0,0]};
+const furnFree=()=>Math.max(0,furnSlots()-furnPlaced().length);
 // Past alles nog? Spullen die niet in deze woning passen of te veel zijn, gaan naar de opslag.
-function furnNormalize(){S.furn=S.furn||{};S.furnStore=S.furnStore||{};const hi=furnHi(),moved=[];
+// keep = te veel spullen laten staan (bij het laden zonder antwoord van de server weten we je lidmaatschap niet zeker)
+function furnNormalize(keep){S.furn=S.furn||{};S.furnStore=S.furnStore||{};const hi=furnHi(),moved=[];
  Object.keys(S.furn).forEach(k=>{if(!FURN.find(f=>f.id===k))delete S.furn[k]});Object.keys(S.furnStore).forEach(k=>{if(!FURN.find(f=>f.id===k)||S.furn[k])delete S.furnStore[k]});
  FURN.forEach(f=>{if(S.furn[f.id]&&!furnFits(f,hi)){delete S.furn[f.id];S.furnStore[f.id]=1;moved.push(f)}});
- const pl=furnPlaced().sort((a,b)=>b.p-a.p);while(pl.length>(home().slots||0)){const f=pl.pop();delete S.furn[f.id];S.furnStore[f.id]=1;moved.push(f)}
+ if(!keep){const pl=furnPlaced().sort((a,b)=>b.p-a.p);while(pl.length>furnSlots()){const f=pl.pop();delete S.furn[f.id];S.furnStore[f.id]=1;moved.push(f)}}
  return moved}
-furnNormalize();
-const furnFxList=f=>Object.entries(f.fx).map(([k,v])=>FURN_FX[k]?`<span>${FURN_FX[k][0]} <b>${FURN_FX[k][1](v)}</b></span>`:'').join('');
+furnNormalize(window.__TIER__==null);
+// effecten van een spul; zit je met dat effect al op het plafond (FURN_CAP), dan staat er 'max' bij (bij iets dat al staat: als het erboven komt)
+const furnCapHit=(k,own)=>typeof FURN_CAP!=='undefined'&&FURN_CAP[k]!=null&&(own?furnFxRaw(k)>FURN_CAP[k]+1e-9:furnFxRaw(k)>=FURN_CAP[k]-1e-9);
+const furnCapTxt=k=>FURN_FX[k][1](FURN_CAP[k]);
+const furnFxList=f=>{const own=!!(S.furn&&S.furn[f.id]);return Object.entries(f.fx).map(([k,v])=>{if(!FURN_FX[k])return '';const c=furnCapHit(k,own);
+ return `<span${c?` class="cap" title="Maximaal ${furnCapTxt(k)} uit inrichting. ${own?'Je zit erboven: dit deel telt niet mee.':'Je zit al op het maximum: dit helpt niet meer.'}"`:''}>${FURN_FX[k][0]} <b>${FURN_FX[k][1](v)}</b>${c?'<em>max</em>':''}</span>`}).join('')};
+// plekken als blokjes; de extra plekken van je lidmaatschap hebben een gouden rand
+function furnSlotBar(used){const n=furnSlots(),t=tierSlots(),b=n-t;
+ return `<div class="vh-slots" title="${used} van ${n} plekken bezet${t?', waarvan '+t+' extra als '+lidName():''}">${Array.from({length:n},(_,i)=>`<i class="${i<used?'on':''}${i>=b?' x':''}"></i>`).join('')}<span>${used}/${n}</span>${t?`<em class="vh-tx${isHR()?' hr':''}">+${t} ${isHR()?'HR':'VIP'}</em>`:''}</div>`}
 const furnSell=f=>Math.floor(f.p*.5/10)*10;
 function furnWhy(f){const hi=furnHi();if(hi<f.h)return 'Vanaf '+HOMES[f.h].n.toLowerCase();if(f.hmax!=null&&hi>f.hmax)return 'Past niet meer bij je woning';return ''}
 // Lijst met spullen voor het inrichten (rechts naast het tafereel)
@@ -586,8 +671,8 @@ function furnPanelHtml(){const hi=furnHi(),h=home(),used=furnPlaced().length,fre
   return `<li class="vh-row ${kind}" data-it="${f.id}" style="--c:${f.col}" onmouseenter="vhHover('${f.id}')" onmouseleave="vhHover(null)" onfocusin="vhHover('${f.id}')"><i></i><div class="vh-rb"><b>${f.n}</b><p>${f.d}</p><div class="vh-fx">${furnFxList(f)}</div></div><div class="vh-rbtn">${btn}</div></li>`};
  const placed=furnPlaced(),stored=FURN.filter(f=>S.furnStore&&S.furnStore[f.id]),buy=FURN.filter(f=>!S.furn[f.id]&&!(S.furnStore&&S.furnStore[f.id])&&furnFits(f,hi)),later=FURN.filter(f=>!S.furn[f.id]&&!(S.furnStore&&S.furnStore[f.id])&&hi<f.h);
  const sec=(t,list,kind,note)=>list.length?`<div class="vh-sec"><h4>${t}${note?`<span>${note}</span>`:''}</h4><ul>${list.map(f=>row(f,kind)).join('')}</ul></div>`:'';
- return `<div class="vh-ph"><div><div class="label">Inrichten</div><h3>${h.n}</h3></div><div class="vh-slots" title="${used} van ${h.slots} plekken bezet">${Array.from({length:h.slots},(_,i)=>`<i class="${i<used?'on':''}"></i>`).join('')}<span>${used}/${h.slots}</span></div></div>
-  <p class="vh-pnote">Er passen ${h.slots} spullen in ${h.n.toLowerCase()==='onder de brug'?'je plek onder de brug':'je '+h.n.toLowerCase()}. Wat neerstaat, werkt. Wat je opbergt, bewaar je voor later.</p>
+ return `<div class="vh-ph"><div><div class="label">Inrichten</div><h3>${h.n}</h3></div>${furnSlotBar(used)}</div>
+  <p class="vh-pnote">Er passen ${furnSlots()} spullen in ${h.n.toLowerCase()==='onder de brug'?'je plek onder de brug':'je '+h.n.toLowerCase()}. Wat neerstaat, werkt. Wat je opbergt, bewaar je voor later.</p>
   ${sec('In huis',placed,'in')}${sec('Te koop',buy,'buy',free?free+' plek'+(free>1?'ken':'')+' vrij':'alles vol')}${sec('In de opslag',stored,'store')}${sec('Later',later,'later','beter wonen')}
   <button class="btn ghost vh-done" onclick="vbEdit(false)">Klaar</button>`}
 // Wijs je een regel aan, dan licht het spul (of de plek waar het komt) op in het tafereel

@@ -433,3 +433,36 @@
 .vg-sum2 dd{margin:0;font-size:13px;overflow:visible;text-overflow:clip;text-align:right}
 .vg-sell{margin-top:0}.vg-sell .btn{flex:1 1 150px}
 @media (max-width:600px){.vg-o{grid-template-columns:72px minmax(0,1fr)}.vg-sum2{grid-template-columns:1fr}.vg-sum2 div:last-child{grid-column:auto}}
+/* ===== Inrichting: meer plekken (VIP/HR), plafonds per effect, overzichtelijke winkel (november 2026) ===== */
+.vh-slots i.x{border-color:#e9b949;border-style:dashed}
+.vh-slots i.x.on{background:#e9b949;border-color:#e9b949;border-style:solid}
+.vh-slots .vh-tx{flex:none;font-style:normal;font-family:var(--f-head);font-weight:900;font-size:9.5px;letter-spacing:.12em;line-height:1;padding:3px 6px 2px;border-radius:99px;margin-left:6px;color:#1a1206;background:linear-gradient(135deg,#ffe9a8,#e9b949)}
+.vh-slots .vh-tx.hr{color:#fff;background:linear-gradient(135deg,#c4a5f5,#7c3aed)}
+.fs-fx span em,.vh-fx span em,.vh-sum li em{font-style:normal;font-family:var(--f-mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;margin-left:5px;padding:1px 4px;border-radius:4px;background:rgba(255,173,58,.14);color:var(--acc)}
+.fs-fx span.cap b,.vh-fx span.cap b{color:var(--faint)}
+/* in huis: compacte kaarten zonder verhaaltje, zodat 20 spullen te overzien zijn */
+.fs-sec.in .fs-grid{grid-template-columns:repeat(auto-fill,minmax(min(330px,100%),1fr));gap:8px}
+.fs-sec.in .fs-h{min-width:0}.fs-sec.in .fs-h b{min-width:0;overflow-wrap:break-word;hyphens:auto}
+.fs-sec.in .fs-card{grid-template-columns:40px minmax(0,1fr);gap:10px;padding:10px 12px}
+.fs-sec.in .fs-ic{width:40px;height:40px;border-radius:10px}.fs-sec.in .fs-ic svg{width:22px;height:22px}
+.fs-sec.in .fs-b p,.fs-sec.in .fs-p{display:none}.fs-sec.in .fs-h b{font-size:15px}
+.fs-sec.in .fs-f{justify-content:flex-end}
+/* nog op slot: ingeklapt */
+.fs-later{margin:18px 0 0;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.fs-later>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;padding:12px 44px 12px 16px;min-height:48px;position:relative}
+.fs-later>summary::-webkit-details-marker{display:none}
+.fs-later>summary b{font-family:var(--f-head);font-weight:800;font-size:18px;text-transform:uppercase}
+.fs-later>summary span{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.fs-later>summary::after{content:"";position:absolute;right:18px;top:50%;width:8px;height:8px;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);transform:translateY(-70%) rotate(45deg);transition:transform .2s}
+.fs-later[open]>summary::after{transform:translateY(-30%) rotate(-135deg)}
+.fs-later>summary:focus-visible{outline:2px solid var(--sec,var(--acc));outline-offset:2px}
+.fs-later .fs-sec{margin:0;padding:4px 14px 14px}
+@media (prefers-reduced-motion:reduce){.fs-later>summary::after{transition:none}}
+@media (prefers-reduced-motion:reduce){.vh-svg *{animation:none!important}}
+.fs-sec.in .fs-b{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:5px 10px}
+.fs-sec.in .fs-h{grid-column:1;grid-row:1}.fs-sec.in .fs-fx{grid-column:1/-1;grid-row:2}.fs-sec.in .fs-h .fs-in{display:none}
+.fs-sec.in .fs-f{grid-column:2;grid-row:1;margin:0;padding:0}
+.fs-sec.in .fs-btn .btn{padding:7px 10px;font-size:12px}
+.fs-later .fs-card .fs-lock,.fs-later .fs-why{display:none}.fs-h span{max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mk-val>div{min-width:0}.mk-val b small{display:block;white-space:normal;overflow-wrap:anywhere}
+.mk-val{grid-template-columns:repeat(auto-fit,minmax(min(126px,100%),1fr))}

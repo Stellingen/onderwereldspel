@@ -188,7 +188,9 @@ const famScale=()=>{const i=famRankIdx();return i>FAM_TOP+1?1.25:.5+.1*i};
 const fam=()=>{const f=famBase();if(!f)return {chance:0,loot:0,jail:0};const k=famScale();
  return Object.assign({},f,{chance:Math.round(f.chance*k*10)/10,loot:Math.round(f.loot*k*10)/10,jail:Math.round(f.jail*k*10)/10})};
 const famPerk=k=>{const f=famBase();return f&&f.perk.fx[k]?f.perk.fx[k]*famScale():0};
-const furnFx=k=>FURN.reduce((a,f)=>a+((S&&S.furn&&S.furn[f.id])?(f.fx[k]||0):0),0);
+// inrichting: wat alle neergezette spullen samen doen, per effect afgetopt op FURN_CAP (furnFxRaw = zonder plafond)
+const furnFxRaw=k=>FURN.reduce((a,f)=>a+((S&&S.furn&&S.furn[f.id])?(f.fx[k]||0):0),0);
+const furnFx=k=>{const v=furnFxRaw(k),c=typeof FURN_CAP!=='undefined'?FURN_CAP[k]:null;return c!=null?Math.min(c,v):v};
 const buffFocus=()=>(S.buffs&&S.buffs.focus&&S.buffs.focus.until>now())?S.buffs.focus.pct:0;
 const buffLoot=()=>(S.buffs&&S.buffs.loot&&S.buffs.loot.until>now())?S.buffs.loot.pct:0;
 const sk=id=>(S.skills&&S.skills[id])||0;
