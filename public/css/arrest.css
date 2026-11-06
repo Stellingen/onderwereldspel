@@ -1,0 +1,104 @@
+/* Arrestatieverloop (arrest.js): politiecel, advocaat, verhoor, officier van justitie, afdoening. Plus de statuskaarten. */
+.ar-ov{position:fixed;inset:0;z-index:66;background:rgba(3,5,9,.9);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;
+  padding:max(12px,env(safe-area-inset-top,0px)) 12px max(12px,env(safe-area-inset-bottom,0px));overflow-y:auto;animation:arIn .2s}
+.ar-ov.out{opacity:0;transition:opacity .2s}
+@keyframes arIn{from{opacity:0}}
+.ar-box{--ac:#7fa4ff;width:min(640px,100%);min-width:0;border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);border-radius:14px;background:#0b0f17;overflow:hidden;
+  box-shadow:0 30px 80px -30px color-mix(in srgb,var(--ac) 50%,transparent);display:flex;flex-direction:column}
+.ar-box.ok{--ac:var(--green)}.ar-box.bad{--ac:var(--red)}.ar-box.mid{--ac:var(--acc)}
+.ar-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:11px 16px;border-bottom:1px solid var(--line);background:#0e1420}
+.ar-top .label{color:#9fc0ff;min-width:0;overflow-wrap:anywhere}
+.ar-steps{display:flex;gap:4px;margin:0;padding:0;list-style:none;min-width:0}
+.ar-steps li{font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border:1px solid var(--line2);border-radius:20px;color:var(--faint);white-space:nowrap}
+.ar-steps li.done{color:var(--mute);border-color:var(--line2);background:#121826}
+.ar-steps li.now{color:#0b0f17;background:var(--ac);border-color:var(--ac);font-weight:600}
+.ar-body{display:flex;flex-direction:column;gap:14px;padding:18px 18px 16px;min-width:0}
+.ar-body>p{margin:0;color:var(--mute);font-size:14.5px;line-height:1.5}
+.ar-hd{display:flex;align-items:center;gap:12px;min-width:0}
+.ar-hd>div{min-width:0}
+.ar-hd .label{display:block;color:var(--mute);overflow-wrap:anywhere}
+.ar-hd h2{margin:2px 0 0;font-size:24px;line-height:1.15}
+.ar-ic{width:22px;height:22px;flex:0 0 22px}
+.ar-hd>.ar-ic{width:42px;height:42px;flex:0 0 42px;padding:9px;border-radius:10px;color:var(--ac);background:color-mix(in srgb,var(--ac) 12%,transparent);border:1px solid color-mix(in srgb,var(--ac) 35%,transparent)}
+/* bewijsmeter */
+.ar-meter{display:flex;flex-direction:column;gap:5px}
+.ar-m-h{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.ar-m-h b{font-size:20px;letter-spacing:0;color:var(--acc)}.ar-m-h b.ok{color:var(--green)}.ar-m-h b.bad{color:var(--red)}
+.ar-m-bar{position:relative;height:8px;border-radius:5px;background:#18202e;overflow:hidden}
+.ar-m-bar>i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg,#3fe395,#ffad6b 55%,#ff3d52);transition:width .4s}
+.ar-m-bar>u{position:absolute;top:-2px;bottom:-2px;width:2px;background:#e8ecf4;opacity:.7}
+.ar-meter small{color:var(--faint);font-size:12px}
+/* keuzes */
+.ar-opts{display:flex;flex-direction:column;gap:8px}
+.ar-op{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"t e" "s s";gap:3px 10px;align-items:center;width:100%;min-width:0;padding:12px 14px;text-align:left;
+  color:var(--fg);background:var(--panel2);border:1px solid var(--line2);border-radius:10px;cursor:pointer;font:inherit;transition:border-color .15s,background .15s}
+.ar-op:hover:not(:disabled),.ar-op:focus-visible{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 8%,var(--panel2));outline:none}
+.ar-op:disabled{opacity:.45;cursor:not-allowed}
+.ar-op b{grid-area:t;font-size:15.5px;min-width:0}
+.ar-op span{grid-area:s;color:var(--mute);font-size:13px;line-height:1.4}
+.ar-op em{grid-area:e;font-style:normal;font-family:var(--f-mono);font-size:11px;white-space:nowrap;padding:3px 7px;border-radius:6px;color:var(--ac);background:color-mix(in srgb,var(--ac) 12%,transparent)}
+.ar-foot{display:flex;flex-direction:column;gap:6px;padding-top:4px;border-top:1px dashed var(--line2)}
+.ar-q{margin-top:8px;justify-content:flex-start;text-align:left;text-transform:none;letter-spacing:0;font-size:14.5px;padding:10px 14px}
+.ar-q>span{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.ar-q small{font-family:var(--f-mono);font-size:11px;opacity:.75;font-weight:500}
+.ar-max{color:var(--faint);font-size:11.5px;text-align:center}
+.ar-acts{display:flex;gap:8px}
+.ar-acts .btn{flex:1}
+/* piket wachten */
+.ar-wait{display:flex;flex-direction:column;gap:8px;align-items:stretch}
+.ar-wait b{font-family:var(--f-mono);font-size:30px;text-align:center;color:var(--ac)}
+.ar-wait .ar-m-bar>i{background:var(--ac)}
+/* beslissing */
+.ar-prs{display:flex;flex-direction:column;gap:6px}
+.ar-pr{display:grid;grid-template-columns:minmax(96px,9.5em) minmax(0,1fr) 3.2em;align-items:center;gap:10px;font-size:13px;color:var(--mute);padding:4px 6px;border-radius:6px}
+.ar-pr i{height:6px;border-radius:4px;background:#18202e;overflow:hidden}.ar-pr i u{display:block;height:100%;background:var(--line2)}
+.ar-pr b{font-family:var(--f-mono);text-align:right;font-weight:500}
+.ar-pr.on{color:var(--fg);background:color-mix(in srgb,var(--ac) 12%,transparent)}.ar-pr.on i u{background:var(--ac)}
+.ar-dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}
+.ar-dl div{padding:8px 10px;background:var(--panel2);border-radius:8px;min-width:0}
+.ar-dl dt{font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.ar-dl dd{margin:2px 0 0;font-size:13.5px;overflow-wrap:anywhere}.ar-dl dd.ok{color:var(--green)}.ar-dl dd.bad{color:var(--red)}
+/* taakstraf */
+.ar-tk-how.dim{opacity:.55}
+.ar-tk-h{display:flex;justify-content:space-between;gap:10px;font-family:var(--f-mono);font-size:12px;color:var(--mute)}
+.ar-tk-h b{color:var(--fg);font-size:15px}
+.ar-tk-bar>i{background:var(--acc)}
+.ar-wall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:min(100%,330px);margin:0 auto;padding:10px;border-radius:10px;
+  background:repeating-linear-gradient(0deg,#3a2c26 0 22px,#2b201c 22px 24px),#3a2c26}
+.ar-tile{position:relative;aspect-ratio:1;border:0;border-radius:6px;background:rgba(255,255,255,.04);cursor:pointer;padding:6px;display:grid;place-items:center;touch-action:manipulation;color:var(--fg)}
+.ar-tile svg{width:100%;height:auto;opacity:0;transition:opacity .12s}
+.ar-tile.on svg{opacity:1}
+.ar-tile.on{background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
+.ar-tile.clean{background:rgba(63,227,149,.25)}.ar-tile.dry{background:rgba(255,61,82,.25)}
+.ar-tile kbd{position:absolute;left:5px;top:3px;font-family:var(--f-mono);font-size:10px;color:rgba(255,255,255,.35)}
+@media (max-width:560px){
+  .ar-ov{place-items:start center}
+  .ar-body{padding:14px 14px 14px;gap:12px}
+  .ar-hd h2{font-size:20px}
+  .ar-hd>.ar-ic{width:36px;height:36px;flex-basis:36px;padding:7px}
+  .ar-steps li{padding:2px 5px;font-size:9px}
+  .ar-dl{grid-template-columns:minmax(0,1fr)}
+  .ar-pr{grid-template-columns:minmax(0,8.5em) minmax(0,1fr) 3em;gap:6px}
+}
+/* statuskaarten: misdaden, politiebureau */
+.ar-gv{margin:0 0 18px;padding:16px;background:var(--panel);border:1px solid var(--line);display:flex;flex-direction:column;gap:12px;min-width:0}
+.ar-gv-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.ar-gv-h h2{margin:0;font-size:18px}.ar-gv-h span{color:var(--mute);font-size:13px;min-width:0}
+.ar-gv-l{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.ar-gv-l span{display:flex;flex-direction:column;gap:1px;padding:7px 10px;border-left:3px solid var(--c);background:var(--bg2);font-size:12.5px;color:var(--mute);min-width:0}
+.ar-gv-l b{color:var(--fg);font-size:12.5px}
+.ar-sts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ar-st{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;background:var(--bg2);border:1px solid var(--line);min-width:0}
+.ar-st>.ar-ic{color:var(--mute);margin-top:2px}
+.ar-st>div{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.ar-st b{font-family:var(--f-mono);font-size:16px;font-weight:500;overflow-wrap:anywhere}.ar-st b small{color:var(--faint);font-size:11px}
+.ar-st em{font-style:normal;font-size:12px;line-height:1.35;color:var(--mute);overflow-wrap:anywhere}
+.ar-st .ar-m-bar{height:6px}.ar-st .ar-m-bar>i{background:var(--violet)}
+.ar-st.warn{border-color:color-mix(in srgb,var(--acc) 50%,transparent)}.ar-st.warn>.ar-ic{color:var(--acc)}
+.ar-st.bad{border-color:color-mix(in srgb,var(--red) 55%,transparent)}.ar-st.bad>.ar-ic{color:var(--red)}.ar-st.bad .ar-m-bar>i{background:var(--red)}
+.ar-pb{margin-top:16px}
+.kl.ban,.klb.ban{opacity:.7}
+.kl.ban .kl-go,.klb.ban .kl-go{background:var(--red-dim);color:#ffb3bc}
+@media (max-width:900px){.ar-gv-l{grid-template-columns:repeat(2,minmax(0,1fr))}.ar-sts{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:420px){.ar-gv-l{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){.ar-ov{animation:none}.ar-m-bar>i,.ar-tile svg{transition:none}.ar-ov.out{transition:none}}

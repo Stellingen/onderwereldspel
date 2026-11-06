@@ -120,6 +120,7 @@ V.politie=()=>{if(pbExpire())save();const L=pbList(),open=pbOpen(),fr=pbFronts()
   <div class="pb-hero-t"><span class="label">${pbI('badge')} Bureau Centrum · 24 uur open</span><h1>Politiebureau</h1>
    <p>Opgepakt met meer zwart geld dan je kunt verantwoorden? Dan ligt het hier. Toon via je zaak aan dat het van jou is en je krijgt het terug.</p></div>
 </section>
+ ${typeof arPbHtml==='function'?arPbHtml():''}
  <div class="pb-kpis">${kpi('folder','Open dossiers',open.length,open.length?'nog terug te eisen':'niets openstaand',open.length?'warn':'')}
   ${kpi('lock','In beslag',fmt(open.reduce((a,d)=>a+d.a,0)),'open bedrag')}
   ${kpi('cash','Teruggekregen',fmt(L.filter(d=>d.st==='won').reduce((a,d)=>a+(d.back||0),0)),'na belasting','ok')}

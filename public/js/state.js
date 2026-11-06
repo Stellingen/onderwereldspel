@@ -259,21 +259,24 @@ function arrest(sec,title,msg,opts){
   const pa={sec,title,msg,opts,fleeing:false};S.pendingArrest=pa;save();pushState();
   const ch=Math.round(talkChance()*mult);
   const plain=jailSec(sec);
-  const goJail=(extra,why)=>jailFor(pa,extra,why);
+  // opts.flow (klussen, FIOD-inval): niet meteen de cel in, maar het arrestatieverloop (arrest.js)
+  const goJail=(extra,why)=>opts.flow&&typeof arFlow==='function'?arFlow(pa,extra,why):jailFor(pa,extra,why);
   const btns=[];
   if(opts.flee){const L=FLEE_LEVELS[opts.flee];
     btns.push({l:(opts.chase?'Wegrijden · ':'Vluchten · ')+L.label,c:'',f:()=>{pa.fleeing=true;S.pendingArrest=pa;save();pushState();closeModal();(typeof escapeGame==='function'?escapeGame(opts.flee,opts):fleeGame(opts.flee,opts)).then(ok=>{
       if(ok){S.pendingArrest=null;S.stats.fled=(S.stats.fled||0)+1;S.cred+=1;S.heat=Math.min(100,S.heat+5);addXp(3);
-        if(opts.wanted&&!raid&&typeof setWanted==='function')setWanted(opts.wanted.lv,opts.wanted.t,opts.wanted.sec); // na een huurmoord: ontkomen, wel gezocht
+        if(opts.wanted&&!raid&&typeof setWanted==='function'){setWanted(opts.wanted.lv,opts.wanted.t,opts.wanted.sec);if(opts.wanted.why&&S.wanted&&S.wanted.lv)S.wanted.why=opts.wanted.why} // na een huurmoord of overval: ontkomen, wel gezocht
         log(raid?'Politiecontrole ontvlucht. Je staat nog op de gezochtlijst':'Gevlucht en de politie kwijtgeraakt','ok');save();pushState();render();
         toast(raid?'Ontglipt! Maar je wordt nog steeds gezocht.':'Ontkomen! De politie is je kwijt.')}
       else goJail(1.2,'Vluchtpoging mislukt (+20% straf)')})}});
   }
   if(ch>0)btns.push({l:'Praat je eruit · '+ch+'%',c:'ghost',f:()=>{if(rnd(1,100)<=ch){S.pendingArrest=null;S.cred+=1;addXp(5);log('Uit een arrestatie gepraat','ok');save();pushState();closeModal();render();toast('Je praat je eruit. De agent laat je gaan.')}else goJail(1.25,'Praatje mislukt, de agent wordt boos (+25% straf)')}});
-  btns.push({l:'Geef je over · '+fmtTime(plain),c:'red',f:()=>goJail()});
+  if(opts.flow&&typeof arQuick==='function')btns.push({l:'Laat de advocaat het regelen · '+arQuickTxt(pa),c:'ghost',f:()=>arQuick(pa)});
+  btns.push({l:opts.flow?'Geef je over · politiecel':'Geef je over · '+fmtTime(plain),c:'red',f:()=>goJail()});
   const fr=opts.flee&&!opts.chase&&typeof fleeParams==='function'?fleeParams(opts.flee,opts).rate:null; // inschatting voor jou (flee.js)
   const hint=opts.flee?' Vlucht je en lukt het, dan ben je vrij. Mislukt het, dan krijg je 20% extra straf.'+(fr?' Rennen is voor jou '+fr.txt+'.':''):'';
-  showModal(title,msg+hint,btns);
+  const hint2=opts.flow?' Geef je je over, dan volgen politiecel, advocaat, verhoor en de officier van justitie: hooguit '+fmtTime(plain)+' cel.':'';
+  showModal(title,msg+hint+hint2,btns);
 }
 // Na verversen: een open arrestatie komt terug; een afgebroken vlucht of autodiefstal telt als mislukt.
 function resumePending(){
@@ -283,6 +286,7 @@ function resumePending(){
   if(S.pendingHit){const H=(typeof HITS!=='undefined'&&HITS.find(h=>h.id===S.pendingHit.id))||{t:'het doelwit',d:3};S.pendingHit=null;addHeat(15);log('Huurmoord afgebroken','bad');
     arrest(typeof hitJail==='function'?hitJail(H):300,'Gezien!','Je liet het contract op '+H.t+' halverwege liggen. Iemand heeft je gezien.',{flee:Math.min(5,H.d)});return}
   const pa=S.pendingArrest;if(!pa)return;
+  if(pa.flow&&typeof arResume==='function'){arResume(pa);return} // midden in het arrestatieverloop ververst: de volle straf
   if(pa.fleeing){jailFor(pa,1.2,'Vluchtpoging afgebroken (+20% straf)');return}
   arrest(pa.sec,pa.title,pa.msg,pa.opts);
 }

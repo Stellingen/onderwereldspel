@@ -1,6 +1,7 @@
 // Alle acties (klikken) en de politiecontroles
 const act={
  async crime(id,quick){const c=CRIMES.find(x=>x.id===id);if(!c||inJail()||cdLeft(id)||rankIdx(S.xp)<c.r||window.__chase||S.pendingLock||S.pendingGame)return;if(S.energy<crEn(c)){toast('Te moe. Je hebt '+crEn(c)+' energie nodig','bad');return}
+  if(typeof arBanLeft==='function'&&arBanLeft(c)){toast(arBanMsg(c),'bad');return}
   // elke klus heeft een spel (crimegames.js; bij inbraak-klussen het slot uit lockgame.js). Meesters kunnen het overslaan
   // (snel uitvoeren, iets lagere kans). Verversen tijdens het spel = betrapt (S.pendingGame, zie main.js)
   if(quick&&!(typeof crCanQuick==='function'&&crCanQuick(c)))return;
@@ -105,7 +106,7 @@ function crimeResolve(c,o){o=o&&typeof o==='object'?o:{bonus:+o||0};const cg=typ
    else if(ml1>ml0)setTimeout(()=>toast(`Vakmanschap ${MAST[ml1][1]}: ${c.n} (+${ml1*2}% kans, +${ml1*5}% buit)`,'lvl'),600);
    // hoe goed het ging: met een spel telt hoe netjes je speelde (geen fout = perfect), anders hoe ruim je slaagde
    const q=o.game?(o.game.miss===0?'perfect':o.game.miss===1?'netjes':''):roll<=ch*.3?'perfect':roll<=ch*.65?'netjes':'',cr=c.cr?credGain(c.cr,q):0;S.cred+=cr;if(q==='perfect')S.stats.perfect=(S.stats.perfect||0)+1;
-   addHeat(crimeUp(c)>=2?rnd(2,3):rnd(1,4));addXp(c.xp);if(typeof famEv==='function')famEv('crime',{r:c.r,g,cr});
+   addHeat(crimeUp(c)>=2?rnd(2,3):rnd(1,4));addXp(c.xp);if(typeof arOk==='function')arOk(c);if(typeof famEv==='function')famEv('crime',{r:c.r,g,cr});
    const how=o.game?(o.game.miss===0?' schone klus':o.game.miss===1?' netjes gedaan':' gelukt'):o.quick?' snel gedaan':q==='perfect'?' perfect uitgevoerd':q==='netjes'?' netjes gedaan':' gelukt';
    toast(c.n+how+': +'+fmt(g)+(clean>1?' (+'+Math.round((clean-1)*100)+'% schoon)':'')+(cr?' · +'+cr+' straatcredit':''),q==='perfect'?'lvl':'ok');log(c.n+' gelukt'+(o.quick?' (snel)':q?' ('+q+')':'')+', buit '+fmt(g)+(cr?', +'+cr+' cred':''),'ok')}
   else crimeFail(c,o.game?'Het spel ging goed, maar toch: ':'');
@@ -113,10 +114,14 @@ function crimeResolve(c,o){o=o&&typeof o==='object'?o:{bonus:+o||0};const cg=typ
 function crimeFail(c,pre){
   // Bagatel (c.sev 'A': bedelen, statiegeld): geen cel en geen vlucht. Haak voor het latere gevolg per ernstklasse.
   if(c.sev==='A'){crimeFailMinor(c,pre);return}
+  // gevolg per soort (arrest.js): oplichting = aangifte, smokkel = partij kwijt + locatieverbod, witteboord = FIOD-dossier
+  if(typeof arFail==='function'&&arFail(c,pre))return;
+  // straatwerk, inbraak en overvallen: betrapt. Overvallen ×1,75 en kans op een signalement; daarna het arrestatieverloop
+  const X=typeof arHeist==='function'?arHeist(c):{sec:c.jail,o:{}};
   const lost=Math.floor(Math.min(Math.floor(S.cash*0.1),c.max*2)*(1-furnFx('safe'))); // verlies past bij de grootte van de klus
   S.cash-=lost;S.stats.fails++;crxN(crCat(c));crxAdd(c,0);S.hp=Math.max(10,S.hp-rnd(5,15));addHeat(rnd(5,10));
    addXp(Math.ceil(c.xp/4));log(c.n+' mislukt, '+fmt(lost)+' kwijt','bad');save();
-   arrest(c.jail,'Betrapt!',(pre||'')+c.n+' ging mis. '+FLEE_LEVELS[c.flee||2].where,{flee:c.flee||2,cat:crCat(c)});save();render()}
+   arrest(X.sec,'Betrapt!',(pre||'')+c.n+' ging mis. '+FLEE_LEVELS[c.flee||2].where,Object.assign({flee:c.flee||2,cat:crCat(c)},X.o));save();render()}
 // Klasse A: weggestuurd (je mag hier even niet terugkomen: 3× de wachttijd) of een boete (APV), geen arrestatie.
 function crimeFailMinor(c,pre){S.stats.fails++;S.stats.minor=(S.stats.minor||0)+1;crxN(crCat(c));crxAdd(c,0);addXp(Math.ceil(c.xp/4));addHeat(1);
   if(Math.random()<.5&&S.cash>=1){const f=Math.min(Math.floor(S.cash),Math.max(50,Math.round(c.max*2)));S.cash-=f;
