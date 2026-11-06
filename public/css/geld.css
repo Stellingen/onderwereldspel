@@ -526,3 +526,15 @@ body.ba-lock{overflow:hidden}
 .bk-coin.gone{opacity:.62}
 .bk-coin.gone.scam .bk-spark .l{stroke:var(--red)}
 .bk-coin.gone.scam{background:repeating-linear-gradient(135deg,rgba(255,61,82,.06) 0 10px,transparent 10px 20px),var(--panel)}
+
+/* maximaal aantal vestigingen per lidmaatschap (gewoon 10, VIP 12, High roller 15) */
+.bz-maxnote{display:flex;align-items:flex-start;gap:8px;flex-basis:100%;margin:2px 0 0;font-size:12.5px;line-height:1.45;color:var(--mute);min-width:0}
+.bz-maxnote span{min-width:0;overflow-wrap:break-word}
+.bz-maxnote b{color:var(--fg);font-weight:600}
+.bz-maxnote .vipt{margin:1px 0 0;flex:0 0 auto}
+.bz-shop-h .bz-maxnote{margin-top:6px}
+/* lange zaaknamen (Sportwagenimporteur, Vastgoedportefeuille) passen ook op de telefoon */
+.bz-head-t>div{min-width:0}
+.bz-head-t h1{overflow-wrap:anywhere;hyphens:auto}
+.bz-buy .btn{white-space:normal;text-wrap:balance;height:auto;min-height:48px}
+@container (max-width:520px){.bzd .bz-head-t h1{font-size:clamp(24px,8.4cqw,40px)}}

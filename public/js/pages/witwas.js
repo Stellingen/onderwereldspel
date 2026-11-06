@@ -46,6 +46,8 @@ const wwKeesCap=()=>Math.round(25000*Math.pow(1.7,rankIdx(S.xp))/100)*100;
 const wwKeesLeft=()=>Math.max(0,wwKeesCap()-wwS().kees);
 const wwFronts=()=>BIZ.filter(b=>wwCan(b)&&bizUnits(b.id).length);
 const wwQ=B=>B?bizUnits(B.id).reduce((a,l)=>a+l,0):0;
+// hoe ver een zaak is uitgebouwd (0-1), gemeten tegen het gewone maximum (10 vestigingen × level 5); VIP/HR met meer
+// vestigingen zitten daar sneller aan, verder niet
 const wwF=B=>Math.max(0,Math.min(1,(wwQ(B)-1)/(BIZ_MAX*5-1)));
 // duur via een soort zaak voor een bedrag (zonder bedrag: wat vandaag nog kan)
 const wwDur=(B,a)=>{if(a==null)a=Math.max(1,wwLeftB(B));return Math.round(WW_MIN_MS+a/wwRate(B)*60000)};
@@ -111,7 +113,7 @@ V.wit=()=>{const z=zwart(),w=wit(),W=wwS(),fr=wwFronts(),kl=wwKeesLeft(),kMax=Ma
   const P=wwProf(F),left=wwLeftB(F),cap=wwCapB(F),max=Math.min(z,left),a=wwPick('zaak',max),tx=Math.round(a*P.tax),job=wwJob(F.id),nm=esc(F.n.toLowerCase());
   return `<div class="ww-rts" role="list">${fr.map(b=>{const Pb=wwProf(b),lb=wwLeftB(b),cb=wwCapB(b),jb=wwJob(b.id);
     return `<button role="listitem" class="ww-rt ${b.id===F.id?'on':''} ${jb?'busy':''}" onclick="ww.front='${b.id}';ww.amt.zaak=0;render()" style="--c:${b.col}" aria-pressed="${b.id===F.id}">
-     ${typeof bzIcon==='function'?bzIcon(b,34):''}<span class="ww-rt-n"><b>${esc(b.n)}</b><small>${bizUnits(b.id).length}× · level ${wwQ(b)}/${BIZ_MAX*5}</small></span>
+     ${typeof bzIcon==='function'?bzIcon(b,34):''}<span class="ww-rt-n"><b>${esc(b.n)}</b><small>${bizUnits(b.id).length}× · level ${wwQ(b)}/${Math.max(bizMax(),bizUnits(b.id).length)*5}</small></span>
      <span class="ww-rt-k"><span><small>Belasting</small><b data-fit="10">${wwPct(Pb.tax)}</b></span><span><small>Per minuut</small><b data-fit="10">${fmtS(wwPerMin(b))}</b></span><span><small>${jb?'Bezig':'Vandaag nog'}</small><b data-fit="10">${jb?wwTime(Math.max(0,jb.t1-now())):fmtS(lb)}</b></span></span>
      <i class="ww-rt-bar" title="Vandaag ${fmt(cb-lb)} van ${fmt(cb)} gebruikt"><i style="width:${cb?((cb-lb)/cb*100).toFixed(1):0}%"></i></i><span class="ww-bdg">${wwBadge(fr,b)}</span></button>`}).join('')}</div>
    <div class="ww-do" style="--c:${F.col}">
@@ -149,7 +151,7 @@ V.wit=()=>{const z=zwart(),w=wit(),W=wwS(),fr=wwFronts(),kl=wwKeesLeft(),kMax=Ma
 // Echte klanten lopen binnen en rekenen af. Vlak na een echte klant valt een zwarte bon niet op (dekking, max 2 per klant).
 // Zonder klant valt het op, en kijkt de inspecteur mee (rood), dan gaat de verdenking hard omhoog. Op 100% is het mis.
 function wwGame(amount,B){return new Promise(resolve=>{
- const tier=Math.max(0,BIZ.indexOf(B)),T=24,N=wwChunks(B),lv=wwFee(B).f,gap=[1.05,1.9].map(x=>x*Math.max(.5,1-tier*.03-lv*.2));
+ const tier=Math.max(0,Math.round(1.7*Math.log2(Math.max(1,B.p||5000)/5000))),T=24,N=wwChunks(B),lv=wwFee(B).f,gap=[1.05,1.9].map(x=>x*Math.max(.5,1-tier*.03-lv*.2));
  const ov=document.createElement('div');ov.className='chase-ov ww-ov';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
  ov.innerHTML=`<div class="chase-box ww-box">
   <div class="ww-gh"><div><span class="label">Werkdag · ${esc(B.n)}</span><h2 id="wwT">Laat het meelopen</h2></div><b id="wwClock">0:${T}</b></div>
