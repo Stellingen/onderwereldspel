@@ -95,7 +95,7 @@ function vbEdit(on){vb.edit=!!on;vb.sel=null;SFX.click();render();if(on)vbFocus(
 // op de telefoon staat het tafereel onder de woningen: even naar beneden scrollen
 function vbFocus(){const st=document.getElementById('vbStage');if(!st)return;const r=st.getBoundingClientRect();if(r.top<56||r.top>innerHeight*.45)window.scrollTo({top:scrollY+r.top-70,behavior:'smooth'})}
 // wat je spullen samen doen
-function vbFurnSum(){const keys=Object.keys(FURN_FX).filter(k=>furnFx(k));return keys.length?keys.map(k=>`<li><span>${FURN_FX[k][0]}</span><b>${FURN_FX[k][1](Math.round(furnFx(k)*100)/100)}</b></li>`).join(''):''}
+function vbFurnSum(){const keys=Object.keys(FURN_FX).filter(k=>furnFx(k));return keys.length?keys.map(k=>{const top=FURN_CAP[k]!=null&&furnFxRaw(k)>=FURN_CAP[k]-1e-9;return `<li class="${top?'top':''}"><span>${FURN_FX[k][0]}</span><b>${FURN_FX[k][1](Math.round(furnFx(k)*100)/100)}${top?'<em title="Meer van dit effect helpt niet meer">max</em>':''}</b></li>`}).join(''):''}
 function vbInfo(up){const h=home(),L=house(),used=furnPlaced().length,sum=vbFurnSum();
  return `<div class="vh-info"><div class="label">${L.place}${S.rent&&S.rent.id===L.id?' · gehuurd':houseOwned(L.id)&&L.id!=='brug'?' · eigen woning':''}</div><h2>${L.n}</h2><p>${L.d}</p>
   <dl class="vh-facts"><div><dt>Rust</dt><dd>${h.rest} s · elke ${fmtClock(STAY.rest.cd())}</dd></div><div><dt>Per rustbeurt</dt><dd>+${h.hp+furnFx('restHp')}% gezondheid</dd></div>
@@ -104,7 +104,7 @@ function vbInfo(up){const h=home(),L=house(),used=furnPlaced().length,sum=vbFurn
    <div><span>Gezondheid</span><b id="vbHs">${S.hp}%</b><i><em id="vbHb" style="width:${S.hp}%;--c:var(--green)"></em></i></div>
    <div><span>Hitte</span><b id="vbHeat">${S.heat}%</b><i><em id="vbTb" style="width:${S.heat}%;--c:${S.heat>60?'var(--red)':'var(--acc)'}"></em></i></div></div>
   ${sum?`<div class="vh-sum"><div class="label">Je spullen</div><ul>${sum}</ul></div>`:''}
-  ${up?'':`<div class="vh-cta"><button class="btn" onclick="vbGo('shop')">Inrichten · ${used}/${h.slots} plekken</button></div>`}</div>`}
+  ${up?'':`<div class="vh-cta"><button class="btn" onclick="vbGo('shop')">Inrichten · ${used}/${furnSlots()} plekken</button></div>`}</div>`}
 // Huizenmarkt: alle woningen als kaarten; kies er een voor de bezichtiging (vergelijken, kopen, huren, erin gaan wonen)
 const vbTypeOf=L=>HOMES.find(t=>t.id===L.t)||HOMES[0];
 function vbMkStatus(L){const ri=rankIdx(S.xp),own=houseOwned(L.id),cur=S.home===L.id,rent=S.rent&&S.rent.id===L.id;
@@ -115,7 +115,7 @@ function vbMkCard(L){const T=vbTypeOf(L),[k,st]=vbMkStatus(L),own=houseOwned(L.i
   <span class="mk-b"><span class="mk-pl">${L.place}</span><b>${L.n}</b><span class="mk-st ${k}">${st}</span>
    <span class="mk-p">${L.id==='brug'?'<em>Gratis</em>':own?`<em>Waarde ${fmt(v)}</em><small class="${v>=o.b?'up':'dn'}">${v>=o.b?'+':''}${fmt(v-o.b)}</small>`:`<em>${fmt(mktPrice(L.id))}</em><small>of ${fmt(L.rent)} huur / speldag</small>`}</span></span></button>`}
 function vbMkDetail(L){const h=home(),x=vbTypeOf(L),ri=rankIdx(S.xp),lock=ri<L.r,own=houseOwned(L.id),cur=S.home===L.id,xi=HOMES.indexOf(x),busy=!!stay.kind;
- const R=[['Rust',h.rest+' s',x.rest+' s',x.rest<h.rest],['Wachttijd rusten',fmtClock(h.cd*1000),fmtClock(x.cd*1000),x.cd<h.cd],['Per rustbeurt','+'+h.hp+'%','+'+x.hp+'%',x.hp>h.hp],['Max. energie','+'+h.en,'+'+x.en,x.en>h.en],['Hitte per rust',h.heat?'−'+h.heat+'%':'—',x.heat?'−'+x.heat+'%':'—',x.heat>h.heat],['Plekken voor spullen',h.slots,x.slots,x.slots>h.slots]];
+ const R=[['Rust',h.rest+' s',x.rest+' s',x.rest<h.rest],['Wachttijd rusten',fmtClock(h.cd*1000),fmtClock(x.cd*1000),x.cd<h.cd],['Per rustbeurt','+'+h.hp+'%','+'+x.hp+'%',x.hp>h.hp],['Max. energie','+'+h.en,'+'+x.en,x.en>h.en],['Hitte per rust',h.heat?'−'+h.heat+'%':'—',x.heat?'−'+x.heat+'%':'—',x.heat>h.heat],['Plekken voor spullen',furnSlots(),houseSlots(L.id),houseSlots(L.id)>furnSlots()]];
  const gone=cur?[]:FURN.filter(f=>S.furn[f.id]&&!furnFits(f,xi));
  const MP=mktPrice(L.id),affW=wit()>=MP,affB=S.bank>=MP,affR=S.bank+wit()>=L.rent,debt=(S.rent&&S.rent.debt>0)||S.rentOwed>0;
  const o=own&&L.id!=='brug'?ownedS()[L.id]:null,v=o?houseVal(L.id):0,days=o?Math.floor((now()-o.t)/DAY_MS):0;
@@ -185,14 +185,16 @@ function vbShopHtml(){const hi=furnHi(),h=home(),used=furnPlaced().length,free=f
    <div class="fs-ic">${furnIc(f)}</div><div class="fs-b"><div class="fs-h"><b>${f.n}</b>${kind==='later'?`<span class="fs-lock">${HOMES[f.h].n}</span>`:kind==='in'?'<span class="fs-in">In huis</span>':kind==='store'?'<span class="fs-st">Opslag</span>':''}</div>
     <p>${f.d}</p><div class="fs-fx">${furnFxList(f)}</div>
     <div class="fs-f"><span class="fs-p">${kind==='in'||kind==='store'?'':fmt(f.p)}</span>${kind==='later'?`<span class="fs-why">Vanaf ${HOMES[f.h].n.toLowerCase()}</span>`:`<span class="fs-btn">${btn}</span>`}</div></div></article>`};
- const sec=(t,sub,list0,kind)=>{const list=fc(list0);return list.length?`<section class="fs-sec"><div class="fs-sh"><h3>${t}</h3><span>${sub}</span></div><div class="fs-grid">${list.map(f=>card(f,kind)).join('')}</div></section>`:''};
- const byHome=HOMES.map((x,i)=>[x,later.filter(f=>f.h===i)]).filter(([,L])=>L.length);
+ const sec=(t,sub,list0,kind)=>{const list=fc(list0);return list.length?`<section class="fs-sec ${kind}"><div class="fs-sh"><h3>${t}</h3><span>${sub}</span></div><div class="fs-grid">${list.map(f=>card(f,kind)).join('')}</div></section>`:''};
+ const byHome=HOMES.map((x,i)=>[x,later.filter(f=>f.h===i)]).filter(([,L])=>L.length),nLater=fc(later).length;
+ const tsl=x=>{const [a,b]=typeSlots(x.id);return a===b?a+' plekken':a+'–'+b+' plekken'};
  return `${vbBackHtml('Winkel')}
-  <div class="fs-top"><div class="fs-slots"><span class="label">${house().n} · plekken</span><div class="vh-slots">${Array.from({length:h.slots},(_,i)=>`<i class="${i<used?'on':''}"></i>`).join('')}<span>${used}/${h.slots}</span></div><small>Hoe beter je woning, hoe meer plek en hoe grotere spullen.</small></div>${vbPayHtml('cash')}</div>
+  <div class="fs-top"><div class="fs-slots"><span class="label">${house().n} · plekken</span>${furnSlotBar(used)}<small>Hoe beter je woning, hoe meer plek en hoe grotere spullen.${tierSlots()?` Als ${lidName()} heb je in elke woning ${tierSlots()} plekken extra.`:''}</small></div>${vbPayHtml('cash')}</div>
   <div class="fit-tabs2 fs-cats">${FURN_CAT.map(([k,n])=>{const c=k==='all'?FURN.length:FURN.filter(f=>furnCat(f)===k).length;return `<button class="${cf===k?'on':''}" onclick="vb.cat='${k}';render()">${n} <small>${c}</small></button>`}).join('')}</div>
   <section class="vh-stage is-edit fs-stage" id="vbStage"><div class="vh-scene">${(()=>{const nw=window._vbNew;window._vbNew=null;let sc=vhScene(h.id,{furn:S.furn,ghosts:true,key:'s'});if(nw)sc=sc.replace(`class="vh-it" data-it="${nw}"`,`class="vh-it new" data-it="${nw}"`);return sc})()}</div></section>
-  ${sec('Te koop','past in je '+house().n.toLowerCase(),buy,'buy')}${sec('In huis','wat neerstaat, werkt',placed,'in')}${sec('In de opslag','bewaard voor later',stored,'store')}
-  ${byHome.map(([x,L])=>sec('Bij een '+x.n.toLowerCase(),'nog op slot · '+(x.slots)+' plekken',L,'later')).join('')}`}
+  ${sec('In huis',used+' van '+furnSlots()+' plekken · wat neerstaat, werkt',placed,'in')}${sec('Te koop',free?'past in je '+house().n.toLowerCase()+' · '+free+' plek'+(free===1?'':'ken')+' vrij':'alles vol · berg eerst iets op',buy,'buy')}${sec('In de opslag','bewaard voor later',stored,'store')}
+  ${nLater?`<details class="fs-later" ${vb.later?'open':''} ontoggle="vb.later=this.open"><summary><b>Nog op slot</b><span>${nLater} spul${nLater===1?'':'len'} voor een betere woning</span></summary>
+   ${byHome.map(([x,L])=>sec('Bij een '+x.n.toLowerCase(),tsl(x),L,'later')).join('')}</details>`:''}`}
 V.verblijf=()=>{const h=home();if(stay.kind&&vb.view)vb.view=null;
  if(vb.view==='shop')return vbShopHtml();
  if(vb.view==='up'||vb.view==='markt')return vbMarktHtml();
