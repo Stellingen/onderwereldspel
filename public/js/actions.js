@@ -99,7 +99,8 @@ const act={
 // anders de verwachte kans (chance). Buit: × rang/familie/… (lootMult) × professionaliteit (crLootK, tot +60%) × schone klus (+8%/+4%).
 function crimeResolve(c,o){o=o&&typeof o==='object'?o:{bonus:+o||0};const cg=typeof crDice==='function';
   const P0=cg?crP(c):0,roll=rnd(1,100),ch=Math.min(chanceCap(c),cg?(o.quick?crQuick(c):o.game?crDice(c):chance(c)):chance(c)+(o.bonus||0));
-  if(roll<=ch){const clean=o.game?cgCleanK(o.game.miss):1,g=Math.floor(rnd(c.min,c.max)*lootMult()*(cg?crLootK(c):mastLoot(c.id))*clean*(o.bonus?1.08:1));S.cash+=g;addZwart(g);S.stats.crimes++;
+  // een gewonnen spel is altijd gelukt: de kans zat al in het spel (cgTarget). Zonder spel telt de worp.
+  if(o.game?o.game.ok!==false:roll<=ch){const clean=o.game?cgCleanK(o.game.miss):1,g=Math.floor(rnd(c.min,c.max)*lootMult()*(cg?crLootK(c):mastLoot(c.id))*clean*(o.bonus?1.08:1));S.cash+=g;addZwart(g);S.stats.crimes++;
    crxN(crCat(c));crxAdd(c,1);const ml0=mastLv(c.id);S.mast=S.mast||{};S.mast[c.id]=(S.mast[c.id]||0)+1;const ml1=mastLv(c.id);
    if(cg){const P1=crP(c),l0=cgLvIdx(P0),l1=cgLvIdx(P1);if(l1>l0)setTimeout(()=>toast(`${c.n}: je bent nu ${cgLvName(P1)} (${Math.round(P1*100)}%)${P1>=CG_QUICK_P?' · snel uitvoeren kan nu':''}`,'lvl'),700);
     else if(ml1>ml0)setTimeout(()=>toast(`Vakmanschap ${MAST[ml1][1]}: ${c.n} (professionaliteit ${Math.round(P1*100)}%)`,'lvl'),600)}
@@ -109,7 +110,7 @@ function crimeResolve(c,o){o=o&&typeof o==='object'?o:{bonus:+o||0};const cg=typ
    addHeat(crimeUp(c)>=2?rnd(2,3):rnd(1,4));addXp(c.xp);if(typeof arOk==='function')arOk(c);if(typeof famEv==='function')famEv('crime',{r:c.r,g,cr});
    const how=o.game?(o.game.miss===0?' schone klus':o.game.miss===1?' netjes gedaan':' gelukt'):o.quick?' snel gedaan':q==='perfect'?' perfect uitgevoerd':q==='netjes'?' netjes gedaan':' gelukt';
    toast(c.n+how+': +'+fmt(g)+(clean>1?' (+'+Math.round((clean-1)*100)+'% schoon)':'')+(cr?' · +'+cr+' straatcredit':''),q==='perfect'?'lvl':'ok');log(c.n+' gelukt'+(o.quick?' (snel)':q?' ('+q+')':'')+', buit '+fmt(g)+(cr?', +'+cr+' cred':''),'ok')}
-  else crimeFail(c,o.game?'Het spel ging goed, maar toch: ':'');
+  else crimeFail(c,'');
   save();render()}
 function crimeFail(c,pre){
   // Bagatel (c.sev 'A': bedelen, statiegeld): geen cel en geen vlucht. Haak voor het latere gevolg per ernstklasse.

@@ -259,7 +259,7 @@ function cgCount(box,onGo){const st=box.querySelector('.jb-stage');const reduce=
  const step=()=>{if(n===0){el.remove();onGo();return}el.innerHTML=`<b>${n}</b>`;try{if(window.SFX&&SFX.tick)SFX.tick()}catch(e){}n--;setTimeout(step,reduce?380:450)};step()}
 
 // ---------- 4. het spel spelen ----------
-function cgNew(type,P,w,th){const T=CG_TYPES[type],[k,m]=T.km(w||0),p=cgSolve(cgG(P),k,m);
+function cgNew(type,P,w,th,tgt){const T=CG_TYPES[type],[k,m]=T.km(w||0),p=cgSolve(tgt!=null?tgt:cgG(P),k,m);
  const G={type,P,d:1-P,w:w||0,k,m,p,hits:0,miss:0,t:0,done:false,th:th||{},slow:1,dirty:1,fx:null,e:T.e?T.e[0]+T.e[1]*(1-P):0};
  G.hit=lbl=>{if(G.done)return;G.hits++;G.fx={ok:1,txt:lbl,t:G.t};G.dirty=1;if(G.onFx)G.onFx(true);if(G.hits>=G.k)G.end(true)};
  G.bad=why=>{if(G.done)return;G.miss++;G.fx={ok:0,txt:why,t:G.t};G.dirty=1;if(G.onFx)G.onFx(false);if(G.miss>G.m)G.end(false,why)};
@@ -271,9 +271,11 @@ function cgTime(G){const T=CG_TYPES[G.type],n=G.k+G.m;switch(G.type){
  case 'talk':return 4+n*(G.Tc*.75+1.15);case 'memory':return 3+G.show+n*(G.Tc*.75+1);case 'hack':return 5+n*(G.Tc*.75+.3);case 'route':return 5+n*(2.3+G.cpW);
  case 'deal':return 5+n*2.6/G.v;case 'saw':return 4+n*G.tb*1.6}return 20}
 // spel voor een klus (of oefenen: c = null, P en type gegeven). Geeft {ok, miss, why}
-async function cgPlay(c,o){o=o||{};const type=o.type||cgType(c),P=o.P!=null?o.P:crP(c),w=o.w!=null?o.w:cgW(c),th=o.th||cgTheme(c);
- if(type==='lock')return cgLock(c,P,w,th,o);
- const T=CG_TYPES[type],G=cgNew(type,P,w,th),reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;G.slow=reduce?1.15:1;T.init(G);G.T=cgTime(G);G.c=c;G.practice=!!o.practice;
+// Gewonnen = gelukt: bij een echte klus is het spel zelf de hele kans (spel × dobbelsteen), dus geen extra worp achteraf.
+const cgTarget=(c,P,o)=>o.tgt!=null?o.tgt:(c&&!o.practice&&o.P==null&&typeof crDice==='function')?Math.max(.05,Math.min(.99,cgG(P)*Math.min(chanceCap(c),crDice(c))/100)):null;
+async function cgPlay(c,o){o=o||{};const type=o.type||cgType(c),P=o.P!=null?o.P:crP(c),w=o.w!=null?o.w:cgW(c),th=o.th||cgTheme(c),tgt=cgTarget(c,P,o);
+ if(type==='lock')return cgLock(c,P,w,th,Object.assign({},o,{tgt}));
+ const T=CG_TYPES[type],G=cgNew(type,P,w,th,tgt),reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;G.slow=reduce?1.15:1;T.init(G);G.T=cgTime(G);G.c=c;G.practice=!!o.practice;
  return new Promise(resolve=>{window.__chase=true;window.__cg=G;
   const ov=cgOverlay(G,o),stage=ov.querySelector('#cgStage'),ctl=ov.querySelector('#cgCtl'),tim=ov.querySelector('#cgTime');
   let raf=0,last=0,started=false,intro=null;
@@ -318,12 +320,12 @@ function cgOverlay(G,o){const T=CG_TYPES[G.type],th=G.th,ov=document.createEleme
   <div class="jb-stage lk-stage cg-stage" id="cgStage"></div><div class="jb-help cg-help" id="cgHelp">${((CG_INFO[G.type]||{}).steps||[T.how])[1].replace(/\{who\}/g,cgEsc(th.who||'het doelwit'))}</div><div class="jb-ctl cg-ctl" id="cgCtl"></div></div>`;
  document.body.appendChild(ov);return ov}
 // het bestaande slot (lockgame.js) met moeilijkheid uit P; pinnen naar de zwaarte van de klus
-function cgLockP(P,w){const d=1-P,pins=5+Math.round(w*2),p=cgSolve(cgG(P),pins,2),speed=.42+.38*d,h=cgHalfWin(p)*CG_LOCK_K,zone=Math.min(.6,2*h*speed);
+function cgLockP(P,w,tgt){const d=1-P,pins=5+Math.round(w*2),p=cgSolve(tgt!=null?tgt:cgG(P),pins,2),speed=.42+.38*d,h=cgHalfWin(p)*CG_LOCK_K,zone=Math.min(.6,2*h*speed);
  const ad=sk('ademhaling'),k=kalmLv();
  return {d,pins,zone,speed,panicRate:(.02+.035*d)*kalmPanic(),panicMiss:(10+8*d)*kalmPanic(),breathTol:Math.min(.42,.18+.05*(1-d)+SK.ademhaling.adem*ad+k*.012),breathN:3,time:7+pins*2.6,
   maxMiss:2,label:'Slot · '+cgLvName(P)}}
 const CG_LOCK_K=1; // correctie na simulatie (zie scripts in de rapportage)
-async function cgLock(c,P,w,th,o){if(typeof lockGame!=='function')return {ok:true,miss:0};const LP=cgLockP(P,w),st={misses:0};
+async function cgLock(c,P,w,th,o){if(typeof lockGame!=='function')return {ok:true,miss:0};const LP=cgLockP(P,w,o.tgt),st={misses:0};
  const ok=await lockGame(LP,{intro:{type:'lock',title:o.title||th.n||'Slot',tag:(o.practice?'Oefenen · ':'')+'Slot · '+cgLvName(P),goal:[`<b>${LP.pins}</b> pinnen`,`<b>${LP.maxMiss}</b> fouten mag`,`<b>${Math.round(LP.time)}</b> seconden`]},title:o.title||th.n||'Slot',sub:o.sub||((th.sub?th.sub+' · ':'')+(o.practice?'Oefenen · ':'')+LP.pins+' pinnen · hooguit '+LP.maxMiss+' fouten'),onEnd:x=>Object.assign(st,x)});
  return {ok:!!ok,miss:Math.min(2,st.misses||0),why:ok?'':'Het slot ging niet open.'}}
 
