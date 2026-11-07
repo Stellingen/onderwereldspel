@@ -1,9 +1,11 @@
-// Bajes-ontsnapspel: ontsnappen is geen dobbelsteen meer maar een spel in drie fases, na een korte filmpje-intro.
+// Bajes-ontsnapspel: ontsnappen is geen dobbelsteen maar een spel in vier fases, na een korte filmpje-intro.
 //  1. De tralies: vijl in het ritme (druk als de naald in het groene stuk staat). Mis je, dan maak je lawaai; komt de
 //     bewaker langs, dan lig je stil. Te veel lawaai = de bewaker hoort je.
-//  2. De gang: van bovenaf, stap voor stap over een raster. Bewakers lopen hun ronde en zoeklampen draaien; sta je in
-//     een lichtkegel, dan ben je gezien. Haal de deur naar de binnenplaats voor de celtelling (beperkt aantal stappen).
-//  3. De muur: klim met links en rechts om de beurt. Het zoeklicht zwaait over de muur: zit het op jou, dan stilhouden.
+//  2. De gang (van opzij): sluip van dekking naar dekking. Een bewaker op de loopbrug kijkt afwisselend weg en de gang in,
+//     een camera wijst om de beurt naar links of rechts. Een steen gooien leidt de bewaker af. Altijd te halen: elk stuk
+//     zonder dekking past in één keer wegkijken (jbGang in jb-core.js, getest met een bot).
+//  3. De sleutels: pak de sleutelbos van de slapende nachtwaker als hij diep slaapt, en kies de sleutel die bij de deur past.
+//  4. De muur: klim met links en rechts om de beurt. Het zoeklicht zwaait over de muur: zit het op jou, dan stilhouden.
 //     Wacht je te lang, dan zakt je grip en glijd je terug.
 // Moeilijkheid (jbParams): uit escChance() (lidmaatschap, familie, outfit 'esc'), de straf die nog over is en je rang
 // (hoe hoger je staat, hoe zwaarder je bewaakt wordt). Een betere
@@ -41,13 +43,13 @@ function escFail(why,quiet){S.pendingEsc=null;if(!inJail()){save();return}const 
 // ---------- het spel ----------
 function jailBreakGame(P){
  return new Promise(resolve=>{
-  P=P||jbParams();window.__chase=true;
+  P=P||jbParams();if(!P.seed)P.seed=1+(Math.random()*1e9|0);window.__chase=true;
   const reduce=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
   const doll=()=>typeof dollSvg==='function'&&typeof fitS==='function'?dollSvg(fitS().wear,{label:'Jij'}):'';
   const ov=document.createElement('div');ov.className='chase-ov jb-ov';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-labelledby','jbT');
   ov.innerHTML=`<div class="jb-box lv${P.lv}">
     <div class="jb-top"><div class="jb-tt"><h2><span id="jbT">Ontsnappen</span><span class="jb-lv lv${P.lv}">${P.label}</span></h2><p id="jbSub">Nacht in de bajes</p></div>
-     <div class="jb-steps" aria-label="Fases"><i data-s="1">1<small>Tralies</small></i><i data-s="2">2<small>Gang</small></i><i data-s="3">3<small>Muur</small></i></div></div>
+     <div class="jb-steps" aria-label="Fases"><i data-s="1">1<small>Tralies</small></i><i data-s="2">2<small>Gang</small></i><i data-s="3">3<small>Sleutels</small></i><i data-s="4">4<small>Muur</small></i></div></div>
     <div class="jb-stage" id="jbStage"></div>
     <div class="jb-help" id="jbHelp"></div>
     <div class="jb-ctl" id="jbCtl"></div></div>`;
@@ -73,8 +75,8 @@ function jailBreakGame(P){
    stage.onclick=go;later(go,reduce?1600:3900)}
 
   // ===== uitleg voor elke fase =====
-  function intro(n,title,txt,start){st.intro=true;steps(n);q('jbSub').textContent='Fase '+n+' van 3 · '+title;
-   const box=document.createElement('div');box.className='jb-intro';box.innerHTML=`<span class="label">Fase ${n} van 3</span><h3>${title}</h3><p>${txt}</p><button class="btn" id="jbGo">Begin</button><small>of druk op spatie</small>`;
+  function intro(n,title,txt,start){st.intro=true;steps(n);q('jbSub').textContent='Fase '+n+' van 4 · '+title;
+   const box=document.createElement('div');box.className='jb-intro';box.innerHTML=`<span class="label">Fase ${n} van 4</span><h3>${title}</h3><p>${txt}</p><button class="btn" id="jbGo">Begin</button><small>of druk op spatie</small>`;
    stage.appendChild(box);const go=()=>{if(!st.intro)return;st.intro=false;box.remove();start()};box.querySelector('#jbGo').onclick=e=>{e.stopPropagation();go()};
    setKeys(e=>{if(e.code==='Space'||e.code==='Enter'){go();return}return false});st.go=go}
 
@@ -85,7 +87,7 @@ function jailBreakGame(P){
      <div class="jb-cell"><div class="jb-bars">${[0,1,2].map(i=>`<div class="jb-bar" data-b="${i}"><i class="jb-cut" style="--c:0"></i></div>`).join('')}</div><div class="jb-file" id="jbFile"></div></div>
      <div class="jb-meters"><div class="jb-rh"><span class="label">Ritme</span><div class="jb-track"><i class="jb-zone" id="jbZone"></i><i class="jb-needle" id="jbNeedle"></i></div></div>
       <div class="jb-noise"><span class="label">Lawaai</span><div class="jb-nbar"><i id="jbNoise"></i></div></div></div></div>`;
-   help.innerHTML='Druk op <b>Vijl</b> (spatie) als de naald in het <b class="g">groene stuk</b> staat. Mis je, dan maak je lawaai. Komt de bewaker langs: <b>niks doen</b>.';
+   help.innerHTML='<b>Vijl</b> (spatie) als de naald in het <b class="g">groen</b> staat. Bewaker bij je cel: <b>niks doen</b>.';
    ctl.innerHTML='<button class="jb-b jb-big" id="jbFileBtn">Vijl</button>';
    const Z=q('jbZone'),N=q('jbNeedle'),NB=q('jbNoise'),GD=q('jbGd'),WN=q('jbWarn'),F=q('jbFile');
    const place=()=>{zc=P.zone/2+.04+Math.random()*(1-P.zone-.08);Z.style.left=((zc-P.zone/2)*100)+'%';Z.style.width=(P.zone*100)+'%'};place();
@@ -103,9 +105,9 @@ function jailBreakGame(P){
     if(noise>=100)fail('De bewaker hoorde het vijlen.')};
    q('jbFileBtn').addEventListener('pointerdown',e=>{e.preventDefault();hit(e.pointerType==='mouse'?'mouse':'touch')});
    const tapStage=e=>{if(e.target.closest('.jb-intro'))return;e.preventDefault();hit(e.pointerType==='mouse'?'mouse':'touch')};stage.addEventListener('pointerdown',tapStage);
-   const win1=()=>{stage.removeEventListener('pointerdown',tapStage);loop=null;sfx('win',1);stage.querySelector('.jb-cell').classList.add('open');help.innerHTML='<b class="g">De tralies zijn door.</b> Je wringt je erdoor.';
+   const win1=()=>{stage.removeEventListener('pointerdown',tapStage);loop=null;sfx('win',1);stage.querySelector('.jb-cell').classList.add('open');help.innerHTML='<b class="g">De tralies zijn door.</b>';
     later(phase2,reduce?600:1200)};
-   intro(1,'De tralies','Vijl drie tralies door met de lepel. Druk alleen als de naald in het groene stuk staat: elke misser maakt lawaai. Hoor je voetstappen, stop dan tot de bewaker weg is. Te veel lawaai en hij hoort je.',()=>{
+   intro(1,'De tralies','Vijl drie tralies door. Druk als de naald in het groene stuk staat. Hoor je voetstappen? Stop tot de bewaker weg is.',()=>{
     setKeys(e=>{if(e.code==='Space'||e.code==='Enter'||e.code==='ArrowUp'||e.code==='KeyF'){hit('key');return}return false});
     run(dt=>{if(st.done)return;p=(Math.sin(st.t*Math.PI*2*P.swing)+1)/2;cool=Math.max(0,cool-dt);stroke=Math.max(0,stroke-dt);flash=Math.max(0,flash-dt*2);
      noise=Math.max(0,noise-P.decay*dt);
@@ -115,50 +117,120 @@ function jailBreakGame(P){
      F.style.setProperty('--b',bar());F.style.setProperty('--y',stroke>0?Math.sin(stroke/.22*Math.PI):0);stage.style.setProperty('--fl',flash.toFixed(2))})});
    st.p1=()=>({cut,need,noise,p,zc,guard,zone:P.zone});st.p1hit=hit}
 
-  // ===== fase 2: de gang =====
-  function phase2(){st.ph=2;loop=null;const m=jbMap(P.map,P.range),opt=jbSolve(m)||40,maxS=Math.ceil(opt*P.slack)+2;
-   let x=m.S[0],y=m.S[1],t=0,moves=0,busy=false;
-   stage.innerHTML=`<div class="jb-p2"><div class="jb-p2h"><span class="label">Celtelling</span><b id="jbLeft"></b><div class="jb-lbar"><i id="jbLb"></i></div></div><div class="jb-grid" id="jbGrid" style="--w:${m.W};--h:${m.H}"></div></div>`;
-   const G=q('jbGrid'),you=`<span class="jb-you">${doll()}</span>`;
-   const fit=()=>{const r=stage.getBoundingClientRect(),cs=Math.floor(Math.min((r.width-8)/m.W,(r.height-48)/m.H));G.style.setProperty('--cs',Math.max(22,cs)+'px')};fit();
-   const ro=window.ResizeObserver?new ResizeObserver(fit):null;if(ro)ro.observe(stage);st.ro=ro;
-   const draw=(caught)=>{const a=jbSeen(m,t),b=P.preview?jbSeen(m,t+1):null;let h='';
-    for(let yy=0;yy<m.H;yy++)for(let xx=0;xx<m.W;xx++){const c=m.cell(xx,yy),k=xx+','+yy;let cls='jg '+(c==='#'?'w':c==='c'?'cr':c==='L'?'lp':c==='E'?'ex':c==='S'?'st':'f');
-     if(c!=='#'&&a.cone.has(k))cls+=' cn';else if(b&&c!=='#'&&b.cone.has(k))cls+=' cn2';
-     const gi=a.gs.findIndex(G0=>G0.x===xx&&G0.y===yy);let inner='';
-     if(gi>=0){const G0=a.gs[gi],rot=G0.dx>0?90:G0.dx<0?-90:G0.dy>0?180:0;inner+=`<span class="jb-g" style="--r:${rot}deg"><i></i></span>`}
-     if(c==='L'){const l=m.lamps.find(l=>l.x===xx&&l.y===yy),d=l.dirs[Math.floor(t/l.every)%l.dirs.length];inner+=`<span class="jb-lamp" style="--r:${{U:0,R:90,D:180,L:-90}[d]}deg"></span>`}
-     if(c==='E')inner+='<span class="jb-door">UIT</span>';
-     if(xx===x&&yy===y)inner+=you;
-     h+=`<div class="${cls}${xx===x&&yy===y&&caught?' caught':''}" data-x="${xx}" data-y="${yy}">${inner}</div>`}
-    G.innerHTML=h;const left=maxS-moves;q('jbLeft').textContent=left+' stappen';q('jbLb').style.width=Math.max(0,left/maxS*100)+'%';q('jbLb').className=left<=4?'hot':left<=maxS*.35?'warm':''};
-   const go=(dx,dy)=>{if(st.done||st.intro||busy)return;const r=jbStep(m,x,y,x+dx,y+dy,t);if(r==='wall'){sfx('tick');return}
-    moves++;t++;if(dx||dy){x+=dx;y+=dy;sfx('card')}else sfx('tick');
-    if(r==='out'){draw();sfx('win',1);busy=true;help.innerHTML='<b class="g">Je bent op de binnenplaats.</b> Nu nog de muur over.';later(phase3,reduce?500:1000);return}
-    if(r==='seen'||r==='bump'){draw(true);fail(r==='bump'?'Je liep recht tegen een bewaker aan.':'Een bewaker zag je in de gang.');return}
-    if(moves>=maxS){draw(true);fail('Celtelling: ze zagen dat je cel leeg was.');return}draw()};
-   const dirs={ArrowUp:[0,-1],KeyW:[0,-1],ArrowDown:[0,1],KeyS:[0,1],ArrowLeft:[-1,0],KeyA:[-1,0],ArrowRight:[1,0],KeyD:[1,0],Space:[0,0],Period:[0,0]};
-   help.innerHTML=`Loop naar de deur <b class="g">UIT</b>. Elke stap of <b>wacht</b> laat de bewakers één stap lopen. Niet in het <b class="y">gele licht</b> staan.${P.preview?' Het vage licht is waar ze <b>na je stap</b> kijken.':''}`;
-   const arr=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="${{L:'M15 5l-7 7 7 7',R:'M9 5l7 7-7 7',U:'M5 15l7-7 7 7',D:'M5 9l7 7 7-7'}[d]}"/></svg>`;
-   ctl.innerHTML=`<div class="jb-pad"><button class="jb-b" data-m="-1,0" aria-label="Links">${arr('L')}</button><button class="jb-b" data-m="0,-1" aria-label="Omhoog">${arr('U')}</button><button class="jb-b" data-m="0,1" aria-label="Omlaag">${arr('D')}</button><button class="jb-b" data-m="1,0" aria-label="Rechts">${arr('R')}</button><button class="jb-b jb-wait" data-m="0,0">Wacht</button></div>`;
-   ctl.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();const [a,c]=b.dataset.m.split(',').map(Number);go(a,c)}));
-   // tikken op een vakje naast je, of vegen over het raster
-   let sw=null;G.addEventListener('pointerdown',e=>{sw={x:e.clientX,y:e.clientY,used:false}});
-   G.addEventListener('pointermove',e=>{if(!sw||sw.used)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;if(Math.max(Math.abs(dx),Math.abs(dy))>28){sw.used=true;Math.abs(dx)>Math.abs(dy)?go(Math.sign(dx),0):go(0,Math.sign(dy))}});
-   G.addEventListener('pointerup',e=>{if(!sw)return;const used=sw.used;sw=null;if(used)return;const c=e.target.closest('.jg');if(!c)return;const cx=+c.dataset.x,cy=+c.dataset.y,dx=cx-x,dy=cy-y;
-    if(!dx&&!dy)go(0,0);else if(Math.abs(dx)+Math.abs(dy)===1)go(dx,dy)});
-   draw();
-   intro(2,'De gang','Sluip naar de deur naar de binnenplaats. Bewakers lopen hun ronde en zoeklampen draaien: sta je in hun licht, dan ben je gezien. Je hebt maar een paar stappen voor de celtelling.',()=>{
-    setKeys(e=>{const d=dirs[e.code];if(d){go(d[0],d[1]);return}return false})});
-   st.p2=()=>({x,y,t,moves,maxS,opt,map:P.map,range:P.range,path:jbPath(m)});st.p2go=go}
+  // ===== fase 2: de gang, van opzij. Sluip van dekking naar dekking (rekenwerk in jb-core.js: jbGang*) =====
+  function phase2(){st.ph=2;loop=null;stage.onclick=null;
+   const G=jbGang(P.d,P.seed),s=jbGangState(G),gx=G.g.x,beamA=gx-G.g.reach;let keyL=0,keyR=0,btn=0,stones=G.stones,ended=false,camX=0;
+   const zL=G.cam?jbGangZone(G,'L'):null,zR=G.cam?jbGangZone(G,'R'):null;
+   const doors=Array.from({length:9},(_,i)=>{const x=10+i*9.5;return G.covers.some(c=>Math.abs(c.x-x)<6)||x>gx-6?'':`<i class="jz-door" style="--x:${x}"><b>${String(14+i*2).padStart(3,'0')}</b></i>`}).join('');
+   const cov=G.covers.map(c=>`<div class="jz-c k-${c.k}" style="--x:${c.x}"></div>`).join('');
+   const mini=G.covers.map(c=>`<i class="mc" style="--a:${c.x-c.w/2};--b:${c.x+c.w/2}"></i>`).join('');
+   stage.innerHTML=`<div class="jb-p2g">
+     <div class="jz-hud"><span class="jz-st" id="jgEye"><i class="jz-ic"></i><b></b></span>${G.cam?'<span class="jz-st" id="jgCamH"><i class="jz-ic cam"></i><b></b></span>':''}
+      <span class="jz-tm"><span class="label">Celtelling</span><b id="jbLeft"></b></span></div>
+     <div class="jz-view" id="jgView"><div class="jz-world" id="jgW" style="--L:${G.L}">
+      <div class="jz-wall">${doors}<i class="jz-lamp" style="--x:22"></i><i class="jz-lamp" style="--x:60"></i></div><div class="jz-floor"></div>
+      <div class="jz-walk" style="--x:${gx-6}"></div>
+      <div class="jz-exit" style="--x:${G.exit}"><span>Post</span></div>
+      ${G.cam?`<div class="jz-cz" id="jgZL" style="--a:${zL[0]};--b:${zL[1]}"></div><div class="jz-cz" id="jgZR" style="--a:${zR[0]};--b:${zR[1]}"></div><div class="jz-dode" style="--x:${G.cam.x}"></div><div class="jz-cam" id="jgCam" style="--x:${G.cam.x}"><i></i></div>`:''}
+      <div class="jz-beam" id="jgBeam" style="--a:${beamA};--b:${G.safeFrom};--g:${gx-1.5}"></div>
+      <div class="jz-guard" id="jgGuard" style="--x:${gx}"><span class="jz-gb"></span><span class="jz-q" id="jgQ"></span></div>
+      <div class="jz-you" id="jgYou">${doll()}</div>${cov}
+     </div><div class="jz-vig" id="jgVig"></div></div>
+     <div class="jz-mini" aria-hidden="true"><i class="mb" id="jgMB" style="--a:${beamA};--b:${G.safeFrom}"></i>${G.cam?`<i class="mz" id="jgML" style="--a:${zL[0]};--b:${zL[1]}"></i><i class="mz" id="jgMR" style="--a:${zR[0]};--b:${zR[1]}"></i>`:''}${mini}<i class="me" style="--a:${G.exit-2};--b:100"></i><i class="my" id="jgMY"></i></div></div>`;
+   help.innerHTML='Houd <b>Sluip</b> vast om te lopen (of →). Kijkt er iets <b class="y">jouw kant op</b>, sta dan achter iets.';
+   ctl.innerHTML=`<div class="jz-ctl"><button class="jb-b" id="jgBack" aria-label="Terug"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+     <button class="jb-b jb-big" id="jgGo">Sluip <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+     <button class="jb-b jz-stone" id="jgStone">Steen <b id="jgStN">${stones}</b></button></div>`;
+   const V=q('jgView'),W=q('jgW'),Y=q('jgYou'),B=q('jgBeam'),GD=q('jgGuard'),QQ=q('jgQ'),EY=q('jgEye'),CH=q('jgCamH'),CM=q('jgCam'),VG=q('jgVig'),MB=q('jgMB'),MY=q('jgMY'),ZL=q('jgZL'),ZR=q('jgZR'),ML=q('jgML'),MR=q('jgMR');
+   let u=8,VW=50;
+   const fit=()=>{const r=V.getBoundingClientRect();VW=r.width<520?44:r.width<760?58:66;u=r.width/VW;W.style.setProperty('--u',u+'px')};fit();
+   const ro=window.ResizeObserver?new ResizeObserver(fit):null;if(ro)ro.observe(V);st.ro=ro;
+   const hold=(el,v)=>{const on=e=>{e.preventDefault();btn=v;el.classList.add('on')},off=()=>{if(btn===v)btn=0;el.classList.remove('on')};
+    el.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(n=>el.addEventListener(n,off))};
+   hold(q('jgGo'),1);hold(q('jgBack'),-1);
+   // op de telefoon: ook ergens in de gang vasthouden = sluipen
+   V.addEventListener('pointerdown',e=>{if(e.target.closest('.jb-intro'))return;e.preventDefault();btn=1});['pointerup','pointercancel','pointerleave'].forEach(n=>V.addEventListener(n,()=>{if(btn===1)btn=0}));
+   const stone=()=>{if(st.done||st.intro||ended||stones<=0)return;stones--;q('jgStN').textContent=stones;if(!stones)q('jgStone').disabled=true;
+    jbGangDistract(G,s);sfx('tick');const pb=document.createElement('i');pb.className='jz-pebble';pb.style.setProperty('--x',Math.min(gx+8,99));W.appendChild(pb);later(()=>pb.remove(),900)};
+   q('jgStone').addEventListener('click',stone);
+   const ku=e=>{const k=e.code;if(k==='ArrowRight'||k==='KeyD')keyR=0;if(k==='ArrowLeft'||k==='KeyA')keyL=0};document.addEventListener('keyup',ku);
+   const blur=()=>{keyL=keyR=btn=0};window.addEventListener('blur',blur);
+   st.p2off=()=>{document.removeEventListener('keyup',ku);window.removeEventListener('blur',blur);if(ro)ro.disconnect();st.ro=null};
+   const GS={away:['Kijkt weg','ok'],turn:['Draait om!','warn'],look:['Kijkt!','bad'],back:['Draait weg','warn']};
+   let lastG='',lastC='',walkT=0;
+   const draw=(dt)=>{const x=s.x,hid=jbGangHid(G,x),seen=jbGangSeen(G,s,x);
+    camX=Math.max(0,Math.min(G.L-VW,x-VW*.38));W.style.transform=`translateX(${(-camX*u).toFixed(1)}px)`;
+    const mv=(keyR||btn>0)?1:(keyL||btn<0)?-1:0;walkT=mv?walkT+dt:0;
+    Y.style.setProperty('--x',x.toFixed(2));Y.classList.toggle('hid',hid);Y.classList.toggle('walk',!!mv);Y.classList.toggle('seen',seen);
+    Y.classList.toggle('low',hid&&G.covers.some(c=>c.k==='kar'&&Math.abs(x-c.x)<=c.w/2));
+    if(s.gs!==lastG){lastG=s.gs;const [t,c]=GS[s.gs];EY.className='jz-st '+c;EY.querySelector('b').textContent=t;GD.dataset.s=s.gs;B.dataset.s=s.gs;MB.dataset.s=s.gs;if(s.gs==='turn')sfx('tick')}
+    QQ.textContent=s.dis>0?'?':s.gs==='turn'?'!':'';
+    if(G.cam){const blink=s.ct<G.cam.blink;const k=s.cs+(blink?'b':'');if(k!==lastC){lastC=k;CH.className='jz-st '+(blink?'warn':'cam');CH.querySelector('b').textContent=blink?'Camera draait':'Camera '+(s.cs==='L'?'links':'rechts');
+      CM.dataset.s=s.cs;ZL.classList.toggle('on',s.cs==='L');ZR.classList.toggle('on',s.cs==='R');ML.classList.toggle('on',s.cs==='L');MR.classList.toggle('on',s.cs==='R');ZL.classList.toggle('bl',blink);ZR.classList.toggle('bl',blink)}}
+    MY.style.setProperty('--x',x.toFixed(1));VG.style.opacity=(s.sus/100).toFixed(2);
+    const left=Math.max(0,G.time-s.t);q('jbLeft').textContent=Math.ceil(left)+'s';q('jbLeft').className=left<8?'hot':left<16?'warm':''};
+   const win2=()=>{ended=true;loop=null;st.p2off();sfx('win',1);help.innerHTML='<b class="g">Je bent bij de bewakerspost.</b>';later(phase3,reduce?500:900)};
+   draw(0);
+   intro(2,'De gang','Sluip van dekking naar dekking. Kijkt de bewaker of de camera jouw kant op, sta dan verstopt. Recht onder de camera ziet hij je niet. Een steen leidt de bewaker even af.',()=>{
+    setKeys(e=>{const k=e.code;if(k==='ArrowRight'||k==='KeyD'){keyR=1;return}if(k==='ArrowLeft'||k==='KeyA'){keyL=1;return}if(k==='Space'||k==='KeyE'){stone();return}return false});
+    run(dt=>{if(st.done||ended)return;const mv=(keyR||btn>0)?1:(keyL||btn<0)?-1:0;const r=jbGangTick(G,s,dt,mv);draw(dt);
+     if(r==='out'){win2();return}
+     if(r==='caught'){st.p2off();const z=G.cam?jbGangZone(G,s.cs):null,byCam=z&&s.x>=z[0]&&s.x<=z[1]&&s.gs!=='look';Y.classList.add('caught');fail(byCam?'De camera zag je in de gang.':'De bewaker zag je in de gang.');return}
+     if(s.t>=G.time){st.p2off();fail('Celtelling: ze zagen dat je cel leeg was.')}})});
+   st.p2=()=>({x:s.x,t:s.t,gs:s.gs,gt:s.gt,cs:s.cs,ct:s.ct,sus:s.sus,hid:jbGangHid(G,s.x),time:G.time,stones,covers:G.covers,cam:G.cam,g:G.g,exit:G.exit,safeFrom:G.safeFrom,v:G.v});
+   st.p2set=(v)=>{btn=v};st.p2stone=stone;st.G=G;st.s=s}
 
-  // ===== fase 3: de muur =====
-  function phase3(){st.ph=3;if(st.ro){st.ro.disconnect();st.ro=null}
+  // ===== fase 3: de sleutels van de slapende nachtwaker =====
+  function phase3(){st.ph=3;loop=null;
+   const Z=jbSleep(P.d,P.seed),s=jbSleepState(Z),K=jbKeys(Z);let hold=0,keys=false,kt=Z.keyTime,ended=false;
+   const keySvg=(k,i)=>`<svg viewBox="0 0 60 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#c9ced6" stroke-width="4"/><path d="M21 10h33v4h-4v5h-4v-5h-4v6h-4v-6h-17z" fill="#c9ced6"/></svg>`;
+   stage.innerHTML=`<div class="jb-pk"><div class="jn-room" id="jkRoom">
+      <div class="jn-win"><i></i></div><div class="jn-mon"><i></i><i></i></div><div class="jn-clock">03:12</div>
+      <div class="jn-desk"></div><div class="jn-cup"></div>
+      <div class="jn-guard" id="jkG"><div class="jn-chair"></div><div class="jn-body"><i class="jn-belt"></i></div><div class="jn-head"><i class="jn-cap"></i><i class="jn-eye"></i></div><div class="jn-ring" id="jkRing">${'<i></i>'.repeat(Z.keys)}</div></div>
+      <div class="jn-zz" id="jkZ"><i>Z</i><i>z</i><i>z</i></div>
+      <div class="jn-arm" id="jkArm"><i class="jn-hand"></i></div>
+      <div class="jn-door" id="jkDoor"><span class="jn-sign">Binnenplaats</span><span class="jn-tag" style="--c:${JB_KEYC[K.door.c][1]}">${K.door.n}</span></div>
+     </div>
+     <div class="jn-meters"><div class="jn-ss" id="jkSs"><i></i><b></b></div>
+      <div class="jn-bar"><span class="label">Hand</span><div><i id="jkP"></i></div></div><div class="jn-bar wake"><span class="label">Wakker</span><div><i id="jkW"></i></div></div></div></div>`;
+   help.innerHTML='Houd <b>Pak</b> vast als hij <b class="g">diep slaapt</b>. Laat los als hij <b class="y">woelt</b>.';
+   ctl.innerHTML='<button class="jb-b jb-big" id="jkHold">Pak de sleutels</button>';
+   const HB=q('jkHold'),A=q('jkArm'),GG=q('jkG'),SS=q('jkSs'),PB=q('jkP'),WB=q('jkW'),ZZ=q('jkZ');
+   const on=e=>{e.preventDefault();hold=1;HB.classList.add('on')},off=()=>{hold=0;HB.classList.remove('on')};
+   HB.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(n=>HB.addEventListener(n,off));
+   const ku=e=>{if(e.code==='Space'||e.code==='ArrowUp'||e.code==='Enter')hold=0};document.addEventListener('keyup',ku);const blur=()=>{hold=0};window.addEventListener('blur',blur);
+   const offK=()=>{document.removeEventListener('keyup',ku);window.removeEventListener('blur',blur)};st.p3off=offK;
+   const SL={deep:['Diep in slaap','ok'],stir:['Woelt… laat los','warn'],light:['Slaapt licht: niks doen','bad']};let lastS='';
+   const draw=()=>{if(s.ss!==lastS){lastS=s.ss;const [t,c]=SL[s.ss];SS.className='jn-ss '+c;SS.querySelector('b').textContent=t;GG.dataset.s=s.ss;ZZ.dataset.s=s.ss;if(s.ss==='stir')sfx('tick')}
+    A.style.setProperty('--p',(s.prog/100).toFixed(3));A.classList.toggle('mv',!!hold);PB.style.width=s.prog+'%';WB.style.width=Math.min(100,s.wake)+'%';WB.className=s.wake>60?'hot':s.wake>25?'warm':'';
+    q('jkRoom').classList.toggle('risk',!!hold&&s.ss==='light')};
+   draw();
+   // de sleutelbos is binnen: kies de sleutel die bij het bordje op de deur past
+   const pick=()=>{keys=true;hold=0;offK();sfx('pop');q('jkRing').classList.add('got');
+    help.innerHTML=`Welke sleutel past op de deur? Zoek <b>${JB_KEYC[K.door.c][0]} ${K.door.n}</b>.`;
+    ctl.innerHTML=`<div class="jn-keys" role="group" aria-label="Sleutelbos">${K.keys.map((k,i)=>`<button class="jn-key" data-i="${i}" aria-label="Sleutel ${JB_KEYC[k.c][0]} ${k.n}">${keySvg(k,i)}<span class="jn-tag" style="--c:${JB_KEYC[k.c][1]}">${k.n}</span></button>`).join('')}</div><div class="jn-kt"><i id="jkKt"></i></div>`;
+    q('jkDoor').classList.add('on');
+    ctl.querySelectorAll('.jn-key').forEach(b=>b.addEventListener('click',()=>{if(st.done||ended)return;const k=K.keys[+b.dataset.i];
+     if(k.ok){ended=true;loop=null;b.classList.add('ok');q('jkDoor').classList.add('open');sfx('win',1);help.innerHTML='<b class="g">Klik.</b> De deur naar de binnenplaats is open.';later(phase4,reduce?500:1000);return}
+     b.disabled=true;b.classList.add('no');s.wake+=42;sfx('lose');GG.classList.remove('jolt');void GG.offsetWidth;GG.classList.add('jolt');
+     if(s.wake>=100){fail('Het gerammel maakte de nachtwaker wakker.')}}));
+    setKeys(()=>false);
+    run(dt=>{if(st.done||ended)return;kt-=dt;s.wake=Math.max(0,s.wake-dt*6);WB.style.width=Math.min(100,s.wake)+'%';const kk=q('jkKt');if(kk){kk.style.width=Math.max(0,kt/Z.keyTime*100)+'%';kk.className=kt<2.5?'hot':''}
+     if(kt<=0)fail('Je stond te lang te rommelen bij de deur.')})};
+   intro(3,'De sleutels','De nachtwaker slaapt. Houd Pak vast als hij diep slaapt, laat los als hij woelt. Kies daarna de sleutel die bij de deur past.',()=>{
+    setKeys(e=>{if(e.code==='Space'||e.code==='ArrowUp'||e.code==='Enter'){hold=1;return}return false});
+    run(dt=>{if(st.done||ended||keys)return;const r=jbSleepTick(Z,s,dt,hold);draw();
+     if(r==='woke'){offK();GG.dataset.s='awake';fail('De nachtwaker werd wakker.');return}if(r==='got')pick()})});
+   st.p3=()=>({ss:s.ss,st:s.st,prog:s.prog,wake:s.wake,keys,door:K.door,keyList:K.keys,kt});st.p3hold=v=>{hold=v?1:0};st.p3key=i=>{const b=ctl.querySelector(`.jn-key[data-i="${i}"]`);if(b)b.click()}}
+
+  // ===== fase 4: de muur =====
+  function phase4(){st.ph=4;if(st.ro){st.ro.disconnect();st.ro=null}
    let h=0,lastSide=0,idle=0,bx=0,dir=1,seen=0,cool=0,slipT=0;const sweep=P.sweep;
    stage.innerHTML=`<div class="jb-p3"><div class="jb-sky"></div><div class="jb-tower"><i class="jb-sl"></i></div><div class="jb-beam" id="jbBeam"></div>
      <div class="jb-wall"><div class="jb-wire"></div><div class="jb-climb" id="jbClimb"><span class="jb-cl">${doll()}</span></div></div>
      <div class="jb-hgt"><i id="jbH"></i><span id="jbHt">0%</span></div><div class="jb-still" id="jbStill">Stil!</div></div>`;
-   help.innerHTML='Klim met <b>links</b> en <b>rechts</b> om de beurt (← →). Twee keer dezelfde kant = je glijdt. Staat het <b class="y">zoeklicht</b> op je: <b>niks doen</b>. Wacht je te lang, dan glijd je terug.';
+   help.innerHTML='<b>Links</b>, <b>rechts</b>, om de beurt (← →). In het <b class="y">zoeklicht</b>: niks doen.';
    ctl.innerHTML='<div class="jb-climbb"><button class="jb-b jb-big" data-s="-1">Links</button><button class="jb-b jb-big" data-s="1">Rechts</button></div>';
    const B=q('jbBeam'),C=q('jbClimb'),HB=q('jbH'),HT=q('jbHt'),STL=q('jbStill');
    const lit=()=>Math.abs(bx-.5)<P.beam/2+.05;
@@ -170,7 +242,7 @@ function jailBreakGame(P){
    ctl.querySelectorAll('[data-s]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();climb(+b.dataset.s)}));
    // tik op de linker- of rechterhelft van het beeld
    const tap=e=>{if(e.target.closest('.jb-intro'))return;e.preventDefault();const r=stage.getBoundingClientRect();climb(e.clientX-r.left<r.width/2?-1:1)};stage.addEventListener('pointerdown',tap);
-   intro(3,'De muur','Klim over de buitenmuur: om de beurt links en rechts. Het zoeklicht zwaait heen en weer. Valt het op jou, doe dan niks tot het voorbij is. Blijf je te lang hangen, dan zakt je grip.',()=>{
+   intro(4,'De muur','Klim om de beurt links en rechts. Staat het zoeklicht op je, doe dan niks. Hang je te lang stil, dan zak je terug.',()=>{
     setKeys(e=>{const k=e.code;if(k==='ArrowLeft'||k==='KeyA'){climb(-1);return}if(k==='ArrowRight'||k==='KeyD'){climb(1);return}return false});
     let ph=Math.random()*Math.PI*2;
     run(dt=>{if(st.done)return;cool=Math.max(0,cool-dt);
@@ -181,22 +253,22 @@ function jailBreakGame(P){
      B.style.left=(bx*100)+'%';B.style.setProperty('--w',(P.beam*100)+'%');C.style.bottom=`calc(${h*.78}% + 6px)`;HB.style.height=h+'%';HT.textContent=Math.floor(h)+'%';
      stage.classList.toggle('jb-lit',on)})});
    const win=()=>{stage.removeEventListener('pointerdown',tap);finish(true)};
-   st.p3=()=>({h,bx,lit:lit(),lastSide,per:P.per});st.p3climb=climb}
+   st.p4=()=>({h,bx,lit:lit(),lastSide,per:P.per});st.p4climb=climb}
 
   // ===== einde =====
   function fail(why){if(st.done)return;st.why=why;finish(false)}
   function finish(ok){if(st.done)return;st.done=true;st.res=ok;loop=null;setKeys(e=>{if(e.code==='Space'||e.code==='Enter'){close();return}return false});
    const box=ov.querySelector('.jb-box');box.classList.add(ok?'won':'lost');ctl.innerHTML='';const stl=q('jbStill');if(stl)stl.remove();
-   if(ok){steps(4);q('jbT').textContent='Ontsnapt!';q('jbSub').textContent='Over de muur en de nacht in';sfx('big');
+   if(ok){steps(5);q('jbT').textContent='Ontsnapt!';q('jbSub').textContent='Over de muur en de nacht in';sfx('big');
     stage.innerHTML=`<div class="jb-out"><div class="jbo-sky"><i class="jbo-moon"></i></div><div class="jbo-city">${Array.from({length:14},(_,i)=>`<i style="--h:${30+((i*37)%55)}%;--d:${i*.13}s"></i>`).join('')}</div>
       <div class="jbo-wall"></div><div class="jbo-you">${doll()}</div><p class="jbo-t">Je bent eruit. Ze zoeken je nu overal.</p></div>`;help.innerHTML='Je staat op de gezochtlijst tot de politie je vindt.'}
    else{q('jbT').textContent='Gepakt!';q('jbSub').textContent=st.why||'Alarm';sfx('lose');
     stage.insertAdjacentHTML('beforeend',`<div class="jb-alarm"><b>Alarm</b><span>${st.why||''}</span></div>`);help.innerHTML='Terug je cel in, met <b class="r">30 seconden extra straf</b>.'}
    later(close,ok?2400:2000)}
-  function close(){if(closed||!st.done)return;closed=true;cancelAnimationFrame(raf);timers.forEach(clearTimeout);document.removeEventListener('keydown',onKey);if(st.ro)st.ro.disconnect();
+  function close(){if(closed||!st.done)return;closed=true;cancelAnimationFrame(raf);if(st.p2off)st.p2off();if(st.p3off)st.p3off();timers.forEach(clearTimeout);document.removeEventListener('keydown',onKey);if(st.ro)st.ro.disconnect();
    ov.classList.add('out');setTimeout(()=>{ov.remove();window.__chase=false;resolve(st.res===true)},220)}
   ov.addEventListener('click',e=>{if(st.done)close()});
   // test-hook (zoals ov._fl bij het vluchtspel)
-  ov._jb=()=>Object.assign({ph:st.ph,intro:st.intro,done:st.done,res:st.res,why:st.why,P},st.ph===1&&st.p1?st.p1():st.ph===2&&st.p2?st.p2():st.ph===3&&st.p3?st.p3():{});
-  ov._jbT={go:()=>st.go&&st.go(),skip:()=>{if(st.ph===0)phase1()},hit:()=>st.p1hit&&st.p1hit(),move:(a,b)=>st.p2go&&st.p2go(a,b),climb:s=>st.p3climb&&st.p3climb(s)};
+  ov._jb=()=>Object.assign({ph:st.ph,intro:st.intro,done:st.done,res:st.res,why:st.why,P},st.ph===1&&st.p1?st.p1():st.ph===2&&st.p2?st.p2():st.ph===3&&st.p3?st.p3():st.ph===4&&st.p4?st.p4():{});
+  ov._jbT={go:()=>st.go&&st.go(),skip:()=>{if(st.ph===0)phase1()},hit:()=>st.p1hit&&st.p1hit(),walk:v=>st.p2set&&st.p2set(v),stone:()=>st.p2stone&&st.p2stone(),hold:v=>st.p3hold&&st.p3hold(v),key:i=>st.p3key&&st.p3key(i),gang:()=>[st.G,st.s],jump:n=>{if(st.ph<=1&&!st.done){loop=null;[phase2,phase3,phase4][n-2]()}},climb:s=>st.p4climb&&st.p4climb(s)};
   last=performance.now();raf=requestAnimationFrame(frame);cutscene()})}

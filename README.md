@@ -1212,3 +1212,25 @@ Carjacken (Auto's → Carjacken) heeft nu zes aanpakken. Elke aanpak heeft een e
 - **Verloren** betekent dat hij wegrijdt, dat de bestuurder terugvecht (gezondheid, minder met een zwaar wapen) of dat de politie komt. In dat laatste geval volgt een arrestatie: te voet vluchten, of vanuit de auto de achtervolging Plankgas!.
 
 Oude saves werken gewoon. Nieuwe velden: `S.jackScout` (de drie doelwitten) en `S.stats.jackAp` (pogingen en successen per aanpak).
+
+## Ontsnappen uit de bajes: vier fases (november 2026)
+
+Het oude doolhof (fase 2, stap voor stap over een raster) voelde als een val: zonder vooraf de looprichting van elke
+bewaker te kennen kwam je er bijna nooit doorheen, en op één combinatie (plattegrond 2 met lange kegels) was er zelfs
+geen route. Het ontsnapspel heeft nu vier fases (`jailbreak.js`, rekenwerk in `jb-core.js`):
+
+1. **De tralies**: ongewijzigd (vijlen in het ritme, stil bij de bewaker).
+2. **De gang, van opzij**: houd *Sluip* vast (of →) en ga van dekking naar dekking (pilaar, kast, wasmand, nis).
+   Een bewaker op de loopbrug kijkt weg, draait om (waarschuwing) en kijkt de gang in. Een camera wijst om de beurt naar
+   links of rechts, met een knipper voor hij draait; recht eronder is een dode hoek. Een *steen* gooien leidt de bewaker
+   af (2 op makkelijk, 1 op zwaar). Je wordt niet direct gepakt: een korte "gezien"-balk geeft 0,28–0,5 s speling.
+   Bovenin staat altijd wat de bewaker en camera doen, onderin een plattegrond van de hele gang.
+   `jbGang(d,seed)` legt de dekking zo neer dat elk open stuk in één keer wegkijken past (met marge).
+3. **De sleutels**: de nachtwaker slaapt. Houd *Pak* vast als hij diep slaapt, laat los als hij woelt; in lichte slaap
+   maakt bewegen hem wakker. Daarna kies je de sleutel met de kleur en het nummer van het bordje op de deur
+   (4 of 5 sleutels, 8–5 seconden, een foute sleutel rammelt).
+4. **De muur**: ongewijzigd.
+
+Getest met een bot (`jbGangSafeFor` = wachten tot het veilig is): 100% ontsnapt op makkelijk en midden, ±95% op
+"Bijna onmogelijk" (de rest: tijd op). Altijd doorlopen wordt bijna altijd gepakt; een speler die alleen op "kijkt weg"
+let, haalt het op zwaar ongeveer de helft van de keren. De voorpagina toont dezelfde gang live (lp-home.js).

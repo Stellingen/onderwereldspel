@@ -26,7 +26,7 @@ function facts(F) {
   const brug = HOUSES.find(h => h.id === 'brug'), villa = HOUSES.find(h => h.id === 'villa'), gracht = HOUSES.find(h => h.id === 'gracht');
   const slots = COV.GAMES.filter(g => /slot/i.test(g.kind)).length;
   const fams = FAMILIES.slice().sort((a, b) => a.r - b.r || a.cred - b.cred).map(f => ({ id: f.id, n: f.n, m: f.m, col: f.col, rank: rk(f.r) }));
-  const map = typeof jbMap === 'function' ? jbMap(1, 2) : null, path = map ? jbPath(map) : null;
+  const gg = typeof jbGang === 'function' ? jbGang(LP_GANG.d, LP_GANG.seed) : null;
   // Grinden loont: kans en buit per niveau van professionaliteit (zelfde som als crimegames.js: spel × dobbelsteen, zonder spullen)
   const cgg = P => .5 + .49 * (1 - Math.pow(1 - P, 1.6));
   const grind = [[0, 'Beginner'], [.3, 'Gevorderd'], [.55, 'Professional'], [.8, 'Meester'], [1, 'Alles maximaal']].map(([P, n]) =>
@@ -42,7 +42,7 @@ function facts(F) {
     homeTypes: HOMES.map(h => ({ id: h.id, n: h.n, r: h.r, rank: rk(h.r) })),
     haltes: [at(0), at(gracht.r), at(R.length - 1)],
     rail: R.map((_, i) => at(i)), famList: fams,
-    gang: map && path ? { W: map.W, H: map.H, g: map.cell ? Array.from({ length: map.H }, (_, y) => Array.from({ length: map.W }, (_, x) => map.cell(x, y)).join('')) : [], path, t0: (s0 => ({ cone: [...s0.cone], gs: s0.gs }))(jbSeen(map, 0)) } : null
+    gang: gg ? { L: gg.L, covers: gg.covers, cam: gg.cam, g: { x: gg.g.x, reach: gg.g.reach }, exit: gg.exit, safeFrom: gg.safeFrom, start: gg.start } : null
   };
 }
 
@@ -162,7 +162,7 @@ function lus(N) {
   const S = [
     ['crimes', 'straat', 'Doe een klus.', 'Zakkenrollen op de Dam, fietsen bij het station, later een geldtransport. Elke klus is een kort spelletje: grijpen, sluipen, een slot of een kluis kraken.', N.crimes + ' klussen'],
     ['run', 'politie', 'Betrapt? Rennen.', 'Gaat het fout, dan vlucht je zelf: te voet door de steeg of met plankgas door de stad.', 'Je speelt het zelf'],
-    ['jail', 'politie', 'Gepakt? Ontsnap.', 'De bajes is geen game over. Werk tijd van je straf af, betaal borg of vijl de tralies door.', 'Drie fases'],
+    ['jail', 'politie', 'Gepakt? Ontsnap.', 'De bajes is geen game over. Werk tijd van je straf af, betaal borg of vijl de tralies door.', 'Vier fases'],
     ['xp', 'straat', 'Word er beter in.', 'Hoe vaker je een klus doet, hoe makkelijker het spel en hoe groter de buit. Elke rang opent nieuwe klussen, families en woningen.', N.ranks + ' rangen']];
   return `<section class="lp-sec lp-lus" id="zo-werkt-het" aria-labelledby="h-lus">
  <div class="lp-wrap">
@@ -198,38 +198,48 @@ function grind(N) {
 }
 
 /* ================= Minigames ================= */
-// bewegende laag van de gang: lichtkegels, bewakers en de speler (zelfde tekening in lp-home.js)
-function gangDyn(cone, gs, p, ox, oy, c) {
-  return cone.map(k => { const [x, y] = k.split(','); return `<rect x="${ox + x * c + 2}" y="${oy + y * c + 2}" width="${c - 4}" height="${c - 4}" fill="#ffd27a" fill-opacity=".2"/>`; }).join('')
-    + gs.map(g => `<circle cx="${ox + g.x * c + c / 2}" cy="${oy + g.y * c + c / 2}" r="${c * .3}" fill="#a9dcff"/><circle cx="${ox + (g.x + g.dx * .32) * c + c / 2}" cy="${oy + (g.y + g.dy * .32) * c + c / 2}" r="${c * .09}" fill="#0b0d10"/>`).join('')
-    + `<circle cx="${ox + p[0] * c + c / 2}" cy="${oy + p[1] * c + c / 2}" r="${c * .28}" fill="#ff7a1a" stroke="#0b0d10" stroke-width="3"/>`;
-}
+// de gang uit Ontsnappen (fase 2), van opzij: dezelfde plattegrond als jbGang(LP_GANG.d, LP_GANG.seed) in het spel.
+// Dit is het stilstaande beeld (poster, reduced motion); lp-home.js laat er een bot doorheen sluipen met jb-core.js.
+const LP_GANG = { d: .5, seed: 11, view: 50 };
 function gangSvg(N) {
   const G = N.gang; if (!G) return '';
-  const c = 46, ox = (360 - G.W * c) / 2, oy = 70;
-  let cells = '';
-  G.g.forEach((row, y) => [...row].forEach((ch, x) => {
-    const X = ox + x * c, Y = oy + y * c;
-    if (ch === '#') cells += `<rect x="${X}" y="${Y}" width="${c}" height="${c}" fill="#1c2027"/>`;
-    else { cells += `<rect x="${X + .5}" y="${Y + .5}" width="${c - 1}" height="${c - 1}" fill="${ch === 'E' ? '#12301f' : ch === 'S' ? '#2a1c17' : '#101318'}"/>`;
-      if (ch === 'c') cells += `<rect x="${X + 7}" y="${Y + 7}" width="${c - 14}" height="${c - 14}" rx="3" fill="#4a3424" stroke="#6b4c33"/>`;
-      if (ch === 'L') cells += `<circle cx="${X + c / 2}" cy="${Y + c / 2}" r="${c / 4}" fill="#3a3f48" stroke="#a9dcff" stroke-opacity=".5"/>`;
-      if (ch === 'E') cells += `<text x="${X + c / 2}" y="${Y + c / 2 + 5}" text-anchor="middle" class="lp-gang__t" fill="#3fe395">UIT</text>`; }
-  }));
-  // veilige route als stippellijn (eindbeeld = poster = reduced motion)
-  let x = 0, y = 0; G.g.forEach((row, yy) => { const i = row.indexOf('S'); if (i >= 0) { x = i; y = yy; } });
-  const pts = [[x, y]]; G.path.forEach(([dx, dy]) => { x += dx; y += dy; if (dx || dy) pts.push([x, y]); });
-  const P = pts.map(([a, b]) => `${ox + a * c + c / 2},${oy + b * c + c / 2}`).join(' ');
-  return `<svg class="lp-gang" viewBox="0 0 360 640" aria-hidden="true" focusable="false" data-ox="${ox}" data-oy="${oy}" data-c="${c}">
-<rect width="360" height="640" fill="#0b0d10"/><text x="18" y="38" class="lp-gang__t" fill="#a9dcff">FASE 2 · DE GANG</text><text x="342" y="38" text-anchor="end" class="lp-gang__t" fill="#8a8f98">${G.path.length} STAPPEN</text>
-${cells}<polyline class="lp-gang__route" points="${P}" fill="none" stroke="#ff7a1a" stroke-width="3" stroke-dasharray="2 7" stroke-linecap="round"/><g class="lp-gang__dyn">${gangDyn(G.t0.cone, G.t0.gs, pts[0], ox, oy, c)}</g>
-<text x="180" y="${oy + G.H * c + 34}" text-anchor="middle" class="lp-gang__t" fill="#8a8f98">BLIJF UIT DE LICHTKEGELS</text></svg>`;
+  const u = 360 / LP_GANG.view, Y0 = 96, H = 360, fl = Y0 + H * .76, X = x => +(x * u).toFixed(1), gx = G.g.x;
+  const zone = side => side === 'L' ? [G.cam.x - 2.5 - G.cam.zw, G.cam.x - 2.5] : [G.cam.x + 2.5, G.cam.x + 2.5 + G.cam.zw];
+  let w = `<rect x="0" y="${Y0}" width="${X(G.L)}" height="${H * .76}" fill="#171c22"/><rect x="0" y="${Y0 + H * .4}" width="${X(G.L)}" height="${H * .36}" fill="#1a2622"/>`
+    + `<rect x="0" y="${fl}" width="${X(G.L)}" height="${H * .24}" fill="#1b1e23"/>`;
+  for (let i = 0; i < 9; i++) { const x = 10 + i * 9.5; if (x > gx - 6 || G.covers.some(c => Math.abs(c.x - x) < 6)) continue;
+    w += `<rect x="${X(x - 2.5)}" y="${fl - H * .47}" width="${X(5)}" height="${H * .47}" fill="#2a3038" stroke="#3b434e" stroke-width="2"/>`; }
+  w += `<rect x="${X(gx - 6)}" y="${Y0 + H * .23}" width="${X(G.L - gx + 6)}" height="${H * .035}" fill="#47505c"/>`
+    + `<rect x="${X(G.exit - 2)}" y="${fl - H * .5}" width="${X(7)}" height="${H * .5}" fill="#12301f" stroke="#3fe395" stroke-width="2"/>`;
+  if (G.cam) { const zl = zone('L'), zr = zone('R');
+    w += `<rect class="lp-gang__zl" x="${X(zl[0])}" y="${Y0 + 20}" width="${X(G.cam.zw)}" height="${H - 24}" fill="#ff5060" fill-opacity=".2"/><rect class="lp-gang__zr" x="${X(zr[0])}" y="${Y0 + 20}" width="${X(G.cam.zw)}" height="${H - 24}" fill="#ff5060" fill-opacity=".04"/>`
+      + `<rect x="${X(G.cam.x - 2.5)}" y="${H * .88 + Y0}" width="${X(5)}" height="${H * .1}" rx="5" fill="none" stroke="#3fe395" stroke-opacity=".5" stroke-dasharray="5 4"/><rect x="${X(G.cam.x - 1.2)}" y="${Y0 + 6}" width="${X(2.4)}" height="12" rx="3" fill="#5a6472"/>`; }
+  const a = gx - G.g.reach, gy = Y0 + H * .1;
+  w += `<polygon class="lp-gang__beam" points="${X(gx - 1.5)},${gy + 14} ${X(G.safeFrom)},${fl + H * .18} ${X(a)},${fl + H * .18}" fill="#ffe9a6" fill-opacity="0"/>`
+    + `<g class="lp-gang__gd" transform="translate(${X(gx)} ${gy})"><circle cy="4" r="7" fill="#c99b7a"/><rect x="-9" y="12" width="18" height="40" rx="6" fill="#22345a"/><rect x="-8" y="-4" width="16" height="6" rx="2" fill="#1a2a4a"/></g>`;
+  // eerst de nissen (achter je), dan jij, dan de rest (voor je)
+  const cv = c => c.k === 'pilaar' ? `<rect x="${X(c.x - 3.5)}" y="${Y0}" width="${X(7)}" height="${H * .97}" fill="#3a414b"/>`
+    : c.k === 'kast' ? `<rect x="${X(c.x - 3.5)}" y="${fl + H * .2 - H * .54}" width="${X(7)}" height="${H * .54}" fill="#3a4c45"/>`
+    : c.k === 'kar' ? `<rect x="${X(c.x - 4)}" y="${fl + H * .21 - H * .3}" width="${X(8)}" height="${H * .3}" rx="4" fill="#7b6f5a"/><rect x="${X(c.x - 4)}" y="${fl + H * .21 - H * .3}" width="${X(8)}" height="${H * .066}" rx="4" fill="#d8d2c2"/>`
+    : c.k === 'nis' ? `<rect x="${X(c.x - 4)}" y="${fl - H * .62}" width="${X(8)}" height="${H * .62}" fill="#07080a" stroke="#232830" stroke-width="3"/>` : '';
+  w += G.covers.filter(c => c.k === 'nis').map(cv).join('')
+    + `<g class="lp-gang__you" transform="translate(${X(G.start)} ${fl + H * .2})"><circle cy="-${H * .33}" r="11" fill="#ff7a1a"/><rect x="-14" y="-${H * .3}" width="28" height="${H * .3}" rx="10" fill="#ff7a1a"/></g>`
+    + G.covers.filter(c => c.k !== 'nis').map(cv).join('');
+  const m = (x0, x1, f, o) => `<rect x="${(18 + x0 * 3.24).toFixed(1)}" y="512" width="${((x1 - x0) * 3.24).toFixed(1)}" height="14" fill="${f}" fill-opacity="${o}"/>`;
+  const mini = `<rect x="18" y="512" width="324" height="14" rx="7" fill="#14181e"/>${m(a, G.safeFrom, '#ffd970', .1).replace('<rect', '<rect class="lp-gang__mb"')}`
+    + G.covers.map(c => m(c.x - c.w / 2, c.x + c.w / 2, '#55606e', 1)).join('') + m(G.exit - 2, 100, '#3fe395', .7)
+    + `<circle class="lp-gang__my" cx="${(18 + G.start * 3.24).toFixed(1)}" cy="519" r="6" fill="#ff7a1a"/>`;
+  return `<svg class="lp-gang" viewBox="0 0 360 640" aria-hidden="true" focusable="false" data-u="${u}" data-d="${LP_GANG.d}" data-seed="${LP_GANG.seed}" data-view="${LP_GANG.view}">
+<defs><clipPath id="lpGangClip"><rect x="0" y="${Y0}" width="360" height="${H}" rx="8"/></clipPath></defs>
+<rect width="360" height="640" fill="#0b0d10"/><text x="18" y="56" class="lp-gang__t" fill="#a9dcff">FASE 2 · DE GANG</text><text x="342" y="56" text-anchor="end" class="lp-gang__t lp-gang__st" fill="#3fe395">KIJKT WEG</text>
+<g clip-path="url(#lpGangClip)"><g class="lp-gang__w">${w}</g></g>${mini}
+<text x="180" y="580" text-anchor="middle" class="lp-gang__t" fill="#8a8f98">STA VERSTOPT ALS ER IEMAND KIJKT</text></svg>`;
 }
 function games(N) {
   const G = [
     ['rennen', 'Rennen!', 'Betrapt? Weg door de steeg. Wissel van baan, spring en buk, en struikel niet te vaak.', 'Na een mislukte klus', 'straat'],
     ['plankgas', 'Plankgas!', 'Met een gestolen auto door de stad. Ontwijk het verkeer, geef nitro en neem een zijstraat.', "Bij auto's stelen", 'straat'],
-    ['gang', 'Ontsnappen', 'Vijl de tralies in het ritme, sluip door de gang langs de lichtkegels en klim over de muur.', 'Als je vastzit', 'politie'],
+    ['gang', 'Ontsnappen', 'Vijl de tralies door, sluip van dekking naar dekking, pak de sleutels van de nachtwaker en klim over de muur.', 'Als je vastzit', 'politie'],
     ['carjacken', 'Carjacken', 'Tankstation, stoplicht, parkeergarage of een valse aanrijding. Kies je auto uit drie, speel je aanpak en rij weg.', 'Vanaf ' + esc(N.jackRank), 'straat'],
     ['contact', 'Contact maken', 'Een geparkeerde auto starten zonder sleutel: toets de pijlen in de goede volgorde voor de tijd op is. Een rode pijl druk je andersom.', 'Bij straat afzoeken', 'straat']];
   const media = (g) => g[0] === 'gang'
@@ -441,7 +451,7 @@ function page(N, o) {
   return hero(N, o) + lus(N) + grind(N) + games(N) + loopbaan(N) + imperium(N) + casino(N) + lidTeaser(N) + eerlijk(N) + slot(N);
 }
 
-const LPV = { facts, page, lidPage, lidTeaser, hero, lus, grind, games, loopbaan, imperium, casino, eerlijk, slot, faqList, klimSvg, gangSvg, haltRows };
+const LPV = { facts, page, lidPage, lidTeaser, hero, lus, grind, games, loopbaan, imperium, casino, eerlijk, slot, faqList, klimSvg, gangSvg, haltRows, LP_GANG };
 root.LPV = LPV;
 if (typeof module !== 'undefined' && module.exports) module.exports = LPV;
 })(typeof window !== 'undefined' ? window : this);

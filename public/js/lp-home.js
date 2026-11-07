@@ -156,25 +156,41 @@ if ('IntersectionObserver' in window && items.length) {
 }
 document.addEventListener('visibilitychange', () => { if (document.hidden) items.forEach(it => { if (it.playing) { it.pause(); it.wasOn = true; } }); else { items.forEach(it => { it.wasOn = false; }); choose(); } });
 
-// live gang: de echte plattegrond, bewakers en kortste route uit jb-core.js (zelfde code als in het spel)
+// live gang: dezelfde plattegrond, bewaker en camera als in het spel (jbGang uit jb-core.js); een bot sluipt erdoorheen
 let gangP = null, gangApi = null;
 function gang(media) {
   if (gangP) return gangP;
   gangP = need('/js/jb-core.js').then(ok => {
-    if (!ok || typeof jbMap !== 'function') return null;
-    const svg = q('svg.lp-gang', media), dyn = q('.lp-gang__dyn', svg), ox = +svg.dataset.ox, oy = +svg.dataset.oy, c = +svg.dataset.c;
-    const m = jbMap(1, 2), path = jbPath(m) || [];
-    let t = 0, x = m.S[0], y = m.S[1], timer = null, hold = 0;
-    const draw = () => { const s = jbSeen(m, t); let h = '';
-      s.cone.forEach(k => { const [a, b] = k.split(','); h += `<rect x="${ox + a * c + 2}" y="${oy + b * c + 2}" width="${c - 4}" height="${c - 4}" fill="#ffd27a" fill-opacity=".2"/>`; });
-      s.gs.forEach(g => { h += `<circle cx="${ox + g.x * c + c / 2}" cy="${oy + g.y * c + c / 2}" r="${c * .3}" fill="#a9dcff"/><circle cx="${ox + (g.x + g.dx * .32) * c + c / 2}" cy="${oy + (g.y + g.dy * .32) * c + c / 2}" r="${c * .09}" fill="#0b0d10"/>`; });
-      h += `<circle cx="${ox + x * c + c / 2}" cy="${oy + y * c + c / 2}" r="${c * .28}" fill="#ff7a1a" stroke="#0b0d10" stroke-width="3"/>`; dyn.innerHTML = h; };
-    const step = () => {
-      if (hold) { hold--; if (!hold) { t = 0; x = m.S[0]; y = m.S[1]; } draw(); return; }
-      const mv = path[t]; if (!mv) { hold = 3; return; }
-      x += mv[0]; y += mv[1]; t++; if (m.cell(x, y) === 'E') hold = 3; draw();
+    if (!ok || typeof jbGang !== 'function') return null;
+    const svg = q('svg.lp-gang', media); if (!svg) return null;
+    const u = +svg.dataset.u, VW = +svg.dataset.view, d = +svg.dataset.d, seed = +svg.dataset.seed;
+    const W = q('.lp-gang__w', svg), you = q('.lp-gang__you', svg), beam = q('.lp-gang__beam', svg), gd = q('.lp-gang__gd', svg), my = q('.lp-gang__my', svg), mb = q('.lp-gang__mb', svg), st = q('.lp-gang__st', svg), zl = q('.lp-gang__zl', svg), zr = q('.lp-gang__zr', svg);
+    const youY = you.getAttribute('transform').split(' ')[1], gdT = gd.getAttribute('transform');
+    let G, s, timer = null, hold = 0;
+    const reset = () => { G = jbGang(d, seed); s = jbGangState(G); };
+    const next = x => { const c = G.covers.find(c => c.x - c.w / 2 > x + .01); return c ? Math.min(c.x, G.safeFrom + .5) : G.exit; };
+    const draw = () => {
+      const camX = Math.max(0, Math.min(G.L - VW, s.x - VW * .38));
+      W.setAttribute('transform', `translate(${(-camX * u).toFixed(1)} 0)`);
+      you.setAttribute('transform', `translate(${(s.x * u).toFixed(1)} ${youY}`); you.style.opacity = jbGangHid(G, s.x) ? .45 : 1;
+      const look = s.gs === 'look', turn = s.gs === 'turn';
+      beam.setAttribute('fill-opacity', look ? .4 : turn ? .14 : 0); mb.setAttribute('fill-opacity', look ? .55 : turn ? .25 : .1);
+      gd.setAttribute('transform', gdT + (look || turn ? ' scale(-1 1)' : ''));
+      st.textContent = look ? 'KIJKT!' : turn ? 'DRAAIT OM' : 'KIJKT WEG'; st.setAttribute('fill', look ? '#ff6b7c' : turn ? '#ffd970' : '#3fe395');
+      if (zl) { zl.setAttribute('fill-opacity', s.cs === 'L' ? .2 : .04); zr.setAttribute('fill-opacity', s.cs === 'R' ? .2 : .04); }
+      my.setAttribute('cx', (18 + s.x * 3.24).toFixed(1));
     };
-    gangApi = { play() { if (!timer) timer = setInterval(step, 480); }, pause() { clearInterval(timer); timer = null; } };
+    const step = () => {
+      if (hold) { hold--; if (!hold) reset(); draw(); return; }
+      for (let i = 0; i < 3; i++) {
+        let mv = 1;
+        if (jbGangHid(G, s.x)) { const t = next(s.x), dd = t - s.x; for (let k = 0; k <= 20; k++) { const px = s.x + dd * k / 20; if (jbGangSafeFor(G, s, px) < (px - s.x) / G.v + .45) { mv = 0; break; } } }
+        const r = jbGangTick(G, s, 1 / 60, mv); if (r || s.t > G.time) { hold = 30; break; }
+      }
+      draw();
+    };
+    reset();
+    gangApi = { play() { if (!timer) timer = setInterval(step, 50); }, pause() { clearInterval(timer); timer = null; } };
     return gangApi;
   });
   return gangP;
