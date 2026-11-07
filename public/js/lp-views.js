@@ -32,7 +32,7 @@ function facts(F) {
   const grind = [[0, 'Beginner'], [.3, 'Gevorderd'], [.55, 'Professional'], [.8, 'Meester'], [1, 'Alles maximaal']].map(([P, n]) =>
     ({ n, P: Math.round(P * 100), kans: Math.round(cgg(P) * Math.min(P >= 1 ? 99 : 95, 58 + 38 * P)), buit: Math.round(.6 * Math.pow(P, 1.5) * 100) }));
   return {
-    grind, crimeGames: 11,
+    grind, crimeGames: (typeof CG_TYPES==='object'?Object.keys(CG_TYPES).length:18),
     ranks: R.length, crimes: CRIMES.length, fams: FAMILIES.length, biz: BIZ.length, houses: HOUSES.length, cars: CARS.length,
     games: COV.GAMES.length, slots, outfits: F.outfits || 0, streets: ST.map(s => s.n),
     startCash: G.startCash, energyFullMin: Math.round(G.enBase * G.enRegenS / 60), garageMax: G.garageMax,
