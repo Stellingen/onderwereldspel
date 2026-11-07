@@ -1043,3 +1043,172 @@ Een mislukte klus loopt niet meer altijd op de cel uit. Het gevolg hangt af van 
 - op het dashboard.
 
 Op elke klus staat wat er gebeurt als hij mislukt.
+
+## Ronde november 2026, deel 2
+
+- **Gewonnen klus-spel = gelukt** (`cgTarget` in `crimegames.js`, `crimeResolve` in `actions.js`): de hele kans (spel × dobbelsteen)
+  zit in het spel; geen worp achteraf, dus na een gewonnen spel nooit meer "betrapt" of vluchten. Alleen een verloren spel leidt tot
+  `crimeFail` (arrestatie/vluchten).
+
+### Klus-spellen, ronde 3: andere spellen, minder tekst (november 2026)
+
+- **18 spelsoorten** (was 11). Zeven nieuwe in `public/js/crimegames2.js` (geladen na `crimegames.js`), elk met een eigen
+  SVG/HTML-tekening, tikken én toetsenbord, en dezelfde kalibratie (`cgSolve` + model van een gemiddelde speler):
+  | Spel | Hoe | Klussen |
+  |---|---|---|
+  | Bellen | een telefoon (of chat) in beeld: de ander zegt iets, jij kiest wat je terugzegt (rustig en geloofwaardig wint). Vertrouwensbalk | beller fraudebende, "Hoi mam" (chat), bankpas verhuren (de bank belt jou), vastgoedbaron chanteren, nepwebshop (klantenservice-chat) |
+  | Meekijken | kijk mee hoe iemand een code intoetst (een hand op het toetsenpaneel), toets hem daarna zelf in | kantoor Zuidas (alarmpaneel), garageboxen (sleutelkastje), vrijhaven Genève (toegangspoort) |
+  | Alarm | lees welke draad eruit moet (bv. SIRENE), volg de kleur door de kluwen, tik die kleur | apotheek, museum, stroom aftappen |
+  | Keuren | lopende band: goed of weg (← →). Valse briefjes met een duidelijk gebrek, of dozen met waardevol/rommel | valse briefjes, ladingdiefstal, loods van de rivaal |
+  | Uitkijken | het werk gaat vanzelf; duikt er iemand op in een raam/deur, tik op die plek | muren taggen, statiegeld, pakketjes |
+  | Volgen | onthoud welke container/pallet van jou is en volg hem terwijl ze schuiven | zeecontainer, goudtransport, haven van Rotterdam |
+  | Nakijken | twee papieren naast elkaar (werkbon/factuur, pasje/loonlijst, eisen/offerte): tik het vakje dat niet klopt | valse facturen, zwartwerk bouw, aanbesteding |
+- **Nieuwe verdeling**: elk spel hoort bij 2 tot 7 klussen (Gesprek 7, Slot/Kluis/Overval/Bellen/Route/Dealen 5, rest 2–4).
+  Ids van klussen blijven gelijk. Door de andere trainingen per spel kan P bij verplaatste klussen iets verschuiven.
+- **Gesprek duidelijker**: tekstballon met wie er praat, de vraag "Wat zeg je?" en drie antwoorden als zin (met de aanpak
+  erboven, bv. "Geld bieden · Noem je prijs."). Geen spiekbriefje meer. Jouw antwoord verschijnt als ballon.
+- **Minder tekst**: uitlegscherm = titel, doel als drie chips (✓ 4× goed · ✕ 1 fout mag · ⏱ 22 s), hooguit drie stappen van
+  één regel en de bediening in een paar woorden. Geen hulpregel meer onder het speelveld (ook niet bij het slot), korte
+  feedback ("Te laat", "Verkeerde draad"). Geen cijfers 1/2/3/4 op knoppen (toetsen werken nog). Speelvelden lopen op een
+  hoge telefoon door tot de rand (geen lege balken); het slot vult op de telefoon het hele scherm.
+- **Verhoor (arrest.js)**: de rechercheur stelt een vraag in een tekstballon; je keuzes zijn kort met wat je zegt:
+  Zwijgen ("Geen commentaar."), Een verhaal ophangen ("Ik was gewoon thuis." + kans), Bekennen. Taakstraf zonder cijfers op
+  de vakken.
+- **Kalibratie** (gemiddelde speler, sim 1500 rondes): zie `scratchpad/crimes2/sim_prac.txt` en `sim_real.txt`; per type
+  ligt de sim-slaagkans binnen ±0,05 van het doel. Antwoordtijden per vraag bij P=0 → P=1: bellen 3,9 → 5,2 s,
+  nakijken 3,5 → 4,8 s, alarm 2,0 → 2,6 s, keuren 1,3 → 1,6 s, meekijken 1,1 → 1,5 s per cijfer; uitkijken reactie
+  0,83 → 1,03 s; volgen schuifduur 0,37 → 0,49 s.
+
+### Vluchtspel: jij als renner
+
+- **Rennen! versie 3** (`flee.js` regels en scherm, nieuw `flee-art.js` tekenwerk, `css/rennen.css`, november 2026):
+  - **Niets valt meer over elkaar.** Het beeld wordt van ver naar dichtbij getekend: lucht → vloer → het einde van de route →
+    de zijkanten (per kant van ver naar dichtbij) → alles op of naast de baan (decor, obstakels, jij, de agent) samen op diepte
+    gesorteerd. Zijgevels stoppen waar de route stopt; het einde wordt eerst getekend (oorzaak van de overlappende gebouwen
+    aan het eind: dat werd vroeger ná de gevels over alles heen geschilderd). Decor staat altijd binnen de straat (|X| ≤ 2,9 m),
+    gevels erbuiten. Na een opening zie je de kopse kant van het volgende blok. Gepasseerde obstakels verdwijnen binnen 1,4 m.
+  - **Camera** iets hoger en verder (5 m, 8,4 m achter je), zodat je over je eigen hoofd heen kijkt; binnen en in de garage
+    lager (3,9 m), soepel overgaand bij de deur. Mist naar de horizon voor diepte.
+  - **De agent achter je** loopt altijd links achter je (nooit over je heen). Een stilstaande agent als obstakel bestaat niet
+    meer (die leek naast je te staan); agenten komen alleen op je af of zitten achter je aan.
+  - **Balk onder het beeld** in plaats van over het beeld: afstand tot de agent · route met de uitgang · adem.
+  - **Plekken** (`fleeCtx`, `FL_TH` voor obstakels, `FLV` in flee-art.js voor kleuren en vormen): gracht (grachtenpanden met
+    trap-, klok-, hals- en lijstgevels, woonboten, bruggen met lichtjes, de laatste brug is de uitgang), steeg (bakstenen muren,
+    achterdeuren met lampjes, eind: lichte portiek), **woonwijk** (nieuw: rijtjeshuizen met heg en voortuin, eind: park),
+    winkelstraat (etalages, naambanden, lichtsnoeren, eind: zijstraat), kade (containers met deuren, schepen, eind: water met
+    bootje), **parkeergarage** (nieuw: pilaren, geparkeerde auto's, tl-licht, eind: uitrit), en binnen gang, winkel, kantoor.
+    Inbraak niveau 1-3 vlucht nu door een woonwijk (was steeg), oplichting vanaf niveau 3 van kantoor naar de parkeergarage,
+    straatwerk niveau 1 en huurmoord kunnen ook de woonwijk zijn.
+  - **De renner ben jij**: `runnerLook()` volgt het kledingcontract via `outfitLook()` (pages/look.js): per plek
+    `{kind,c,c2}` met nette standaarden. Oudere stukken zonder `look.kind` (hoodie, pet, pak, trainingspak, kisten…) worden
+    herkend aan hun id. Soorten: hoofd skimask/cap/beanie/hood/hat/none, boven tee/hoodie/jacket/suit/tracksuit/thief,
+    benen jeans/track/suit/thief (zonder broek volgt de broek het pak/trainingspak), schoenen sneaker/boot/dress.
+    Rennen (zool zichtbaar bij het opzwaaiende been), springen, bukken, kantelen bij baanwissel, rood bij struikelen; zacht
+    tegenlicht zodat zwarte kleren niet wegvallen. **Portret** (`flPortrait`, van voren) op de kaart vooraf en bij de uitslag.
+  - **Minder tekst**: kaart vooraf = jij, "Voor jou: …", vier trainingsiconen met waarde, eventueel "+x%" voorsprong,
+    ← → ↑ ↓ en de knop. Knoppen: pijlen, "Buk", "Spring" met icoon. Uitslag: portret, Ontkomen!/Gepakt!, voorsprong of
+    route-% en aantal keer gestruikeld. Markering op hekken/stellingen: pijltjes in plaats van tekst. Nooit twee meldingen tegelijk.
+  - **Balans** ongewijzigd (`node scripts/fleesim.js 400`, voor → na, slaagkans max-good): L1 98→99%, L2 92→94%, L3 87→91%,
+    L4 62→68%, L5 39→43%; nieuw-avg L3 35→39%, L5 0→2% (binnen de ruis van de simulatie; alleen obstakeltypes van gelijke
+    breedte gewisseld).
+  - Prestatie: alleen canvas, geen DOM per frame (HUD alleen bij verandering), geen backdrop-filter; tekentijd 0,3-3 ms per frame.
+
+### Kleding, dievenpak en herkenning
+
+- **Outfit: meer kleding, Dievenpak en herkenning** (`pages/look.js`, opmaak in `css/look.css`, november 2026)
+  - **32 nieuwe stukken** (`FIT_NEW`, nu 134 draagbare stukken) met eigen merken: Zwaluw (sneakers, o.a. *Zwaluw Tag*),
+    Kwiek, Asfalt, Kade 13, Noorderzon, Grachtwerk, Casa Bruno, Maison Lupo en Nachtwacht. `r` van deze stukken is direct
+    de rang-index in `RANKS` (niet door `rkRemap`). Duurdere stukken hebben 2-3 effecten.
+  - **Nieuwe plek Broek** (`FIT_SLOTS`: hoofd, kleding, broek, schoenen, nek, pols, ring). Een set telt nu tot 7
+    (`FIT_STYLE_SLOTS=7`; setbonus blijft bij 3 en 5). Zonder broek tekent de pop de broek van je pak/trainingspak zoals eerst.
+  - **Pakken vanaf Onderbaas** (index 16): Driedelig krijtstreep (€450.000), Wit pak (€600.000), Fluwelen nachtpak en
+    Zijden pak van Maison Lupo (Schaduwbaas, €800.000/€950.000), Peetvaderpak (Peetvader, €2,5 mln), plus hoed, pantalon
+    en loafers van Maison Lupo.
+  - **Prijs** (ongewijzigd, `fitPrice`): met de rang betaal je de gewone prijs; eronder +40% en +25% per rang-stap
+    (`rkPow`). Voorbeeld skimasker: €3.800 als Dief, €8.200 als Rookie.
+  - **Dievenpak** (stijl `dief`, alles zwart): Zwarte beanie, Skimasker, Zwarte nekwarmer, Zwarte hoodie, Nachtwacht
+    dievenpak (overall), Zwarte cargobroek, Zwarte handschoenen, Zwaluw Tag Stealth, Matzwarte ring. Setbonus 3:
+    −8% herkend, −3% hitte; 5: −15% herkend, −5% hitte, +4% ontsnappen. Het skimasker is los te koop.
+  - **Herkenning** (`fitFx('herken')`, fractie 0..0,6, gecapt in `outfitFx` via `FIT_CAP`). Bronnen: Dievenpak-stukken
+    (skimasker 0,18, overall 0,12), Bivakmuts 0,15, Pruik 0,12, Motorhelm 0,08, Bandana 0,04, Pet en Grijze hoodie 0,03, set
+    Grijze muis 0,04/0,08. Effect (klein, nooit een hogere slaagkans):
+    - signalement na een mislukte overval: kans 50% × (1 − herken) (`arHeist`, arrest.js; bij 0,6: 20%);
+    - start-bewijs in het verhoor: −20 × herken (`arB0`, arrest.js; bij 0,6: −12), met een regel in de politiecel;
+    - hitte: × (1 − 0,25 × herken) in `addHeat` (state.js, `FIT_HK_HEAT`; bij 0,6: −15%).
+  - **Winkel**: elk effect als chip met icoon en kort label (kans, buit, inkomen, XP, borg, wachttijd, vluchten, energie,
+    autowaarde, ontsnappen, hitte, herkend); uitleg in de tooltip. "Als je hem aantrekt" verschijnt alleen als het iets
+    anders is dan het stuk zelf. Beschrijvingen max. 2 regels. De etalagepop tekent ook de nieuwe stukken (skimasker,
+    beanie, cap, hoed, hoodie, jack, trainingspak, pak, dievenpak, broeken, sneakers/boots/nette schoenen, handschoenen).
+  - **Uiterlijk-contract** (voor het vluchtspel): elk draagbaar stuk heeft `look:{kind,c,c2}` (oude stukken via een tabel
+    in look.js). Soorten: hoofd `skimask cap beanie hood hat none`; kleding `tee hoodie jacket suit tracksuit thief`; broek
+    `jeans track suit thief`; schoenen `sneaker boot dress`; sieraden `chain scarf tie phones watch band gloves ring`.
+    Kleding die ook je benen bedekt heeft `look.legs:{kind,c,c2}`.
+  - **`outfitLook(wear?)`** (look.js): geeft altijd
+    `{hoofd,bovenlijf,benen,schoenen}` met per plek `{kind,c,c2,id}` (id = null bij de standaard), plus `herken` (0..0,6).
+    Zonder argument: wat de speler nu draagt. Benen = de broek, anders `legs` van de kleding, anders een spijkerbroek.
+    Standaarden: hoofd `none`, bovenlijf `tee #30353e`, benen `jeans #1d2531`, schoenen `sneaker #3a3f48`.
+  - Oude saves: `S.fit.wear.broek` ontbreekt gewoon; niets verandert aan wat je had. Geen nieuwe S-velden.
+
+### Werk en dealen (Straat)
+
+**Klusjes** – 27 legale klusjes, van statiegeld rapen in het Vondelpark (Rookie) tot het gezicht van een goed doel (Peetvader).
+Wit geld, een beetje XP, geen politie. Het loon per energiepunt volgt één curve over de rangen (±×1,4 per rang), ruim onder misdaad.
+Bij veel klusjes komt soms (55%) een kort moment met een keuze: doorrijden bij oranje, de miljonair laten sturen, de veiling rekken.
+Veilig kiezen = normaal loon; gokken = meer loon of korting. Bovenaan een kort overzicht (klaar, open, energie), daaronder de beste klus eerst.
+
+**Dealen** – naast het netwerk (loopjongen van Mo → drugsbaron) nu:
+- **Zes buurten** (Centrum, De Pijp, Bos en Lommer, Noord, Zuidoost, Oud-Zuid) met elk eigen smaak, politie (●) en kans op beroving (●).
+  De vraag schuift vloeiend door de tijd, per blok heeft één buurt een uitschieter (+35%). Verplaatsen kost 2 energie.
+- **Vraagtabel**: per product en buurt hoeveel boven of onder de straatprijs.
+- **Verzadiging**: steeds op dezelfde plek verkopen drukt daar even de prijs.
+- **Afspraken**: klanten bestellen een partij in een buurt voor 25–60% extra. Een onbekend nummer kan een tip van de politie zijn.
+- **Beroving**: op straat kun je je partij kwijtraken; vuurkracht (wapens) verlaagt die kans tot −70%.
+- **Nieuwe waar**: sigaretten zonder accijns, namaaktassen, zwaar vuurwerk (in december veel vraag) en nephorloges.
+
+**Wapens** – 12 nieuwe wapens tussen de bestaande in (18 in totaal): van honkbalknuppel (€250) via Desert Eagle en MP5 tot
+Barrett .50 en granaatwerper. Kans en vuurkracht blijven binnen het oude plafond (+18%, vuurkracht 12). Elk wapen heeft een eigen
+silhouet in de winkel (gunart.js) en kan een skin dragen. Lange ladders tonen alleen wat ertoe doet; "Alle tonen" klapt de rest open.
+
+### Wapenkisten en wapenskins (casino, alleen VIP en High roller)
+
+Een extraatje in het casino: open een kist en pak een **wapenskin** (patroon × wapen). Alleen VIP en High roller zien het.
+Normale spelers zien het nergens: niet in de casinolobby, niet in de spelbalk en niet bij zoeken. `#kisten` geeft een nette
+weigering ("Deze deur blijft dicht").
+
+- **Vier kisten**: Straatkist €5.000 (alles kan erin zitten), Kofferbakkist €25.000, Pantserkist €100.000 (vanaf Ongewoon) en de
+  Gekke Kist €1.000.000 (vanaf Zeldzaam, alles of niks). Hoe duurder, hoe meer kans op zeldzaam.
+- **Zes zeldzaamheden**: Gewoon, Ongewoon, Zeldzaam, Episch, Legendarisch en Ultra legendarisch. Verkoopwaarde
+  ±€600–1.400, €2.000–4.650, €6.500–16.000, €25.000–55.600, €146.000–306.000 en €12,6–27,8 miljoen. Duurder wapen = duurdere skin.
+- **43 patronen** in de toon van het spel (Grachtengrijs, Bakfietsbeige, Stroopwafel, Delfts Blauw, Drie Kruisen, Neon Wallen,
+  Gouden Bocht, Bliksem boven het IJ, De Peetvader, Melkweg van Mokum …), getekend als SVG over het wapen.
+- **Openen**: een strip met skins die afremt op je uitslag. De uitslag ligt vast bij de klik (geld eraf, skin in je kluis):
+  verversen tijdens het draaien verandert niets, je ziet daarna meteen wat je had. Met "minder beweging" direct de uitslag.
+- **Kansen** staan bij elke kist. Gemiddeld krijg je 88% van de prijs terug (High roller 91%), dus het huis wint altijd een beetje.
+  Ultra legendarisch: Straatkist ±1 op 33.600, Kofferbak ±1 op 3.300, Pantser ±1 op 640, Gekke Kist ±1 op 26.
+- **Wapenkluis**: al je skins, filter op zeldzaamheid, sorteren, één verkopen of alles van een zeldzaamheid in één keer
+  (wat je op een wapen hebt, houd je). Zet een skin op een wapen dat je hebt: puur voor de show, te zien in de wapenwinkel en op
+  je profiel. In het casino (VIP/HR) en via Wapens → Wapenkluis (ook voor wie geen VIP meer is maar nog skins heeft). `#wapenkluis`.
+- Telt mee in je casinosessie (speeltijd, verdenking met zwart geld), maar niet voor cashback of je casinokaart. Verkopen levert wit geld op.
+
+### Carjacken: zes aanpakken
+
+Carjacken (Auto's → Carjacken) heeft nu zes aanpakken. Elke aanpak heeft een eigen spel, eigen buit en eigen risico:
+
+| Aanpak | Vanaf | Energie / afkoelen | Spel | Buit | Risico |
+|---|---|---|---|---|---|
+| Tankstation | Boef | 8 / 3 min | Sluip naar de auto als de bestuurder in de shop zijn rug naar je toe draait | laag | laag |
+| Bezorger | Boef | 8 / 3 min | Tik wat oplicht (portier, contact, handrem) voordat hij weer beneden is | laag | laag |
+| Stoplicht | Boef, met wapen | 12 / 5 min | Druk als de streep in het groen staat: portier, eruit, gas | middel | middel |
+| Parkeergarage | Ritselaar | 12 / 6 min | Slot draaien: tik als de naald in het groene stuk staat. Eén pin per beveiligingsniveau extra | middel | middel |
+| Valse aanrijding | Gangster, met wapen | 14 / 5 min | Een tikje geven, wachten tot hij uitstapt, dan instappen | hoog | hoog |
+| Oprit 's nachts | Handhaver | 16 / 9 min | Relay-attack: kies de golf die gelijk is aan het signaal van de sleutel | hoogst | hoog |
+
+**Zo werkt het:** kies een aanpak en ga op de loer. Dat kost energie en start het afkoelen. Je ziet drie auto's met hun klasse, waarde, beveiliging (geen alarm / alarm / alarm + tracker) en **jouw kans**. Je hebt 3 minuten om er één te kiezen. Daarna volgen één zin uitleg, Start, 3-2-1 en het spel. Het spel werkt met touch (grote knoppen, tikken in de scène) en met het toetsenbord (spatie, of ← ↓ → bij drie keuzes).
+
+**Kans:** Je kans hangt af van je steelervaring, je rang, twee trainingen per aanpak (bv. Sloten en Rijvaardigheid in de garage) en je wapen of routine. Het niveau van de auto telt ook mee, en zware beveiliging maakt het moeilijker. Het spel is zo afgesteld dat een gemiddelde speler precies die kans haalt. Dat is gecontroleerd met een simulatie. Een groentje haalt ±30% bij de veiligste keuze, een getrainde dief 85–95%.
+
+**Gevolgen:**
+- **Gewonnen** betekent dat de auto van jou is (garage of direct naar de heler). Getuigen geven extra hitte. Was de eigenaar erbij (pomp, bezorger, stoplicht, aanrijding), dan is de auto heet (−15%) en gemeld als gestolen. In de garage en op de oprit is dat alleen zo bij getuigen of een tracker.
+- **Verloren** betekent dat hij wegrijdt, dat de bestuurder terugvecht (gezondheid, minder met een zwaar wapen) of dat de politie komt. In dat laatste geval volgt een arrestatie: te voet vluchten, of vanuit de auto de achtervolging Plankgas!.
+
+Oude saves werken gewoon. Nieuwe velden: `S.jackScout` (de drie doelwitten) en `S.stats.jackAp` (pogingen en successen per aanpak).

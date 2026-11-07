@@ -140,3 +140,4 @@
 .ap-tik.h1 .jg-drv{opacity:1}.ap-tik .jg-me{opacity:0}.ap-tik.h2 .jg-me{opacity:1}.ap-tik.won.h2 .jg-me{opacity:0}
 @media (max-width:520px){.jg-box{padding:10px}.jg-head h2{font-size:20px}.jg-pips span{font-size:9.5px;padding:3px 5px}.jg-in p{font-size:16px}.jg-say{font-size:13px}.jg-now{height:54px}}
 @media (prefers-reduced-motion:reduce){.jg-car,.jg-me,.jg-drv{transition:none!important}.jg-puff circle,.jg-tube,.jg-key circle{animation:none!important}}
+.jx-chip b{white-space:normal;overflow-wrap:anywhere;hyphens:auto}

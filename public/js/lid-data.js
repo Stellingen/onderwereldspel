@@ -17,10 +17,10 @@ const TIERS = [
     key: ['Alle klussen, rangen, families en spellen', 'Je voortgang op je account, op elk apparaat', 'Alle minigames: vluchten, achtervolgingen, ontsnappen', 'Je eigen casinokaart groeit mee met wat je speelt'] },
   { id: 'vip', n: 'VIP', short: 'VIP', tag: 'VIP', col: '#f2c230', price: PRICE.vip,
     line: 'Sneller vooruit, iets meer ruimte.',
-    key: ['Slaagkans ×1,15 en +10% buit', 'Wachttijden 75% van normaal', '+15% straatcredit, betere rente', '5 depositoplekken, €300.000 beleggen', 'Hogere inzetlimieten in het casino', 'Zaken: tot 12 vestigingen · woningen +2 plekken', 'VIP-tag bij je naam'] },
+    key: ['Slaagkans ×1,15 en +10% buit', 'Wachttijden 75% van normaal', '+15% straatcredit, betere rente', '5 depositoplekken, €300.000 beleggen', 'Hogere inzetlimieten in het casino', 'Wapenkisten met skins in het casino', 'Zaken: tot 12 vestigingen · woningen +2 plekken', 'VIP-tag bij je naam'] },
   { id: 'hr', n: 'High roller', short: 'HR', tag: 'HIGH ROLLER', col: '#a855f7', price: PRICE.hr,
     line: 'Alles van VIP, en flink meer.',
-    key: ['Slaagkans ×1,4 en +25% buit', 'Wachttijden 55% van normaal', '+40% straatcredit, de beste rente', '10 depositoplekken, €1 mln. beleggen', 'Hoogste inzetlimieten en de High roller-tafel', 'Zaken: tot 15 vestigingen · woningen +5 plekken', 'Diamanten geldklem en gouden dobbelsteen', 'HIGH ROLLER-tag bij je naam'] }
+    key: ['Slaagkans ×1,4 en +25% buit', 'Wachttijden 55% van normaal', '+40% straatcredit, de beste rente', '10 depositoplekken, €1 mln. beleggen', 'Hoogste inzetlimieten en de High roller-tafel', 'Wapenkisten met skins, betere kansen', 'Zaken: tot 15 vestigingen · woningen +5 plekken', 'Diamanten geldklem en gouden dobbelsteen', 'HIGH ROLLER-tag bij je naam'] }
 ];
 // Volledige vergelijking. Per rij: n = voordeel, v = [gratis, vip, hr], s = korte uitleg (optioneel),
 // nieuw = komt deze ronde in het spel, rtp = casino-uitbetaling (feitelijk, zonder nadruk). '–' = niet.
@@ -58,7 +58,8 @@ const CATS = [
     { id: 'rtp_vd', n: 'RTP Visdief', rtp: true, v: ['91,5%', '94%', '96,5%'] },
     { id: 'rtp_zb', n: 'RTP Suikerbaron', rtp: true, v: ['95%', '95,5%', '96%'] },
     { id: 'rtp_dr', n: 'RTP Gouden Draak', s: 'Jackpotmunten 30% / 60% vaker', rtp: true, v: ['92%', '93,5%', '95%'] },
-    { id: 'rtp_av', n: 'RTP Hoogvlieger', rtp: true, v: ['88%', '91,5%', '96%'] }
+    { id: 'rtp_av', n: 'RTP Hoogvlieger', rtp: true, v: ['88%', '91,5%', '96%'] },
+    { id: 'kist', n: 'Wapenkisten met skins', s: 'Vier kisten, skins verkopen in je wapenkluis', nieuw: true, rtp: true, v: ['–', '88%', '91%'] }
   ] },
   { id: 'woning', n: 'Woning', rows: [
     { id: 'woon', n: 'Extra plekken bij woningen', nieuw: true, v: ['–', '+2', '+5'] },
