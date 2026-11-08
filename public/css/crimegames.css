@@ -280,3 +280,8 @@ button.cg-ck-r:disabled{cursor:default}
 }
 @media (max-width:380px){.cg-pk-pad{width:min(200px,60vw)}.cg-pk-k{font-size:18px}.cg-wbtn .cg-b{font-size:12px}}
 @media (prefers-reduced-motion:reduce){.cg-ph-wave i,.cg-ph-b.typing i,.cg-ph-b,.cg-bub.me{animation:none}.cg-pk-hand{transition:none}}
+/* uitleg: Start en Overslaan naast elkaar */
+.cg-in-bt{display:grid;gap:8px;align-self:stretch;margin-top:2px}.cg-in-bt.two{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+.cg-in-bt .cg-in-go{margin-top:0}
+.cg-in-skip{display:flex;flex-direction:column;gap:2px;min-height:48px;padding:6px 8px}
+.cg-in-skip small{font-family:var(--f-mono);font-size:10.5px;text-transform:none;letter-spacing:0;opacity:.75}

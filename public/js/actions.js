@@ -2,15 +2,17 @@
 const act={
  async crime(id,quick){const c=CRIMES.find(x=>x.id===id);if(!c||inJail()||cdLeft(id)||rankIdx(S.xp)<c.r||window.__chase||S.pendingLock||S.pendingGame)return;if(S.energy<crEn(c)){toast('Te moe. Je hebt '+crEn(c)+' energie nodig','bad');return}
   if(typeof arBanLeft==='function'&&arBanLeft(c)){toast(arBanMsg(c),'bad');return}
-  // elke klus heeft een spel (crimegames.js; bij inbraak-klussen het slot uit lockgame.js). Meesters kunnen het overslaan
-  // (snel uitvoeren, iets lagere kans). Verversen tijdens het spel = betrapt (S.pendingGame, zie main.js)
+  // elke klus heeft een spel (crimegames.js; bij inbraak-klussen het slot uit lockgame.js). Overslaan kan altijd (op de kaart
+  // of bij de uitleg): dan gooi je met de kans die op de kaart staat. Verversen tijdens het spel = betrapt (S.pendingGame, zie main.js)
   if(quick&&!(typeof crCanQuick==='function'&&crCanQuick(c)))return;
   S.energy-=crEn(c);S.cd[id]=now()+crimeCd(c);
   if(typeof cgPlay!=='function'){crimeResolve(c);return}
   if(quick){S.stats.quick=(S.stats.quick||0)+1;crimeResolve(c,{quick:true});return}
   S.pendingGame={id,t:now()};save();render();
-  let r=null;try{r=await cgPlay(c)}catch(e){console.error(e);r=null}
-  delete S.pendingGame;S.stats.games=(S.stats.games||0)+1;
+  let r=null;try{r=await cgPlay(c,{skip:chance(c)})}catch(e){console.error(e);r=null}
+  delete S.pendingGame;
+  if(r&&r.skip){S.stats.quick=(S.stats.quick||0)+1;crimeResolve(c,{quick:true});return}
+  S.stats.games=(S.stats.games||0)+1;
   if(!r){crimeResolve(c);return} // spel kon niet starten: gewoon de verwachte kans, niemand de dupe
   if(!r.ok){S.stats.gameFail=(S.stats.gameFail||0)+1;crimeFail(c,(r.why?r.why.replace(/\.?$/,'. '):''));return}
   if(!r.miss)S.stats.clean=(S.stats.clean||0)+1;
@@ -95,21 +97,21 @@ const act={
  Object.keys(act).forEach(k=>{if(skip.includes(k))return;const fn=act[k];act[k]=function(...a){
   if(depth===0&&S.wanted&&!inJail()&&Math.random()<(page==='casino'?0.2:0.12)*(S.hide?.4:1)*(typeof wantedK==='function'?wantedK():1)){policeRaid();return}
   depth++;try{return fn.apply(this,a)}finally{depth--}}})})();
-// Uitkomst van een klus. o.game = uitslag van het klus-spel (dan de dobbelsteen crDice), o.quick = snel uitvoeren (crQuick),
+// Uitkomst van een klus. o.game = uitslag van het klus-spel (dan de dobbelsteen crDice), o.quick = overslaan zonder spel (crQuick = de kans op de kaart),
 // anders de verwachte kans (chance). Buit: × rang/familie/… (lootMult) × professionaliteit (crLootK, tot +60%) × schone klus (+8%/+4%).
 function crimeResolve(c,o){o=o&&typeof o==='object'?o:{bonus:+o||0};const cg=typeof crDice==='function';
   const P0=cg?crP(c):0,roll=rnd(1,100),ch=Math.min(chanceCap(c),cg?(o.quick?crQuick(c):o.game?crDice(c):chance(c)):chance(c)+(o.bonus||0));
   // een gewonnen spel is altijd gelukt: de kans zat al in het spel (cgTarget). Zonder spel telt de worp.
   if(o.game?o.game.ok!==false:roll<=ch){const clean=o.game?cgCleanK(o.game.miss):1,g=Math.floor(rnd(c.min,c.max)*lootMult()*(cg?crLootK(c):mastLoot(c.id))*clean*(o.bonus?1.08:1));S.cash+=g;addZwart(g);S.stats.crimes++;
    crxN(crCat(c));crxAdd(c,1);const ml0=mastLv(c.id);S.mast=S.mast||{};S.mast[c.id]=(S.mast[c.id]||0)+1;const ml1=mastLv(c.id);
-   if(cg){const P1=crP(c),l0=cgLvIdx(P0),l1=cgLvIdx(P1);if(l1>l0)setTimeout(()=>toast(`${c.n}: je bent nu ${cgLvName(P1)} (${Math.round(P1*100)}%)${P1>=CG_QUICK_P?' · snel uitvoeren kan nu':''}`,'lvl'),700);
+   if(cg){const P1=crP(c),l0=cgLvIdx(P0),l1=cgLvIdx(P1);if(l1>l0)setTimeout(()=>toast(`${c.n}: je bent nu ${cgLvName(P1)} (${Math.round(P1*100)}%)`,'lvl'),700);
     else if(ml1>ml0)setTimeout(()=>toast(`Vakmanschap ${MAST[ml1][1]}: ${c.n} (professionaliteit ${Math.round(P1*100)}%)`,'lvl'),600)}
    else if(ml1>ml0)setTimeout(()=>toast(`Vakmanschap ${MAST[ml1][1]}: ${c.n} (+${ml1*2}% kans, +${ml1*5}% buit)`,'lvl'),600);
    // hoe goed het ging: met een spel telt hoe netjes je speelde (geen fout = perfect), anders hoe ruim je slaagde
    const q=o.game?(o.game.miss===0?'perfect':o.game.miss===1?'netjes':''):roll<=ch*.3?'perfect':roll<=ch*.65?'netjes':'',cr=c.cr?credGain(c.cr,q):0;S.cred+=cr;if(q==='perfect')S.stats.perfect=(S.stats.perfect||0)+1;
    addHeat(crimeUp(c)>=2?rnd(2,3):rnd(1,4));addXp(c.xp);if(typeof arOk==='function')arOk(c);if(typeof famEv==='function')famEv('crime',{r:c.r,g,cr});
-   const how=o.game?(o.game.miss===0?' schone klus':o.game.miss===1?' netjes gedaan':' gelukt'):o.quick?' snel gedaan':q==='perfect'?' perfect uitgevoerd':q==='netjes'?' netjes gedaan':' gelukt';
-   toast(c.n+how+': +'+fmt(g)+(clean>1?' (+'+Math.round((clean-1)*100)+'% schoon)':'')+(cr?' · +'+cr+' straatcredit':''),q==='perfect'?'lvl':'ok');log(c.n+' gelukt'+(o.quick?' (snel)':q?' ('+q+')':'')+', buit '+fmt(g)+(cr?', +'+cr+' cred':''),'ok')}
+   const how=o.game?(o.game.miss===0?' schone klus':o.game.miss===1?' netjes gedaan':' gelukt'):o.quick?' gelukt (overgeslagen)':q==='perfect'?' perfect uitgevoerd':q==='netjes'?' netjes gedaan':' gelukt';
+   toast(c.n+how+': +'+fmt(g)+(clean>1?' (+'+Math.round((clean-1)*100)+'% schoon)':'')+(cr?' · +'+cr+' straatcredit':''),q==='perfect'?'lvl':'ok');log(c.n+' gelukt'+(o.quick?' (overgeslagen)':q?' ('+q+')':'')+', buit '+fmt(g)+(cr?', +'+cr+' cred':''),'ok')}
   else crimeFail(c,'');
   save();render()}
 function crimeFail(c,pre){

@@ -192,7 +192,7 @@ function grind(N) {
    <div class="lp-grind__wat"><h3 class="lp-grind__h">Waar professionaliteit uit bestaat</h3>
     <ul>${WAT.map(x => `<li class="kaart"><b class="num">${x[0]}</b><div><h4>${x[1]}</h4><p>${x[2]}</p></div></li>`).join('')}</ul></div>
   </div>
-  <ul class="lp-grind__chips" aria-label="Wat grinden nog meer oplevert"><li class="chip">Meester? Klus snel uitvoeren zonder spel</li><li class="chip">Getraind rennen: lastige vlucht 36% → 70%</li><li class="chip">Kalmte: minder paniek onder druk</li><li class="chip">Nooit 100%: de straat blijft de straat</li></ul>
+  <ul class="lp-grind__chips" aria-label="Wat grinden nog meer oplevert"><li class="chip">Spel overslaan? Dan telt gewoon je kans</li><li class="chip">Getraind rennen: lastige vlucht 36% → 70%</li><li class="chip">Kalmte: minder paniek onder druk</li><li class="chip">Nooit 100%: de straat blijft de straat</li></ul>
  </div>
 </section>`;
 }

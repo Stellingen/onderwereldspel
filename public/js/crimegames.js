@@ -14,7 +14,7 @@
 //   × lidmaatschap, tussen 5% en het plafond (chanceCap). Verwachte kans = G(P) × dobbelsteen.
 //   Nieuweling (P=0, niks extra): ±0,5 × 58% ≈ 29%. Alles maximaal: 0,99 × 99% ≈ 98%.
 // BUIT: × (1 + 0,6 × P^1,5) (meester +60%), plus een schone klus: geen fout +8%, één fout +4%.
-// SNEL UITVOEREN (vanaf Meester, P ≥ 0,8): zonder spel, kans = dobbelsteen × (G(P) − 0,06), geen schone-klusbonus.
+// OVERSLAAN (altijd, op de kaart of bij de uitleg): zonder spel, kans = de kans op de kaart (chance), geen schone-klusbonus.
 // Verversen tijdens een spel = betrapt (S.pendingGame, afgehandeld in main.js).
 
 // ---------- 1. professionaliteit, kans en buit ----------
@@ -37,8 +37,9 @@ function crDiceParts(c,P){if(P==null)P=crP(c);const up=crimeUp(c),fx=k=>typeof f
  return {raw,w,pro,E,heat,cap:chanceCap(c)}}
 const crDice=c=>{const d=crDiceParts(c);return Math.max(5,Math.min(d.cap,Math.round(d.raw*(1+tierK()))))};
 const crChance=c=>Math.max(1,Math.round(cgG(crP(c))*crDice(c)));
-const crCanQuick=c=>crP(c)>=CG_QUICK_P;
-const crQuick=c=>Math.max(1,Math.round(crDice(c)*Math.max(0,cgG(crP(c))-CG_QUICK_K)));
+const crCanQuick=c=>true;
+// overslaan (zonder spel): precies de kans die op de kaart staat. Altijd mogelijk; alleen de bonus voor een schone klus mis je.
+const crQuick=c=>chance(c);
 const crLootK=c=>1+CG_LOOT*Math.pow(crP(c),1.5);
 const cgCleanK=miss=>miss==null?1:1+(CG_CLEAN[miss]||0);
 
@@ -274,8 +275,10 @@ function cgIntro(box,I,onGo){const inf=CG_INFO[I.type]||{steps:[],ctl:'one'},c=C
   <ul class="cg-in-goal" aria-label="Doel">${goal.map(g=>`<li>${g}</li>`).join('')}</ul>
   <ol class="cg-in-steps">${inf.steps.slice(0,3).map(x=>`<li><span>${x.replace(/\{who\}/g,'<b>'+who+'</b>')}</span></li>`).join('')}</ol>
   <p class="cg-in-ctl">${cgSi('tap')}<span>${c[0]}</span>${CG_TAP?'':`${cgSi('key')}<span>${c[1]}</span>`}</p>
-  <button type="button" class="btn lk-go cg-in-go">Start<small>${CG_TAP?'tijd loopt na start':'spatie · tijd loopt na start'}</small></button></div>`;
- box.appendChild(el);let gone=false;const btn=el.querySelector('.cg-in-go');
+  <div class="cg-in-bt${I.onSkip?' two':''}"><button type="button" class="btn lk-go cg-in-go">Start<small>${CG_TAP?'tijd loopt na start':'spatie · tijd loopt na start'}</small></button>${I.onSkip?`<button type="button" class="btn ghost cg-in-skip">Overslaan<small>${I.skipCh}% kans</small></button>`:''}</div></div>`;
+ box.appendChild(el);let gone=false;const btn=el.querySelector('.cg-in-go'),sk=el.querySelector('.cg-in-skip');
+ // overslaan: geen spel, je gooit met de kans die bij de klus staat (act.crime → crimeResolve quick)
+ if(sk)sk.addEventListener('click',()=>{if(gone)return;gone=true;document.removeEventListener('keydown',key,true);I.onSkip()});
  const go=()=>{if(gone)return;gone=true;document.removeEventListener('keydown',key,true);el.classList.add('out');setTimeout(()=>el.remove(),180);cgCount(box,onGo)};
  const key=e=>{if(e.code==='Space'||e.key==='Enter'){e.preventDefault();e.stopPropagation();if(!e.repeat)go()}};
  document.addEventListener('keydown',key,true);btn.addEventListener('click',go);setTimeout(()=>{try{btn.focus({preventScroll:true})}catch(e){}},60);return {go}}
@@ -330,7 +333,8 @@ async function cgPlay(c,o){o=o||{};const type=o.type||cgType(c),P=o.P!=null?o.P:
    ctl.innerHTML='';snd(G.ok?'win':'lose');window.__cg=null;
    setTimeout(()=>{ov.classList.add('out');setTimeout(()=>{ov.remove();window.__chase=false;resolve({ok:!!G.ok,miss:G.miss,why:G.why||'De tijd was op.',hits:G.hits})},200)},G.ok?850:1250)};
   stage.innerHTML=V.stage(G);ctl.innerHTML=V.ctl(G);paintLives();
-  intro=cgIntro(ov.querySelector('.cg-box'),{type,title:th.n||T.n,who:th.who||(V.who&&V.who(G)),tag:(o.practice?'Oefenen · ':'')+T.n+' · '+cgLvName(G.P),k:G.k,m:G.m,sec:Math.round(G.T)},begin);
+  const onSkip=o.skip&&!o.practice?()=>{G.done=true;finish.d=1;cancelAnimationFrame(raf);document.removeEventListener('keydown',key);window.__cg=null;ov.classList.add('out');setTimeout(()=>{ov.remove();window.__chase=false;resolve({skip:true})},150)}:null;
+  intro=cgIntro(ov.querySelector('.cg-box'),{type,title:th.n||T.n,who:th.who||(V.who&&V.who(G)),tag:(o.practice?'Oefenen · ':'')+T.n+' · '+cgLvName(G.P),k:G.k,m:G.m,sec:Math.round(G.T),onSkip,skipCh:o.skip},begin);
   const tick=t=>{if(G.done){finish();return}const dt=Math.min(.05,(t-last)/1000);last=t;
    if(started){G.t+=dt;T.tick(G,dt);if(G.t>=G.T&&!G.done)G.end(false,th.timeout||'De tijd is op');
     const left=Math.max(0,1-G.t/G.T);tim.style.width=(left*100).toFixed(1)+'%';tim.classList.toggle('hot',left<.25)}
@@ -351,8 +355,9 @@ function cgLockP(P,w,tgt){const d=1-P,pins=5+Math.round(w*2),p=cgSolve(tgt!=null
   maxMiss:2,label:'Slot · '+cgLvName(P)}}
 const CG_LOCK_K=1; // correctie na simulatie (zie scripts in de rapportage)
 async function cgLock(c,P,w,th,o){if(typeof lockGame!=='function')return {ok:true,miss:0};const LP=cgLockP(P,w,o.tgt),st={misses:0};
- const ok=await lockGame(LP,{intro:{type:'lock',title:o.title||th.n||'Slot',tag:(o.practice?'Oefenen · ':'')+'Slot · '+cgLvName(P),k:LP.pins,m:LP.maxMiss,sec:Math.round(LP.time)},
+ const ok=await lockGame(LP,{intro:{type:'lock',title:o.title||th.n||'Slot',tag:(o.practice?'Oefenen · ':'')+'Slot · '+cgLvName(P),k:LP.pins,m:LP.maxMiss,sec:Math.round(LP.time),skipCh:o.practice?0:o.skip},
   title:o.title||th.n||'Slot',sub:o.sub||th.sub||(c?c.n:''),onEnd:x=>Object.assign(st,x)});
+ if(ok==='skip')return {skip:true};
  return {ok:!!ok,miss:Math.min(2,st.misses||0),why:ok?'':'Het slot ging niet open.'}}
 
 // ---------- 5. tekeningen (SVG) per spel ----------

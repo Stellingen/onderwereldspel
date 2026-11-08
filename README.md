@@ -871,7 +871,7 @@ vandaan komt (`enParts`). De serverwaarschuwing gaat nu pas af boven 700 energie
   schermlezertekst geven de hele som. Nieuweling: ±26–34%, halverwege ±72–80%, alles maximaal: 98%.
 - **Buit**: × (1 + 0,6 × P^1,5), dus een meester +60% (vervangt de +5% per vakmanschapsniveau). Geen fout in het spel =
   schone klus: +8% buit (één fout +4%) en perfecte straatcredit. Rangbonus en de rest van `lootMult` blijven zoals ze waren.
-- **Snel uitvoeren** voor meesters (P ≥ 80%): zonder spel, met kans dobbelsteen × (spelkans − 6%), zonder schone-klusbonus
+- **Overslaan** (sinds november 2026 altijd, op de kaart of bij de uitleg van het spel): zonder spel, je kans is precies het percentage op de kaart; alleen de schone-klusbonus mis je
   (maximaal 92% tegen 98% met spel).
 - **Slot**: de losse slotkans (`CR_LOCK`) is opgenomen in de spellen: klussen met het spel Slot krijgen altijd het slot (met
   P als moeilijkheid, hooguit 2 fouten), andere klussen nooit nog een extra slot erbovenop.

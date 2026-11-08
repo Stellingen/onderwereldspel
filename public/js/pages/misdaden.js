@@ -102,7 +102,7 @@ const klSeg=ch=>`<i class="kl-seg" aria-hidden="true"><i style="width:${ch}%"></
 function klState(c){const lock=rankIdx(S.xp)<c.r,left=cdLeft(c.id),tired=S.energy<crEn(c),jail=inJail(),ban=typeof arBanLeft==='function'?arBanLeft(c):0;return {lock,left,tired,jail,ban,ok:!lock&&!left&&!tired&&!jail&&!ban}}
 function klBtn(c,st){const [b,s]=st.lock?['Vanaf '+RANKS[c.r][0],'nog '+Math.ceil(RANKS[c.r][1]-S.xp).toLocaleString('nl-NL')+' XP']:st.jail?['Je zit vast','eerst vrijkomen']:st.ban?['Locatieverbod','nog '+arDur(st.ban)]:st.left?['Nog '+fmtClock(st.left),'even afkoelen']:st.tired?['Te moe',crEn(c)+' energie nodig']:['Uitvoeren',crEn(c)+' energie'];
  const q=!st.lock&&typeof crCanQuick==='function'&&crCanQuick(c);
- return `<div class="kl-gos${q?' q':''}"><button class="btn kl-go" onclick="act.crime('${c.id}')" ${st.ok?'':'disabled'}><b>${b}</b><small>${s}</small></button>${q?`<button class="btn ghost kl-quick" onclick="act.crime('${c.id}',true)" ${st.ok?'':'disabled'} title="Zonder spel, met een iets lagere kans en zonder bonus voor een schone klus"><b>Snel</b><small>${crQuick(c)}% · geen spel</small></button>`:''}</div>`}
+ return `<div class="kl-gos${q?' q':''}"><button class="btn kl-go" onclick="act.crime('${c.id}')" ${st.ok?'':'disabled'}><b>${b}</b><small>${s}</small></button>${q?`<button class="btn ghost kl-quick" onclick="act.crime('${c.id}',true)" ${st.ok?'':'disabled'} title="Zonder spel: je kans is precies het percentage van deze klus. Geen bonus voor een schone klus."><b>Overslaan</b><small>${crQuick(c)}% kans</small></button>`:''}</div>`}
 // kansopbouw in gewone woorden: dezelfde onderdelen als crPro/crDiceParts/crChance in crimegames.js, alleen uitgeschreven.
 function klChParts(c){const n=v=>(Math.round(v*10)/10).toLocaleString('nl-NL'),pc=v=>Math.round(v*100)+'%';
  if(typeof crPro!=='function')return {base:c.base,txt:'Kans '+chance(c)+'%',g:100,d:chance(c)};
@@ -111,7 +111,7 @@ function klChParts(c){const n=v=>(Math.round(v*10)/10).toLocaleString('nl-NL'),p
  t+=`Spel: een gemiddelde speler haalt het ±${g}% van de keren. Daarna de dobbelsteen: ${CG_D0} + professionaliteit ${n(D.pro)}${D.w?(D.w>0?' + zwaarte ':' − zwaarte ')+n(Math.abs(D.w)):''}${D.E.map(([l,v])=>' + '+l+' '+n(v)).join('')}${D.heat>0?' − hitte '+D.heat:''}`;
  if(tierK())t+=', × '+(1+tierK()).toLocaleString('nl-NL')+' als '+lidName();
  t+=` = ${d}% (max ${D.cap}%). Verwacht: ${g}% × ${d}% = ${chance(c)}%.`;
- if(crCanQuick(c))t+=` Snel uitvoeren (zonder spel): ${crQuick(c)}%.`;
+ t+=` Overslaan (zonder spel): ${crQuick(c)}% kans.`;
  return {base:c.base,txt:t,g,d}}
 // Ervaring per soort misdaad: zes tegels met level, voortgang en wat het je nu oplevert
 function crxPanel(){return `<section class="crx"><div class="crx-h"><h2>Ervaring per soort</h2><span>Elke klus telt mee voor zijn soort (gelukt 1, mislukt een half). Je ervaring telt voor een kwart mee in je professionaliteit op elke klus van die soort; vanaf level 2 gaat ook je plafond omhoog (tot 99%).</span></div>
@@ -189,7 +189,7 @@ V.crimes=()=>{
  ${typeof prButtons==='function'?prButtons(['cg','flee','breath']):''}
  ${crxPanel()}
  ${typeof arCrimesPanel==='function'?arCrimesPanel():''}
- <div class="cr-mast-how"><b>Professionaliteit</b><span>Elke klus heeft een eigen spel. Je professionaliteit per klus komt uit <em>vakmanschap</em> (hoe vaak gelukt, 40%; vol na 150 keer), <em>ervaring in de soort</em> (25%), <em>training</em> die bij het spel past (20%) en je <em>rang</em> (15%). Hoe hoger, hoe makkelijker het spel, hoe groter je kans daarna en hoe meer buit (tot +60%). Als nieuweling haal je ±30%, als meester bijna altijd; vanaf <em>Meester</em> (80%) mag je ook <em>snel uitvoeren</em> zonder spel. Geen fout in het spel = schone klus: +8% buit.</span></div>
+ <div class="cr-mast-how"><b>Professionaliteit</b><span>Elke klus heeft een eigen spel. Je professionaliteit per klus komt uit <em>vakmanschap</em> (hoe vaak gelukt, 40%; vol na 150 keer), <em>ervaring in de soort</em> (25%), <em>training</em> die bij het spel past (20%) en je <em>rang</em> (15%). Hoe hoger, hoe makkelijker het spel, hoe groter je kans daarna en hoe meer buit (tot +60%). Als nieuweling haal je ±30%, als meester bijna altijd. Geen zin in het spel? Druk op <em>Overslaan</em>: dan geldt gewoon de kans op de kaart. Geen fout in het spel = schone klus: +8% buit.</span></div>
  ${best.length?`<div class="tierhead kl-besth"><h2>Beste voor jou</h2><span>Meeste buit per energiepunt, met jouw kans</span></div><div class="klb-grid n${best.length}">${best.map(klBest).join('')}</div>`:''}
  <div class="tierhead kl-besth"><h2>Klussen per rang</h2><span>${avail.length} van de ${CRIMES.length} vrijgespeeld · tik op een rang</span></div>
  <div class="krb-grid">${tiers.filter(t=>t<=ri+1).slice().reverse().map(t=>klRankBanner(t,ri)).join('')}</div>

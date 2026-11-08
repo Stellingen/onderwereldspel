@@ -60,7 +60,9 @@ function lockGame(P,opts){opts=opts||{};return new Promise(resolve=>{
   if(el>=P.time){finish(false);return}
   raf=requestAnimationFrame(tick)};
  if(opts.intro)help.style.display='none';paintLock();const run=()=>{raf=requestAnimationFrame(t=>{last=t;t0=t;tick(t)})};
- if(opts.intro&&typeof cgIntro==='function'){let live=false;const k0=press;press=()=>{if(live)k0()};cgIntro(ov.querySelector('.jb-box'),opts.intro,()=>{live=true;run()})}else run()})}
+ if(opts.intro&&typeof cgIntro==='function'){let live=false;const k0=press;press=()=>{if(live)k0()};
+  const I=Object.assign({},opts.intro);if(I.skipCh)I.onSkip=()=>{done=true;document.removeEventListener('keydown',key);stage.onpointerdown=null;ov.classList.add('out');setTimeout(()=>{ov.remove();window.__chase=false;resolve('skip')},150)};
+  cgIntro(ov.querySelector('.jb-box'),I,()=>{live=true;run()})}else run()})}
 
 // ---------- ademhaling (training en oefenen) ----------
 function breathGame(P,opts){opts=opts||{};return new Promise(resolve=>{
