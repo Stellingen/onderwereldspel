@@ -58,6 +58,20 @@ K.thumb=function(o,cv){cv=cv||document.createElement('canvas');cv.width=cv.heigh
   if(o.pool){R(2,27,6,2,'#2f8fd6')}
   if(o.building){R(x0-2,y0,1,h,'#c9a227');R(x0+w+1,y0,1,h,'#c9a227');for(let y=y0;y<26;y+=3)R(x0-2,y,w+4,1,'#c9a227')}
   return cv};
+/* ---------- auto van opzij (40×24) ---------- */
+K.carPic=function(cv,col,kind,o){o=o||{};cv.width=40;cv.height=24;const c=cv.getContext('2d'),R=(x,y,w,h,f)=>{c.fillStyle=f;c.fillRect(x,y,w,h)};
+  R(0,0,40,24,o.bg||'#1a1d23');R(0,20,40,4,'#2a2d33');R(3,19,34,2,'rgba(0,0,0,.45)');
+  const k=kind||'sedan',low=k==='sport',tall=k==='suv'||k==='van'||k==='pickup',x0=k==='city'?6:3,x1=k==='city'?34:37,by=low?12:tall?9:11,bh=low?6:tall?9:7;
+  R(x0,by,x1-x0,bh,col);R(x0,by,x1-x0,1,shade(col,1.3));R(x0,by+bh-1,x1-x0,1,shade(col,.6));
+  const cx0=k==='van'?x0+2:k==='city'?x0+4:x0+7,cx1=k==='van'?x1-3:k==='pickup'?x0+19:x1-(low?9:7),cy=low?by-4:tall?by-6:by-5;
+  for(let y=cy;y<by;y++){const i=y-cy;R(cx0+(k==='van'?0:Math.max(0,2-i)),y,cx1-cx0-(k==='van'?0:Math.max(0,2-i))*2,1,shade(col,.95))}
+  R(cx0+2,cy+1,(cx1-cx0)/2-2,by-cy-1,o.smash?'#e8f2ff':'#5a7a9a');R(cx0+(cx1-cx0)/2+1,cy+1,(cx1-cx0)/2-3,by-cy-1,'#5a7a9a');
+  if(o.smash){R(cx0+3,cy+2,1,1,'#1a1d23');R(cx0+5,cy+1,1,2,'#1a1d23');R(cx0+4,cy+3,2,1,'#5a7a9a')}
+  if(o.loot)R(cx0+(cx1-cx0)/2+2,by-3,3,2,'#b08850');
+  R(x1-2,by+1,2,2,o.alarm?'#ff9a2a':'#fff3c8');R(x0,by+1,2,2,o.alarm?'#ff9a2a':'#b0221e');R(Math.round((x0+x1)/2),by+1,1,bh-2,shade(col,.7));
+  if(o.open)R(cx0+(cx1-cx0)/2,by-1,1,bh,'#111');
+  [x0+6,x1-7].forEach(x=>{R(x-3,17,7,5,'#111');R(x-1,18,3,3,'#8a8c90')});
+  return cv};
 /* ---------- dialoogvenster onderin (portret, tekst, keuzes) ---------- */
 // K.dialog({name,role,look,mood,lines:[...],choices:[{t,ic,risk,dis,why,f}],onClose}) — de wereld loopt gewoon door
 const box=document.createElement('div');box.className='sd-dlg';box.id='sdDlg';box.hidden=true;box.setAttribute('role','dialog');
@@ -69,10 +83,10 @@ function render(){if(!D)return;const cs=$s('sdDlgC');const ch=D.choices||[];
   cs.innerHTML=ch.map((c,i)=>`<button class="sd-dlg-o${i===sel?' on':''}${c.dis?' dis':''}" data-i="${i}" role="menuitem" ${c.dis?'aria-disabled="true"':''}>${c.ic?`<i>${c.ic}</i>`:''}<span>${E(c.t)}${c.why&&c.dis?`<small>${E(c.why)}</small>`:c.sub?`<small>${E(c.sub)}</small>`:''}</span>${c.risk?`<em class="r${c.risk}" title="Risico">${'●'.repeat(c.risk)}${'○'.repeat(3-c.risk)}</em>`:''}</button>`).join('');
   cs.hidden=!(tw&&tw.done)}
 K.dialog=function(d){D=d;sel=Math.max(0,(d.choices||[]).findIndex(c=>!c.dis));box.hidden=false;box.classList.remove('go');void box.offsetWidth;box.classList.add('go');
-  K.portrait(d.look,d.mood,$s('sdDlgPor'));$s('sdDlgN').textContent=d.name||'';$s('sdDlgR').textContent=d.role||'';box.style.setProperty('--c',d.col||'#ff7a1a');
+  const pc=$s('sdDlgPor');pc.classList.toggle('wide',!!d.draw);if(d.draw){pc.width=40;pc.height=24;d.draw(pc)}else{pc.width=pc.height=24;K.portrait(d.look,d.mood,pc)}$s('sdDlgN').textContent=d.name||'';$s('sdDlgR').textContent=d.role||'';box.style.setProperty('--c',d.col||'#ff7a1a');
   const line=Array.isArray(d.lines)?d.lines[0]:d.lines||'';tw=K.type($s('sdDlgT'),line);render();tw.then(()=>render());if(G.snd)G.snd.fx('open');return K};
-K.say=function(text,mood,choices){if(!D)return;if(mood){D.mood=mood;K.portrait(D.look,mood,$s('sdDlgPor'))}if(choices)D.choices=choices;tw=K.type($s('sdDlgT'),text);render();tw.then(()=>render())};
-K.dialogOpen=()=>!!D;
+K.say=function(text,mood,choices){if(!D)return;if(mood&&!D.draw){D.mood=mood;K.portrait(D.look,mood,$s('sdDlgPor'))}if(D.draw&&D.redraw)D.draw($s('sdDlgPor'));if(choices)D.choices=choices;tw=K.type($s('sdDlgT'),text);render();tw.then(()=>render())};
+K.dialogOpen=()=>!!D;K.redraw=()=>{if(D&&D.draw)D.draw($s('sdDlgPor'))};
 K.closeDialog=function(quiet){if(!D)return;const d=D;D=null;box.hidden=true;if(tw)tw.skip();if(!quiet&&G.snd)G.snd.fx('close');d.onClose&&d.onClose()};
 function pickChoice(i){if(!D)return;if(tw&&!tw.done){tw.skip();render();return}const c=(D.choices||[])[i];if(!c)return;if(c.dis){G.toast&&G.toast(c.why||'Kan nu niet','bad');return}G.snd&&G.snd.fx('click');c.f&&c.f()}
 box.addEventListener('click',e=>{if(e.target.closest('#sdDlgX')){K.closeDialog();return}const b=e.target.closest('[data-i]');if(b){pickChoice(+b.dataset.i);return}if(tw&&!tw.done){tw.skip();render()}});

@@ -51,6 +51,9 @@ const FX={
   splash:()=>noise(0,.35,.15,'lowpass',1800,300),
   phoneRing:()=>{for(let i=0;i<4;i++){tone(1318,i*.1,.05,'square',.06);tone(1046,i*.1+.05,.05,'square',.06)}},
   carDoor:()=>{tone(140,0,.08,'square',.12,80);noise(0,.06,.1,'lowpass',1200)},
+  glass:()=>{noise(0,.3,.3,'highpass',3000);[2400,3100,2700,3600].forEach((f,i)=>tone(f,i*.04,.12,'square',.04))},
+  carAlarm:()=>{for(let i=0;i<8;i++){tone(i%2?880:660,i*.22,.2,'square',.07)}},
+  engineStart:()=>{tone(60,0,.5,'sawtooth',.18,140);noise(0,.4,.08,'lowpass',600,1200)},
   money:()=>{tone(1568,0,.05,'square',.07);tone(2093,.05,.12,'square',.07)},
 };
 function fx(k){if(!st.fx)return;try{(FX[k]||FX.click)()}catch(e){}}

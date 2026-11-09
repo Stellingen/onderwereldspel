@@ -52,7 +52,11 @@ function items(){const out=[];
   if(LAY.plek)M.places.filter(p=>!p.dyn).forEach(p=>out.push({k:'pl',id:p.id,x:p.door.x,z:p.door.z,n:p.name,c:secOf(p.page)[2],ic:pic(p.page),pri:2}));
   const home=M.places.find(p=>p.dyn==='plot'&&p.home);if(home)out.push({k:'home',id:home.id,x:home.door.x,z:home.door.z,n:'Thuis',c:'#ffd35a',ic:K.ic.home,pri:4,big:1});
   if(LAY.bezit){const own=ownedPlaces();out.push({k:'bezit',x:M.ESTATE.gate.x+40,z:M.ESTATE.gate.z+40,n:own.length?'Jouw bezit ×'+own.length:'Oostland · jouw terrein',c:'#f2c230',ic:K.ic.key,pri:5,big:1})}
-  if(LAY.auto&&G.car)out.push({k:'car',x:G.car.x,z:G.car.z,n:'Mijn auto',c:'#ff7a1a',ic:pic('cars'),pri:3});
+  const oc=(G.vehicles||[]).find(v=>v.own);if(LAY.auto&&oc)out.push({k:'car',x:oc.x,z:oc.z,n:'Mijn auto',c:'#ff7a1a',ic:pic('cars'),pri:3});
+  // de heler (bestellingen, spullen verkopen) en waar je een gestolen auto kwijt kunt
+  const hl=(G.NPC||[]).find(n=>n.arch==='heler'&&n.x>250);if(LAY.plek&&hl)out.push({k:'pl',x:hl.x,z:hl.z,n:'Ome Henk (heler)',c:'#ff7a1a',ic:K.ic.bag,pri:2});
+  if(G.autoPoints)G.autoPoints().forEach(p=>out.push({k:'dl',x:p.x,z:p.z,n:p.t,c:'#f2c230',ic:K.ic.key,pri:6,big:1}));
+  if(G.orderCar&&G.orderCar.st!=='gestolen')out.push({k:'dl',x:G.orderCar.x,z:G.orderCar.z,n:G.orderCar.m.n+' (heler)',c:'#ff7a1a',ic:pic('cars'),pri:7,big:1});
   if(G.waypoint)out.push({k:'wp',x:G.waypoint.x,z:G.waypoint.z,n:G.waypoint.n||'Gemarkeerd',c:'#ff4fd8',ic:K.ic.route,pri:9,big:1});
   return out}
 let cells=[];

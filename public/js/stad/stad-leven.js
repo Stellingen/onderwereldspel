@@ -32,7 +32,7 @@ G.ev=ev;
 /* ---------- dagklussen ---------- */
 const DAILY=[['roof2','Beroof 2 mensen op straat','roof',2],['zakenman','Beroof een zakenman','roof:zakenman',1],['toerist','Beroof een toerist','roof:toerist',1],['oma','Help een oma met haar boodschappen','oma',1],
   ['fooi3','Geef 3 keer een fooi of een euro','fooi',3],['heler','Verkoop spullen bij de heler','heler',1],['ontsnap','Schud de politie af','ontsnap',1],['praat6','Praat met 6 mensen','praat',6],
-  ['missie2','Doe 2 klussen als missie','missie',2],['pakket','Vind een verstopt pakketje','pakket',1],['verstop','Verstop je voor de politie','verstop',1],['foto','Maak een foto voor een toerist','foto',1],['taxi','Neem een taxi','taxi',1]];
+  ['missie2','Doe 2 klussen als missie','missie',2],['pakket','Vind een verstopt pakketje','pakket',1],['verstop','Verstop je voor de politie','verstop',1],['foto','Maak een foto voor een toerist','foto',1],['taxi','Neem een taxi','taxi',1],['kraak2','Breek 2 geparkeerde auto\'s open','kraak',2],['lever','Steel een auto en lever hem af','lever',1],['jack','Carjack een auto in het verkeer','jack',1]];
 const dayKey=()=>{try{return new Date(Date.now()-6*3600e3).toLocaleDateString('nl-NL',{timeZone:'Europe/Amsterdam'})}catch(e){return new Date(Date.now()-6*3600e3).toDateString()}};
 function hashS(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function dag(){const D=obj('stadDag',{});const k=dayKey();if(D.k!==k){const prevFull=D.k&&D.full;let h=hashS(k+(window.__USER__||''));const pool=DAILY.slice(),ids=[];while(ids.length<3&&pool.length){ids.push(pool.splice(h%pool.length,1)[0][0]);h=Math.imul(h^(h>>>13),2654435761)>>>0}
@@ -51,7 +51,7 @@ const ACH=[['eerste','Eerste slachtoffer','Beroof iemand op straat','roof',1],['
   ['praat50','Kletskous','Praat met 50 mensen','praat',50],['fooi10','Gulle gever','Geef 10 keer een fooi','fooi',10],['ontsnap1','Weg is weg','Schud de politie af','ontsnap',1],['ontsnap10','Glibberig','Schud de politie 10 keer af','ontsnap',10],
   ['drie','Onvindbaar','Ontsnap met 3 sterren','ontsnap3',1],['verstop10','Kameleon','Verstop je 10 keer','verstop',10],['heler10','Vaste klant','Verkoop 10 keer bij de heler','heler',10],
   ['pakket10','Speurneus','Vind 10 pakketjes','pakket',10],['pakket30','Alles gevonden','Vind alle 30 pakketjes','pakket',30],['missie10','Vakman','Doe 10 klussen als missie','missie',10],
-  ['dag7','Week vol','Maak 7 keer al je dagklussen af','dagvol',7],['taxi','Achterbank','Neem een taxi','taxi',1],['selfie','Selfie','Maak een foto met je telefoon','selfie',1],['bezit5','Landheer','Heb 5 panden op Oostland','bezit',5]];
+  ['dag7','Week vol','Maak 7 keer al je dagklussen af','dagvol',7],['taxi','Achterbank','Neem een taxi','taxi',1],['selfie','Selfie','Maak een foto met je telefoon','selfie',1],['bezit5','Landheer','Heb 5 panden op Oostland','bezit',5],['kraak10','Ruitentikker','Breek 10 auto\'s open','kraak',10],['lever1','Eerste rit','Lever een gestolen auto af','lever',1],['lever10','Autodief','Lever 10 gestolen auto\'s af','lever',10],['jack1','Uitstappen!','Carjack een auto','jack',1]];
 G.ACH=ACH;
 function achVal(a){if(a[3]==='bezit')return (M.places||[]).filter(p=>p.est&&p.own).length;return cnt()[a[3]]||0}
 G.achVal=achVal;

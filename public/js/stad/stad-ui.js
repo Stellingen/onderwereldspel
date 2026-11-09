@@ -91,6 +91,7 @@ function drawMini(){const P=G.P,w=mini.width,s=1.3;mc.setTransform(1,0,0,1,0,0);
   if(G.gpsPath&&G.waypoint){mc.strokeStyle='#ff4fd8';mc.lineWidth=2.2;mc.setLineDash([3,2]);mc.beginPath();mc.moveTo(P.x,P.z);G.gpsPath.forEach(q=>mc.lineTo(q.x,q.z));mc.stroke();mc.setLineDash([]);const w=G.waypoint;mc.fillStyle='#000';mc.fillRect(w.x-3.4,w.z-3.4,6.8,6.8);mc.fillStyle='#ff4fd8';mc.fillRect(w.x-2.6,w.z-2.6,5.2,5.2)}
   if(G.police&&G.police.dots)G.police.dots().forEach(d=>{if(d.r){mc.strokeStyle=d.c;mc.lineWidth=1.5;mc.globalAlpha=.8;mc.beginPath();mc.arc(d.x,d.z,d.r,0,Math.PI*2);mc.stroke();mc.globalAlpha=1}else{mc.fillStyle='#000';mc.fillRect(d.x-2.8,d.z-2.8,5.6,5.6);mc.fillStyle=d.c;mc.fillRect(d.x-2,d.z-2,4,4)}});
   if(G.npcDots)G.npcDots().forEach(d=>{mc.fillStyle=d.c;mc.fillRect(d.x-1.4,d.z-1.4,2.8,2.8)});
+  if(G.autoDots)G.autoDots().forEach(d=>{mc.fillStyle='#000';mc.fillRect(d.x-3.2,d.z-3.2,6.4,6.4);mc.fillStyle=d.c;mc.fillRect(d.x-2.4,d.z-2.4,4.8,4.8)});
   M.places.forEach(p=>{if(p.dyn&&!p.own)return;mc.fillStyle='#000';mc.fillRect(p.door.x-3,p.door.z-3,6,6);mc.fillStyle=pcol(p);mc.fillRect(p.door.x-2.2,p.door.z-2.2,4.4,4.4)});
   if(G.missionDots)G.missionDots().forEach(d=>{const r=d.big?3.4:2;mc.fillStyle='#000';mc.fillRect(d.x-r-.8,d.z-r-.8,2*r+1.6,2*r+1.6);mc.fillStyle=d.c;mc.fillRect(d.x-r,d.z-r,2*r,2*r)});
   mc.translate(P.x,P.z);mc.rotate(Math.atan2(Math.cos(P.ry),Math.sin(P.ry)));mc.fillStyle='#000';mc.beginPath();mc.moveTo(5,0);mc.lineTo(-3.4,3.4);mc.lineTo(-1.6,0);mc.lineTo(-3.4,-3.4);mc.closePath();mc.fill();
@@ -117,6 +118,8 @@ function enter(pl){if(!pl)return;if(G.mission&&G.mission()){tst('Maak eerst je k
   if(pl.page==='crimes'&&G.openBoard){G.openBoard();return}
   // Notaris De Sleutel: het vastgoedmenu (al je woningen en zaken)
   if(pl.id==='biz'&&G.vastgoed){G.snd&&G.snd.fx('door');G.vastgoed.open();return}
+  // Garage Van der Plaat en het autokerkhof: het automenu van de Pixelstad (stad-autos.js)
+  if((pl.id==='cars'||pl.id==='sloop')&&G.garage){G.garage.open(pl.id==='sloop'?'sloop':'mine');return}
   // kavels op Oostland: leeg of niet je huidige huis → notaris-kaartje van die kavel; je huis of zaak → naar binnen
   if(pl.dyn==='plot'&&!(pl.own&&pl.home)&&pl.zone!=='brug'&&G.plotUI){G.plotUI(pl);return}
   if(pl.dyn==='plot'&&pl.zone==='brug'&&!pl.home&&G.plotUI){G.vastgoed&&G.vastgoed.open({say:'Onder de brug slapen kost niets. Zal ik het als uw adres noteren?'});return}

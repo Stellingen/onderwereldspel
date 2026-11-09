@@ -275,7 +275,8 @@ function buildCity(){
    case 'container':{const w=7,d=3,t=CONT[p.v%5];for(let k=0;k<p.h;k++){const y0=k*2.6;if(p.rot)gb.box(p.x-d/2,y0,p.z-w/2,p.x+d/2,y0+2.5,p.z+w/2,t,{us:.6,top:t});else gb.box(p.x-w/2,y0,p.z-d/2,p.x+w/2,y0+2.5,p.z+d/2,t,{us:.6,top:t})}break}
    case 'crane':{const c=swatch('#d8a52a'),dk=swatch('#3a3d42');[[-2,-2],[2,-2],[-2,2],[2,2]].forEach(([a,b])=>gb.cbox(p.x+a,p.z+b,.5,.5,0,16,c));gb.box(p.x-2.5,15,p.z-2.5,p.x+2.5,16.5,p.z+2.5,c);
      gb.box(p.x-6,16.5,p.z-.6,p.x+24,17.5,p.z+.6,c);gb.box(p.x-1,16.5,p.z-1.2,p.x+1.5,19,p.z+1.2,dk);gb.cbox(p.x+16,p.z,.1,.1,8,16.5,dk);gb.cbox(p.x+16,p.z,1.2,1.2,7.4,8,dk);break}
-   case 'car':case 'police':{const pol=p.k==='police',col=pol?'#eef0f2':PROPC.car[p.v%7],rot=p.rot;gb.cbox(p.x,p.z,1.9,4.2,.3,1.05,swatch(col),rot?0:1);
+   case 'car':if(M.dynCars)break;
+   case 'police':{const pol=p.k==='police',col=pol?'#eef0f2':PROPC.car[p.v%7],rot=p.rot;gb.cbox(p.x,p.z,1.9,4.2,.3,1.05,swatch(col),rot?0:1);
      gb.cbox(p.x,p.z,1.7,2.2,1.05,1.65,swatch(PROPC.glass,'#000000'),rot?0:1,{top:swatch(col)});
      if(pol){gb.cbox(p.x,p.z,1.92,1.2,.55,.8,swatch('#1f4ea8'),rot?0:1);gb.cbox(p.x,p.z,1.2,.4,1.65,1.85,swatch('#2a5fd8','#3a6aff'),rot?0:1)}
      const tw=swatch(PROPC.tire);[[-.85,-1.3],[.85,-1.3],[-.85,1.3],[.85,1.3]].forEach(([a,b])=>gb.cbox(p.x+(rot?a:b),p.z+(rot?b:a),rot?.3:.7,rot?.7:.3,0,.6,tw));
@@ -304,6 +305,7 @@ function buildCity(){
        if(p.ns){gb.box(p.x,y,p.z+o,p.x+.05,y+h,p.z+o+.42,a);if(hash(k,p.v,43)<.5)gb.box(p.x+.02,y+.2,p.z+o+.1,p.x+.07,y+h-.15,p.z+o+.32,b)}
        else{gb.box(p.x+o,y,p.z,p.x+o+.42,y+h,p.z+.05,a);if(hash(k,p.v,43)<.5)gb.box(p.x+o+.1,y+.2,p.z+.02,p.x+o+.32,y+h-.15,p.z+.07,b)}}break}
    case 'arch':{const g=swatch('#d6a63e'),dk=swatch('#2a2c30');[-6,6].forEach(o=>{gb.cbox(p.x,p.z+o,1.1,1.1,0,6.4,dk);gb.cbox(p.x,p.z+o,1.3,1.3,6.4,6.8,g)});gb.box(p.x-.5,5.6,p.z-6.6,p.x+.5,6.6,p.z+6.6,dk);gb.box(p.x-.55,6.6,p.z-6.6,p.x+.55,6.8,p.z+6.6,g);break}
+   case 'wreck':{const cols=['#7a4a32','#5a5d63','#8a3b2a','#3a5f7a','#6a6a40','#4a3a2a'];for(let k=0;k<p.h;k++){const c=swatch(cols[(p.v+k)%6]),y=k*.75;gb.box(p.x-1,y,p.z-2.1+(k%2)*.2,p.x+1,y+.7,p.z+2.1-(k%2)*.2,c,{top:swatch(cols[(p.v+k+2)%6])})}break}
    case 'gate':{gb.box(p.x-3,0,p.z-.6,p.x+3,4.6,p.z+.6,swatch('#2c2e32'),{});for(let x=p.x-2.6;x<p.x+3;x+=.7)gb.box(x,0,p.z+.6,x+.18,4.4,p.z+.8,swatch('#55585e'));gb.box(p.x-3.4,4.6,p.z-.8,p.x+3.4,5.3,p.z+.8,swatch('#3a3c40'));break}
   }});
   return gb}

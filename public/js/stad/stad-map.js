@@ -80,6 +80,8 @@ place({id:'wit',page:'wit',name:'Wasserette Schoon Geld',sign:'WASSERETTE',st:'s
 place({id:'hits',page:'hits',name:'Het Contact',sign:'CONTACT',st:'brick2',fl:3,face:'E',x0:284,z0:96,x1:297,z1:110,ic:'hits'});
 place({id:'shop',page:'shop',name:'Wapenhandel Kogel & Zn',sign:'WAPENS',st:'gun',fl:2,face:'S',x0:261,z0:172,x1:277,z1:185,ic:'shop'});
 place({id:'cars',page:'cars',name:'Garage Van der Plaat',sign:'GARAGE',st:'garage',fl:2,face:'N',x0:313,z0:97,x1:338,z1:118,ic:'cars'});
+// Autokerkhof De Sloop op de havenkade: slopen voor onderdelen (S.sloop), met een kantoortje en stapels wrakken
+place({id:'sloop',page:'cars',name:'Autokerkhof De Sloop',sign:'AUTOKERKHOF',st:'ware2',fl:1,face:'W',x0:328,z0:126,x1:338,z1:142,res:[312,121,340,147],ic:'cars'});
 place({id:'werk',page:'werk',name:'Havenloods 7',sign:'HAVEN',st:'ware',fl:3,face:'N',x0:313,z0:149,x1:338,z1:176,ic:'werk'});
 place({id:'skills',page:'skills',name:'Sportschool De Bokszak',sign:'GYM',st:'gym',fl:2,face:'N',x0:40,z0:200,x1:66,z1:214,ic:'skills'});
 place({id:'relax',page:'relax',name:'Spa Zeezicht',sign:'SPA',st:'beach',fl:2,face:'N',x0:90,z0:200,x1:116,z1:214,ic:'relax'});
@@ -234,6 +236,11 @@ props.filter(p=>p.k==='container').forEach(p=>hides.push({x:p.x,z:p.z,k:'contain
 // geparkeerde auto's langs de stoeprand (decor)
 for(let i=0;i<120;i++){const vert=rng()<.5;if(vert){const x=pick(RX),side=rng()<.5?-1:1,z=RZ[0]+8+rng()*(RZ[3]-RZ[0]-16);if(RZ.some(q=>Math.abs(q-z)<9))continue;prop('car',x+side*(RW-1.2),z,{rot:1,v:ri(0,6),dir:side})}
   else{const z=pick(RZ),side=rng()<.5?-1:1,x=RX[0]+8+rng()*(RX[6]-RX[0]-16);if(RX.some(q=>Math.abs(q-x)<9)||(x>174&&x<208))continue;prop('car',x,z+side*(RW-1.2),{rot:0,v:ri(0,6),dir:side})}}
+// geparkeerde auto's op Oostland (langs de stoeprand)
+for(let i=0;i<46;i++){const vert=rng()<.5;if(vert){const x=pick(RXE),side=rng()<.5?-1:1,z=RZE[0]+8+rng()*(RZE[4]-RZE[0]-16);if(RZE.some(q=>Math.abs(q-z)<9)||[88,140,192].some(q=>Math.abs(q-z)<9&&x===RXE[0]))continue;prop('car',x+side*(RW-1.2),z,{rot:1,v:ri(0,6),dir:side})}
+  else{const z=pick(RZE),side=rng()<.5?-1:1,x=RXE[0]+8+rng()*(RXE[2]-RXE[0]-16);if(RXE.some(q=>Math.abs(q-x)<9))continue;prop('car',x,z+side*(RW-1.2),{rot:0,v:ri(0,6),dir:side})}}
+// wrakken op het autokerkhof
+[[315,124],[315,131],[315,138],[321,124],[321,131],[321,138]].forEach(([x,z],i)=>{prop('wreck',x+1.5,z+2,{h:1+(i%3),v:i});block(x,z,x+3,z+5)});
 // politieauto's voor het bureau, standbeeld op het plein, bankjes in het park
 [[146,129],[154,129],[162,129]].forEach(([x,z])=>prop('police',x,z,{rot:1}));
 prop('statue',229,119,{solid:2.2});

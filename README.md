@@ -1297,10 +1297,34 @@ met scripts en stijlen wordt uit `/game` gelezen) en tekent de stad eromheen. He
 - **Kaart** (`js/stad/stad-kaart.js`): zoomen en schuiven (slepen, knijpen, scrollwiel, + en −), lagen (Plekken, Bezit, Mijn auto, Politie),
   plekken die te dicht bij elkaar staan worden één bolletje met een getal, al je bezit is één gouden markering op Oostland. Tik op een plek of
   de grond: 'Route zetten' (roze lijn op de minikaart, een lichtbaken in de stad en een chip met de afstand) of 'Erheen lopen'.
-- **Auto's** (`js/stad/stad-cars.js`): verkeer rijdt rechts over het wegennet (kruisingen en bochten, wacht op elkaar en op jou). Je eigen auto
-  uit je garage (S.cars, de duurste of de laatst gekozen) staat waar je hem liet; 'Mijn auto' op je telefoon brengt hem naar de dichtstbijzijnde
-  weg. F (of de knop) is in- en uitstappen. Rijden: W/S gas en rem, A/D sturen, op de telefoon de stick als stuur. Topsnelheid hangt af van de
-  klasse van de auto. De camera draait mee achter de auto.
+- **Auto's rijden** (`js/stad/stad-cars.js`): verkeer rijdt rechts over het wegennet (kruisingen en bochten, wacht op elkaar en op jou);
+  elke auto in het verkeer is een echt model uit het spel. Je eigen auto uit je garage (S.cars, de duurste of de laatst gekozen) staat waar
+  je hem liet; 'Mijn auto' op je telefoon brengt hem naar de dichtstbijzijnde weg. F (of de knop) is in- en uitstappen, in elke auto waar
+  je naast staat (je eigen auto of een gestolen auto: `G.vehicles`). Rijden: W/S gas en rem, A/D sturen, op de telefoon de stick als stuur.
+  Topsnelheid hangt af van de klasse. Een flinke botsing geeft schade (op de snelheidsmeter), en schade kost waarde bij het afleveren.
+- **Auto's stelen** (`js/stad/stad-autos.js`, alleen in de Pixelstad, met de regels en bedragen van het klikspel):
+  - Geparkeerde auto's (langs de stoep, ook op Oostland) zijn echte modellen met bouwjaar, kilometerstand, staat, kleur, kenteken en
+    straatwaarde (`pickCar`/`spawnCar` uit autos.js, net als 'straat afzoeken'; op de Zuidas, IJ-oever en in de Villawijk vaker dure).
+    Loop erheen: een kader in de kleur van de zeldzaamheid, model en zeldzaamheid boven de auto. Schittert er iets achter het raam, dan
+    ligt er iets in. Elk model dat je zo bekijkt telt als 'gezien' in je autocollectie (S.carDex).
+  - Inbreken (energie en wachttijd van de klus Autokraak): het slot openbreken (stil: druk op het juiste moment als het streepje in
+    het groen staat, meer pinnen en een kleiner vlak bij duurdere auto's, makkelijker met steelervaring) of de ruit inslaan (drie keer
+    snel slaan, snel maar luid). Alarm volgens de beveiliging van de auto (jackSecRoll: geen alarm, alarm of alarm met tracker).
+  - Doorzoeken: spullen (laptoptas, navigatie, golftas...) gaan in je zakken voor de heler, soms geld uit het dashboardkastje. Waarde op
+    de schaal van de buit van Autokraak (× lootMult, duurdere auto = betere spullen).
+  - Kortsluiten en wegrijden (energie carEn en wachttijd carCd, zoals stelen in het klikspel): verbind de draadjes in de goede volgorde
+    (pijltjes of de gekleurde knoppen) voor de tijd op is. Fouten kosten tijd. Mislukt = de motor slaat niet aan (en het alarm kan afgaan).
+  - Carjacken: staat een auto stil in het verkeer en heb je een wapen (vanaf de rang van carjacken, energie en wachttijd van carjacken),
+    dan trek je de bestuurder eruit (snel drukken). De bestuurder rent weg en belt 112; zo'n auto is altijd gemeld als gestolen.
+  - Afleveren (gouden ring en markering op de kaart zodra je in een gestolen auto rijdt, E bij de ring): Garage Van der Plaat (in je
+    garage, met dezelfde beloning als een gelukte diefstal in het klikspel: waarde, XP, steelervaring, straatcredit, hitte), Ome Henk de
+    heler bij Het Contact (als hij dit model zoekt: act.carOrder; vanaf Compagnon elke auto), Autokerkhof De Sloop op de havenkade
+    (slopen voor onderdelen, als het autokerkhof van jou is) of je eigen chop shop op Oostland (als je die zaak hebt). Niet tijdens een
+    achtervolging. Een auto met tracker wordt na een tijdje gemeld en dan komt de politie.
+- **Garage Van der Plaat en het autokerkhof** (eigen menu met de monteur als pixelportret): Jouw auto's (rijden, bod vragen, verkopen of
+  een ander bod, naar de heler, slopen, overspuiten, nieuwe papieren voor een auto die als gestolen is gemeld: 30% van de waarde), Heler
+  zoekt (bestellingen met de vermenigvuldiger; 'Zoek er een in de stad' zet zo'n model ergens geparkeerd neer en op je kaart), Sloop
+  (het autokerkhof kopen, sloop-ervaring, alles slopen) en Garage (uitbouwen). Alle details blijven in het scherm van het klikspel (↗).
 - **Mensen op straat** (`js/stad/stad-npc.js`): voorbijgangers hebben een soort met eigen uiterlijk, praatjes en reacties: toerist,
   zakenman, student, oma, voorbijganger, bendelid en agent lopen rond (verdeeld per wijk en per tijd van de dag); een straatmuzikant op
   Het Plein, zwervers in de stegen en helers staan vast. Loop naar iemand toe: boven het hoofd verschijnt 'E · Toerist'. Het gesprek is
