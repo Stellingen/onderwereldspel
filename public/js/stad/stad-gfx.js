@@ -198,11 +198,12 @@ GB.prototype.mesh=function(mat){const g=new TH.BufferGeometry();g.setAttribute('
   g.setAttribute('uv',new TH.Float32BufferAttribute(this.u,2));g.setAttribute('aTile',new TH.Float32BufferAttribute(this.t,4));g.computeBoundingSphere();return new TH.Mesh(g,mat)};
 
 // materiaal: textuuratlas met tegels die zich herhalen, plus 's nachts verlichte ramen
-const U={uNight:{value:0},uLit:{value:null}};
+const U={uNight:{value:0},uLit:{value:null},uPS:{value:new TH.Vector2(-999,-999)},uPZ:{value:0},uCutR:{value:0}};
 function atlasMat(tex,litTex){const m=new TH.MeshLambertMaterial({map:tex});U.uLit.value=litTex;
-  m.onBeforeCompile=sh=>{sh.uniforms.uNight=U.uNight;sh.uniforms.uLit=U.uLit;
-    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute vec4 aTile;\nvarying vec4 vTile;\nvarying vec2 vAo;').replace('#include <uv_vertex>','#include <uv_vertex>\nvTile=aTile;').replace('#include <project_vertex>','#include <project_vertex>\nvAo=vec2((modelMatrix*vec4(transformed,1.)).y,abs(normal.y));');
-    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec4 vTile;\nvarying vec2 vAo;\nuniform sampler2D uLit;\nuniform float uNight;')
+  m.onBeforeCompile=sh=>{sh.uniforms.uNight=U.uNight;sh.uniforms.uLit=U.uLit;sh.uniforms.uPS=U.uPS;sh.uniforms.uPZ=U.uPZ;sh.uniforms.uCutR=U.uCutR;
+    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute vec4 aTile;\nvarying vec4 vTile;\nvarying vec2 vAo;').replace('#include <uv_vertex>','#include <uv_vertex>\nvTile=aTile;').replace('#include <common>','#include <common>\nvarying float vVZ;').replace('#include <project_vertex>','#include <project_vertex>\nvAo=vec2((modelMatrix*vec4(transformed,1.)).y,abs(normal.y));vVZ=-mvPosition.z;');
+    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec4 vTile;\nvarying vec2 vAo;\nvarying float vVZ;\nuniform sampler2D uLit;\nuniform float uNight;\nuniform vec2 uPS;\nuniform float uPZ,uCutR;')
+      .replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nif(uCutR>0.&&vAo.x>.6&&vVZ<uPZ-2.){float cd=length(gl_FragCoord.xy-uPS)/uCutR;vec2 bq=mod(floor(gl_FragCoord.xy),2.);float th=.82+.18*(bq.x+bq.y*2.)/3.;if(cd<th)discard;}')
       .replace('#include <map_fragment>','vec2 aUv=vTile.xy+clamp(fract(vMapUv),.002,.998)*vTile.zw;\nvec4 sampledDiffuseColor=texture2D(map,aUv);\ndiffuseColor*=sampledDiffuseColor;\nif(vAo.y<.5)diffuseColor.rgb*=mix(.58,1.,smoothstep(-.4,2.4,vAo.x));')
       .replace('#include <emissivemap_fragment>','totalEmissiveRadiance+=texture2D(uLit,aUv).rgb*uNight;')};
   m.customProgramCacheKey=()=>'stad-atlas';return m}

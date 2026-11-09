@@ -1267,4 +1267,16 @@ met scripts en stijlen wordt uit `/game` gelezen) en tekent de stad eromheen. He
   een steiger en een bouwkraan en gaat het pand verdieping voor verdieping omhoog. Het bouwen loopt alleen als je in de buurt bent, zodat je
   het altijd ziet. Verdiepingen = basis + per upgrade (vastgoed 2 per niveau) + 1 per 3 vestigingen, met een maximum per soort.
   Naar binnen opent Bezit meteen op die zaak. Op de kaart staat 'Jouw bezit' bovenaan.
-- **Nog niet** (volgende stap): auto's rijden en verkeer, politie op straat.
+- **Klussen als missies** (`js/stad/stad-missions.js`): Café Het Gat en de telefoon openen het klussenbord van de Pixelstad
+  (niet het scherm van het klikspel). Alle klussen staan erop met dezelfde kans, buit, energie, wachttijd en straf. Elke klus is een
+  missie van een van zeven soorten: zakkenrollen (achter het doelwit sluipen en vasthouden, niet van voren), bedelen (voorbijgangers
+  aanspreken), graaien (iets pakken terwijl de bewaking wegkijkt en naar de heler brengen), taggen (drie muren), inbraak (langs bewakers
+  met zichtkegels, slot kraken, buit pakken, naar de vluchtauto), overval (overvallen, buit grijpen en vluchten voor de agenten) en
+  koerier (ophalen, praten, afleveren, soms met een stille agent achter je). Moeilijkheid volgt je kans: meer bewakers, scherpere ogen
+  en langer kraken bij een lage kans. Alarm = de politie komt, een rommelige klus (minder buit) of gepakt. Gepakt of te laat = dezelfde
+  mislukking als in het klikspel (crimeFail: betrapt, vluchten, advocaat, cel). Gelukt = crimeResolve met het aantal fouten als 'miss'.
+  Overslaan met de kans op de kaart kan ook. Verversen tijdens een missie telt als betrapt (S.pendingGame, net als het klikspel).
+- **Jouw poppetje** (`js/stad/stad-avatar.js`): precies je outfit uit het spel: pak met das en revers, hoodie met capuchon, trainingspak met
+  strepen, jurk, pet, hoed, muts, bivakmuts, sneakers met zool, laarzen, ketting, das, koptelefoon, horloge, handschoenen en een gouden grill.
+- **Doorkijk**: staat er een gebouw tussen de camera en jou, dan wordt er een rond gat in getekend zodat je jezelf altijd ziet.
+- **Nog niet** (volgende stappen): buitenwijken met kavels voor je woning, bedrijventerrein, auto's rijden en verkeer.

@@ -79,7 +79,7 @@ function hud(){try{
 setInterval(hud,400);hud();
 // wijknaam: in beeld als je een nieuwe wijk in loopt (zoals in GTA)
 function loc(){const P=G.P;if(!P)return;const n=M.districtAt(P.x,P.z);if(n===lastLoc)return;const first=!lastLoc;lastLoc=n;$s('sdLoc').textContent=n;if(first||G.paused)return;
-  const a=$s('sdArea');a.querySelector('b').textContent=n;a.hidden=false;a.classList.remove('go');void a.offsetWidth;a.classList.add('go');clearTimeout(areaT);areaT=setTimeout(()=>{a.hidden=true},3200)}
+  const a=$s('sdArea');a.querySelector('small').textContent='Pixelstad';a.classList.remove('bad');a.querySelector('b').textContent=n;a.hidden=false;a.classList.remove('go');void a.offsetWidth;a.classList.add('go');clearTimeout(areaT);areaT=setTimeout(()=>{a.hidden=true},3200)}
 
 /* ---------- minikaart ---------- */
 const mapCv=X.mapCanvas(),mini=$s('sdMini'),mc=mini.getContext('2d');mc.imageSmoothingEnabled=false;
@@ -89,7 +89,9 @@ let pathPts=null;
 function drawMini(){const P=G.P,w=mini.width,s=1.3;mc.setTransform(1,0,0,1,0,0);mc.imageSmoothingEnabled=false;mc.fillStyle='#14304a';mc.fillRect(0,0,w,w);
   mc.save();mc.translate(w/2,w/2);mc.rotate(G.yaw);mc.scale(s,s);mc.translate(-P.x,-P.z);mc.drawImage(mapCv,0,0);
   if(pathPts&&P.path){mc.strokeStyle='#ff7a1a';mc.lineWidth=2;mc.setLineDash([3,2]);mc.beginPath();mc.moveTo(P.x,P.z);P.path.forEach(q=>mc.lineTo(q.x,q.z));mc.stroke();mc.setLineDash([])}
+  if(G.missionPath&&G.missionPath.length){mc.strokeStyle='#ffd35a';mc.lineWidth=2.2;mc.setLineDash([3,2]);mc.beginPath();mc.moveTo(P.x,P.z);G.missionPath.forEach(q=>mc.lineTo(q.x,q.z));mc.stroke();mc.setLineDash([])}
   M.places.forEach(p=>{if(p.dyn&&!p.own)return;mc.fillStyle='#000';mc.fillRect(p.door.x-3,p.door.z-3,6,6);mc.fillStyle=pcol(p);mc.fillRect(p.door.x-2.2,p.door.z-2.2,4.4,4.4)});
+  if(G.missionDots)G.missionDots().forEach(d=>{const r=d.big?3.4:2;mc.fillStyle='#000';mc.fillRect(d.x-r-.8,d.z-r-.8,2*r+1.6,2*r+1.6);mc.fillStyle=d.c;mc.fillRect(d.x-r,d.z-r,2*r,2*r)});
   mc.translate(P.x,P.z);mc.rotate(Math.atan2(Math.cos(P.ry),Math.sin(P.ry)));mc.fillStyle='#000';mc.beginPath();mc.moveTo(5,0);mc.lineTo(-3.4,3.4);mc.lineTo(-1.6,0);mc.lineTo(-3.4,-3.4);mc.closePath();mc.fill();
   mc.fillStyle='#fff';mc.beginPath();mc.moveTo(3.6,0);mc.lineTo(-2.4,2.4);mc.lineTo(-1,0);mc.lineTo(-2.4,-2.4);mc.closePath();mc.fill();mc.restore();
   const r=mini.getBoundingClientRect().width/2-2;$s('sdNorth').style.transform=`translate(${Math.sin(-G.yaw)*-r}px,${-Math.cos(G.yaw)*r}px)`;
@@ -109,7 +111,10 @@ let cur=null;
 function showInside(kind,label,pg){G.pause();closeAll();cur=kind;document.body.classList.add('stad-in');const ib=$s('sdIn');ib.hidden=false;ib.style.setProperty('--c',secOf(pg)[2]);
   $s('sdInK').textContent=kind.phone?'Telefoon':kind.jail?'Je zit vast':'Binnen · '+(M.districtAt(G.P.x,G.P.z));$s('sdInName').textContent=label;
   if(typeof page!=='undefined'&&page===pg&&location.hash==='#'+pg)render();else location.hash='#'+pg;window.scrollTo(0,0);jailBtn()}
-function enter(pl){if(!pl)return;if(!hasPage(pl.page)){tst('Hier is nog niets te doen');return}if(pl.before)pl.before();showInside({pl},pl.name,pl.page)}
+function enter(pl){if(!pl)return;if(G.mission&&G.mission()){tst('Maak eerst je klus af','bad');return}
+  // Café Het Gat: het klussenbord van de Pixelstad (missies), niet het scherm van het klikspel
+  if(pl.page==='crimes'&&G.openBoard){G.openBoard();return}
+  if(!hasPage(pl.page)){tst('Hier is nog niets te doen');return}if(pl.before)pl.before();showInside({pl},pl.name,pl.page)}
 G.onEnter=enter;
 function phoneApp(pg){showInside({phone:1,pg},pageName(pg),pg)}
 function leave(){if(!cur)return;if(jailed()){if(cur.phone){showInside({jail:1,pl:M.placeById('jail')},'De Bajes','jail');return}tst('Je zit nog vast. Wacht je straf uit, betaal borg of ontsnap.','bad');return}
@@ -129,7 +134,7 @@ setInterval(()=>{if(typeof inJail!=='function')return;const j=inJail();
 const APPS=['dash','profiel','rank','lid','bank','shop','look','fam','hits','crimes','cars','casino'];
 const APPN={dash:'Overzicht',profiel:'Profiel',rank:'Ranglijst',lid:'Lid',bank:'Bank',shop:'Wapens',look:'Kleding',fam:'Familie',hits:'Opdrachten',crimes:'Klussen',cars:"Auto's",casino:'Casino'};
 // alles wat je online kunt doen staat op je telefoon; klussen, casino en auto's doe je ter plekke (die apps tonen de weg)
-const ONSITE={crimes:1,cars:1,casino:1};
+const ONSITE={cars:1,casino:1};
 function renderApps(){$s('sdApps').innerHTML=APPS.filter(hasPage).map(k=>`<button class="sd-app" data-app="${k}"><i style="--c:${secOf(k)[2]}">${pic(k)}${ONSITE[k]?`<em>${ic('pin')}</em>`:''}</i><span>${APPN[k]||pageName(k)}</span></button>`).join('');
   let msgs=[];try{msgs=(typeof logShown==='function'?logShown():S.log||[]).slice(0,2)}catch(e){}
   $s('sdMsgs').innerHTML=msgs.length?msgs.map(l=>`<div class="sd-msg ${l.c||''}"><b>Onderwereld</b><span>${E(String(l.m).replace(/<[^>]+>/g,''))}</span></div>`).join(''):''}
@@ -141,6 +146,7 @@ $s('sdPhone').addEventListener('click',e=>{const b=e.target.closest('[data-app]'
   if(k==='klik'){try{sessionStorage.setItem('ow_mode','klik')}catch(e){}G.savePos();location.href='/game';return}
   if(k==='set'){settings();return}
   // klussen, casino en auto's: daar moet je heen; de telefoon zet de route uit
+  if(k==='crimes'&&G.openBoard){$s('sdPhone').hidden=true;if(cur)leaveQuiet();G.openBoard();return}
   if(ONSITE[k]&&!jailed()){const pl=M.placeByPage(k);$s('sdPhone').hidden=true;if(cur)leaveQuiet();G.resume();G.goPlace(pl);tst('Route naar '+pl.name);return}
   $s('sdPhone').hidden=true;phoneApp(k)});
 function settings(){const s=$s('sdSet');$s('sdHome').hidden=true;s.hidden=false;const pix=G.pixPref||0;let skin='';try{skin=localStorage.getItem('stad_skin')||''}catch(e){}

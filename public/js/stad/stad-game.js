@@ -8,7 +8,7 @@ window.STAD=G;
 let renderer,scene,camera,sun,hemi,water,waterTex,cityMesh,ground,marks,humans,clock,rt,post,postCam,pools;
 const P={x:M.spawn.x,z:M.spawn.z,ry:Math.PI,vx:0,vz:0,ph:0,sp:0,run:false,path:null,goal:null};
 G.P=P;
-const NPC=[];const NPC_N=30;
+const NPC=[];const NPC_N=30;G.actors=[];
 
 /* ---------- uiterlijk ---------- */
 const SKINS=['#e9b98f','#d9a27a','#b97a52','#8d5a3a','#f1caa5','#6e4630'];
@@ -64,7 +64,7 @@ G.init=function(host){
   marks=X.placeMarks(scene);G.marks=marks;
   pools=X.lampPools(scene);
   makePost();
-  humans=X.makeHumans(scene,1+NPC_N);
+  humans=X.makeHumans(scene,1+NPC_N+24);
   if(G.lotsSetup)G.lotsSetup(scene);
   // voetgangers op de stoep
   for(let i=0;i<NPC_N;i++)NPC.push(spawnNpc(true));
@@ -148,7 +148,8 @@ function input(){
   const typing=e=>{const t=e.target;return t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable)};
   addEventListener('keydown',e=>{if(G.paused||typing(e))return;const k=e.key.toLowerCase();
     if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift',' '].includes(k)){K[k]=1;if(k.startsWith('arrow')||k===' ')e.preventDefault()}
-    if(k===' '||k==='f'||k==='enter'){if(G.near&&!e.repeat){e.preventDefault();G.onEnter&&G.onEnter(G.near)}}
+    if(k==='f')K.f=1;
+    if(k===' '||k==='f'||k==='enter'){if(G.missionAction&&G.missionAction()){e.preventDefault()}else if(G.near&&!e.repeat){e.preventDefault();G.onEnter&&G.onEnter(G.near)}}
     if(k==='q'&&!e.repeat)G.yawT+=Math.PI/4;if(k==='e'&&!e.repeat)G.yawT-=Math.PI/4;
     if((k==='+'||k==='=')&&!e.repeat)G.distT=Math.max(16,G.distT-6);if(k==='-'&&!e.repeat)G.distT=Math.min(70,G.distT+6);
     if(k==='j'&&!e.repeat)G.onPhone&&G.onPhone();if(k==='m'&&!e.repeat)G.onMap&&G.onMap();
@@ -196,6 +197,7 @@ G.placeAtDoor=function(pl){const f=pl.face,o=f==='S'?[0,1]:f==='N'?[0,-1]:f==='E
   G.yawT=G.yaw=Math.atan2(-o[0],-o[1])+Math.PI;stopPath()};
 G.teleport=function(x,z){const p=M.nearestWalk(x,z,20);if(p){P.x=p.x;P.z=p.z;stopPath()}};
 function draw(){renderer.setRenderTarget(rt);renderer.render(scene,camera);renderer.setRenderTarget(null);renderer.render(post,postCam)}
+const cutV=new TH.Vector3(),cutS=new TH.Vector2();
 function frame(t){raf=requestAnimationFrame(frame);let dt=(t-last)/1000;if(!(dt>0))dt=0;dt=Math.min(.05,dt);last=t;if(G.paused)return;step(dt,t/1000);draw()}
 function step(dt,ts){
   // invoer → richting (ten opzichte van de camera)
@@ -222,9 +224,12 @@ function step(dt,ts){
   const cp=Math.cos(G.pitch),spp=Math.sin(G.pitch);const tx=P.x,tz=P.z,ty=1.2;
   camera.position.set(tx+Math.sin(G.yaw)*cp*G.dist,ty+spp*G.dist,tz+Math.cos(G.yaw)*cp*G.dist);camera.lookAt(tx,ty,tz);
   sun.position.set(tx-40,80,tz+25);sun.target.position.set(tx,0,tz);
+  camera.updateMatrixWorld();cutV.set(P.x,1.2,P.z).project(camera);const rs=renderer.getSize(cutS);X.U.uPS.value.set((cutV.x*.5+.5)*rs.x,(cutV.y*.5+.5)*rs.y);
+  cutV.set(P.x,1.2,P.z).applyMatrix4(camera.matrixWorldInverse);X.U.uPZ.value=-cutV.z;X.U.uCutR.value=rs.y*.15*(G.paused?0:1);
   // mensen
-  humans.count(1+NPC.length);humans.pose(0,{x:P.x,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,look:P.look,lean:v>7?.12:0});
-  NPC.forEach((n,i)=>{npcStep(n,dt);humans.pose(i+1,n)});humans.flush();humans.xray(true);
+  G.missionStep&&!G.paused&&G.missionStep(dt);
+  const A=G.actors.slice(0,24);humans.count(1+NPC.length+A.length);humans.pose(0,{x:P.x,y:-60,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,look:P.look});if(G.avatarPose)G.avatarPose({x:P.x,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,lean:v>7?.12:0,hide:G.driving});
+  NPC.forEach((n,i)=>{npcStep(n,dt);humans.pose(i+1,n)});A.forEach((a,i)=>humans.pose(1+NPC.length+i,a));humans.flush();humans.xray(false);
   // markeringen laten leven
   for(const m of marks){m.pin.rotation.y=ts*1.6;m.pin.position.y=3+Math.sin(ts*2.2+m.p.door.x)*.18;const s=1+Math.sin(ts*3)*.06;m.ring.scale.set(s,s,s);m.ring.material.opacity=G.near===m.p?1:(m.p.dyn&&!m.p.own?.4:.7)}
   waterTex.offset.x=(ts*.02)%1;waterTex.offset.y=(Math.sin(ts*.3)*.02);
