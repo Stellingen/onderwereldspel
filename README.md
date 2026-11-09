@@ -1254,8 +1254,8 @@ met scripts en stijlen wordt uit `/game` gelezen) en tekent de stad eromheen. He
   getekende pixel-art. De stad is één model (~33.000 driehoeken). Het beeld wordt op ongeveer 360 pixels hoogte getekend en zonder vervaging
   opgeschaald, met nabewerking: contourlijnen, gloed van ramen en neon, iets meer contrast en beperkte kleurdiepte met dither.
   Dag en nacht volgen de echte tijd in Nederland (instelbaar). 's Nachts branden ramen, neon en lantaarns.
-- **Besturing**: WASD of pijltjes, Shift rennen, Spatie naar binnen, Q en E draaien, scrollen zoomt, klikken op een gebouw of de kaart
-  = erheen lopen, J telefoon, M kaart, Esc terug. Op de telefoon een stick, een renknop, vegen en knijpen.
+- **Besturing**: WASD of pijltjes, Shift rennen, E (of Spatie) praten met mensen en naar binnen, F auto in en uit, Z en C draaien,
+  scrollen zoomt, klikken op een gebouw of de kaart = erheen lopen, J telefoon, M kaart, Esc terug. Op de telefoon een stick, een renknop, vegen en knijpen.
 - **Telefoon (J)**: saldo, laatste berichten en apps voor alles wat online kan (overzicht, profiel, ranglijst, lidmaatschap, bank,
   wapens, kleding, familie, opdrachten). Klussen, casino en auto's doe je ter plekke: die apps zetten de route uit. Ook: kaart,
   instellingen (beeld, huidskleur, tijd) en terug naar het klikspel.
@@ -1279,19 +1279,55 @@ met scripts en stijlen wordt uit `/game` gelezen) en tekent de stad eromheen. He
 - **Jouw poppetje** (`js/stad/stad-avatar.js`): precies je outfit uit het spel: pak met das en revers, hoodie met capuchon, trainingspak met
   strepen, jurk, pet, hoed, muts, bivakmuts, sneakers met zool, laarzen, ketting, das, koptelefoon, horloge, handschoenen en een gouden grill.
 - **Doorkijk**: staat er een gebouw tussen de camera en jou, dan wordt er een rond gat in getekend zodat je jezelf altijd ziet.
-- **Oostkant en woonkavels**: de kaart is 576 × 360 meter. Over het havenkanaal (drie havenbruggen) liggen de IJ-oever (penthouses aan het
-  water), het bedrijventerrein (bedrijfshallen, chop shop, autogarage en autodealer), Villawijk Duinzicht en de Tuinwijk. Woningen staan op
-  kavels die bij hun soort passen: kraakpanden in De Haven, de woonboot in de gracht, rijtjeshuizen in de Westbuurt en de Tuinwijk,
-  grachtenpanden aan de gracht, penthouses aan de IJ-oever en villa's in de villawijk; onder de brug is een vaste plek. Een lege kavel heeft
-  bomen, paaltjes en een groen bord. Het kavelscherm verkoopt de woning met dezelfde aankoop als het klikspel (act.buyHouse/rentHouse,
-  de grond zit in de prijs) en bouwt hem op die kavel; ook hier gaan wonen, naar binnen, verplaatsen en verkopen. Welke woning op welke
-  kavel staat: S.stadPlots. Woningen zonder kavel (bijvoorbeeld gekocht in het klikspel) krijgen vanzelf een vrije kavel van hun soort.
+- **Oostland, jouw eigen terrein** (update november 2026): de kaart is 576 × 360 meter. De hele oostkant over het havenkanaal (drie
+  havenbruggen met een poort 'Oostland · jouw terrein') is van jou: elke woning en alle 47 zaken uit het spel hebben daar een vaste kavel
+  (`STAD_MAP.EST_H` en `EST_B`, uiterlijk per zaak in `BIZ_LOOK`). IJ-oever: penthouses en kantoortorens; bedrijventerrein: auto's en handel;
+  Oosterstraat: winkels, horeca en toerisme; Villawijk: villa's, herenhuizen en verhuurpanden; Tuinwijk: rijtjeshuizen, het kraakpand, de
+  woonboot in de vijver, garageboxen, parkeergarage en de markt. Onder de brug in de stad blijft de gratis slaapplek. Lege kavel = bomen of
+  grind met een klein bordje (geen ring, geen pin: rustig beeld); jouw panden krijgen een gouden ring. In de stad zelf staan geen kavels meer.
+- **Notaris De Sleutel** (`js/stad/stad-vastgoed.js`, ook de app 'Vastgoed' op je telefoon): één menu voor al je vastgoed, met de notaris
+  als pixelportret. Mijn bezit (route, naar binnen of beheer, thuis maken, upgraden, vestiging erbij, verkopen met bevestiging), Te koop
+  (woningen en zaken met de gewone prijs: act.buyHouse, rentHouse, bizBuy) en In aanbouw. Loop je op Oostland naar een lege kavel, dan
+  opent de notaris op die kavel.
+- **Kaart** (`js/stad/stad-kaart.js`): zoomen en schuiven (slepen, knijpen, scrollwiel, + en −), lagen (Plekken, Bezit, Mijn auto, Politie),
+  plekken die te dicht bij elkaar staan worden één bolletje met een getal, al je bezit is één gouden markering op Oostland. Tik op een plek of
+  de grond: 'Route zetten' (roze lijn op de minikaart, een lichtbaken in de stad en een chip met de afstand) of 'Erheen lopen'.
 - **Auto's** (`js/stad/stad-cars.js`): verkeer rijdt rechts over het wegennet (kruisingen en bochten, wacht op elkaar en op jou). Je eigen auto
   uit je garage (S.cars, de duurste of de laatst gekozen) staat waar je hem liet; 'Mijn auto' op je telefoon brengt hem naar de dichtstbijzijnde
   weg. F (of de knop) is in- en uitstappen. Rijden: W/S gas en rem, A/D sturen, op de telefoon de stick als stuur. Topsnelheid hangt af van de
   klasse van de auto. De camera draait mee achter de auto.
-- **Politie op straat**: politieauto's rijden mee in het verkeer. Ben je gezocht (of gaat er tijdens een missie een alarm af), dan gaan ze achter je aan.
-  Te voet stapt er een agent uit die je achterna rent; in de auto ben je gepakt als je naast een politieauto stil komt te staan. Gepakt = dezelfde
-  politiecontrole als het klikspel (policeRaid), tijdens een missie = missie mislukt. Ben je ze een tijdje kwijt (ver weg), dan haken ze af.
+- **Mensen op straat** (`js/stad/stad-npc.js`): voorbijgangers hebben een soort met eigen uiterlijk, praatjes en reacties: toerist,
+  zakenman, student, oma, voorbijganger, bendelid en agent lopen rond (verdeeld per wijk en per tijd van de dag); een straatmuzikant op
+  Het Plein, zwervers in de stegen en helers staan vast. Loop naar iemand toe: boven het hoofd verschijnt 'E · Toerist'. Het gesprek is
+  een dialoogvenster met pixelportret, tekst die verschijnt en keuzeknoppen (pijltjes of W/S, E bevestigt, geen nummers): praten (soms
+  een tip), een foto maken voor toeristen, oma helpen, een zwerver of muzikant een fooi geven, spullen verkopen aan de heler, een
+  bendelid intimideren, of beroven. Mensen kletsen ook onderling (tekstwolkjes).
+- **Straatroof**: alleen met een wapen (gearBest('wapen')). Energie en wachttijd zijn die van de beste straatklus die je hebt
+  (zakkenrollen → scooter → horloge, `roofRef`), de buit = buit van die klus × lootMult × crLootK × hoe rijk iemand is (zakenman 1,3,
+  student 0,3, zwerver niets). Iemand kan zich verzetten (sterker dan je wapen = een duw, gezondheid eraf). Vasthouden (E of de knop)
+  om het geld af te pakken; met een zwaarder wapen gaat het sneller. Soms krijg je een spul (telefoon, horloge...) in plaats van een
+  deel van het geld: dat verkoop je bij de heler (S.stadZak, bij een arrestatie in beslag genomen). In dezelfde wijk letten mensen daarna
+  beter op en hebben ze minder bij zich.
+- **Getuigen en respect**: wie het ziet (binnen 14 meter, 's nachts 10, en met zicht) rent weg, gilt, of belt 112 (telefoon aan het oor).
+  Ben je snel, dan hou je de beller tegen. Met een bivakmuts bellen mensen half zo vaak. Respect per wijk (S.stadRep): helpen en fooien
+  geven = meer, beroven = minder (oma's beroven kost veel). Veel respect = minder mensen die de politie bellen.
+- **Politie op straat** (`js/stad/stad-police.js`): komt een 112-melding door, dan komt er na ongeveer 10 seconden een politieauto met
+  sirene (geluid uit de juiste richting, blauw-rood aan de rand van het scherm). Politieauto's rijden alleen over de weg en pleinen, niet
+  door stegen. Agenten stappen uit en zoeken je: ze zien je alleen in hun blikveld (100°, 22 meter, 's nachts 16) en als er niets tussen
+  zit. Zien ze je niet meer, dan lopen ze naar waar ze je het laatst zagen en zoeken in een cirkel (op de minikaart en de kaart).
+  Achter een afvalcontainer, container of heg kun je je verstoppen (E). Blijf 8, 14 of 20 seconden uit zicht (1, 2 of 3 sterren) en je
+  bent ze kwijt (+3 XP, +1 straatcredit). Pakken ze je, dan volgt de arrestatie van het klikspel (crimeFail van de straatklus, met de
+  gewone keuzes). Sprinten kost adem zolang de politie achter je aan zit; je training (Conditie, Uithouding, Ademhaling) en lidmaatschap
+  tellen mee. Gezocht in het klikspel? Dan herkent een patrouille of een agent op straat je en begint de achtervolging (gepakt =
+  policeRaid). Tijdens een achtervolging kun je niet naar binnen of een klus starten.
+- **Vluchten in de stad**: kies je bij een arrestatie 'Vluchten', dan ren je in de Pixelstad zelf weg (`escapeGame` wordt in /stad
+  vervangen; alleen de autoachtervolging blijft het klikspel-scherm). De agenten staan zo ver achter je als de voorsprong uit het klikspel
+  (fleeParams). Uit zicht = ontkomen (de regels van het klikspel: vrij, of nog gezocht na een politiecontrole), gepakt = +20% straf.
+- **Stegen**: elk bouwblok heeft aan elke kant minstens één steeg van 3 meter naar de binnenplaats (donker asfalt, graffiti, een lamp)
+  met een afvalcontainer om achter te schuilen.
+- **Geluid en muziek** (`js/stad/stad-sfx.js`): alles opgewekt met Web Audio. Effecten (deuren, geld, telefoon, fluitje, sirene, motor)
+  en chiptune-muziek die meegaat met wat er gebeurt: dag, nacht, achtervolging en stil als je binnen bent. Effecten, muziek en volume
+  apart in de instellingen van de telefoon.
+- **Gamegevoel**: schermschud, heel even stilstand bij een klap of een buit, eurobiljetten die wegspringen en zwevende bedragen.
 - **Straatbeeld**: Amsterdammertjes en fietsen langs de gracht, bomen langs de stoep, prullenbakken, bootjes in de gracht en het havenkanaal,
   lichtreclame op de Zuidas.

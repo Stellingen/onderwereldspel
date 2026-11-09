@@ -110,7 +110,7 @@ let cur=null;
 function showInside(kind,label,pg){G.pause();closeAll();cur=kind;document.body.classList.add('stad-in');const ib=$s('sdIn');ib.hidden=false;ib.style.setProperty('--c',secOf(pg)[2]);
   $s('sdInK').textContent=kind.phone?'Telefoon':kind.jail?'Je zit vast':'Binnen · '+(M.districtAt(G.P.x,G.P.z));$s('sdInName').textContent=label;
   if(typeof page!=='undefined'&&page===pg&&location.hash==='#'+pg)render();else location.hash='#'+pg;window.scrollTo(0,0);jailBtn()}
-function enter(pl){if(!pl)return;if(G.mission&&G.mission()){tst('Maak eerst je klus af','bad');return}if(G.driving&&G.exitCar)G.exitCar(true);
+function enter(pl){if(!pl)return;if(G.mission&&G.mission()){tst('Maak eerst je klus af','bad');return}if(G.police&&G.police.active()&&pl.page!=='jail'){tst('Niet nu: de politie zit achter je aan','bad');return}if(G.driving&&G.exitCar)G.exitCar(true);
   // Café Het Gat: het klussenbord van de Pixelstad (missies), niet het scherm van het klikspel
   if(pl.page==='crimes'&&G.openBoard){G.openBoard();return}
   // Notaris De Sleutel: het vastgoedmenu (al je woningen en zaken)

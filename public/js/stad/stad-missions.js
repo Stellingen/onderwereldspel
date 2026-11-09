@@ -100,7 +100,7 @@ function build(c){const k=kindOf(c),ch=typeof chance==='function'?chance(c):50,D
   return m}
 /* ---------- starten, slagen, mislukken ---------- */
 function canStart(c){if(typeof inJail==='function'&&inJail())return 'Je zit vast';if(cdLeftMs(c))return 'Nog even wachten';if(rankIdx(S.xp)<c.r)return 'Vanaf '+RANKS[c.r][0];
-  if(typeof arBanLeft==='function'&&arBanLeft(c))return typeof arBanMsg==='function'?arBanMsg(c):'Even niet';if(S.energy<crEn(c))return 'Te moe: '+crEn(c)+' energie nodig';if(S.pendingGame||S.pendingLock||window.__chase)return 'Er loopt al iets';if(MS)return 'Je bent al bezig';return ''}
+  if(typeof arBanLeft==='function'&&arBanLeft(c))return typeof arBanMsg==='function'?arBanMsg(c):'Even niet';if(S.energy<crEn(c))return 'Te moe: '+crEn(c)+' energie nodig';if(S.pendingGame||S.pendingLock||window.__chase)return 'Er loopt al iets';if(G.police&&G.police.active())return 'Schud eerst de politie af';if(MS)return 'Je bent al bezig';return ''}
 const cdLeftMs=c=>{try{return cdLeft(c.id)}catch(e){return 0}};
 function start(c){const why=canStart(c);if(why){G.toast(why,'bad');return}
   S.energy-=crEn(c);S.cd[c.id]=now()+crimeCd(c);S.pendingGame={id:c.id,t:now()};save();

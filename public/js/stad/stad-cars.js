@@ -44,7 +44,7 @@ function startTurn(c){const B=c.B,opts=B.n.filter(n=>n!==c.A),C=opts.length?pick
 function busy(node,self){return TRAF.some(o=>o!==self&&o.mode==='turn'&&o.node===node)}
 function blockedAhead(c){const fx=Math.sin(c.ry),fz=Math.cos(c.ry);const chk=(x,z,r)=>{const dx=x-c.x,dz=z-c.z,ahead=dx*fx+dz*fz,side=Math.abs(dx*fz-dz*fx);return ahead>0&&ahead<r&&side<1.6};
   if(!G.driving&&chk(G.P.x,G.P.z,5.5))return true;if(G.driving&&G.car&&chk(G.car.x,G.car.z,7))return true;return TRAF.some(o=>o!==c&&chk(o.x,o.z,6.5))}
-function trafficStep(c,dt){if(c.chase)return chaseStep(c,dt);
+function trafficStep(c,dt){if(c.chase)return G.policeCarStep?G.policeCarStep(c,dt):chaseStep(c,dt);
   const stop=blockedAhead(c);c.v+=((stop?0:c.max)-c.v)*Math.min(1,dt*(stop?6:1.5));
   if(c.mode==='edge'){const [a,b]=edgePts(c),L=Math.hypot(b.x-a.x,b.z-a.z)||1;c.t+=c.v*dt/L;
     if(c.t>=1){if(busy(c.B,c)){c.t=1;c.v=0}else startTurn(c)}}
@@ -78,12 +78,11 @@ function endChase(silent){TRAF.forEach(c=>{if(c.chase){c.chase=false;c.cop=null;
   for(let i=TRAF.filter(c=>c.police).length;i<2;i++)spawnCar(true,true);cool=silent?45:30;lostT=0;hud()}
 // gezocht (of alarm tijdens een missie): politie komt eraan
 function wantedLevel(){const w=S.wanted;if(!w)return 0;return typeof w==='object'?(w.lv||1):1}
-function policeTick(dt){const mis=G.mission&&G.mission(),hot=(wantedLevel()>0&&!mis)||(mis&&mis.alarm);if(cool>0)cool-=dt;
-  if(hot&&cool<=0){const want=Math.min(3,1+(mis?1:wantedLevel()));let ch=chasers();
-    if(ch.length<want){const pol=TRAF.find(c=>c.police&&!c.chase&&Math.hypot(c.x-G.P.x,c.z-G.P.z)<110);if(pol){pol.chase=true;G.toast&&G.toast('De politie heeft je gezien!','bad')}else if(ch.length<want){const c=spawnCar(true,true);c.chase=true}}
-    ch=chasers();const far=ch.every(c=>Math.hypot(c.x-G.P.x,c.z-G.P.z)>95)&&COPS.every(a=>Math.hypot(a.x-G.P.x,a.z-G.P.z)>45);
-    if(ch.length&&far){lostT+=dt;if(lostT>8){G.toast&&G.toast('Je bent de politie kwijt','ok');endChase(false)}}else lostT=0}
-  else if(!hot&&chasers().length)endChase(true)}
+function policeTick(dt){if(cool>0)cool-=dt;if(!G.police||G.police.active()||cool>0)return;
+  // gezocht (klikspel): ziet een patrouillewagen je, dan begint de achtervolging (stad-police.js)
+  if(wantedLevel()>0&&!(G.mission&&G.mission())&&!G.hidden){const pol=TRAF.find(c=>c.police&&!c.chase&&Math.hypot(c.x-G.P.x,c.z-G.P.z)<26&&G.los&&G.los(c,G.P));
+    if(pol){G.police.start({stars:Math.min(3,wantedLevel()),why:'gezocht',wanted:1,car:pol});G.toast&&G.toast('Een politieauto herkent je!','bad');cool=20}}}
+G.traf={spawn:(pol,near)=>spawnCar(pol,near),remove:c=>{G.scene().remove(c.mesh);const i=TRAF.indexOf(c);if(i>=0)TRAF.splice(i,1);if(c.police&&TRAF.filter(o=>o.police&&!o.chase).length<3)spawnCar(true,true)},carMesh,list:TRAF};
 /* ---------- je eigen auto ---------- */
 function myCars(){try{return (S.cars||[]).map((c,i)=>({c,i})).filter(o=>o.c&&o.c.id)}catch(e){return[]}}
 function bestCar(){const L=myCars();if(!L.length)return null;let pref=-1;try{pref=+localStorage.getItem('stad_carIdx')}catch(e){}const f=L.find(o=>o.i===pref);if(f)return f;return L.slice().sort((a,b)=>(b.c.v||0)-(a.c.v||0))[0]}
@@ -97,7 +96,7 @@ function spawnMine(x,z,ry){const d=myCarObj();if(!d){mine=null;return}if(mine)G.
 function savePos(){if(!mine)return;try{localStorage.setItem('stad_carpos',JSON.stringify({x:+mine.x.toFixed(1),z:+mine.z.toFixed(1),ry:+mine.ry.toFixed(2),id:mine.d.o.c.id}))}catch(e){}}
 function roadNear(x,z){let best=null,bd=1e9;N.forEach(A=>A.n.forEach(B=>{const d=dirOf(A,B),[a,b]=[pOut(A,d),pIn(B,d)];const vx=b.x-a.x,vz=b.z-a.z,L2=vx*vx+vz*vz||1;let t=((x-a.x)*vx+(z-a.z)*vz)/L2;t=Math.max(0,Math.min(1,t));const px=a.x+vx*t,pz=a.z+vz*t,dd=Math.hypot(px-x,pz-z);if(dd<bd){bd=dd;best={x:px,z:pz,ry:Math.atan2(d.x,d.z)}}}));return best}
 G.bringCar=function(){const d=myCarObj();if(!d){G.toast&&G.toast("Je hebt nog geen auto. Steel er een via Auto's.",'bad');return}const r=roadNear(G.P.x,G.P.z);if(!r)return;spawnMine(r.x,r.z,r.ry);G.toast&&G.toast('Je '+d.name+' staat op je te wachten','ok')};
-function enterCar(){if(!mine||G.driving)return;if(G.mission&&G.mission()&&['hold','lift','beg'].includes((G.mission().steps[G.mission().i]||{}).t)&&false)return;G.driving=true;G.stopPath&&G.stopPath();G.distT=Math.max(G.distT,56);hud()}
+function enterCar(){if(!mine||G.driving)return;G.snd&&G.snd.fx('carDoor');if(G.hidden&&G.unhide)G.unhide();if(G.mission&&G.mission()&&['hold','lift','beg'].includes((G.mission().steps[G.mission().i]||{}).t)&&false)return;G.driving=true;G.stopPath&&G.stopPath();G.distT=Math.max(G.distT,56);hud()}
 function exitCar(quiet){if(!G.driving||!mine)return;G.driving=false;const s=Math.cos(mine.ry),c=-Math.sin(mine.ry);const p=M.nearestWalk(mine.x+s*2.2,mine.z+c*2.2,6)||M.nearestWalk(mine.x,mine.z,8);if(p){G.P.x=p.x;G.P.z=p.z}G.P.vx=G.P.vz=0;mine.v=0;G.distT=46;savePos();hud()}
 G.exitCar=exitCar;
 function driveStep(dt){const K=G.K,c=mine;let thr=0,steer=0;
@@ -117,13 +116,14 @@ function driveStep(dt){const K=G.K,c=mine;let thr=0,steer=0;
   // camera achter de auto, tenzij je zelf net hebt gedraaid
   if(Math.abs(c.v)>3&&performance.now()-(G.manualRotT||0)>1500){let want=c.ry+Math.PI-G.yawT;while(want>Math.PI)want-=Math.PI*2;while(want<-Math.PI)want+=Math.PI*2;G.yawT+=want*Math.min(1,dt*1.6)}}
 G.carStep=function(dt){if(!TRAF.length)for(let i=0;i<26;i++)spawnCar(i<3,false);
-  TRAF.slice().forEach(c=>trafficStep(c,dt));COPS.forEach(a=>copStep(a,dt));policeTick(dt);
+  TRAF.slice().forEach(c=>trafficStep(c,dt));policeTick(dt);
   // zwaailichten
   const fl=Math.floor(performance.now()/180)%2;TRAF.forEach(c=>{const b=c.mesh.userData.bar;if(b){const on=c.chase||G.night>.5;b[0].visible=on?fl===0:true;b[1].visible=on?fl===1:true}});
   if(G.driving&&mine)driveStep(dt);
   // instappen
   const nearMine=mine&&!G.driving&&Math.hypot(G.P.x-mine.x,G.P.z-mine.z)<3.4;if(nearMine!==G.nearCar){G.nearCar=nearMine;hud()}
   if(G.driving&&mine)$s('sdSpdV').textContent=Math.round(Math.abs(mine.v)*3.6);
+  if(G.snd)G.snd.engine(G.driving&&mine?mine.v:null);
   hudT+=dt;if(hudT>.5){hudT=0;hudPol()}};
 let hudT=0;
 /* ---------- knoppen en snelheidsmeter ---------- */
@@ -131,7 +131,7 @@ const ui=document.createElement('div');ui.id='sdCarUi';document.body.appendChild
 ui.innerHTML=`<button class="sd-carp" id="sdCarP" hidden></button><div class="sd-spd" id="sdSpd" hidden><b id="sdSpdV">0</b><small>km/u</small><span id="sdSpdN"></span><button id="sdOutCar">${touch?'Uitstappen':'<kbd>F</kbd> Uitstappen'}</button></div><div class="sd-pol" id="sdPol" hidden>Politie zit achter je</div>`;
 function hud(){const p=$s('sdCarP');p.hidden=!G.nearCar||G.driving;if(!p.hidden)p.innerHTML=(touch?'':'<kbd>F</kbd> ')+'Instappen · <b>'+(mine?mine.d.name:'')+'</b>';
   $s('sdSpd').hidden=!G.driving;if(G.driving&&mine)$s('sdSpdN').textContent=mine.d.name;document.body.classList.toggle('stad-drive',!!G.driving)}
-function hudPol(){const on=chasers().length>0||COPS.length>0;$s('sdPol').hidden=!on}
+function hudPol(){$s('sdPol').hidden=true}
 $s('sdCarP').onclick=enterCar;$s('sdOutCar').onclick=()=>exitCar();
 addEventListener('keydown',e=>{if(G.paused||e.repeat)return;const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;if(e.key.toLowerCase()==='f'){if(!G.driving&&G.missionAction&&G.missionAction())return;if(G.driving){exitCar();e.stopImmediatePropagation()}else if(G.nearCar&&!(G.near)){enterCar();e.stopImmediatePropagation()}}},true);
 // opstarten: je auto staat waar je hem liet, anders bij het plein

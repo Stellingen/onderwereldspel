@@ -65,9 +65,9 @@ function build(){const d=spec(),g=new TH.Group(),P={};const top=d.top,tk=top.kin
 let av=null;
 function ensure(){let k='';try{k=JSON.stringify(spec())}catch(e){}if(av&&av.key===k)return;const sc=G.scene();if(av)sc.remove(av.g);av=build();sc.add(av.g)}
 G.avatarSync=ensure;
-G.avatarPose=function(h){if(!av)ensure();if(!av)return;const g=av.g,P=av.P;g.visible=!h.hide;g.position.set(h.x,(h.y||0),h.z);g.rotation.y=h.ry;
+G.avatarPose=function(h){if(!av)ensure();if(!av)return;const g=av.g,P=av.P;g.visible=!h.hide;g.position.set(h.x,(h.y||0)-(h.crouch?.55:0),h.z);g.rotation.y=h.ry;g.scale.y=h.crouch?.8:1;
   const sw=Math.sin(h.ph)*.75*Math.min(1,h.sp),bob=Math.abs(Math.cos(h.ph))*.06*Math.min(1,h.sp);
-  P.legL.rotation.x=sw;P.legR.rotation.x=-sw;P.armL.rotation.x=-sw*.8+(h.arm||0);P.armR.rotation.x=sw*.8+(h.arm||0);P.torso.rotation.x=h.lean||0;
+  P.legL.rotation.x=sw;P.legR.rotation.x=-sw;P.armL.rotation.x=-sw*.8+(h.arm||0);P.armR.rotation.x=sw*.8+(h.arm||0)+(h.crouch?-1.2:0);P.torso.rotation.x=h.lean||0;
   g.children[0].position.y=bob;P.head.rotation.y=Math.sin(h.ph*.5)*.04*Math.min(1,h.sp)};
 setInterval(()=>{if(G.ready&&!G.paused)ensure()},2000);
 })();
