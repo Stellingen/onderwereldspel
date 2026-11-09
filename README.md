@@ -1234,3 +1234,30 @@ geen route. Het ontsnapspel heeft nu vier fases (`jailbreak.js`, rekenwerk in `j
 Getest met een bot (`jbGangSafeFor` = wachten tot het veilig is): 100% ontsnapt op makkelijk en midden, ±95% op
 "Bijna onmogelijk" (de rest: tijd op). Altijd doorlopen wordt bijna altijd gepakt; een speler die alleen op "kijkt weg"
 let, haalt het op zwaar ongeveer de helft van de keren. De voorpagina toont dezelfde gang live (lp-home.js).
+
+## Pixelstad: het open-wereld-spel (beta, november 2026)
+
+Een tweede manier van spelen naast het klikspel, alleen voor VIP en High roller (en beheerders). Op `/stad` loop je zelf door
+een stad van blokjes in pixelstijl. Ga je een gebouw binnen, dan opent daar het gewone scherm van het klikspel (casino, bank,
+klussen, enzovoort). Account, voortgang en opslag zijn precies dezelfde: `/stad` laadt dezelfde spelcode als `/game` (de lijst
+met scripts en stijlen wordt uit `/game` gelezen) en tekent de stad eromheen. Het klikspel zelf is niet veranderd.
+
+- **Ingang**: na het inloggen krijgen VIP en High roller één keer per sessie de keuze Klikspel of Pixelstad (met "onthoud mijn
+  keuze"), plus een vaste link in het menu en in het Meer-menu op de telefoon (`js/stad-entry.js`, doet niets voor gewone spelers).
+  Gewone spelers die `/stad` openen zien een uitleg met de weg naar het lidmaatschap.
+- **De stad** (`js/stad/stad-map.js`, puur rekenwerk): 384 × 264 meter met Westbuurt, Centrum, De Gracht, Het Plein, Zuidas, De Haven,
+  Boulevard en strand, Villapark en De Bajes. 16 gebouwen met een ingang, elk gekoppeld aan een scherm van het klikspel:
+  Casino Royaal, Nederlandsche Onderbank, Politiebureau, Makelaardij, Café Het Gat (klussen), Wasserette (witwassen), Het Contact
+  (huurmoorden), Wapenhandel, Garage (auto's), Havenloods (werk), Sportschool, Spa, Kledingzaak, Jouw woning, Familievilla en De Bajes.
+  Routes gaan met A* over een raster van 1 meter (liever over de stoep dan over de weg).
+- **Tekenen** (`js/stad/stad-gfx.js`, `js/stad/stad-game.js`, three.js 0.185.1 in `public/stad/vendor`): alle texturen zijn in code
+  getekende pixel-art. De stad is één model (~33.000 driehoeken). Het beeld wordt op ongeveer 360 pixels hoogte getekend en zonder vervaging
+  opgeschaald, met nabewerking: contourlijnen, gloed van ramen en neon, iets meer contrast en beperkte kleurdiepte met dither.
+  Dag en nacht volgen de echte tijd in Nederland (instelbaar). 's Nachts branden ramen, neon en lantaarns.
+- **Besturing**: WASD of pijltjes, Shift rennen, Spatie naar binnen, Q en E draaien, scrollen zoomt, klikken op een gebouw of de kaart
+  = erheen lopen, J telefoon, M kaart, Esc terug. Op de telefoon een stick, een renknop, vegen en knijpen.
+- **Telefoon (J)**: saldo, laatste berichten en apps voor alles wat online kan (overzicht, profiel, ranglijst, lidmaatschap, bank,
+  wapens, kleding, familie, opdrachten). Klussen, casino en auto's doe je ter plekke: die apps zetten de route uit. Ook: kaart,
+  instellingen (beeld, huidskleur, tijd) en terug naar het klikspel.
+- **Bajes**: zit je vast, dan sta je binnen in De Bajes tot je vrij bent; daarna kom je buiten de poort uit.
+- **Nog niet** (volgende stappen): je eigen panden die zichtbaar groeien, auto's rijden en verkeer, politie op straat.

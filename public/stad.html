@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#08090b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>{{TITLE}}</title>
+<meta name="robots" content="noindex">
+<script>try{window.BRAND=JSON.parse('{{BRAND_JSON}}')}catch(e){}</script>
+<style>html,body{margin:0;background:#08090b;color:#e8e4da;font-family:system-ui,sans-serif}.boot{position:fixed;inset:0;display:grid;place-items:center;background:#08090b;z-index:80;font-weight:800;font-size:28px;letter-spacing:.1em;color:#f2c230}
+.sd-gate{max-width:420px;padding:24px;text-align:center;letter-spacing:0;font-size:16px;color:#e8e4da;display:flex;flex-direction:column;gap:10px;align-items:center}.sd-gate>span{color:#f2c230;letter-spacing:.2em;font-size:13px}.sd-gate b{font-size:24px}.sd-gate p{opacity:.8;line-height:1.5;margin:0}
+.sd-gate-b{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px}.sd-gate-b a{padding:12px 16px;background:#f2c230;color:#111;text-decoration:none;font-weight:700}.sd-gate-b a+a{background:transparent;color:#e8e4da;border:2px solid #3a3d44}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Big+Shoulders+Text:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+</head>
+<!-- Pixelstad: het open-wereld-spel voor VIP en High roller. Losse pagina naast het klikspel (/game), zelfde account en voortgang.
+     Het laadt precies dezelfde spelcode als /game (lijst wordt uit /game gelezen) en tekent daar de stad omheen. -->
+<body class="stad">
+<script src="/js/notap.js"></script>
+<div class="boot" id="boot"><span>PIXELSTAD</span></div>
+<div id="stadWorld"></div>
+<div class="app">
+  <nav class="side" id="nav"></nav>
+  <main>
+    <div class="topbar" id="topbar"></div>
+    <section id="view"></section>
+  </main>
+  <aside class="rail" id="rail" aria-label="Overzicht"></aside>
+</div>
+<div id="toasts" aria-live="polite"></div>
+<div id="modal" hidden><div class="modalbox" role="alertdialog" aria-labelledby="modalT"><div class="siren"></div><h2 id="modalT"></h2><p id="modalM"></p><div id="modalB"></div></div></div>
+
+<script>
+(async function(){
+  const boot=document.getElementById('boot');
+  const fail=(t,html)=>{boot.innerHTML='<div class="sd-gate"><span>PIXELSTAD</span><b></b><p></p>'+(html||'')+'</div>';boot.querySelector('b').textContent=t[0];boot.querySelector('p').textContent=t[1]};
+  let token=null;try{token=localStorage.getItem('ow_token')}catch(e){}
+  if(!token){location.replace('/?login=1');return}
+  const h={Authorization:'Bearer '+token};
+  try{
+    const me=await fetch('/api/me',{headers:h});
+    if(me.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/?login=1&verlopen=1');return}
+    if(me.status===403){location.replace('/game');return}
+    if(!me.ok)throw new Error('me');
+    const mj=await me.json();
+    window.__TOKEN__=token;window.__USER__=mj.username;window.__SINCE__=mj.since||null;window.__REDEEMED__=mj.redeemed||[];
+    window.__TIER__=mj.tier!=null?+mj.tier:null;window.__ADMIN__=!!mj.admin;window.__PUB__=!!mj.pub;
+    const tier=window.__TIER__!=null?window.__TIER__:((mj.redeemed||[]).includes('vip')?1:0);
+    // alleen VIP en High roller (en beheerders)
+    if(tier<1&&!window.__ADMIN__){fail(['Alleen voor VIP en High roller','De Pixelstad is het open-wereld-spel van Onderwereld: je loopt zelf door de stad en gaat gebouwen binnen. Word VIP of High roller om mee te spelen.'],
+      '<div class="sd-gate-b"><a class="btn" href="/game#lid">Bekijk lidmaatschap</a><a class="btn ghost" href="/game">Naar het klikspel</a></div>');return}
+    const sid=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');window.__SID__=sid;
+    const st=await fetch('/api/state?sid='+sid,{headers:h});
+    if(st.ok){const j=await st.json();window.__SERVER_REV__=j.rev||0;if(j&&j.state)window.__SERVER_STATE__=j.state}
+  }catch(e){fail(['Geen verbinding','De Pixelstad kan alleen online. Probeer het zo opnieuw.'],'<div class="sd-gate-b"><a class="btn" href="/stad">Opnieuw</a><a class="btn ghost" href="/game">Naar het klikspel</a></div>');return}
+  try{const vr=await fetch('/api/version',{cache:'no-store'});if(vr.ok)window.__VER__=(await vr.json()).v||''}catch(e){}
+  const V=window.__VER__?'?v='+window.__VER__:'';
+  // dezelfde stijlen en scripts als het klikspel: rechtstreeks uit /game, zodat de pixelstad altijd gelijk loopt
+  let files=null,css=[];
+  try{const g=await (await fetch('/game',{cache:'no-store'})).text();const m=g.match(/const files=(\[[\s\S]*?\]);/);if(m)files=JSON.parse(m[1].replace(/'/g,'"'));
+    css=[...g.matchAll(/<link rel="stylesheet" href="(css\/[^"]+)">/g)].map(x=>x[1])}catch(e){}
+  if(!files||!files.length){fail(['Laden mislukt','Ververs de pagina om het opnieuw te proberen.']);return}
+  css.push('css/stad.css');
+  await Promise.all(css.map(f=>new Promise(res=>{const l=document.createElement('link');l.rel='stylesheet';l.href='/'+f+V;l.onload=l.onerror=res;document.head.appendChild(l)})));
+  for(const f of files){await new Promise(res=>{const s=document.createElement('script');s.src='/'+f+V;s.onload=res;s.onerror=res;document.body.appendChild(s)})}
+  if(window.__TOKEN__&&!window.__SERVER_STATE__&&typeof pushState==='function')pushState();
+  try{window.THREE=await import('/stad/vendor/three.module.min.js')}catch(e){fail(['Je browser kan dit niet tekenen','De Pixelstad heeft WebGL nodig. Speel verder in het klikspel.'],'<div class="sd-gate-b"><a class="btn" href="/game">Naar het klikspel</a></div>');return}
+  for(const f of ['js/stad/stad-map.js','js/stad/stad-gfx.js','js/stad/stad-game.js','js/stad/stad-ui.js']){await new Promise(res=>{const s=document.createElement('script');s.src='/'+f+V;s.onload=res;s.onerror=res;document.body.appendChild(s)})}
+  try{STAD.init(document.getElementById('stadWorld'))}catch(e){console.error(e);fail(['Je browser kan dit niet tekenen','De Pixelstad heeft WebGL nodig. Speel verder in het klikspel.'],'<div class="sd-gate-b"><a class="btn" href="/game">Naar het klikspel</a></div>');return}
+  boot.remove();
+})();
+</script>
+</body>
+</html>
