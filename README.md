@@ -1279,4 +1279,19 @@ met scripts en stijlen wordt uit `/game` gelezen) en tekent de stad eromheen. He
 - **Jouw poppetje** (`js/stad/stad-avatar.js`): precies je outfit uit het spel: pak met das en revers, hoodie met capuchon, trainingspak met
   strepen, jurk, pet, hoed, muts, bivakmuts, sneakers met zool, laarzen, ketting, das, koptelefoon, horloge, handschoenen en een gouden grill.
 - **Doorkijk**: staat er een gebouw tussen de camera en jou, dan wordt er een rond gat in getekend zodat je jezelf altijd ziet.
-- **Nog niet** (volgende stappen): buitenwijken met kavels voor je woning, bedrijventerrein, auto's rijden en verkeer.
+- **Oostkant en woonkavels**: de kaart is 576 × 360 meter. Over het havenkanaal (drie havenbruggen) liggen de IJ-oever (penthouses aan het
+  water), het bedrijventerrein (bedrijfshallen, chop shop, autogarage en autodealer), Villawijk Duinzicht en de Tuinwijk. Woningen staan op
+  kavels die bij hun soort passen: kraakpanden in De Haven, de woonboot in de gracht, rijtjeshuizen in de Westbuurt en de Tuinwijk,
+  grachtenpanden aan de gracht, penthouses aan de IJ-oever en villa's in de villawijk; onder de brug is een vaste plek. Een lege kavel heeft
+  bomen, paaltjes en een groen bord. Het kavelscherm verkoopt de woning met dezelfde aankoop als het klikspel (act.buyHouse/rentHouse,
+  de grond zit in de prijs) en bouwt hem op die kavel; ook hier gaan wonen, naar binnen, verplaatsen en verkopen. Welke woning op welke
+  kavel staat: S.stadPlots. Woningen zonder kavel (bijvoorbeeld gekocht in het klikspel) krijgen vanzelf een vrije kavel van hun soort.
+- **Auto's** (`js/stad/stad-cars.js`): verkeer rijdt rechts over het wegennet (kruisingen en bochten, wacht op elkaar en op jou). Je eigen auto
+  uit je garage (S.cars, de duurste of de laatst gekozen) staat waar je hem liet; 'Mijn auto' op je telefoon brengt hem naar de dichtstbijzijnde
+  weg. F (of de knop) is in- en uitstappen. Rijden: W/S gas en rem, A/D sturen, op de telefoon de stick als stuur. Topsnelheid hangt af van de
+  klasse van de auto. De camera draait mee achter de auto.
+- **Politie op straat**: politieauto's rijden mee in het verkeer. Ben je gezocht (of gaat er tijdens een missie een alarm af), dan gaan ze achter je aan.
+  Te voet stapt er een agent uit die je achterna rent; in de auto ben je gepakt als je naast een politieauto stil komt te staan. Gepakt = dezelfde
+  politiecontrole als het klikspel (policeRaid), tijdens een missie = missie mislukt. Ben je ze een tijdje kwijt (ver weg), dan haken ze af.
+- **Straatbeeld**: Amsterdammertjes en fietsen langs de gracht, bomen langs de stoep, prullenbakken, bootjes in de gracht en het havenkanaal,
+  lichtreclame op de Zuidas.

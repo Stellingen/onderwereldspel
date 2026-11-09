@@ -20,11 +20,12 @@ const rect=(cx,x,y,w,h,c)=>{cx.fillStyle=css(c);cx.fillRect(x,y,w,h)};
 // tegel in uv-ruimte (de textuur wordt omgedraaid: uv v=0 is de onderkant van het plaatje)
 const tileUV=(x,y,w,h)=>[x/AS,1-(y+h)/AS,w/AS,h/AS];
 // kleurvlakjes (8×8) voor de rest van de spullen
-const SW={};let swN=0;
+const SW={};let swN=0,ATEX=null,LTEX=null;
 function swatch(c,glow,noise){const key=c+'|'+(glow||'')+'|'+(noise==null?6:noise);if(SW[key])return SW[key];
   const i=swN++,x=(i%64)*8,y=448+Math.floor(i/64)*8,b=hex(c),nz=noise==null?6:noise;
   for(let a=0;a<8;a++)for(let d=0;d<8;d++){const n=(hash(x+d,y+a,7)-.5)*nz*2;px(A,x+d,y+a,[b[0]+n,b[1]+n,b[2]+n])}
   if(glow)rect(L,x,y,8,8,hex(glow));
+  if(ATEX){ATEX.needsUpdate=true;LTEX.needsUpdate=true}
   return SW[key]=tileUV(x+1,y+1,6,6)}
 // gevelstijlen: muur, voeg/schaduw, kozijn, glas, soort begane grond, dak
 const STY={
@@ -143,8 +144,14 @@ function groundCanvas(){
   const zebraV=(x,z)=>{for(let k=-M.RW+1;k<M.RW;k+=1)cx.fillRect((x+k)*GP,z*GP,GP-2,GP*2)};
   const zebraH=(x,z)=>{for(let k=-M.RW+1;k<M.RW;k+=1)cx.fillRect(x*GP,(z+k)*GP,GP*2,GP-2)};
   M.RX.forEach(x=>M.RZ.forEach(z=>{zebraV(x,z-M.RW-2);zebraV(x,z+M.RW);if(x>M.RX[0])zebraH(x-M.RW-2,z);zebraH(x+M.RW,z)}));
+  // oostkant: zelfde markering
+  const inXE=x=>M.RXE.some(q=>Math.abs(q-x)<=M.RW+M.SW),inZE=z=>M.RZE.some(q=>Math.abs(q-z)<=M.RW+M.SW);
+  M.RXE.forEach(x=>{for(let z=M.RZE[0];z<M.RZE[4];z++){if(inZE(z)||[88,140,192].some(q=>Math.abs(q-z)<=M.RW+M.SW))continue;if(Math.floor(z/2)%2===0)cx.fillRect(x*GP-1,z*GP,2,GP)}});
+  M.RZE.forEach(z=>{for(let x=M.RXE[0];x<M.RXE[2];x++){if(inXE(x))continue;if(Math.floor(x/2)%2===0)cx.fillRect(x*GP,z*GP-1,GP,2)}});
+  [88,140,192].forEach(z=>{for(let x=312;x<M.RXE[0]-M.RW;x++){if(Math.floor(x/2)%2===0)cx.fillRect(x*GP,z*GP-1,GP,2)}});
+  M.RXE.forEach(x=>M.RZE.forEach(z=>{zebraV(x,z-M.RW-2);zebraV(x,z+M.RW);zebraH(x-M.RW-2,z);if(x<M.RXE[2])zebraH(x+M.RW,z)}));
   // kade-rand: gele lijn langs het havenwater
-  cx.fillStyle='#d8b23a';for(let z=6;z<200;z++)for(let x=300;x<378;x++){if(G[z*W+x]===T.DOCK&&(G[z*W+x+1]===T.WATER||G[(z+1)*W+x]===T.WATER||G[(z-1)*W+x]===T.WATER))cx.fillRect(x*GP,z*GP,GP,GP)}
+  cx.fillStyle='#d8b23a';for(let z=6;z<H-1;z++)for(let x=300;x<W-1;x++){if(G[z*W+x]===T.DOCK&&(G[z*W+x+1]===T.WATER||G[(z+1)*W+x]===T.WATER||G[(z-1)*W+x]===T.WATER))cx.fillRect(x*GP,z*GP,GP,GP)}
   // stoeprand: lichte rand op de stoep, donkere goot op de weg
   const R=t=>t===T.ROAD,Wk=t=>t===T.WALK||t===T.PLAZA;
   for(let z=1;z<H-1;z++)for(let x=1;x<W-1;x++){const t=G[z*W+x];if(!Wk(t))continue;
@@ -160,8 +167,9 @@ function groundCanvas(){
   const soft=(x0,z0,x1,z1,n)=>{for(let k=n;k>=1;k--){cx.fillStyle=`rgba(0,0,0,${.07})`;cx.fillRect(x0*GP-k,z0*GP-k,(x1-x0)*GP+2*k,(z1-z0)*GP+2*k)}};
   M.buildings.forEach(b=>soft(b.x0,b.z0,b.x1,b.z1,6));M.props.forEach(p=>{if(p.k==='wall')soft(p.x0,p.z0,p.x1,p.z1,4);if(p.k==='container')soft(p.x-(p.rot?1.5:3.5),p.z-(p.rot?3.5:1.5),p.x+(p.rot?1.5:3.5),p.z+(p.rot?3.5:1.5),3);if(p.k==='hedge')soft(p.x-1,p.z-1,p.x+1,p.z+1,2)});
   // lege kavels: grind met een betonrand (wordt bebouwd als je de zaak koopt)
-  M.places.forEach(p=>{if(!p.rect)return;const r=p.rect;for(let Y=r.z0*GP;Y<r.z1*GP;Y++)for(let X=r.x0*GP;X<r.x1*GP;X++){const n=hash(X,Y,21);cx.fillStyle=n<.08?'#4a3e30':n>.9?'#8a7a62':'#6b5c48';cx.fillRect(X,Y,1,1)}
+  M.places.forEach(p=>{if(!p.rect||p.dyn==='plot')return;const r=p.rect;for(let Y=r.z0*GP;Y<r.z1*GP;Y++)for(let X=r.x0*GP;X<r.x1*GP;X++){const n=hash(X,Y,21);cx.fillStyle=n<.08?'#4a3e30':n>.9?'#8a7a62':'#6b5c48';cx.fillRect(X,Y,1,1)}
     cx.strokeStyle='#9a968c';cx.lineWidth=2;cx.strokeRect(r.x0*GP+1,r.z0*GP+1,(r.x1-r.x0)*GP-2,(r.z1-r.z0)*GP-2)});
+  M.places.forEach(p=>{if(p.dyn!=='plot'||p.zone==='boot'||p.zone==='brug')return;const r=p.rect;cx.fillStyle='#8a6a42';for(let x=r.x0*GP;x<r.x1*GP;x+=3){cx.fillRect(x,r.z0*GP,2,1);cx.fillRect(x,r.z1*GP-1,2,1)}for(let z=r.z0*GP;z<r.z1*GP;z+=3){cx.fillRect(r.x0*GP,z,1,2);cx.fillRect(r.x1*GP-1,z,1,2)}});
   // tuinpaden in het park
   cx.fillStyle=css(C.path);[[6,114,23,116],[37,62,73,64],[54,43,56,81],[123,17,185,19],[150,6,152,29],[6,17,46,19]].forEach(([a,b,c,e])=>cx.fillRect(a*GP,b*GP,(c-a)*GP,(e-b)*GP));
   // parkeervakken voor het politiebureau, plein-cirkel
@@ -199,7 +207,7 @@ GB.prototype.mesh=function(mat){const g=new TH.BufferGeometry();g.setAttribute('
 
 // materiaal: textuuratlas met tegels die zich herhalen, plus 's nachts verlichte ramen
 const U={uNight:{value:0},uLit:{value:null},uPS:{value:new TH.Vector2(-999,-999)},uPZ:{value:0},uCutR:{value:0}};
-function atlasMat(tex,litTex){const m=new TH.MeshLambertMaterial({map:tex});U.uLit.value=litTex;
+function atlasMat(tex,litTex){const m=new TH.MeshLambertMaterial({map:tex});U.uLit.value=litTex;ATEX=tex;LTEX=litTex;
   m.onBeforeCompile=sh=>{sh.uniforms.uNight=U.uNight;sh.uniforms.uLit=U.uLit;sh.uniforms.uPS=U.uPS;sh.uniforms.uPZ=U.uPZ;sh.uniforms.uCutR=U.uCutR;
     sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute vec4 aTile;\nvarying vec4 vTile;\nvarying vec2 vAo;').replace('#include <uv_vertex>','#include <uv_vertex>\nvTile=aTile;').replace('#include <common>','#include <common>\nvarying float vVZ;').replace('#include <project_vertex>','#include <project_vertex>\nvAo=vec2((modelMatrix*vec4(transformed,1.)).y,abs(normal.y));vVZ=-mvPosition.z;');
     sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec4 vTile;\nvarying vec2 vAo;\nvarying float vVZ;\nuniform sampler2D uLit;\nuniform float uNight;\nuniform vec2 uPS;\nuniform float uPZ,uCutR;')
@@ -275,6 +283,18 @@ function buildCity(){
    case 'statue':{gb.cbox(p.x,p.z,4,4,0,1.2,swatch(PROPC.stone));gb.cbox(p.x,p.z,2.6,2.6,1.2,2.6,swatch('#a89e8a'));const gd=swatch(PROPC.gold,'#3a2a08');
      gb.cbox(p.x,p.z,.9,.6,2.6,4.2,gd);gb.cbox(p.x,p.z,1.2,.7,4.2,5.4,gd);gb.cbox(p.x,p.z,.6,.6,5.4,6.0,gd);gb.box(p.x+.55,4.9,p.z-.2,p.x+.85,6.6,p.z+.2,gd);break}
    case 'hedge':gb.cbox(p.x,p.z,2,2,0,1.6,swatch(PROPC.hedge,null,18));break;
+   case 'bollard':gb.cbox(p.x,p.z,.22,.22,0,.85,swatch('#6a2a20'));gb.cbox(p.x,p.z,.28,.28,.85,.95,swatch('#4a1d16'));break;
+   case 'bin':gb.cbox(p.x,p.z,.6,.6,0,1.0,swatch('#2f5d3a'));gb.cbox(p.x,p.z,.66,.66,1.0,1.08,swatch('#1f3a26'));break;
+   case 'bikes':{const cols=['#c23b2e','#2f5d9a','#1d1d1f','#e8e4da','#3f7a4a'];for(let k=0;k<4;k++){const c=swatch(cols[(k+(p.v||0))%5]),off=(k-1.5)*.7;
+     if(p.rot){gb.box(p.x-.9,.25,p.z+off-.04,p.x+.9,.85,p.z+off+.04,c);gb.cbox(p.x-.7,p.z+off,.5,.1,0,.6,swatch('#1d1d1f'),0);gb.cbox(p.x+.7,p.z+off,.5,.1,0,.6,swatch('#1d1d1f'),0)}
+     else{gb.box(p.x+off-.04,.25,p.z-.9,p.x+off+.04,.85,p.z+.9,c);gb.cbox(p.x+off,p.z-.7,.1,.5,0,.6,swatch('#1d1d1f'));gb.cbox(p.x+off,p.z+.7,.1,.5,0,.6,swatch('#1d1d1f'))}}break}
+   case 'stree':{const s=p.s||1;gb.cbox(p.x,p.z,1.2,1.2,0,.06,swatch('#3a3c40'));gb.cbox(p.x,p.z,.35*s,.35*s,0,2.6*s,swatch(PROPC.trunk));const c=swatch(PROPC.leaf[p.v%3]);gb.cbox(p.x,p.z,2.2*s,2.2*s,2.3*s,3.8*s,c);gb.cbox(p.x,p.z,1.5*s,1.5*s,3.8*s,4.6*s,c);break}
+   case 'boat':{const cols=['#2f5d9a','#c23b2e','#e8e4da','#3f7a4a','#d7a530'],c=swatch(cols[p.v%5]),L=p.l||6,w=2.2;
+     if(p.rot){gb.box(p.x-w/2,-.75,p.z-L/2,p.x+w/2,.05,p.z+L/2,c,{top:swatch('#6a4a2c')});gb.box(p.x-w/2+.3,.05,p.z-L/2+1.2,p.x+w/2-.3,.9,p.z+.4,swatch('#e8e4da'),{top:swatch('#3a3c40')});gb.box(p.x-.6,-.75,p.z+L/2,p.x+.6,-.1,p.z+L/2+.6,c)}
+     else{gb.box(p.x-L/2,-.75,p.z-w/2,p.x+L/2,.05,p.z+w/2,c,{top:swatch('#6a4a2c')});gb.box(p.x-L/2+1.2,.05,p.z-w/2+.3,p.x+.4,.9,p.z+w/2-.3,swatch('#e8e4da'),{top:swatch('#3a3c40')});gb.box(p.x+L/2,-.75,p.z-.6,p.x+L/2+.6,-.1,p.z+.6,c)}break}
+   case 'billboard':{const cols=[['#ff4fd8','#ff4fd8'],['#3ad6ff','#3ad6ff'],['#f2c230','#ffd35a'],['#3fe395','#3fe395']],cc=cols[p.v%4];
+     gb.cbox(p.x-2.5,p.z,.25,.25,p.y,p.y+2.2,swatch('#2a2d32'));gb.cbox(p.x+2.5,p.z,.25,.25,p.y,p.y+2.2,swatch('#2a2d32'));gb.box(p.x-3.4,p.y+2.2,p.z-.15,p.x+3.4,p.y+4.4,p.z+.15,swatch('#1a1c22'));
+     gb.box(p.x-3.1,p.y+2.45,p.z-.2,p.x+3.1,p.y+4.15,p.z+.2,swatch(cc[0],cc[1]));gb.box(p.x-2.4,p.y+3.0,p.z-.24,p.x+1.6,p.y+3.4,p.z+.24,swatch('#111214','#000000'));break}
    case 'wall':gb.box(p.x0,0,p.z0,p.x1,4.2,p.z1,swatch(PROPC.wall,null,10),{top:swatch('#5a5c60')});gb.box(p.x0,4.2,p.z0,p.x1,4.6,p.z1,swatch('#3a3c40'));break;
    case 'tower':{const c=swatch('#7d7f82');gb.cbox(p.x,p.z,3,3,0,8,c);gb.cbox(p.x,p.z,3.8,3.8,8,10,swatch('#4a4c50','#ffe9a8'));gb.cbox(p.x,p.z,4.2,4.2,10,10.4,swatch('#3a3c40'));break}
    case 'gate':{gb.box(p.x-3,0,p.z-.6,p.x+3,4.6,p.z+.6,swatch('#2c2e32'),{});for(let x=p.x-2.6;x<p.x+3;x+=.7)gb.box(x,0,p.z+.6,x+.18,4.4,p.z+.8,swatch('#55585e'));gb.box(p.x-3.4,4.6,p.z-.8,p.x+3.4,5.3,p.z+.8,swatch('#3a3c40'));break}

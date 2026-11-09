@@ -72,7 +72,7 @@ G.init=function(host){
   try{const s=JSON.parse(localStorage.getItem('stad_pos')||'null');if(s&&M.canStand(s.x,s.z)){P.x=s.x;P.z=s.z;P.ry=s.ry||0;G.yaw=G.yawT=s.yaw||0}}catch(e){}
   P.look=playerLook();
   applyLight();resize();addEventListener('resize',resize);
-  input();G.ready=true;G.resume();
+  input();G.ready=true;if(G.carsInit)try{G.carsInit()}catch(e){console.error(e)}G.resume();
   setInterval(()=>{if(!G.paused){applyLight();P.look=playerLook()}},20000);
   setInterval(savePos,4000);
 };
@@ -136,7 +136,7 @@ function npcStep(n,dt){
   if(!sidewalk(ax,az)||n.turn<0){const opts=DIRS.filter(([a,b])=>!(a===-n.dx&&b===-n.dz)&&sidewalk(n.x+a*1.6,n.z+b*1.6));
     const pick=opts.length?rnd(opts):[-n.dx,-n.dz];n.dx=pick[0];n.dz=pick[1];n.turn=3+Math.random()*8;if(Math.random()<.12)n.stop=1+Math.random()*3}
   // uitwijken voor de speler
-  const px=n.x-P.x,pz=n.z-P.z,pd=Math.hypot(px,pz);let ox=0,oz=0;if(pd<1.1&&pd>.01){ox=px/pd*(1.1-pd)*3;oz=pz/pd*(1.1-pd)*3}
+  const px=n.x-P.x,pz=n.z-P.z,pd=Math.hypot(px,pz),R=G.driving?3.2:1.1;let ox=0,oz=0;if(pd<R&&pd>.01){ox=px/pd*(R-pd)*(G.driving?8:3);oz=pz/pd*(R-pd)*(G.driving?8:3)}
   const nx=n.x+(n.dx*n.v+ox)*dt,nz=n.z+(n.dz*n.v+oz)*dt;if(M.canStand(nx,n.z,.3))n.x=nx;if(M.canStand(n.x,nz,.3))n.z=nz;
   const tr=Math.atan2(n.dx,n.dz);let d=tr-n.ry;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;n.ry+=d*Math.min(1,dt*8);
   n.ph+=dt*n.v*4.2;n.sp=.6;
@@ -150,7 +150,7 @@ function input(){
     if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift',' '].includes(k)){K[k]=1;if(k.startsWith('arrow')||k===' ')e.preventDefault()}
     if(k==='f')K.f=1;
     if(k===' '||k==='f'||k==='enter'){if(G.missionAction&&G.missionAction()){e.preventDefault()}else if(G.near&&!e.repeat){e.preventDefault();G.onEnter&&G.onEnter(G.near)}}
-    if(k==='q'&&!e.repeat)G.yawT+=Math.PI/4;if(k==='e'&&!e.repeat)G.yawT-=Math.PI/4;
+    if(k==='q'&&!e.repeat){G.yawT+=Math.PI/4;G.manualRotT=performance.now()}if(k==='e'&&!e.repeat){G.yawT-=Math.PI/4;G.manualRotT=performance.now()}
     if((k==='+'||k==='=')&&!e.repeat)G.distT=Math.max(16,G.distT-6);if(k==='-'&&!e.repeat)G.distT=Math.min(70,G.distT+6);
     if(k==='j'&&!e.repeat)G.onPhone&&G.onPhone();if(k==='m'&&!e.repeat)G.onMap&&G.onMap();
     if(K.w||K.a||K.s||K.d||K.arrowup||K.arrowdown||K.arrowleft||K.arrowright)stopPath()});
@@ -164,7 +164,7 @@ function input(){
   cv.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(pinch&&pts.size===2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);G.distT=Math.max(16,Math.min(70,pinch.dist*pinch.d/Math.max(20,d)));return}
     if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.x;drag.moved+=Math.abs(dx)+Math.abs(e.clientY-drag.y);drag.x=e.clientX;drag.y=e.clientY;
-    if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>8){G.yawT-=dx*.008;G.yaw=G.yawT}});
+    if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>8){G.yawT-=dx*.008;G.yaw=G.yawT;G.manualRotT=performance.now()}});
   const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch=null;if(!drag||drag.id!==e.pointerId)return;const d=drag;drag=null;
     if(Math.hypot(e.clientX-d.sx,e.clientY-d.sy)<8&&performance.now()-d.t<600&&d.btn===0)click(e.clientX,e.clientY)};
   cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',e=>{pts.delete(e.pointerId);drag=null;pinch=null});
@@ -200,6 +200,9 @@ function draw(){renderer.setRenderTarget(rt);renderer.render(scene,camera);rende
 const cutV=new TH.Vector3(),cutS=new TH.Vector2();
 function frame(t){raf=requestAnimationFrame(frame);let dt=(t-last)/1000;if(!(dt>0))dt=0;dt=Math.min(.05,dt);last=t;if(G.paused)return;step(dt,t/1000);draw()}
 function step(dt,ts){
+  if(G.carStep)G.carStep(dt);
+  let v=0;
+  if(!G.driving){
   // invoer → richting (ten opzichte van de camera)
   let ix=(K.d||K.arrowright?1:0)-(K.a||K.arrowleft?1:0),iy=(K.w||K.arrowup?1:0)-(K.s||K.arrowdown?1:0);
   if(G.joy.on){ix=G.joy.x;iy=G.joy.y;if(Math.hypot(ix,iy)>.15)stopPath()}
@@ -213,9 +216,10 @@ function step(dt,ts){
   const sp=(run?9.5:5.2);const tvx=mx*sp,tvz=mz*sp,acc=Math.min(1,dt*12);P.vx+=(tvx-P.vx)*acc;P.vz+=(tvz-P.vz)*acc;
   const nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
   if(M.canStand(nx,P.z,.38))P.x=nx;else P.vx*=.2;if(M.canStand(P.x,nz,.38))P.z=nz;else P.vz*=.2;
-  const v=Math.hypot(P.vx,P.vz);
+  v=Math.hypot(P.vx,P.vz);
   if(v>.3){const tr=Math.atan2(P.vx,P.vz);let d=tr-P.ry;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;P.ry+=d*Math.min(1,dt*14)}
   P.ph+=dt*v*1.25;P.sp=Math.min(1.3,v/4.2);
+  }
   // dichtstbijzijnde ingang
   let best=null,bd=2.6;for(const m of marks){const d=Math.hypot(P.x-m.p.door.x,P.z-m.p.door.z);if(d<bd){bd=d;best=m.p}}
   if(best!==G.near){G.near=best;G.onNear&&G.onNear(best)}

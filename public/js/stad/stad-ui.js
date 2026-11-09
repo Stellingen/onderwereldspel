@@ -111,11 +111,14 @@ let cur=null;
 function showInside(kind,label,pg){G.pause();closeAll();cur=kind;document.body.classList.add('stad-in');const ib=$s('sdIn');ib.hidden=false;ib.style.setProperty('--c',secOf(pg)[2]);
   $s('sdInK').textContent=kind.phone?'Telefoon':kind.jail?'Je zit vast':'Binnen · '+(M.districtAt(G.P.x,G.P.z));$s('sdInName').textContent=label;
   if(typeof page!=='undefined'&&page===pg&&location.hash==='#'+pg)render();else location.hash='#'+pg;window.scrollTo(0,0);jailBtn()}
-function enter(pl){if(!pl)return;if(G.mission&&G.mission()){tst('Maak eerst je klus af','bad');return}
+function enter(pl){if(!pl)return;if(G.mission&&G.mission()){tst('Maak eerst je klus af','bad');return}if(G.driving&&G.exitCar)G.exitCar(true);
   // Café Het Gat: het klussenbord van de Pixelstad (missies), niet het scherm van het klikspel
   if(pl.page==='crimes'&&G.openBoard){G.openBoard();return}
+  // woningkavel: eerst het kavelscherm (kopen, bouwen, verhuizen); binnen via 'Naar binnen'
+  if(pl.dyn==='plot'&&G.plotUI){G.plotUI(pl);return}
   if(!hasPage(pl.page)){tst('Hier is nog niets te doen');return}if(pl.before)pl.before();showInside({pl},pl.name,pl.page)}
 G.onEnter=enter;
+function enterDirect(pl){if(!pl)return;if(pl.before)pl.before();showInside({pl},pl.name,pl.page)}
 function phoneApp(pg){showInside({phone:1,pg},pageName(pg),pg)}
 function leave(){if(!cur)return;if(jailed()){if(cur.phone){showInside({jail:1,pl:M.placeById('jail')},'De Bajes','jail');return}tst('Je zit nog vast. Wacht je straf uit, betaal borg of ontsnap.','bad');return}
   const was=cur;cur=null;document.body.classList.remove('stad-in');$s('sdIn').hidden=true;
@@ -131,11 +134,11 @@ setInterval(()=>{if(typeof inJail!=='function')return;const j=inJail();
   if(cur)jailBtn()},800);
 
 /* ---------- telefoon (J) ---------- */
-const APPS=['dash','profiel','rank','lid','bank','shop','look','fam','hits','crimes','cars','casino'];
-const APPN={dash:'Overzicht',profiel:'Profiel',rank:'Ranglijst',lid:'Lid',bank:'Bank',shop:'Wapens',look:'Kleding',fam:'Familie',hits:'Opdrachten',crimes:'Klussen',cars:"Auto's",casino:'Casino'};
+const APPS=['dash','profiel','rank','lid','bank','shop','look','fam','hits','crimes','cars','casino','mycar'];
+const APPN={mycar:'Mijn auto',dash:'Overzicht',profiel:'Profiel',rank:'Ranglijst',lid:'Lid',bank:'Bank',shop:'Wapens',look:'Kleding',fam:'Familie',hits:'Opdrachten',crimes:'Klussen',cars:"Auto's",casino:'Casino'};
 // alles wat je online kunt doen staat op je telefoon; klussen, casino en auto's doe je ter plekke (die apps tonen de weg)
 const ONSITE={cars:1,casino:1};
-function renderApps(){$s('sdApps').innerHTML=APPS.filter(hasPage).map(k=>`<button class="sd-app" data-app="${k}"><i style="--c:${secOf(k)[2]}">${pic(k)}${ONSITE[k]?`<em>${ic('pin')}</em>`:''}</i><span>${APPN[k]||pageName(k)}</span></button>`).join('');
+function renderApps(){$s('sdApps').innerHTML=APPS.filter(k=>k==='mycar'||hasPage(k)).map(k=>`<button class="sd-app" data-app="${k}"><i style="--c:${k==='mycar'?'#ff7a1a':secOf(k)[2]}">${pic(k==='mycar'?'cars':k)}${ONSITE[k]?`<em>${ic('pin')}</em>`:''}</i><span>${APPN[k]||pageName(k)}</span></button>`).join('');
   let msgs=[];try{msgs=(typeof logShown==='function'?logShown():S.log||[]).slice(0,2)}catch(e){}
   $s('sdMsgs').innerHTML=msgs.length?msgs.map(l=>`<div class="sd-msg ${l.c||''}"><b>Onderwereld</b><span>${E(String(l.m).replace(/<[^>]+>/g,''))}</span></div>`).join(''):''}
 function openPhone(){const ph=$s('sdPhone');if(!ph.hidden){ph.hidden=true;if(!cur)G.resume();return}closeAll();renderApps();$s('sdSet').hidden=true;$s('sdHome').hidden=false;ph.hidden=false;if(!cur)G.pause()}
@@ -146,6 +149,7 @@ $s('sdPhone').addEventListener('click',e=>{const b=e.target.closest('[data-app]'
   if(k==='klik'){try{sessionStorage.setItem('ow_mode','klik')}catch(e){}G.savePos();location.href='/game';return}
   if(k==='set'){settings();return}
   // klussen, casino en auto's: daar moet je heen; de telefoon zet de route uit
+  if(k==='mycar'){$s('sdPhone').hidden=true;if(cur)leaveQuiet();G.resume();G.bringCar&&G.bringCar();return}
   if(k==='crimes'&&G.openBoard){$s('sdPhone').hidden=true;if(cur)leaveQuiet();G.openBoard();return}
   if(ONSITE[k]&&!jailed()){const pl=M.placeByPage(k);$s('sdPhone').hidden=true;if(cur)leaveQuiet();G.resume();G.goPlace(pl);tst('Route naar '+pl.name);return}
   $s('sdPhone').hidden=true;phoneApp(k)});
@@ -163,19 +167,20 @@ function settings(){const s=$s('sdSet');$s('sdHome').hidden=true;s.hidden=false;
 try{const d=localStorage.getItem('stad_day');if(d==='0'||d==='1')G.forceDay=+d}catch(e){}
 
 /* ---------- grote kaart (M) ---------- */
-const mapIn=$s('sdMapIn'),mapImg=mapCv.toDataURL();
+const mapIn=$s('sdMapIn'),mapImg=mapCv.toDataURL();mapIn.style.aspectRatio=M.W+'/'+M.H;
 function buildMap(){
   const vis=M.places.filter(p=>!p.dyn||p.own);
   mapIn.innerHTML=`<img src="${mapImg}" alt="Kaart van de Pixelstad" draggable="false">`+M.DISTRICTS.map(d=>`<em class="sd-dn" style="left:${d.x/M.W*100}%;top:${d.z/M.H*100}%">${d.n}</em>`).join('')
-   +M.places.filter(p=>p.dyn==='biz'&&!p.own).map(p=>`<button class="sd-pin sale" data-pl="${p.id}" style="left:${p.door.x/M.W*100}%;top:${p.door.z/M.H*100}%" title="${E(p.name)}" aria-label="${E(p.name)}"></button>`).join('')
-   +vis.map(p=>`<button class="sd-pin${p.dyn?' own':''}${p.building?' bouw':''}" data-pl="${p.id}" style="left:${p.door.x/M.W*100}%;top:${p.door.z/M.H*100}%;--c:${pcol(p)}" title="${E(p.name)}" aria-label="${E(p.name)}">${pic(p.dyn==='home'?'verblijf':p.page)}</button>`).join('')
+   +M.places.filter(p=>p.dyn&&!p.own).map(p=>`<button class="sd-pin sale" data-pl="${p.id}" style="left:${p.door.x/M.W*100}%;top:${p.door.z/M.H*100}%" title="${E(p.name)}" aria-label="${E(p.name)}"></button>`).join('')
+   +vis.map(p=>`<button class="sd-pin${p.dyn?' own':''}${p.building?' bouw':''}" data-pl="${p.id}" style="left:${p.door.x/M.W*100}%;top:${p.door.z/M.H*100}%;--c:${pcol(p)}" title="${E(p.name)}" aria-label="${E(p.name)}">${pic(p.page)}</button>`).join('')
    +'<i class="sd-me" id="sdMe"></i>';
   const groups=typeof NAV_GROUPS!=='undefined'?NAV_GROUPS:[['Plekken',M.places.map(p=>p.page),'#f2c230']];
-  const row=p=>`<button data-pl="${p.id}"><i>${pic(p.dyn==='home'?'verblijf':p.page)}</i><span><b>${E(p.name)}</b><small>${p.building?'In aanbouw · ':''}${E(p.dyn?(p.dyn==='home'?'Verblijf':'Bezit'):pageName(p.page))} · ${E(M.districtAt(p.door.x,p.door.z))}</small></span></button>`;
-  const mine=M.places.filter(p=>p.dyn&&p.own),sale=M.places.filter(p=>p.dyn==='biz'&&!p.own);
+  const row=p=>`<button data-pl="${p.id}"><i>${pic(p.page)}</i><span><b>${E(p.name)}</b><small>${p.building?'In aanbouw · ':''}${E(p.dyn?(p.dyn==='plot'?(p.own?'Woning':'Woonkavel'):'Bezit'):pageName(p.page))} · ${E(M.districtAt(p.door.x,p.door.z))}</small></span></button>`;
+  const mine=M.places.filter(p=>p.dyn&&p.own),sale=M.places.filter(p=>p.dyn==='biz'&&!p.own),plots=M.places.filter(p=>p.dyn==='plot'&&!p.own&&p.zone!=='brug');
   $s('sdLegend').innerHTML=`<div class="sd-lg" style="--c:#f2c230"><h4>Jouw bezit</h4>${mine.map(row).join('')}</div>`
    +groups.map(g=>{const ps=M.places.filter(p=>!p.dyn&&g[1].includes(p.page));if(!ps.length)return '';return `<div class="sd-lg" style="--c:${g[2]}"><h4>${E(g[0])}</h4>${ps.map(row).join('')}</div>`}).join('')
-   +(sale.length?`<div class="sd-lg" style="--c:#9aa1ab"><h4>Te koop (${sale.length})</h4>${sale.map(row).join('')}</div>`:'')}
+   +(plots.length?`<div class="sd-lg" style="--c:#3fe395"><h4>Woonkavels (${plots.length})</h4>${plots.map(row).join('')}</div>`:'')
+   +(sale.length?`<div class="sd-lg" style="--c:#9aa1ab"><h4>Zaken te koop (${sale.length})</h4>${sale.map(row).join('')}</div>`:'')}
 function openMap(){closeAll();buildMap();const m=$s('sdMap');m.hidden=false;if(!cur)G.pause();const me=$s('sdMe');me.style.left=G.P.x/M.W*100+'%';me.style.top=G.P.z/M.H*100+'%'}
 G.onMap=()=>{const m=$s('sdMap');if(!m.hidden){closeAll();if(!cur)G.resume()}else openMap()};
 $s('sdMapB').addEventListener('click',openMap);$s('sdMmWrap').addEventListener('click',openMap);
@@ -210,5 +215,5 @@ addEventListener('keydown',e=>{const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$
 
 // opstarten in de bajes als je vastzit
 if(jailed())setTimeout(()=>{if(!cur)showInside({jail:1,pl:M.placeById('jail')},'De Bajes','jail')},50);
-G.ui={enter,leave,openMap,openPhone,cur:()=>cur};
+G.ui={enter,enterDirect,leave,openMap,openPhone,cur:()=>cur};
 })();

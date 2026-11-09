@@ -114,6 +114,7 @@ function finish(ok,why){if(!MS)return;const m=MS,c=m.c;MS=null;cleanup();delete 
   save();watchOverlay()}
 function cleanup(){G.actors.slice().forEach(removeActor);G.actors.length=0;clearObjs();marker(null);hud(false);G.missionPath=null}
 G.missionAbort=()=>{if(MS)finish(false,'Je liet de klus schieten')};
+G.missionAbortCaught=()=>{if(MS)finish(false,'De politie had je te pakken')};
 /* ---------- elke frame ---------- */
 function stepStart(){const s=MS.steps[MS.i];if(!s){finish(true);return}MS.held=0;s.st=0;MS.prog=0;MS.hint="";MS.txt=s.txt;
   const tp=s.p||(s.pts&&s.pts[0])||(MS.target);marker(tp&&!MS.target?tp:(s.t==='lift'?null:tp));
@@ -131,7 +132,7 @@ function alarm(why){if(!MS||MS.alarm)return;MS.alarm=true;MS.miss+=2;G.toast(why
   hud()}
 const holding=()=>!!(G.K[' ']||G.K.f||G.actHold);
 G.missionAction=()=>{if(!MS)return false;const s=MS.steps[MS.i];if(!s)return false;return ['hold','lift','beg'].includes(s.t)&&inRange(s)};
-function inRange(s){const P=G.P;if(s.t==='hold')return dist(P,s.p)<s.r;if(s.t==='lift')return MS.target&&dist(P,MS.target)<1.8;if(s.t==='beg')return dist(P,s.p)<9;return false}
+function inRange(s){const P=G.P;if(G.driving)return false;if(s.t==='hold')return dist(P,s.p)<s.r;if(s.t==='lift')return MS.target&&dist(P,MS.target)<1.8;if(s.t==='beg')return dist(P,s.p)<9;return false}
 let rt=0;
 G.missionStep=function(dt){if(!MS)return;const m=MS,P=G.P,s=m.steps[m.i];if(!s)return;m.t+=dt;rt+=dt;
   if(rt>3){rt=0;const p=s.p||(m.target&&s.t!=='away'?m.target:null)||(s.left&&s.left[0]);if(p&&dist(P,p)>6)route(p)}
