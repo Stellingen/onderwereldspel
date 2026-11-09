@@ -34,7 +34,7 @@ ui.innerHTML=`
  </div>
 </div>
 <div class="sd-area" id="sdArea" hidden><small>Pixelstad</small><b></b></div>
-<div class="sd-keys" id="sdKeys" ${touch?'hidden':''}><span><kbd>WASD</kbd>lopen</span><span><kbd>Shift</kbd>rennen</span><span><kbd>Spatie</kbd>naar binnen</span><span><kbd>Q</kbd><kbd>E</kbd>draaien</span><span class="sd-beta">beta</span></div>
+<div class="sd-keys" id="sdKeys" ${touch?'hidden':''}><span><kbd>WASD</kbd>lopen</span><span><kbd>Shift</kbd>rennen</span><span><kbd>E</kbd>praten / naar binnen</span><span><kbd>Z</kbd><kbd>C</kbd>draaien</span><span class="sd-beta">beta</span></div>
 <button class="sd-prompt" id="sdPrompt" hidden></button>
 <div class="sd-joy" id="sdJoy" ${touch?'':'hidden'}><i id="sdKnob"></i></div>
 <button class="sd-run" id="sdRun" ${touch?'':'hidden'}>Ren</button>
@@ -48,10 +48,6 @@ ui.innerHTML=`
   </div>
   <div class="sd-dock"><button class="sd-app" data-app="map"><i style="--c:#3fe395">${ic('map')}</i><span>Kaart</span></button><button class="sd-app" data-app="set"><i style="--c:#a9dcff">${ic('set')}</i><span>Instellingen</span></button><button class="sd-app" data-app="klik"><i style="--c:#ff7a1a">${ic('klik')}</i><span>Klikspel</span></button></div>
   <button class="sd-homebar" data-close aria-label="Telefoon wegleggen"></button>
- </div></div>
-<div class="sd-map" id="sdMap" hidden><div class="sd-map-box">
-  <div class="sd-map-top"><div><small>Pixelstad</small><b>Kaart</b></div><span>${touch?'Tik':'Klik'} op een plek en je loopt erheen</span><button class="sd-x" data-close aria-label="Sluiten">×</button></div>
-  <div class="sd-map-body"><div class="sd-map-wrap"><div class="sd-map-in" id="sdMapIn"></div></div><div class="sd-legend" id="sdLegend"></div></div>
  </div></div>
 <div class="sd-in" id="sdIn" hidden><button class="sd-out" id="sdOut">${ic('out')}<span>Naar buiten</span></button><div class="sd-in-n"><small id="sdInK">Binnen</small><b id="sdInName"></b></div><button class="sd-b" id="sdInPhone" title="Telefoon (J)">${ic('phone')}<span>Telefoon</span></button><button class="sd-b" id="sdInMap" title="Kaart (M)">${ic('map')}<span>Kaart</span></button></div>
 <div class="sd-help" id="sdHelp" hidden></div>`;
@@ -79,7 +75,7 @@ function hud(){try{
 setInterval(hud,400);hud();
 // wijknaam: in beeld als je een nieuwe wijk in loopt (zoals in GTA)
 function loc(){const P=G.P;if(!P)return;const n=M.districtAt(P.x,P.z);if(n===lastLoc)return;const first=!lastLoc;lastLoc=n;$s('sdLoc').textContent=n;if(first||G.paused)return;
-  const a=$s('sdArea');a.querySelector('small').textContent='Pixelstad';a.classList.remove('bad');a.querySelector('b').textContent=n;a.hidden=false;a.classList.remove('go');void a.offsetWidth;a.classList.add('go');clearTimeout(areaT);areaT=setTimeout(()=>{a.hidden=true},3200)}
+  const a=$s('sdArea');a.querySelector('small').textContent=M.estateAt&&M.estateAt(P.x,P.z)?'Oostland · jouw terrein':'Pixelstad';a.classList.remove('bad');a.querySelector('b').textContent=n;a.hidden=false;a.classList.remove('go');void a.offsetWidth;a.classList.add('go');clearTimeout(areaT);areaT=setTimeout(()=>{a.hidden=true},3200)}
 
 /* ---------- minikaart ---------- */
 const mapCv=X.mapCanvas(),mini=$s('sdMini'),mc=mini.getContext('2d');mc.imageSmoothingEnabled=false;
@@ -90,6 +86,9 @@ function drawMini(){const P=G.P,w=mini.width,s=1.3;mc.setTransform(1,0,0,1,0,0);
   mc.save();mc.translate(w/2,w/2);mc.rotate(G.yaw);mc.scale(s,s);mc.translate(-P.x,-P.z);mc.drawImage(mapCv,0,0);
   if(pathPts&&P.path){mc.strokeStyle='#ff7a1a';mc.lineWidth=2;mc.setLineDash([3,2]);mc.beginPath();mc.moveTo(P.x,P.z);P.path.forEach(q=>mc.lineTo(q.x,q.z));mc.stroke();mc.setLineDash([])}
   if(G.missionPath&&G.missionPath.length){mc.strokeStyle='#ffd35a';mc.lineWidth=2.2;mc.setLineDash([3,2]);mc.beginPath();mc.moveTo(P.x,P.z);G.missionPath.forEach(q=>mc.lineTo(q.x,q.z));mc.stroke();mc.setLineDash([])}
+  if(G.gpsPath&&G.waypoint){mc.strokeStyle='#ff4fd8';mc.lineWidth=2.2;mc.setLineDash([3,2]);mc.beginPath();mc.moveTo(P.x,P.z);G.gpsPath.forEach(q=>mc.lineTo(q.x,q.z));mc.stroke();mc.setLineDash([]);const w=G.waypoint;mc.fillStyle='#000';mc.fillRect(w.x-3.4,w.z-3.4,6.8,6.8);mc.fillStyle='#ff4fd8';mc.fillRect(w.x-2.6,w.z-2.6,5.2,5.2)}
+  if(G.police&&G.police.dots)G.police.dots().forEach(d=>{if(d.r){mc.strokeStyle=d.c;mc.lineWidth=1.5;mc.globalAlpha=.8;mc.beginPath();mc.arc(d.x,d.z,d.r,0,Math.PI*2);mc.stroke();mc.globalAlpha=1}else{mc.fillStyle='#000';mc.fillRect(d.x-2.8,d.z-2.8,5.6,5.6);mc.fillStyle=d.c;mc.fillRect(d.x-2,d.z-2,4,4)}});
+  if(G.npcDots)G.npcDots().forEach(d=>{mc.fillStyle=d.c;mc.fillRect(d.x-1.4,d.z-1.4,2.8,2.8)});
   M.places.forEach(p=>{if(p.dyn&&!p.own)return;mc.fillStyle='#000';mc.fillRect(p.door.x-3,p.door.z-3,6,6);mc.fillStyle=pcol(p);mc.fillRect(p.door.x-2.2,p.door.z-2.2,4.4,4.4)});
   if(G.missionDots)G.missionDots().forEach(d=>{const r=d.big?3.4:2;mc.fillStyle='#000';mc.fillRect(d.x-r-.8,d.z-r-.8,2*r+1.6,2*r+1.6);mc.fillStyle=d.c;mc.fillRect(d.x-r,d.z-r,2*r,2*r)});
   mc.translate(P.x,P.z);mc.rotate(Math.atan2(Math.cos(P.ry),Math.sin(P.ry)));mc.fillStyle='#000';mc.beginPath();mc.moveTo(5,0);mc.lineTo(-3.4,3.4);mc.lineTo(-1.6,0);mc.lineTo(-3.4,-3.4);mc.closePath();mc.fill();
@@ -114,8 +113,13 @@ function showInside(kind,label,pg){G.pause();closeAll();cur=kind;document.body.c
 function enter(pl){if(!pl)return;if(G.mission&&G.mission()){tst('Maak eerst je klus af','bad');return}if(G.driving&&G.exitCar)G.exitCar(true);
   // Café Het Gat: het klussenbord van de Pixelstad (missies), niet het scherm van het klikspel
   if(pl.page==='crimes'&&G.openBoard){G.openBoard();return}
-  // woningkavel: eerst het kavelscherm (kopen, bouwen, verhuizen); binnen via 'Naar binnen'
-  if(pl.dyn==='plot'&&G.plotUI){G.plotUI(pl);return}
+  // Notaris De Sleutel: het vastgoedmenu (al je woningen en zaken)
+  if(pl.id==='biz'&&G.vastgoed){G.snd&&G.snd.fx('door');G.vastgoed.open();return}
+  // kavels op Oostland: leeg of niet je huidige huis → notaris-kaartje van die kavel; je huis of zaak → naar binnen
+  if(pl.dyn==='plot'&&!(pl.own&&pl.home)&&pl.zone!=='brug'&&G.plotUI){G.plotUI(pl);return}
+  if(pl.dyn==='plot'&&pl.zone==='brug'&&!pl.home&&G.plotUI){G.vastgoed&&G.vastgoed.open({say:'Onder de brug slapen kost niets. Zal ik het als uw adres noteren?'});return}
+  if(pl.dyn==='biz'&&!pl.own&&G.plotUI){G.plotUI(pl);return}
+  G.snd&&G.snd.fx('door');
   if(!hasPage(pl.page)){tst('Hier is nog niets te doen');return}if(pl.before)pl.before();showInside({pl},pl.name,pl.page)}
 G.onEnter=enter;
 function enterDirect(pl){if(!pl)return;if(pl.before)pl.before();showInside({pl},pl.name,pl.page)}
@@ -134,11 +138,11 @@ setInterval(()=>{if(typeof inJail!=='function')return;const j=inJail();
   if(cur)jailBtn()},800);
 
 /* ---------- telefoon (J) ---------- */
-const APPS=['dash','profiel','rank','lid','bank','shop','look','fam','hits','crimes','cars','casino','mycar'];
-const APPN={mycar:'Mijn auto',dash:'Overzicht',profiel:'Profiel',rank:'Ranglijst',lid:'Lid',bank:'Bank',shop:'Wapens',look:'Kleding',fam:'Familie',hits:'Opdrachten',crimes:'Klussen',cars:"Auto's",casino:'Casino'};
+const APPS=['crimes','vastgoed','mycar','bank','look','shop','fam','hits','cars','casino','dash','profiel','rank','lid'];
+const APPN={vastgoed:'Vastgoed',mycar:'Mijn auto',dash:'Overzicht',profiel:'Profiel',rank:'Ranglijst',lid:'Lid',bank:'Bank',shop:'Wapens',look:'Kleding',fam:'Familie',hits:'Opdrachten',crimes:'Klussen',cars:"Auto's",casino:'Casino'};
 // alles wat je online kunt doen staat op je telefoon; klussen, casino en auto's doe je ter plekke (die apps tonen de weg)
 const ONSITE={cars:1,casino:1};
-function renderApps(){$s('sdApps').innerHTML=APPS.filter(k=>k==='mycar'||hasPage(k)).map(k=>`<button class="sd-app" data-app="${k}"><i style="--c:${k==='mycar'?'#ff7a1a':secOf(k)[2]}">${pic(k==='mycar'?'cars':k)}${ONSITE[k]?`<em>${ic('pin')}</em>`:''}</i><span>${APPN[k]||pageName(k)}</span></button>`).join('');
+function renderApps(){$s('sdApps').innerHTML=APPS.filter(k=>k==='mycar'||k==='vastgoed'||hasPage(k)).map(k=>`<button class="sd-app" data-app="${k}"><i style="--c:${k==='mycar'?'#ff7a1a':k==='vastgoed'?'#f2c230':secOf(k)[2]}">${k==='vastgoed'&&G.kit?G.kit.ic.key:pic(k==='mycar'?'cars':k)}${ONSITE[k]?`<em>${ic('pin')}</em>`:''}</i><span>${APPN[k]||pageName(k)}</span></button>`).join('');
   let msgs=[];try{msgs=(typeof logShown==='function'?logShown():S.log||[]).slice(0,2)}catch(e){}
   $s('sdMsgs').innerHTML=msgs.length?msgs.map(l=>`<div class="sd-msg ${l.c||''}"><b>Onderwereld</b><span>${E(String(l.m).replace(/<[^>]+>/g,''))}</span></div>`).join(''):''}
 function openPhone(){const ph=$s('sdPhone');if(!ph.hidden){ph.hidden=true;if(!cur)G.resume();return}closeAll();renderApps();$s('sdSet').hidden=true;$s('sdHome').hidden=false;ph.hidden=false;if(!cur)G.pause()}
@@ -150,6 +154,7 @@ $s('sdPhone').addEventListener('click',e=>{const b=e.target.closest('[data-app]'
   if(k==='set'){settings();return}
   // klussen, casino en auto's: daar moet je heen; de telefoon zet de route uit
   if(k==='mycar'){$s('sdPhone').hidden=true;if(cur)leaveQuiet();G.resume();G.bringCar&&G.bringCar();return}
+  if(k==='vastgoed'&&G.vastgoed){$s('sdPhone').hidden=true;G.vastgoed.open();return}
   if(k==='crimes'&&G.openBoard){$s('sdPhone').hidden=true;if(cur)leaveQuiet();G.openBoard();return}
   if(ONSITE[k]&&!jailed()){const pl=M.placeByPage(k);$s('sdPhone').hidden=true;if(cur)leaveQuiet();G.resume();G.goPlace(pl);tst('Route naar '+pl.name);return}
   $s('sdPhone').hidden=true;phoneApp(k)});
@@ -158,43 +163,30 @@ function settings(){const s=$s('sdSet');$s('sdHome').hidden=true;s.hidden=false;
   s.innerHTML=`<button class="sd-back" data-back>← Terug</button><h3>Instellingen</h3>
    <div class="sd-row"><b>Beeld</b><div class="sd-seg">${[[480,'Scherp'],[0,'Normaal'],[260,'Grove pixels']].map(([v,n])=>`<button data-pix="${v}" class="${pix===v?'on':''}">${n}</button>`).join('')}</div></div>
    <div class="sd-row"><b>Huidskleur</b><div class="sd-sk">${SK.map(c=>`<button data-skin="${c}" style="--c:${c}" class="${skin===c?'on':''}" aria-label="Huidskleur"></button>`).join('')}</div></div>
+   <div class="sd-row"><b>Geluid</b><div class="sd-seg"><button data-snd="fx" class="${G.snd&&G.snd.fxOn?'on':''}">Effecten</button><button data-snd="mu" class="${G.snd&&G.snd.muOn?'on':''}">Muziek</button></div></div>
+   <div class="sd-row"><b>Volume</b><input type="range" min="0" max="1" step=".05" value="${G.snd?G.snd.vol:.8}" data-vol aria-label="Volume"></div>
    <div class="sd-row"><b>Tijd van de dag</b><div class="sd-seg">${[['','Echt'],['1','Dag'],['0','Nacht']].map(([v,n])=>`<button data-day="${v}" class="${String(G.forceDay==null?'':G.forceDay)===v?'on':''}">${n}</button>`).join('')}</div></div>
-   <div class="sd-row"><b>Besturing</b><p>${touch?'Stick linksonder om te lopen, ver duwen is rennen. Veeg om de camera te draaien, knijp om te zoomen. Tik op een gebouw en je loopt erheen.':'WASD of pijltjes om te lopen, Shift rennen, Spatie naar binnen. Q en E draaien de camera, scrollen zoomt. Klik op een gebouw en je loopt erheen. J telefoon, M kaart, Esc terug.'}</p></div>`;
+   <div class="sd-row"><b>Besturing</b><p>${touch?'Stick linksonder om te lopen, ver duwen is rennen. Veeg om de camera te draaien, knijp om te zoomen. Tik op een gebouw en je loopt erheen.':'WASD of pijltjes om te lopen, Shift rennen. E of Spatie: praten met iemand of naar binnen. F: auto in en uit. Z en C draaien de camera, scrollen zoomt. Klik op een gebouw en je loopt erheen. J telefoon, M kaart, Esc terug.'}</p></div>`;
+  const vr=s.querySelector('[data-vol]');if(vr)vr.oninput=()=>{G.snd&&G.snd.setVol(+vr.value)};
   s.onclick=e=>{const t=e.target.closest('button');if(!t)return;if(t.dataset.back!=null){s.hidden=true;$s('sdHome').hidden=false;return}
+    if(t.dataset.snd&&G.snd){if(t.dataset.snd==='fx')G.snd.setFx(!G.snd.fxOn);else G.snd.setMu(!G.snd.muOn);settings();return}
     if(t.dataset.pix!=null){G.setPix(+t.dataset.pix||0);settings()}
     if(t.dataset.skin){try{localStorage.setItem('stad_skin',t.dataset.skin)}catch(e){}G.refreshLook&&G.refreshLook();settings()}
     if(t.dataset.day!=null){G.forceDay=t.dataset.day===''?null:+t.dataset.day;try{localStorage.setItem('stad_day',t.dataset.day)}catch(e){}G.applyLight&&G.applyLight();settings()}}}
 try{const d=localStorage.getItem('stad_day');if(d==='0'||d==='1')G.forceDay=+d}catch(e){}
 
-/* ---------- grote kaart (M) ---------- */
-const mapIn=$s('sdMapIn'),mapImg=mapCv.toDataURL();mapIn.style.aspectRatio=M.W+'/'+M.H;
-function buildMap(){
-  const vis=M.places.filter(p=>!p.dyn||p.own);
-  mapIn.innerHTML=`<img src="${mapImg}" alt="Kaart van de Pixelstad" draggable="false">`+M.DISTRICTS.map(d=>`<em class="sd-dn" style="left:${d.x/M.W*100}%;top:${d.z/M.H*100}%">${d.n}</em>`).join('')
-   +M.places.filter(p=>p.dyn&&!p.own).map(p=>`<button class="sd-pin sale" data-pl="${p.id}" style="left:${p.door.x/M.W*100}%;top:${p.door.z/M.H*100}%" title="${E(p.name)}" aria-label="${E(p.name)}"></button>`).join('')
-   +vis.map(p=>`<button class="sd-pin${p.dyn?' own':''}${p.building?' bouw':''}" data-pl="${p.id}" style="left:${p.door.x/M.W*100}%;top:${p.door.z/M.H*100}%;--c:${pcol(p)}" title="${E(p.name)}" aria-label="${E(p.name)}">${pic(p.page)}</button>`).join('')
-   +'<i class="sd-me" id="sdMe"></i>';
-  const groups=typeof NAV_GROUPS!=='undefined'?NAV_GROUPS:[['Plekken',M.places.map(p=>p.page),'#f2c230']];
-  const row=p=>`<button data-pl="${p.id}"><i>${pic(p.page)}</i><span><b>${E(p.name)}</b><small>${p.building?'In aanbouw · ':''}${E(p.dyn?(p.dyn==='plot'?(p.own?'Woning':'Woonkavel'):'Bezit'):pageName(p.page))} · ${E(M.districtAt(p.door.x,p.door.z))}</small></span></button>`;
-  const mine=M.places.filter(p=>p.dyn&&p.own),sale=M.places.filter(p=>p.dyn==='biz'&&!p.own),plots=M.places.filter(p=>p.dyn==='plot'&&!p.own&&p.zone!=='brug');
-  $s('sdLegend').innerHTML=`<div class="sd-lg" style="--c:#f2c230"><h4>Jouw bezit</h4>${mine.map(row).join('')}</div>`
-   +groups.map(g=>{const ps=M.places.filter(p=>!p.dyn&&g[1].includes(p.page));if(!ps.length)return '';return `<div class="sd-lg" style="--c:${g[2]}"><h4>${E(g[0])}</h4>${ps.map(row).join('')}</div>`}).join('')
-   +(plots.length?`<div class="sd-lg" style="--c:#3fe395"><h4>Woonkavels (${plots.length})</h4>${plots.map(row).join('')}</div>`:'')
-   +(sale.length?`<div class="sd-lg" style="--c:#9aa1ab"><h4>Zaken te koop (${sale.length})</h4>${sale.map(row).join('')}</div>`:'')}
-function openMap(){closeAll();buildMap();const m=$s('sdMap');m.hidden=false;if(!cur)G.pause();const me=$s('sdMe');me.style.left=G.P.x/M.W*100+'%';me.style.top=G.P.z/M.H*100+'%'}
-G.onMap=()=>{const m=$s('sdMap');if(!m.hidden){closeAll();if(!cur)G.resume()}else openMap()};
+/* ---------- grote kaart (M): stad-kaart.js ---------- */
+function openMap(){G.kaart&&G.kaart.open()}
+G.onMap=()=>{if(G.kaart&&G.kaart.isOpen())G.kaart.close();else openMap()};
 $s('sdMapB').addEventListener('click',openMap);$s('sdMmWrap').addEventListener('click',openMap);
-const goPl=id=>{const pl=M.placeById(id);closeAll();if(cur)leaveQuiet();if(cur)return;G.resume();G.goPlace(pl)};
-$s('sdMap').addEventListener('click',e=>{const b=e.target.closest('[data-pl]');if(b){goPl(b.dataset.pl);return}
-  if(e.target.closest('.sd-map-in')){const r=mapIn.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*M.W,z=(e.clientY-r.top)/r.height*M.H;closeAll();if(cur)leaveQuiet();if(cur)return;G.resume();G.goTo(x,z)}});
 
 /* ---------- sluiten en sneltoetsen ---------- */
-function closeAll(){$s('sdPhone').hidden=true;$s('sdMap').hidden=true}
-ui.addEventListener('click',e=>{if(e.target.closest('[data-close]')||e.target.classList.contains('sd-phone')||e.target.classList.contains('sd-map')){closeAll();if(!cur)G.resume()}});
-addEventListener('keydown',e=>{const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;const k=e.key.toLowerCase(),ov=!$s('sdPhone').hidden||!$s('sdMap').hidden;
+function closeAll(){$s('sdPhone').hidden=true;if(G.kaart&&G.kaart.isOpen())G.kaart.close()}
+ui.addEventListener('click',e=>{if(e.target.closest('[data-close]')||e.target.classList.contains('sd-phone')){closeAll();if(!cur)G.resume()}});
+addEventListener('keydown',e=>{const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;const k=e.key.toLowerCase(),ov=!$s('sdPhone').hidden;
   if(k==='escape'){if(ov){closeAll();if(!cur)G.resume()}else if(cur&&$s('modal').hidden&&!document.querySelector('.cg-ov,.chase-ov'))leave();return}
   if(e.repeat)return;
-  if(G.paused&&!cur&&ov){if(k==='j'){if(!$s('sdPhone').hidden){closeAll();G.resume()}else openPhone()}if(k==='m'){if(!$s('sdMap').hidden){closeAll();G.resume()}else openMap()}}
+  if(G.paused&&!cur&&ov){if(k==='j'){closeAll();G.resume()}if(k==='m'){openMap()}}
   else if(cur&&(k==='j'||k==='m')&&$s('modal').hidden){if(k==='j')openPhone();else{if(!jailed())leaveQuiet();openMap()}}});
 
 /* ---------- stick en renknop op de telefoon ---------- */
@@ -209,11 +201,11 @@ addEventListener('keydown',e=>{const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$
 (function(){let seen=0;try{seen=+localStorage.getItem('stad_help')}catch(e){}if(seen)return;const h=$s('sdHelp');h.hidden=false;
   h.innerHTML=`<small>Nieuw · beta</small><b>Welkom in de Pixelstad</b><p>Dezelfde stad en dezelfde voortgang, maar nu loop je er zelf doorheen. Ga een gebouw binnen en je speelt daar zoals je gewend bent.</p>
    <ul>${touch?'<li><b>Lopen</b><span>stick linksonder, ver duwen is rennen</span></li><li><b>Naar binnen</b><span>tik op de knop bij de deur of op een gebouw</span></li><li><b>Camera</b><span>veeg om te draaien, knijp om te zoomen</span></li><li><b>Telefoon en kaart</b><span>rechtsboven</span></li>'
-   :'<li><b><kbd>WASD</kbd></b><span>lopen, met <kbd>Shift</kbd> rennen</span></li><li><b><kbd>Spatie</kbd></b><span>naar binnen bij een deur</span></li><li><b><kbd>J</kbd> <kbd>M</kbd></b><span>telefoon en kaart</span></li><li><b><kbd>Q</kbd> <kbd>E</kbd></b><span>camera draaien, scrollen zoomt</span></li><li><b>Klik</b><span>op een gebouw en je loopt erheen</span></li>'}</ul>
+   :'<li><b><kbd>WASD</kbd></b><span>lopen, met <kbd>Shift</kbd> rennen</span></li><li><b><kbd>E</kbd></b><span>praten met mensen, naar binnen bij een deur</span></li><li><b><kbd>J</kbd> <kbd>M</kbd></b><span>telefoon en kaart</span></li><li><b><kbd>Z</kbd> <kbd>C</kbd></b><span>camera draaien, scrollen zoomt</span></li><li><b>Klik</b><span>op een gebouw en je loopt erheen</span></li>'}</ul>
    <button class="btn" id="sdHelpOk">Op pad</button>`;
   $s('sdHelpOk').onclick=()=>{h.hidden=true;try{localStorage.setItem('stad_help','1')}catch(e){}}})();
 
 // opstarten in de bajes als je vastzit
 if(jailed())setTimeout(()=>{if(!cur)showInside({jail:1,pl:M.placeById('jail')},'De Bajes','jail')},50);
-G.ui={enter,enterDirect,leave,openMap,openPhone,cur:()=>cur};
+G.ui={enter,enterDirect,leave,leaveQuiet,closeAll,openMap,openPhone,cur:()=>cur};
 })();
