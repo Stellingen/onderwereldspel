@@ -124,7 +124,7 @@ function sync(first){if(!G.ready||typeof S==='undefined')return;const scene=G.sc
 let acc=0;
 G.lotStep=function(dt){acc+=dt;if(acc<.1)return;const d=acc;acc=0;const scene=G.scene();
   LOT.forEach(l=>{if(!l.building)return;const p=l.p,near=Math.hypot(G.P.x-p.door.x,G.P.z-p.door.z)<75;if(!near)return;
-    l.t+=d;if(l.t<Math.min(1.1,10/Math.max(1,l.w.fl)))return;l.t=0;l.shown=Math.floor(l.shown)+1;if(l.shown>=l.w.fl){l.shown=l.w.fl;l.building=false;const b=bizOf(p);G.toast&&G.toast((p.dyn==='plot'?'Je '+hOf(l.w.id).n.toLowerCase():'Je '+(b?b.n:'pand'))+' is klaar','ok')}
+    l.t+=d;if(l.t<Math.min(1.1,10/Math.max(1,l.w.fl)))return;l.t=0;l.shown=Math.floor(l.shown)+1;G.snd&&G.snd.fx('build');if(l.shown>=l.w.fl){l.shown=l.w.fl;l.building=false;const b=bizOf(p),nm=p.dyn==='plot'?hOf(l.w.id).n:(b?b.n:'pand');G.toast&&G.toast('Je '+(p.dyn==='plot'?nm.toLowerCase():nm)+' is klaar','ok');G.msg&&G.msg('notaris','Uw '+nm.toLowerCase()+' op Oostland is opgeleverd. Gefeliciteerd.',{k:'route',x:p.door.x,z:p.door.z,n:nm})}
     place(l,scene)})};
 M.places.filter(p=>p.dyn==='biz').forEach(p=>{p.before=()=>{try{window.bz=window.bz||{};bz.sel=p.biz;bz.mode=null}catch(e){}}});
 M.places.filter(p=>p.dyn==='plot').forEach(p=>{p.before=()=>{try{if(window.vb){vb.view=null;vb.sel=null}}catch(e){}}});

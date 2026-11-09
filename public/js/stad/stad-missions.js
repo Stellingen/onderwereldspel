@@ -109,7 +109,7 @@ function start(c){const why=canStart(c);if(why){G.toast(why,'bad');return}
   let len=0,last=G.P;MS.steps.forEach(s=>{const p=s.p||(s.pts&&s.pts[0]);if(p){len+=dist(last,p);last=p}});MS.limit=Math.round(70+len/4.4*(1.5-MS.D*.4));
   hud(true);stepStart();G.toast(KN[MS.k]+': '+c.n,'lvl')}
 function finish(ok,why){if(!MS)return;const m=MS,c=m.c;MS=null;cleanup();delete S.pendingGame;S.stats.games=(S.stats.games||0)+1;
-  if(ok){S.stats.missions=(S.stats.missions||0)+1;if(!m.miss)S.stats.clean=(S.stats.clean||0)+1;banner(m.miss?'Gelukt':'Schone klus','ok');crimeResolve(c,{game:{ok:true,miss:Math.min(3,m.miss)}})}
+  if(ok){S.stats.missions=(S.stats.missions||0)+1;G.ev&&G.ev('missie');if(!m.miss)S.stats.clean=(S.stats.clean||0)+1;banner(m.miss?'Gelukt':'Schone klus','ok');crimeResolve(c,{game:{ok:true,miss:Math.min(3,m.miss)}})}
   else{S.stats.gameFail=(S.stats.gameFail||0)+1;banner('Mislukt','bad');crimeFail(c,why?why.replace(/\.?$/,'. '):'')}
   save();watchOverlay()}
 function cleanup(){G.actors.slice().forEach(removeActor);G.actors.length=0;clearObjs();marker(null);hud(false);G.missionPath=null}

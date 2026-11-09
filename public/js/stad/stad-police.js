@@ -101,7 +101,7 @@ function copStep(a,dt){const P=G.P;
   else if(a.st==='search'){const l=P0.lkp||P,Rr=20+10*P0.stars;if(!a.wp||goPath(a,a.wp.x,a.wp.z,3.6,dt)||dist(a,a.wp)<1.2||(a.stuck||0)>1.5){if(!a.wait){a.wait=rr(.8,2)}a.wait-=dt;a.sp=0;a.ry+=dt*1.5;if(a.wait<=0){a.wait=0;const q=M.nearestWalk(l.x+rr(-Rr,Rr),l.z+rr(-Rr,Rr),10);a.wp=q||l;a.path=null}}}}
 /* ---------- verstoppen ---------- */
 function hideNear(){const P=G.P;let best=null,bd=2.1;M.hides.forEach(h=>{let d;if(h.r){const dx=Math.max(0,Math.abs(P.x-h.x)-h.r[0]),dz=Math.max(0,Math.abs(P.z-h.z)-h.r[1]);d=Math.hypot(dx,dz)+.6}else d=Math.hypot(P.x-h.x,P.z-h.z);if(d<bd){bd=d;best=h}});return best}
-G.police.tryHide=function(){if(G.hidden){G.unhide();return true}if(!P0.on||G.driving)return false;const h=hideNear();if(!h)return false;G.hidden=true;G.stopPath&&G.stopPath();G.snd&&G.snd.fx('hide');hud();return true};
+G.police.tryHide=function(){if(G.hidden){G.unhide();return true}if(!P0.on||G.driving)return false;const h=hideNear();if(!h)return false;G.hidden=true;G.ev&&G.ev('verstop');G.stopPath&&G.stopPath();G.snd&&G.snd.fx('hide');hud();return true};
 G.unhide=()=>{if(!G.hidden)return;G.hidden=false;G.snd&&G.snd.fx('hide');hud()};
 /* ---------- gepakt of ontkomen ---------- */
 function caught(){if(!P0.on||P0.ending)return;P0.ending=true;const mode=P0.mode,res=P0.res,ref=P0.ref;G.snd&&G.snd.fx('caught');G.shake&&G.shake(1);G.hitStop=.12;G.hidden=false;
@@ -111,7 +111,7 @@ function caught(){if(!P0.on||P0.ending)return;P0.ending=true;const mode=P0.mode,
     if(G.zakLeeg)G.zakLeeg('De politie neemt je spullen in beslag');
     if(mode==='wanted'){if(typeof policeRaid==='function'&&!policeRaid())G.toast&&G.toast('De agent laat je gaan','ok');return}
     if(ref&&typeof crimeFail==='function'){crimeFail(ref,'Straatroof. ')}else if(typeof arrest==='function')arrest(120,'Gepakt!','De politie heeft je te pakken.',{flow:true,cat:'straat'})},450)}
-function escaped(){if(!P0.on||P0.ending)return;P0.ending=true;const mode=P0.mode,res=P0.res;G.snd&&G.snd.fx('ok');banner('Ontkomen','ok');
+function escaped(){if(!P0.on||P0.ending)return;P0.ending=true;const mode=P0.mode,res=P0.res;G.ev&&(G.ev('ontsnap'),P0.stars>=3&&G.ev('ontsnap3'));G.snd&&G.snd.fx('ok');banner('Ontkomen','ok');
   end(true);
   if(mode==='flee'){window.__chase=false;res&&res(true);return}
   try{if(typeof addXp==='function')addXp(3);S.cred=(S.cred||0)+1;S.stats=S.stats||{};S.stats.ontsnapt=(S.stats.ontsnapt||0)+1;save()}catch(e){}

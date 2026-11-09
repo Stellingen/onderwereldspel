@@ -1256,9 +1256,14 @@ met scripts en stijlen wordt uit `/game` gelezen) en tekent de stad eromheen. He
   Dag en nacht volgen de echte tijd in Nederland (instelbaar). 's Nachts branden ramen, neon en lantaarns.
 - **Besturing**: WASD of pijltjes, Shift rennen, E (of Spatie) praten met mensen en naar binnen, F auto in en uit, Z en C draaien,
   scrollen zoomt, klikken op een gebouw of de kaart = erheen lopen, J telefoon, M kaart, Esc terug. Op de telefoon een stick, een renknop, vegen en knijpen.
-- **Telefoon (J)**: saldo, laatste berichten en apps voor alles wat online kan (overzicht, profiel, ranglijst, lidmaatschap, bank,
-  wapens, kleding, familie, opdrachten). Klussen, casino en auto's doe je ter plekke: die apps zetten de route uit. Ook: kaart,
-  instellingen (beeld, huidskleur, tijd) en terug naar het klikspel.
+- **Telefoon (J)** (`js/stad/stad-phone.js`): komt omhoog als een echte telefoon (op een telefoon schermvullend). Startscherm met je
+  pixelportret, contant en bank, een 'Nu'-kaart (politie, missie, route, dagklussen of pakketjes), de laatste berichten en apps. In de
+  telefoon zelf: Berichten (gesprekken per contact, met knoppen zoals Route of Naar de notaris), Dagklussen, Contacten (bellen regelt iets:
+  notaris, garage brengt je auto, Het Contact, de heler, taxi), Taxi (snel naar elke plek of je bezit, betalen met contant: €15 + €0,55
+  per meter, minimaal €25; niet tijdens een achtervolging of missie), Camera (selfie van je poppetje in je outfit, opslaan als plaatje),
+  Prestaties en Instellingen (geluid, muziek, volume, beeld, huidskleur, tijd, besturing). Dock: Berichten, Kaart, Klussen, Vastgoed.
+  Apps met ↗ openen het scherm van het klikspel (bank, kleding, wapens, familie, opdrachten, overzicht, profiel, ranglijst, lid); casino
+  en auto's zetten een route. Rode getallen = ongelezen berichten of op te halen dagklussen (ook op de telefoonknop in de HUD).
 - **Bajes**: zit je vast, dan sta je binnen in De Bajes tot je vrij bent; daarna kom je buiten de poort uit.
 - **Jouw bezit** (`js/stad/stad-lots.js`): je woning staat in de Westbuurt en ziet eruit naar waar je woont (tentje onder de brug,
   dichtgetimmerd kraakpand, rijtjeshuis, grachtenpand, penthouse-toren tot 13 verdiepingen, villa met zwembad). Elke zaak uit Bezit heeft
@@ -1329,5 +1334,18 @@ met scripts en stijlen wordt uit `/game` gelezen) en tekent de stad eromheen. He
   en chiptune-muziek die meegaat met wat er gebeurt: dag, nacht, achtervolging en stil als je binnen bent. Effecten, muziek en volume
   apart in de instellingen van de telefoon.
 - **Gamegevoel**: schermschud, heel even stilstand bij een klap of een buit, eurobiljetten die wegspringen en zwevende bedragen.
+- **Terugkomen** (`js/stad/stad-leven.js`):
+  - Berichten van contacten (S.stadMsg, maximaal 40): welkom, nieuwe dagklussen, opgeleverde panden, beloningen. Een melding schuift
+    bovenin binnen; tik erop en je bent in het gesprek.
+  - Dagklussen: elke dag om 6 uur (Nederlandse tijd) drie nieuwe van Het Contact, voor iedereen anders maar vast per dag (bijvoorbeeld
+    een zakenman beroven, een oma helpen, de politie afschudden, met 6 mensen praten, een pakketje vinden, een taxi nemen). Beloning per
+    klus: 2,4 × de gemiddelde buit van je straatklus (× lootMult) en XP; alle drie = bonus die oploopt met de dagen op rij (tot 7).
+    Bewaard in S.stadDag.
+  - Pakketjes: 30 verstopte pakketjes in stegen, parken, op kades en het strand, zichtbaar binnen 34 meter. Elk pakketje geeft geld en
+    XP, bij 10, 20 en 30 een bericht en bij 30 een grote bonus. Een zwerver wijst je voor een tientje het dichtstbijzijnde aan (route op
+    de kaart). Bewaard in S.stadCol.
+  - Prestaties: 17 stuks (eerste straatroof, 25 overvallen, 5 oma's geholpen, 50 gesprekken, 10 fooien, politie 1 en 10 keer afgeschud,
+    ontsnapt met 3 sterren, 10 keer verstopt, 10 keer heler, 10 en 30 pakketjes, 10 missies, 7 keer alle dagklussen, taxi, selfie,
+    5 panden op Oostland). Tellers in S.stadCnt, behaald in S.stadAch.
 - **Straatbeeld**: Amsterdammertjes en fietsen langs de gracht, bomen langs de stoep, prullenbakken, bootjes in de gracht en het havenkanaal,
   lichtreclame op de Zuidas.

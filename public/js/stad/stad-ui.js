@@ -17,6 +17,8 @@ const jailed=()=>typeof inJail==='function'&&inJail();
 const tst=(m,c)=>{try{toast(m,c)}catch(e){}};G.toast=tst;
 const E=s=>typeof esc==='function'?esc(s):String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+// toetsuitleg onderin alleen de eerste paar keer
+let visits=0;try{visits=(+localStorage.getItem('stad_visits')||0)+1;localStorage.setItem('stad_visits',visits)}catch(e){}
 const ui=document.createElement('div');ui.id='stadUi';document.body.appendChild(ui);
 ui.innerHTML=`
 <div class="sd-top">
@@ -34,7 +36,7 @@ ui.innerHTML=`
  </div>
 </div>
 <div class="sd-area" id="sdArea" hidden><small>Pixelstad</small><b></b></div>
-<div class="sd-keys" id="sdKeys" ${touch?'hidden':''}><span><kbd>WASD</kbd>lopen</span><span><kbd>Shift</kbd>rennen</span><span><kbd>E</kbd>praten / naar binnen</span><span><kbd>Z</kbd><kbd>C</kbd>draaien</span><span class="sd-beta">beta</span></div>
+<div class="sd-keys" id="sdKeys" ${touch||visits>4?'hidden':''}><span><kbd>WASD</kbd>lopen</span><span><kbd>Shift</kbd>rennen</span><span><kbd>E</kbd>praten / naar binnen</span><span><kbd>Z</kbd><kbd>C</kbd>draaien</span><span class="sd-beta">beta</span></div>
 <button class="sd-prompt" id="sdPrompt" hidden></button>
 <div class="sd-joy" id="sdJoy" ${touch?'':'hidden'}><i id="sdKnob"></i></div>
 <button class="sd-run" id="sdRun" ${touch?'':'hidden'}>Ren</button>
@@ -145,7 +147,7 @@ const ONSITE={cars:1,casino:1};
 function renderApps(){$s('sdApps').innerHTML=APPS.filter(k=>k==='mycar'||k==='vastgoed'||hasPage(k)).map(k=>`<button class="sd-app" data-app="${k}"><i style="--c:${k==='mycar'?'#ff7a1a':k==='vastgoed'?'#f2c230':secOf(k)[2]}">${k==='vastgoed'&&G.kit?G.kit.ic.key:pic(k==='mycar'?'cars':k)}${ONSITE[k]?`<em>${ic('pin')}</em>`:''}</i><span>${APPN[k]||pageName(k)}</span></button>`).join('');
   let msgs=[];try{msgs=(typeof logShown==='function'?logShown():S.log||[]).slice(0,2)}catch(e){}
   $s('sdMsgs').innerHTML=msgs.length?msgs.map(l=>`<div class="sd-msg ${l.c||''}"><b>Onderwereld</b><span>${E(String(l.m).replace(/<[^>]+>/g,''))}</span></div>`).join(''):''}
-function openPhone(){const ph=$s('sdPhone');if(!ph.hidden){ph.hidden=true;if(!cur)G.resume();return}closeAll();renderApps();$s('sdSet').hidden=true;$s('sdHome').hidden=false;ph.hidden=false;if(!cur)G.pause()}
+function openPhone(){if(G.phone){G.phone.toggle();return}const ph=$s('sdPhone');if(!ph.hidden){ph.hidden=true;if(!cur)G.resume();return}closeAll();renderApps();$s('sdSet').hidden=true;$s('sdHome').hidden=false;ph.hidden=false;if(!cur)G.pause()}
 G.onPhone=openPhone;
 $s('sdPhoneB').addEventListener('click',openPhone);
 $s('sdPhone').addEventListener('click',e=>{const b=e.target.closest('[data-app]');if(!b)return;const k=b.dataset.app;
@@ -181,7 +183,7 @@ G.onMap=()=>{if(G.kaart&&G.kaart.isOpen())G.kaart.close();else openMap()};
 $s('sdMapB').addEventListener('click',openMap);$s('sdMmWrap').addEventListener('click',openMap);
 
 /* ---------- sluiten en sneltoetsen ---------- */
-function closeAll(){$s('sdPhone').hidden=true;if(G.kaart&&G.kaart.isOpen())G.kaart.close()}
+function closeAll(){$s('sdPhone').hidden=true;if(G.phone&&G.phone.isOpen())G.phone.close();if(G.kaart&&G.kaart.isOpen())G.kaart.close()}
 ui.addEventListener('click',e=>{if(e.target.closest('[data-close]')||e.target.classList.contains('sd-phone')){closeAll();if(!cur)G.resume()}});
 addEventListener('keydown',e=>{const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;const k=e.key.toLowerCase(),ov=!$s('sdPhone').hidden;
   if(k==='escape'){if(ov){closeAll();if(!cur)G.resume()}else if(cur&&$s('modal').hidden&&!document.querySelector('.cg-ov,.chase-ov'))leave();return}
@@ -207,5 +209,5 @@ addEventListener('keydown',e=>{const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$
 
 // opstarten in de bajes als je vastzit
 if(jailed())setTimeout(()=>{if(!cur)showInside({jail:1,pl:M.placeById('jail')},'De Bajes','jail')},50);
-G.ui={enter,enterDirect,leave,leaveQuiet,closeAll,openMap,openPhone,cur:()=>cur};
+G.ui={enter,enterDirect,leave,leaveQuiet,closeAll,openMap,openPhone,phoneApp,cur:()=>cur};
 })();
