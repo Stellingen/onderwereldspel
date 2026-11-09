@@ -1260,4 +1260,11 @@ met scripts en stijlen wordt uit `/game` gelezen) en tekent de stad eromheen. He
   wapens, kleding, familie, opdrachten). Klussen, casino en auto's doe je ter plekke: die apps zetten de route uit. Ook: kaart,
   instellingen (beeld, huidskleur, tijd) en terug naar het klikspel.
 - **Bajes**: zit je vast, dan sta je binnen in De Bajes tot je vrij bent; daarna kom je buiten de poort uit.
-- **Nog niet** (volgende stappen): je eigen panden die zichtbaar groeien, auto's rijden en verkeer, politie op straat.
+- **Jouw bezit** (`js/stad/stad-lots.js`): je woning staat in de Westbuurt en ziet eruit naar waar je woont (tentje onder de brug,
+  dichtgetimmerd kraakpand, rijtjeshuis, grachtenpand, penthouse-toren tot 13 verdiepingen, villa met zwembad). Elke zaak uit Bezit heeft
+  een eigen kavel in een passende wijk (winkels in de Westbuurt, horeca in het Centrum en op Oud-Zuid, de club en het vastgoed op de Zuidas,
+  garages en loodsen in De Haven). Lege kavel = bord 'te koop'. Koop je de zaak, upgrade je hem of open je meer vestigingen, dan komt er
+  een steiger en een bouwkraan en gaat het pand verdieping voor verdieping omhoog. Het bouwen loopt alleen als je in de buurt bent, zodat je
+  het altijd ziet. Verdiepingen = basis + per upgrade (vastgoed 2 per niveau) + 1 per 3 vestigingen, met een maximum per soort.
+  Naar binnen opent Bezit meteen op die zaak. Op de kaart staat 'Jouw bezit' bovenaan.
+- **Nog niet** (volgende stap): auto's rijden en verkeer, politie op straat.

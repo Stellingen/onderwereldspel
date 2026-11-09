@@ -162,6 +162,9 @@ body.stad-in main{max-width:1240px;margin:0 auto;width:100%;box-sizing:border-bo
 .sd-dn{position:absolute;transform:translate(-50%,-50%);font:800 12px var(--f-head);font-style:normal;text-transform:uppercase;letter-spacing:.14em;color:#fff;text-shadow:2px 2px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;pointer-events:none;opacity:.9;white-space:nowrap}
 .sd-pin{position:absolute;transform:translate(-50%,-50%);width:30px;height:30px;display:grid;place-items:center;background:#0d0e11;border:2px solid var(--c);color:var(--c);padding:0;box-shadow:3px 3px 0 #000;z-index:1}
 .sd-pin svg{width:17px;height:17px}.sd-pin:hover{background:var(--c);color:#111;z-index:2}
+.sd-pin.own{box-shadow:3px 3px 0 #000,0 0 0 2px #000,0 0 12px rgba(242,194,48,.6)}
+.sd-pin.bouw::after{content:"";position:absolute;right:-5px;top:-5px;width:10px;height:10px;background:repeating-linear-gradient(45deg,#f2c230 0 3px,#111 3px 6px);border:1px solid #000}
+.sd-pin.sale{width:12px;height:12px;background:#7d828a;border:2px solid #000;box-shadow:none;z-index:0}.sd-pin.sale:hover{background:#fff}
 .sd-me{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;background:#fff;border:3px solid #000;z-index:3;animation:sdMe .8s steps(2) infinite}
 @keyframes sdMe{50%{box-shadow:0 0 0 5px var(--acc)}}
 .sd-legend{overflow:auto;border-left:1px solid var(--ln);padding:6px 0}

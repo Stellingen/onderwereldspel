@@ -84,11 +84,12 @@ function loc(){const P=G.P;if(!P)return;const n=M.districtAt(P.x,P.z);if(n===las
 /* ---------- minikaart ---------- */
 const mapCv=X.mapCanvas(),mini=$s('sdMini'),mc=mini.getContext('2d');mc.imageSmoothingEnabled=false;
 const PCOL={};M.places.forEach(p=>{PCOL[p.id]=secOf(p.page)[2]});
+const pcol=p=>p.dyn?(p.own?'#f2c230':'#7d828a'):PCOL[p.id];
 let pathPts=null;
 function drawMini(){const P=G.P,w=mini.width,s=1.3;mc.setTransform(1,0,0,1,0,0);mc.imageSmoothingEnabled=false;mc.fillStyle='#14304a';mc.fillRect(0,0,w,w);
   mc.save();mc.translate(w/2,w/2);mc.rotate(G.yaw);mc.scale(s,s);mc.translate(-P.x,-P.z);mc.drawImage(mapCv,0,0);
   if(pathPts&&P.path){mc.strokeStyle='#ff7a1a';mc.lineWidth=2;mc.setLineDash([3,2]);mc.beginPath();mc.moveTo(P.x,P.z);P.path.forEach(q=>mc.lineTo(q.x,q.z));mc.stroke();mc.setLineDash([])}
-  M.places.forEach(p=>{mc.fillStyle='#000';mc.fillRect(p.door.x-3,p.door.z-3,6,6);mc.fillStyle=PCOL[p.id];mc.fillRect(p.door.x-2.2,p.door.z-2.2,4.4,4.4)});
+  M.places.forEach(p=>{if(p.dyn&&!p.own)return;mc.fillStyle='#000';mc.fillRect(p.door.x-3,p.door.z-3,6,6);mc.fillStyle=pcol(p);mc.fillRect(p.door.x-2.2,p.door.z-2.2,4.4,4.4)});
   mc.translate(P.x,P.z);mc.rotate(Math.atan2(Math.cos(P.ry),Math.sin(P.ry)));mc.fillStyle='#000';mc.beginPath();mc.moveTo(5,0);mc.lineTo(-3.4,3.4);mc.lineTo(-1.6,0);mc.lineTo(-3.4,-3.4);mc.closePath();mc.fill();
   mc.fillStyle='#fff';mc.beginPath();mc.moveTo(3.6,0);mc.lineTo(-2.4,2.4);mc.lineTo(-1,0);mc.lineTo(-2.4,-2.4);mc.closePath();mc.fill();mc.restore();
   const r=mini.getBoundingClientRect().width/2-2;$s('sdNorth').style.transform=`translate(${Math.sin(-G.yaw)*-r}px,${-Math.cos(G.yaw)*r}px)`;
@@ -97,10 +98,10 @@ G.drawMini=drawMini;let mmT=0;G.onFrame=dt=>{mmT+=(dt||0);if(!(mmT<.08)){mmT=0;t
 
 /* ---------- ingang in de buurt ---------- */
 const prompt=$s('sdPrompt');
-G.onNear=p=>{if(!p){prompt.hidden=true;return}const sc=secOf(p.page);prompt.hidden=false;
-  prompt.innerHTML=`<i class="sd-pi">${pic(p.page)}</i><span class="sd-pt"><small>${E(sc[0])} · ${E(pageName(p.page))}</small><b>${E(p.name)}</b></span><span class="sd-pk">${touch?'Naar binnen':'<kbd>Spatie</kbd>Naar binnen'}</span>`;prompt.style.setProperty('--c',sc[2])};
+G.onNear=p=>{if(!p){prompt.hidden=true;return}const sc=p.dyn&&p.own?['Jouw bezit',[],'#f2c230']:secOf(p.page);prompt.hidden=false;
+  const act=p.dyn==='biz'&&!p.own?'Bekijken':p.building?'Bouw bekijken':'Naar binnen';prompt.innerHTML=`<i class="sd-pi">${pic(p.page)}</i><span class="sd-pt"><small>${E(sc[0])} · ${E(pageName(p.page))}${p.building?' · in aanbouw':''}</small><b>${E(p.name)}</b></span><span class="sd-pk">${touch?act:'<kbd>Spatie</kbd>'+act}</span>`;prompt.style.setProperty('--c',sc[2])};
 prompt.addEventListener('click',()=>{if(G.near)enter(G.near)});
-G.onPath=(path,goal)=>{pathPts=path;const d=$s('sdDest');if(!path){d.hidden=true;return}d.hidden=false;d.style.setProperty('--c',goal?PCOL[goal.id]:'#ff7a1a');
+G.onPath=(path,goal)=>{pathPts=path;const d=$s('sdDest');if(!path){d.hidden=true;return}d.hidden=false;d.style.setProperty('--c',goal?pcol(goal):'#ff7a1a');
   d.innerHTML=`${ic('walk')}<span><small>Onderweg naar</small><b>${goal?E(goal.name):'je bestemming'}</b></span><button title="Stoppen" aria-label="Stoppen">×</button>`;d.querySelector('button').onclick=()=>G.stopPath()};
 
 /* ---------- naar binnen en naar buiten ---------- */
@@ -108,7 +109,7 @@ let cur=null;
 function showInside(kind,label,pg){G.pause();closeAll();cur=kind;document.body.classList.add('stad-in');const ib=$s('sdIn');ib.hidden=false;ib.style.setProperty('--c',secOf(pg)[2]);
   $s('sdInK').textContent=kind.phone?'Telefoon':kind.jail?'Je zit vast':'Binnen · '+(M.districtAt(G.P.x,G.P.z));$s('sdInName').textContent=label;
   if(typeof page!=='undefined'&&page===pg&&location.hash==='#'+pg)render();else location.hash='#'+pg;window.scrollTo(0,0);jailBtn()}
-function enter(pl){if(!pl)return;if(!hasPage(pl.page)){tst('Hier is nog niets te doen');return}showInside({pl},pl.name,pl.page)}
+function enter(pl){if(!pl)return;if(!hasPage(pl.page)){tst('Hier is nog niets te doen');return}if(pl.before)pl.before();showInside({pl},pl.name,pl.page)}
 G.onEnter=enter;
 function phoneApp(pg){showInside({phone:1,pg},pageName(pg),pg)}
 function leave(){if(!cur)return;if(jailed()){if(cur.phone){showInside({jail:1,pl:M.placeById('jail')},'De Bajes','jail');return}tst('Je zit nog vast. Wacht je straf uit, betaal borg of ontsnap.','bad');return}
@@ -156,15 +157,20 @@ function settings(){const s=$s('sdSet');$s('sdHome').hidden=true;s.hidden=false;
 try{const d=localStorage.getItem('stad_day');if(d==='0'||d==='1')G.forceDay=+d}catch(e){}
 
 /* ---------- grote kaart (M) ---------- */
-const mapIn=$s('sdMapIn');
-(function(){const img=mapCv.toDataURL();
-  mapIn.innerHTML=`<img src="${img}" alt="Kaart van de Pixelstad" draggable="false">`+M.DISTRICTS.map(d=>`<em class="sd-dn" style="left:${d.x/M.W*100}%;top:${d.z/M.H*100}%">${d.n}</em>`).join('')
-   +M.places.map(p=>`<button class="sd-pin" data-pl="${p.id}" style="left:${p.door.x/M.W*100}%;top:${p.door.z/M.H*100}%;--c:${PCOL[p.id]}" title="${E(p.name)}" aria-label="${E(p.name)}">${pic(p.page)}</button>`).join('')
+const mapIn=$s('sdMapIn'),mapImg=mapCv.toDataURL();
+function buildMap(){
+  const vis=M.places.filter(p=>!p.dyn||p.own);
+  mapIn.innerHTML=`<img src="${mapImg}" alt="Kaart van de Pixelstad" draggable="false">`+M.DISTRICTS.map(d=>`<em class="sd-dn" style="left:${d.x/M.W*100}%;top:${d.z/M.H*100}%">${d.n}</em>`).join('')
+   +M.places.filter(p=>p.dyn==='biz'&&!p.own).map(p=>`<button class="sd-pin sale" data-pl="${p.id}" style="left:${p.door.x/M.W*100}%;top:${p.door.z/M.H*100}%" title="${E(p.name)}" aria-label="${E(p.name)}"></button>`).join('')
+   +vis.map(p=>`<button class="sd-pin${p.dyn?' own':''}${p.building?' bouw':''}" data-pl="${p.id}" style="left:${p.door.x/M.W*100}%;top:${p.door.z/M.H*100}%;--c:${pcol(p)}" title="${E(p.name)}" aria-label="${E(p.name)}">${pic(p.dyn==='home'?'verblijf':p.page)}</button>`).join('')
    +'<i class="sd-me" id="sdMe"></i>';
   const groups=typeof NAV_GROUPS!=='undefined'?NAV_GROUPS:[['Plekken',M.places.map(p=>p.page),'#f2c230']];
-  $s('sdLegend').innerHTML=groups.map(g=>{const ps=M.places.filter(p=>g[1].includes(p.page));if(!ps.length)return '';
-    return `<div class="sd-lg" style="--c:${g[2]}"><h4>${E(g[0])}</h4>${ps.map(p=>`<button data-pl="${p.id}"><i>${pic(p.page)}</i><span><b>${E(p.name)}</b><small>${E(pageName(p.page))} · ${E(M.districtAt(p.door.x,p.door.z))}</small></span></button>`).join('')}</div>`}).join('')})();
-function openMap(){closeAll();const m=$s('sdMap');m.hidden=false;if(!cur)G.pause();const me=$s('sdMe');me.style.left=G.P.x/M.W*100+'%';me.style.top=G.P.z/M.H*100+'%'}
+  const row=p=>`<button data-pl="${p.id}"><i>${pic(p.dyn==='home'?'verblijf':p.page)}</i><span><b>${E(p.name)}</b><small>${p.building?'In aanbouw · ':''}${E(p.dyn?(p.dyn==='home'?'Verblijf':'Bezit'):pageName(p.page))} · ${E(M.districtAt(p.door.x,p.door.z))}</small></span></button>`;
+  const mine=M.places.filter(p=>p.dyn&&p.own),sale=M.places.filter(p=>p.dyn==='biz'&&!p.own);
+  $s('sdLegend').innerHTML=`<div class="sd-lg" style="--c:#f2c230"><h4>Jouw bezit</h4>${mine.map(row).join('')}</div>`
+   +groups.map(g=>{const ps=M.places.filter(p=>!p.dyn&&g[1].includes(p.page));if(!ps.length)return '';return `<div class="sd-lg" style="--c:${g[2]}"><h4>${E(g[0])}</h4>${ps.map(row).join('')}</div>`}).join('')
+   +(sale.length?`<div class="sd-lg" style="--c:#9aa1ab"><h4>Te koop (${sale.length})</h4>${sale.map(row).join('')}</div>`:'')}
+function openMap(){closeAll();buildMap();const m=$s('sdMap');m.hidden=false;if(!cur)G.pause();const me=$s('sdMe');me.style.left=G.P.x/M.W*100+'%';me.style.top=G.P.z/M.H*100+'%'}
 G.onMap=()=>{const m=$s('sdMap');if(!m.hidden){closeAll();if(!cur)G.resume()}else openMap()};
 $s('sdMapB').addEventListener('click',openMap);$s('sdMmWrap').addEventListener('click',openMap);
 const goPl=id=>{const pl=M.placeById(id);closeAll();if(cur)leaveQuiet();if(cur)return;G.resume();G.goPlace(pl)};

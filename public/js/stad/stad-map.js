@@ -45,6 +45,9 @@ const over=(a,b)=>a[0]<b[2]&&a[2]>b[0]&&a[1]<b[3]&&a[3]>b[1];
 function addB(b){b.i=buildings.length;buildings.push(b);set(b.x0,b.z0,b.x1,b.z1,T.LOT);block(b.x0,b.z0,b.x1,b.z1);return b}
 // bijzonder gebouw met ingang: door = punt op de stoep vlak voor de deur
 function place(o){const r=[o.x0,o.z0,o.x1,o.z1];reserved.push(o.res||r);
+  if(o.dyn){set(o.x0,o.z0,o.x1,o.z1,T.LOT);const f=o.face,mx=o.dx!=null?o.dx:(o.x0+o.x1)/2,mz=(o.z0+o.z1)/2;
+    const door=f==='N'?{x:mx,z:o.z0-1.2}:f==='S'?{x:mx,z:o.z1+1.2}:f==='W'?{x:o.x0-1.2,z:mz}:{x:o.x1+1.2,z:mz};
+    const pl=Object.assign({},o,{door,b:-1,rect:{x0:o.x0,z0:o.z0,x1:o.x1,z1:o.z1}});places.push(pl);return pl}
   const parts=(o.parts||[r]).map((p,k)=>addB({x0:p[0],z0:p[1],x1:p[2],z1:p[3],fl:p[4]||o.fl,st:p[5]||o.st,roof:p[6]||o.roof||'flat',pl:o.id,main:k===0}));
   const f=o.face,mx=o.dx!=null?o.dx:(o.x0+o.x1)/2,mz=o.dz!=null?o.dz:(o.z0+o.z1)/2;
   const door=f==='N'?{x:mx,z:o.z0-1.2}:f==='S'?{x:mx,z:o.z1+1.2}:f==='W'?{x:o.x0-1.2,z:mz}:{x:o.x1+1.2,z:mz};
@@ -74,7 +77,13 @@ place({id:'werk',page:'werk',name:'Havenloods 7',sign:'HAVEN',st:'ware',fl:3,fac
 place({id:'skills',page:'skills',name:'Sportschool De Bokszak',sign:'GYM',st:'gym',fl:2,face:'N',x0:40,z0:200,x1:66,z1:214,ic:'skills'});
 place({id:'relax',page:'relax',name:'Spa Zeezicht',sign:'SPA',st:'beach',fl:2,face:'N',x0:90,z0:200,x1:116,z1:214,ic:'relax'});
 place({id:'look',page:'look',name:'Kledingzaak Maatwerk',sign:'KLEDING',st:'boutique',fl:2,face:'N',x0:140,z0:200,x1:166,z1:214,ic:'look'});
-place({id:'verblijf',page:'verblijf',name:'Jouw woning',sign:'THUIS',st:'brick',fl:3,face:'N',x0:38,z0:96,x1:50,z1:108,res:[37,95,56,116],ic:'verblijf',roof:'gableX',home:1});
+// je eigen woning: het gebouw hangt af van waar je woont (stad-lots.js)
+place({id:'verblijf',page:'verblijf',name:'Jouw woning',sign:'THUIS',face:'N',dx:45,x0:37,z0:96,x1:56,z1:116,res:[37,95,56,116],ic:'verblijf',dyn:'home'});
+// kavels voor je zaken (Bezit): leeg met een bord 'te koop', of jouw pand dat groeit met vestigingen en upgrades
+const LOTS=[['wash',37,147,48,159,'N'],['boven',49,147,61,160,'N'],['winkelpand',62,147,73,160,'N'],['snack',88,147,99,158,'N'],['shop',100,147,111,158,'N'],['barber',112,147,123,158,'N'],
+ ['hotel',137,147,153,161,'N'],['speelhal',154,147,171,160,'N'],['shisha',229,147,246,159,'N'],['club',261,43,279,58,'N'],['vastgoed',280,43,297,61,'N'],
+ ['garage',313,44,338,70,'S'],['autogarage',313,124,338,136,'N'],['dealer',313,182,338,196,'N'],['bedrijfshal',346,44,370,54,'W'],['port',346,100,370,110,'W'],['jet',346,156,370,166,'W']];
+LOTS.forEach(([b,x0,z0,x1,z1,f])=>place({id:'biz_'+b,biz:b,page:'biz',name:'Kavel',sign:'TE KOOP',face:f,x0,z0,x1,z1,ic:'biz',dyn:'biz'}));
 // villapark: de familievilla in een tuin met heg
 set(46,6,116,29,T.GARDEN);
 place({id:'fam',page:'fam',name:'Villa Cosa Nostra',sign:'FAMILIE',st:'villa',fl:3,face:'S',x0:66,z0:9,x1:96,z1:22,res:[46,6,116,29],ic:'fam'});
@@ -109,7 +118,7 @@ fill(137,147,171,185,CEN);fill(211,147,247,185,CEN);
 // Zuidas: torens
 fill(261,43,297,81,ZUID);fill(261,95,297,133,ZUID);fill(261,147,297,185,ZUID);
 // haven: loodsen en containers
-[[313,44,338,70,2],[313,124,338,136,2],[313,182,338,196,2]].forEach(([a,b,c,e,f])=>addB({x0:a,z0:b,x1:c,z1:e,fl:f,st:pick(STY.haven),roof:'flat'}));
+
 // noordkant: kantoren tussen gracht en bajes, park tussen villa en gracht
 set(123,6,185,29,T.PARK);set(6,6,46,29,T.PARK);set(197,6,262,29,T.GRASS);
 [[200,9,214,27,6],[216,11,232,27,8],[234,9,252,27,7]].forEach(([a,b,c,e,f])=>addB({x0:a,z0:b,x1:c,z1:e,fl:f,st:pick(STY.noord),roof:'flat'}));
@@ -199,6 +208,7 @@ function districtAt(x,z){
   if(z<33)return x<120?'Villapark':x<197?'Noorderpark':x<258?'Noordkade':'De Bajes';
   if(z>=197)return z>=226?'Het Strand':'Boulevard';
   if(x<26)return 'Westkust';if(x<126)return 'Westbuurt';if(x<180)return 'Centrum';if(x<258)return 'Oud-Zuid';if(x<308)return 'Zuidas';return 'De Haven'}
-root.STAD_MAP={districtAt,W,H,FL,T,RX,RZ,RW,SW,ground:g,solid,bridgeWalk,buildings,props,places,bridges,DISTRICTS,spawn,jailGate,
+function setSolid(r,on){block(Math.floor(r.x0),Math.floor(r.z0),Math.ceil(r.x1),Math.ceil(r.z1),on?1:0)}
+root.STAD_MAP={districtAt,setSolid,W,H,FL,T,RX,RZ,RW,SW,ground:g,solid,bridgeWalk,buildings,props,places,bridges,DISTRICTS,spawn,jailGate,
   at,walkable,canStand,nearestWalk,findPath,placeById:id=>places.find(p=>p.id===id),placeByPage:pg=>places.find(p=>p.page===pg)};
 })(typeof window!=='undefined'?window:globalThis);

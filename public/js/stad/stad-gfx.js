@@ -41,6 +41,8 @@ const STY={
  beach:{w:'#eab7a0',m:'#d29a84',f:'#ffffff',g:'#3a6a8a',gnd:'kiosk',aw:'#e8584a',roof:'#c2a68a',pat:'plain'},
  beach2:{w:'#a5d6cd',m:'#86bab0',f:'#ffffff',g:'#3a6a8a',gnd:'kiosk',aw:'#f0b23a',roof:'#a8b8b0',pat:'plain'},
  casino:{w:'#1b1519',m:'#120e11',f:'#d6a63e',g:'#4a1f4a',gnd:'casino',roof:'#2a2228',pat:'casino',neon:'#ff4fd8'},
+ club:{w:'#12161e',m:'#0b0e13',f:'#2a3a5a',g:'#0f1d33',gnd:'casino',roof:'#1d222b',pat:'casino',n1:'#3ad6ff',n2:'#2a6cff',n3:'#b8a1ff'},
+ kraak:{w:'#6d6a62',m:'#57544d',f:'#4a4640',g:'#1c1f24',gnd:'door',roof:'#4a4844',pat:'boarded'},
  bank:{w:'#cfc5b2',m:'#b3a993',f:'#7a705e',g:'#1f2a36',gnd:'columns',roof:'#7d776b',pat:'stone'},
  police:{w:'#e3e6ea',m:'#c9cdd3',f:'#1f4ea8',g:'#1d2a44',gnd:'police',roof:'#8a9098',pat:'plain'},
  jail:{w:'#7b7d80',m:'#64666a',f:'#3a3c40',g:'#1c1f24',gnd:'bars',roof:'#5f6164',pat:'jail'},
@@ -67,13 +69,14 @@ function drawStyle(k,s){const i=slotN++,ox=(i%8)*64,oy=Math.floor(i/8)*64;
   for(let fy=0;fy<2;fy++)for(let bx=0;bx<4;bx++){const x=ox+bx*16,y=oy+fy*16,on=hash(bx,fy,i*3+1)<.55;
     if(s.pat==='curtain'){rect(A,x,y,16,16,g);rect(A,x,y,16,1,f);rect(A,x,y,1,16,f);for(let a=2;a<14;a++)px(A,x+a,y+15-a,mix(g,[255,255,255],.25));
       if(on)rect(L,x+1,y+1,15,15,hex(hash(bx,fy,i)<.5?'#ffe7a8':'#cfe8ff'));continue}
-    if(s.pat==='casino'){rect(A,x+3,y+3,10,11,g);rect(A,x+2,y+2,12,1,f);rect(A,x+2,y+14,12,1,f);rect(L,x+3,y+3,10,11,hex(on?'#ff4fd8':'#7a3cff'));rect(L,x+2,y+2,12,1,hex('#ffcf5a'));continue}
+    if(s.pat==='casino'){rect(A,x+3,y+3,10,11,g);rect(A,x+2,y+2,12,1,f);rect(A,x+2,y+14,12,1,f);rect(L,x+3,y+3,10,11,hex(on?(s.n1||'#ff4fd8'):(s.n2||'#7a3cff')));rect(L,x+2,y+2,12,1,hex(s.n3||'#ffcf5a'));continue}
     if(s.pat==='corr'){if(fy===0&&bx%2===0){rect(A,x+3,y+4,10,4,f);rect(A,x+4,y+5,8,2,g);if(on)rect(L,x+4,y+5,8,2,hex('#ffe7a8'))}continue}
     const ww=s.pat==='jail'?4:s.k==='villa'||s.pat==='stone'?8:8,wh=s.pat==='jail'?6:s.pat==='stone'?12:10,wx=x+(16-ww)/2|0,wy=y+(s.pat==='stone'?2:3);
     rect(A,wx-1,wy-1,ww+2,wh+2,f);rect(A,wx,wy,ww,wh,g);
     if(s.pat!=='jail'){rect(A,wx+ww/2|0,wy,1,wh,f);rect(A,wx,wy+(wh/2|0),ww,1,f);px(A,wx+1,wy+1,mix(g,[255,255,255],.35))}
     else for(let a=0;a<ww;a+=2)rect(A,wx+a,wy,1,wh,f);
     rect(A,wx-1,wy+wh+1,ww+2,1,shade(f,.8));
+    if(s.pat==='boarded'&&hash(bx,fy,i+4)<.7){for(let a=0;a<wh;a+=3)rect(A,wx-1,wy+a,ww+2,2,shade(hex('#8a6a42'),.8+hash(a,bx,i)*.4));continue}
     if(on){const lc=hex(hash(bx,fy,i+9)<.7?'#ffd98a':'#ffeec8');rect(L,wx,wy,ww,wh,lc);if(s.pat!=='jail'){rect(L,wx+ww/2|0,wy,1,wh,[0,0,0]);rect(L,wx,wy+(wh/2|0),ww,1,[0,0,0])}}}
   // begane grond (64×16)
   const gy=oy+32;wall(ox,gy,64,16);
@@ -86,7 +89,7 @@ function drawStyle(k,s){const i=slotN++,ox=(i%8)*64,oy=Math.floor(i/8)*64;
     case 'lobby':{rect(A,x,gy+3,16,13,f);rect(A,x+1,gy+4,14,12,g);rect(A,x+8,gy+4,1,12,f);rect(L,x+1,gy+4,14,12,hex('#dfe9f0'));rect(L,x+8,gy+4,1,12,[0,0,0]);break}
     case 'roll':{rect(A,x+1,gy+3,14,13,shade(w,.75));for(let a=4;a<16;a+=2)rect(A,x+2,gy+a,12,1,shade(w,.6));rect(A,x+1,gy+2,14,1,f);break}
     case 'kiosk':{rect(A,x+1,gy+5,14,11,g);for(let d=0;d<16;d++)rect(A,x+d,gy+1,1,4,d%4<2?hex(s.aw):[255,255,255]);rect(A,x+1,gy+11,14,5,shade(w,.8));rect(L,x+1,gy+5,14,6,hex('#ffe2a0'));break}
-    case 'casino':{rect(A,x,gy+2,16,14,hex('#d6a63e'));rect(A,x+1,gy+4,14,12,hex('#2a0f2a'));rect(L,x+1,gy+4,14,12,hex('#ff4fd8'));rect(L,x,gy+2,16,2,hex('#ffcf5a'));rect(L,x+7,gy+4,2,12,hex('#ffcf5a'));break}
+    case 'casino':{rect(A,x,gy+2,16,14,f);rect(A,x+1,gy+4,14,12,g);rect(L,x+1,gy+4,14,12,hex(s.n1||'#ff4fd8'));rect(L,x,gy+2,16,2,hex(s.n3||'#ffcf5a'));rect(L,x+7,gy+4,2,12,hex(s.n3||'#ffcf5a'));break}
     case 'columns':{rect(A,x+2,gy,3,16,shade(w,1.1));rect(A,x+11,gy,3,16,shade(w,1.1));rect(A,x+2,gy,3,1,f);rect(A,x+11,gy,3,1,f);rect(A,x+6,gy+4,4,12,g);break}
     case 'police':{rect(A,x,gy,16,4,hex('#1f4ea8'));rect(A,x,gy+2,16,1,[240,240,240]);rect(A,x+3,gy+6,10,10,g);rect(A,x+3,gy+6,10,1,f);rect(L,x+3,gy+7,10,9,hex('#cfe0ff'));break}
     case 'bars':{rect(A,x+3,gy+4,10,12,g);for(let a=3;a<13;a+=2)rect(A,x+a,gy+4,1,12,f);break}
@@ -156,6 +159,9 @@ function groundCanvas(){
   // zachte schaduw rond gebouwen en muren op de grond
   const soft=(x0,z0,x1,z1,n)=>{for(let k=n;k>=1;k--){cx.fillStyle=`rgba(0,0,0,${.07})`;cx.fillRect(x0*GP-k,z0*GP-k,(x1-x0)*GP+2*k,(z1-z0)*GP+2*k)}};
   M.buildings.forEach(b=>soft(b.x0,b.z0,b.x1,b.z1,6));M.props.forEach(p=>{if(p.k==='wall')soft(p.x0,p.z0,p.x1,p.z1,4);if(p.k==='container')soft(p.x-(p.rot?1.5:3.5),p.z-(p.rot?3.5:1.5),p.x+(p.rot?1.5:3.5),p.z+(p.rot?3.5:1.5),3);if(p.k==='hedge')soft(p.x-1,p.z-1,p.x+1,p.z+1,2)});
+  // lege kavels: grind met een betonrand (wordt bebouwd als je de zaak koopt)
+  M.places.forEach(p=>{if(!p.rect)return;const r=p.rect;for(let Y=r.z0*GP;Y<r.z1*GP;Y++)for(let X=r.x0*GP;X<r.x1*GP;X++){const n=hash(X,Y,21);cx.fillStyle=n<.08?'#4a3e30':n>.9?'#8a7a62':'#6b5c48';cx.fillRect(X,Y,1,1)}
+    cx.strokeStyle='#9a968c';cx.lineWidth=2;cx.strokeRect(r.x0*GP+1,r.z0*GP+1,(r.x1-r.x0)*GP-2,(r.z1-r.z0)*GP-2)});
   // tuinpaden in het park
   cx.fillStyle=css(C.path);[[6,114,23,116],[37,62,73,64],[54,43,56,81],[123,17,185,19],[150,6,152,29],[6,17,46,19]].forEach(([a,b,c,e])=>cx.fillRect(a*GP,b*GP,(c-a)*GP,(e-b)*GP));
   // parkeervakken voor het politiebureau, plein-cirkel
@@ -204,10 +210,8 @@ function atlasMat(tex,litTex){const m=new TH.MeshLambertMaterial({map:tex});U.uL
 /* =================== de stad bouwen =================== */
 const PROPC={trunk:'#5a3d26',leaf:['#2f6e2a','#3c8a34','#4f7a26'],pine:'#24502a',palm:'#3f8a3a',lamp:'#2a2d32',bench:'#6a4a2c',hedge:'#2f6a2c',wall:'#8a8c90',stone:'#b7ad9a',gold:'#d6a63e',glass:'#2a3f52',tire:'#1c1d20',
   car:['#c23b2e','#2f5d9a','#e8e4da','#2a2c30','#d7a530','#3f7a4a','#7a3c8a']};
-function buildCity(){
-  const gb=new GB();
-  // gebouwen
-  M.buildings.forEach((b,bi)=>{const s=SLOT[b.st]||SLOT.brick,h=b.fl*FL,dx=b.x1-b.x0,dz=b.z1-b.z0,uOff=Math.floor(hash(bi,1,2)*4)/4,vOff=hash(bi,2,2)<.5?0:.5;
+// één gebouw (blok met gevels en dak) in de bouwer; ook gebruikt voor je eigen panden (stad-lots.js)
+function drawBuilding(gb,b,bi){const s=SLOT[b.st]||SLOT.brick,h=b.fl*FL,dx=b.x1-b.x0,dz=b.z1-b.z0,uOff=Math.floor(hash(bi,1,2)*4)/4,vOff=hash(bi,2,2)<.5?0:.5;
     const face=(a,bq,len)=>{const bays=Math.max(1,Math.round(len/3.4))/4;
       // begane grond
       gb.quad([a[0],0,a[1]],[bq[0],0,bq[1]],[bq[0],FL,bq[1]],[a[0],FL,a[1]],uOff,0,uOff+bays,1,s.gnd);
@@ -228,9 +232,13 @@ function buildCity(){
       // dakrand
       const rc=swatch(STY[b.st]?STY[b.st].m:'#666'),e=.3;gb.box(b.x0,h,b.z0,b.x1,h+.5,b.z0+e,rc);gb.box(b.x0,h,b.z1-e,b.x1,h+.5,b.z1,rc);gb.box(b.x0,h,b.z0,b.x0+e,h+.5,b.z1,rc);gb.box(b.x1-e,h,b.z0,b.x1,h+.5,b.z1,rc);
       if(dx*dz>90&&!b.pl){const n=1+(hash(bi,5,1)*2|0);for(let k=0;k<n;k++){const ax=b.x0+2+hash(bi,k,8)*(dx-5),az=b.z0+2+hash(bi,k,9)*(dz-5);gb.box(ax,h,az,ax+1.6,h+1.2,az+1.2,swatch('#9a9ca0'),{top:swatch('#7d8084')})}}}
-  });
+  }
+function buildCity(){
+  const gb=new GB();
+  // gebouwen
+  M.buildings.forEach((b,bi)=>drawBuilding(gb,b,bi));
   // deuren van de bijzondere plekken
-  M.places.forEach(p=>{const b=M.buildings[p.b],e=.04,w=1.3,dh=2.6;let x=p.door.x,z=p.door.z;
+  M.places.forEach(p=>{if(p.dyn)return;const b=M.buildings[p.b],e=.04,w=1.3,dh=2.6;let x=p.door.x,z=p.door.z;
     if(p.face==='S')gb.quad([x-w,0,b.z1+e],[x+w,0,b.z1+e],[x+w,dh,b.z1+e],[x-w,dh,b.z1+e],0,0,1,1,DOORT);
     if(p.face==='N')gb.quad([x+w,0,b.z0-e],[x-w,0,b.z0-e],[x-w,dh,b.z0-e],[x+w,dh,b.z0-e],0,0,1,1,DOORT);
     if(p.face==='E')gb.quad([b.x1+e,0,z+w],[b.x1+e,0,z-w],[b.x1+e,dh,z-w],[b.x1+e,dh,z+w],0,0,1,1,DOORT);
@@ -328,7 +336,7 @@ const SIGNC={casino:['#ffcf5a','#2a0f2a','#ff4fd8'],bank:['#2a2418','#e9dfc8','#
   fam:['#d6b25a','#1a1418','#d6b25a'],hits:['#ff5a4a','#140c0c','#7a1f1f'],shop:['#ffffff','#7a1f1f','#2c2e32'],cars:['#1d1d1f','#f0b23a','#1d1d1f'],werk:['#ffffff','#2e5f9a','#ffffff'],
   skills:['#ffffff','#e8a03a','#38486a'],relax:['#1f4a5a','#bfe8e0','#ffffff'],look:['#d6b25a','#1d1d1f','#d6b25a'],wit:['#1f3a6a','#e8f2ff','#3a7ad6'],biz:['#ffffff','#2b7a55','#ffffff'],verblijf:['#3a2418','#f1e4c8','#7a5a3a']};
 function placeMarks(scene){const out=[];
-  M.places.forEach(p=>{const b=M.buildings[p.b],c=SIGNC[p.id]||['#fff','#222','#fff'];const cv=textCanvas(p.sign,c[0],c[1],c[2]),tex=nearestTex(cv);
+  M.places.forEach(p=>{if(p.dyn)return;const b=M.buildings[p.b],c=SIGNC[p.id]||['#fff','#222','#fff'];const cv=textCanvas(p.sign,c[0],c[1],c[2]),tex=nearestTex(cv);
     const sw=cv.width/13*1.15,sh=1.15,mat=new TH.MeshBasicMaterial({map:tex});const m=new TH.Mesh(new TH.PlaneGeometry(sw,sh),mat);
     const y=Math.min(FL*.98,3.2)+.55,e=.08;let ry=0,x=p.door.x,z=p.door.z;
     if(p.face==='S'){z=b.z1+e;ry=0}else if(p.face==='N'){z=b.z0-e;ry=Math.PI}else if(p.face==='E'){x=b.x1+e;ry=Math.PI/2}else{x=b.x0-e;ry=-Math.PI/2}
@@ -347,5 +355,5 @@ function lampPools(scene){const cv=document.createElement('canvas');cv.width=cv.
   const mat=new TH.MeshBasicMaterial({map:tex,transparent:true,opacity:0,blending:TH.AdditiveBlending,depthWrite:false});
   const m=new TH.InstancedMesh(new TH.PlaneGeometry(9,9).rotateX(-Math.PI/2),mat,L.length);const o=new TH.Object3D();
   L.forEach((p,i)=>{o.position.set(p.x,.08,p.z);o.updateMatrix();m.setMatrixAt(i,o.matrix)});m.renderOrder=2;scene.add(m);return m}
-window.STAD_GFX={lampPools,STY,SLOT,swatch,atlas,lit,groundCanvas,mapCanvas,buildCity,atlasMat,makeHumans,placeMarks,textCanvas,nearestTex,U,GB,hash,PROPC};
+window.STAD_GFX={drawBuilding,lampPools,SIGNC,ROOFT,DOORT,STY,SLOT,swatch,atlas,lit,groundCanvas,mapCanvas,buildCity,atlasMat,makeHumans,placeMarks,textCanvas,nearestTex,U,GB,hash,PROPC};
 })();

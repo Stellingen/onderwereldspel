@@ -61,10 +61,11 @@ G.init=function(host){
   // de stad
   const gb=X.buildCity();const at=X.nearestTex(X.atlas),lt=X.nearestTex(X.lit);
   cityMesh=gb.mesh(X.atlasMat(at,lt));cityMesh.castShadow=true;cityMesh.receiveShadow=true;scene.add(cityMesh);G.city=cityMesh;
-  marks=X.placeMarks(scene);
+  marks=X.placeMarks(scene);G.marks=marks;
   pools=X.lampPools(scene);
   makePost();
   humans=X.makeHumans(scene,1+NPC_N);
+  if(G.lotsSetup)G.lotsSetup(scene);
   // voetgangers op de stoep
   for(let i=0;i<NPC_N;i++)NPC.push(spawnNpc(true));
   // laatst bekende plek
@@ -171,8 +172,10 @@ function input(){
 const ray=new TH.Raycaster(),v2=new TH.Vector2(),plane=new TH.Plane(new TH.Vector3(0,1,0),0),hitP=new TH.Vector3();
 function click(cx,cy){v2.set(cx/innerWidth*2-1,-(cy/innerHeight)*2+1);ray.setFromCamera(v2,camera);
   // eerst de markeringen (ring, ruit, bord), dan de gebouwen, dan de grond
-  for(const m of marks){const h=ray.intersectObjects([m.pin,m.sign,m.ring],false);if(h.length){goPlace(m.p);return}}
-  const hc=ray.intersectObject(cityMesh,false);
+  for(const m of marks){if(!m.ring.visible&&!m.pin.visible)continue;const h=ray.intersectObjects([m.pin,m.sign,m.ring].filter(o=>o&&o.visible!==false),false);if(h.length){goPlace(m.p);return}}
+  const hc=ray.intersectObject(cityMesh,false),hl=ray.intersectObjects(G.lotMeshes||[],false);
+  // je eigen panden (en borden 'te koop') als ze dichterbij zijn dan de rest van de stad
+  if(hl.length&&(!hc.length||hl[0].distance<=hc[0].distance+.01)){const pl=hl[0].object.userData.pl;if(pl){goPlace(pl);return}}
   if(hc.length){const p=hc[0].point;const b=M.buildings.find(b=>p.x>=b.x0-.6&&p.x<=b.x1+.6&&p.z>=b.z0-.6&&p.z<=b.z1+.6);
     if(b&&b.pl){goPlace(M.placeById(b.pl));return}
     if(ray.ray.intersectPlane(plane,hitP)&&hitP.distanceTo(p)<3){goTo(hitP.x,hitP.z);return}
@@ -223,8 +226,9 @@ function step(dt,ts){
   humans.count(1+NPC.length);humans.pose(0,{x:P.x,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,look:P.look,lean:v>7?.12:0});
   NPC.forEach((n,i)=>{npcStep(n,dt);humans.pose(i+1,n)});humans.flush();humans.xray(true);
   // markeringen laten leven
-  for(const m of marks){m.pin.rotation.y=ts*1.6;m.pin.position.y=3+Math.sin(ts*2.2+m.p.door.x)*.18;const s=1+Math.sin(ts*3)*.06;m.ring.scale.set(s,s,s);m.ring.material.opacity=G.near===m.p?1:.7}
+  for(const m of marks){m.pin.rotation.y=ts*1.6;m.pin.position.y=3+Math.sin(ts*2.2+m.p.door.x)*.18;const s=1+Math.sin(ts*3)*.06;m.ring.scale.set(s,s,s);m.ring.material.opacity=G.near===m.p?1:(m.p.dyn&&!m.p.own?.4:.7)}
   waterTex.offset.x=(ts*.02)%1;waterTex.offset.y=(Math.sin(ts*.3)*.02);
+  G.lotStep&&G.lotStep(dt);
   G.onFrame&&G.onFrame(dt)}
 function pathLeft(){if(!P.path)return 0;let d=0,px=P.x,pz=P.z;for(const w of P.path){d+=Math.hypot(w.x-px,w.z-pz);px=w.x;pz=w.z}return d}
 G.refreshLook=()=>{P.look=playerLook()};G.applyLight=()=>applyLight();
