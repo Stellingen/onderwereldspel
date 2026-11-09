@@ -114,7 +114,8 @@ function driveStep(dt){const K=G.K,c=mine;let thr=0,steer=0;
     const jx=G.joy.x,jy=G.joy.y,mag=Math.min(1,Math.hypot(jx,jy));if(mag>.2){const fx=-Math.sin(G.yaw),fz=-Math.cos(G.yaw),rx=Math.cos(G.yaw),rz=-Math.sin(G.yaw),wx=rx*jx+fx*jy,wz=rz*jx+fz*jy,want=Math.atan2(wx,wz);
       let r=want-c.ry;while(r>Math.PI)r-=Math.PI*2;while(r<-Math.PI)r+=Math.PI*2;if(Math.abs(r)>2.2&&Math.abs(c.v)<4){thr=-mag;steer=r>0?-1:1}else{steer=Math.max(-1,Math.min(1,r*1.6));thr=mag}}}
   else{thr=(K.w||K.arrowup?1:0)-(K.s||K.arrowdown?1:0);steer=(K.a||K.arrowleft?1:0)-(K.d||K.arrowright?1:0)}
-  const max=c.d.max*(K.shift?1.12:1),v0=Math.abs(c.v);
+  if(G.carFreeze){thr=0;steer=0;c.v=0}
+  const max=c.d.max*(K.shift?1.12:1)*(G.carK||1),v0=Math.abs(c.v);
   if(thr>0)c.v+=(c.v<0?18:9)*thr*dt;else if(thr<0)c.v+=(c.v>0?-18:-7)*(-thr)*dt;else c.v*=Math.pow(.35,dt);
   c.v=Math.max(-7,Math.min(max,c.v));
   const turn=steer*Math.min(1,Math.abs(c.v)/5)*(2.1-Math.min(1,Math.abs(c.v)/max)*.8)*Math.sign(c.v||1);c.ry+=turn*dt;

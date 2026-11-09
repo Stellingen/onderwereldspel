@@ -8,7 +8,7 @@ window.STAD=G;
 let renderer,scene,camera,sun,hemi,water,waterTex,cityMesh,ground,marks,humans,clock,rt,post,postCam,pools;
 const P={x:M.spawn.x,z:M.spawn.z,ry:Math.PI,vx:0,vz:0,ph:0,sp:0,run:false,path:null,goal:null};
 G.P=P;
-const NPC=[];const NPC_N=38;G.actors=[];G.NPC=NPC;G.stam=1;G.shakeA=0;
+const NPC=[];const NPC_N=38;const ACT_MAX=30;G.actors=[];G.NPC=NPC;G.stam=1;G.shakeA=0;G.spMul=1;G.sunOff={x:-40,y:80,z:25};
 
 /* ---------- uiterlijk ---------- */
 const SKINS=['#e9b98f','#d9a27a','#b97a52','#8d5a3a','#f1caa5','#6e4630'];
@@ -38,7 +38,8 @@ function applyLight(){const day=daylight(),night=1-day;
   const sky=new TH.Color().setRGB(.08+.42*day,.1+.52*day,.16+.62*day);scene.background=sky;scene.fog.color=sky;
   hemi.intensity=.55+1.1*day;hemi.color.setRGB(.55+.45*day,.6+.4*day,.8+.2*day);hemi.groundColor.setRGB(.2+.15*day,.2+.12*day,.25);
   sun.intensity=.15+2.3*day;sun.color.setRGB(1,.86+.12*day,.7+.28*day);
-  X.U.uNight.value=.25+night*1.05;G.night=night;if(post)post.material.uniforms.uNight.value=night;if(pools)pools.material.opacity=Math.max(0,night-.15)*.7}
+  X.U.uNight.value=.22+night*.86;G.night=night;G.day=day;if(post)post.material.uniforms.uNight.value=night;if(pools)pools.material.opacity=Math.max(0,night-.15)*.7;
+  if(G.onLight)try{G.onLight({day,night,scene,hemi,sun,post,pools})}catch(e){console.error(e)}}
 
 /* ---------- opstarten ---------- */
 G.init=function(host){
@@ -53,7 +54,7 @@ G.init=function(host){
   const sc=sun.shadow.camera;sc.left=-50;sc.right=50;sc.top=50;sc.bottom=-50;sc.near=1;sc.far=220;sun.shadow.bias=-.0006;sun.shadow.normalBias=.04;scene.add(sun);scene.add(sun.target);
   // grond (water zit er als gaten in) en water eronder
   const gtex=X.nearestTex(X.groundCanvas(),true);
-  ground=new TH.Mesh(new TH.PlaneGeometry(M.W,M.H),new TH.MeshLambertMaterial({map:gtex,alphaTest:.5}));ground.rotation.x=-Math.PI/2;ground.position.set(M.W/2,0,M.H/2);ground.receiveShadow=true;scene.add(ground);
+  ground=new TH.Mesh(new TH.PlaneGeometry(M.W,M.H),new TH.MeshLambertMaterial({map:gtex,alphaTest:.5}));ground.rotation.x=-Math.PI/2;ground.position.set(M.W/2,0,M.H/2);ground.receiveShadow=true;scene.add(ground);G.ground=ground;
   const wc=document.createElement('canvas');wc.width=wc.height=32;const wx=wc.getContext('2d');wx.fillStyle='#1f4f6e';wx.fillRect(0,0,32,32);
   for(let i=0;i<46;i++){const x=Math.random()*32|0,y=Math.random()*32|0;wx.fillStyle=Math.random()<.5?'#2f6f92':'#174056';wx.fillRect(x,y,3+(Math.random()*3|0),1)}
   waterTex=X.nearestTex(wc);waterTex.wrapS=waterTex.wrapT=TH.RepeatWrapping;waterTex.repeat.set(140,120);
@@ -64,7 +65,7 @@ G.init=function(host){
   marks=X.placeMarks(scene);G.marks=marks;
   pools=X.lampPools(scene);
   makePost();
-  humans=X.makeHumans(scene,1+NPC_N+14+24);
+  humans=X.makeHumans(scene,1+NPC_N+26+ACT_MAX);
   if(G.lotsSetup)G.lotsSetup(scene);
   // voetgangers op de stoep
   for(let i=0;i<NPC_N;i++)NPC.push(spawnNpc(true));
@@ -91,10 +92,10 @@ function makePost(){
   rt=new TH.WebGLRenderTarget(2,2,{minFilter:TH.NearestFilter,magFilter:TH.NearestFilter,depthBuffer:true});
   rt.depthTexture=new TH.DepthTexture(2,2);rt.depthTexture.type=TH.UnsignedIntType;
   postCam=new TH.OrthographicCamera(-1,1,1,-1,0,1);
-  const mat=new TH.ShaderMaterial({uniforms:{tColor:{value:rt.texture},tDepth:{value:rt.depthTexture},uRes:{value:new TH.Vector2(2,2)},cameraNear:{value:camera.near},cameraFar:{value:camera.far},uNight:{value:0},uOutline:{value:1}},
+  const mat=new TH.ShaderMaterial({uniforms:{tColor:{value:rt.texture},tDepth:{value:rt.depthTexture},uRes:{value:new TH.Vector2(2,2)},cameraNear:{value:camera.near},cameraFar:{value:camera.far},uNight:{value:0},uOutline:{value:1},uTint:{value:new TH.Vector3(1,1,1)},uFlash:{value:new TH.Vector4(1,1,1,0)},uSat:{value:1.12},uVig:{value:.35}},
     vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',
     fragmentShader:`#include <packing>
-      uniform sampler2D tColor,tDepth;uniform vec2 uRes;uniform float cameraNear,cameraFar,uNight,uOutline;varying vec2 vUv;
+      uniform sampler2D tColor,tDepth;uniform vec2 uRes;uniform float cameraNear,cameraFar,uNight,uOutline,uSat,uVig;uniform vec3 uTint;uniform vec4 uFlash;varying vec2 vUv;
       float ld(vec2 uv){return -perspectiveDepthToViewZ(texture2D(tDepth,uv).x,cameraNear,cameraFar);}
       vec3 toS(vec3 c){c=max(c,0.);return mix(c*12.92,1.055*pow(c,vec3(1./2.4))-.055,step(.0031308,c));}
       float bayer(vec2 p){p=mod(floor(p),4.);float i=p.x+p.y*4.;
@@ -111,11 +112,11 @@ function makePost(){
         for(int i=0;i<12;i++){float a=float(i)*.5236;vec2 o=vec2(cos(a),sin(a));
           vec3 s1=texture2D(tColor,vUv+o*px*1.6).rgb,s2=texture2D(tColor,vUv+o*px*3.4).rgb;
           b+=max(s1-.55,0.)*.9+max(s2-.55,0.)*.5;}
-        c+=b*(.035+.09*uNight);
+        c+=b*(.03+.055*uNight);
         // kleur: iets meer contrast en verzadiging
-        vec3 s=toS(c);float l=dot(s,vec3(.299,.587,.114));s=mix(vec3(l),s,1.12);s=(s-.5)*1.06+.5;
+        vec3 s=toS(c)*uTint;float l=dot(s,vec3(.299,.587,.114));s=mix(vec3(l),s,uSat);s=(s-.5)*1.06+.5;
         // vignet
-        vec2 q=vUv-.5;s*=1.-dot(q,q)*.35;
+        vec2 q=vUv-.5;float vg=dot(q,q);s*=1.-vg*uVig;s=mix(s,uFlash.rgb,uFlash.a*(.25+vg*2.2));
         // beperkte kleurdiepte met dither: echte pixel-art kleuren
         float lv=40.;s=floor(s*lv+bayer(gl_FragCoord.xy)+.5)/lv;
         gl_FragColor=vec4(clamp(s,0.,1.),1.);}`,depthTest:false,depthWrite:false});
@@ -140,7 +141,7 @@ function npcStep(n,dt){
   const px=n.x-P.x,pz=n.z-P.z,pd=Math.hypot(px,pz),R=G.driving?3.2:1.1;let ox=0,oz=0;if(pd<R&&pd>.01){ox=px/pd*(R-pd)*(G.driving?8:3);oz=pz/pd*(R-pd)*(G.driving?8:3)}
   const nx=n.x+(n.dx*n.v+ox)*dt,nz=n.z+(n.dz*n.v+oz)*dt;if(M.canStand(nx,n.z,.3))n.x=nx;if(M.canStand(n.x,nz,.3))n.z=nz;
   const tr=Math.atan2(n.dx,n.dz);let d=tr-n.ry;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;n.ry+=d*Math.min(1,dt*8);
-  n.ph+=dt*n.v*4.2;n.sp=.6;
+  n.ph+=dt*n.v*(n.run?2.6:4.2);n.sp=n.run?1.15:.6;
   if(Math.hypot(n.x-P.x,n.z-P.z)>110){for(const k in n)delete n[k];Object.assign(n,spawnNpc(false))}}
 G.spawnNpc=spawnNpc;
 
@@ -210,6 +211,7 @@ function step(dt,ts){
   if(G.joy.on){ix=G.joy.x;iy=G.joy.y;if(Math.hypot(ix,iy)>.15)stopPath()}
   if(G.talking||G.frozen>0){ix=iy=0;stopPath();if(G.frozen>0)G.frozen-=dt}
   if(G.hidden){if(Math.hypot(ix,iy)>.2&&G.unhide)G.unhide();else{ix=iy=0}}
+  if((G.emote||G.sitting||G.pose)&&(Math.hypot(ix,iy)>.25||P.path)){if(G.poseLock){ix=iy=0;stopPath()}else G.standUp&&G.standUp()}
   let run=!!K.shift||(G.joy.on&&Math.hypot(G.joy.x,G.joy.y)>.86)||G.runToggle;
   const fx=-Math.sin(G.yaw),fz=-Math.cos(G.yaw),rx=Math.cos(G.yaw),rz=-Math.sin(G.yaw);
   let mx=rx*ix+fx*iy,mz=rz*ix+fz*iy;
@@ -218,29 +220,29 @@ function step(dt,ts){
     else{mx=dx/d;mz=dz/d;run=run||d+pathLeft()>14}}
   const ml=Math.hypot(mx,mz);if(ml>1){mx/=ml;mz/=ml}
   // uithoudingsvermogen telt alleen als de politie achter je aan zit (G.useStam): sprinten kost adem, buiten adem ga je trager
-  let sp=(run?9.5:5.2);if(G.useStam){const moving=Math.hypot(mx,mz)>.2;if(run&&moving){G.stam=Math.max(0,G.stam-dt*(G.stamDrain||.2))}else G.stam=Math.min(1,G.stam+dt*(G.stamRegen||.1));if(G.stam<=0&&run)sp=G.windSp||7.2}else G.stam=Math.min(1,G.stam+dt*.3);
+  let sp=(run?9.5:5.2)*(G.spMul||1);if(G.useStam){const moving=Math.hypot(mx,mz)>.2;if(run&&moving){G.stam=Math.max(0,G.stam-dt*(G.stamDrain||.2)*(G.stamK||1))}else G.stam=Math.min(1,G.stam+dt*(G.stamRegen||.1));if(G.stam<=0&&run)sp=G.windSp||7.2}else G.stam=Math.min(1,G.stam+dt*.3);
   if(G.hidden)sp=0;
   const tvx=mx*sp,tvz=mz*sp,acc=Math.min(1,dt*12);P.vx+=(tvx-P.vx)*acc;P.vz+=(tvz-P.vz)*acc;
   const nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
   if(M.canStand(nx,P.z,.38))P.x=nx;else P.vx*=.2;if(M.canStand(P.x,nz,.38))P.z=nz;else P.vz*=.2;
   v=Math.hypot(P.vx,P.vz);
   if(v>.3){const tr=Math.atan2(P.vx,P.vz);let d=tr-P.ry;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;P.ry+=d*Math.min(1,dt*14)}
-  P.ph+=dt*v*1.25;P.sp=Math.min(1.3,v/4.2);
+  const f0=Math.floor(P.ph/Math.PI);P.ph+=dt*v*1.25;P.sp=Math.min(1.3,v/4.2);if(v>1.5&&Math.floor(P.ph/Math.PI)!==f0&&G.onFoot)G.onFoot(v>7,v);
   }
   // dichtstbijzijnde ingang
   let best=null,bd=2.6;for(const m of marks){const d=Math.hypot(P.x-m.p.door.x,P.z-m.p.door.z);if(d<bd){bd=d;best=m.p}}
   if(best!==G.near){G.near=best;G.onNear&&G.onNear(best)}
   // camera
-  let dy=G.yawT-G.yaw;G.yaw+=dy*Math.min(1,dt*8);G.dist+=(G.distT-G.dist)*Math.min(1,dt*6);
-  const cp=Math.cos(G.pitch),spp=Math.sin(G.pitch);const tx=P.x,tz=P.z,ty=1.2;
+  let dy=G.yawT-G.yaw;G.yaw+=dy*Math.min(1,dt*8);const zk=G.camK!=null?G.camK:(G.talking&&!G.driving?.82:1);G.dist+=(G.distT*zk-G.dist)*Math.min(1,dt*(zk<1?3.5:6));
+  const cp=Math.cos(G.pitch),spp=Math.sin(G.pitch);const tx=P.x+(G.camOff?G.camOff.x:0),tz=P.z+(G.camOff?G.camOff.z:0),ty=1.2;
   camera.position.set(tx+Math.sin(G.yaw)*cp*G.dist,ty+spp*G.dist,tz+Math.cos(G.yaw)*cp*G.dist);camera.lookAt(tx,ty,tz);
   if(G.shakeA>.01){const a=G.shakeA;camera.position.x+=(Math.random()-.5)*a;camera.position.y+=(Math.random()-.5)*a;camera.position.z+=(Math.random()-.5)*a;G.shakeA*=Math.pow(.02,dt)}
-  sun.position.set(tx-40,80,tz+25);sun.target.position.set(tx,0,tz);
+  sun.position.set(tx+G.sunOff.x,G.sunOff.y,tz+G.sunOff.z);sun.target.position.set(tx,0,tz);
   camera.updateMatrixWorld();cutV.set(P.x,1.2,P.z).project(camera);const rs=renderer.getSize(cutS);X.U.uPS.value.set((cutV.x*.5+.5)*rs.x,(cutV.y*.5+.5)*rs.y);
-  cutV.set(P.x,1.2,P.z).applyMatrix4(camera.matrixWorldInverse);X.U.uPZ.value=-cutV.z;X.U.uCutR.value=rs.y*.15*(G.paused?0:1);
+  cutV.set(P.x,1.2,P.z).applyMatrix4(camera.matrixWorldInverse);X.U.uPZ.value=-cutV.z;X.U.uCutR.value=rs.y*.2*(G.paused?0:1);
   // mensen
   G.missionStep&&!G.paused&&G.missionStep(dt);
-  const A=G.actors.slice(0,24);humans.count(1+NPC.length+A.length);humans.pose(0,{x:P.x,y:-60,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,look:P.look});if(G.avatarPose)G.avatarPose({x:P.x,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,lean:v>7?.12:0,hide:G.driving,crouch:G.hidden,arm:G.pArm||0});
+  const A=G.actors.slice(0,ACT_MAX);humans.count(1+NPC.length+A.length);humans.pose(0,{x:P.x,y:-60,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,look:P.look});if(G.avatarPose)G.avatarPose({x:P.x,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,v,dt,lean:v>7?.2:v>1?.05:0,hide:G.driving,crouch:G.hidden,arm:G.pArm||0});
   NPC.forEach((n,i)=>{npcStep(n,dt);humans.pose(i+1,n)});A.forEach((a,i)=>humans.pose(1+NPC.length+i,a));humans.flush();humans.xray(false);
   // markeringen laten leven
   for(const m of marks){m.pin.rotation.y=ts*1.6;m.pin.position.y=3+Math.sin(ts*2.2+m.p.door.x)*.18;const s=1+Math.sin(ts*3)*.06;m.ring.scale.set(s,s,s);m.ring.material.opacity=G.near===m.p?1:(m.p.dyn&&!m.p.own?.4:.7)}
@@ -250,5 +252,5 @@ function step(dt,ts){
 function pathLeft(){if(!P.path)return 0;let d=0,px=P.x,pz=P.z;for(const w of P.path){d+=Math.hypot(w.x-px,w.z-pz);px=w.x;pz=w.z}return d}
 G.shake=a=>{G.shakeA=Math.max(G.shakeA,a)};
 G.refreshLook=()=>{P.look=playerLook()};G.applyLight=()=>applyLight();
-G.camera=()=>camera;G.render=draw;G.scene=()=>scene;
+G.camera=()=>camera;G.render=draw;G.scene=()=>scene;G.renderer=()=>renderer;G.daylight=daylight;
 })();

@@ -9,7 +9,7 @@ const pageName=k=>{const p=(typeof PAGES!=='undefined'&&PAGES.find(x=>x[0]===k))
 const secOf=k=>{const g=typeof NAV_GROUPS!=='undefined'&&NAV_GROUPS.find(g=>g[1].includes(k));return g||['Jij',[],'#f2c230']};
 const pic=k=>{try{return typeof svg==='function'&&typeof ICONS!=='undefined'&&ICONS[k]?svg(k):K.ic.route}catch(e){return K.ic.route}};
 const ownedPlaces=()=>M.places.filter(p=>p.dyn&&p.own&&p.zone!=='brug');
-const LAY={plek:1,bezit:1,auto:1,politie:1};try{Object.assign(LAY,JSON.parse(localStorage.getItem('stad_kaart')||'{}'))}catch(e){}
+const LAY={plek:1,doen:1,bezit:1,auto:1,politie:1};try{Object.assign(LAY,JSON.parse(localStorage.getItem('stad_kaart')||'{}'))}catch(e){}
 const mapCv=X.mapCanvas();
 /* ---------- opbouw ---------- */
 const ov=document.createElement('div');ov.className='sd-kaart';ov.id='sdKaart';ov.hidden=true;document.body.appendChild(ov);
@@ -57,11 +57,12 @@ function items(){const out=[];
   const hl=(G.NPC||[]).find(n=>n.arch==='heler'&&n.x>250);if(LAY.plek&&hl)out.push({k:'pl',x:hl.x,z:hl.z,n:'Ome Henk (heler)',c:'#ff7a1a',ic:K.ic.bag,pri:2});
   if(G.autoPoints)G.autoPoints().forEach(p=>out.push({k:'dl',x:p.x,z:p.z,n:p.t,c:'#f2c230',ic:K.ic.key,pri:6,big:1}));
   if(G.orderCar&&G.orderCar.st!=='gestolen')out.push({k:'dl',x:G.orderCar.x,z:G.orderCar.z,n:G.orderCar.m.n+' (heler)',c:'#ff7a1a',ic:pic('cars'),pri:7,big:1});
+  if(LAY.doen&&G.spotMap)G.spotMap().forEach(o=>out.push(Object.assign({k:'do'},o)));
   if(G.waypoint)out.push({k:'wp',x:G.waypoint.x,z:G.waypoint.z,n:G.waypoint.n||'Gemarkeerd',c:'#ff4fd8',ic:K.ic.route,pri:9,big:1});
   return out}
 let cells=[];
 function placePins(){const its=items().map(o=>Object.assign(o,{px:sx(o.x),py:sz(o.z)})).filter(o=>o.px>-20&&o.py>-20&&o.px<VW+20&&o.py<VH+20).sort((a,b)=>b.pri-a.pri);
-  const R=Z>=3.2?22:34;cells=[];its.forEach(o=>{const c=cells.find(c=>Math.abs(c.px-o.px)<R&&Math.abs(c.py-o.py)<R);if(c&&o.k==='pl'&&c.k==='pl')c.more.push(o);else cells.push(Object.assign(o,{more:[]}))});
+  const R=Z>=3.2?22:34;cells=[];its.forEach(o=>{const c=cells.find(c=>Math.abs(c.px-o.px)<R&&Math.abs(c.py-o.py)<R);if(c&&(o.k==='pl'||o.k==='do')&&(c.k==='pl'||c.k==='do'))c.more.push(o);else cells.push(Object.assign(o,{more:[]}))});
   const lab=Z>=3.2;
   pins.innerHTML=cells.map((o,i)=>`<button class="sd-k-pin k-${o.k}${o.big?' big':''}${o.more.length?' clu':''}" data-c="${i}" style="left:${o.px}px;top:${o.py}px;--c:${o.c}" aria-label="${E(o.n)}"><i>${o.ic}</i>${o.more.length?`<em>${o.more.length+1}</em>`:''}${(lab||o.big)&&!o.more.length?`<span>${E(o.n)}</span>`:''}</button>`).join('')}
 /* ---------- kaartje van een gekozen plek ---------- */
@@ -71,7 +72,7 @@ function showCard(o){let h='';const d=o.x!=null?dist(o.x,o.z):0;
   if(o.k==='bezit'){const own=ownedPlaces();h=`<div class="sd-k-ch"><i style="--c:#f2c230">${K.ic.key}</i><div><small>Oostland · jouw terrein</small><b>${own.length?'Jouw bezit':'Nog niets van jou'}</b></div></div>
     <div class="sd-k-own">${own.map(p=>`<button data-go="${p.id}"><span>${E(p.name.replace(/^(Thuis: |Jouw )/,''))}</span><small>${E(M.districtAt(p.door.x,p.door.z))}${p.building?' · bouwt':''}</small></button>`).join('')||'<p>Bij Notaris De Sleutel koop je een woning of zaak; die wordt hier gebouwd.</p>'}</div>
     <div class="sd-k-b"><button class="btn sm" data-not>${K.ic.key} Notaris</button><button class="btn ghost sm" data-wp="${M.ESTATE.gate.x},${M.ESTATE.gate.z},Oostland">Route naar Oostland</button></div>`}
-  else{const pl=o.id?M.placeById(o.id):null,sub=pl?(pl.dyn?'Jouw bezit':secOf(pl.page)[0]+' · '+pageName(pl.page)):o.k==='car'?'Je auto staat hier':o.k==='wp'?'Jouw markering':M.districtAt(o.x,o.z);
+  else{const pl=o.id?M.placeById(o.id):null,sub=pl?(pl.dyn?'Jouw bezit':secOf(pl.page)[0]+' · '+pageName(pl.page)):o.k==='car'?'Je auto staat hier':o.k==='wp'?'Jouw markering':o.k==='do'?'Te doen · '+M.districtAt(o.x,o.z):M.districtAt(o.x,o.z);
     h=`<div class="sd-k-ch"><i style="--c:${o.c||'#ff4fd8'}">${o.ic||K.ic.route}</i><div><small>${E(sub)}</small><b>${E(o.n||'Plek op de kaart')}</b></div></div><p class="sd-k-d">${E(M.districtAt(o.x,o.z))} · ${d} m · ${walkT(d)}</p>
     <div class="sd-k-b"><button class="btn sm" data-wp="${o.x},${o.z},${E(o.n||'Gemarkeerd')}"${o.id?` data-pl="${o.id}"`:''}>${K.ic.route} Route zetten</button><button class="btn ghost sm" data-walk="${o.x},${o.z}"${o.id?` data-pl="${o.id}"`:''}>${K.ic.walk} Erheen lopen</button>${o.k==='wp'?'<button class="btn ghost sm" data-clear>Wissen</button>':''}</div>`}
   card.innerHTML=`<button class="sd-x" data-cclose aria-label="Sluiten">×</button>${h}`;card.hidden=false;G.snd&&G.snd.fx('tab')}
@@ -90,7 +91,7 @@ chip.addEventListener('click',e=>{if(e.target.closest('[data-x]')){clearWp();ret
 let gt=0;setInterval(()=>{if(!G.ready||G.paused||!G.waypoint)return;gt++;if(gt%3===0)gps();hudWp();if(beam)beam.material.opacity=.22+Math.sin(performance.now()/300)*.08;
   if(dist(G.waypoint.x,G.waypoint.z)<5){G.toast&&G.toast('Je bent er','ok');G.snd&&G.snd.fx('ok');clearWp()}},500);
 /* ---------- openen, sluiten, bedienen ---------- */
-function chipsHtml(){const L=[['plek','Plekken'],['bezit','Bezit'],['auto','Mijn auto']];if(G.police&&G.police.active&&G.police.active())L.push(['politie','Politie']);
+function chipsHtml(){const L=[['plek','Plekken'],['doen','Te doen'],['bezit','Bezit'],['auto','Mijn auto']];if(G.police&&G.police.active&&G.police.active())L.push(['politie','Politie']);
   $s('sdKChips').innerHTML=L.map(([k,n])=>`<button data-lay="${k}" class="${LAY[k]?'on':''}">${n}</button>`).join('')}
 function open(){if(G.ui&&G.ui.closeAll)G.ui.closeAll();ov.hidden=false;if(!(G.ui&&G.ui.cur&&G.ui.cur()))G.pause();size();if(!open._z){Z=Math.max(minZ(),Math.min(maxZ,Math.min(VW,VH)/260));open._z=1}CX=G.P.x;CZ=G.P.z;clampView();card.hidden=true;chipsHtml();draw();G.snd&&G.snd.fx('open')}
 function close(){if(ov.hidden)return;ov.hidden=true;G.snd&&G.snd.fx('close');if(!(G.ui&&G.ui.cur&&G.ui.cur()))G.resume()}

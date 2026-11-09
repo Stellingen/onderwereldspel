@@ -1373,3 +1373,44 @@ met scripts en stijlen wordt uit `/game` gelezen) en tekent de stad eromheen. He
     5 panden op Oostland). Tellers in S.stadCnt, behaald in S.stadAch.
 - **Straatbeeld**: Amsterdammertjes en fietsen langs de gracht, bomen langs de stoep, prullenbakken, bootjes in de gracht en het havenkanaal,
   lichtreclame op de Zuidas.
+
+### Stadsleven: de grote uitbreiding van de Pixelstad (november 2026)
+
+Het klikspel blijft zoals het is. De Pixelstad is hetzelfde spel plus extra's die alleen VIP en High roller daar hebben. Alle bedragen
+schalen mee met je rang: `zScale(k)` = k × de gemiddelde buit van je straatklus (zwart geld), `witPE()` = het loon per energie van je
+beste baan (wit geld). Alles blijft ver onder de grenzen van de anti-cheat (`checkJump`).
+
+- **Levendiger karakter** (`stad-avatar.js`, `stad-emote.js`): ademen, rondkijken, knipperen, frunniken, hoofd draait mee naar wie je
+  aankijkt. Emote-wiel (T of de knop Emote): zwaaien, dansen, juichen, buigen, duim, flexen, uitdagen, zitten, geld strooien. Mensen
+  op straat reageren erop (zwaaien terug, kijken, dansen mee, graaien naar het geld).
+- **Meer met mensen** (`stad-npc.js`): Praten heeft nu Compliment, Grap, De weg vragen en Uitschelden. Zakkenrollen (timing-spel,
+  regels en buit van de klus Zakkenrollen). Dealen op straat aan klanten (via `act.dlSell`, dus dezelfde voorraad, prijzen en buurten
+  als Dealen in het klikspel). Nieuwe types: joggers, barista, snackkar, visboer, dobbelaar, straatracer, hondenuitlaters.
+- **Te doen op straat** (`stad-doen.js`, 200+ plekken, laag "Te doen" op de kaart en app in de telefoon):
+  bankjes (zitten: +1 energie en HP per 10 s, max 5 per keer), prullenbakken en containers doorzoeken (1 energie, elke bak één keer
+  per dag), 7 geldautomaten (alles storten of snel opnemen), koffiekar en snackkar (zelfde prijs en effect als Ontspannen), vissen
+  (14 soorten, 2 energie per worp, visboek, verkopen bij de visboer voor wit geld), 6 uitkijkpunten (bonus bij alle zes), dobbelen met
+  Snelle Eddy (dagplafond 10 × straatbuit), straatoptreden met de muzikant (ritmespel, 3 energie), fotomodus met 6 filters.
+- **Mini-spellen** (`stad-mini.js`): timing, rammen, vasthouden, ritme, vechten (ontwijken en slaan) en binnenhalen. Werkt met
+  toetsen en met tikken.
+- **Straatnaam** (`stad-naam.js`, `S.stadNaam`): bijna alles in de stad geeft straat-XP (High roller +20%). 30 levels met titels
+  van Onbekende tot Koning van de stad. Elk level één talentpunt, 12 talenten die alleen in de Pixelstad werken (sneller lopen, meer
+  adem, makkelijker sloten, minder bellende getuigen, meer zakruimte, goedkopere taxi, betere vis, snellere auto, meer respect, meer
+  beschermgeld, harder slaan). Eén keer per dag opnieuw verdelen tegen contant geld.
+- **Wijken** (`stad-wijk.js`, `S.stadWijk`): 7 wijken met elk een baas. Respect verdien je door te helpen, fooien en door tags te
+  zetten (3 muren per wijk, 2 energie, +7 respect). Bij 40 respect daag je de baas uit (5 energie, vechtspel). Win je, dan is de wijk
+  van jou: elke dag beschermgeld ophalen bij 3 winkels (1 energie per winkel) en 40% minder getuigen die bellen. Zakt je respect onder
+  de 15, dan raak je de wijk kwijt.
+- **Vechtclub De Kooi** (haven): 5 vechters per dag, steeds sterker, inleg en prijzengeld lopen op (4 energie per gevecht).
+- **Straatraces** (`stad-race.js`, `S.stadRace`): 4 routes met checkpoints. Brons, zilver en goud geven één keer een premie; daarna
+  één keer per dag startgeld. Rico bij de start legt het uit.
+- **Hond** (`stad-hond.js`, `S.stadHond`): een zwerfhond in het Noorderpark die je kunt adopteren. Loopt mee, zoekt spullen (Zoek!),
+  apporteert, en blaft als er politie in de buurt is terwijl je gezocht wordt. Menu met H of de hondenknop.
+- **Gebeurtenissen** (`stad-events.js`): om de paar minuten iets op straat: verloren portemonnee (houden of terugbrengen), "Houd de
+  dief!", gevallen lading, verdwaalde toerist.
+- **Sfeer** (`stad-sfeer.js`): weer dat elk half uur wisselt (helder, bewolkt, regen, onweer, mist, sneeuw; vast te zetten in de
+  instellingen), plassen en spatten, gouden uur en blauwe nacht, duiven die opvliegen, meeuwen, katten om te aaien, boten op zee,
+  omgevingsgeluid en een titelkaart bij het binnenkomen.
+- **Dagklussen en prestaties**: 10 nieuwe dagklussen en ongeveer 25 nieuwe prestaties voor al het bovenstaande.
+
+Niet gebouwd (wacht op akkoord): agenten omkopen, premiejagers en wegversperringen.

@@ -82,7 +82,7 @@ function carMenu(p){G.talking=true;const m=p.m,R=rar(m),x=p.data,ch=[],kw=kraakW
   K.dialog({name:m.n,role:R[0]+' · '+x.plate,draw:drawP(p),lines,col:R[1],choices:ch,onClose:()=>{G.talking=false}})}
 /* ---------- spelletjes (onderin, de wereld loopt door) ---------- */
 let mini=null;
-const mp=document.createElement('div');mp.className='sd-mini';mp.id='sdMini';mp.hidden=true;document.body.appendChild(mp);
+const mp=document.createElement('div');mp.className='sd-mini';mp.id='sdMiniP';mp.hidden=true;document.body.appendChild(mp);
 function miniOpen(title,sub,body){mp.innerHTML=`<div class="sd-mini-h"><b>${E(title)}</b><small>${E(sub)}</small><button class="sd-x" data-mx aria-label="Stoppen">×</button></div><div class="sd-mini-b">${body}</div>`;mp.hidden=false;mp.classList.remove('go');void mp.offsetWidth;mp.classList.add('go');G.talking=true}
 function miniClose(){mp.hidden=true;mini=null;G.talking=false}
 mp.addEventListener('click',e=>{if(e.target.closest('[data-mx]')){mini&&mini.end('cancel');return}const b=e.target.closest('[data-k]');if(b&&mini&&mini.key)mini.key(b.dataset.k)});

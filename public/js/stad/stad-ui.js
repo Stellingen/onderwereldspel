@@ -36,7 +36,7 @@ ui.innerHTML=`
  </div>
 </div>
 <div class="sd-area" id="sdArea" hidden><small>Pixelstad</small><b></b></div>
-<div class="sd-keys" id="sdKeys" ${touch||visits>4?'hidden':''}><span><kbd>WASD</kbd>lopen</span><span><kbd>Shift</kbd>rennen</span><span><kbd>E</kbd>praten / naar binnen</span><span><kbd>Z</kbd><kbd>C</kbd>draaien</span><span class="sd-beta">beta</span></div>
+<div class="sd-keys" id="sdKeys" ${touch||visits>4?'hidden':''}><span><kbd>WASD</kbd>lopen</span><span><kbd>Shift</kbd>rennen</span><span><kbd>E</kbd>praten / doen</span><span><kbd>T</kbd>emote</span><span><kbd>Z</kbd><kbd>C</kbd>draaien</span><span class="sd-beta">beta</span></div>
 <button class="sd-prompt" id="sdPrompt" hidden></button>
 <div class="sd-joy" id="sdJoy" ${touch?'':'hidden'}><i id="sdKnob"></i></div>
 <button class="sd-run" id="sdRun" ${touch?'':'hidden'}>Ren</button>
@@ -77,7 +77,7 @@ function hud(){try{
 setInterval(hud,400);hud();
 // wijknaam: in beeld als je een nieuwe wijk in loopt (zoals in GTA)
 function loc(){const P=G.P;if(!P)return;const n=M.districtAt(P.x,P.z);if(n===lastLoc)return;const first=!lastLoc;lastLoc=n;$s('sdLoc').textContent=n;if(first||G.paused)return;
-  const a=$s('sdArea');a.querySelector('small').textContent=M.estateAt&&M.estateAt(P.x,P.z)?'Oostland · jouw terrein':'Pixelstad';a.classList.remove('bad');a.querySelector('b').textContent=n;a.hidden=false;a.classList.remove('go');void a.offsetWidth;a.classList.add('go');clearTimeout(areaT);areaT=setTimeout(()=>{a.hidden=true},3200)}
+  const a=$s('sdArea');a.querySelector('small').textContent=M.estateAt&&M.estateAt(P.x,P.z)?'Oostland · jouw terrein':G.wijkOwn&&G.wijkOwn(P.x,P.z)?'Jouw wijk':'Pixelstad';a.classList.remove('bad');a.querySelector('b').textContent=n;a.hidden=false;a.classList.remove('go');void a.offsetWidth;a.classList.add('go');clearTimeout(areaT);areaT=setTimeout(()=>{a.hidden=true},3200)}
 
 /* ---------- minikaart ---------- */
 const mapCv=X.mapCanvas(),mini=$s('sdMini'),mc=mini.getContext('2d');mc.imageSmoothingEnabled=false;
@@ -91,6 +91,7 @@ function drawMini(){const P=G.P,w=mini.width,s=1.3;mc.setTransform(1,0,0,1,0,0);
   if(G.gpsPath&&G.waypoint){mc.strokeStyle='#ff4fd8';mc.lineWidth=2.2;mc.setLineDash([3,2]);mc.beginPath();mc.moveTo(P.x,P.z);G.gpsPath.forEach(q=>mc.lineTo(q.x,q.z));mc.stroke();mc.setLineDash([]);const w=G.waypoint;mc.fillStyle='#000';mc.fillRect(w.x-3.4,w.z-3.4,6.8,6.8);mc.fillStyle='#ff4fd8';mc.fillRect(w.x-2.6,w.z-2.6,5.2,5.2)}
   if(G.police&&G.police.dots)G.police.dots().forEach(d=>{if(d.r){mc.strokeStyle=d.c;mc.lineWidth=1.5;mc.globalAlpha=.8;mc.beginPath();mc.arc(d.x,d.z,d.r,0,Math.PI*2);mc.stroke();mc.globalAlpha=1}else{mc.fillStyle='#000';mc.fillRect(d.x-2.8,d.z-2.8,5.6,5.6);mc.fillStyle=d.c;mc.fillRect(d.x-2,d.z-2,4,4)}});
   if(G.npcDots)G.npcDots().forEach(d=>{mc.fillStyle=d.c;mc.fillRect(d.x-1.4,d.z-1.4,2.8,2.8)});
+  if(G.spotDots)G.spotDots().forEach(d=>{const r=d.big?2.6:1.7;mc.fillStyle='#000';mc.fillRect(d.x-r-.7,d.z-r-.7,2*r+1.4,2*r+1.4);mc.fillStyle=d.c;mc.fillRect(d.x-r,d.z-r,2*r,2*r)});
   if(G.autoDots)G.autoDots().forEach(d=>{mc.fillStyle='#000';mc.fillRect(d.x-3.2,d.z-3.2,6.4,6.4);mc.fillStyle=d.c;mc.fillRect(d.x-2.4,d.z-2.4,4.8,4.8)});
   M.places.forEach(p=>{if(p.dyn&&!p.own)return;mc.fillStyle='#000';mc.fillRect(p.door.x-3,p.door.z-3,6,6);mc.fillStyle=pcol(p);mc.fillRect(p.door.x-2.2,p.door.z-2.2,4.4,4.4)});
   if(G.missionDots)G.missionDots().forEach(d=>{const r=d.big?3.4:2;mc.fillStyle='#000';mc.fillRect(d.x-r-.8,d.z-r-.8,2*r+1.6,2*r+1.6);mc.fillStyle=d.c;mc.fillRect(d.x-r,d.z-r,2*r,2*r)});

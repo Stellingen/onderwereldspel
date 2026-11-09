@@ -119,5 +119,32 @@ K.ic={
   scare:P('3,2,10,9;5,11,2,3;9,11,2,3;5,5,2,2,#0008;9,5,2,2,#0008;6,8,4,1,#0008'),
   hide:P('1,8,14,7;2,6,12,2;4,9,8,1,#0005'),
   star:P('7,1,2,4;1,6,14,3;4,9,3,3;9,9,3,3;3,12,3,3;10,12,3,3'),
-  gift:P('2,6,12,9;1,4,14,3;7,4,2,11,#0006;5,1,2,3;9,1,2,3')};
+  gift:P('2,6,12,9;1,4,14,3;7,4,2,11,#0006;5,1,2,3;9,1,2,3'),
+  vis:P('1,6,2,4;3,5,8,6;11,6,3,4;13,4,2,2;13,10,2,2;5,7,1,1,#0009;4,4,5,1;4,11,5,1'),
+  pin:P('2,3,12,10;3,4,10,4,#0007;4,10,2,2,#0007;7,10,2,2,#0007;10,10,2,2,#0007;5,13,6,2'),
+  kop:P('2,5,9,8;11,6,3,5;12,7,1,3,#0009;3,3,1,2;6,2,1,3;9,3,1,2;3,13,7,1'),
+  bank:P('1,10,14,2;1,5,2,6;13,5,2,6;3,4,10,2;2,12,12,2;5,7,6,1,#0006'),
+  bak:P('3,5,10,10;2,3,12,2;6,1,4,2;5,7,1,6,#0006;8,7,1,6,#0006;11,7,1,6,#0006'),
+  dobbel:P('2,2,12,12;4,4,2,2,#0009;10,4,2,2,#0009;7,7,2,2,#0009;4,10,2,2,#0009;10,10,2,2,#0009'),
+  vlag:P('2,1,2,14;4,2,10,7;4,2,2,2,#0009;8,2,2,2,#0009;12,2,2,2,#0009;6,4,2,2,#0009;10,4,2,2,#0009;4,6,2,2,#0009;8,6,2,2,#0009;12,6,2,2,#0009'),
+  spuit:P('5,6,6,9;6,3,4,3;7,1,2,2;11,2,1,1;13,1,1,1;13,3,1,1;12,5,1,1;6,9,4,2,#0006'),
+  vuist:P('3,5,10,7;3,4,2,2;6,3,2,2;9,3,2,2;12,5,2,5;5,12,6,3;5,8,6,1,#0006'),
+  poot:P('5,8,6,6;4,10,8,3;2,5,3,3;6,2,2,4;9,2,2,4;12,5,2,3'),
+  kroon:P('2,10,12,4;2,4,2,6;7,2,2,8;12,4,2,6;4,7,3,3;9,7,3,3;4,11,8,1,#0006'),
+  hart:P('2,3,4,5;10,3,4,5;3,2,2,1;11,2,2,1;6,5,4,3;3,8,10,2;5,10,6,2;7,12,2,2'),
+  bliksem:P('8,1,4,2;6,3,4,2;4,5,5,2;6,7,6,2;7,9,3,2;6,11,2,2;5,13,2,2'),
+  klok:P('3,3,10,10;2,5,1,6;13,5,1,6;5,2,6,1;5,13,6,1;7,5,2,4,#0009;8,8,3,2,#0009'),
+  euro:P('5,2,7,2;3,4,3,2;2,6,8,2;2,9,8,2;3,11,3,2;5,13,7,2')};
+/* ---------- kleine 3D-modellen van blokjes in één keer (één tekenopdracht per model) ---------- */
+// blokken: [breedte, hoogte, diepte, x, y, z, kleur, gloeit]. Gloeiende blokken (lampen, neon) blijven 's nachts fel.
+const TH3=window.THREE;let ML=null,MB=null;
+K.model=function(boxes,o){o=o||{};const A=[[],[],[]],B=[[],[],[]],c=new TH3.Color();if(!ML){ML=new TH3.MeshLambertMaterial({vertexColors:true});MB=new TH3.MeshBasicMaterial({vertexColors:true})}
+  boxes.forEach(b=>{const g=new TH3.BoxGeometry(b[0],b[1],b[2]).toNonIndexed();if(b[8])g.rotateY(b[8]);g.translate(b[3],b[4],b[5]);const P=g.attributes.position.array,N=g.attributes.normal.array,T=b[7]?B:A;c.set(b[6]);
+    for(let i=0;i<P.length;i+=3){T[0].push(P[i],P[i+1],P[i+2]);T[1].push(N[i],N[i+1],N[i+2]);T[2].push(c.r,c.g,c.b)}g.dispose()});
+  const grp=new TH3.Group(),mk=(T,m,sh)=>{if(!T[0].length)return;const g=new TH3.BufferGeometry();g.setAttribute('position',new TH3.Float32BufferAttribute(T[0],3));g.setAttribute('normal',new TH3.Float32BufferAttribute(T[1],3));g.setAttribute('color',new TH3.Float32BufferAttribute(T[2],3));
+    const me=new TH3.Mesh(g,m);me.castShadow=sh&&!o.noShadow;grp.add(me)};
+  mk(A,ML,true);mk(B,MB,false);return grp};
+// bordje met tekst (pixels), dubbelzijdig
+K.sign=function(text,fg,bg,border,h){const X=window.STAD_GFX,cv=X.textCanvas(text,fg,bg,border),tex=X.nearestTex(cv),hh=h||.9,m=new TH3.Mesh(new TH3.PlaneGeometry(cv.width/13*hh,hh),new TH3.MeshBasicMaterial({map:tex,side:TH3.DoubleSide}));return m};
+
 })();

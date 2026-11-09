@@ -55,6 +55,19 @@ const FX={
   carAlarm:()=>{for(let i=0;i<8;i++){tone(i%2?880:660,i*.22,.2,'square',.07)}},
   engineStart:()=>{tone(60,0,.5,'sawtooth',.18,140);noise(0,.4,.08,'lowpass',600,1200)},
   money:()=>{tone(1568,0,.05,'square',.07);tone(2093,.05,.12,'square',.07)},
+  gull:()=>{tone(1500,0,.16,'sawtooth',.035,1100);tone(1450,.2,.22,'sawtooth',.03,900)},
+  flutter:()=>{for(let i=0;i<6;i++)noise(i*.05,.04,.07,'bandpass',1400,900)},
+  thunder:()=>{noise(0,1.6,.5,'lowpass',240,60);tone(55,0,1.2,'sine',.3,30)},
+  woef:()=>{tone(300,0,.09,'sawtooth',.12,170);tone(280,.14,.1,'sawtooth',.11,150)},
+  jank:()=>tone(900,0,.25,'sine',.06,600),
+  miauw:()=>tone(700,0,.3,'triangle',.07,480),
+  spray:()=>noise(0,.3,.09,'highpass',4200,6000),
+  dice:()=>{for(let i=0;i<4;i++)tone(600+Math.random()*500,i*.05,.03,'square',.06)},
+  punch:()=>{tone(150,0,.09,'sine',.5,50);noise(0,.07,.28,'lowpass',1800,300)},
+  whoosh:()=>noise(0,.16,.1,'bandpass',500,2200),
+  go:()=>{tone(880,0,.5,'square',.1)},beep:()=>tone(440,0,.18,'square',.09),
+  chirp:()=>{const f=2600+Math.random()*900;tone(f,0,.05,'sine',.03,f*1.2);tone(f*1.1,.09,.05,'sine',.03,f*.9)},
+  cricket:()=>{for(let i=0;i<3;i++)tone(4200,i*.06,.03,'square',.012)},
 };
 function fx(k){if(!st.fx)return;try{(FX[k]||FX.click)()}catch(e){}}
 /* ---------- sirene (loeit, harder en panning naar richting) ---------- */
@@ -69,6 +82,12 @@ let eng=null;
 function engine(v){const c=ac();if(!c)return;if(v==null||!st.fx){if(eng)eng.g.gain.setTargetAtTime(0,c.currentTime,.15);return}
   if(!eng){const o=c.createOscillator(),o2=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type='sawtooth';o2.type='square';f.type='lowpass';f.frequency.value=420;o.connect(f);o2.connect(f);f.connect(g);g.gain.value=0;g.connect(fxBus);o.start();o2.start();eng={o,o2,g}}
   const s=Math.abs(v);eng.o.frequency.setTargetAtTime(38+s*3.4,c.currentTime,.1);eng.o2.frequency.setTargetAtTime(19+s*1.7,c.currentTime,.1);eng.g.gain.setTargetAtTime(.05+Math.min(.05,s*.003),c.currentTime,.1)}
+/* ---------- omgeving: regen, zee en wind als zachte ruislagen ---------- */
+const AMB={};
+function ambLayer(k){const c=ac();if(!c)return null;if(AMB[k])return AMB[k];const src=c.createBufferSource();src.buffer=noiseBuf(c);src.loop=true;const f=c.createBiquadFilter(),g=c.createGain();g.gain.value=0;
+  if(k==='rain'){f.type='highpass';f.frequency.value=2400}else if(k==='sea'){f.type='lowpass';f.frequency.value=520;const l=c.createOscillator(),lg=c.createGain();l.frequency.value=.13;lg.gain.value=260;l.connect(lg);lg.connect(f.frequency);l.start()}else{f.type='bandpass';f.frequency.value=380;f.Q.value=.6}
+  src.connect(f);f.connect(g);g.connect(fxBus);src.start();return AMB[k]={g}}
+function amb(o){if(!ctx||ctx.state!=='running')return;for(const k of ['rain','sea','wind']){const v=st.fx?Math.max(0,Math.min(1,o[k]||0)):0;if(!v&&!AMB[k])continue;const L=ambLayer(k);if(L)L.g.gain.setTargetAtTime(v*(k==='rain'?.11:k==='sea'?.16:.07),ctx.currentTime,.6)}}
 /* ---------- muziek ---------- */
 const N=n=>440*Math.pow(2,(n-69)/12);
 // akkoorden als midi-grondtoon + type; per stemming een paar progressies
@@ -95,14 +114,17 @@ function note(S0,s,T,spb){const P=S0.prog[seq.prog%S0.prog.length],ch=P[Math.flo
   // drums
   if(S0.kick.includes(s))tone(130,T,.12,'sine',.5,45,muBus);
   if(S0.snare.includes(s))noise(T,.1,.13,'highpass',1800,null,muBus);
-  if(s%2===0&&Math.random()<S0.hat)noise(T,.03,.05,'highpass',7000,null,muBus)}
+  if(s%2===0&&Math.random()<S0.hat)noise(T,.03,.05,'highpass',7000,null,muBus);
+  // de straatmuzikant: een gitaarloopje dat harder wordt als je dichterbij komt
+  if(busk>0&&st.fx&&s%2===0){const pen=[0,3,5,7,10,12],n=root+pen[(s/2+seq.bar*3)%6];tone(N(n),T,spb*1.7,'triangle',.11*busk,null,fxBus);if(s%8===0)tone(N(root-12),T,spb*3.5,'triangle',.1*busk,null,fxBus)}}
+let busk=0;
 function music(mode){seq.want=mode;if(mode!=='stil'&&st.mu&&!seq.on&&ctx&&ctx.state==='running')startMusic()}
 // stemming volgt het spel: achtervolging, missie, binnen, nacht of dag
 setInterval(()=>{if(!G||!G.ready)return;const chase=(G.police&&G.police.active&&G.police.active())||(G.mission&&G.mission()&&G.mission().alarm);
   const inside=G.ui&&G.ui.cur&&G.ui.cur();music(chase?'jacht':inside?'stil':(G.night>.55?'nacht':'dag'))},700);
 function apply(){if(!ctx)return;fxBus.gain.setTargetAtTime(st.fx?.55:0,ctx.currentTime,.05);muBus.gain.setTargetAtTime(st.mu?.2:0,ctx.currentTime,.3);master.gain.setTargetAtTime(st.vol,ctx.currentTime,.05);
   if(st.mu&&!seq.on)startMusic()}
-G.snd={fx,siren,engine,music,
+G.snd={fx,siren,engine,music,amb,busk:v=>{busk=Math.max(0,Math.min(1,v||0))},
   get fxOn(){return st.fx},get muOn(){return st.mu},get vol(){return st.vol},
   setFx(v){st.fx=!!v;set('stad_fx',v?'1':'0');apply();if(!v){siren(null);engine(null)}},setMu(v){st.mu=!!v;set('stad_mu',v?'1':'0');apply()},setVol(v){st.vol=Math.max(0,Math.min(1,+v||0));set('stad_vol',st.vol);apply()}};
 // pauze (tabblad weg): muziek zachter

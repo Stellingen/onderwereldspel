@@ -32,7 +32,9 @@ G.ev=ev;
 /* ---------- dagklussen ---------- */
 const DAILY=[['roof2','Beroof 2 mensen op straat','roof',2],['zakenman','Beroof een zakenman','roof:zakenman',1],['toerist','Beroof een toerist','roof:toerist',1],['oma','Help een oma met haar boodschappen','oma',1],
   ['fooi3','Geef 3 keer een fooi of een euro','fooi',3],['heler','Verkoop spullen bij de heler','heler',1],['ontsnap','Schud de politie af','ontsnap',1],['praat6','Praat met 6 mensen','praat',6],
-  ['missie2','Doe 2 klussen als missie','missie',2],['pakket','Vind een verstopt pakketje','pakket',1],['verstop','Verstop je voor de politie','verstop',1],['foto','Maak een foto voor een toerist','foto',1],['taxi','Neem een taxi','taxi',1],['kraak2','Breek 2 geparkeerde auto\'s open','kraak',2],['lever','Steel een auto en lever hem af','lever',1],['jack','Carjack een auto in het verkeer','jack',1]];
+  ['missie2','Doe 2 klussen als missie','missie',2],['pakket','Vind een verstopt pakketje','pakket',1],['verstop','Verstop je voor de politie','verstop',1],['foto','Maak een foto voor een toerist','foto',1],['taxi','Neem een taxi','taxi',1],['kraak2','Breek 2 geparkeerde auto\'s open','kraak',2],['lever','Steel een auto en lever hem af','lever',1],['jack','Carjack een auto in het verkeer','jack',1],
+  ['vis3','Vang 3 vissen','vangst',3],['tag2','Zet 2 tags op een muur','tag',2],['bak4','Doorzoek 4 prullenbakken of containers','bak',4],['zakrol','Rol iemands zakken','zakrol',1],['optreden','Treed op met de straatmuzikant','optreden',1],
+  ['race','Rijd een straatrace binnen de bronstijd','finish',1],['knok','Win een gevecht','knok',1],['compl','Geef 2 mensen een compliment','compl',2],['eet','Haal koffie of een broodje bij een kar','eet',1],['event','Los een gebeurtenis op straat op','event',1]];
 const dayKey=()=>{try{return new Date(Date.now()-6*3600e3).toLocaleDateString('nl-NL',{timeZone:'Europe/Amsterdam'})}catch(e){return new Date(Date.now()-6*3600e3).toDateString()}};
 function hashS(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function dag(){const D=obj('stadDag',{});const k=dayKey();if(D.k!==k){const prevFull=D.k&&D.full;let h=hashS(k+(window.__USER__||''));const pool=DAILY.slice(),ids=[];while(ids.length<3&&pool.length){ids.push(pool.splice(h%pool.length,1)[0][0]);h=Math.imul(h^(h>>>13),2654435761)>>>0}
@@ -42,7 +44,7 @@ function dagEv(name,n){const D=dag();(D.ids||[]).forEach(id=>{const d=dagDef(id)
 function dagReward(){return {cash:scale(2.4),xp:Math.max(3,Math.round(ref().xp*1.6))}}
 function dagClaim(id){const D=dag(),d=dagDef(id);if(!d||D.claimed[id]||(D.p[id]||0)<d[3])return false;const r=dagReward();D.claimed[id]=1;S.cash+=r.cash;if(typeof addZwart==='function')addZwart(r.cash);if(typeof addXp==='function')addXp(r.xp);
   G.snd&&G.snd.fx('cash');G.fx2&&G.fx2.float('+'+fmt(r.cash),G.P.x,G.P.z);
-  if(D.ids.every(i=>D.claimed[i])&&!D.full){D.full=1;D.streak=(D.streak||0)+1;const b=scale(3)*Math.min(7,D.streak);S.cash+=b;if(typeof addZwart==='function')addZwart(b);cnt().dagvol=(cnt().dagvol||0)+1;
+  if(D.ids.every(i=>D.claimed[i])&&!D.full){D.full=1;D.streak=(D.streak||0)+1;const b=scale(3)*Math.min(7,D.streak);S.cash+=b;if(typeof addZwart==='function')addZwart(b);G.ev('dagvol');
     msg('contact','Alle drie gedaan. Bonus: '+fmt(b)+(D.streak>1?' (dag '+D.streak+' op rij)':'')+'. Morgen meer.',{k:'dag'});G.snd&&G.snd.fx('lvl')}
   achCheck();sv();return true}
 G.dag={get:dag,def:dagDef,claim:dagClaim,reward:dagReward};
@@ -51,9 +53,15 @@ const ACH=[['eerste','Eerste slachtoffer','Beroof iemand op straat','roof',1],['
   ['praat50','Kletskous','Praat met 50 mensen','praat',50],['fooi10','Gulle gever','Geef 10 keer een fooi','fooi',10],['ontsnap1','Weg is weg','Schud de politie af','ontsnap',1],['ontsnap10','Glibberig','Schud de politie 10 keer af','ontsnap',10],
   ['drie','Onvindbaar','Ontsnap met 3 sterren','ontsnap3',1],['verstop10','Kameleon','Verstop je 10 keer','verstop',10],['heler10','Vaste klant','Verkoop 10 keer bij de heler','heler',10],
   ['pakket10','Speurneus','Vind 10 pakketjes','pakket',10],['pakket30','Alles gevonden','Vind alle 30 pakketjes','pakket',30],['missie10','Vakman','Doe 10 klussen als missie','missie',10],
-  ['dag7','Week vol','Maak 7 keer al je dagklussen af','dagvol',7],['taxi','Achterbank','Neem een taxi','taxi',1],['selfie','Selfie','Maak een foto met je telefoon','selfie',1],['bezit5','Landheer','Heb 5 panden op Oostland','bezit',5],['kraak10','Ruitentikker','Breek 10 auto\'s open','kraak',10],['lever1','Eerste rit','Lever een gestolen auto af','lever',1],['lever10','Autodief','Lever 10 gestolen auto\'s af','lever',10],['jack1','Uitstappen!','Carjack een auto','jack',1]];
+  ['dag7','Week vol','Maak 7 keer al je dagklussen af','dagvol',7],['taxi','Achterbank','Neem een taxi','taxi',1],['selfie','Selfie','Maak een foto met je telefoon','selfie',1],['bezit5','Landheer','Heb 5 panden op Oostland','bezit',5],['kraak10','Ruitentikker','Breek 10 auto\'s open','kraak',10],['lever1','Eerste rit','Lever een gestolen auto af','lever',1],['lever10','Autodief','Lever 10 gestolen auto\'s af','lever',10],['jack1','Uitstappen!','Carjack een auto','jack',1],
+  ['vis1','Beet!','Vang je eerste vis','vangst',1],['vis50','Sportvisser','Vang 50 vissen','vangst',50],['visz','Grote vangst','Vang een zeldzame vis','visz',1],['visboek','Visboek vol','Vang alle 14 soorten','vissoort',14],
+  ['tag10','Vandaal','Zet 10 tags','tag',10],['wijk1','Wijkbaas','Neem een wijk over','wijk',1],['wijk7','De hele stad','Neem alle zeven wijken over','wijken',7],['geld25','Incasseerder','Haal 25 keer beschermgeld op','bescherm',25],
+  ['knok10','Straatvechter','Win 10 gevechten','knok',10],['kampioen','Kampioen van De Kooi','Versla alle vijf op één dag','kampioen',1],['goud1','Goud','Haal goud op een straatrace','goud',1],['goud4','Koning van de weg','Haal goud op alle vier de routes','goudn',4],
+  ['hond','Beste vriend','Neem de zwerfhond in huis','hond',1],['kijk6','Uitzicht','Vind alle zes uitkijkpunten','kijk',6],['zakrol10','Vingervlug','Rol 10 keer iemands zakken','zakrol',10],['optreden5','Straatartiest','Treed 5 keer op','optreden',5],
+  ['event10','Altijd in de buurt','Los 10 gebeurtenissen op','event',10],['naam10','Bekende naam','Bereik Straatnaam level 10','naam',10],['naam30','Koning van de stad','Bereik Straatnaam level 30','naam',30],['kat','Kattenmens','Aai een kat','kat',1],['bak25','Schatgraver','Doorzoek 25 bakken','bak',25]];
 G.ACH=ACH;
-function achVal(a){if(a[3]==='bezit')return (M.places||[]).filter(p=>p.est&&p.own).length;return cnt()[a[3]]||0}
+function achVal(a){const k=a[3];if(k==='bezit')return (M.places||[]).filter(p=>p.est&&p.own).length;if(k==='vissoort')return Object.keys((S.stadVis&&S.stadVis.dex)||{}).length;if(k==='wijken')return G.wijk?G.wijk.n():0;if(k==='goudn')return G.race?G.race.ROUTES.filter(r=>((S.stadRace||{})[r.id]||{}).m>=3).length:0;
+  if(k==='kijk')return Object.keys(S.stadKijk||{}).length;if(k==='naam')return G.naam?G.naam.level():1;return cnt()[k]||0}
 G.achVal=achVal;
 function achCheck(){const H=obj('stadAch',{});ACH.forEach(a=>{if(H[a[0]])return;if(achVal(a)>=a[4]){H[a[0]]=Date.now();G.snd&&G.snd.fx('lvl');ach(a)}})}
 function ach(a){const el=document.createElement('div');el.className='sd-ach';el.innerHTML=`<i>${K.ic.star}</i><span><small>Prestatie</small><b>${K.E(a[1])}</b><em>${K.E(a[2])}</em></span>`;document.body.appendChild(el);setTimeout(()=>el.remove(),4200);
@@ -71,7 +79,7 @@ function pkSetup(){const sc=G.scene(),g=new TH.BoxGeometry(.7,.55,.5),m=new TH.M
   PK.forEach(p=>{const grp=new TH.Group(),b=new TH.Mesh(g,m);b.position.y=.3;b.castShadow=true;const t=new TH.Mesh(new TH.BoxGeometry(.72,.08,.52),new TH.MeshLambertMaterial({color:0x6a4a2c}));t.position.y=.45;const dd=new TH.Mesh(d,dm);dd.position.y=1.2;grp.add(b,t,dd);grp.position.set(p.x,0,p.z);grp.visible=false;sc.add(grp);pkMesh.push({p,g:grp,d:dd})})}
 function pkStep(dt,ts){const C=col(),P=G.P;pkMesh.forEach(o=>{if(C[o.p.id]){o.g.visible=false;return}const d=Math.hypot(P.x-o.p.x,P.z-o.p.z);o.g.visible=d<34||(G.waypoint&&G.waypoint.pk===o.p.id);if(!o.g.visible)return;
   o.d.rotation.y=ts*2.4;o.d.position.y=1.2+Math.sin(ts*3)*.12;if(d<1.3&&!G.driving){C[o.p.id]=Date.now();const n=Object.keys(C).length,g=scale(1.2);S.cash+=g;if(typeof addZwart==='function')addZwart(g);if(typeof addXp==='function')addXp(3);
-    G.snd&&G.snd.fx('cash');G.fx2&&G.fx2.burst(o.p.x,.8,o.p.z,'#ffd35a',10);G.fx2&&G.fx2.float('+'+fmt(g)+' · pakketje '+n+'/30',o.p.x,o.p.z,'#ffd35a');ev('pakket');
+    G.snd&&G.snd.fx('cash');G.fx2&&G.fx2.burst(o.p.x,.8,o.p.z,'#ffd35a',10);G.fx2&&G.fx2.float('+'+fmt(g)+' · pakketje '+n+'/30',o.p.x,o.p.z,'#ffd35a');G.ev('pakket');
     if(G.waypoint&&G.waypoint.pk===o.p.id&&G.clearWaypoint)G.clearWaypoint();
     if(n===30){const b=scale(30);S.cash+=b;if(typeof addZwart==='function')addZwart(b);msg('contact','Alle 30 pakketjes. Niemand anders heeft dat ooit gedaan. Hier, '+fmt(b)+'.')}else if(n%10===0)msg('contact',n+' van de 30 pakketjes gevonden. Ga zo door.');sv()}})}
 // tip van een zwerver: het dichtstbijzijnde pakketje dat je nog niet hebt
@@ -80,9 +88,9 @@ G.pakketTip=function(){const C=col(),P=G.P,L=PK.filter(p=>!C[p.id]).sort((a,b)=>
 /* ---------- taxi ---------- */
 G.taxi=function(pl){if(!pl)return;if(G.police&&G.police.active()){G.toast('Geen taxi die je nu meeneemt','bad');return false}if(G.mission&&G.mission()){G.toast('Maak eerst je klus af','bad');return false}if(typeof inJail==='function'&&inJail())return false;
   const d=Math.hypot(pl.door.x-G.P.x,pl.door.z-G.P.z),fare=taxiFare(d);if(S.cash<fare){G.toast('Te weinig contant voor de taxi ('+fmt(fare)+')','bad');return false}
-  S.cash-=fare;sv();ev('taxi');const f=document.createElement('div');f.className='sd-fade';document.body.appendChild(f);G.snd&&G.snd.fx('carDoor');
+  S.cash-=fare;sv();G.ev('taxi');const f=document.createElement('div');f.className='sd-fade';document.body.appendChild(f);G.snd&&G.snd.fx('carDoor');
   setTimeout(()=>{if(G.ui&&G.ui.cur&&G.ui.cur())G.ui.leaveQuiet&&G.ui.leaveQuiet();G.placeAtDoor(pl);G.resume()},450);setTimeout(()=>f.remove(),1100);G.toast('Taxi naar '+pl.name.replace(/^(Thuis: |Jouw )/,'')+' · '+fmt(fare),'info');return true};
-const taxiFare=d=>Math.max(25,Math.round((15+d*.55)/5)*5);G.taxiFare=taxiFare;
+const taxiFare=d=>Math.max(20,Math.round((15+d*.55)*(1-.2*(G.perk?G.perk('taxi'):0))/5)*5);G.taxiFare=taxiFare;
 /* ---------- koppelen ---------- */
 const wait=setInterval(()=>{if(!G.ready)return;clearInterval(wait);pkSetup();dag();const f=G.onFrame;G.onFrame=dt=>{f&&f(dt);if(!G.paused)pkStep(dt,performance.now()/1000)};
   if(!msgs().length){msg('contact','Welkom in de stad. Praat met mensen, kijk rond. In de stegen liggen pakketjes die niemand mist.',null,true);msg('notaris','Uw grond in Oostland ligt klaar. Kom langs bij Notaris De Sleutel als u wilt bouwen.',{k:'vastgoed'},true)}},300);

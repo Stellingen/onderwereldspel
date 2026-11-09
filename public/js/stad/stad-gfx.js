@@ -211,7 +211,7 @@ function atlasMat(tex,litTex){const m=new TH.MeshLambertMaterial({map:tex});U.uL
   m.onBeforeCompile=sh=>{sh.uniforms.uNight=U.uNight;sh.uniforms.uLit=U.uLit;sh.uniforms.uPS=U.uPS;sh.uniforms.uPZ=U.uPZ;sh.uniforms.uCutR=U.uCutR;
     sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute vec4 aTile;\nvarying vec4 vTile;\nvarying vec2 vAo;').replace('#include <uv_vertex>','#include <uv_vertex>\nvTile=aTile;').replace('#include <common>','#include <common>\nvarying float vVZ;').replace('#include <project_vertex>','#include <project_vertex>\nvAo=vec2((modelMatrix*vec4(transformed,1.)).y,abs(normal.y));vVZ=-mvPosition.z;');
     sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec4 vTile;\nvarying vec2 vAo;\nvarying float vVZ;\nuniform sampler2D uLit;\nuniform float uNight;\nuniform vec2 uPS;\nuniform float uPZ,uCutR;')
-      .replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nif(uCutR>0.&&vAo.x>.6&&vVZ<uPZ-2.){float cd=length(gl_FragCoord.xy-uPS)/uCutR;vec2 bq=mod(floor(gl_FragCoord.xy),2.);float th=.82+.18*(bq.x+bq.y*2.)/3.;if(cd<th)discard;}')
+      .replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nif(uCutR>0.&&vAo.x>.6&&vVZ<uPZ-2.){float cd=length(gl_FragCoord.xy-uPS)/uCutR;vec2 bq=mod(floor(gl_FragCoord.xy),2.);float th=.66+.34*(bq.x+bq.y*2.)/3.;if(cd<th)discard;}')
       .replace('#include <map_fragment>','vec2 aUv=vTile.xy+clamp(fract(vMapUv),.002,.998)*vTile.zw;\nvec4 sampledDiffuseColor=texture2D(map,aUv);\ndiffuseColor*=sampledDiffuseColor;\nif(vAo.y<.5)diffuseColor.rgb*=mix(.58,1.,smoothstep(-.4,2.4,vAo.x));')
       .replace('#include <emissivemap_fragment>','totalEmissiveRadiance+=texture2D(uLit,aUv).rgb*uNight;')};
   m.customProgramCacheKey=()=>'stad-atlas';return m}
@@ -328,25 +328,30 @@ function makeHumans(scene,max){
   const hide=new TH.Matrix4().makeScale(0,0,0);
   // h: {x,z,ry,ph (loopfase),sp (snelheid 0..1),look:{skin,hair,top,arm,pants,shoe,hat:'none|cap|beanie|hat|mask',hatC}}
   const SC=new TH.Matrix4().makeScale(1.18,1.18,1.18);
-  function pose(i,h){root.makeRotationY(h.ry);root.setPosition(h.x,h.y||0,h.z);root.multiply(SC);const sw=Math.sin(h.ph)*.75*Math.min(1,h.sp),bob=Math.abs(Math.cos(h.ph))*.06*Math.min(1,h.sp),lean=h.lean||0;
-    const at=(k,x,y,z,rx,sx,sy,sz)=>{tmp.makeRotationX(rx||0);q.makeTranslation(x,y+bob,z).multiply(tmp);if(sx!=null)q.scale(new TH.Vector3(sx,sy,sz));tmp.multiplyMatrices(root,q);set(k,i,tmp);return tmp};
-    at('legL',-.15,.84,0,sw);at('legR',.15,.84,0,-sw);
+  const RZ=new TH.Matrix4(),HM=new TH.Matrix4(),T2=new TH.Matrix4(),V1=new TH.Vector3();
+  function pose(i,h){root.makeRotationY(h.ry);root.setPosition(h.x,h.y||0,h.z);root.multiply(SC);const sw=Math.sin(h.ph)*.75*Math.min(1,h.sp),bob=Math.abs(Math.cos(h.ph))*.06*Math.min(1,h.sp)+(h.hop||0),lean=h.lean||0;
+    const at=(k,x,y,z,rx,sx,sy,sz,rz)=>{tmp.makeRotationX(rx||0);if(rz){tmp.premultiply(RZ.makeRotationZ(rz))}q.makeTranslation(x,y+bob,z).multiply(tmp);if(sx!=null)q.scale(V1.set(sx,sy,sz));tmp.multiplyMatrices(root,q);set(k,i,tmp);return tmp};
+    const lL=h.legL!=null?h.legL:sw,lR=h.legR!=null?h.legR:-sw;
+    at('legL',-.15,.84,0,lL);at('legR',.15,.84,0,lR);
     // schoenen aan het eind van het been
-    q.makeTranslation(-.15,.84+bob,0).multiply(rot.makeRotationX(sw)).multiply(tmp.makeTranslation(0,-.74,.06));set('shoeL',i,tmp.multiplyMatrices(root,q));
-    q.makeTranslation(.15,.84+bob,0).multiply(rot.makeRotationX(-sw)).multiply(tmp.makeTranslation(0,-.74,.06));set('shoeR',i,tmp.multiplyMatrices(root,q));
+    q.makeTranslation(-.15,.84+bob,0).multiply(rot.makeRotationX(lL)).multiply(tmp.makeTranslation(0,-.74,.06));set('shoeL',i,tmp.multiplyMatrices(root,q));
+    q.makeTranslation(.15,.84+bob,0).multiply(rot.makeRotationX(lR)).multiply(tmp.makeTranslation(0,-.74,.06));set('shoeR',i,tmp.multiplyMatrices(root,q));
     at('torso',0,.84,0,lean);
-    const asw=-sw*.8+(h.arm||0);at('armL',-.41,1.5,0,asw);at('armR',.41,1.5,0,h.armR!=null?h.armR:-asw);
-    q.makeTranslation(-.41,1.5+bob,0).multiply(rot.makeRotationX(asw)).multiply(tmp.makeTranslation(0,-.62,0));set('handL',i,tmp.multiplyMatrices(root,q));
-    q.makeTranslation(.41,1.5+bob,0).multiply(rot.makeRotationX(h.armR!=null?h.armR:-asw)).multiply(tmp.makeTranslation(0,-.62,0));set('handR',i,tmp.multiplyMatrices(root,q));
-    at('head',0,1.56,0,0);
+    const asw=-sw*.8+(h.arm||0),aL=h.armL!=null?h.armL:asw,aR=h.armR!=null?h.armR:-asw,zL=h.armLz||0,zR=h.armRz||0;
+    at('armL',-.41,1.5,0,aL,null,0,0,zL);at('armR',.41,1.5,0,aR,null,0,0,zR);
+    q.makeTranslation(-.41,1.5+bob,0).multiply(rot.makeRotationZ(zL)).multiply(tmp.makeRotationX(aL)).multiply(T2.makeTranslation(0,-.62,0));set('handL',i,tmp.multiplyMatrices(root,q));
+    q.makeTranslation(.41,1.5+bob,0).multiply(rot.makeRotationZ(zR)).multiply(tmp.makeRotationX(aR)).multiply(T2.makeTranslation(0,-.62,0));set('handR',i,tmp.multiplyMatrices(root,q));
+    // hoofd: draait mee met waar iemand naar kijkt; haar, pet en ogen hangen aan het hoofd
+    HM.makeTranslation(0,1.56+bob,0);if(h.hy||h.hx){HM.multiply(rot.makeRotationY(h.hy||0));if(h.hx)HM.multiply(rot.makeRotationX(h.hx))}HM.premultiply(root);set('head',i,HM);
+    const hd=(k,x,y,z,sx,sy,sz)=>{q.makeTranslation(x,y,z);if(sx!=null)q.scale(V1.set(sx,sy,sz));tmp.multiplyMatrices(HM,q);set(k,i,tmp)};
     const hat=h.look.hat||'none';
-    if(hat==='hat'){at('hair',0,2.0,0,0,1.06,1.6,1.06);at('brim',0,2.0,0,0,1.5,1,2.6)}
-    else if(hat==='cap'){at('hair',0,1.98,0,0,1,1.1,1);at('brim',0,1.98,.32,0,1,1,1)}
-    else if(hat==='beanie'){at('hair',0,1.92,0,0,1.04,1.8,1.04);set('brim',i,hide)}
-    else if(hat==='mask'){at('hair',0,1.52,0,0,1.06,2.75,1.06);set('brim',i,hide)}
+    if(hat==='hat'){hd('hair',0,.44,0,1.06,1.6,1.06);hd('brim',0,.44,0,1.5,1,2.6)}
+    else if(hat==='cap'){hd('hair',0,.42,0,1,1.1,1);hd('brim',0,.42,.32,1,1,1)}
+    else if(hat==='beanie'){hd('hair',0,.36,0,1.04,1.8,1.04);set('brim',i,hide)}
+    else if(hat==='mask'){hd('hair',0,-.04,0,1.06,2.75,1.06);set('brim',i,hide)}
     else if(hat==='bald'){set('hair',i,hide);set('brim',i,hide)}
-    else{at('hair',0,1.94,-.02,0);set('brim',i,hide)}
-    at('eyes',0,1.83,.25,0);
+    else{hd('hair',0,.38,-.02);set('brim',i,hide)}
+    if(h.blink)set('eyes',i,hide);else hd('eyes',0,.27,.25);
     const L=h.look,c=(k,v)=>{col.set(v);im[k].setColorAt(i,col)};
     c('legL',L.pants);c('legR',L.pants);c('shoeL',L.shoe);c('shoeR',L.shoe);c('torso',L.top);c('armL',L.arm||L.top);c('armR',L.arm||L.top);c('handL',L.skin);c('handR',L.skin);c('head',L.skin);
     c('hair',hat==='none'||hat==='bald'?L.hair:L.hatC||L.hair);c('brim',L.hatC||L.hair);c('eyes',hat==='mask'?'#e8e4da':'#15161a')}
@@ -385,5 +390,5 @@ function lampPools(scene){const cv=document.createElement('canvas');cv.width=cv.
   const mat=new TH.MeshBasicMaterial({map:tex,transparent:true,opacity:0,blending:TH.AdditiveBlending,depthWrite:false});
   const m=new TH.InstancedMesh(new TH.PlaneGeometry(9,9).rotateX(-Math.PI/2),mat,L.length);const o=new TH.Object3D();
   L.forEach((p,i)=>{o.position.set(p.x,.08,p.z);o.updateMatrix();m.setMatrixAt(i,o.matrix)});m.renderOrder=2;scene.add(m);return m}
-window.STAD_GFX={drawBuilding,lampPools,SIGNC,ROOFT,DOORT,STY,SLOT,swatch,atlas,lit,groundCanvas,mapCanvas,buildCity,atlasMat,makeHumans,placeMarks,textCanvas,nearestTex,U,GB,hash,PROPC};
+window.STAD_GFX={swCount:()=>swN,drawBuilding,lampPools,SIGNC,ROOFT,DOORT,STY,SLOT,swatch,atlas,lit,groundCanvas,mapCanvas,buildCity,atlasMat,makeHumans,placeMarks,textCanvas,nearestTex,U,GB,hash,PROPC};
 })();
