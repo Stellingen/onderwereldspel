@@ -40,14 +40,14 @@ function begin(o){const fresh=!P0.on;P0.on=true;P0.mode=o.mode||P0.mode||'roof';
   if(o.x!=null)P0.lkp={x:o.x,z:o.z};if(fresh){P0.seenAgo=0;P0.t=0;P0.wt=0;P0.arrived=false;P0.cops=[];P0.cars=[];P0.sawFirst=false;settings();hud(true)}
   if(o.resolve)P0.res=o.resolve;if(o.level)P0.level=o.level}
 // melding van een getuige: de meldkamer stuurt een auto
-function report(x,z,o){o=o||{};if(P0.on){P0.stars=clamp(P0.stars+(o.stars>1?1:0),1,3);if(!P0.sawFirst)P0.lkp={x,z};need();hud();return}
+function report(x,z,o){o=o||{};if(!P0.on&&G.smeer&&G.smeer.intercept(x,z,o))return;if(P0.on){P0.stars=clamp(P0.stars+(o.stars>1?1:0),1,3);if(!P0.sawFirst)P0.lkp={x,z};need();hud();return}
   const d=M.districtAt(x,z),delay=/Zuidas|Centrum|Plein/.test(d)?8:/Villawijk/.test(d)?7:/Haven|Bedrijven|Oosterstraat|IJ-oever|Tuinwijk/.test(d)?13:10;
   begin({mode:'roof',stars:o.stars||1,why:o.why||'straatroof',x,z,ref:G.roofRef&&G.roofRef()});P0.dispatchT=delay;G.toast&&G.toast('Een getuige heeft 112 gebeld','bad');G.snd&&G.snd.fx('phoneRing');banner('112','bad');need()}
 // direct: een agent ziet het (of je bent gezocht en wordt herkend)
 function start(o){o=o||{};const P=G.P;if(P0.on){P0.stars=clamp(Math.max(P0.stars,o.stars||1),1,3);P0.lkp={x:P.x,z:P.z};P0.seenAgo=0;hud();return}
   begin({mode:o.wanted?'wanted':'roof',stars:o.stars||1,why:o.why,x:P.x,z:P.z,ref:G.roofRef&&G.roofRef()});P0.dispatchT=0;P0.arrived=true;P0.sawFirst=true;
-  if(o.at&&o.at.arch==='agent'){// de agent op straat gaat zelf achter je aan
-    const n=o.at;const i=G.NPC.indexOf(n);if(i>=0){G.NPC.splice(i,1);setTimeout(()=>{const k=G.spawnNpc(false);G.NPC.push(k)},20000)}addCop(n.x,n.z,n.look)}
+  if(o.at&&(o.at.arch==='agent'||o.at.arch==='wijkagent')){// de agent op straat gaat zelf achter je aan
+    const n=o.at,x=n.x,z=n.z;if(n.arch==='wijkagent'){G.smeer&&G.smeer.away(n)}else{const i=G.NPC.indexOf(n);if(i>=0){G.NPC.splice(i,1);setTimeout(()=>{const k=G.spawnNpc(false);G.NPC.push(k)},20000)}}const c=addCop(x,z,n.look);if(c)c.nm=n.nm}
   if(o.car){o.car.chase=true;P0.cars.push(o.car)}
   need();banner(o.wanted?'Herkend':'Politie','bad');G.snd&&G.snd.fx('whistle')}
 // vluchten bij een arrestatie: agenten vlak achter je, een auto komt eraan
@@ -97,8 +97,51 @@ function copStep(a,dt){const P=G.P;
   if(see&&!G.hidden){a.sees=1;P0.lkp={x:P.x,z:P.z};P0.seenAgo=0;P0.sawFirst=true;if(a.st!=='chase'){a.st='chase';G.bubble&&G.bubble(a,'!',{col:'#ff5a5a'});if(!a.saw){a.saw=true;G.snd&&G.snd.fx('whistle')}}}else a.sees=0;
   const sp=copSpeed();
   if(a.st==='chase'){if(see&&!G.hidden){goPath(a,P.x,P.z,sp,dt);if(dist(a,P)<1.1&&!G.driving)caught()}else{a.st='go';G.bubble&&G.bubble(a,'?',{col:'#ffd35a'})}}
+  else if(a.st==='post'){a.sp=0;a.ry+=Math.sin(P0.t*1.3+a.ph)*dt*.4}
   else if(a.st==='go'){const l=P0.lkp||P;if(goPath(a,l.x,l.z,sp*.9,dt)||dist(a,l)<1.4){a.st='search';a.wp=null}}
   else if(a.st==='search'){const l=P0.lkp||P,Rr=20+10*P0.stars;if(!a.wp||goPath(a,a.wp.x,a.wp.z,3.6,dt)||dist(a,a.wp)<1.2||(a.stuck||0)>1.5){if(!a.wait){a.wait=rr(.8,2)}a.wait-=dt;a.sp=0;a.ry+=dt*1.5;if(a.wait<=0){a.wait=0;const q=M.nearestWalk(l.x+rr(-Rr,Rr),l.z+rr(-Rr,Rr),10);a.wp=q||l;a.path=null}}}}
+/* ---------- wegversperringen ---------- */
+// Zit de politie met twee of drie sterren achter je aan terwijl je rijdt, dan zetten ze verderop twee wagens dwars over de weg, met
+// spijkermatten op de stoep ernaast. Rammen kan (met vaart): schade, een ster erbij, maar je bent erdoor. Over een mat rijden geeft
+// lekke banden tot de achtervolging voorbij is. Stilstaan bij de versperring = gepakt. Omrijden of te voet verder kan altijd.
+const BLK={cur:null,cd:6,n:0};
+function edgeAhead(){const c=G.car;if(!c)return null;const fx=Math.sin(c.ry),fz=Math.cos(c.ry);let best=null,bs=-9;
+  N.forEach(A=>A.n.forEach(B=>{const mx=(A.x+B.x)/2,mz=(A.z+B.z)/2,dx=mx-c.x,dz=mz-c.z,d=Math.hypot(dx,dz);if(d<55||d>125)return;const al=(dx*fx+dz*fz)/d;if(al<.75)return;
+    const L=Math.hypot(B.x-A.x,B.z-A.z);if(L<18)return;const ux=(B.x-A.x)/L,uz=(B.z-A.z)/L;if(Math.abs(ux*fx+uz*fz)<.8)return;if(!roadOK(mx,mz)||!roadOK(mx-uz*3,mz+ux*3)||!roadOK(mx+uz*3,mz-ux*3))return;
+    const sc=al*2-Math.abs(d-85)/85+Math.random()*.15;if(sc>bs){bs=sc;best={x:mx,z:mz,ux,uz}}}));return best}
+let stripM=null;
+function stripMesh(){return K.model([[2.6,.05,.55,0,.03,0,'#16171a'],[2.6,.06,.08,0,.09,-.16,'#c8ccd2',1],[2.6,.06,.08,0,.09,0,'#c8ccd2',1],[2.6,.06,.08,0,.09,.16,'#c8ccd2',1]],{noShadow:1})}
+function coneMesh(){return K.model([[.42,.06,.42,0,.03,0,'#16171a'],[.3,.22,.3,0,.17,0,'#ff6a1a'],[.22,.1,.22,0,.33,0,'#f1efe9',1],[.16,.2,.16,0,.48,0,'#ff6a1a']],{noShadow:1})}
+function blockPlace(e){if(!G.traf)return;const px=-e.uz,pz=e.ux,ry=Math.atan2(px,pz),sc=G.scene(),meshes=[];
+  const cars=[-1,1].map(s=>{const c=G.traf.spawn(true,false);c.block=1;c.x=e.x+px*s*2.35;c.z=e.z+pz*s*2.35;c.ry=ry+(s>0?0:Math.PI);c.v=0;c.mesh.position.set(c.x,0,c.z);c.mesh.rotation.y=c.ry;return c});
+  // je wijkagent op de loonlijst 'vergeet' één mat
+  const w=G.wijk&&G.wijk.at(e.x,e.z),paid=!!(w&&G.smeer&&G.smeer.loon(w.id)),skip=paid?(Math.random()<.5?-1:1):0;
+  const strips=[];[-1,1].forEach(s=>{if(s===skip)return;const x=e.x+px*s*5.6,z=e.z+pz*s*5.6;if(!M.walkable(x,z))return;const m=stripMesh();m.position.set(x,0,z);m.rotation.y=ry;sc.add(m);meshes.push(m);strips.push({x,z})});
+  [[-1,-3.4],[1,-3.4],[-1,3.4],[1,3.4],[0,-4.2],[0,4.2]].forEach(([s,k])=>{const m=coneMesh();m.position.set(e.x+px*s*3.2+e.ux*k,0,e.z+pz*s*3.2+e.uz*k);sc.add(m);meshes.push(m)});
+  const b={e,cars,strips,meshes,t:0,cops:[],vPrev:0,paid};[-1,1].forEach(s=>{const q=M.nearestWalk(e.x+px*s*5.2+e.ux*1.6,e.z+pz*s*5.2+e.uz*1.6,4);if(!q)return;const a=addCop(q.x,q.z);if(a){a.st='post';a.ry=Math.atan2(G.P.x-a.x,G.P.z-a.z);b.cops.push(a)}});
+  BLK.cur=b;BLK.n++;banner('Wegversperring','bad');G.snd&&G.snd.fx('whistle');
+  G.toast&&G.toast(paid?'Tip van je wijkagent: fuik verderop, één stoep is vrij':BLK.n<3?'Wegversperring verderop: rammen met vaart, omrijden of te voet verder':'Wegversperring verderop','bad')}
+function blockClear(){const b=BLK.cur;if(!b)return;BLK.cur=null;b.cars.forEach(c=>{try{G.traf.remove(c)}catch(e){}});b.meshes.forEach(m=>G.scene().remove(m));
+  b.cops.forEach(a=>{if(a.st==='post'){a.st='leave';a.away={x:a.x+rr(-20,20),z:a.z+rr(-20,20)};a.lt=0}})}
+const landOK=(x,z)=>{x=Math.floor(x);z=Math.floor(z);if(x<0||z<0||x>=M.W||z>=M.H)return false;return M.ground[z*M.W+x]!==T.WATER};
+function ram(b,c){b.hit=1;b.hitT=b.t;const px=-b.e.uz,pz=b.e.ux;b.cars.forEach(k=>{const s=((k.x-b.e.x)*px+(k.z-b.e.z)*pz)>0?1:-1;k.px=px*s;k.pz=pz*s;k.push=1.5;k.spin=s*1.6;k.noCol=1;k.x+=k.px*2.3;k.z+=k.pz*2.3;k.mesh.position.set(k.x,0,k.z)});
+  c.v=Math.sign(c.v||1)*b.vPrev*.5;c.dmg=Math.min(.6,(c.dmg||0)+.14);G.shake&&G.shake(1);G.hitStop=.1;G.snd&&G.snd.fx('hit');G.flash&&G.flash('#ffffff',.5);G.fx2&&G.fx2.burst(c.x,1,c.z,'#c8ccd2',14);
+  P0.stars=clamp(P0.stars+1,1,3);need();hud();banner('Erdoorheen!','bad');G.ev&&G.ev('ram');G.carHud&&G.carHud();b.cops.forEach(a=>{if(a.st==='post')a.st='go'})}
+function blockStep(dt){const b=BLK.cur;BLK.cd-=dt;
+  if(!b){if(G.driving&&G.car&&P0.stars>=2&&P0.arrived&&BLK.cd<=0&&Math.abs(G.car.v)>6&&!(G.mission&&G.mission())){const e=edgeAhead();if(e){blockPlace(e);BLK.cd=24}else BLK.cd=3}return}
+  b.t+=dt;const d=Math.hypot(G.P.x-b.e.x,G.P.z-b.e.z),c=G.driving&&G.car?G.car:null;
+  if(d>175||b.t>75||(b.hit&&b.t>b.hitT+10)){blockClear();BLK.cd=b.hit?28:10;return}
+  if(c){const v=Math.abs(c.v);
+    if(!b.hit){const dl=(c.x-b.e.x)*b.e.ux+(c.z-b.e.z)*b.e.uz,dw=(c.x-b.e.x)*-b.e.uz+(c.z-b.e.z)*b.e.ux;if(Math.abs(dl)<4.2&&Math.abs(dw)<4.6&&b.vPrev>=13)ram(b,c)}
+    b.strips.forEach(s=>{if(!s.used&&Math.hypot(c.x-s.x,c.z-s.z)<2.2&&v>3){s.used=1;if(!c.flat){c.flat=1;G.toast&&G.toast('Lekke banden! Je auto trekt niet meer','bad');G.snd&&G.snd.fx('hit');G.shake&&G.shake(.5);G.carHud&&G.carHud()}}});
+    if(!b.hit&&d<8.5&&v<2.5){b.hold=(b.hold||0)+dt;if(b.hold>1.8){caught();return}}else b.hold=0;b.vPrev=v}else b.vPrev=0;
+  // bij de versperring zien ze je aankomen
+  if(d<42&&!G.hidden&&los(b.e,G.P)){P0.lkp={x:G.P.x,z:G.P.z};P0.seenAgo=0;P0.sawFirst=true}
+  // geramde wagens schuiven opzij; staan ze boven het water (een brug), dan gaan ze eroverheen
+  if(b.hit)b.cars.forEach(k=>{if(k.push>0){k.x+=k.px*k.push*dt*4;k.z+=k.pz*k.push*dt*4;k.ry+=k.spin*k.push*dt;k.push-=dt*1.8}
+    if(!landOK(k.x,k.z)&&!k.sunk){k.vy=(k.vy||0)+16*dt;k.y=(k.y||0)-k.vy*dt;k.mesh.rotation.z=(k.mesh.rotation.z||0)+dt*1.4*(k.spin>0?1:-1);if(k.y<-1&&!k.spl){k.spl=1;G.snd&&G.snd.fx('splash');G.fx2&&G.fx2.burst(k.x,.3,k.z,'#a9dcff',16)}if(k.y<-3.5){k.sunk=1;k.mesh.visible=false}}
+    k.mesh.position.set(k.x,k.y||0,k.z);k.mesh.rotation.y=k.ry})}
+G.police.blok=()=>BLK.cur?{x:BLK.cur.e.x,z:BLK.cur.e.z}:null;G.police._b={BLK,edgeAhead,blockPlace,blockClear};
 /* ---------- verstoppen ---------- */
 function hideNear(){const P=G.P;let best=null,bd=2.1;M.hides.forEach(h=>{let d;if(h.r){const dx=Math.max(0,Math.abs(P.x-h.x)-h.r[0]),dz=Math.max(0,Math.abs(P.z-h.z)-h.r[1]);d=Math.hypot(dx,dz)+.6}else d=Math.hypot(P.x-h.x,P.z-h.z);if(d<bd){bd=d;best=h}});return best}
 G.police.tryHide=function(){if(G.hidden){G.unhide();return true}if(!P0.on||G.driving)return false;const h=hideNear();if(!h)return false;G.hidden=true;G.ev&&G.ev('verstop');G.stopPath&&G.stopPath();G.snd&&G.snd.fx('hide');hud();return true};
@@ -106,17 +149,22 @@ G.unhide=()=>{if(!G.hidden)return;G.hidden=false;G.snd&&G.snd.fx('hide');hud()};
 /* ---------- gepakt of ontkomen ---------- */
 function caught(){if(!P0.on||P0.ending)return;P0.ending=true;const mode=P0.mode,res=P0.res,ref=P0.ref;G.snd&&G.snd.fx('caught');G.shake&&G.shake(1);G.hitStop=.12;G.hidden=false;
   if(navigator.vibrate)try{navigator.vibrate([80,40,80])}catch(e){}
+  const stars0=P0.stars,cp=P0.cops.slice().sort((a,b)=>dist(a,G.P)-dist(b,G.P))[0];
   banner('Gepakt','bad');end(false);
-  setTimeout(()=>{if(mode==='flee'){window.__chase=false;res&&res(false);return}
+  const go=()=>{if(mode==='flee'){window.__chase=false;res&&res(false);return}
     if(G.zakLeeg)G.zakLeeg('De politie neemt je spullen in beslag');
     if(mode==='wanted'){if(typeof policeRaid==='function'&&!policeRaid())G.toast&&G.toast('De agent laat je gaan','ok');return}
-    if(ref&&typeof crimeFail==='function'){crimeFail(ref,'Straatroof. ')}else if(typeof arrest==='function')arrest(120,'Gepakt!','De politie heeft je te pakken.',{flow:true,cat:'straat'})},450)}
+    if(ref&&typeof crimeFail==='function'){crimeFail(ref,'Straatroof. ')}else if(typeof arrest==='function')arrest(120,'Gepakt!','De politie heeft je te pakken.',{flow:true,cat:'straat'})};
+  // alleen in de Pixelstad: je kunt de agent een envelop aanbieden (stad-smeer.js). Mislukt het, dan volgt de gewone arrestatie.
+  if(G.smeer&&G.smeer.kan(mode,stars0)&&!G.driving){if(cp){cp.st='post';cp.sp=0;cp.ry=Math.atan2(G.P.x-cp.x,G.P.z-cp.z)}const weg=()=>{if(cp&&cp.st==='post'){cp.st='leave';cp.lt=0}};
+    setTimeout(()=>{G.smeer.aanbod({mode,stars:stars0,look:cp&&cp.look,nm:cp&&cp.nm}).then(ok=>{weg();if(ok){G.toast&&G.toast(mode==='wanted'?'De agent kijkt weg. Je staat nog wel op de gezochtlijst.':'De agent kijkt de andere kant op. Je bent vrij.','ok');if(typeof log==='function')log('Agent omgekocht bij een aanhouding in de Pixelstad','ok')}else setTimeout(go,250)}).catch(()=>{weg();go()})},450);return}
+  setTimeout(go,450)}
 function escaped(){if(!P0.on||P0.ending)return;P0.ending=true;const mode=P0.mode,res=P0.res;G.ev&&(G.ev('ontsnap'),P0.stars>=3&&G.ev('ontsnap3'));G.snd&&G.snd.fx('ok');banner('Ontkomen','ok');
   end(true);
   if(mode==='flee'){window.__chase=false;res&&res(true);return}
   try{if(typeof addXp==='function')addXp(3);S.cred=(S.cred||0)+1;S.stats=S.stats||{};S.stats.ontsnapt=(S.stats.ontsnapt||0)+1;save()}catch(e){}
   G.toast&&G.toast(mode==='wanted'?'Je bent ze kwijt. Je staat nog wel op de gezochtlijst.':'Je bent de politie kwijt. +3 XP','ok');if(typeof log==='function')log('In de Pixelstad de politie afgeschud','ok')}
-function end(calm){const P=G.P;P0.cops.forEach(a=>{a.st='leave';const ang=Math.atan2(a.x-P.x,a.z-P.z);a.away={x:a.x+Math.sin(ang)*30,z:a.z+Math.cos(ang)*30};a.lt=0});
+function end(calm){const P=G.P;blockClear();try{(G.vehicles||[]).forEach(v=>{v.flat=0})}catch(e){}P0.cops.forEach(a=>{a.st='leave';const ang=Math.atan2(a.x-P.x,a.z-P.z);a.away={x:a.x+Math.sin(ang)*30,z:a.z+Math.cos(ang)*30};a.lt=0});
   P0.cars.forEach(c=>{c.leaving=true;c.t0=0});P0.on=false;P0.res=null;P0.stars=0;P0.lkp=null;G.useStam=false;G.hidden=false;setTimeout(()=>{P0.ending=false},600);hud(false)}
 /* ---------- elke frame ---------- */
 let sirenK=0;
@@ -133,6 +181,7 @@ function step(dt){// opruimen van vertrekkende agenten en auto's
   if(!P0.arrived&&P0.dispatchT<=0){P0.wt=(P0.wt||0)+dt;if(P0.wt>20)P0.arrived=true}
   const counting=P0.arrived||P0.cops.length>0;
   if(counting){const seen=P0.cops.some(a=>a.sees)||carSees;if(!seen)P0.seenAgo+=dt*(G.hidden?2:1)}
+  try{blockStep(dt)}catch(e){console.error(e)}if(!P0.on)return;
   if(counting&&P0.seenAgo>=loseT()){escaped();return}
   // sirene en blauw-rood aan de rand van het scherm
   let nd=1e9,nc=null;P0.cars.forEach(c=>{if(c.wait>0||c.leaving)return;const d=dist(c,G.P);if(d<nd){nd=d;nc=c}});
@@ -154,7 +203,7 @@ function hud(show){if(show===false){box.hidden=true;hp.hidden=true;document.body
   // knop/prompt bij een verstopplek
   const h=!G.driving&&!G.hidden&&hideNear();if(h||G.hidden){const p=G.hidden?G.P:h;V3.set(p.x,G.hidden?1.6:1.9,p.z).project(G.camera());hp.hidden=false;hp.style.left=(V3.x*.5+.5)*innerWidth+'px';hp.style.top=(-V3.y*.5+.5)*innerHeight+'px';
     hp.innerHTML=`<kbd>${touch?'Tik':'E'}</kbd><span>${G.hidden?'Tevoorschijn komen':'Verstoppen'}</span>`}else hp.hidden=true}
-G.police.dots=()=>{const out=[];if(P0.on&&P0.lkp&&!(P0.seenAgo<.6))out.push({x:P0.lkp.x,z:P0.lkp.z,r:20+10*P0.stars,c:'#4d7dff'});P0.cops.forEach(a=>{if(a.st!=='leave')out.push({x:a.x,z:a.z,c:a.sees?'#ff3d52':'#4d7dff'})});P0.cars.forEach(c=>{if(!(c.wait>0)&&!c.leaving)out.push({x:c.x,z:c.z,c:'#4d7dff'})});return out};
+G.police.dots=()=>{const out=[];if(P0.on&&P0.lkp&&!(P0.seenAgo<.6))out.push({x:P0.lkp.x,z:P0.lkp.z,r:20+10*P0.stars,c:'#4d7dff'});P0.cops.forEach(a=>{if(a.st!=='leave')out.push({x:a.x,z:a.z,c:a.sees?'#ff3d52':'#4d7dff'})});P0.cars.forEach(c=>{if(!(c.wait>0)&&!c.leaving)out.push({x:c.x,z:c.z,c:'#4d7dff'})});if(BLK.cur)BLK.cur.cars.forEach(c=>out.push({x:c.x,z:c.z,c:'#ffffff'}));return out};
 /* ---------- koppelen ---------- */
 const wait=setInterval(()=>{if(!G.ready)return;clearInterval(wait);const f=G.onFrame;G.onFrame=dt=>{f&&f(dt);if(!G.paused)step(dt)}},200);
 // vluchten bij een arrestatie: in de stad (behalve een achtervolging met de auto, die blijft het klikspel-scherm)

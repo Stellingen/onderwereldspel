@@ -65,7 +65,7 @@ G.init=function(host){
   marks=X.placeMarks(scene);G.marks=marks;
   pools=X.lampPools(scene);
   makePost();
-  humans=X.makeHumans(scene,1+NPC_N+26+ACT_MAX);
+  humans=X.makeHumans(scene,1+NPC_N+48+ACT_MAX);
   if(G.lotsSetup)G.lotsSetup(scene);
   // voetgangers op de stoep
   for(let i=0;i<NPC_N;i++)NPC.push(spawnNpc(true));
@@ -138,7 +138,7 @@ function npcStep(n,dt){
   if(!sidewalk(ax,az)||n.turn<0){const opts=DIRS.filter(([a,b])=>!(a===-n.dx&&b===-n.dz)&&sidewalk(n.x+a*1.6,n.z+b*1.6));
     const pick=opts.length?rnd(opts):[-n.dx,-n.dz];n.dx=pick[0];n.dz=pick[1];n.turn=3+Math.random()*8;if(Math.random()<.12)n.stop=1+Math.random()*3}
   // uitwijken voor de speler
-  const px=n.x-P.x,pz=n.z-P.z,pd=Math.hypot(px,pz),R=G.driving?3.2:1.1;let ox=0,oz=0;if(pd<R&&pd>.01){ox=px/pd*(R-pd)*(G.driving?8:3);oz=pz/pd*(R-pd)*(G.driving?8:3)}
+  const px=n.x-P.x,pz=n.z-P.z,pd=Math.hypot(px,pz),R=G.driving?3.2:1.1+(G.ruim||0);let ox=0,oz=0;if(pd<R&&pd>.01){ox=px/pd*(R-pd)*(G.driving?8:3);oz=pz/pd*(R-pd)*(G.driving?8:3)}
   const nx=n.x+(n.dx*n.v+ox)*dt,nz=n.z+(n.dz*n.v+oz)*dt;if(M.canStand(nx,n.z,.3))n.x=nx;if(M.canStand(n.x,nz,.3))n.z=nz;
   const tr=Math.atan2(n.dx,n.dz);let d=tr-n.ry;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;n.ry+=d*Math.min(1,dt*8);
   n.ph+=dt*n.v*(n.run?2.6:4.2);n.sp=n.run?1.15:.6;

@@ -1413,4 +1413,45 @@ beste baan (wit geld). Alles blijft ver onder de grenzen van de anti-cheat (`che
   omgevingsgeluid en een titelkaart bij het binnenkomen.
 - **Dagklussen en prestaties**: 10 nieuwe dagklussen en ongeveer 25 nieuwe prestaties voor al het bovenstaande.
 
-Niet gebouwd (wacht op akkoord): agenten omkopen, premiejagers en wegversperringen.
+### Mensen van de stad: banden, bekendheid, nieuws, omkopen en wegversperringen (november 2026)
+
+De Pixelstad is meer een simulatie geworden: de stad onthoudt wie je bent en wat je doet. Alles hieronder bestaat alleen in de
+Pixelstad; het klikspel is niet aangepast. Premiejagers zijn op verzoek niet gebouwd.
+
+- **Vaste bewoners** (`stad-volk.js`): 72 bewoners (9 per wijk) met een eigen naam, beroep, karakter en uiterlijk (huid, kapsel,
+  baard, bril, hoofddeksel, postuur). Ook de vaste figuren (Luigi, Ouwe Jaap, Snelle Eddy, de wijkbazen …) en alle agenten hebben
+  een eigen ontwerp. In 3D hebben poppetjes nu kapsels, hoofddoeken, capuchons en verschillende lengtes en breedtes (`stad-gfx.js`).
+- **Portret in het gesprek** (`stad-face.js`): een groot pixelportret (48×48) van wie je spreekt, met een stemming (neutraal, blij,
+  boos, bang) die past bij jullie band. Hetzelfde gezicht staat in de telefoon en in de krant.
+- **Band per persoon** (`S.stadBand`, −100 … 100): Vijand, Mag je niet, Onbekende, Bekende, Goede bekende, Vriend, Vertrouweling.
+  - Beter: praten, compliment, grap, fooi, trakteren, een cadeau, helpen (praatjes tellen tot 10 punten per dag per persoon).
+  - Slechter: beroven (−45), zakkenrollen, uitschelden, intimideren, vechten, en misdaad waar ze bij staan. Wie het slachtoffer is
+    telt: burgers en agenten nemen het je kwalijk, mensen uit de onderwereld (bendeleden, de heler, wijkbazen) kijken er niet van op.
+  - Bekenden groeten je. Vrienden bellen nooit de politie over jou, geven korting (tot 20%) en doen één keer per dag een gunst die
+    bij hun beroep past (eten, oplappen, gratis taxi, auto repareren, een tip, hitte omlaag, een beurstip, een mooi krantenstuk,
+    op de uitkijk staan, roddels over agenten, je deel). Vijanden praten niet met je en bellen sneller.
+  - Onderhoud: zie je iemand drie dagen niet, dan zakt de band langzaam. Goedmaken kan met geld.
+  - Verzoeken: hooguit drie keer per dag stuurt een bekende een bericht (kom even langs, leen me wat, jaag iemand weg). Geleend geld komt
+    na twee dagen met 10% terug (meestal).
+  - Telefoon-app Bekenden met iedereen die je kent, hun band, karakter, gunst en een route naar ze toe.
+- **Bekendheid** (0 … 100): uit je rang, straatnaam, wijken, je plek op de ranglijst (`/api/leaderboard`) en het nieuws. Hoe
+  bekender, hoe vaker mensen je herkennen en ruimte voor je maken. In een wijk waar je respect hebt knikken ze en zeggen ze baas;
+  waar je veel misdaad pleegt lopen ze met een boog om je heen, bellen ze minder snel en geven slachtoffers sneller af. Agenten
+  herkennen je van verder weg en enveloppen worden duurder. Met een bivakmuts op herkent niemand je.
+- **Nieuws** (`stad-nieuws.js`, `S.stadNieuws`): De Grachtenbode schrijft over wat je doet (overvallen, achtervolgingen, een geramde
+  versperring, een wijk overnemen, mensen helpen, een hogere plek op de ranglijst). Onbekend = "een onbekende man", bekend = je naam
+  in de kop. Slecht nieuws maakt je een half uur bekender, goed nieuws geeft respect. Lezen in de telefoon of bij een krantenbak.
+- **Agenten omkopen** (`stad-smeer.js`, `S.stadSmeer`): elke wijk heeft een wijkagent met een naam, een band en een geweten (de een
+  is te koop, de ander niet; de kapper weet wie).
+  - Loonlijst: een envelop (4× je straatbuit, duurder als je bekender bent, goedkoper als hij je mag) zet hem 24 uur op je loonlijst.
+    Hij ziet jouw misdaden niet, herkent je niet als je gezocht wordt en moffelt de meeste 112-meldingen uit zijn wijk weg. Mislukt
+    het, dan ben je zijn vertrouwen kwijt en bij een rechtlijnige agent volgt een achtervolging.
+  - Aanhouding: word je in de Pixelstad te voet gepakt, dan kun je een envelop aanbieden (2,5× je straatbuit per ster, kans hangt af
+    van sterren, je naam bij het korps en charisma). Lukt het, dan loop je weg; mislukt het, dan ben je de helft kwijt en volgt de
+    gewone arrestatie van het klikspel.
+  - Naam bij het korps (−100 … 100): ontsnappen en rammen maken hem slechter, koffie, tips en enveloppen beter.
+- **Wegversperringen** (`stad-police.js`): rijd je met twee of drie sterren, dan zet de politie verderop twee wagens dwars over de
+  weg, met pionnen en spijkermatten op de stoep ernaast. Rammen met vaart kan (schade en een ster erbij; op een brug gaan de wagens
+  het water in), een mat geeft lekke banden tot de achtervolging voorbij is, stilstaan bij de versperring is gepakt. Een wijkagent op
+  je loonlijst waarschuwt je en laat één stoep vrij.
+- **Kaart**: het Autokerkhof De Sloop stond half op de weg naar de brug; het staat nu ten noorden van de weg.

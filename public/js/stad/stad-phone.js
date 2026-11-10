@@ -27,7 +27,8 @@ const scr=$s('sdP2Scr');let app='home',sub=null;
 const playerLook=()=>{const L=G.P&&G.P.look||{};let tie=null,chain=null;try{const ol=typeof outfitLook==='function'?outfitLook():null;if(ol&&ol.bovenlijf&&ol.bovenlijf.kind==='suit')tie=ol.bovenlijf.c2||'#7a1f2a';const w=S.fit&&S.fit.wear||{};if(/ketting|goud|chain/.test(w.nek||''))chain=1}catch(e){}
   return {skin:L.skin,hair:L.hair,top:L.top,hat:L.hat,hatC:L.hatC,tie,chain,bg:'#1d2230'}};
 /* ---------- schermen ---------- */
-function badge(k){if(k==='berichten')return G.unread?G.unread():0;if(k==='dag'&&G.dag){const D=G.dag.get();return (D.ids||[]).filter(id=>{const d=G.dag.def(id);return d&&(D.p[id]||0)>=d[3]&&!D.claimed[id]}).length}if(k==='vastgoed')return (G.lots||[]).filter(l=>l.building).length;if(k==='naam'&&G.naam)return G.naam.points();if(k==='wijken'&&G.wijk)return G.wijk.open();return 0}
+const EXT={};
+function badge(k){if(EXT[k])return EXT[k].badge?EXT[k].badge():0;if(k==='berichten')return G.unread?G.unread():0;if(k==='dag'&&G.dag){const D=G.dag.get();return (D.ids||[]).filter(id=>{const d=G.dag.def(id);return d&&(D.p[id]||0)>=d[3]&&!D.claimed[id]}).length}if(k==='vastgoed')return (G.lots||[]).filter(l=>l.building).length;if(k==='naam'&&G.naam)return G.naam.points();if(k==='wijken'&&G.wijk)return G.wijk.open();return 0}
 function appBtn(a){const [k,n,ic,c,kind]=a;if(kind==='klik'&&!hasPage(k))return '';const icon=ic||pic(k==='klussen'?'crimes':k==='auto'?'cars':k==='klik'?'dash':k),col=c||secCol(k),b=badge(k);
   return `<button class="sd-p2-app" data-app="${k}"><i style="--c:${col}">${icon}${b?`<em>${b}</em>`:''}${kind==='klik'?'<u>↗</u>':kind==='rt'?`<u>${K.ic.route}</u>`:''}</i><span>${E(n)}</span></button>`}
 function nowCard(){const m=G.mission&&G.mission(),w=G.waypoint;
@@ -52,8 +53,8 @@ function berichten(){const L=G.msgs?G.msgs():[];if(sub){const c=G.contacts[sub]|
   const by={};L.forEach(m=>{if(!by[m.f])by[m.f]={m,u:0};if(m.u)by[m.f].u++});
   scr.innerHTML=head('Berichten')+`<div class="sd-p2-list">${Object.keys(by).map(f=>{const c=G.contacts[f]||G.contacts.stad,o=by[f];return `<button class="sd-p2-row" data-thread="${f}"><canvas data-por="${f}" width="24" height="24"></canvas><span><b>${E(c.n)}</b><small>${E(o.m.x)}</small></span><em>${o.u?`<i>${o.u}</i>`:''}${ago(o.m.t)}</em></button>`}).join('')||'<p class="sd-p2-none">Nog geen berichten.</p>'}</div>`;
   scr.querySelectorAll('[data-por]').forEach(c=>K.portrait((G.contacts[c.dataset.por]||G.contacts.stad).look,null,c))}
-const actLabel=a=>a.k==='route'?'Route':a.k==='vastgoed'?'Naar de notaris':a.k==='board'?'Klussen':a.k==='dag'?'Dagklussen':a.k==='ach'?'Prestaties':a.k==='naam'?'Talenten':a.k==='wijk'?'Wijken':a.k==='hond'?'Hond':a.k==='app'?'Bekijken':'Open';
-function doAct(a){if(a.k==='npc'){const n=G.NPC.find(q=>q.arch===a.a);if(n){close();G.setWaypoint&&G.setWaypoint(n.x,n.z,a.n||'Route')}return}if(a.k==='none')return;if(a.k==='race'){close();G.race&&G.race.route(a.id);return}if(a.k==='route'){close();G.setWaypoint&&G.setWaypoint(a.x,a.z,a.n||'Route')}else if(a.k==='vastgoed'){close();G.vastgoed&&G.vastgoed.open()}else if(a.k==='board'){close();G.openBoard&&G.openBoard()}else if(a.k==='dag')go('dag');else if(a.k==='ach')go('prestaties');else if(a.k==='naam')go('naam');else if(a.k==='wijk')go('wijken');else if(a.k==='hond')go('hond');else if(a.k==='app'&&RENDER[a.a])go(a.a);else if(a.k==='foto'){close();G.foto&&G.foto.open()}}
+const actLabel=a=>a.k==='route'||a.k==='pers'?'Route':a.k==='vastgoed'?'Naar de notaris':a.k==='board'?'Klussen':a.k==='dag'?'Dagklussen':a.k==='ach'?'Prestaties':a.k==='naam'?'Talenten':a.k==='wijk'?'Wijken':a.k==='hond'?'Hond':a.k==='app'?'Bekijken':'Open';
+function doAct(a){if(a.k==='npc'){const n=G.NPC.find(q=>q.arch===a.a);if(n){close();G.setWaypoint&&G.setWaypoint(n.x,n.z,a.n||'Route')}return}if(a.k==='none')return;if(a.k==='race'){close();G.race&&G.race.route(a.id);return}if(a.k==='route'){close();G.setWaypoint&&G.setWaypoint(a.x,a.z,a.n||'Route')}else if(a.k==='vastgoed'){close();G.vastgoed&&G.vastgoed.open()}else if(a.k==='board'){close();G.openBoard&&G.openBoard()}else if(a.k==='dag')go('dag');else if(a.k==='ach')go('prestaties');else if(a.k==='naam')go('naam');else if(a.k==='wijk')go('wijken');else if(a.k==='hond')go('hond');else if(a.k==='app'&&RENDER[a.a])go(a.a);else if(a.k==='foto'){close();G.foto&&G.foto.open()}else if(a.k==='pers'){close();G.volk&&G.volk.zoek(a.id)}}
 function dagScr(){const D=G.dag.get(),r=G.dag.reward();
   scr.innerHTML=head('Dagklussen','Van Het Contact · nieuw om 6 uur')+`<div class="sd-p2-list">${(D.ids||[]).map(id=>{const d=G.dag.def(id),p=Math.min(d[3],D.p[id]||0),ok=p>=d[3],cl=D.claimed[id];
     return `<div class="sd-p2-dag${ok?' ok':''}${cl?' cl':''}"><b>${E(d[1])}</b><i class="sd-p2-pb"><i style="width:${p/d[3]*100}%"></i></i><span>${p}/${d[3]} · ${fmt(r.cash)} + ${r.xp} XP</span>${cl?'<em>Opgehaald</em>':ok?`<button class="btn sm" data-claim="${id}">Ophalen</button>`:''}</div>`}).join('')}
@@ -109,7 +110,9 @@ function go(k,s){app=k;sub=s||null;G.snd&&G.snd.fx('tab');draw();scr.scrollTop=0
 /* ---------- openen en sluiten ---------- */
 function open(k){if(G.ui&&G.ui.closeAll)G.ui.closeAll();if(G.kit.dialogOpen())G.kit.closeDialog(true);ov.hidden=false;ov.classList.remove('go');void ov.offsetWidth;ov.classList.add('go');app=k||'home';sub=null;if(!(G.ui&&G.ui.cur&&G.ui.cur()))G.pause();draw();G.snd&&G.snd.fx('open');if(navigator.vibrate&&touch)try{navigator.vibrate(15)}catch(e){}}
 function close(){if(ov.hidden)return;ov.hidden=true;G.snd&&G.snd.fx('close');if(!(G.ui&&G.ui.cur&&G.ui.cur()))G.resume()}
-G.phone={open,close,toggle:()=>ov.hidden?open():close(),isOpen:()=>!ov.hidden};
+G.phone={open,close,toggle:()=>ov.hidden?open():close(),isOpen:()=>!ov.hidden,
+  // een app erbij uit een andere module: {k, n, ic, c, render(scr, head, sub), click(t, close, go), badge()}
+  add(o){if(EXT[o.k])return;EXT[o.k]=o;const i=APPS.findIndex(a=>a[0]===(o.after||'contacten'));APPS.splice(i<0?APPS.length:i+1,0,[o.k,o.n,o.ic,o.c,'in']);RENDER[o.k]=()=>o.render(scr,head,sub)}};
 function launch(k){const a=APPS.find(x=>x[0]===k);if(!a)return;const kind=a[4];
   if(kind==='in'){go(k);return}
   if(k==='kaart'){close();G.kaart&&G.kaart.open();return}
@@ -123,6 +126,7 @@ ov.addEventListener('click',e=>{const t=e.target;if(t===ov){close();return}
   if(t.closest('[data-close]')){close();return}if(t.closest('[data-home]')){go('home');return}if(t.closest('[data-back]')){if(sub){sub=null;draw()}else if(app!=='home')go('home');else close();return}
   const ap=t.closest('[data-app]');if(ap){launch(ap.dataset.app);return}
   const th=t.closest('[data-thread]');if(th){app='berichten';sub=th.dataset.thread;draw();return}
+  if(EXT[app]&&EXT[app].click&&EXT[app].click(t,close,go)){if(!ov.hidden)draw();return}
   if(app==='naam'&&G.naam&&G.naam.click(t)){draw();return}if(app==='wijken'&&G.wijk&&G.wijk.click&&G.wijk.click(t,close)){if(!ov.hidden)draw();return}if(app==='hond'&&G.hond&&G.hond.click&&G.hond.click(t,close)){if(!ov.hidden)draw();return}
   const ac=t.closest('[data-act]');if(ac){try{doAct(JSON.parse(ac.dataset.act))}catch(e){}return}
   const cl=t.closest('[data-claim]');if(cl){G.dag.claim(cl.dataset.claim);draw();return}

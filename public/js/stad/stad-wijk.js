@@ -62,7 +62,7 @@ G.knok=async function(n){if(fighting||n.beaten||G.driving)return;if(G.police&&G.
   // te moe om te vechten: je krijgt gewoon een klap
   if(S.energy<2){n.st='fight';n.t=0;setTimeout(()=>{G.snd&&G.snd.fx('hit');G.shake&&G.shake(.8);const hp=Math.round(rr(6,14));S.hp=Math.max(10,(S.hp||100)-hp);G.frozen=.5;sv();G.toast('Te moe om terug te slaan (−'+hp+' gezondheid)','bad')},420);return}S.energy-=2;
   G.bubble&&G.bubble(n,pick(['Kom maar op!','Jij vraagt erom.','Dit is onze straat.']),{col:'#ff9a9a'});
-  const r=await fight(n,{name:n.nm,hp:58,dmg:11,win:.8,block:.22});if(!r||r.cancel){if(r&&r.cancel){n.st='walk';G.rep&&G.rep.add(n.x,n.z,-1)}return}
+  const r=await fight(n,{name:n.nm,hp:58,dmg:11,win:.8,block:.22});G.volk&&G.volk.daad(n,'knok');if(!r||r.cancel){if(r&&r.cancel){n.st='walk';G.rep&&G.rep.add(n.x,n.z,-1)}return}
   if(r.ok){n.beaten=1;const g=Math.max(5,zS(.3));S.cash+=g;if(typeof addZwart==='function')addZwart(g);if(typeof addXp==='function')addXp(4);G.rep&&G.rep.add(n.x,n.z,5);G.ev&&G.ev('knok');fl('+'+fmt(g)+' · respect',n.x,n.z,'#ffd35a');sv();
     setTimeout(()=>{n.st='flee';n.t=0;n.from=G.P;n.flee=7;G.bubble&&G.bubble(n,pick(['Oké, oké!','Ik ga al.','Je hebt gewonnen.']))},1500)}
   else{G.rep&&G.rep.add(n.x,n.z,-2);G.toast('Je bent tegen de grond gegaan','bad');setTimeout(()=>{n.st='walk';n.t=0;G.bubble&&G.bubble(n,pick(['Volgende keer beter.','Wegwezen.']))},900)}};

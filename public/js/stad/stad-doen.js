@@ -115,7 +115,7 @@ function setupAtms(){ATMS.forEach(([x,z])=>{const p=M.nearestWalk(x,z,5);if(!p)r
 /* =================== koffiekar en snackkar =================== */
 function eetKeuze(id,pose){return (n,ch,main)=>{let r=null;try{r=RELAX.find(x=>x.id===id)}catch(e){}if(!r)return;const cost=relaxCost(r,rankIdx(S.xp),rankLevel(S.xp)),cd=typeof cdLeft==='function'?cdLeft('rx_'+id):0;
     const eff=[r.energy?'energie +'+r.energy:'',r.hp?'gezondheid +'+r.hp:''].filter(Boolean).join(', ');let why='';if(cd)why='Net gehad: nog '+Math.ceil(cd/60000)+' min';else if(S.cash<cost)why='Kost '+fmt(cost)+' contant';
-    ch.push({t:r.n+' · '+fmt(cost),sub:why?'':eff,ic:K.ic.kop,dis:!!why,why,f:()=>{const e0=S.energy,h0=S.hp,c0=S.cash;act.relax(id);if(S.cash<c0){G.ev&&G.ev('eet');K.closeDialog(true);G.pose=pose;setTimeout(()=>{if(G.pose===pose)G.pose=null},2600);G.snd&&G.snd.fx('ok');
+    ch.push({t:r.n+' · '+fmt(cost),sub:why?'':eff,ic:K.ic.kop,dis:!!why,why,f:()=>{const e0=S.energy,h0=S.hp,c0=S.cash;act.relax(id);if(S.cash<c0){G.ev&&G.ev('eet');G.volk&&G.volk.daad(n,'eet');const kk=G.korting?G.korting(n):0,back=Math.round((c0-S.cash)*kk);if(back>0){S.cash+=back;setTimeout(()=>G.fx2&&G.fx2.float('Vaste klant: '+fmt(back)+' terug',n.x,n.z,'#ffd35a'),900)}K.closeDialog(true);G.pose=pose;setTimeout(()=>{if(G.pose===pose)G.pose=null},2600);G.snd&&G.snd.fx('ok');
         fl([S.energy>e0?'+'+Math.round(S.energy-e0)+' energie':'',S.hp>h0?'+'+Math.round(S.hp-h0)+' gezondheid':''].filter(Boolean).join(' · ')||r.n,G.P.x,G.P.z,'#7fd1c7');G.bubble&&G.bubble(n,pick(['Alsjeblieft.','Eet smakelijk.','Tot morgen!']))}}})}}
 /* =================== vissen =================== */
 // id, naam, zeldzaamheid 1-4, water (g gracht, h haven, z zee, v vijver), alleen 's nachts, waarde, kilo van-tot

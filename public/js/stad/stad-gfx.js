@@ -327,9 +327,9 @@ function makeHumans(scene,max){
   const set=(k,i,m)=>im[k].setMatrixAt(i,m);
   const hide=new TH.Matrix4().makeScale(0,0,0);
   // h: {x,z,ry,ph (loopfase),sp (snelheid 0..1),look:{skin,hair,top,arm,pants,shoe,hat:'none|cap|beanie|hat|mask',hatC}}
-  const SC=new TH.Matrix4().makeScale(1.18,1.18,1.18);
+  const SC=new TH.Matrix4().makeScale(1.18,1.18,1.18),SC2=new TH.Matrix4();
   const RZ=new TH.Matrix4(),HM=new TH.Matrix4(),T2=new TH.Matrix4(),V1=new TH.Vector3();
-  function pose(i,h){root.makeRotationY(h.ry);root.setPosition(h.x,h.y||0,h.z);root.multiply(SC);const sw=Math.sin(h.ph)*.75*Math.min(1,h.sp),bob=Math.abs(Math.cos(h.ph))*.06*Math.min(1,h.sp)+(h.hop||0),lean=h.lean||0;
+  function pose(i,h){root.makeRotationY(h.ry);root.setPosition(h.x,h.y||0,h.z);const LK=h.look||{};if(LK.h||LK.w){const bw=1.18*(LK.w||1);root.multiply(SC2.makeScale(bw,1.18*(LK.h||1),bw))}else root.multiply(SC);const sw=Math.sin(h.ph)*.75*Math.min(1,h.sp),bob=Math.abs(Math.cos(h.ph))*.06*Math.min(1,h.sp)+(h.hop||0),lean=h.lean||0;
     const at=(k,x,y,z,rx,sx,sy,sz,rz)=>{tmp.makeRotationX(rx||0);if(rz){tmp.premultiply(RZ.makeRotationZ(rz))}q.makeTranslation(x,y+bob,z).multiply(tmp);if(sx!=null)q.scale(V1.set(sx,sy,sz));tmp.multiplyMatrices(root,q);set(k,i,tmp);return tmp};
     const lL=h.legL!=null?h.legL:sw,lR=h.legR!=null?h.legR:-sw;
     at('legL',-.15,.84,0,lL);at('legR',.15,.84,0,lR);
@@ -344,17 +344,25 @@ function makeHumans(scene,max){
     // hoofd: draait mee met waar iemand naar kijkt; haar, pet en ogen hangen aan het hoofd
     HM.makeTranslation(0,1.56+bob,0);if(h.hy||h.hx){HM.multiply(rot.makeRotationY(h.hy||0));if(h.hx)HM.multiply(rot.makeRotationX(h.hx))}HM.premultiply(root);set('head',i,HM);
     const hd=(k,x,y,z,sx,sy,sz)=>{q.makeTranslation(x,y,z);if(sx!=null)q.scale(V1.set(sx,sy,sz));tmp.multiplyMatrices(HM,q);set(k,i,tmp)};
-    const hat=h.look.hat||'none';
+    const hat=h.look.hat||'none',hs=h.look.hs||'';let brimHair=false;
     if(hat==='hat'){hd('hair',0,.44,0,1.06,1.6,1.06);hd('brim',0,.44,0,1.5,1,2.6)}
-    else if(hat==='cap'){hd('hair',0,.42,0,1,1.1,1);hd('brim',0,.42,.32,1,1,1)}
+    else if(hat==='cap'||hat==='pet'){hd('hair',0,.42,0,1,hat==='pet'?1.3:1.1,1);hd('brim',0,.42,.32,1,1,1)}
     else if(hat==='beanie'){hd('hair',0,.36,0,1.04,1.8,1.04);set('brim',i,hide)}
     else if(hat==='mask'){hd('hair',0,-.04,0,1.06,2.75,1.06);set('brim',i,hide)}
-    else if(hat==='bald'){set('hair',i,hide);set('brim',i,hide)}
-    else{hd('hair',0,.38,-.02);set('brim',i,hide)}
+    else if(hat==='hijab'||hat==='hood'){hd('hair',0,.02,-.07,1.1,2.9,.94);hd('brim',0,-.02,-.02,1.12,3,1.5)}
+    else if(hat==='bald'||hs==='kaal'){set('hair',i,hide);set('brim',i,hide)}
+    else if(hs==='afro'){hd('hair',0,.3,-.03,1.3,2.3,1.22);set('brim',i,hide)}
+    else if(hs==='hanenkam'){hd('hair',0,.4,0,.26,1.7,.96);set('brim',i,hide)}
+    else if(hs==='kalend'){hd('hair',0,.16,-.08,1.04,1.1,.8);set('brim',i,hide)}
+    else{hd('hair',0,hs==='kuif'?.42:.38,-.02,1,hs==='kuif'?1.5:1,1);
+      if(h.look.long||hs==='lang'||hs==='bob'||hs==='vlecht'||hs==='krul'){hd('brim',0,hs==='bob'||hs==='krul'?.12:-.02,-.2,1.06,hs==='bob'||hs==='krul'?5:8.5,.55);brimHair=true}
+      else if(hs==='knot'){hd('brim',0,.56,-.1,.5,3.2,.75);brimHair=true}
+      else if(hs==='staart'){hd('brim',0,.2,-.32,.34,5.5,.5);brimHair=true}
+      else set('brim',i,hide)}
     if(h.blink)set('eyes',i,hide);else hd('eyes',0,.27,.25);
     const L=h.look,c=(k,v)=>{col.set(v);im[k].setColorAt(i,col)};
     c('legL',L.pants);c('legR',L.pants);c('shoeL',L.shoe);c('shoeR',L.shoe);c('torso',L.top);c('armL',L.arm||L.top);c('armR',L.arm||L.top);c('handL',L.skin);c('handR',L.skin);c('head',L.skin);
-    c('hair',hat==='none'||hat==='bald'?L.hair:L.hatC||L.hair);c('brim',L.hatC||L.hair);c('eyes',hat==='mask'?'#e8e4da':'#15161a')}
+    c('hair',hat==='none'||hat==='bald'?L.hair:hat==='hood'?L.top:L.hatC||L.hair);c('brim',brimHair?L.hair:hat==='hood'?L.top:L.hatC||L.hair);c('eyes',hat==='mask'?'#e8e4da':'#15161a')}
   return {im,count(n){PARTS.forEach(k=>{im[k].count=n})},pose,
     flush(){PARTS.forEach(k=>{im[k].instanceMatrix.needsUpdate=true;if(im[k].instanceColor)im[k].instanceColor.needsUpdate=true})},
     xray(on){['legL','legR','torso','armL','armR','head','hair'].forEach(k=>{const m=xr[k];m.visible=on;if(on){im[k].getMatrixAt(0,q);m.setMatrixAt(0,q);m.instanceMatrix.needsUpdate=true}})}};

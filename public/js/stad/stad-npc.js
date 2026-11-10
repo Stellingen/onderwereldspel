@@ -73,9 +73,9 @@ const FIXED=[];
 function addFixed(arch,x,z,ry){const p=M.nearestWalk(x,z,6)||{x,z};const n={x:p.x,z:p.z,dx:0,dz:1,v:0,ph:0,ry:ry||0,turn:99,stop:0,fixed:1,home:{x:p.x,z:p.z,ry:ry||0}};n.arch=arch;n.look=lookFor(arch,null)||lookFor('student',null);n.nm=pick(A[arch].names);n.st=A[arch].fixed||'stand';n.t=0;G.NPC.push(n);FIXED.push(n);return n}
 G.addFixed=addFixed;
 // iemand van een bepaalde soort op een plek zetten (voor gebeurtenissen)
-G.npcMake=function(arch,x,z){const n=G.spawnNpc(false),p=M.nearestWalk(x,z,6)||{x,z},a=A[arch]||A.burger;n.x=p.x;n.z=p.z;n.arch=A[arch]?arch:'burger';n.look=lookFor(n.arch,null)||n.look;n.v=a.v?rr(a.v[0],a.v[1]):1.3;n.run=a.run?1:0;n.nm=pick(a.names);n.st='walk';n.t=0;n.klant=null;G.NPC.push(n);return n};
+G.npcMake=function(arch,x,z){const n=G.spawnNpc(false),p=M.nearestWalk(x,z,6)||{x,z},a=A[arch]||A.burger;n.x=p.x;n.z=p.z;n.arch=A[arch]?arch:'burger';n.look=lookFor(n.arch,null)||n.look;n.v=a.v?rr(a.v[0],a.v[1]):1.3;n.run=a.run?1:0;n.nm=pick(a.names);n.st='walk';n.t=0;n.klant=null;n.rid=null;n.aid=null;n.robbed=n.picked=0;G.NPC.push(n);return n};
 G.npcRemove=function(n){const i=G.NPC.indexOf(n);if(i>=0)G.NPC.splice(i,1)};
-function setupFixed(){addFixed('muzikant',223.5,111.5,Math.PI);addFixed('heler',300.5,108.5,-Math.PI/2);
+function setupFixed(){const addFixed=G.addFixed;addFixed('muzikant',223.5,111.5,Math.PI);addFixed('heler',300.5,108.5,-Math.PI/2);
   const al=M.alleys.slice().sort((a,b)=>a.cx-b.cx);[al[2],al[Math.floor(al.length/2)],al[al.length-3]].filter(Boolean).forEach(a=>{const ns=a.f==='N'||a.f==='S';addFixed('zwerver',ns?a.x0+.7:a.cx,ns?a.cz:a.z0+.7,ns?Math.PI/2:0)});
   const ha=al.find(a=>a.cx>60&&a.cx<130);if(ha)addFixed('heler',ha.cx,ha.cz,0)}
 /* ---------- tekstwolkjes boven hoofden ---------- */
@@ -169,16 +169,17 @@ G.npcBrain=function(n,dt){const st=n.st||'walk',dP=dist(n,G.P);n.t=(n.t||0)+dt;n
 /* ---------- agenten op straat: zien ze iets, dan begint de achtervolging ---------- */
 function copWatch(n,dt){n.cw=(n.cw||0)-dt;if(n.cw>0)return false;n.cw=.4;const P=G.P,d=dist(n,P);if(d>16||G.driving)return false;
   const lv=typeof S!=='undefined'&&S.wanted?(typeof S.wanted==='object'?(S.wanted.lv||1):1):0;
-  if((lv>0&&d<11&&los(n,P)&&!(G.police&&G.police.active()))&&!G.hidden){bubble(n,'Hé! Jou ken ik!',{col:'#a9c8ff'});G.snd&&G.snd.fx('whistle');G.police&&G.police.start({stars:Math.min(3,lv),why:'gezocht',at:n,wanted:1});n.st='walk';return false}
+  if((lv>0&&d<11*(1+(G.faam?G.faam():0)/250)&&los(n,P)&&!(G.police&&G.police.active()))&&!G.hidden){if(G.smeer&&G.smeer.blind(n))return false;bubble(n,'Hé! Jou ken ik!',{col:'#a9c8ff'});G.snd&&G.snd.fx('whistle');G.police&&G.police.start({stars:Math.min(3,lv),why:'gezocht',at:n,wanted:1});n.st='walk';return false}
   return false}
 /* ---------- getuigen ---------- */
 // x,z = waar het gebeurt; victim = het slachtoffer; stars = hoe zwaar
 function crime(x,z,o){o=o||{};const night=G.night>.55,Rr=night?10:14,masked=G.P.look&&G.P.look.hat==='mask',pt={x,z};let callers=0;
   rep(x,z,o.rep!=null?o.rep:-2);
   G.NPC.forEach(n=>{if(n===o.victim||n.st==='call')return;const d=dist(n,pt);if(d>Rr||!los(n,pt))return;const a=A[n.arch]||A.burger;
-    if(a.cop){if(!(G.police&&G.police.active())){bubble(n,'Staan blijven!',{col:'#a9c8ff'});G.snd&&G.snd.fx('whistle');G.police&&G.police.start({stars:o.stars||1,why:o.why||'straatroof',at:n})}return}
-    if(o.soft&&!a.cop){const rp2=repAt(x,z);if(callers<1&&Math.random()<a.call*.45*(1-rp2/200)*(1-.12*perk('prater'))*(G.wijkOwn&&G.wijkOwn(x,z)?.4:1)){callers++;n.st='call';n.t=0;n.callT=rr(3,6);n.cx=x;n.cz=z;n.why=o.why;n.stars=1;bubble(n,pick(['Hé! Dat mag niet!','Vandaal!']),{col:'#ffd35a'})}return}
-    const rp=repAt(x,z),pc=a.call*(masked?.5:1)*(1-rp/200)*(callers<2?1:0)*(1-.12*perk('prater'))*(G.wijkOwn&&G.wijkOwn(x,z)?.6:1);
+    if(a.cop){if(G.smeer&&G.smeer.blind(n,o)){if(d<9)bubble(n,pick(['…','Ik zag niks.','Hm.']),{col:'#a9c8ff'});return}if(!(G.police&&G.police.active())){bubble(n,'Staan blijven!',{col:'#a9c8ff'});G.snd&&G.snd.fx('whistle');G.smeer&&G.smeer.zag&&G.smeer.zag(n);G.police&&G.police.start({stars:o.stars||1,why:o.why||'straatroof',at:n})}return}
+    const vw=G.volk?G.volk.getuige(n,{x,z,soft:o.soft}):null,vm=vw?vw.mul:1;if(vw&&vw.never){if(d<8&&Math.random()<.5)bubble(n,pick(['Ik heb niks gezien.','Ik kijk wel even weg.']),{col:'#c8ffd8'});return}
+    if(o.soft&&!a.cop){const rp2=repAt(x,z);if(callers<1&&Math.random()<a.call*.45*vm*(1-rp2/200)*(1-.12*perk('prater'))*(G.wijkOwn&&G.wijkOwn(x,z)?.4:1)){callers++;n.st='call';n.t=0;n.callT=rr(3,6);n.cx=x;n.cz=z;n.why=o.why;n.stars=1;bubble(n,pick(['Hé! Dat mag niet!','Vandaal!']),{col:'#ffd35a'})}return}
+    const rp=repAt(x,z),pc=a.call*vm*(masked?.5:1)*(1-rp/200)*(callers<2?1:0)*(1-.12*perk('prater'))*(G.wijkOwn&&G.wijkOwn(x,z)?.6:1);
     if(Math.random()<pc){callers++;n.st='call';n.t=0;n.callT=rr(2.5,6)*(n.arch==='zakenman'?.7:1);n.cx=x;n.cz=z;n.why=o.why;n.stars=o.stars;n.masked=masked;bubble(n,'112!',{col:'#ffd35a'});return}
     if(a.fight&&Math.random()<.5){n.st='walk';bubble(n,pick(['Ha, lekker bezig.','Niet mijn probleem.']));return}
     n.st=Math.random()<.35?'cower':'flee';n.t=0;n.from=pt;n.flee=rr(4,8);if(a.scream||Math.random()<.4){bubble(n,pick(['Help!','Aaah!','Hij heeft een wapen!','Politie!']),{col:'#ff9a9a'});if(Math.random()<.5)G.snd&&G.snd.fx('scream')}});
@@ -192,11 +193,11 @@ function roofWhy(n){const c=roofRef();if(!c)return 'Kan nu niet';if(!weapon())re
   const cd=(S.cd&&S.cd.straatroof||0)-now();if(cd>0)return 'Even wachten: nog '+Math.ceil(cd/1000)+' s';if(S.energy<crEn(c))return 'Te moe: '+crEn(c)+' energie nodig';if(!(A[n.arch]||{}).wallet)return 'Daar valt niets te halen';return ''}
 function roofStart(n){const c=roofRef(),why=roofWhy(n);if(why){G.toast(why,'bad');return}
   K.closeDialog(true);S.energy-=crEn(c);S.cd=S.cd||{};S.cd.straatroof=now()+crimeCd(c);try{save()}catch(e){}
-  const a=A[n.arch],w=vk(),fight=Math.random()<Math.max(0,(a.tough-w))*.08;n.t=0;
+  const a=A[n.arch],w=vk(),ang=G.volk?G.volk.angst(n.x,n.z):0,fight=Math.random()<Math.max(0,(a.tough-w))*.08*(1-.6*ang);n.t=0;
   G.shake&&G.shake(.35);G.snd&&G.snd.fx('grab');G.pArm=-1.5;
   if(fight){n.st='fight';bubble(n,pick(['Blijf van me af!','Probeer het maar!','Rot op!']),{col:'#ff9a9a'});setTimeout(()=>{G.snd&&G.snd.fx('hit');G.shake&&G.shake(.9);G.hitStop=.08;const hp=Math.round(rr(5,15));S.hp=Math.max(10,(S.hp||100)-hp);G.frozen=.6;G.pArm=0;G.toast('Hij verzet zich! Je krijgt een duw (−'+hp+' gezondheid)','bad');if(navigator.vibrate)try{navigator.vibrate(60)}catch(e){};try{save()}catch(e){}},500);crime(n.x,n.z,{victim:n,why:'straatroof',stars:1});return}
   n.st='handsup';bubble(n,pick(['Niet schieten!','Oké, oké!','Rustig!','Neem alles!']),{col:'#ffe0a0'});
-  R={n,c,t:0,need:clamp(2.6-.25*w,1,2.6)};hold(true);crime(n.x,n.z,{victim:n,why:'straatroof',stars:G.police&&G.police.active()?2:1})}
+  R={n,c,t:0,need:clamp(2.6-.25*w,1,2.6)*(1-.3*ang)};hold(true);crime(n.x,n.z,{victim:n,why:'straatroof',stars:G.police&&G.police.active()?2:1})}
 function roofStep(dt){if(!R)return;const n=R.n,d=dist(n,G.P);G.pArm=-1.5;
   if(d>3||G.driving){bubble(n,'Hè hè.');n.st='flee';n.t=0;n.from=G.P;R=null;hold(false);G.pArm=0;G.toast('Overval afgebroken','bad');return}
   const h=!!(G.K[' ']||G.K.e||G.actHold);if(h)R.t+=dt;else R.t=Math.max(0,R.t-dt*.6);holdBar(R.t/R.need);
@@ -205,7 +206,7 @@ function roofStep(dt){if(!R)return;const n=R.n,d=dist(n,G.P);G.pArm=-1.5;
     S.cash+=cash;if(typeof addZwart==='function')addZwart(cash);if(typeof addXp==='function')addXp(Math.max(1,Math.round(c.xp*.75)));if(typeof addHeat==='function')addHeat(rnd(2,4));S.stats=S.stats||{};S.stats.roof=(S.stats.roof||0)+1;G.ev&&(G.ev('roof'),G.ev('roof:'+n.arch));
     try{save()}catch(e){}G.snd&&G.snd.fx('cash');G.hitStop=.07;G.shake&&G.shake(.4);burst(n.x,1.4,n.z,'#3fe395',10);float('+'+fmt(cash)+(item?' + '+item.n.toLowerCase():''),n.x,n.z);
     if(navigator.vibrate)try{navigator.vibrate(40)}catch(e){}
-    n.st='flee';n.t=0;n.from=G.P;n.flee=8;n.robbed=1;bubble(n,pick(['Help! Overval!','Politie!','Mijn tas!']),{col:'#ff9a9a'});if(A[n.arch].scream||Math.random()<.5)G.snd&&G.snd.fx('scream');
+    n.st='flee';n.t=0;n.from=G.P;n.flee=8;n.robbed=1;G.volk&&G.volk.daad(n,'roof');bubble(n,pick(['Help! Overval!','Politie!','Mijn tas!']),{col:'#ff9a9a'});if(A[n.arch].scream||Math.random()<.5)G.snd&&G.snd.fx('scream');
     // het slachtoffer belt zelf ook (als jij weg bent)
     if(Math.random()<A[n.arch].call*(G.P.look&&G.P.look.hat==='mask'?.5:1)){setTimeout(()=>{if(n.st==='flee'||n.st==='walk'){n.st='call';n.t=0;n.callT=rr(3,6);n.cx=n.x;n.cz=n.z;n.why='straatroof';n.stars=1;n.masked=G.P.look&&G.P.look.hat==='mask'}},rr(2500,5000))}
     if(n.arch==='oma')rep(n.x,n.z,-10);else rep(n.x,n.z,-3);
@@ -219,8 +220,8 @@ const on=e=>{e.preventDefault();G.actHold=true},off=()=>{G.actHold=false};hb.add
 function hold(v){hb.hidden=!v;if(!v){G.actHold=false;hb.style.setProperty('--p','0%')}}
 function holdBar(p){hb.style.setProperty('--p',clamp(p,0,1)*100+'%')}
 /* ---------- helpen, fooi, tips ---------- */
-function helpDone(n){bubble(n,'Dank je wel, jongen!',{col:'#ffe0a0'});const g=Math.round(rr(2,12));S.cash+=g;if(typeof addXp==='function')addXp(2);rep(n.x,n.z,5);S.stats=S.stats||{};S.stats.oma=(S.stats.oma||0)+1;G.ev&&G.ev('oma');try{save()}catch(e){}float('+'+fmt(g)+' · respect',n.x,n.z,'#ffd35a');G.snd&&G.snd.fx('ok')}
-function tipMoney(n,amt){if(S.cash<amt){G.toast('Niet genoeg contant geld','bad');return false}S.cash-=amt;G.ev&&G.ev('fooi');try{save()}catch(e){}rep(n.x,n.z,2);G.snd&&G.snd.fx('coin');float('−'+fmt(amt),G.P.x,G.P.z,'#ffd35a');return true}
+function helpDone(n){G.volk&&G.volk.daad(n,'help');bubble(n,'Dank je wel, jongen!',{col:'#ffe0a0'});const g=Math.round(rr(2,12));S.cash+=g;if(typeof addXp==='function')addXp(2);rep(n.x,n.z,5);S.stats=S.stats||{};S.stats.oma=(S.stats.oma||0)+1;G.ev&&G.ev('oma');try{save()}catch(e){}float('+'+fmt(g)+' · respect',n.x,n.z,'#ffd35a');G.snd&&G.snd.fx('ok')}
+function tipMoney(n,amt){if(S.cash<amt){G.toast('Niet genoeg contant geld','bad');return false}S.cash-=amt;G.ev&&G.ev('fooi');G.volk&&G.volk.daad(n,'fooi');try{save()}catch(e){}rep(n.x,n.z,2);G.snd&&G.snd.fx('coin');float('−'+fmt(amt),G.P.x,G.P.z,'#ffd35a');return true}
 /* ---------- zakkenrollen: zonder wapen, met vlugge vingers (klus 'zakken' uit het klikspel: energie en wachttijd) ---------- */
 const zakRef=()=>{try{return CRIMES.find(c=>c.id==='zakken')||roofRef()}catch(e){return null}};
 const skl=id=>{try{return (S.skills&&S.skills[id])||0}catch(e){return 0}};
@@ -235,11 +236,11 @@ async function zakrol(n){const c=zakRef(),why=zakWhy(n);if(why){G.toast(why,'bad
   if(r.ok){const al=G.alert()||0,g=Math.max(1,Math.floor(rnd(c.min,c.max)*(typeof lootMult==='function'?lootMult():1)*(typeof crLootK==='function'?crLootK(c):1)*a.wallet*.8*(1-al/200)));let item=null;
     if(Math.random()<.2&&zak().length<G.zakMax()){const it=pick(ITEMS);item={n:it[0],v:Math.max(5,Math.round(g*.5*it[1]))};zak().push(item)}
     S.cash+=g;if(typeof addZwart==='function')addZwart(g);if(typeof addXp==='function')addXp(Math.max(1,Math.round(c.xp*.6)));if(typeof addHeat==='function')addHeat(1);S.stats=S.stats||{};S.stats.zakrol=(S.stats.zakrol||0)+1;G.ev&&G.ev('zakrol');try{save()}catch(e){}
-    G.snd&&G.snd.fx('coin');float('+'+fmt(g)+(item?' + '+item.n.toLowerCase():''),n.x,n.z);n.picked=1;n.st='walk';n.t=0;if(typeof log==='function')log('Zakkenrollen in de Pixelstad: '+fmt(g)+(item?' en '+item.n.toLowerCase():''),'ok');
+    G.snd&&G.snd.fx('coin');float('+'+fmt(g)+(item?' + '+item.n.toLowerCase():''),n.x,n.z);n.picked=1;G.volk&&G.volk.daad(n,'zakrolok');n.st='walk';n.t=0;if(typeof log==='function')log('Zakkenrollen in de Pixelstad: '+fmt(g)+(item?' en '+item.n.toLowerCase():''),'ok');
     // soms merkt hij het een paar tellen later
-    if(Math.random()<.14)setTimeout(()=>{if(n.st!=='walk'||dist(n,G.P)>40)return;bubble(n,'Hé… mijn portemonnee!',{col:'#ff9a9a'});n.robbed=1;if(Math.random()<a.call){n.st='call';n.t=0;n.callT=rr(3,6);n.cx=n.x;n.cz=n.z;n.why='zakkenrollen';n.stars=1}},rr(3500,7000));return}
+    if(Math.random()<.14)setTimeout(()=>{if(n.st!=='walk'||dist(n,G.P)>40)return;bubble(n,'Hé… mijn portemonnee!',{col:'#ff9a9a'});n.robbed=1;G.volk&&G.volk.daad(n,'zakrol2');if(Math.random()<a.call){n.st='call';n.t=0;n.callT=rr(3,6);n.cx=n.x;n.cz=n.z;n.why='zakkenrollen';n.stars=1}},rr(3500,7000));return}
   // betrapt
-  G.snd&&G.snd.fx('bad');G.shake&&G.shake(.4);n.robbed=1;bubble(n,pick(['Blijf van me af!','Dief!','Hé! Mijn zak!']),{col:'#ff9a9a'});rep(n.x,n.z,n.arch==='oma'?-8:-3);
+  G.snd&&G.snd.fx('bad');G.shake&&G.shake(.4);n.robbed=1;G.volk&&G.volk.daad(n,'zakrol');bubble(n,pick(['Blijf van me af!','Dief!','Hé! Mijn zak!']),{col:'#ff9a9a'});rep(n.x,n.z,n.arch==='oma'?-8:-3);
   if(a.fight){n.st='fight';n.t=0;setTimeout(()=>{G.snd&&G.snd.fx('hit');G.shake&&G.shake(.8);const hp=Math.round(rr(5,12));S.hp=Math.max(10,(S.hp||100)-hp);G.frozen=.5;try{save()}catch(e){}G.toast('Betrapt. Je krijgt een klap (−'+hp+' gezondheid)','bad')},420)}
   else{G.toast('Betrapt!','bad');if(Math.random()<a.call){n.st='call';n.t=0;n.callT=rr(2.5,5);n.cx=n.x;n.cz=n.z;n.why='zakkenrollen';n.stars=1;bubble(n,'112!',{col:'#ffd35a'})}else{n.st='flee';n.t=0;n.from=G.P;n.flee=6}}
   crime(n.x,n.z,{victim:n,why:'zakkenrollen',stars:1,rep:0})}
@@ -250,10 +251,10 @@ function dealInfo(n){try{const g=DRUGS.find(x=>x.id===n.klant);if(!g||g.lv>dlLv(
     if(typeof inJail==='function'&&inJail())why='Je zit vast';else if(typeof cdLeft==='function'&&cdLeft('deal_'+g.id))why='Even wachten met '+g.n.toLowerCase();else if(S.energy<DL_EN)why='Te moe: '+DL_EN+' energie nodig';else if(have<1)why='Je hebt geen '+g.n.toLowerCase()+' bij je (inkopen bij Havenloods 7)';
     return {g,have,mo,why}}catch(e){return null}}
 function deal(n,g){K.closeDialog(true);try{const D=dlS();D.bu=buurtAt(n.x,n.z);const c0=S.cash;act.dlSell(g.id);const got=S.cash-c0;n.klant=null;
-    if(got>0){float('+'+fmt(got),n.x,n.z);bubble(n,pick(['Top. Tot de volgende keer.','Je bent een held.','Je hebt me niet gezien.']),{col:'#c8ffd8'});G.snd&&G.snd.fx('cash');G.ev&&G.ev('deal');n.st='wave';n.t=0;n.dur=1.2;n.back='walk'}}catch(e){console.error(e)}}
+    if(got>0){float('+'+fmt(got),n.x,n.z);bubble(n,pick(['Top. Tot de volgende keer.','Je bent een held.','Je hebt me niet gezien.']),{col:'#c8ffd8'});G.snd&&G.snd.fx('cash');G.ev&&G.ev('deal');G.volk&&G.volk.daad(n,'deal');n.st='wave';n.t=0;n.dur=1.2;n.back='walk'}}catch(e){console.error(e)}}
 /* ---------- gesprek ---------- */
 function portraitLook(n){const L=n.look||{};return Object.assign({},L,{bg:'#1a1d23'})}
-function opener(n){const a=A[n.arch],rp=repAt(n.x,n.z);if(G.npcOpen){const t=G.npcOpen(n);if(t)return t}if(a.cop&&typeof S!=='undefined'&&S.wanted)return 'Wacht eens even... jou ken ik van het bureau.';
+function opener(n){const a=A[n.arch],rp=repAt(n.x,n.z);if(G.npcOpen){const t=G.npcOpen(n);if(t)return t}if(a.cop&&typeof S!=='undefined'&&S.wanted&&!(G.smeer&&G.smeer.blind(n)))return 'Wacht eens even... jou ken ik van het bureau.';
   if(n.klant&&dealInfo(n))return pick(['Psst. Heb jij toevallig '+dealInfo(n).g.n.toLowerCase()+'?','Hé. Ze zeggen dat jij '+dealInfo(n).g.n.toLowerCase()+' hebt.']);
   if(G.wijkOwn&&G.wijkOwn(n.x,n.z)&&!a.cop&&Math.random()<.6)return pick(['Dag baas.','Alles rustig in de wijk, baas.','Fijn dat je er bent.']);
   if(rp>40&&!a.cop)return pick(['Hé, jij bent die van '+M.districtAt(n.x,n.z)+'. Respect.','Ah, jij weer. Alles goed?']);if(rp<-40&&!a.cop)return pick(['Blijf uit mijn buurt.','Jij bent die gast die hier mensen beroofd. Wegwezen.']);
@@ -263,33 +264,33 @@ const COMPL_R={oma:'Och, wat lief van je.',zakenman:'Dank je. Maatwerk.',rivaal:
 const GRAP=[['Waarom nemen Amsterdammers nooit de trap? Omdat ze alles al op de fiets doen.','Haha!'],['Wat doet een agent in de gracht? Zijn fiets zoeken.','Die ken ik nog niet!'],['Mijn huur is zo hoog, ik woon er alleen nog in het weekend.','Zo herkenbaar.'],['Ik zocht een parkeerplek. Nu heb ik een hypotheek.','Haha, ja.'],['Een toerist vraagt de weg. Ik zeg: rechtdoor tot je natte voeten krijgt.','Ha!']];
 const SCHELD={oma:['Wel alle… Dat zeg je niet tegen een dame!',1],zakenman:['Mijn advocaat hoort hiervan.',0],rivaal:['Wat zei je daar? Kom hier!',2],agent:['Weet u wel tegen wie u praat? Doorlopen.',0],student:['Doe normaal, man.',0],toerist:['Sorry? I don\'t understand.',0],zwerver:['Ja ja. Jij ook.',0],jogger:['Geen adem voor jou.',0]};
 const WEG=[['bank','De bank'],['crimes','Café Het Gat'],['cars','De garage'],['biz','De notaris'],['casino','Het casino'],['shop','De wapenhandel']];
-function talk(n){const a=A[n.arch];G.talking=true;if(!n.spoke){n.spoke=1;G.ev&&G.ev('praat')}n.st='talk';n.t=0;target=null;G.lookAt=n;G.snd&&G.snd.fx('blip');
+function talk(n){const a=A[n.arch];G.talking=true;if(!n.spoke){n.spoke=1;G.ev&&G.ev('praat')}n.st='talk';n.t=0;target=null;G.lookAt=n;G.snd&&G.snd.fx('blip');const VP=G.volk?G.volk.contact(n):null,vij=!!(VP&&G.volk.val(VP.id)<=-40&&VP.kind!=='agent');
   const wpn=weapon(),fin=[{t:'Tot ziens',ic:K.ic.hand,f:()=>K.closeDialog()}];
   const praat=()=>{const tip=Math.random()<.4;K.say(tip?pick(TIPS):pick(a.talk),tip?'blij':null,[
-    {t:'Compliment geven',ic:K.ic.star,dis:n.compl,why:'Al gedaan',f:()=>{n.compl=1;G.ev&&G.ev('compl');rep(n.x,n.z,1);K.say(COMPL_R[n.arch]||'Dank je!',a.fight?null:'blij',main())}},
-    {t:'Grap vertellen',ic:K.ic.talk,dis:n.grap,why:'Al gedaan',f:()=>{n.grap=1;const g=pick(GRAP),ok=Math.random()<.55+(perk('charme')?.15:0);G.zeg&&G.zeg(g[0].length>34?'Ken je die van…':g[0]);if(ok){rep(n.x,n.z,2);G.snd&&G.snd.fx('ok')}K.say(ok?g[1]:pick(['…','Die was flauw.','Hm.']),ok?'blij':null,main())}},
+    {t:'Compliment geven',ic:K.ic.star,dis:n.compl,why:'Al gedaan',f:()=>{n.compl=1;G.ev&&G.ev('compl');G.volk&&G.volk.daad(n,'compl');rep(n.x,n.z,1);K.say(COMPL_R[n.arch]||'Dank je!',a.fight?null:'blij',main())}},
+    {t:'Grap vertellen',ic:K.ic.talk,dis:n.grap,why:'Al gedaan',f:()=>{n.grap=1;const g=pick(GRAP),ok=Math.random()<.55+(perk('charme')?.15:0);G.zeg&&G.zeg(g[0].length>34?'Ken je die van…':g[0]);G.volk&&G.volk.daad(n,ok?'grap':'grapmis');if(ok){rep(n.x,n.z,2);G.snd&&G.snd.fx('ok')}K.say(ok?g[1]:pick(['…','Die was flauw.','Hm.']),ok?'blij':null,main())}},
     {t:'De weg vragen',ic:K.ic.route,f:()=>{K.say('Waar moet je heen?',null,WEG.map(([id,nm])=>({t:nm,ic:K.ic.route,f:()=>{const pl=M.placeById(id);if(pl&&G.setWaypoint){K.closeDialog(true);G.setWaypoint(pl.door.x,pl.door.z,pl.name,pl.id);bubble(n,pick(['Die kant op.','Rechtdoor, dan zie je het.','Niet te missen.']));n.st='wave';n.t=0;n.dur=1.2;n.back=n.fixed?(n.fixSt||A[n.arch].fixed||'stand'):'walk'}}})).concat([{t:'Laat maar',ic:K.ic.no,f:()=>K.say(pick(a.talk),null,main())}]))}},
-    {t:'Uitschelden',ic:K.ic.scare,risk:a.fight?3:1,dis:n.scold,why:'Al gedaan',f:()=>{n.scold=1;const r=SCHELD[n.arch]||['Nou zeg!',0];rep(n.x,n.z,-3);K.say(r[0],'boos',fin);
+    {t:'Uitschelden',ic:K.ic.scare,risk:a.fight?3:1,dis:n.scold,why:'Al gedaan',f:()=>{n.scold=1;const r=SCHELD[n.arch]||['Nou zeg!',0];G.volk&&G.volk.daad(n,'scheld');rep(n.x,n.z,-3);K.say(r[0],'boos',fin);
       if(r[1]===1)setTimeout(()=>{K.closeDialog(true);n.st='fight';n.t=0;setTimeout(()=>{G.snd&&G.snd.fx('hit');G.shake&&G.shake(.5);S.hp=Math.max(10,(S.hp||100)-2);G.pose='au';setTimeout(()=>{if(G.pose==='au')G.pose=null},500);G.toast('Oma slaat je met haar tas (−2 gezondheid)','bad');try{save()}catch(e){}},350)},1300);
       if(r[1]===2)setTimeout(()=>{K.closeDialog(true);if(G.knok)G.knok(n);else{n.st='fight';n.t=0}},1300)}},
     {t:'Terug',ic:K.ic.no,f:()=>K.say(pick(a.talk),null,main())}])};
   const main=()=>{const rw=roofWhy(n),ch=[];
-    ch.push({t:'Praten',sub:'Compliment, grap, de weg vragen',ic:K.ic.talk,f:praat});
+    ch.push({t:'Praten',sub:vij?'':'Compliment, grap, de weg vragen',ic:K.ic.talk,dis:vij,why:'Wil niet met je praten',f:praat});
     if(G.npcService&&G.npcService[n.arch])try{G.npcService[n.arch](n,ch,main)}catch(e){console.error(e)}
     if(n.klant){const d=dealInfo(n);if(d)ch.push({t:'Verkoop '+d.g.n.toLowerCase(),sub:d.why?'':d.have+' '+(d.have===1?d.g.u:d.g.u2)+(d.mo?' van Mo':'')+' · '+DL_EN+' energie',ic:K.ic.bag,risk:2,dis:!!d.why,why:d.why,f:()=>deal(n,d.g)})}
-    if(n.arch==='toerist')ch.push({t:'Foto voor ze maken',ic:K.ic.photo,dis:n.photo,why:'Al gedaan',f:()=>{n.photo=1;G.ev&&G.ev('foto');const g=Math.round(rr(3,15));S.cash+=g;rep(n.x,n.z,2);try{save()}catch(e){}G.snd&&G.snd.fx('coin');float('+'+fmt(g),n.x,n.z);K.say('Thank you! Hier, voor de moeite.','blij',main())}});
+    if(n.arch==='toerist')ch.push({t:'Foto voor ze maken',ic:K.ic.photo,dis:n.photo,why:'Al gedaan',f:()=>{n.photo=1;G.ev&&G.ev('foto');G.volk&&G.volk.daad(n,'foto');const g=Math.round(rr(3,15));S.cash+=g;rep(n.x,n.z,2);try{save()}catch(e){}G.snd&&G.snd.fx('coin');float('+'+fmt(g),n.x,n.z);K.say('Thank you! Hier, voor de moeite.','blij',main())}});
     if(n.arch==='oma')ch.push({t:'Even helpen met de boodschappen',ic:K.ic.hand,dis:n.helped,why:'Al geholpen',f:()=>{n.helped=1;K.say('Wat aardig! Loop je even een stukje mee?','blij',[]);setTimeout(()=>{K.closeDialog(true);n.st='follow';n.t=0;n.followT=8},1300)}});
     if(n.arch==='zwerver')ch.push({t:'Geef '+fmt(10),ic:K.ic.money,dis:n.gave,why:'Al gegeven',f:()=>{if(!tipMoney(n,10))return;n.gave=1;const p=Math.random()<.6&&G.pakketTip&&G.pakketTip();K.say(p?'Ik zag laatst iemand iets verstoppen. In '+p.w+', hier niet ver vandaan. Ik heb het op je kaart gezet.':pick(TIPS),'blij',main())}});
     if(n.arch==='muzikant'){ch.push({t:'Fooi geven · '+fmt(5),ic:K.ic.music,dis:n.gave,why:'Al gegeven',f:()=>{if(!tipMoney(n,5))return;n.gave=1;K.say('Dank je! Deze is voor jou.','blij',main());[523,659,784,659,523].forEach((f,i)=>setTimeout(()=>G.snd&&G.snd.fx('blip'),i*150))}})}
-    if(n.arch==='heler'){const z=zak(),tot=z.reduce((s,i)=>s+i.v,0);ch.push({t:z.length?'Spullen verkopen · '+fmt(tot):'Spullen verkopen',ic:K.ic.bag,dis:!z.length,why:'Je hebt niets op zak',sub:z.length?z.map(i=>i.n).join(', '):'',f:()=>{S.cash+=tot;if(typeof addZwart==='function')addZwart(tot);z.length=0;S.stats=S.stats||{};S.stats.heling=(S.stats.heling||0)+1;G.ev&&G.ev('heler');try{save()}catch(e){}G.snd&&G.snd.fx('cash');float('+'+fmt(tot),n.x,n.z);K.say('Mooi spul. Hier, tel maar na.','blij',[{t:'Bedankt',ic:K.ic.hand,f:()=>K.closeDialog()}])}})}
+    if(n.arch==='heler'){const z=zak(),hk=G.volk?G.volk.helerK(n):0,tot=Math.round(z.reduce((s,i)=>s+i.v,0)*(1+hk));ch.push({t:z.length?'Spullen verkopen · '+fmt(tot):'Spullen verkopen',ic:K.ic.bag,dis:!z.length,why:'Je hebt niets op zak',sub:z.length?z.map(i=>i.n).join(', '):'',f:()=>{S.cash+=tot;if(typeof addZwart==='function')addZwart(tot);z.length=0;S.stats=S.stats||{};S.stats.heling=(S.stats.heling||0)+1;G.ev&&G.ev('heler');try{save()}catch(e){}G.snd&&G.snd.fx('cash');float('+'+fmt(tot),n.x,n.z);K.say('Mooi spul. Hier, tel maar na.','blij',[{t:'Bedankt',ic:K.ic.hand,f:()=>K.closeDialog()}])}})}
     if(G.npcExtra)try{G.npcExtra(n,ch,main)}catch(e){console.error(e)}
-    if(a.fight)ch.push({t:'Intimideren',ic:K.ic.scare,risk:wpn?1:3,f:()=>{if(wpn&&Math.random()<.5+vk()*.06){K.say('Oké, oké, rustig maar. Ik ga al.','bang',[]);rep(n.x,n.z,4);setTimeout(()=>{K.closeDialog(true);n.st='flee';n.t=0;n.from=G.P},1100)}
+    if(a.fight)ch.push({t:'Intimideren',ic:K.ic.scare,risk:wpn?1:3,f:()=>{G.volk&&G.volk.daad(n,'intim');if(wpn&&Math.random()<.5+vk()*.06+.3*(G.volk?G.volk.angst(n.x,n.z):0)){K.say('Oké, oké, rustig maar. Ik ga al.','bang',[]);rep(n.x,n.z,4);setTimeout(()=>{K.closeDialog(true);n.st='flee';n.t=0;n.from=G.P},1100)}
       else{K.say('Wat zei je? Kom maar op!','boos',[]);setTimeout(()=>{K.closeDialog(true);if(G.knok){G.knok(n);return}n.st='fight';n.t=0;setTimeout(()=>{G.snd&&G.snd.fx('hit');G.shake&&G.shake(.9);G.hitStop=.08;const hp=Math.round(rr(6,16));S.hp=Math.max(10,(S.hp||100)-hp);G.frozen=.5;try{save()}catch(e){}G.toast('Klap gehad (−'+hp+' gezondheid)','bad')},450)},800)}}});
     if(!a.cop&&a.wallet){const zw=zakWhy(n);ch.push({t:'Zakkenrollen',sub:zw?'':'Zonder wapen, met vlugge vingers',ic:K.ic.hand,risk:a.tough>2?2:1,dis:!!zw,why:zw,f:()=>zakrol(n)})}
     if(!a.cop&&a.wallet)ch.push({t:'Beroven',ic:K.ic.rob,risk:n.arch==='zakenman'||n.arch==='rivaal'?3:2,dis:!!rw,why:rw,sub:!rw&&wpn?'Met je '+wpn.n.toLowerCase():'',f:()=>roofStart(n)});
     ch.push({t:'Laat maar',ic:K.ic.no,f:()=>K.closeDialog()});return ch};
-  K.dialog({name:n.nm,role:a.n+(n.robbed?' · beroofd':'')+(n.klant&&dealInfo(n)?' · klant':''),look:portraitLook(n),mood:n.robbed?'boos':a.cop?'neutraal':null,lines:[opener(n)],col:a.col,choices:main(),onClose:()=>{G.talking=false;if(G.lookAt===n)G.lookAt=null;if(n.st==='talk')back(n)}});
-  if(a.cop&&typeof S!=='undefined'&&S.wanted){setTimeout(()=>{K.closeDialog(true);G.police&&G.police.start({stars:Math.min(3,S.wanted.lv||1),why:'gezocht',at:n,wanted:1})},1600)}}
+  K.dialog({name:n.nm,role:((G.volk&&G.volk.rol(n))||a.n)+(n.robbed?' · beroofd':'')+(n.klant&&dealInfo(n)?' · klant':''),look:portraitLook(n),mood:n.robbed?'boos':a.cop?'neutraal':(G.volk&&G.volk.stem(n))||null,lines:[opener(n)],col:a.col,choices:main(),onClose:()=>{G.talking=false;if(G.lookAt===n)G.lookAt=null;if(n.st==='talk')back(n)}});
+  if(a.cop&&typeof S!=='undefined'&&S.wanted&&!(G.smeer&&G.smeer.blind(n))){setTimeout(()=>{K.closeDialog(true);G.smeer&&G.smeer.zag&&G.smeer.zag(n);G.police&&G.police.start({stars:Math.min(3,S.wanted.lv||1),why:'gezocht',at:n,wanted:1})},1600)}}
 /* ---------- reacties op je emotes ---------- */
 G.onEmote=function(id){const P=G.P;let k=0,got=0;G.NPC.forEach(m=>{const d=dist(m,P);if(d>9.5||['flee','call','handsup','fight','follow','talk','scramble','hold','duel'].includes(m.st)||!los(m,P))return;const a=A[m.arch]||A.burger;
   const set=(st,dur)=>{if(st!=='wave'&&st!=='watch'&&m.fixed)return;if(!['wave','watch','dance'].includes(m.st))m.back=m.st;m.st=st;m.t=0;m.dur=dur};
@@ -314,7 +315,7 @@ function pickTarget(){const P=G.P;if(G.driving||G.talking||R||G.hidden||G.paused
 function promptStep(){if(!ringAdded&&G.ready){G.scene().add(ring);ringAdded=true}const n=pickTarget();target=n;G.lookNpc=n||null;
   const door=G.near&&Math.hypot(G.P.x-G.near.door.x,G.P.z-G.near.door.z);if(n&&door!=null&&door<dist(n,G.P)){target=null}
   if(!target){pr.hidden=true;ring.visible=false;return}ring.visible=true;ring.position.set(n.x,.06,n.z);V3.set(n.x,2.7,n.z).project(G.camera());
-  pr.hidden=false;pr.style.left=(V3.x*.5+.5)*innerWidth+'px';pr.style.top=(-V3.y*.5+.5)*innerHeight+'px';pr.style.setProperty('--c',A[n.arch].col);pr.innerHTML=`<kbd>${touch?'Tik':'E'}</kbd><span>${E(A[n.arch].n)}</span>`}
+  pr.hidden=false;pr.style.left=(V3.x*.5+.5)*innerWidth+'px';pr.style.top=(-V3.y*.5+.5)*innerHeight+'px';pr.style.setProperty('--c',A[n.arch].col);const kn=G.volk&&n.rid&&G.volk.rec(n.rid);pr.innerHTML=`<kbd>${touch?'Tik':'E'}</kbd><span>${E(kn&&kn.k?n.nm:A[n.arch].n)}</span>`}
 pr.addEventListener('click',()=>{if(target)talk(target)});
 // E / Spatie: eerst verstoppen (stad-police), dan praten. Een deur die dichterbij is gaat voor.
 G.interact=function(){if(R)return true;if(G.police&&G.police.tryHide&&G.police.tryHide())return true;if(target){talk(target);return true}return false};

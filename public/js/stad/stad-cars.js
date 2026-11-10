@@ -46,7 +46,7 @@ function startTurn(c){const B=c.B,opts=B.n.filter(n=>n!==c.A),C=opts.length?pick
 function busy(node,self){return TRAF.some(o=>o!==self&&o.mode==='turn'&&o.node===node)}
 function blockedAhead(c){const fx=Math.sin(c.ry),fz=Math.cos(c.ry);const chk=(x,z,r)=>{const dx=x-c.x,dz=z-c.z,ahead=dx*fx+dz*fz,side=Math.abs(dx*fz-dz*fx);return ahead>0&&ahead<r&&side<1.6};
   if(!G.driving&&chk(G.P.x,G.P.z,5.5))return true;if(G.driving&&G.car&&chk(G.car.x,G.car.z,7))return true;return TRAF.some(o=>o!==c&&chk(o.x,o.z,6.5))}
-function trafficStep(c,dt){if(c.chase)return G.policeCarStep?G.policeCarStep(c,dt):chaseStep(c,dt);
+function trafficStep(c,dt){if(c.block)return;if(c.chase)return G.policeCarStep?G.policeCarStep(c,dt):chaseStep(c,dt);
   if(c.hold){c.v=0;place(c);return}
   const stop=blockedAhead(c);c.v+=((stop?0:c.max)-c.v)*Math.min(1,dt*(stop?6:1.5));
   if(c.mode==='edge'){const [a,b]=edgePts(c),L=Math.hypot(b.x-a.x,b.z-a.z)||1;c.t+=c.v*dt/L;
@@ -83,7 +83,7 @@ function endChase(silent){TRAF.forEach(c=>{if(c.chase){c.chase=false;c.cop=null;
 function wantedLevel(){const w=S.wanted;if(!w)return 0;return typeof w==='object'?(w.lv||1):1}
 function policeTick(dt){if(cool>0)cool-=dt;if(!G.police||G.police.active()||cool>0)return;
   // gezocht (klikspel): ziet een patrouillewagen je, dan begint de achtervolging (stad-police.js)
-  if(wantedLevel()>0&&!(G.mission&&G.mission())&&!G.hidden){const pol=TRAF.find(c=>c.police&&!c.chase&&Math.hypot(c.x-G.P.x,c.z-G.P.z)<26&&G.los&&G.los(c,G.P));
+  if(wantedLevel()>0&&!(G.mission&&G.mission())&&!G.hidden){const pol=TRAF.find(c=>c.police&&!c.chase&&!c.block&&Math.hypot(c.x-G.P.x,c.z-G.P.z)<26&&G.los&&G.los(c,G.P));
     if(pol){G.police.start({stars:Math.min(3,wantedLevel()),why:'gezocht',wanted:1,car:pol});G.toast&&G.toast('Een politieauto herkent je!','bad');cool=20}}}
 G.traf={spawn:(pol,near)=>spawnCar(pol,near),remove:c=>{G.scene().remove(c.mesh);const i=TRAF.indexOf(c);if(i>=0)TRAF.splice(i,1);if(c.police&&TRAF.filter(o=>o.police&&!o.chase).length<3)spawnCar(true,true)},carMesh,list:TRAF};
 /* ---------- je eigen auto ---------- */
@@ -115,14 +115,14 @@ function driveStep(dt){const K=G.K,c=mine;let thr=0,steer=0;
       let r=want-c.ry;while(r>Math.PI)r-=Math.PI*2;while(r<-Math.PI)r+=Math.PI*2;if(Math.abs(r)>2.2&&Math.abs(c.v)<4){thr=-mag;steer=r>0?-1:1}else{steer=Math.max(-1,Math.min(1,r*1.6));thr=mag}}}
   else{thr=(K.w||K.arrowup?1:0)-(K.s||K.arrowdown?1:0);steer=(K.a||K.arrowleft?1:0)-(K.d||K.arrowright?1:0)}
   if(G.carFreeze){thr=0;steer=0;c.v=0}
-  const max=c.d.max*(K.shift?1.12:1)*(G.carK||1),v0=Math.abs(c.v);
+  const max=c.d.max*(K.shift?1.12:1)*(G.carK||1)*(c.flat?.5:1),v0=Math.abs(c.v);
   if(thr>0)c.v+=(c.v<0?18:9)*thr*dt;else if(thr<0)c.v+=(c.v>0?-18:-7)*(-thr)*dt;else c.v*=Math.pow(.35,dt);
   c.v=Math.max(-7,Math.min(max,c.v));
   const turn=steer*Math.min(1,Math.abs(c.v)/5)*(2.1-Math.min(1,Math.abs(c.v)/max)*.8)*Math.sign(c.v||1);c.ry+=turn*dt;
   const fx=Math.sin(c.ry),fz=Math.cos(c.ry),nx=c.x+fx*c.v*dt,nz=c.z+fz*c.v*dt,L=2.1;
   const ok=(x,z)=>drivable(x+fx*L,z+fz*L)&&drivable(x-fx*L,z-fz*L)&&drivable(x+fz*.9,z-fx*.9)&&drivable(x-fz*.9,z+fx*.9);
   if(ok(nx,nz)){c.x=nx;c.z=nz}else if(ok(nx,c.z)){c.x=nx;c.v*=.7}else if(ok(c.x,nz)){c.z=nz;c.v*=.7}else c.v*=-.3;
-  TRAF.forEach(o=>{const dx=c.x-o.x,dz=c.z-o.z,d=Math.hypot(dx,dz);if(d<3.2&&d>.01){c.x+=dx/d*(3.2-d)*.5;c.z+=dz/d*(3.2-d)*.5;c.v*=.6}});
+  TRAF.forEach(o=>{if(o.noCol)return;const dx=c.x-o.x,dz=c.z-o.z,d=Math.hypot(dx,dz);if(d<3.2&&d>.01){c.x+=dx/d*(3.2-d)*.5;c.z+=dz/d*(3.2-d)*.5;c.v*=.6}});
   // schade: een flinke klap (snelheid valt ineens weg) kost waarde
   const hit=v0-Math.abs(c.v);if(hit>4.5){c.dmg=Math.min(.6,(c.dmg||0)+hit*.006);G.shake&&G.shake(Math.min(1,hit*.08));G.snd&&G.snd.fx('hit');G.onCrash&&G.onCrash(c,hit)}
   c.mesh.position.set(c.x,0,c.z);c.mesh.rotation.y=c.ry;G.P.x=c.x;G.P.z=c.z;G.P.vx=fx*c.v;G.P.vz=fz*c.v;G.P.ry=c.ry;
@@ -131,7 +131,7 @@ function driveStep(dt){const K=G.K,c=mine;let thr=0,steer=0;
 G.carStep=function(dt){if(!TRAF.length)for(let i=0;i<26;i++)spawnCar(i<3,false);
   TRAF.slice().forEach(c=>trafficStep(c,dt));policeTick(dt);
   // zwaailichten
-  const fl=Math.floor(performance.now()/180)%2;TRAF.forEach(c=>{const b=c.mesh.userData.bar;if(b){const on=c.chase||G.night>.5;b[0].visible=on?fl===0:true;b[1].visible=on?fl===1:true}});
+  const fl=Math.floor(performance.now()/180)%2;TRAF.forEach(c=>{const b=c.mesh.userData.bar;if(b){const on=c.chase||c.block||G.night>.5;b[0].visible=on?fl===0:true;b[1].visible=on?fl===1:true}});
   if(G.driving&&mine)driveStep(dt);
   // instappen: het dichtstbijzijnde voertuig binnen 3,4 meter
   let near=null;if(!G.driving){let bd=3.4;VEH.forEach(v=>{const d=Math.hypot(G.P.x-v.x,G.P.z-v.z);if(d<bd){bd=d;near=v}})}if(near!==G.nearCar){G.nearCar=near;hud()}
@@ -143,7 +143,7 @@ let hudT=0;
 const ui=document.createElement('div');ui.id='sdCarUi';document.body.appendChild(ui);
 ui.innerHTML=`<button class="sd-carp" id="sdCarP" hidden></button><div class="sd-spd" id="sdSpd" hidden><b id="sdSpdV">0</b><small>km/u</small><span id="sdSpdN"></span><em id="sdSpdX"></em><button id="sdOutCar">${touch?'Uitstappen':'<kbd>F</kbd> Uitstappen'}</button></div><div class="sd-pol" id="sdPol" hidden>Politie zit achter je</div>`;
 function hud(){const p=$s('sdCarP'),n=G.nearCar;p.hidden=!n||G.driving;if(!p.hidden)p.innerHTML=(touch?'':'<kbd>F</kbd> ')+'Instappen · <b>'+(n?n.d.name:'')+'</b>'+(n&&n.stolen?' <i class="sd-hot">gestolen</i>':'');
-  $s('sdSpd').hidden=!G.driving;if(G.driving&&mine){$s('sdSpdN').textContent=mine.d.name;const dm=Math.round((mine.dmg||0)*100);$s('sdSpdX').innerHTML=(mine.stolen?'<i class="sd-hot">gestolen</i>':'')+(dm?'<i class="sd-dmg">schade '+dm+'%</i>':'')}
+  $s('sdSpd').hidden=!G.driving;if(G.driving&&mine){$s('sdSpdN').textContent=mine.d.name;const dm=Math.round((mine.dmg||0)*100);$s('sdSpdX').innerHTML=(mine.stolen?'<i class="sd-hot">gestolen</i>':'')+(mine.flat?'<i class="sd-dmg">lekke banden</i>':'')+(dm?'<i class="sd-dmg">schade '+dm+'%</i>':'')}
   document.body.classList.toggle('stad-drive',!!G.driving);document.body.classList.toggle('stad-hotcar',!!(G.driving&&mine&&mine.stolen))}
 G.carHud=hud;
 function hudPol(){$s('sdPol').hidden=true}

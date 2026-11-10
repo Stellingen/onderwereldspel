@@ -83,9 +83,9 @@ function render(){if(!D)return;const cs=$s('sdDlgC');const ch=D.choices||[];
   cs.innerHTML=ch.map((c,i)=>`<button class="sd-dlg-o${i===sel?' on':''}${c.dis?' dis':''}" data-i="${i}" role="menuitem" ${c.dis?'aria-disabled="true"':''}>${c.ic?`<i>${c.ic}</i>`:''}<span>${E(c.t)}${c.why&&c.dis?`<small>${E(c.why)}</small>`:c.sub?`<small>${E(c.sub)}</small>`:''}</span>${c.risk?`<em class="r${c.risk}" title="Risico">${'●'.repeat(c.risk)}${'○'.repeat(3-c.risk)}</em>`:''}</button>`).join('');
   cs.hidden=!(tw&&tw.done)}
 K.dialog=function(d){D=d;sel=Math.max(0,(d.choices||[]).findIndex(c=>!c.dis));box.hidden=false;box.classList.remove('go');void box.offsetWidth;box.classList.add('go');
-  const pc=$s('sdDlgPor');pc.classList.toggle('wide',!!d.draw);if(d.draw){pc.width=40;pc.height=24;d.draw(pc)}else{pc.width=pc.height=24;K.portrait(d.look,d.mood,pc)}$s('sdDlgN').textContent=d.name||'';$s('sdDlgR').textContent=d.role||'';box.style.setProperty('--c',d.col||'#ff7a1a');
+  const pc=$s('sdDlgPor');pc.classList.toggle('wide',!!d.draw);if(d.draw){pc.width=40;pc.height=24;d.draw(pc)}else if(K.face)K.face(d.look,d.mood,pc);else{pc.width=pc.height=24;K.portrait(d.look,d.mood,pc)}$s('sdDlgN').textContent=d.name||'';$s('sdDlgR').textContent=d.role||'';box.style.setProperty('--c',d.col||'#ff7a1a');
   const line=Array.isArray(d.lines)?d.lines[0]:d.lines||'';tw=K.type($s('sdDlgT'),line);render();tw.then(()=>render());if(G.snd)G.snd.fx('open');return K};
-K.say=function(text,mood,choices){if(!D)return;if(mood&&!D.draw){D.mood=mood;K.portrait(D.look,mood,$s('sdDlgPor'))}if(D.draw&&D.redraw)D.draw($s('sdDlgPor'));if(choices)D.choices=choices;tw=K.type($s('sdDlgT'),text);render();tw.then(()=>render())};
+K.say=function(text,mood,choices){if(!D)return;if(mood&&!D.draw){D.mood=mood;(K.face||K.portrait)(D.look,mood,$s('sdDlgPor'))}if(D.draw&&D.redraw)D.draw($s('sdDlgPor'));if(choices)D.choices=choices;tw=K.type($s('sdDlgT'),text);render();tw.then(()=>render())};
 K.dialogOpen=()=>!!D;K.redraw=()=>{if(D&&D.draw)D.draw($s('sdDlgPor'))};
 K.closeDialog=function(quiet){if(!D)return;const d=D;D=null;box.hidden=true;if(tw)tw.skip();if(!quiet&&G.snd)G.snd.fx('close');d.onClose&&d.onClose()};
 function pickChoice(i){if(!D)return;if(tw&&!tw.done){tw.skip();render();return}const c=(D.choices||[])[i];if(!c)return;if(c.dis){G.toast&&G.toast(c.why||'Kan nu niet','bad');return}G.snd&&G.snd.fx('click');c.f&&c.f()}
@@ -134,7 +134,13 @@ K.ic={
   hart:P('2,3,4,5;10,3,4,5;3,2,2,1;11,2,2,1;6,5,4,3;3,8,10,2;5,10,6,2;7,12,2,2'),
   bliksem:P('8,1,4,2;6,3,4,2;4,5,5,2;6,7,6,2;7,9,3,2;6,11,2,2;5,13,2,2'),
   klok:P('3,3,10,10;2,5,1,6;13,5,1,6;5,2,6,1;5,13,6,1;7,5,2,4,#0009;8,8,3,2,#0009'),
-  euro:P('5,2,7,2;3,4,3,2;2,6,8,2;2,9,8,2;3,11,3,2;5,13,7,2')};
+  euro:P('5,2,7,2;3,4,3,2;2,6,8,2;2,9,8,2;3,11,3,2;5,13,7,2'),
+  krant:P('1,2,14,12;3,4,6,2,#0009;3,7,4,4,#0007;8,7,5,1,#0007;8,9,5,1,#0007;3,12,10,1,#0007;10,4,3,2,#0007'),
+  badge:P('3,2,10,2;2,4,12,5;3,9,10,2;5,11,6,2;7,13,2,2;6,5,4,3,#0008;7,6,2,1'),
+  envelop:P('1,4,14,9;1,4,2,1,#0008;3,5,2,1,#0008;5,6,2,1,#0008;7,7,2,1,#0008;9,6,2,1,#0008;11,5,2,1,#0008;13,4,2,1,#0008'),
+  mensen:P('3,2,4,4;2,7,6,7;10,3,3,3;9,7,5,6;4,3,2,1,#0006;11,4,1,1,#0006'),
+  cadeau:P('2,6,12,9;1,4,14,3;7,4,2,11,#0007;4,1,3,3;9,1,3,3;6,2,4,2'),
+  kegel:P('7,1,2,3;6,4,4,3;5,7,6,3;4,10,8,3;2,13,12,2;6,5,4,1,#fff;5,9,6,1,#fff')};
 /* ---------- kleine 3D-modellen van blokjes in één keer (één tekenopdracht per model) ---------- */
 // blokken: [breedte, hoogte, diepte, x, y, z, kleur, gloeit]. Gloeiende blokken (lampen, neon) blijven 's nachts fel.
 const TH3=window.THREE;let ML=null,MB=null;
