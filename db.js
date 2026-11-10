@@ -76,7 +76,7 @@ async function init() {
     'ALTER TABLE users ADD COLUMN banned TINYINT NOT NULL DEFAULT 0', 'ALTER TABLE users ADD COLUMN ban_reason VARCHAR(200) NULL',
     'ALTER TABLE users ADD COLUMN public_profile TINYINT NOT NULL DEFAULT 0',
     // tijdstip waarop de speler bij registreren bevestigde dat hij 16 jaar of ouder is
-    'ALTER TABLE users ADD COLUMN age16_at DATETIME NULL']) {
+    'ALTER TABLE users ADD COLUMN age16_at DATETIME NULL', 'ALTER TABLE users ADD COLUMN beta TINYINT NOT NULL DEFAULT 0']) {
     try { await pool.query(sql); } catch (e) { if (e.code !== 'ER_DUP_FIELDNAME' && e.errno !== 1060) console.warn('Kolom toevoegen mislukt:', e.message); }
   }
 

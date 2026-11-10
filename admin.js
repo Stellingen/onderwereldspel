@@ -69,11 +69,11 @@ module.exports = function mountAdmin(app, { auth, db, need, rankOf }) {
     const like = '%' + String(req.query.q || '').trim().toLowerCase().slice(0, 32).replace(/[%_\\]/g, '\\$&') + '%';
     const sort = { xp: 'g.xp DESC', geld: 'g.networth DESC', nieuw: 'u.created_at DESC', actief: 'g.updated_at DESC', naam: 'u.username ASC' }[req.query.sort] || 'g.updated_at DESC';
     const FLAGS = `(SELECT COUNT(*) FROM player_flags f WHERE f.user_id=u.id AND f.resolved=0)`;
-    const filter = { vip: `${TIER_SQL}=1`, hr: `${TIER_SQL}=2`, banned: 'u.banned=1', admin: 'u.is_admin=1', flag: `${FLAGS}>0`, online: 'g.updated_at > NOW() - INTERVAL 5 MINUTE' }[req.query.f] || '1=1';
+    const filter = { vip: `${TIER_SQL}=1`, hr: `${TIER_SQL}=2`, banned: 'u.banned=1', admin: 'u.is_admin=1', beta: 'u.beta=1', flag: `${FLAGS}>0`, online: 'g.updated_at > NOW() - INTERVAL 5 MINUTE' }[req.query.f] || '1=1';
     const off = Math.max(0, Math.min(100000, parseInt(req.query.off, 10) || 0)), lim = 100;
     try {
       const [rows] = await db.q(
-        `SELECT u.id, u.display, u.username, u.created_at, u.banned, u.is_admin, u.tier AS tier_raw, ${TIER_SQL} AS tier, ${FLAGS} AS flags,
+        `SELECT u.id, u.display, u.username, u.created_at, u.banned, u.is_admin, u.beta, u.tier AS tier_raw, ${TIER_SQL} AS tier, ${FLAGS} AS flags,
            g.xp, g.networth, g.rankname, g.updated_at, TIMESTAMPDIFF(SECOND, g.updated_at, NOW()) AS seen_s
          FROM users u LEFT JOIN game_state g ON g.user_id=u.id
          WHERE u.username LIKE ? AND ${filter}
@@ -89,7 +89,7 @@ module.exports = function mountAdmin(app, { auth, db, need, rankOf }) {
     const id = +req.params.id;
     if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Ongeldig id' });
     try {
-      const [u] = await db.q(`SELECT u.id, u.display, u.username, u.created_at, u.banned, u.ban_reason, u.is_admin, u.public_profile, u.tier AS tier_raw, ${TIER_SQL} AS tier FROM users u WHERE u.id=?`, [id]);
+      const [u] = await db.q(`SELECT u.id, u.display, u.username, u.created_at, u.banned, u.ban_reason, u.is_admin, u.beta, u.public_profile, u.tier AS tier_raw, ${TIER_SQL} AS tier FROM users u WHERE u.id=?`, [id]);
       if (!u.length) return res.status(404).json({ error: 'Speler niet gevonden' });
       const [g] = await db.q('SELECT state, xp, networth, rankname, updated_at, TIMESTAMPDIFF(SECOND, updated_at, NOW()) AS seen_s, rev, sid FROM game_state WHERE user_id=?', [id]);
       const [red] = await db.q('SELECT code, amount, created_at FROM redemptions WHERE user_id=? ORDER BY created_at DESC', [id]);
@@ -186,6 +186,11 @@ module.exports = function mountAdmin(app, { auth, db, need, rankOf }) {
         await db.q('UPDATE users SET tier=? WHERE id=?', [t, id]);
         await kick(id);
         detail = t === null ? 'lidmaatschap automatisch (VIP-code telt)' : 'lidmaatschap ' + TIER_NAME[t];
+      } else if (type === 'beta') {
+        // beta-tester: toegang tot de realistische stad (/realistisch)
+        await db.q('UPDATE users SET beta=? WHERE id=?', [b.on ? 1 : 0, id]);
+        await kick(id);
+        detail = b.on ? 'beta-toegang gegeven (realistische stad)' : 'beta-toegang ingetrokken';
       } else if (type === 'ban') {
         const on = !!b.on, reason = String(b.reason || '').slice(0, 200);
         if (id === req.user.id) return res.status(400).json({ error: 'Je kunt jezelf niet blokkeren' });

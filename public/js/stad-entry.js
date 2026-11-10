@@ -5,7 +5,8 @@
 (function(){
 'use strict';
 if(location.pathname.indexOf('/stad')===0)return;
-const allowed=()=>!!window.__TOKEN__&&((typeof tier==='function'&&tier()>=1)||!!window.__ADMIN__);
+const vip=()=>(typeof tier==='function'&&tier()>=1)||!!window.__ADMIN__,beta=()=>!!window.__BETA__;   // beta = tester van de realistische stad
+const allowed=()=>!!window.__TOKEN__&&(vip()||beta());
 if(!allowed())return;
 const css=`.nav-stad{position:relative}.nav-stad em,.ms-stad em{font-style:normal;font:800 9px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:#111;background:var(--acc);padding:1px 4px;margin-left:auto}
 .ms-stad{display:flex;align-items:center;gap:10px;margin:10px 0 4px;padding:12px 14px;background:linear-gradient(100deg,rgba(255,122,26,.18),rgba(77,125,255,.12));border:1px solid rgba(255,122,26,.45);color:var(--fg);text-decoration:none;clip-path:var(--cut-s)}
@@ -13,7 +14,8 @@ const css=`.nav-stad{position:relative}.nav-stad em,.ms-stad em{font-style:norma
 .sc-ov{position:fixed;inset:0;z-index:75;background:rgba(4,5,7,.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:grid;place-items:center;padding:16px;overflow:auto;animation:tin .2s}
 .sc-box{width:min(760px,100%)}.sc-box>small{display:block;font:700 11px var(--f-mono);letter-spacing:.24em;text-transform:uppercase;color:var(--acc);margin-bottom:6px}
 .sc-box>h2{margin:0 0 16px;font:900 clamp(30px,5vw,46px)/1 var(--f-display);text-transform:uppercase}
-.sc-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sc-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sc-opts.n3{grid-template-columns:1fr 1fr 1fr}.sc-box.w3{width:min(1040px,100%)}.sc-t b em.bt,.nav-real em,.ms-real em{background:#7fd1c7}
+@media (max-width:900px){.sc-opts.n3{grid-template-columns:1fr}}
 .sc-o{display:flex;flex-direction:column;text-align:left;padding:0;background:var(--panel);border:1px solid var(--line2);color:var(--fg);cursor:pointer;clip-path:var(--cut);font:inherit;transition:border-color .15s,transform .15s}
 .sc-o:hover,.sc-o:focus-visible{border-color:var(--acc);transform:translateY(-2px)}
 .sc-art{height:150px;display:block;width:100%;background:#0b0d12;image-rendering:pixelated}
@@ -26,11 +28,15 @@ const css=`.nav-stad{position:relative}.nav-stad em,.ms-stad em{font-style:norma
 const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 const ICO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9l5-3v15M8 21V4l7 3v14M15 21V11l6 2v8M2 21h20"/><path d="M11 9h1M11 12h1M11 15h1M18 15h1"/></svg>';
 // link in het menu: terug zetten als het menu opnieuw getekend wordt
+const ICO3='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>';
 function inject(){const nav=document.getElementById('nav');
-  if(nav&&!nav.querySelector('.nav-stad')){const a=document.createElement('a');a.className='navlink nav-stad';a.href='/stad';a.title='Pixelstad: loop zelf door de stad';a.innerHTML=ICO+'<span>Pixelstad</span><em>beta</em>';
+  if(beta()){if(nav&&!nav.querySelector('.nav-real')){const a=document.createElement('a');a.className='navlink nav-stad nav-real';a.href='/realistisch';a.title='Realistische stad: vroege test voor beta-testers';a.innerHTML=ICO3+'<span>Realistische stad</span><em>beta</em>';const sp=nav.querySelector('.navspace');if(sp)sp.after(a);else nav.appendChild(a)}
+    const pn=document.querySelector('#msheet .ms-panel');if(pn&&!pn.querySelector('.ms-real')){const a=document.createElement('a');a.className='ms-stad ms-real';a.href='/realistisch';a.innerHTML=ICO3+'<span><b>Realistische stad</b><small>Vroege test, alleen voor beta-testers.</small></span><em>beta</em>';const h=pn.querySelector('.ms-search');if(h)h.after(a);else pn.appendChild(a)}}
+  if(!vip())return;
+  if(nav&&!nav.querySelector('.nav-stad:not(.nav-real)')){const a=document.createElement('a');a.className='navlink nav-stad';a.href='/stad';a.title='Pixelstad: loop zelf door de stad';a.innerHTML=ICO+'<span>Pixelstad</span><em>beta</em>';
     const sp=nav.querySelector('.navspace');if(sp)sp.after(a);else nav.appendChild(a)}
   const pn=document.querySelector('#msheet .ms-panel');
-  if(pn&&!pn.querySelector('.ms-stad')){const a=document.createElement('a');a.className='ms-stad';a.href='/stad';a.innerHTML=ICO+'<span><b>Pixelstad</b><small>Loop zelf door de stad. Alleen voor VIP en High roller.</small></span><em>beta</em>';
+  if(pn&&!pn.querySelector('.ms-stad:not(.ms-real)')){const a=document.createElement('a');a.className='ms-stad';a.href='/stad';a.innerHTML=ICO+'<span><b>Pixelstad</b><small>Loop zelf door de stad. Alleen voor VIP en High roller.</small></span><em>beta</em>';
     const h=pn.querySelector('.ms-search');if(h)h.after(a);else pn.appendChild(a)}}
 inject();
 ['nav','msheet'].forEach(id=>{const el=document.getElementById(id);if(el)new MutationObserver(inject).observe(el,{childList:true})});
@@ -38,8 +44,8 @@ setTimeout(()=>{const el=document.getElementById('msheet');if(el&&!el._scObs){el
 // keuze na het inloggen
 let mode=null,pref=null;try{mode=sessionStorage.getItem('ow_mode');pref=localStorage.getItem('ow_mode_pref')}catch(e){}
 if(mode)return;
-const go=(m,remember)=>{try{sessionStorage.setItem('ow_mode',m);if(remember)localStorage.setItem('ow_mode_pref',m)}catch(e){}if(m==='stad')location.href='/stad'};
-if(pref==='stad'){go('stad');return}
+const go=(m,remember)=>{try{sessionStorage.setItem('ow_mode',m);if(remember)localStorage.setItem('ow_mode_pref',m)}catch(e){}if(m==='stad')location.href='/stad';if(m==='real')location.href='/realistisch'};
+if(pref==='stad'&&vip()){go('stad');return}
 if(pref==='klik'){go('klik');return}
 // pixelplaatje van de stad (zelf getekend)
 function art(){let s='<svg class="sc-art" viewBox="0 0 120 50" preserveAspectRatio="xMidYMax slice" shape-rendering="crispEdges">';
@@ -50,12 +56,17 @@ function art(){let s='<svg class="sc-art" viewBox="0 0 120 50" preserveAspectRat
   for(let x=4;x<120;x+=10)s+=`<rect x="${x}" y="48" width="4" height="1" fill="#e8e4d8"/>`;
   s+='<rect x="57" y="40" width="3" height="3" fill="#d9a27a"/><rect x="56" y="43" width="5" height="3" fill="#ff7a1a"/><rect x="57" y="46" width="1" height="2" fill="#1d2531"/><rect x="59" y="46" width="1" height="2" fill="#1d2531"/>';
   return s+'</svg>'}
+function artR(){let s='<svg class="sc-art" style="image-rendering:auto" viewBox="0 0 120 50" preserveAspectRatio="xMidYMax slice"><defs><linearGradient id="scSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f78c8"/><stop offset="1" stop-color="#dbe9f6"/></linearGradient></defs><rect width="120" height="50" fill="url(#scSky)"/>';
+  [[4,16,16,'#cfc5b2'],[22,8,13,'#6f8fb0'],[37,20,18,'#a65a34'],[57,5,12,'#7aa3c4'],[71,18,17,'#d8cbb0'],[90,10,13,'#8c8e92'],[104,22,16,'#8a3b2a']].forEach(([x,y,w,c])=>{s+=`<rect x="${x}" y="${y}" width="${w}" height="${44-y}" fill="${c}"/>`;for(let yy=y+3;yy<40;yy+=5)for(let xx=x+2;xx<x+w-2;xx+=4)s+=`<rect x="${xx}" y="${yy}" width="2" height="3" fill="#2a3a4d" opacity=".75"/>`});
+  return s+'<rect y="44" width="120" height="6" fill="#3a3c40"/><rect y="43" width="120" height="1.5" fill="#a7a39b"/><circle cx="60" cy="39.5" r="1.6" fill="#e7b68e"/><rect x="58.6" y="41" width="2.8" height="4" rx="1" fill="#1c2740"/></svg>'}
 function artK(){return '<svg class="sc-art" viewBox="0 0 120 50" preserveAspectRatio="xMidYMax slice"><rect width="120" height="50" fill="#101216"/>'
   +[0,1,2].map(r=>[0,1,2,3].map(c=>`<rect x="${8+c*27}" y="${6+r*14}" width="23" height="10" fill="#15181d" stroke="#2b3038" stroke-width=".6"/><rect x="${10+c*27}" y="${8+r*14}" width="${6+((r+c)%3)*4}" height="2" fill="${['#ff7a1a','#3fe395','#b8a1ff','#a9dcff'][(r+c)%4]}"/><rect x="${10+c*27}" y="${12+r*14}" width="12" height="1.4" fill="#565b64"/>`).join('')).join('')+'</svg>'}
 function ask(){if(document.querySelector('.sc-ov'))return;const ov=document.createElement('div');ov.className='sc-ov';ov.setAttribute('role','dialog');ov.setAttribute('aria-label','Hoe wil je spelen?');
-  ov.innerHTML=`<div class="sc-box"><small>${typeof isHR==='function'&&isHR()?'High roller':'VIP'} · nieuw</small><h2>Hoe wil je spelen?</h2>
-   <div class="sc-opts"><button class="sc-o" data-m="klik">${artK()}<span class="sc-t"><b>Klikspel</b><span>Zoals je gewend bent: alles met een paar klikken, snel en overzichtelijk.</span></span></button>
-   <button class="sc-o" data-m="stad">${art()}<span class="sc-t"><b>Pixelstad <em>beta</em></b><span>Loop zelf door de stad, ga gebouwen binnen en speel daar. Zelfde voortgang.</span></span></button></div>
+  const n=1+(vip()?1:0)+(beta()?1:0);
+  ov.innerHTML=`<div class="sc-box ${n===3?'w3':''}"><small>${!vip()?'Beta-tester':typeof isHR==='function'&&isHR()?'High roller':'VIP'} · nieuw</small><h2>Hoe wil je spelen?</h2>
+   <div class="sc-opts ${n===3?'n3':''}"><button class="sc-o" data-m="klik">${artK()}<span class="sc-t"><b>Klikspel</b><span>Zoals je gewend bent: alles met een paar klikken, snel en overzichtelijk.</span></span></button>
+   ${vip()?`<button class="sc-o" data-m="stad">${art()}<span class="sc-t"><b>Pixelstad <em>beta</em></b><span>Loop zelf door de stad, ga gebouwen binnen en speel daar. Zelfde voortgang.</span></span></button>`:''}
+   ${beta()?`<button class="sc-o" data-m="real">${artR()}<span class="sc-t"><b>Realistische stad <em class="bt">beta-test</em></b><span>Vroege test zonder pixels: loop rond en bekijk de nieuwe stijl. Alleen voor beta-testers; je voortgang telt hier nog niet.</span></span></button>`:''}</div>
    <label class="sc-rem"><input type="checkbox" id="scRem"> Onthoud mijn keuze (wisselen kan altijd via het menu of je telefoon)</label></div>`;
   document.body.appendChild(ov);
   ov.addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;const rem=document.getElementById('scRem').checked;go(b.dataset.m,rem);ov.remove()})}

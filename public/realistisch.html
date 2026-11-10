@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png">
+<meta name="theme-color" content="#08090b">
+<title>{{TITLE}}</title>
+<meta name="robots" content="noindex">
+<style>
+html,body{margin:0;height:100%;background:#08090b;color:#f4f1ea;overflow:hidden;font:500 15px/1.35 system-ui,"Segoe UI",Arial,sans-serif;overscroll-behavior:none}
+canvas#c{display:block;width:100vw;height:100vh;height:100dvh;touch-action:none;cursor:grab}
+.boot{position:fixed;inset:0;display:grid;place-items:center;background:#08090b;z-index:80;text-align:center;padding:24px}
+.boot b{display:block;font-size:22px;margin:8px 0}.boot span{color:#7fd1c7;font:800 12px/1 inherit;letter-spacing:.2em}.boot p{max-width:420px;margin:0 auto 14px;color:#b9b4a8}
+.boot a{display:inline-block;margin:4px;padding:12px 16px;border-radius:10px;background:#f4f1ea;color:#111;text-decoration:none;font-weight:700}.boot a+a{background:transparent;color:#f4f1ea;box-shadow:inset 0 0 0 1px #555}
+[hidden]{display:none!important}
+#ui{position:fixed;inset:0;pointer-events:none}#ui button,#ui a{pointer-events:auto}
+.rb-top,.rb-btns button,.rb-btns a,.rb-hint{background:rgba(14,16,20,.66);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.14);border-radius:12px;color:#f4f1ea}
+.rb-top{position:absolute;left:max(14px,env(safe-area-inset-left));top:max(14px,env(safe-area-inset-top));padding:10px 14px;display:flex;align-items:center;gap:10px}
+.rb-tag{background:#7fd1c7;color:#0b1413;font:800 11px/1 inherit;letter-spacing:.14em;padding:4px 7px;border-radius:6px}.rb-top b{font-weight:800}.rb-top small{color:#b9b4a8}
+.rb-btns{position:absolute;right:max(14px,env(safe-area-inset-right));top:max(14px,env(safe-area-inset-top));display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:62vw}
+.rb-btns button,.rb-btns a{padding:10px 13px;font:700 13px/1 inherit;cursor:pointer;text-decoration:none}.rb-btns a{color:#cfcabd}
+.rb-hint{position:absolute;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(560px,calc(100vw - 28px));box-sizing:border-box;padding:14px 16px;font-size:14px;color:#dcd7ca}
+.rb-hint b{color:#fff}.rb-hint span{display:block;margin-top:8px;color:#b9b4a8;font-size:13px}.rb-hint button{margin-top:10px;padding:9px 14px;border-radius:9px;border:0;background:#f4f1ea;color:#111;font:700 13px/1 inherit;cursor:pointer}
+.rb-mob{display:none!important}@media (pointer:coarse){.rb-pc{display:none!important}.rb-mob{display:block!important}}
+.rb-stick{position:absolute;width:104px;height:104px;margin:-52px 0 0 -52px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3)}.rb-stick i{position:absolute;left:30px;top:30px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.55)}
+.rb-load{position:absolute;inset:0;display:grid;place-items:center;background:rgba(8,9,11,.82);font-weight:800;font-size:18px;pointer-events:auto}
+@media (max-width:620px){.rb-top small{display:none}.rb-btns{top:auto;bottom:max(14px,env(safe-area-inset-bottom));max-width:calc(100vw - 28px)}.rb-hint{bottom:auto;top:76px}.rb-btns button,.rb-btns a{padding:9px 10px;font-size:12px}}
+</style>
+<script src="/js/stad/stad-map.js?v={{VER}}"></script>
+<script type="importmap">{"imports":{"three":"/real/vendor/build/three.module.min.js?v=185","three/addons/":"/real/vendor/jsm/"}}</script>
+</head>
+<body>
+<canvas id="c"></canvas><div id="ui"></div>
+<div class="boot" id="boot"><div><span>BETA</span><b>Realistische stad</b><p id="bootT">Stad laden…</p><div id="bootB"></div></div></div>
+<script type="module">
+// Alleen voor beta-testers (door een beheerder aangezet) en beheerders. Er wordt hier niets van je spel gelezen of opgeslagen.
+window.__VER__='{{VER}}';
+const boot=document.getElementById('boot'),msg=(t,html)=>{document.getElementById('bootT').textContent=t;document.getElementById('bootB').innerHTML=html||''};
+let token=null;try{token=localStorage.getItem('ow_token')}catch(e){}
+if(!token)location.replace('/?login=1');
+else try{
+  const me=await fetch('/api/me',{headers:{Authorization:'Bearer '+token}});
+  if(me.status===401){try{localStorage.removeItem('ow_token')}catch(e){}location.replace('/?login=1&verlopen=1')}
+  else if(!me.ok)throw new Error('me');
+  else{const mj=await me.json();
+    if(!mj.beta)msg('Deze test is alleen voor beta-testers. Een beheerder kan je toegang geven.','<a href="/game">Naar het spel</a>');
+    else{await import('/real/real.js?v={{VER}}');
+      if(window.__fail)msg('De stad kon niet geladen worden op dit apparaat.','<a href="/realistisch">Opnieuw proberen</a><a href="/game">Naar het spel</a>');else boot.remove()}}
+}catch(e){console.error(e);msg('Er ging iets mis bij het laden.','<a href="/realistisch">Opnieuw proberen</a><a href="/game">Naar het spel</a>')}
+</script>
+</body>
+</html>

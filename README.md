@@ -1455,3 +1455,11 @@ Pixelstad; het klikspel is niet aangepast. Premiejagers zijn op verzoek niet geb
   het water in), een mat geeft lekke banden tot de achtervolging voorbij is, stilstaan bij de versperring is gepakt. Een wijkagent op
   je loonlijst waarschuwt je en laat één stoep vrij.
 - **Kaart**: het Autokerkhof De Sloop stond half op de weg naar de brug; het staat nu ten noorden van de weg.
+
+### Realistische stad (beta, alleen voor testers)
+
+`/realistisch` is een vroege test van de stad zonder pixels (`public/realistisch.html`, `public/real/`, three.js r185 in
+`public/real/vendor/`). Je kunt rondlopen (camera achter je of van boven, tijd van de dag, kwaliteit); klussen, gesprekken en verkeer
+zitten er nog niet in en er wordt niets opgeslagen. Toegang: `users.beta` (beheerpaneel → speler → Beta-tester) of beheerder;
+`/api/me` geeft `beta` terug. Testers zien de keuze bij het inloggen, in het menu en in de telefoon van de Pixelstad.
+De toegang wordt in de pagina gecontroleerd; de bestanden zelf zijn niet geheim.

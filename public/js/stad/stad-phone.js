@@ -17,6 +17,8 @@ const APPS=[['berichten','Berichten',K.ic.talk,'#3fe395','in'],['kaart','Kaart',
   ['shop','Wapens',null,null,'klik'],['fam','Familie',null,null,'klik'],['hits','Opdrachten',null,null,'klik'],['dash','Overzicht',null,null,'klik'],
   ['profiel','Profiel',null,null,'klik'],['rank','Ranglijst',null,null,'klik'],['lid','Lid',null,null,'klik'],['casino','Casino',null,null,'rt'],['cars',"Auto's",null,null,'rt'],
   ['set','Instellingen',SETIC,'#a9dcff','in'],['klik','Klikspel',null,'#ff7a1a','go']];
+// beta-testers van de realistische stad krijgen er een app bij
+try{if(window.__BETA__)APPS.push(['real','Realistisch (beta)',MAPIC,'#7fd1c7','go'])}catch(e){}
 const DOCK=['berichten','kaart','klussen','vastgoed'];
 const secCol=k=>{const g=typeof NAV_GROUPS!=='undefined'&&NAV_GROUPS.find(g=>g[1].includes(k));return g?g[2]:'#ff7a1a'};
 /* ---------- opbouw ---------- */
@@ -120,6 +122,7 @@ function launch(k){const a=APPS.find(x=>x[0]===k);if(!a)return;const kind=a[4];
   if(k==='vastgoed'){close();G.vastgoed&&G.vastgoed.open();return}
   if(k==='auto'){close();if(G.ui&&G.ui.cur&&G.ui.cur())G.ui.leaveQuiet&&G.ui.leaveQuiet();G.resume();G.bringCar&&G.bringCar();return}
   if(k==='klik'){try{sessionStorage.setItem('ow_mode','klik')}catch(e){}G.savePos&&G.savePos();location.href='/game';return}
+  if(k==='real'){G.savePos&&G.savePos();location.href='/realistisch';return}
   if(kind==='rt'){const pl=M.placeByPage(k);close();if(G.ui&&G.ui.cur&&G.ui.cur())G.ui.leaveQuiet&&G.ui.leaveQuiet();G.resume();G.setWaypoint&&G.setWaypoint(pl.door.x,pl.door.z,pl.name,pl.id);return}
   if(kind==='klik'){ov.hidden=true;G.ui&&G.ui.phoneApp&&G.ui.phoneApp(k)}}
 ov.addEventListener('click',e=>{const t=e.target;if(t===ov){close();return}
