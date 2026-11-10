@@ -15,7 +15,7 @@ export const SHOTS={
   // 2. camera achter je karakter, straat in het centrum
   straat:{focus:[156,140],cam:{pos:[137.2,2.9,144.7],at:[160,2.0,142.6]},fov:52,time:'dag',tm:{sunAz:-52,sunEl:44,exposure:.6},PX:9,R:170,shadowR:120,seed:8,aoR:.7,
     people:[{x:142.4,z:145.3,ry:PI/2,l:0,pose:'loop',ph:.9,player:1},{x:149,z:146.2,ry:-PI/2,l:4,pose:'loop',ph:2},{x:152.5,z:145.1,ry:-PI/2+.2,l:6,pose:'bel'},{x:158,z:146,ry:PI/2,l:8,pose:'loop',ph:.3}],
-    crowd:{n:26,r:60,seed:11},cars:[{x:150,z:141.9,ry:PI/2,v:2},{x:166,z:138.1,ry:-PI/2,v:4},{x:181,z:141.9,ry:PI/2,v:1,taxi:1}]},
+    crowd:{n:26,r:60,seed:11},cars:[{x:149.5,z:140.95,ry:PI/2,v:1},{x:163,z:139.0,ry:-PI/2,v:0},{x:176,z:140.95,ry:PI/2,v:1,taxi:1}]},
   // 3. avond met regen
   regen:{focus:[229,112],cam:{pos:[236.5,2.5,131.5],at:[226.5,3.2,104]},fov:50,time:'regen',R:120,seed:5,aoR:.7,lights:14,
     people:[{x:234.6,z:126.4,ry:PI+.25,l:0,pose:'loop',ph:1.1,player:1},{x:228.5,z:118,ry:.4,l:10,pose:'sta',umb:1},{x:222.5,z:110.5,ry:2.2,l:3,pose:'loop',ph:2.4,umb:1},{x:231,z:108.5,ry:-2.6,l:6,pose:'bel'}],

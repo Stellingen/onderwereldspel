@@ -55,7 +55,7 @@ export function buildProps(ctx){const {M,S,night,scene,batch,mats,fx,fz,R,G,extr
   mats.bark=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.95});const lf=mk(256,256),lx=lf.getContext('2d');lx.fillStyle='#d6d6d6';lx.fillRect(0,0,256,256);const lr=rng(21);for(let i=0;i<2600;i++){const v=110+Math.floor(lr()*145);lx.fillStyle=`rgb(${v},${v},${v})`;lx.beginPath();lx.ellipse(lr()*256,lr()*256,2+lr()*5,1.5+lr()*3,lr()*3,0,7);lx.fill()}
   const lt=canvasTex(lf,true,true),lb=canvasTex(lf,false,true);mats.leaf=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.92,map:lt,bumpMap:lb,bumpScale:3});mats.leaf2=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,side:THREE.DoubleSide});
   mats.metalD=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.5,metalness:.7});mats.rubber=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.9});
-  mats.paint=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.48,metalness:.0,envMapIntensity:.14});
+  mats.paint=new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.42,metalness:.05,clearcoat:.35,clearcoatRoughness:.2,envMapIntensity:.28});
   mats.glassD=new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.06,metalness:.85,envMapIntensity:1.1});
   mats.lampHead=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.4});mats.lampHeadOn=new THREE.MeshStandardMaterial({color:0xfff2d0,emissive:0xffd9a0,emissiveIntensity:5});
   mats.head=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.15,metalness:.3});mats.headOn=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xfff2d8,emissiveIntensity:5});
@@ -66,6 +66,7 @@ export function buildProps(ctx){const {M,S,night,scene,batch,mats,fx,fz,R,G,extr
   mats.corr=new THREE.MeshStandardMaterial({map:canvasTex(cc,true,true),bumpMap:canvasTex(cb,false,true),bumpScale:2,vertexColors:true,roughness:.55,metalness:.4});
   mats.glow=new THREE.MeshBasicMaterial({map:glowTex(),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,color:0xffc27a,opacity:night?(ctx.TM.glow||.15):0});
   const near=(p,m)=>Math.abs(p.x-fx)<R+(m||0)&&Math.abs(p.z-fz)<R+(m||0);
+  const placed=[];
   M.props.forEach((p,i)=>{if(!near(p,4))return;const y=G.hAt(p.x,p.z),pr=rng(i*7919+3);
     switch(p.k){
       case 'tree':tree(batch,p.x,y,p.z,p.s||1,pr,'tree');break;
@@ -76,7 +77,7 @@ export function buildProps(ctx){const {M,S,night,scene,batch,mats,fx,fz,R,G,extr
       case 'bollard':batch.add('metalD',place(tint(new THREE.CylinderGeometry(.09,.1,.9,10),'#3a3d42'),p.x,y+.45,p.z));batch.add('metalD',place(tint(new THREE.SphereGeometry(.1,10,6),'#3a3d42'),p.x,y+.9,p.z));break;
       case 'bench':bench(batch,p.x,y,p.z,(p.rot||0)*Math.PI/2,pr);break;
       case 'hedge':{const g=new RoundedBoxGeometry(1.04,1.0,1.04,2,.16);batch.add('leaf',place(tint(g,jitter('#3a6a2c',pr,12),.25,pr),p.x,y+.5,p.z));break}
-      case 'car':car(ctx,p.x,G.hAt(p.x,p.z)>0?0:0,p.z,p.rot?(p.dir>0?0:Math.PI):(p.dir>0?Math.PI/2:-Math.PI/2),{v:p.v});break;
+      case 'car':if(placed.some(q=>Math.hypot(q.x-p.x,q.z-p.z)<5.2))break;placed.push(p);car(ctx,p.x,G.hAt(p.x,p.z)>0?0:0,p.z,p.rot?(p.dir>0?0:Math.PI):(p.dir>0?Math.PI/2:-Math.PI/2),{v:p.v});break;
       case 'police':car(ctx,p.x,0,p.z,p.rot?0:Math.PI/2,{police:1});break;
       case 'container':container(ctx,p.x,y,p.z,p.rot,p.h,p.v);break;
       case 'dumpster':batch.add('corr',place(tint(new THREE.BoxGeometry(1.9,1.15,1.1),'#2f5a3a'),p.x,y+.6,p.z,(p.rot||0)*Math.PI/2));batch.add('plain',place(tint(new THREE.BoxGeometry(1.95,.07,1.15),'#1d1d1f'),p.x,y+1.2,p.z,(p.rot||0)*Math.PI/2));break;
