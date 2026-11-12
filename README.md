@@ -1520,3 +1520,62 @@ Inspiratie: GTA en Mafia. De Pixelstad blijft een pixelspel, maar speelt nu ook 
   - **Kluis kraken**: draai en luister; de meter slaat uit bij het goede getal. Grote overvallen (bank, casino, juwelier, goud) krijgen nu een kluis-stap.
   - **Bedrading**: verbind de draden op kleur tegen de klok. Dit vervangt het oude kortsluiten bij het stelen van geparkeerde auto's; beveiligde en dure auto's zijn moeilijker.
 
+
+### Pixelstad: auto-ongelukken, werkplaats, weer per speldag, karakter en kaartlegenda (november 2026)
+
+- **Pixelstad: auto's, botsen, schade en de werkplaats (november 2026)** (`stad-cars.js`, `stad-autos.js`, `stad-police.js`, `css/stad-auto.css`):
+  - **Waar breng je hem heen**: zodra je in een gestolen auto stapt, staat de route aan naar de beste plek (Ome Henk als hij precies
+    dit model zoekt, anders Garage Van der Plaat, of je eigen chop shop als die dichterbij is of je garage vol zit). Toast "Breng hem
+    naar … · route staat aan", een gouden lichtzuil met ringen, ruitje en bordje "BRENG HEM HIER" in de stad, en de plek pulseert op
+    de grote kaart en de minikaart (`G.kaart.highlight(…,{id:'autodoel'})`). Uitstappen, afleveren of verkopen haalt het weg.
+    `G.autoGoal()` geeft de bestemming.
+  - **Botsen**: de auto is een rechthoek. Punten in een muur/paal en hoeken van vaste tegels in de auto duwen hem eruit langs de
+    kortste vrije kant; de snelheid richting het obstakel gaat eraf, de rest glijdt langs de muur. Een paal op de hoek duwt je opzij.
+    Andere auto's (verkeer, politie, geparkeerd, achtergelaten) zijn ook vast (SAT). Nooit meer in een tegel: lukt het niet, dan terug
+    naar de laatste vrije plek; echt klem (vooruit én achteruit dicht) of een seconde geen vrije plek → naar de dichtstbijzijnde weg.
+  - **Ongeluk**: klap ≥ 7,5 m/s richting het obstakel (≈27 km/u), ook als een ander jou ramt: flits, beeld schudt en wiebelt,
+    rook, −1 tot −22 gezondheid ((klap−6)×0,8), 2 tot 4 s versuft (gas en stuur eerst dood, dan langzaam terug; uitstappen kan dan
+    niet). Voetganger aanrijden (vanaf 4,5 m/s): even omver, sterretjes, opstaan en wegwezen; getuigen kunnen 112 bellen. Een agent
+    aanrijden: 2 sterren.
+  - **Schade** `v.dmg` 0–100: klap ×1,3+2 (licht: (klap−3)×1,1). Donkerder en scheef, rook boven 50, vlammetjes boven 85 ("motor
+    oververhit"), op 100 total loss (motor dood). Topsnelheid −35%, optrekken/sturen −30% bij 100. Waarde × (1 − 0,6·schade/100).
+    Balkje in de snelheidsmeter. Je eigen auto onthoudt de schade (`S.cars[i].dmg`, `v0` = waarde heel).
+  - **Hitte** (gestolen): carjacking 72, alarm 52, stil 28 (+3 per zeldzaamheid); zakt langzaam (niet onder 30 als hij gemeld is).
+    Een patrouille die je ziet herkent hem met (hitte/100)^1,5 × 0,6 per seconde.
+  - **Werkplaats** (rij voor de deur van Garage Van der Plaat of je chop shop en sta stil): schade, hitte, papieren en waarde, en
+    Repareren (deuken uitkloppen: timing per deuk; waarde × schade × 0,25), Overspuiten (kleur kiezen, spuitpistool op de lijn houden;
+    4%; hitte −85% bij perfect), Valse papieren (handtekening overtrekken; 15%; mislukt = geld weg; gelukt = geregistreerd: niet meer
+    gemeld, +10% waarde, koud), dan In je garage zetten / Verkopen (bod van een koper) / Slopen (chop shop). Prijzen met een bodem
+    uit `G.schaal.kost` (hooguit 6/6/25% van de waarde). Vakmanschap: `repareren`, `spuiten`, `vervalsen`. Ook vanuit het
+    garagemenu (Repareren, Overspuiten, Valse papieren per auto). Weer: `G.weerFx().grip` maakt remmen en bochten gladder.
+  - **Garage vol**: zonder chop shop gaat de route naar Ome Henk (als hij alles koopt) of je eigen autokerkhof; anders naar Van der
+    Plaat met de melding dat je daar eerst ruimte maakt. De werkplaats toont dan "Naar Ome Henk" / "Naar De Sloop" en "Ruimte maken".
+- **Speldag-klok** (`stad-game.js`, `G.klok()`): één dag en nacht = één speldag van 4 uur (gelijk met de uitbetalingen om 00:00,
+  04:00, …). Eén speluur = 10 echte minuten; nacht 29–37% van de speldag (iets langer in de winter), schemer ≈ 23 min. Licht, zon,
+  nacht-logica, HUD-klok en telefoon lopen op speltijd.
+- **Weer** (`stad-sfeer.js`): voor iedereen gelijk, vast per speldag uit een hash, in periodes van 20–40 min. Daytypes: mooi, zonnig
+  (zomer soms met onweer aan het eind), wisselend (soms één bui), grijs (mist 's nachts), een front (bewolkt → regen → onweer/storm →
+  opklaring) of sneeuw (winter). Nieuw: `zon` en `storm` (schuine regen, windstoten, rondvliegend afval, duw als je loopt). Een
+  speldag begint en eindigt nooit in regen. Nat (regen + onweer + storm) ≈ 10% van de tijd per jaar (was ≈ 20%). De weerkeuze in
+  de instellingen is alleen beeld en alleen voor deze sessie. `G.weerFx()` → `{k, grip, volk, politie, zicht, wind, nat, en}`:
+  minder mensen buiten bij regen/storm, paraplu's, strand vol bij zon, getuigen bellen later bij storm/onweer/sneeuw, gladdere weg.
+  Telefoon: weerkaart op het beginscherm en de app Weer met verwachting.
+- **Energie per weer** (alleen Pixelstad): `EN_MAX` = basis + weer × (basis/100)^0,6, met zon +20, sneeuw −10, regen −15,
+  onweer −20, storm −25 (bij 100). Bij 450 geeft zon ≈ 500. In de HUD als chip naast de energiebalk (tik voor uitleg). Energie boven
+  je max wordt nooit afgepakt (ook niet in het klikspel); je laadt alleen niet bij tot je eronder zit (`main.js`, `verblijf.js`).
+- **Ledenbonus Pixelstad**: `G.lidBonus()` = 1 + `TIER_STAD[tier()]` (VIP +5%, High roller +10%) op buit en heling via
+  `G.schaal.zwart`; `G.schaal.kost` is de schaal zonder bonus voor wat je betaalt. Getoond als "+10%" naast je naam en onder
+  uitbetalingen. Op de lidmaatschapspagina als bedankje (regel "Pixelstad: buit en heling", gecontroleerd tegen `TIER_STAD`).
+- **Karakter** (`karakter.js`, `css/karakter.css`): `S.char = {skin, hs, hc, eye, mood, mouth, fh}` (alleen waarden uit `KAR_OPT`),
+  `S.charDone`, `S.charStart`, `S.charAsk`. Nieuwe accounts maken hun karakter direct na het aanmelden (vóór de rondleiding);
+  bestaande spelers krijgen "Maak snel je karakter aan" (1× per sessie, na 3× "Later" niet meer). Daarna een gratis startoutfit,
+  alleen deze ene keer en nooit te koop: Zakenman (+4% bedrijfsinkomen, −3% borg), Straatvechter (+3% energie, +4% ontsnappen),
+  Schim (+1 kans, −4% herkend), Coureur (+4% vluchten, +3% autowaarde), Charmeur (+2% XP, −3% wachttijd); of je eigen kleding.
+  Later aan te passen via profiel, Outfit, kledingkast en Pixelstad → telefoon → Instellingen. Klikspel: gezicht, haar en huid op het
+  bestaande poppetje (ook op openbare profielen, `profileOf` geeft een gecontroleerde `char`). Pixelstad: 3D-poppetje (kapsel,
+  haarkleur, ogen, uitdrukking, baard) en pixelportretten (`KAR.face`, voorheen `stad-face.js`) in HUD, telefoon en krant.
+- **Kaart** (`stad-kaart.js`, `css/stad-kaart.css`): vorm = laag (ruit verhaal, vierkant gebouwen, rond te doen, schild bendes, huis
+  bezit), kleur = soort, pixelicoon erin. Legenda "Wat betekent wat" (zijpaneel, op telefoon een onderblad; tik op een regel om aan
+  of uit te zetten; L). Alleen gelijke soorten clusteren, labels overlappen niet, kleine dingen worden stipjes als je uitzoomt.
+  "Ik ben hier" (H), zoomknoppen, schaalbalk, pijlen aan de rand. Minikaart (192 px) in dezelfde taal met route en randpijl.
+  `G.kaart.highlight(x,z,label,{c,ic,sh,id,t,keep,route})` / `G.kaart.unhighlight(id)` laten een plek op beide kaarten pulseren.

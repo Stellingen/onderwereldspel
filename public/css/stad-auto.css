@@ -17,6 +17,8 @@
 .sd-dmg.sd-fire{background:#ff6a1a;color:#111;animation:sdAutoBlink .6s steps(2) infinite}
 .sd-dmg.sd-dead{background:#000;color:#ff3d52;outline:1px solid #ff3d52}
 #sdOutCar.dz{opacity:.45}
+/* telefoon: de routechip schuift omhoog, boven de (iets hogere) snelheidsmeter */
+@media (max-width:700px){body.stad-drive .sd-wp{bottom:calc(200px + env(safe-area-inset-bottom,0px))}}
 @keyframes sdAutoBlink{50%{opacity:.35}}
 
 /* ---------- ongeluk: flits, wiebelend beeld, 'versuft' ---------- */
@@ -31,9 +33,10 @@
 .sd-klap-in>i{display:block;width:180px;height:8px;background:rgba(0,0,0,.7);border:2px solid #000;outline:1px solid #ffd35a}
 .sd-klap-in>i>i{display:block;height:100%;width:100%;background:#ffd35a}
 @keyframes sdKlapB{50%{transform:translateX(-3px) rotate(-2deg)}}
+body.sd-versuft .sd-area{visibility:hidden}
 body.sd-versuft .stad-cv{animation:sdWobble 1.15s ease-in-out infinite;filter:blur(.6px) saturate(.7)}
 @keyframes sdWobble{0%,100%{transform:scale(1.05) rotate(0)}25%{transform:scale(1.06) rotate(.9deg) translateX(6px)}75%{transform:scale(1.06) rotate(-.9deg) translateX(-6px)}}
-@media (max-width:700px){.sd-klap-in b{font-size:42px}.sd-klap-in span{font-size:13px}}
+@media (max-width:700px){.sd-klap{padding-top:max(210px,30vh)}.sd-klap-in b{font-size:42px}.sd-klap-in span{font-size:13px}}
 
 /* ---------- werkplaats ---------- */
 .sd-werk{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:44;width:min(600px,calc(100vw - 32px));max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-x:hidden;overflow-y:auto;
@@ -64,7 +67,7 @@ body.sd-versuft .stad-cv{animation:sdWobble 1.15s ease-in-out infinite;filter:bl
 .sd-werk-val{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding-top:4px;border-top:1px dashed #2b3038}
 .sd-werk-val b{font:900 24px/1 var(--f-display);color:#3fe395;letter-spacing:.01em}
 .sd-werk-val small{font:600 11.5px var(--f-mono,ui-monospace,monospace);color:#8a8f98}
-.sd-werk-svc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sd-werk-svc{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:8px}
 .sd-werk-end{display:flex;flex-wrap:wrap;gap:8px}
 .sd-werk-b{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;min-height:58px;background:#1b1e24;border:2px solid #000;outline:1px solid #3a3d44;color:#ece8de;cursor:pointer;font:inherit;touch-action:manipulation}
 .sd-werk-b>i{display:grid;place-items:center;width:34px;height:34px;flex:none;background:#0b0c0f;border:2px solid #000;color:#f2c230}
@@ -74,6 +77,7 @@ body.sd-versuft .stad-cv{animation:sdWobble 1.15s ease-in-out infinite;filter:bl
 .sd-werk-b small{font:600 11.5px/1.25 var(--f-body);color:#a9a59b}
 .sd-werk-b.svc{flex-direction:column;align-items:flex-start;gap:8px;min-height:112px}
 .sd-werk-b.end{flex:1 1 180px}
+.sd-werk-b.end b{font-size:14px}
 .sd-werk-b.end:not(.ghost){background:#2a2410;outline-color:#f2c230}
 .sd-werk-b.end:not(.ghost)>i{color:#111;background:#f2c230}
 .sd-werk-b.ghost{background:#121418}

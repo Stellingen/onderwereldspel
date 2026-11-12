@@ -88,9 +88,10 @@ function policeTick(dt){if(cool>0)cool-=dt;if(!G.police||G.police.active()||cool
   if(wantedLevel()>0&&!(G.mission&&G.mission())&&!G.hidden){const pol=TRAF.find(c=>c.police&&!c.chase&&!c.block&&Math.hypot(c.x-G.P.x,c.z-G.P.z)<26&&G.los&&G.los(c,G.P));
     if(pol){G.police.start({stars:Math.min(3,wantedLevel()),why:'gezocht',wanted:1,car:pol});G.toast&&G.toast('Een politieauto herkent je!','bad');cool=20;return}}
   // een gestolen auto zonder papieren valt op: hoe heter (alarm, carjacking, kleur), hoe sneller een patrouille hem herkent
-  const st=G.driving&&mine&&mine.stolen;if(st&&!st.papers&&!(G.mission&&G.mission())&&(st.heat||0)>12){
+  // kans per seconde = (hitte/100)^1,5 × 0,6 zolang een patrouille je ziet (binnen 24 m): lauw (30) ±10%/s, heet (72) ±37%/s
+  const st=G.driving&&mine&&mine.stolen;if(st&&!st.papers&&!(G.mission&&G.mission())&&(st.heat||0)>15){
     const pol=TRAF.find(c=>c.police&&!c.chase&&!c.block&&Math.hypot(c.x-mine.x,c.z-mine.z)<24&&G.los&&G.los(c,G.P));
-    if(pol&&Math.random()<dt*st.heat/100*.9){G.police.start({stars:1,why:'gestolen auto',car:pol});G.toast&&G.toast('De politie herkent de gestolen '+mine.d.name+'!','bad');cool=25}}}
+    if(pol&&Math.random()<dt*Math.pow(st.heat/100,1.5)*.6){G.police.start({stars:1,why:'gestolen auto',car:pol});G.toast&&G.toast('De politie herkent de gestolen '+mine.d.name+'!','bad');cool=25}}}
 G.traf={spawn:(pol,near)=>spawnCar(pol,near),remove:c=>{G.scene().remove(c.mesh);const i=TRAF.indexOf(c);if(i>=0)TRAF.splice(i,1);if(c.police&&TRAF.filter(o=>o.police&&!o.chase).length<3)spawnCar(true,true)},carMesh,list:TRAF};
 /* ---------- je eigen auto ---------- */
 function myCars(){try{return (S.cars||[]).map((c,i)=>({c,i})).filter(o=>o.c&&o.c.id)}catch(e){return[]}}
@@ -161,7 +162,7 @@ function unstick(c,why){const [hl,hw]=dimsOf(c),free=(x,z,ry)=>fits(x,z,ry,hl,hw
   const C=[],r=roadNear(c.x,c.z);if(r){C.push(r);const fx=Math.sin(r.ry),fz=Math.cos(r.ry);for(let k=1;k<=6;k++)C.push({x:r.x+fx*k*3,z:r.z+fz*k*3,ry:r.ry},{x:r.x-fx*k*3,z:r.z-fz*k*3,ry:r.ry})}
   for(let rad=2;rad<=30;rad+=2)for(let a=0;a<12;a++){const t=a/12*Math.PI*2;C.push({x:c.x+Math.cos(t)*rad,z:c.z+Math.sin(t)*rad,ry:c.ry})}
   for(const p of C){for(const ry of [p.ry,p.ry+Math.PI,p.ry+Math.PI/2,p.ry-Math.PI/2]){if(free(p.x,p.z,ry)){c.x=p.x;c.z=p.z;c.ry=ry;c.v=0;c.kx=c.kz=c.spin=0;c.safe={x:c.x,z:c.z,ry};c.stk=0;c.bad=0;
-    if(c===mine){G.yawT=ry+Math.PI;G.toast&&G.toast(why||'Je zat klem. Weer op de weg gezet.','info')}return true}}}return false}
+    if(c===mine){G.yawT=ry+Math.PI;if(why!=='')G.toast&&G.toast(why||'Je zat klem. Weer op de weg gezet.','info')}return true}}}return false}
 G.carUnstick=v=>unstick(v||mine);
 /* ---------- schade, rook en vuur ----------
  v.dmg loopt van 0 tot 100. Hoe meer schade, hoe donkerder en scheever de auto, hoe lager de topsnelheid en hoe slechter hij stuurt.
@@ -169,7 +170,7 @@ G.carUnstick=v=>unstick(v||mine);
 let baseMat=null;
 function look(c){if(!c||!c.mesh)return;const d=Math.min(1,(c.dmg||0)/100);if(d<=0&&!c._mat)return;
   if(!c._mat){baseMat=baseMat||G.city.material;const m=baseMat.clone();m.onBeforeCompile=baseMat.onBeforeCompile;m.customProgramCacheKey=baseMat.customProgramCacheKey;c._mat=m;c.mesh.material=m}
-  c._mat.color.setRGB(1-.5*d,1-.55*d,1-.6*d);c._tilt=d>.4?(d-.4)/.6*.055*(c._tsgn||(c._tsgn=Math.random()<.5?-1:1)):0;c.mesh.rotation.z=c._tilt;c.mesh.scale.set(1,1-.06*d,1-.035*d)}
+  c._mat.color.setRGB(1-.42*d,1-.48*d,1-.55*d,TH.SRGBColorSpace||'srgb');c._tilt=d>.4?(d-.4)/.6*.055*(c._tsgn||(c._tsgn=Math.random()<.5?-1:1)):0;c.mesh.rotation.z=c._tilt;c.mesh.scale.set(1,1-.06*d,1-.035*d)}
 G.carLook=look;
 function persistOwn(c){if(!c||!c.own||!c.d||!c.d.o)return;const e=c.d.o.c;if(!e)return;const d=Math.round(c.dmg||0);if(e.dmg===d)return;e.dmg=d;if(e.v0==null)e.v0=e.v;e.v=Math.round(e.v0*(1-.6*d/100)/10)*10;clearTimeout(persistOwn.t);persistOwn.t=setTimeout(()=>{try{save()}catch(e){}},1500)}
 G.carPersist=persistOwn;
@@ -177,17 +178,17 @@ function addDmg(c,a,o){if(!c||!(a>0)||c.dead)return;o=o||{};const d0=c.dmg||0;c.
   if(c===mine&&G.driving){if(c.dmg>=100){c.dead=1;c.v*=.4;G.snd&&G.snd.fx('bad');G.flash&&G.flash('#ff7a1a',.45);G.toast&&G.toast('Total loss! De motor is dood. Stap uit (F).','bad');for(let i=0;i<10;i++)puff(c,'vuur')}
     else if(d0<85&&c.dmg>=85)G.toast&&G.toast('De motor raakt oververhit. Nog een klap en hij is total loss.','bad');else if(d0<50&&c.dmg>=50&&!o.quiet)G.toast&&G.toast('Je auto begint te roken','info');hud()}
   else if(c.dmg>=100)c.dead=1}
-G.carDamage=addDmg;
+G.carDamage=addDmg;G._smk=()=>SMK;
 const SMK=[];let smkGeo=null;
 function puff(c,kind){if(SMK.filter(p=>p.life>0).length>70)return;let p=SMK.find(p=>p.life<=0);if(!p){smkGeo=smkGeo||new TH.BoxGeometry(.55,.55,.55);p={m:new TH.Mesh(smkGeo,new TH.MeshBasicMaterial({color:0xffffff,transparent:true,depthWrite:false})),life:0};p.m.renderOrder=3;G.scene().add(p.m);SMK.push(p)}
   const [hl]=dimsOf(c),fx=Math.sin(c.ry),fz=Math.cos(c.ry),fire=kind==='vuur',dark=c.dead||(c.dmg||0)>80;
   p.m.position.set(c.x+fx*hl*.62+rr(-.4,.4),fire?1:1.15,c.z+fz*hl*.62+rr(-.4,.4));p.fire=fire;p.T=p.life=fire?rr(.35,.6):rr(1.3,2.2);p.vy=fire?rr(1.4,2.4):rr(1.1,1.8);p.vx=rr(-.3,.3)-fx*Math.min(6,Math.abs(c.v||0))*.25;p.vz=rr(-.3,.3)-fz*Math.min(6,Math.abs(c.v||0))*.25;
-  p.m.material.color.set(fire?pick(['#ffb02a','#ff6a1a','#ffd35a']):dark?'#2a2b2f':'#8f9298');p.m.material.opacity=fire?.95:.55;p.m.scale.setScalar(fire?.5:.6);p.m.visible=true}
+  p.m.material.color.set(fire?pick(['#ffb02a','#ff6a1a','#ffd35a']):dark?pick(['#26272b','#3a3b40']):pick(['#7d8087','#9a9da3']));p.m.material.opacity=fire?.95:.8;p.m.scale.setScalar(fire?.55:.8);p.m.visible=true}
 function burstAt(x,z,col,n){if(G.fx2)G.fx2.burst(x,.9,z,col,n)}
 function smokeStep(dt){VEH.forEach(v=>{const d=v.dmg||0;if(d<50)return;if(Math.abs(v.x-G.P.x)>70||Math.abs(v.z-G.P.z)>70)return;
     v._sm=(v._sm||0)+dt*((d-50)/50*7+(v.dead?5:1));while(v._sm>=1){v._sm--;puff(v)}if(d>=85&&!v.dead||v.dead&&(v.fireT=(v.fireT||0)+dt)<6){v._fi=(v._fi||0)+dt*6;while(v._fi>=1){v._fi--;puff(v,'vuur')}}});
   SMK.forEach(p=>{if(p.life<=0)return;p.life-=dt;if(p.life<=0){p.m.visible=false;return}const k=1-p.life/p.T;p.m.position.x+=p.vx*dt;p.m.position.z+=p.vz*dt;p.m.position.y+=p.vy*dt;
-    p.m.scale.setScalar(p.fire?.5*(1-k*.7):.6+k*1.6);p.m.material.opacity=(p.fire?.95:.55)*(1-k);p.m.rotation.y+=dt*1.5})}
+    p.m.scale.setScalar(p.fire?.55*(1-k*.7):.8+k*2);p.m.material.opacity=(p.fire?.95:.8)*(1-k*k);p.m.rotation.y+=dt*1.5})}
 /* ---------- ongeluk: versuft ----------
  Een harde klap (de snelheid richting het obstakel of de andere auto ≥ 7,5 m/s, zo'n 27 km/u): flits, het beeld schudt, de auto
  rookt, je verliest gezondheid en je zit 2 tot 4 seconden versuft. Dan reageert de auto eerst niet en daarna langzaam weer. */
@@ -204,7 +205,7 @@ function crash(c,imp,by,nx,nz){const now=simT;if(now-(c._crT||-9)<.3&&imp<(c._cr
   if(imp<ACC||G.talking){addDmg(c,(imp-3)*1.1,{quiet:1});G.onCrash&&G.onCrash(c,imp);return}
   addDmg(c,imp*1.3+2);G.flash&&G.flash('#ffffff',.55);G.hitStop=.07;if(imp>11)G.snd&&G.snd.fx('glass');for(let i=0;i<5;i++)puff(c);
   const hp=Math.round(clamp((imp-6)*.8,1,22));try{S.hp=Math.max(5,(S.hp||100)-hp);if(typeof save==='function')save()}catch(e){}
-  G.fx2&&G.fx2.float('Klap! −'+hp+' gezondheid',c.x,c.z,'#ff9a9a');
+  G.fx2&&G.fx2.float('−'+hp+' gezondheid',c.x,c.z,'#ff9a9a');
   daze(2+2*clamp((imp-ACC)/15,0,1),rammed?'Geramd!':'Klap!');G.onCrash&&G.onCrash(c,imp)}
 // iets anders raakt jou (een politiewagen die ramt): stad-police.js kan dit aanroepen
 G.carHit=(imp,by)=>{if(G.driving&&mine)crash(mine,imp,by||null,0,0)};
@@ -213,8 +214,8 @@ let lastAanr=0;
 function hitPeds(c,hl,hw){const sp=Math.abs(c.v);if(sp<4.5)return;const fx=Math.sin(c.ry),fz=Math.cos(c.ry),rx=fz,rz=-fx,R=hl+1;
   const test=n=>{const dx=n.x-c.x,dz=n.z-c.z;if(Math.abs(dx)>R||Math.abs(dz)>R)return false;const la=dx*fx+dz*fz,lb=dx*rx+dz*rz;return Math.abs(la)<hl+.3&&Math.abs(lb)<hw+.3};
   (G.NPC||[]).forEach(n=>{if(n.fixed||n.st==='aangereden'||n.st==='sitb'||n.st==='sit'||!test(n))return;const side=((n.x-c.x)*rx+(n.z-c.z)*rz)>0?1:-1;
-    n.st='aangereden';n.t=0;n.kvx=fx*sp*.55+rx*side*3;n.kvz=fz*sp*.55+rz*side*3;n.kdB=0;G.bubble&&G.bubble(n,pick(['Au!','Hé!','Kijk uit!','Aaah!']),{col:'#ff9a9a'});
-    G.snd&&G.snd.fx('hit');G.shake&&G.shake(.35);burstAt(n.x,n.z,'#d8cfb8',8);addDmg(c,1.5+sp*.12,{quiet:1});c.v*=.82;
+    n.st='aangereden';n.t=0;n.kvx=fx*sp*.5+rx*side*6;n.kvz=fz*sp*.5+rz*side*6;n.kdB=0;G.bubble&&G.bubble(n,pick(['Au!','Hé!','Kijk uit!','Aaah!']),{col:'#ff9a9a'});
+    G.snd&&G.snd.fx('hit');G.shake&&G.shake(.35);burstAt(n.x,n.z,'#d8cfb8',8);addDmg(c,1.5+sp*.12,{quiet:1});c.v*=.6;
     try{S.stats=S.stats||{};S.stats.aangereden=(S.stats.aangereden||0)+1}catch(e){}
     if(n.arch==='agent'||n.arch==='wijkagent'){G.toast&&G.toast('Je hebt een agent aangereden!','bad');G.police&&G.police.start&&G.police.start({stars:2,why:'agent aangereden'})}
     else if(performance.now()-lastAanr>3000){lastAanr=performance.now();G.crime&&G.crime(n.x,n.z,{why:'aanrijding',stars:1,victim:n})}});
@@ -247,6 +248,8 @@ function driveStep(dt){const K=G.K,c=mine;let thr=0,steer=0;
   c.v=Math.max(-7,Math.min(max,c.v));if(c.v>max+.5)c.v=max;
   const turn=steer*Math.min(1,Math.abs(c.v)/5)*(2.1-Math.min(1,Math.abs(c.v)/max)*.8)*Math.sign(c.v||1)*(1-.3*dm)*(.85+.15*gr);
   if(gr<1&&turn&&Math.abs(c.v)>6){const sl=(1-gr)*Math.abs(c.v)*turn*.9*dt;c.kx=(c.kx||0)-Math.cos(c.ry)*sl;c.kz=(c.kz||0)+Math.sin(c.ry)*sl}
+  // iets anders heeft de auto verplaatst (race, verhaal, ophalen): dan geldt de oude vrije plek niet meer
+  if(c.safe&&Math.abs(c.x-c.safe.x)+Math.abs(c.z-c.safe.z)>6)c.safe=null;
   const x0=c.x,z0=c.z;if(!c.safe)c.safe=fits(c.x,c.z,c.ry,hl,hw)?{x:c.x,z:c.z,ry:c.ry}:null;
   c.ry+=turn*dt+(c.spin||0)*dt;if(c.spin){c.spin*=Math.pow(.03,dt);if(Math.abs(c.spin)<.02)c.spin=0}
   let fx=Math.sin(c.ry),fz=Math.cos(c.ry);
@@ -268,7 +271,7 @@ function driveStep(dt){const K=G.K,c=mine;let thr=0,steer=0;
       // langs de muur glijden: de neus draait een beetje mee
       if(Math.abs(fn)<.8&&Math.abs(c.v)>1.5){const tx=fx-fn*nx,tz=fz-fn*nz;let a=Math.atan2(tx,tz)-c.ry;while(a>Math.PI)a-=Math.PI*2;while(a<-Math.PI)a+=Math.PI*2;if(c.v<0)a=0;c.ry+=clamp(a,-1,1)*Math.min(1,dt*4)}}}
   // 3. nog steeds niet vrij? terug naar de laatste vrije plek
-  if(!r.ok){if(c.safe){c.x=c.safe.x;c.z=c.safe.z;c.ry=c.safe.ry}else{c.x=x0;c.z=z0}c.v*=-.2;c.kx=c.kz=c.spin=0;c.bad=(c.bad||0)+dt}else{c.safe={x:c.x,z:c.z,ry:c.ry};c.bad=0}
+  if(!r.ok){if(c.safe){c.x=c.safe.x;c.z=c.safe.z;c.ry=c.safe.ry;c.v*=-.2;c.kx=c.kz=c.spin=0;c.bad=(c.bad||0)+dt}else unstick(c,'')}else{c.safe={x:c.x,z:c.z,ry:c.ry};c.bad=0}
   // 4. echt klem (vooruit en achteruit lukt allebei niet), of al een seconde geen vrije plek: naar de weg
   const moved=Math.hypot(c.x-x0,c.z-z0),want=Math.abs(thr)>.3;
   if(want&&moved<dt*.6&&(r.x||r.z||!r.ok||imp>0))c.stk=(c.stk||0)+dt;else c.stk=Math.max(0,(c.stk||0)-dt*2);

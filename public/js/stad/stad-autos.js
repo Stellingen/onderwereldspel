@@ -225,8 +225,14 @@ function goalFor(v){if(!v||!v.stolen||v.dead)return null;const m=v.stolen.m;let 
   const hn=helerNpc();if(o&&hn){const hry=hn.home?hn.home.ry:-Math.PI/2;return {k:'heler',x:hn.x+Math.sin(hry)*5,z:hn.z+Math.cos(hry)*5,n:'Ome Henk (heler)',msg:'Ome Henk zoekt precies deze. Breng hem naar Ome Henk · route staat aan',v}}
   const gw=werkAt('cars'),cw=hasChop()?werkAt('biz_garage'):null,full=S.cars.length>=garCap(),d=p=>Math.hypot(p.x-v.x,p.z-v.z);
   if(cw&&(full||d(cw)<d(gw)))return {k:'chop',x:cw.x,z:cw.z,n:'Jouw chop shop',msg:'Breng hem naar je chop shop · route staat aan',v};
-  return {k:'garage',x:gw.x,z:gw.z,n:'Garage Van der Plaat',msg:'Breng hem naar Garage Van der Plaat · route staat aan',v}}
-function setGoal(v){const g=goalFor(v);if(!g)return;goal=g;if(goalSpot){goalSpot.x=g.x;goalSpot.z=g.z}
+  // garage vol: dan meteen naar wie hem wel neemt (Ome Henk als hij alles koopt, anders je eigen autokerkhof)
+  if(full){const alt=altGoal(v);if(alt)return alt}
+  return {k:'garage',x:gw.x,z:gw.z,n:'Garage Van der Plaat',msg:full?'Je garage zit vol. Breng hem naar Garage Van der Plaat en maak daar ruimte · route staat aan':'Breng hem naar Garage Van der Plaat · route staat aan',v}}
+function altGoal(v){const hn=helerNpc();let any=0;try{any=HELER_LV[helerLv()].any||0}catch(e){}
+  if(hn&&any){const hry=hn.home?hn.home.ry:-Math.PI/2;return {k:'heler',x:hn.x+Math.sin(hry)*5,z:hn.z+Math.cos(hry)*5,n:'Ome Henk (heler)',msg:'Je garage zit vol. Ome Henk koopt hem wel · route staat aan',v}}
+  if(S.sloop){const sl=M.placeById('sloop');return {k:'sloop',x:sl.door.x,z:sl.door.z,n:'Autokerkhof De Sloop',msg:'Je garage zit vol. Sloop hem op je autokerkhof · route staat aan',v}}
+  return null}
+function setGoal(v,gf){const g=gf||goalFor(v);if(!g)return;goal=g;if(goalSpot){goalSpot.x=g.x;goalSpot.z=g.z}
   if(G.setWaypoint){const t=G.toast;G.toast=()=>{};try{G.setWaypoint(g.x,g.z,g.n)}catch(e){}finally{G.toast=t}myWp=G.waypoint||null}
   // grote kaart en minikaart: de bestemming pulseert (met een pijl aan de rand als hij buiten beeld is)
   try{if(G.kaart&&G.kaart.highlight)G.kaart.highlight(g.x,g.z,g.k==='heler'?'Breng hem naar Ome Henk':'Zet hem hier neer',{id:'autodoel',keep:true,c:'#4da3ff',ic:g.k==='heler'?'bag':'moer',sh:'sq'})}catch(e){}
@@ -246,7 +252,7 @@ function beaconMk(){const g=new TH.Group(),add=(geo,mat,y)=>{const m=new TH.Mesh
   const gem=add(new TH.OctahedronGeometry(1.1,0),new TH.MeshBasicMaterial({color:0xffd35a}),7);
   let sign=null;try{sign=K.sign('BRENG HEM HIER','#111111','#f2c230','#000000',1.1);sign.position.y=9.4;sign.renderOrder=5;g.add(sign)}catch(e){}
   g.userData={beam,core,ring,ring2,gem,sign};g.visible=false;G.scene().add(g);return g}
-function beaconStep(ts){if(!bcn)return;bcn.visible=!!goal;if(!goal)return;const u=bcn.userData,ph=(ts*.8)%1;bcn.position.set(goal.x,0,goal.z);
+function beaconStep(ts){if(goal&&goal.v&&goal.v.dead)clearGoal();if(!bcn)return;bcn.visible=!!goal;if(!goal)return;const u=bcn.userData,ph=(ts*.8)%1;bcn.position.set(goal.x,0,goal.z);
   u.beam.material.opacity=.15+Math.sin(ts*3)*.06;u.core.material.opacity=.3+Math.sin(ts*3)*.1;u.ring2.scale.setScalar(1+ph*.4);u.ring2.material.opacity=.8*(1-ph);
   u.ring.scale.setScalar(1+Math.sin(ts*4)*.04);u.gem.rotation.y=ts*1.8;u.gem.position.y=7+Math.sin(ts*2.2)*.35;if(u.sign)u.sign.rotation.y=G.yaw||0}
 /* ---------- E: afleveren, werkplaats, auto, carjacken ---------- */
@@ -324,8 +330,8 @@ gui.addEventListener('click',e=>{const t=e.target.closest('button');if(e.target=
 addEventListener('keydown',e=>{if(e.key==='Escape'&&!gui.hidden){e.stopImmediatePropagation();garageClose()}},true);
 /* ---------- werkplaats: repareren, overspuiten, valse papieren ----------
  Rij voor de deur van Garage Van der Plaat (of je eigen chop shop) en sta stil: het menu gaat open. Betalen gaat contant (eerst je
- zwarte geld). Repareren = waarde × schade% × 0,25 (minstens G.schaal.kost(0,6)), overspuiten = 4% van de waarde (minstens
- G.schaal.kost(1)), valse papieren = 15% (minstens G.schaal.kost(3)). Elk klusje is een spelletje met eigen vakmanschap
+ zwarte geld). Repareren = waarde × schade% × 0,25, overspuiten = 4% van de waarde, valse papieren = 15%; met een bodem
+ uit G.schaal.kost (0,1 / 0,1 / 0,3) die hooguit 6% / 6% / 25% van de waarde is. Elk klusje is een spelletje met eigen vakmanschap
  ('repareren', 'spuiten', 'vervalsen'). Stop je halverwege (Esc of ×), dan krijg je je geld terug; mislukte papieren kosten wel geld.
  - Repareren: elke deuk één klap op het goede moment. Alles raak = schade weg; anders een deel.
  - Overspuiten: houd het spuitpistool op de lijn (drie banen). Hoe netter, hoe minder heet de auto daarna is (tot −85%).
@@ -348,9 +354,12 @@ function tCar(c){const live=()=>(G.vehicles||[]).find(v=>v.own&&v.d&&v.d.o&&v.d.
     setDmg:d=>{d=Math.round(d);if(c.v0==null)c.v0=c.v;c.dmg=d;c.v=r10(c.v0*dmgK(d));if(!d)delete c.dmg;const l=live();if(l){l.dmg=d;if(d<100)l.dead=0;G.carLook&&G.carLook(l)}sv()},
     paint:col=>{c.c=col;const l=live();if(l)recolor(l,col);sv()},stolen:false,rep:()=>typeof carRep==='function'?carRep(c):!!c.rep,papers:()=>!!c.pap,heat:()=>0,
     setPapers:()=>{c.rep=0;c.hot=0;if(!c.pap){c.pap=1;c.v=r10(c.v*1.1);if(c.v0!=null)c.v0=r10(c.v0*1.1)}sv()},cool:()=>{}}}
-const costRep=T=>{const d=T.dmg();return d<1?0:Math.max(zS(.6),r10(T.raw()*Math.min(100,d)/100*.25))};
-const costPaint=T=>Math.max(zS(1),r10(T.raw()*.04));
-const costPap=T=>Math.max(zS(3),r10(T.raw()*.15));
+// prijs = een deel van de waarde, met een bodem uit de schaal van je rang (G.schaal.kost) die nooit boven een klein deel van de
+// waarde uitkomt: een oude Panda kost geen fortuin, een Lamborghini wel
+const fee=(raw,part,k,cap)=>Math.max(20,r10(Math.max(raw*part,Math.min(zS(k),raw*cap))));
+const costRep=T=>{const d=T.dmg();return d<1?0:fee(T.raw(),Math.min(100,d)/100*.25,.1,.06)};
+const costPaint=T=>fee(T.raw(),.04,.1,.06);
+const costPap=T=>fee(T.raw(),.15,.3,.25);
 const valNow=T=>r10(T.full()*dmgK(T.dmg()));
 const KLEUR=[['#c9cfd6','Zilver'],['#1d1d1f','Zwart'],['#e6e1d6','Wit'],['#b8333a','Rood'],['#3a5fa8','Blauw'],['#2f6b4a','Groen'],['#d8a23a','Goud'],['#50565f','Grafiet'],['#7a3c8a','Paars'],['#f08a24','Oranje'],['#e8c547','Geel'],['#7fd1c7','Mint']];
 const WSAY=['Zet hem maar neer. Wat moet er gebeuren?','Mooi ding. Waar is de eigenaar? Grapje.','Deuken, verf, papieren. Alles kan, contant.','Rustig. De buren kijken mee.'];
@@ -373,14 +382,17 @@ function wrender(){if(!W)return;const T=W.T,d=Math.round(T.dmg()),st=T.stolen,ca
       <div class="sd-werk-kl">${KLEUR.map(([c,n])=>`<button class="sd-werk-b kl${c===cur?' nu':''}" data-w="kleur:${c}" style="--k:${c}"><i></i><span><b>${n}</b></span></button>`).join('')}</div>
       <div class="sd-werk-end">${wbtn({k:'terug',t:'Terug',ghost:1},'end')}</div>`}
   else{const cR=costRep(T),cP=costPaint(T),cX=costPap(T),val=valNow(T),full=r10(T.full()),heat=T.heat();
-    const pap=!st?(T.own?'Op jouw naam':'In orde'):T.papers()?'Geregistreerd':st.rep?'Gemeld als gestolen':'Nog niet gemeld';
+    const pap=!st?(T.own?'Op jouw naam':'In orde'):T.papers()?'Geregistreerd':T.rep()?'Gemeld als gestolen':'Nog niet gemeld';
     const svc=[{k:'rep',t:'Repareren',ic:K.ic.moer||K.ic.build,sub:'Deuken uitkloppen · '+fmt(cR),dis:d<1||cash<cR,why:d<1?'Hij is nog heel':'Je hebt '+fmt(cR)+' contant nodig'},
       {k:'spuit',t:'Overspuiten',ic:K.ic.spuit,sub:(st&&!T.papers()?'Minder herkenbaar · ':'Nieuwe kleur · ')+fmt(cP),dis:cash<cP||!!(T.v&&T.v.verhaal),why:T.v&&T.v.verhaal?'Deze niet':'Je hebt '+fmt(cP)+' contant nodig'}];
     if(st)svc.push({k:'pap',t:'Valse papieren',ic:K.ic.akte||K.ic.krant,sub:'Geregistreerd: verkoopt beter · '+fmt(cX),dis:T.papers()||cash<cX||dead,why:T.papers()?'Al geregistreerd':dead?'Total loss':'Je hebt '+fmt(cX)+' contant nodig'});
     const end=[];
     if(st&&!W.chop){const full2=S.cars.length>=garCap(),rep=T.rep(),left=typeof saleLeft==='function'?saleLeft():0;
       end.push({k:'garage',t:'In je garage zetten',ic:K.ic.key,sub:'Waarde '+fmt(val),dis:full2||dead,why:dead?'Total loss':'Je garage zit vol ('+S.cars.length+'/'+garCap()+')'});
-      end.push({k:'verkoop',t:'Verkopen',ic:K.ic.sell,sub:'Een koper laten bieden',dis:full2||rep||!left||dead,why:dead?'Total loss':full2?'Je garage zit vol':rep?'Gemeld: eerst valse papieren':'Geen kopers meer dit uur'})}
+      end.push({k:'verkoop',t:'Verkopen',ic:K.ic.sell,sub:'Een koper laten bieden',dis:full2||rep||!left||dead,why:dead?'Total loss':full2?'Je garage zit vol':rep?'Gemeld: eerst valse papieren':'Geen kopers meer dit uur'});
+      // vol: laat zien waar hij wel heen kan, of maak eerst ruimte
+      if(full2&&!dead){const alt=altGoal(T.v||G.car);if(alt)end.push({k:'alt',t:alt.k==='heler'?'Naar Ome Henk':'Naar De Sloop',ic:alt.k==='heler'?(K.ic.bag||K.ic.route):K.ic.build,sub:alt.k==='heler'?'Hij koopt hem · route aan':'Slopen · route aan'});
+        end.push({k:'leeg',t:'Ruimte maken',ic:K.ic.key,sub:'Verkoop eerst een auto uit je garage'})}}
     if(st&&W.chop)end.push({k:'sloop',t:'Slopen voor onderdelen',ic:K.ic.build,sub:'± '+fmt(r10((typeof sloopEst==='function'?sloopEst({v:val}):val*.6)*lidK()))+' zwart'+(G.lidTxt&&G.lidTxt()?' · '+G.lidTxt():''),dis:dead,why:'Total loss'});
     end.push({k:'weg',t:'Wegrijden',ic:K.ic.route,ghost:1});
     h=head+`<div class="sd-werk-car"><span class="sd-werk-pic"><canvas></canvas></span><div class="sd-werk-st">
@@ -388,13 +400,13 @@ function wrender(){if(!W)return;const T=W.T,d=Math.round(T.dmg()),st=T.stolen,ca
       ${st?`<div class="sd-werk-row"><span>Hitte</span><i class="sd-werk-bar heat"><i style="width:${T.papers()?0:heat}%"></i></i><b>${T.papers()?'koud':heat>=60?'heet':heat>=30?'lauw':'koel'}</b></div>`:''}
       <div class="sd-werk-row"><span>Papieren</span><b class="${st&&T.rep()?'bad':T.papers()?'ok':''}">${pap}</b></div>
       <div class="sd-werk-val"><span>Waarde nu</span><b>${fmt(dead?0:val)}</b>${d>0&&!dead?`<small>heel ${fmt(full)}</small>`:''}</div></div></div>
-     <div class="sd-werk-svc">${svc.map(b=>wbtn(b,'svc')).join('')}</div><div class="sd-werk-end">${end.map(b=>wbtn(b,'end')).join('')}</div>`}
+     <div class="sd-werk-svc" style="--n:${svc.length}">${svc.map(b=>wbtn(b,'svc')).join('')}</div><div class="sd-werk-end">${end.map(b=>wbtn(b,'end')).join('')}</div>`}
   wk.innerHTML=`<div class="sd-werk-in">${h}</div>`;K.portrait(MECH,'blij',wk.querySelector('.sd-werk-por'));const pc=wk.querySelector('.sd-werk-pic canvas');if(pc)K.carPic(pc,T.col(),T.kind,{});
   wsel(W.sel<0?firstOn():W.sel)}
 const wBtns=()=>[...wk.querySelectorAll('.sd-werk-b')];
 function firstOn(){const L=wBtns(),i=L.findIndex(b=>!b.classList.contains('dis'));return i<0?L.length-1:i}
 function wsel(i){const L=wBtns();if(!L.length||!W)return;W.sel=(i+L.length)%L.length;L.forEach((b,j)=>b.classList.toggle('on',j===W.sel))}
-wk.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b||!W)return;if(b.classList.contains('dis')){G.toast(b.dataset.why||'Kan nu niet','bad');G.snd&&G.snd.fx('bad');return}G.snd&&G.snd.fx('click');wAct(b.dataset.w)});
+wk.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b||!W||wg||wk.hidden)return;if(b.classList.contains('dis')){G.toast(b.dataset.why||'Kan nu niet','bad');G.snd&&G.snd.fx('bad');return}G.snd&&G.snd.fx('click');wAct(b.dataset.w)});
 addEventListener('keydown',e=>{if(!W||wg||wk.hidden)return;const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;const k=e.key.toLowerCase();
   if(k==='escape'){e.preventDefault();e.stopImmediatePropagation();if(W.view==='kleur'&&!W.board){W.view='main';W.sel=-1;wrender()}else werkClose();return}
   if(['arrowdown','s','arrowright','d'].includes(k)){e.preventDefault();e.stopImmediatePropagation();wsel(W.sel+1);G.snd&&G.snd.fx('tab');return}
@@ -403,6 +415,8 @@ addEventListener('keydown',e=>{if(!W||wg||wk.hidden)return;const t=e.target;if(t
   if(k==='f')e.stopImmediatePropagation()},true);
 async function wAct(k){if(!W)return;const T=W.T;
   if(k==='weg'){werkClose();return}
+  if(k==='alt'){const v=T.v||G.car,alt=altGoal(v);werkClose();if(alt)setGoal(v,alt);return}
+  if(k==='leeg'){werkClose(true);setTimeout(()=>garageOpen('mine'),60);return}
   if(k==='terug'){if(W.board){werkClose();return}W.view='main';W.sel=-1;wrender();return}
   if(k==='spuit'){W.view='kleur';W.sel=-1;wShow();return}
   const pay=c=>{if(S.cash<c){G.toast('Je hebt '+fmt(c)+' contant nodig','bad');if(W&&W.board)werkClose(true);return false}S.cash-=c;sv();G.snd&&G.snd.fx('coin');return true};
@@ -449,7 +463,7 @@ function gameDeuk(T){return new Promise(res=>{const vk='repareren',e=ease(vk),d=
    `<div class="sd-wg-vis"><canvas class="sd-wg-cv" width="192" height="104"></canvas></div>
     <div class="sd-pick"><div class="sd-pick-bar"><i class="z"><i></i></i><i class="m"></i><b class="sd-pop"></b></div><div class="sd-pick-ft"><div class="sd-pick-pins">${dents.map((_,j)=>`<i data-p="${j}"></i>`).join('')}</div><div class="sd-pick-miss"></div></div></div>
     <button class="btn sd-mini-go" data-k="tap">${touch?'':'<kbd>Spatie</kbd> '}Klop!</button>`,vk);
-  const cv=gbx.querySelector('.sd-wg-cv'),x=cv.getContext('2d'),pic=K.carPic(document.createElement('canvas'),T.col(),T.kind,{}),bar=gbx.querySelector('.sd-pick-bar'),z=gbx.querySelector('.z'),mk=gbx.querySelector('.m'),pp=gbx.querySelector('.sd-pop'),ms=gbx.querySelector('.sd-pick-miss');
+  const cv=gbx.querySelector('.sd-wg-cv'),x=cv.getContext('2d'),pic=K.carPic(document.createElement('canvas'),T.col(),T.kind,{bg:'#14161b'}),bar=gbx.querySelector('.sd-pick-bar'),z=gbx.querySelector('.z'),mk=gbx.querySelector('.m'),pp=gbx.querySelector('.sd-pop'),ms=gbx.querySelector('.sd-pick-miss');
   const zone=()=>{z.style.left=(c-w/2)*100+'%';z.style.width=w*100+'%'};zone();
   const lives=()=>{const l=allow-miss;ms.textContent=l<=0?'Je mag niet meer missen':'Je mag nog '+l+' keer missen';ms.classList.toggle('last',l<=0)};lives();
   const pos=t=>(Math.sin((t-t0)/1000*sp*Math.PI)+1)/2;
@@ -477,7 +491,7 @@ function gameSpuit(T,col){return new Promise(res=>{const vk='spuiten',e=ease(vk)
   gOpen('Overspuiten',touch?'Houd het spuitpistool op de stippellijn. Sleep omhoog en omlaag, of gebruik ▲ ▼.':'Houd het spuitpistool op de stippellijn: W en S, de pijltjes, of slepen met de muis.',
    `<div class="sd-wg-vis"><canvas class="sd-wg-cv sd-wg-drag" width="192" height="104"></canvas></div><div class="sd-wg-info"><b class="sd-wg-n">Baan 1 van 3</b><i class="sd-wg-meter"><i></i></i><small class="sd-wg-s">Rustig en gelijkmatig</small></div>
     <div class="sd-kr-pad"><button class="btn sd-kr-b" data-k="U" aria-label="Omhoog">▲</button><button class="btn sd-kr-b" data-k="D" aria-label="Omlaag">▼</button></div>`,vk);
-  const cv=gbx.querySelector('.sd-wg-cv'),x=cv.getContext('2d'),prim=K.carPic(document.createElement('canvas'),'#80848c',T.kind,{}),neu=K.carPic(document.createElement('canvas'),col,T.kind,{}),nl=gbx.querySelector('.sd-wg-n'),cm=gbx.querySelector('.sd-wg-meter>i'),sl=gbx.querySelector('.sd-wg-s');
+  const cv=gbx.querySelector('.sd-wg-cv'),x=cv.getContext('2d'),prim=K.carPic(document.createElement('canvas'),'#80848c',T.kind,{bg:'#14161b'}),neu=K.carPic(document.createElement('canvas'),col,T.kind,{bg:'#14161b'}),nl=gbx.querySelector('.sd-wg-n'),cm=gbx.querySelector('.sd-wg-meter>i'),sl=gbx.querySelector('.sd-wg-s');
   const toY=ev=>{const r=cv.getBoundingClientRect();return (ev.clientY-r.top)/r.height*104};
   cv.addEventListener('pointerdown',ev=>{ev.preventDefault();try{cv.setPointerCapture(ev.pointerId)}catch(x){}drag=toY(ev)});cv.addEventListener('pointermove',ev=>{if(drag!=null)drag=toY(ev)});
   const upd=()=>{drag=null};cv.addEventListener('pointerup',upd);cv.addEventListener('pointercancel',upd);
