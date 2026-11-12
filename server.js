@@ -269,10 +269,12 @@ function profileOf(st) {
   const n = v => Math.max(0, Math.floor(+v || 0)), stats = st.stats || {};
   let units = 0; Object.values(st.biz2 || {}).forEach(a => { if (Array.isArray(a)) units += a.length; });
   const wear = {}; if (st.fit && st.fit.wear && typeof st.fit.wear === 'object') for (const [k, v] of Object.entries(st.fit.wear)) if (/^[a-z]{2,12}$/.test(k) && /^[a-z]{2,16}$/.test(String(v))) wear[k] = String(v);
+  // karakter (uiterlijk): alleen kleurcodes en korte woorden; de client legt het nog langs de vaste lijsten (KAR.san)
+  let char = null; if (st.char && typeof st.char === 'object') { char = {}; for (const k of ['skin', 'hc', 'eye']) if (/^#[0-9a-f]{6}$/i.test(String(st.char[k]))) char[k] = String(st.char[k]); for (const k of ['hs', 'mood', 'mouth', 'fh']) if (/^[a-z]{0,12}$/.test(String(st.char[k]))) char[k] = String(st.char[k]); }
   return {
     cash: n(st.cash), bank: n(st.bank) + n(st.bankExtra), cred: n(st.cred), family: typeof st.family === 'string' ? st.family.slice(0, 20) : null,
     famEer: st.fr && st.fr.id === st.family ? n(st.fr.eer) : 0, famLead: st.fr && st.fr.id === st.family ? Math.min(2, n(st.fr.lead)) : 0, home: typeof st.home === 'string' ? st.home.slice(0, 20) : null,
-    cars: Array.isArray(st.cars) ? st.cars.length : 0, units, wear,
+    cars: Array.isArray(st.cars) ? st.cars.length : 0, units, wear, char,
     skills: Object.values(st.skills || {}).reduce((a, v) => a + n(v), 0),
     stats: { crimes: n(stats.crimes), fails: n(stats.fails), cars: n(stats.cars), hits: n(stats.hits), jacks: n(stats.jacks), won: n(stats.won), lost: n(stats.lost) },
     jail: n(st.jailUntil) > Date.now(), wanted: !!st.wanted

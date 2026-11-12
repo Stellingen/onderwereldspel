@@ -287,7 +287,7 @@ function ctlFit(){const own=st.first&&!karNew()?ownSets():[];const card=(f,piece
 function foot(){const F=document.getElementById('karF');if(!F)return;const fit=st.step==='fit',f=fit&&st.pick?(startFits().find(x=>x.id===st.pick)||ownSets().find(x=>x.id===st.pick)):null;
   const left=fit?`<button type="button" class="btn ghost" data-k="back">Terug</button>`:st.mode==='ask'?`<button type="button" class="btn ghost" data-k="later">Later</button>`:st.mode==='edit'?`<button type="button" class="btn ghost" data-k="cancel">Annuleren</button>`:'<span></span>';
   const right=fit?`<button type="button" class="btn" data-k="save" ${f?'':'disabled'}>${f?(f.id.startsWith('set:')||f.id==='eigen'?'Klaar':'Kies '+esc(f.n)):'Kies een outfit'}</button>`
-    :st.first&&startFits().length?`<button type="button" class="btn" data-k="next">Verder<span class="kar-wide">: startoutfit</span></button>`:`<button type="button" class="btn" data-k="save">Opslaan</button>`;
+    :st.first&&startFits().length?`<button type="button" class="btn" data-k="next"><span class="kar-wide">Verder: startoutfit</span><span class="kar-narrow">Verder</span></button>`:`<button type="button" class="btn" data-k="save">Opslaan</button>`;
   F.innerHTML=left+right}
 function head(){const fit=st.step==='fit';const T=fit?['Eén keer gratis','Kies je startoutfit','Je kunt hem later gewoon uittrekken.']
    :st.mode==='new'?['Nieuw dossier','Maak je karakter','Zo zien ze je, in het klikspel en in de Pixelstad.']
@@ -300,7 +300,7 @@ function draw(focus){if(!dlg)return;head();dlg.classList.toggle('kar-s2',st.step
 // kleine voorbeelden bij kapsel, uitstraling, mond en baard: jouw gezicht met die keuze (klikspel: pop, Pixelstad: pixels)
 function thumbs(changed){if(!dlg||st.step!=='look')return;if(changed)upLegend(changed);
   const px=isStad();dlg.querySelectorAll('[data-th]').forEach(el=>{const [k,v]=el.dataset.th.split(':'),ch=Object.assign({},st.ch,{[k]:v});if(changed&&k===changed&&el.firstChild)return; // eigen groep: hangt niet af van je keuze daar
-    if(px){const big=face(pixLook(ch,{}),null),cv=document.createElement('canvas');cv.width=30;cv.height=34;const x=cv.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(big,9,2,30,34,0,0,30,34);el.innerHTML='';el.appendChild(cv)}
+    if(px){const big=face(pixLook(ch,{}),null),cv=document.createElement('canvas');cv.width=30;cv.height=32;const x=cv.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(big,9,3,30,32,0,0,30,32);el.innerHTML='';el.appendChild(cv)}
     else el.innerHTML=typeof dollSvg==='function'?dollSvg({},{vb:k==='hs'?'72 8 56 64':'76 30 48 50',char:ch,label:''}):''})}
 function upLegend(k){const L=dlg.querySelector('.kar-g-'+k+' legend em');if(L)L.textContent=(KAR_OPT[k].find(x=>x[0]===st.ch[k])||[])[1]||''}
 function preview(){if(!dlg)return;const w=curWear();face(Object.assign(pixLook(st.ch,w),{bg:'#14171c'}),null,document.getElementById('karPix'));
@@ -324,8 +324,7 @@ function p3(host){const TH=window.THREE,G=window.STAD;if(!TH||!G||!G.avatarMake|
   const loop=t=>{const dt=Math.min(.05,(t-lt)/1000);lt=t;if(!drag&&!still)ry+=dt*.55;if(m)m.rotation.y=ry;r.render(sc,cam);raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
   const cv=r.domElement;cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,r:ry};try{cv.setPointerCapture(e.pointerId)}catch(x){}});
   cv.addEventListener('pointermove',e=>{if(drag)ry=drag.r+(e.clientX-drag.x)*.012});const up=()=>{drag=null};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
-  return {dbg(){const b=m?new TH.Box3().setFromObject(m):null;return {cam:cam.position.toArray(),fov:cam.fov,aspect:cam.aspect,w:host.clientWidth,h:host.clientHeight,cw:cv.width,ch:cv.height,box:b?[b.min.toArray(),b.max.toArray()]:null,fr}},
-    frame(step){const f=step==='look'?[2,2.15,1.75]:[1.32,3.05,1.6];if(f[0]!==fr[0]){fr=f;fit()}},
+  return {frame(step){const f=step==='look'?[2,2.15,1.75]:[1.32,3.05,1.6];if(f[0]!==fr[0]){fr=f;fit()}},
     set(ch,wear){let g=null;try{g=G.avatarMake({char:ch,wear})}catch(e){console.error(e)}if(!g)return;if(m)sc.remove(m);m=g;m.rotation.y=ry;sc.add(m)},
     stop(){cancelAnimationFrame(raf);if(ro)ro.disconnect();if(m)sc.remove(m);try{r.dispose();r.forceContextLoss&&r.forceContextLoss()}catch(e){}cv.remove()}}}
 
@@ -360,7 +359,7 @@ function autoTry(n){if(st.open||typeof S==='undefined'||!S||S.charDone)return;co
   if(busy){if(n<60)setTimeout(()=>autoTry(n+1),1500);return}open()}
 setTimeout(()=>autoTry(0),900);
 
-window.KAR={open,close,face,dollHead,look:pixLook,get:karGet,san,shade,mix,OPT:KAR_OPT,DEF:KAR_DEF,p3:()=>st.p3,
+window.KAR={open,close,face,dollHead,look:pixLook,get:karGet,san,shade,mix,OPT:KAR_OPT,DEF:KAR_DEF,
   // Pixelstad: jouw uiterlijk in G.P.look (HUD-poppetje, telefoon, krant): huid, haar en gezicht uit je karakter
   stadLook(v){if(!v||typeof v!=='object')return v;const c=karGet(),old=v.skin;if(v.arm&&v.arm===old)v.arm=c.skin;v.skin=c.skin;v.hair=c.hc;v.hs=c.hs;v.fh=c.fh;v.eye=c.eye;v.mouth=c.mouth;return v}};
 window.karGet=karGet;window.karBust=karBust;window.karPending=karPending;window.karOpen=o=>open(Object.assign({manual:1},o||{}));

@@ -241,9 +241,12 @@ function driveStep(dt){const K=G.K,c=mine;let thr=0,steer=0;
   // versuft: eerst reageert de auto niet, daarna komen gas en stuur langzaam terug (en het stuur trekt een beetje)
   if(DZ.on){const k=clamp((DZ.t/DZ.T-.4)/.6,0,1);thr*=k;steer=steer*k+Math.sin(DZ.t*6.5)*.4*(1-k)}
   const [hl,hw]=dimsOf(c),dm=clamp((c.dmg||0)/100,0,1),max=c.d.max*(K.shift?1.12:1)*(G.carK||1)*(c.flat?.5:1)*(1-.35*dm),acc=1-.3*dm;
-  if(thr>0)c.v+=(c.v<0?18:9*acc)*thr*dt;else if(thr<0)c.v+=(c.v>0?-18:-7*acc)*(-thr)*dt;else c.v*=Math.pow(G.talking?.02:c.dead?.5:.35,dt);
+  // weer: op een natte of besneeuwde weg rem je langer door, rol je verder uit en glijdt de auto in de bocht een beetje naar buiten
+  let gr=1;try{gr=G.weerFx?clamp(+G.weerFx().grip||1,.5,1):1}catch(e){}
+  if(thr>0)c.v+=(c.v<0?18*gr:9*acc)*thr*dt;else if(thr<0)c.v+=(c.v>0?-18*gr:-7*acc)*(-thr)*dt;else c.v*=Math.pow(G.talking?.02:c.dead?.5:.35,dt*(G.talking?1:gr));
   c.v=Math.max(-7,Math.min(max,c.v));if(c.v>max+.5)c.v=max;
-  const turn=steer*Math.min(1,Math.abs(c.v)/5)*(2.1-Math.min(1,Math.abs(c.v)/max)*.8)*Math.sign(c.v||1)*(1-.3*dm);
+  const turn=steer*Math.min(1,Math.abs(c.v)/5)*(2.1-Math.min(1,Math.abs(c.v)/max)*.8)*Math.sign(c.v||1)*(1-.3*dm)*(.85+.15*gr);
+  if(gr<1&&turn&&Math.abs(c.v)>6){const sl=(1-gr)*Math.abs(c.v)*turn*.9*dt;c.kx=(c.kx||0)-Math.cos(c.ry)*sl;c.kz=(c.kz||0)+Math.sin(c.ry)*sl}
   const x0=c.x,z0=c.z;if(!c.safe)c.safe=fits(c.x,c.z,c.ry,hl,hw)?{x:c.x,z:c.z,ry:c.ry}:null;
   c.ry+=turn*dt+(c.spin||0)*dt;if(c.spin){c.spin*=Math.pow(.03,dt);if(Math.abs(c.spin)<.02)c.spin=0}
   let fx=Math.sin(c.ry),fz=Math.cos(c.ry);

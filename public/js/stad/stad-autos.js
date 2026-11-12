@@ -123,7 +123,7 @@ async function breakIn(p,how){const why=kraakWhy();if(why){G.toast(why,'bad');re
   S.stats=S.stats||{};S.stats.stadKraak=(S.stats.stadKraak||0)+1;G.ev&&G.ev('kraak');sv();setTimeout(()=>{if(dist(p,G.P)<3.5&&!mini&&!G.driving)carMenu(p)},350)}
 function search(p){const c=kraakRef(),t=tierOf(p.m),k=(typeof lootMult==='function'?lootMult():1)*(typeof crLootK==='function'?crLootK(c):1)*(1+.25*(t-1)),got=[],z=G.zak?G.zak():[];
   for(let i=0;i<p.loot;i++){const it=pick(LOOT),v=Math.max(5,Math.round(rnd(c.min,c.max)*k*it[1]*.6));if(z.length<6){z.push({n:it[0],v});got.push(it[0])}}
-  let cash=0;if(p.cash){cash=Math.max(5,Math.round(rnd(c.min,c.max)*.25*k));S.cash+=cash;if(typeof addZwart==='function')addZwart(cash)}
+  let cash=0;if(p.cash){cash=Math.max(5,Math.round(rnd(c.min,c.max)*.25*k*lidK()));S.cash+=cash;if(typeof addZwart==='function')addZwart(cash);G.lidFloat&&G.lidFloat(p.x,p.z)}
   p.searched=1;if(typeof addXp==='function')addXp(Math.max(1,Math.round(c.xp*.5)));if(typeof addHeat==='function')addHeat(1);sv();G.snd&&G.snd.fx(got.length?'grab':'coin');
   G.fx2&&G.fx2.float((got.length?got.join(' + ').toLowerCase():'niks bruikbaars')+(cash?' + '+fmt(cash):''),p.x,p.z,got.length||cash?'#ffd35a':'#9aa1ab');
   if(got.length&&(G.zak?G.zak().length:0)>=6)G.toast('Je zakken zitten vol. Verkoop eerst iets bij de heler.','info');
@@ -167,6 +167,7 @@ async function jack(c){const w=jackWhy();if(w){G.toast(w,'bad');return}S.energy-
 const units=id=>typeof bizUnits==='function'?bizUnits(id):[];
 const hasChop=()=>{try{return units('garage').length>0}catch(e){return false}};
 const r10=x=>Math.round(x/10)*10;
+const lidK=()=>{try{return G.lidBonus?G.lidBonus():1}catch(e){return 1}};
 // de plek voor de deur (stoeprand), waar een auto kan staan
 const WERK={};
 function werkAt(id){if(WERK[id])return WERK[id];const p=M.placeById(id);if(!p)return null;const f=p.face,o=f==='S'?[0,1]:f==='N'?[0,-1]:f==='E'?[1,0]:[-1,0];
@@ -210,8 +211,8 @@ const garCap=()=>typeof garageCap==='function'?garageCap():2;
 function toGarage(v){const m=v.stolen.m,cap=garCap();if(S.cars.length>=cap){G.toast('Je garage zit vol ('+cap+'). Verkoop of sloop eerst iets, of breng hem naar de heler of de sloop.','bad');return null}
   const car=carOf(v);S.cars.push(car);credit(m,car);G.removeVehicle(v);clearGoal();G.snd&&G.snd.fx('lvl');G.fx2&&G.fx2.float(m.n+' · '+fmt(car.v),G.P.x,G.P.z,'#ffd35a');
   if(typeof log==='function')log(m.n+' gestolen in de Pixelstad ('+fmt(car.v)+')','ok');sv();G.ev&&G.ev('lever');return car}
-function chopNow(v){const m=v.stolen.m,car=carOf(v);credit(m,car);G.removeVehicle(v);clearGoal();const R=typeof sloopRoll==='function'?sloopRoll(car):{net:Math.round(car.v*.5)},a=R.net;S.cash+=a;if(typeof addZwart==='function')addZwart(a);S.sloopN=(typeof sloopN==='function'?sloopN():S.sloopN||0)+1;
-  G.snd&&G.snd.fx('cash');G.fx2&&G.fx2.float('+'+fmt(a),G.P.x,G.P.z);G.toast(m.n+' gesloopt in je chop shop: '+fmt(a)+' zwart','ok');if(typeof log==='function')log(m.n+' gesloopt in je chop shop ('+fmt(a)+')','ok');G.ev&&G.ev('lever');sv();return a}
+function chopNow(v){const m=v.stolen.m,car=carOf(v);credit(m,car);G.removeVehicle(v);clearGoal();const R=typeof sloopRoll==='function'?sloopRoll(car):{net:Math.round(car.v*.5)},a=r10(R.net*lidK());S.cash+=a;if(typeof addZwart==='function')addZwart(a);S.sloopN=(typeof sloopN==='function'?sloopN():S.sloopN||0)+1;
+  G.snd&&G.snd.fx('cash');G.fx2&&G.fx2.float('+'+fmt(a),G.P.x,G.P.z);G.lidFloat&&G.lidFloat(G.P.x,G.P.z);const lt=G.lidTxt?G.lidTxt():'';G.toast(m.n+' gesloopt in je chop shop: '+fmt(a)+' zwart'+(lt?' ('+lt+')':''),'ok');if(typeof log==='function')log(m.n+' gesloopt in je chop shop ('+fmt(a)+')','ok');G.ev&&G.ev('lever');sv();return a}
 function deliver(pt){if(pt.k==='werk'){werkOpen(pt);return}const v=G.car;if(!v||!v.stolen)return;if(G.police&&G.police.active()){G.toast('Schud eerst de politie af','bad');return}const m=v.stolen.m;
   if(v.dead){G.toast('Total loss. Hier geeft niemand meer iets voor.','bad');return}
   if(pt.k==='heler'){const car=carOf(v);S.cars.push(car);credit(m,car);G.removeVehicle(v);clearGoal();const ci=S.cars.indexOf(car);
@@ -323,13 +324,14 @@ gui.addEventListener('click',e=>{const t=e.target.closest('button');if(e.target=
 addEventListener('keydown',e=>{if(e.key==='Escape'&&!gui.hidden){e.stopImmediatePropagation();garageClose()}},true);
 /* ---------- werkplaats: repareren, overspuiten, valse papieren ----------
  Rij voor de deur van Garage Van der Plaat (of je eigen chop shop) en sta stil: het menu gaat open. Betalen gaat contant (eerst je
- zwarte geld). Repareren = waarde × schade% × 0,25 (minstens G.schaal.zwart(0,6)), overspuiten = 4% van de waarde (minstens
- G.schaal.zwart(1)), valse papieren = 15% (minstens G.schaal.zwart(3)). Elk klusje is een spelletje met eigen vakmanschap
+ zwarte geld). Repareren = waarde × schade% × 0,25 (minstens G.schaal.kost(0,6)), overspuiten = 4% van de waarde (minstens
+ G.schaal.kost(1)), valse papieren = 15% (minstens G.schaal.kost(3)). Elk klusje is een spelletje met eigen vakmanschap
  ('repareren', 'spuiten', 'vervalsen'). Stop je halverwege (Esc of ×), dan krijg je je geld terug; mislukte papieren kosten wel geld.
  - Repareren: elke deuk één klap op het goede moment. Alles raak = schade weg; anders een deel.
  - Overspuiten: houd het spuitpistool op de lijn (drie banen). Hoe netter, hoe minder heet de auto daarna is (tot −85%).
  - Valse papieren: trek de handtekening over voor de tijd op is. Gelukt = geregistreerd: niet meer 'gemeld', 10% meer waard, koud. */
-const zS=k=>G.schaal?G.schaal.zwart(k):Math.round(50*k);
+// prijzen die jij betaalt: de kale schaal (G.schaal.kost, zonder lidbonus); uitbetalingen krijgen de lidbonus (lidK)
+const zS=k=>G.schaal?(G.schaal.kost||G.schaal.zwart)(k):Math.round(50*k);
 const ease=k=>{try{return G.vak?clamp(G.vak.ease(k),0,1):0}catch(e){return 0}};
 const slp=ms=>new Promise(r=>setTimeout(r,ms));
 function recolor(v,col){if(!v||!v.mesh)return;const m=G.carMesh(qcol(col),v.d.kind,false);m.position.copy(v.mesh.position);m.rotation.copy(v.mesh.rotation);m.scale.copy(v.mesh.scale);G.scene().remove(v.mesh);G.scene().add(m);v.mesh=m;v._mat=null;v.d.col=col;G.carLook&&G.carLook(v)}
@@ -379,7 +381,7 @@ function wrender(){if(!W)return;const T=W.T,d=Math.round(T.dmg()),st=T.stolen,ca
     if(st&&!W.chop){const full2=S.cars.length>=garCap(),rep=T.rep(),left=typeof saleLeft==='function'?saleLeft():0;
       end.push({k:'garage',t:'In je garage zetten',ic:K.ic.key,sub:'Waarde '+fmt(val),dis:full2||dead,why:dead?'Total loss':'Je garage zit vol ('+S.cars.length+'/'+garCap()+')'});
       end.push({k:'verkoop',t:'Verkopen',ic:K.ic.sell,sub:'Een koper laten bieden',dis:full2||rep||!left||dead,why:dead?'Total loss':full2?'Je garage zit vol':rep?'Gemeld: eerst valse papieren':'Geen kopers meer dit uur'})}
-    if(st&&W.chop)end.push({k:'sloop',t:'Slopen voor onderdelen',ic:K.ic.build,sub:'± '+fmt(typeof sloopEst==='function'?sloopEst({v:val}):r10(val*.6))+' zwart',dis:dead,why:'Total loss'});
+    if(st&&W.chop)end.push({k:'sloop',t:'Slopen voor onderdelen',ic:K.ic.build,sub:'± '+fmt(r10((typeof sloopEst==='function'?sloopEst({v:val}):val*.6)*lidK()))+' zwart'+(G.lidTxt&&G.lidTxt()?' · '+G.lidTxt():''),dis:dead,why:'Total loss'});
     end.push({k:'weg',t:'Wegrijden',ic:K.ic.route,ghost:1});
     h=head+`<div class="sd-werk-car"><span class="sd-werk-pic"><canvas></canvas></span><div class="sd-werk-st">
       <div class="sd-werk-row"><span>Schade</span><i class="sd-werk-bar dmg${d>=85?' hi':d>=50?' mid':''}"><i style="width:${d}%"></i></i><b>${dead?'total loss':d+'%'}</b></div>

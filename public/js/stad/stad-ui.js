@@ -58,7 +58,10 @@ document.body.classList.add('stad');
 /* ---------- HUD ---------- */
 const wantedLv=()=>{const w=S.wanted;if(!w)return 0;return typeof w==='object'?(w.lv||1):1};
 let avaKey='';
-function avatar(){const L=G.P&&G.P.look;if(!L)return;const k=JSON.stringify(L);if(k===avaKey)return;avaKey=k;const c=$s('sdAva').getContext('2d');
+function avatar(){const L=G.P&&G.P.look;if(!L)return;const ch=typeof KAR!=='undefined'&&KAR.get?KAR.get():null;const k=JSON.stringify(L)+JSON.stringify(ch);if(k===avaKey)return;avaKey=k;const cv=$s('sdAva');
+  // met karakter (karakter.js): hetzelfde pixelportret als in de telefoon, bijgesneden tot het hoofd
+  if(ch&&KAR.face&&KAR.look){try{const big=KAR.face(Object.assign(KAR.look(ch),{bg:'#1a1d23'}),null);cv.width=30;cv.height=30;const x=cv.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(big,9,4,30,30,0,0,30,30);return}catch(e){}}
+  if(cv.width!==12){cv.width=12;cv.height=12}const c=cv.getContext('2d');
   const R=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h)};R(0,0,12,12,'#1a1d23');
   R(1,9,10,3,L.top);R(5,9,2,1,L.skin);R(3,3,6,6,L.skin);R(4,5,1,1,'#15161a');R(7,5,1,1,'#15161a');R(5,7,2,1,'rgba(0,0,0,.25)');
   const hat=L.hat||'none',hc=hat==='none'||hat==='bald'?L.hair:L.hatC;
@@ -171,15 +174,16 @@ function settings(){const s=$s('sdSet');$s('sdHome').hidden=true;s.hidden=false;
   const SK=['#f1caa5','#e9b98f','#d9a27a','#b97a52','#8d5a3a','#6e4630'];
   s.innerHTML=`<button class="sd-back" data-back>← Terug</button><h3>Instellingen</h3>
    <div class="sd-row"><b>Beeld</b><div class="sd-seg">${[[640,'Scherp'],[0,'Normaal'],[340,'Grove pixels']].map(([v,n])=>`<button data-pix="${v}" class="${pix===v?'on':''}">${n}</button>`).join('')}</div></div>
-   <div class="sd-row"><b>Huidskleur</b><div class="sd-sk">${SK.map(c=>`<button data-skin="${c}" style="--c:${c}" class="${skin===c?'on':''}" aria-label="Huidskleur"></button>`).join('')}</div></div>
+   ${typeof KAR!=='undefined'?`<div class="sd-row"><b>Uiterlijk</b><button class="btn sm" data-kar>Uiterlijk aanpassen</button></div>`:`<div class="sd-row"><b>Huidskleur</b><div class="sd-sk">${SK.map(c=>`<button data-skin="${c}" style="--c:${c}" class="${skin===c?'on':''}" aria-label="Huidskleur"></button>`).join('')}</div></div>`}
    <div class="sd-row"><b>Geluid</b><div class="sd-seg"><button data-snd="fx" class="${G.snd&&G.snd.fxOn?'on':''}">Effecten</button><button data-snd="mu" class="${G.snd&&G.snd.muOn?'on':''}">Muziek</button></div></div>
    <div class="sd-row"><b>Volume</b><input type="range" min="0" max="1" step=".05" value="${G.snd?G.snd.vol:.8}" data-vol aria-label="Volume"></div>
-   <div class="sd-row"><b>Tijd van de dag</b><div class="sd-seg">${[['','Echt'],['1','Dag'],['0','Nacht']].map(([v,n])=>`<button data-day="${v}" class="${String(G.forceDay==null?'':G.forceDay)===v?'on':''}">${n}</button>`).join('')}</div></div>
+   <div class="sd-row"><b>Tijd van de dag</b><div class="sd-seg">${[['','Vanzelf'],['1','Dag'],['0','Nacht']].map(([v,n])=>`<button data-day="${v}" class="${String(G.forceDay==null?'':G.forceDay)===v?'on':''}">${n}</button>`).join('')}</div></div>
    <div class="sd-row"><b>Besturing</b><p>${touch?'Stick linksonder om te lopen, ver duwen is rennen. Veeg om de camera te draaien, knijp om te zoomen. Tik op een gebouw en je loopt erheen.':'WASD of pijltjes om te lopen, Shift rennen. E of Spatie: praten met iemand of naar binnen. F: auto in en uit. Z en C draaien de camera, scrollen zoomt. Klik op een gebouw en je loopt erheen. J telefoon, M kaart, Esc terug.'}</p></div>`;
   const vr=s.querySelector('[data-vol]');if(vr)vr.oninput=()=>{G.snd&&G.snd.setVol(+vr.value)};
   s.onclick=e=>{const t=e.target.closest('button');if(!t)return;if(t.dataset.back!=null){s.hidden=true;$s('sdHome').hidden=false;return}
     if(t.dataset.snd&&G.snd){if(t.dataset.snd==='fx')G.snd.setFx(!G.snd.fxOn);else G.snd.setMu(!G.snd.muOn);settings();return}
     if(t.dataset.pix!=null){G.setPix(+t.dataset.pix||0);settings()}
+    if(t.dataset.kar!=null&&typeof KAR!=='undefined'){s.hidden=true;$s('sdHome').hidden=false;$s('sdPhone').hidden=true;KAR.open({manual:1});return}
     if(t.dataset.skin){try{localStorage.setItem('stad_skin',t.dataset.skin)}catch(e){}G.refreshLook&&G.refreshLook();settings()}
     if(t.dataset.day!=null){G.forceDay=t.dataset.day===''?null:+t.dataset.day;try{localStorage.setItem('stad_day',t.dataset.day)}catch(e){}G.applyLight&&G.applyLight();settings()}}}
 try{const d=localStorage.getItem('stad_day');if(d==='0'||d==='1')G.forceDay=+d}catch(e){}

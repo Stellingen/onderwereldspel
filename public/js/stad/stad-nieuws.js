@@ -73,7 +73,7 @@ function render(scr,head){const L=NW(),Q=ST(),f=faam();Q.u=0;const lead=L[0],d=n
    <h5>Verder in de stad</h5>${filler().map(n=>`<div class="sd-kr-i"><b>${E(n[0])}</b><p>${E(n[1])}</p></div>`).join('')}
    <p class="sd-p2-note">${heet()?'Je bent in het nieuws: mensen herkennen je nu sneller. ':''}${f>=30?'De krant kent je naam.':'De krant kent je naam nog niet. Word bekender en ze schrijven hem voluit.'} Met een bivakmuts op blijf je onbekend.</p></div>`;
   const c=scr.querySelector('#sdKrFace');if(c&&lead){const named=f>=30&&lead.m!=='g'||lead.k==='pers'||lead.k==='pos'||lead.k==='rang';const P=G.P&&G.P.look||{};
-    if(named&&K.face)K.face({skin:P.skin,hair:P.hair,top:P.top,hat:P.hat==='mask'?'none':P.hat,hatC:P.hatC,bg:'#cfc8b8'},lead.m==='m'?'boos':'blij',c);
+    if(named&&K.face){const b=typeof KAR!=='undefined'&&KAR.look?KAR.look():{skin:P.skin,hair:P.hair,top:P.top,hat:P.hat,hatC:P.hatC};K.face(Object.assign({},b,{hat:b.hat==='mask'?'none':b.hat,bg:'#cfc8b8'}),lead.m==='m'?'boos':'blij',c)}
     else if(K.face)K.face({skin:'#2a2c30',hair:'#1a1b1e',top:'#1a1b1e',hs:'kort',bg:'#cfc8b8',eye:'#2a2c30',lip:'#2a2c30'},null,c)}sv()}
 /* ---------- krantenbakken op straat ---------- */
 // het plein, het Centrum (bij het politiebureau), de Zuidas, de Westbuurt (bij de sportschool), de haven en de boulevard
