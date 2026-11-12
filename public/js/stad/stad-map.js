@@ -324,8 +324,8 @@ function findPath(ax,az,bx_,bz_){
 function districtAt(x,z){
   if(x>=592&&z>=560)return 'Het Eiland';
   if(z>=548)return 'Het Strand';
-  if(x>=578&&x<614&&z>=176)return 'Havenkanaal';
-  if(x>=612&&z>=176)return z<380?'Villawijk':'Tuinwijk';
+  if(x>=578&&x<614&&z>=172)return 'Havenkanaal';
+  if(x>=612&&z>=172)return z<380?'Villawijk':'Tuinwijk';
   if(z<172){
     if(x<215)return z<102?'De Bajes':'Villapark';
     if(x<390)return z<102?'Noordkade':'Noorderpark';
