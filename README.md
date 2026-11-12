@@ -1456,6 +1456,30 @@ Pixelstad; het klikspel is niet aangepast. Premiejagers zijn op verzoek niet geb
   je loonlijst waarschuwt je en laat één stoep vrij.
 - **Kaart**: het Autokerkhof De Sloop stond half op de weg naar de brug; het staat nu ten noorden van de weg.
 
+### De grote stad: nieuwe indeling (november 2026)
+De Pixelstad is opnieuw opgezet: groter (800 × 660 m in plaats van 576 × 360 m) en met bredere wegen (12 m, met randlijnen en zebrapaden op elke kruising). Alles ligt op één raster (`STAD_MAP.VR` en `HR`).
+
+**Indeling**
+- **Noorden: haven en industrie.**
+  - De Bajes (noordwest) en de Noordkade met het containerterrein en loodsen.
+  - Het Noorderpark.
+  - De Haven: Garage Van der Plaat, Autokerkhof De Sloop, Havenloods 7, hangar en pier met het jacht.
+  - IJ-oever en Bedrijventerrein, met de kavels voor zaken die niet in een woonwijk horen: autobedrijven, transport, groothandel, importeur, haven, jet, rederij en kantoren.
+- **Midden: het Centrum.** De gracht loopt er dwars doorheen, met kades om langs te lopen. Hier liggen:
+  - Het Plein met Café Het Gat;
+  - Casino Royaal, de Onderbank, het politiebureau en de notaris;
+  - Oud-Zuid en de torens van de Zuidas.
+- **Westen:** de Westbuurt (met de sportschool), Villapark en de Westkust.
+- **Zuiden:** de Boulevard met kavels voor winkels, horeca en toerisme, de Spa, een bouwplaats en het strand. In het zuidoosten ligt de Oosterstraat.
+- **Oosten, over het havenkanaal: Oostland, jouw gebied.** Je komt erin via vijf bruggen met een gouden poort. Hier staan je woningen, van kraakpand en kamer tot penthouse aan het kanaal, met de Villawijk en de Tuinwijk (met vijver).
+- **Zuidoost, over de brug: Het Eiland.** Villa Cosa Nostra, de grootste villa's en de woonboot in de jachthaven.
+
+**Voor ontwikkelaars**
+- Wijknamen zijn dezelfde gebleven. Opgeslagen respect, wijken en omkoopgeld blijven dus geldig.
+- Vaste punten staan in `STAD_MAP.A` (bijvoorbeeld `plein`, `bank`, `pier`, `jacht`, `eiland`), gebieden in `STAD_MAP.Z`. Modules gebruiken die in plaats van losse getallen.
+- Een overzichtsplaatje van de kaart maak je met de node-code in `stad-map.js` (puur rekenwerk).
+- Beeld: standaard fijnere pixels (480 lijnen) en minder kleurstapjes (zachtere overgangen).
+
 ### Gangsterspel: camera, verhaal en kraakwerk (november 2026)
 Inspiratie: GTA en Mafia. De Pixelstad blijft een pixelspel, maar speelt nu ook van dichtbij. Het klikspel is niet veranderd.
 - **Camera (stad-cam.js).** Drie standen, wisselen met V, met de cameraknop rechtsboven of in de instellingen van de telefoon:

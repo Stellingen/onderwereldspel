@@ -136,22 +136,21 @@ function groundCanvas(){
     if(t===T.ROAD){const r=hash(X>>1,Y>>1,12);if(r<.012)c=shade(c,.8);else if(r>.994)c=shade(c,1.25)}
     d[o]=cl(c[0]);d[o+1]=cl(c[1]);d[o+2]=cl(c[2]);d[o+3]=a}}
   cx.putImageData(img,0,0);
-  // wegmarkering: streep in het midden (niet op kruisingen), zebrapaden bij elke kruising
+  // wegmarkering: twee banen per richting zijn er niet, wel een brede weg: gestreepte middenlijn, randlijnen en zebrapaden bij elke kruising
   cx.fillStyle='#e8e4d8';
-  const inX=(x)=>M.RX.some(q=>Math.abs(q-x)<=M.RW+M.SW),inZ=(z)=>M.RZ.some(q=>Math.abs(q-z)<=M.RW+M.SW);
-  M.RX.forEach(x=>{for(let z=M.RZ[0];z<M.RZ[3];z+=1){if(inZ(z))continue;if(Math.floor(z/2)%2===0)cx.fillRect(x*GP-1,z*GP,2,GP)}});
-  M.RZ.forEach(z=>{for(let x=M.RX[0];x<340;x+=1){if(inX(x)||(x>=185&&x<197&&false))continue;if(Math.floor(x/2)%2===0)cx.fillRect(x*GP,z*GP-1,GP,2)}});
+  const nearJ=(v,list)=>list.some(q=>Math.abs(q-v)<=M.RW+M.SW+.5);
+  const XSs=M.VR.map(v=>v.x),ZSs=M.HR.map(h=>h.z);
+  M.VR.forEach(v=>{for(let z=v.a;z<v.b;z++){if(nearJ(z,ZSs))continue;if(Math.floor(z/2)%2===0)cx.fillRect(v.x*GP-1,z*GP,2,GP)}
+    for(let z=v.a;z<v.b;z++){if(nearJ(z,ZSs))continue;cx.fillStyle='rgba(232,228,216,.55)';cx.fillRect((v.x-M.RW+.6)*GP,z*GP,1,GP);cx.fillRect((v.x+M.RW-.6)*GP-1,z*GP,1,GP);cx.fillStyle='#e8e4d8'}});
+  M.HR.forEach(h=>{for(let x=h.a;x<h.b;x++){if(nearJ(x,XSs))continue;if(Math.floor(x/2)%2===0)cx.fillRect(x*GP,h.z*GP-1,GP,2)}
+    for(let x=h.a;x<h.b;x++){if(nearJ(x,XSs))continue;cx.fillStyle='rgba(232,228,216,.55)';cx.fillRect(x*GP,(h.z-M.RW+.6)*GP,GP,1);cx.fillRect(x*GP,(h.z+M.RW-.6)*GP-1,GP,1);cx.fillStyle='#e8e4d8'}});
   const zebraV=(x,z)=>{for(let k=-M.RW+1;k<M.RW;k+=1)cx.fillRect((x+k)*GP,z*GP,GP-2,GP*2)};
   const zebraH=(x,z)=>{for(let k=-M.RW+1;k<M.RW;k+=1)cx.fillRect(x*GP,(z+k)*GP,GP*2,GP-2)};
-  M.RX.forEach(x=>M.RZ.forEach(z=>{zebraV(x,z-M.RW-2);zebraV(x,z+M.RW);if(x>M.RX[0])zebraH(x-M.RW-2,z);zebraH(x+M.RW,z)}));
-  // oostkant: zelfde markering
-  const inXE=x=>M.RXE.some(q=>Math.abs(q-x)<=M.RW+M.SW),inZE=z=>M.RZE.some(q=>Math.abs(q-z)<=M.RW+M.SW);
-  M.RXE.forEach(x=>{for(let z=M.RZE[0];z<M.RZE[4];z++){if(inZE(z)||[88,140,192].some(q=>Math.abs(q-z)<=M.RW+M.SW))continue;if(Math.floor(z/2)%2===0)cx.fillRect(x*GP-1,z*GP,2,GP)}});
-  M.RZE.forEach(z=>{for(let x=M.RXE[0];x<M.RXE[2];x++){if(inXE(x))continue;if(Math.floor(x/2)%2===0)cx.fillRect(x*GP,z*GP-1,GP,2)}});
-  [88,140,192].forEach(z=>{for(let x=312;x<M.RXE[0]-M.RW;x++){if(Math.floor(x/2)%2===0)cx.fillRect(x*GP,z*GP-1,GP,2)}});
-  M.RXE.forEach(x=>M.RZE.forEach(z=>{zebraV(x,z-M.RW-2);zebraV(x,z+M.RW);zebraH(x-M.RW-2,z);if(x<M.RXE[2])zebraH(x+M.RW,z)}));
+  M.NET.forEach(n=>{const has=(dx,dz)=>n.n.some(m=>Math.sign(m.x-n.x)===dx&&Math.sign(m.z-n.z)===dz);
+    if(n.n.length<3)return;
+    if(has(0,-1))zebraV(n.x,n.z-M.RW-2.5);if(has(0,1))zebraV(n.x,n.z+M.RW+.5);if(has(-1,0))zebraH(n.x-M.RW-2.5,n.z);if(has(1,0))zebraH(n.x+M.RW+.5,n.z)});
   // kade-rand: gele lijn langs het havenwater
-  cx.fillStyle='#d8b23a';for(let z=6;z<H-1;z++)for(let x=300;x<W-1;x++){if(G[z*W+x]===T.DOCK&&(G[z*W+x+1]===T.WATER||G[(z+1)*W+x]===T.WATER||G[(z-1)*W+x]===T.WATER))cx.fillRect(x*GP,z*GP,GP,GP)}
+  cx.fillStyle='#d8b23a';for(let z=1;z<H-1;z++)for(let x=1;x<W-1;x++){if(G[z*W+x]===T.DOCK&&(G[z*W+x+1]===T.WATER||G[(z+1)*W+x]===T.WATER||G[(z-1)*W+x]===T.WATER))cx.fillRect(x*GP,z*GP,GP,GP)}
   // stoeprand: lichte rand op de stoep, donkere goot op de weg
   const R=t=>t===T.ROAD,Wk=t=>t===T.WALK||t===T.PLAZA;
   for(let z=1;z<H-1;z++)for(let x=1;x<W-1;x++){const t=G[z*W+x];if(!Wk(t))continue;
@@ -162,7 +161,7 @@ function groundCanvas(){
   // schuim langs de waterlijn op het strand
   for(let z=1;z<H-1;z++)for(let x=1;x<W-1;x++){if(G[z*W+x]!==T.SAND)continue;if(G[(z+1)*W+x]===T.WATER){for(let k=0;k<GP;k++)if(hash(x*GP+k,z,13)<.7){cx.fillStyle='#f4f1e6';cx.fillRect(x*GP+k,z*GP+GP-1-(hash(x*GP+k,z,14)*2|0),1,1)}}}
   // putdeksels in de weg
-  M.RX.forEach(x=>{for(let z=M.RZ[0]+10;z<M.RZ[3];z+=23){if(M.RZ.some(q=>Math.abs(q-z)<8))continue;const X0=(x+2)*GP,Y0=z*GP;cx.fillStyle='#2a2c30';cx.fillRect(X0-2,Y0-1,5,3);cx.fillRect(X0-1,Y0-2,3,5);cx.fillStyle='#4a4d54';cx.fillRect(X0-1,Y0-1,3,3);cx.fillStyle='#2a2c30';cx.fillRect(X0,Y0-1,1,3)}});
+  M.VR.forEach(v=>{for(let z=v.a+12;z<v.b;z+=29){if(M.HR.some(h=>Math.abs(h.z-z)<10))continue;const X0=(v.x+3)*GP,Y0=z*GP;cx.fillStyle='#2a2c30';cx.fillRect(X0-2,Y0-1,5,3);cx.fillRect(X0-1,Y0-2,3,5);cx.fillStyle='#4a4d54';cx.fillRect(X0-1,Y0-1,3,3);cx.fillStyle='#2a2c30';cx.fillRect(X0,Y0-1,1,3)}});
   // zachte schaduw rond gebouwen en muren op de grond
   const soft=(x0,z0,x1,z1,n)=>{for(let k=n;k>=1;k--){cx.fillStyle=`rgba(0,0,0,${.07})`;cx.fillRect(x0*GP-k,z0*GP-k,(x1-x0)*GP+2*k,(z1-z0)*GP+2*k)}};
   M.buildings.forEach(b=>soft(b.x0,b.z0,b.x1,b.z1,6));M.props.forEach(p=>{if(p.k==='wall')soft(p.x0,p.z0,p.x1,p.z1,4);if(p.k==='container')soft(p.x-(p.rot?1.5:3.5),p.z-(p.rot?3.5:1.5),p.x+(p.rot?1.5:3.5),p.z+(p.rot?3.5:1.5),3);if(p.k==='hedge')soft(p.x-1,p.z-1,p.x+1,p.z+1,2)});
@@ -170,11 +169,12 @@ function groundCanvas(){
   M.places.forEach(p=>{if(!p.rect||p.dyn==='plot')return;const r=p.rect;for(let Y=r.z0*GP;Y<r.z1*GP;Y++)for(let X=r.x0*GP;X<r.x1*GP;X++){const n=hash(X,Y,21);cx.fillStyle=n<.08?'#4a3e30':n>.9?'#8a7a62':'#6b5c48';cx.fillRect(X,Y,1,1)}
     cx.strokeStyle='#9a968c';cx.lineWidth=2;cx.strokeRect(r.x0*GP+1,r.z0*GP+1,(r.x1-r.x0)*GP-2,(r.z1-r.z0)*GP-2)});
   M.places.forEach(p=>{if(p.dyn!=='plot'||p.zone==='boot'||p.zone==='brug')return;const r=p.rect;cx.fillStyle='#8a6a42';for(let x=r.x0*GP;x<r.x1*GP;x+=3){cx.fillRect(x,r.z0*GP,2,1);cx.fillRect(x,r.z1*GP-1,2,1)}for(let z=r.z0*GP;z<r.z1*GP;z+=3){cx.fillRect(r.x0*GP,z,1,2);cx.fillRect(r.x1*GP-1,z,1,2)}});
-  // tuinpaden in het park
-  cx.fillStyle=css(C.path);[[6,114,23,116],[37,62,73,64],[54,43,56,81],[123,17,185,19],[150,6,152,29],[6,17,46,19]].forEach(([a,b,c,e])=>cx.fillRect(a*GP,b*GP,(c-a)*GP,(e-b)*GP));
-  // parkeervakken voor het politiebureau, plein-cirkel
-  cx.strokeStyle='#e8e4d8';cx.lineWidth=1;[142,150,158,166].forEach(x=>{cx.beginPath();cx.moveTo(x*GP+.5,125*GP);cx.lineTo(x*GP+.5,132*GP);cx.stroke()});
-  cx.fillStyle='#b4a894';for(let a=0;a<64;a++){const t=a/64*Math.PI*2;cx.fillRect(Math.round((229+Math.cos(t)*6)*GP),Math.round((119+Math.sin(t)*6)*GP),GP,GP)}
+  // tuinpaden in de parken (een kruis door elk park-blok)
+  cx.fillStyle=css(C.path);if(M.Z){const pk=M.Z.park;cx.fillRect(pk[0]*GP,((pk[1]+pk[3])/2-1)*GP,(pk[2]-pk[0])*GP,2*GP);[.3,.7].forEach(f=>cx.fillRect((pk[0]+(pk[2]-pk[0])*f-1)*GP,pk[1]*GP,2*GP,(pk[3]-pk[1])*GP))}
+  cx.fillRect(18*GP,176*GP,2*GP,339*GP);
+  // parkeervakken voor het politiebureau, cirkel rond het standbeeld op het plein
+  const pol=M.placeById('politie');if(pol){cx.strokeStyle='#e8e4d8';cx.lineWidth=1;for(let x=pol.x0+4;x<pol.x1-2;x+=8){cx.beginPath();cx.moveTo(x*GP+.5,(pol.z1+1)*GP);cx.lineTo(x*GP+.5,(pol.z1+9)*GP);cx.stroke()}}
+  const st=M.props.find(p=>p.k==='statue');if(st){cx.fillStyle='#b4a894';for(let a=0;a<96;a++){const t=a/96*Math.PI*2;cx.fillRect(Math.round((st.x+Math.cos(t)*8)*GP),Math.round((st.z+Math.sin(t)*8)*GP),GP,GP)}}
   return cv}
 // kleine kaart (1 pixel per meter) voor de minikaart en de grote kaart
 function mapCanvas(){const cv=document.createElement('canvas');cv.width=W;cv.height=H;const cx=cv.getContext('2d'),img=cx.createImageData(W,H),d=img.data;
@@ -260,7 +260,10 @@ function buildCity(){
     if(isW(x+1,z))gb.quad([x+1,y0,z+1],[x+1,y0,z],[x+1,0,z],[x+1,0,z+1],0,0,.25,.33,QUAY);
     if(isW(x-1,z))gb.quad([x,y0,z],[x,y0,z+1],[x,0,z+1],[x,0,z],0,0,.25,.33,QUAY)}
   // bruggen: reling en een stenen rand
-  M.bridges.forEach(b=>{const st=swatch(PROPC.stone),ir=swatch('#2a2d32');gb.box(b.x0,-.9,b.z0,b.x1,.05,b.z0+.6,st);gb.box(b.x0,-.9,b.z1-.6,b.x1,.05,b.z1,st);
+  M.bridges.forEach(b=>{const st=swatch(PROPC.stone),ir=swatch('#2a2d32');
+    if(b.v){gb.box(b.x0,-.9,b.z0,b.x0+.6,.05,b.z1,st);gb.box(b.x1-.6,-.9,b.z0,b.x1,.05,b.z1,st);gb.box(b.x0,0,b.z0,b.x0+.25,1.0,b.z1,ir,{});gb.box(b.x1-.25,0,b.z0,b.x1,1.0,b.z1,ir);
+      for(let z=b.z0;z<=b.z1;z+=2){gb.box(b.x0,0,z-.15,b.x0+.35,1.1,z+.15,st);gb.box(b.x1-.35,0,z-.15,b.x1,1.1,z+.15,st)}return}
+    gb.box(b.x0,-.9,b.z0,b.x1,.05,b.z0+.6,st);gb.box(b.x0,-.9,b.z1-.6,b.x1,.05,b.z1,st);
     gb.box(b.x0,0,b.z0,b.x1,1.0,b.z0+.25,ir,{});gb.box(b.x0,0,b.z1-.25,b.x1,1.0,b.z1,ir);for(let x=b.x0;x<=b.x1;x+=2){gb.box(x-.15,0,b.z0,x+.15,1.1,b.z0+.35,st);gb.box(x-.15,0,b.z1-.35,x+.15,1.1,b.z1,st)}});
   // spullen
   M.props.forEach((p,pi)=>{const r=hash(pi,3,3);switch(p.k){
@@ -304,7 +307,7 @@ function buildCity(){
      for(let k=0;k<L*2;k++){const o=-L/2+k*.5+.1,h=.7+hash(k,p.v,41)*.7,y=.5+hash(k,p.v,42)*.3;
        if(p.ns){gb.box(p.x,y,p.z+o,p.x+.05,y+h,p.z+o+.42,a);if(hash(k,p.v,43)<.5)gb.box(p.x+.02,y+.2,p.z+o+.1,p.x+.07,y+h-.15,p.z+o+.32,b)}
        else{gb.box(p.x+o,y,p.z,p.x+o+.42,y+h,p.z+.05,a);if(hash(k,p.v,43)<.5)gb.box(p.x+o+.1,y+.2,p.z+.02,p.x+o+.32,y+h-.15,p.z+.07,b)}}break}
-   case 'arch':{const g=swatch('#d6a63e'),dk=swatch('#2a2c30');[-6,6].forEach(o=>{gb.cbox(p.x,p.z+o,1.1,1.1,0,6.4,dk);gb.cbox(p.x,p.z+o,1.3,1.3,6.4,6.8,g)});gb.box(p.x-.5,5.6,p.z-6.6,p.x+.5,6.6,p.z+6.6,dk);gb.box(p.x-.55,6.6,p.z-6.6,p.x+.55,6.8,p.z+6.6,g);break}
+   case 'arch':{const g=swatch('#d6a63e'),dk=swatch('#2a2c30'),o2=M.RW+2;[-o2,o2].forEach(o=>{gb.cbox(p.x,p.z+o,1.1,1.1,0,7.4,dk);gb.cbox(p.x,p.z+o,1.3,1.3,7.4,7.8,g)});gb.box(p.x-.5,6.6,p.z-o2-.6,p.x+.5,7.6,p.z+o2+.6,dk);gb.box(p.x-.55,7.6,p.z-o2-.6,p.x+.55,7.8,p.z+o2+.6,g);break}
    case 'wreck':{const cols=['#7a4a32','#5a5d63','#8a3b2a','#3a5f7a','#6a6a40','#4a3a2a'];for(let k=0;k<p.h;k++){const c=swatch(cols[(p.v+k)%6]),y=k*.75;gb.box(p.x-1,y,p.z-2.1+(k%2)*.2,p.x+1,y+.7,p.z+2.1-(k%2)*.2,c,{top:swatch(cols[(p.v+k+2)%6])})}break}
    case 'gate':{gb.box(p.x-3,0,p.z-.6,p.x+3,4.6,p.z+.6,swatch('#2c2e32'),{});for(let x=p.x-2.6;x<p.x+3;x+=.7)gb.box(x,0,p.z+.6,x+.18,4.4,p.z+.8,swatch('#55585e'));gb.box(p.x-3.4,4.6,p.z-.8,p.x+3.4,5.3,p.z+.8,swatch('#3a3c40'));break}
   }});

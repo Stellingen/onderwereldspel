@@ -258,6 +258,54 @@ function games(N) {
 </section>`;
 }
 
+/* ================= Pixelstad (voor leden) ================= */
+// Het pixelplaatje van de stad uit stad-entry.js (art()), hier als los stilstaand beeld. Geen scripts, geen beelden van buiten.
+function stadArt() {
+  let s = '<svg class="lp-stad__svg" viewBox="0 0 120 50" preserveAspectRatio="xMidYMax slice" shape-rendering="crispEdges" aria-hidden="true" focusable="false">';
+  s += '<rect width="120" height="50" fill="#141a2a"/><rect y="30" width="120" height="20" fill="#0e1220"/>';
+  const B = [[2, 22, 10, '#3a2a3a'], [13, 14, 9, '#2b3550'], [23, 26, 12, '#4a2f2a'], [36, 8, 10, '#1b1519'], [47, 20, 11, '#2f4a36'], [59, 12, 8, '#29597d'], [68, 24, 13, '#5a4a3a'], [82, 16, 9, '#3a3d42'], [92, 6, 10, '#2c6a66'], [103, 20, 15, '#4d2f26']];
+  B.forEach(([x, y, w, c], i) => {
+    s += `<rect x="${x}" y="${y}" width="${w}" height="${50 - y}" fill="${c}"/>`;
+    for (let yy = y + 2; yy < 44; yy += 3) for (let xx = x + 1; xx < x + w - 1; xx += 3) { const on = ((xx * 7 + yy * 13 + i) % 5) < 2; s += `<rect x="${xx}" y="${yy}" width="1" height="1" fill="${on ? (i === 3 ? '#ff4fd8' : '#ffd98a') : '#0a0c12'}"/>`; }
+  });
+  s += '<rect y="46" width="120" height="4" fill="#2a2c33"/><rect x="0" y="47" width="120" height="1" fill="#3a3c44"/>';
+  for (let x = 4; x < 120; x += 10) s += `<rect x="${x}" y="48" width="4" height="1" fill="#e8e4d8"/>`;
+  // jij, een auto met koplampen en verderop een zwaailicht
+  s += '<rect x="57" y="40" width="3" height="3" fill="#d9a27a"/><rect x="56" y="43" width="5" height="3" fill="#ff7a1a"/><rect x="57" y="46" width="1" height="2" fill="#1d2531"/><rect x="59" y="46" width="1" height="2" fill="#1d2531"/>';
+  s += '<rect x="30" y="44" width="10" height="3" fill="#8a2b2b"/><rect x="32" y="42" width="5" height="2" fill="#5e1f1f"/><rect x="40" y="45" width="1" height="1" fill="#ffe9a6"/><rect x="31" y="47" width="2" height="1" fill="#0a0c12"/><rect x="37" y="47" width="2" height="1" fill="#0a0c12"/>';
+  s += '<rect x="96" y="44" width="9" height="3" fill="#d8d6d0"/><rect x="98" y="42" width="4" height="2" fill="#a9b4c4"/><rect x="99" y="41" width="1" height="1" fill="#4d7dff" class="lp-stad__zw"/><rect x="100" y="41" width="1" height="1" fill="#ff5060"/><rect x="97" y="47" width="2" height="1" fill="#0a0c12"/><rect x="102" y="47" width="2" height="1" fill="#0a0c12"/>';
+  return s + '</svg>';
+}
+// o.lid: op /lidmaatschap (zonder knoppen; de pagina heeft ze al). Ingelogd past lp-home.js de knoppen aan (data-li="stadCta").
+function pixelstad(N, o) {
+  o = o || {};
+  const T = [
+    ['straat', 'Op straat, achter het stuur.', 'Lopen, rennen of rijden. In je eigen auto, of in een die je net hebt gestolen.'],
+    ['jij', 'Kraakwerk met je eigen handen.', 'Een slot openpeuteren, een kluis kraken op gehoor, een auto kortsluiten tegen de klok. Hoe vaker je het doet, hoe beter je wordt.'],
+    ['macht', 'Ome Joop heeft een klus.', 'Verhaalmissies van Ome Joop in Café Het Gat, Kees Brouwer in de haven en Madame Lin in Casino Royaal. En De Slang zit je dwars.'],
+    ['leven', 'Langs de bewaking.', 'Zakkenrollen in de drukte, sluipen buiten het zicht van de bewakers. Gaat het mis, dan beslissen je vuisten.'],
+    ['politie', 'De politie zit erachter.', 'Achtervolgingen en wegversperringen. Of je koopt de wijkagent om.'],
+    ['geld', 'Een stad die je kent.', '72 bewoners met een eigen gezicht en eigen banden. De Grachtenbode schrijft over je. Wijken hebben een baas, en die kun je overnemen.']];
+  const cta = o.lid ? '' : `<div class="lp-stad__cta" data-li="stadCta"><a class="btn btn--lg" href="/start" data-auth="register" data-cta="stad">Speel gratis</a> ${tlink('/lidmaatschap', 'Wat krijg je als lid')}</div>`;
+  return `<section class="lp-sec lp-stad${o.lid ? ' lp-stad--lid' : ''}" id="pixelstad" aria-labelledby="h-stad">
+ <div class="lp-wrap">
+  <div class="lp-sec__head">${kicker('Pixelstad · voor leden', 'jij')}<h2 class="lp-h2" id="h-stad">Zelfde stad. <em>Nu loop je er zelf doorheen.</em></h2>
+   <div><p class="lp-lede">Een open stad in pixelstijl, met dezelfde voortgang als het klikspel. Je loopt, rijdt en kraakt zelf: van bovenaf, over je schouder of door je eigen ogen.</p>
+   <p class="lp-stad__regel">In het klikspel regel je het. In de Pixelstad doe je het zelf.</p></div></div>
+  <div class="lp-stad__grid">
+   <figure class="lp-stad__beeld dossier">${stadArt()}<figcaption><span>Dag en nacht op Nederlandse tijd</span><span>Wisselend weer</span><span>Eigen grond om uit te bouwen</span></figcaption></figure>
+   <ul class="lp-stad__tegels">${T.map(t => `<li class="kaart" style="--w:var(--w-${t[0]})"><h3>${t[1]}</h3><p>${t[2]}</p></li>`).join('')}</ul>
+  </div>
+  <div class="lp-stad__box">
+   <div class="lp-stad__boxtxt"><p class="lp-stad__tags"><i class="lp-tag lp-tag--vip">VIP</i> <i class="lp-tag lp-tag--hr">HIGH ROLLER</i></p>
+    <p><b>Alleen voor VIP en High roller.</b> Het klikspel is en blijft gratis: alle klussen, rangen en families. De Pixelstad is voor leden. Betalen kan nog niet; zodra het kan, zie je het hier.</p></div>
+   ${cta}
+   <p class="lp-stad__klein">Zelfde account en voortgang · Alleen spelgeld · Pc en telefoon</p>
+  </div>
+ </div>
+</section>`;
+}
+
 /* ================= Loopbaan ================= */
 const haltRows = h => `<dl><div><dt>Klus</dt><dd>${esc(h.crime.n)} · <span class="num">${eur(h.crime.min)}–${eur(h.crime.max)}</span></dd></div><div><dt>Je slaapt</dt><dd>${esc(h.home.n)} · ${esc(h.home.place)}</dd></div><div><dt>Je kleren</dt><dd>${esc(h.street)}</dd></div></dl>`;
 function halte(h, cls, N) {
@@ -327,8 +375,8 @@ function faqList(N) {
   return [
     ['Wat is ' + B + '?', `Een gratis Nederlands maffiaspel in je browser. Je begint als ${esc(N.first)} met ${eur(N.startCash)} spelgeld en werkt je via ${N.ranks} rangen op tot ${esc(N.last)}: ${N.crimes} klussen, vluchtpartijen die je zelf speelt, auto's, ${N.fams} families, zaken, een woning en training. Alles is verzonnen.`],
     ['Vanaf welke leeftijd?', 'Het spel is voor 16 jaar en ouder, want het gaat over misdaad. Het casino in het spel is voor 18+. Alle namen, families en verhalen zijn verzonnen.'],
-    ['Kost het iets?', 'Nee. Spelen is gratis en blijft gratis. Binnenkort kun je er vrijwillig VIP of High roller bij nemen; betalen kan nu nog niet. Codes in het spel kosten geen echt geld.'],
-    ['Is het pay-to-win?', 'Nu is er niets te koop. Straks geven VIP en High roller voordelen in het spel, zoals meer slaagkans en kortere wachttijden (<a href="/lidmaatschap">alles op een rij</a>). Elke rang is ook gratis te halen, en alles blijft spelgeld.'],
+    ['Kost het iets?', 'Het klikspel niet: dat is gratis en blijft gratis. De Pixelstad, waar je zelf door de stad loopt, is voor VIP en High roller. Betalen kan nog niet. Codes in het spel kosten geen echt geld.'],
+    ['Is het pay-to-win?', 'Nu is er niets te koop. Straks geven VIP en High roller de Pixelstad en voordelen in het spel, zoals meer slaagkans en kortere wachttijden (<a href="/lidmaatschap">alles op een rij</a>). Elke rang is ook gratis te halen, en alles blijft spelgeld.'],
     ['Speel ik met echt geld?', 'Nee. Alle bedragen zijn virtueel spelgeld. Je kunt geen echt geld inzetten, winnen of uitbetalen, ook niet in het casino.'],
     ['Moet ik iets downloaden?', `Nee. Je speelt in je browser, op de computer en op je telefoon. Op je telefoon kun je ${B} ook op je beginscherm zetten, dan opent hij als een app.<span data-faq-app></span>`],
     ['Wordt mijn voortgang bewaard?', 'Ja. Je voortgang staat op de server bij je account, dus je kunt op een ander apparaat inloggen en verder spelen. Je speelt op één apparaat tegelijk: open je het spel ergens anders, dan gaat het daar verder.'],
@@ -337,8 +385,8 @@ function faqList(N) {
     ['Lijkt het op Omerta?', 'Een beetje: je klimt in rang met klussen. Maar hier speel je de vluchtpartijen zelf, en het speelt zich af in Amsterdam.']];
 }
 function eerlijk(N) {
-  const wel = ['Gratis spelen', 'Je voortgang op de server, op elk apparaat', 'Zonder download, ook als app op je beginscherm', `${N.crimes} klussen, ${N.ranks} rangen, ${N.fams} families`, 'Alleen een naam en wachtwoord, geen e-mail'];
-  const niet = ['Geen echt geld: niet inzetten, niet winnen, niet uitbetalen', 'Nu niets te koop met echt geld; VIP en High roller komen later, vrijwillig', 'Geen echte personen of gebeurtenissen'];
+  const wel = ['Het hele klikspel gratis', 'Je voortgang op de server, op elk apparaat', 'Zonder download, ook als app op je beginscherm', `${N.crimes} klussen, ${N.ranks} rangen, ${N.fams} families`, 'Alleen een naam en wachtwoord, geen e-mail'];
+  const niet = ['Geen echt geld: niet inzetten, niet winnen, niet uitbetalen', 'Niet alles gratis: de Pixelstad is voor VIP en High roller. Betalen kan nog niet', 'Geen echte personen of gebeurtenissen'];
   return `<section class="lp-sec lp-eerlijk" id="faq" aria-labelledby="h-eerlijk">
  <div class="lp-wrap">
   <div class="lp-sec__head">${kicker('Eerlijk is eerlijk')}<h2 class="lp-h2" id="h-eerlijk">Wat je wel en niet krijgt.</h2></div>
@@ -397,11 +445,11 @@ var a=document.querySelector('.lp-plan--gratis .lp-plan__gratis');if(a){a.href='
 // op de voorpagina: rustig blok met de drie lidmaatschappen en een link naar alles
 function lidTeaser(N) {
   const L = LIDD(); if (!L) return '';
-  const top = { 0: ['Alle klussen, rangen en families', 'Alle minigames en het casino'], 1: ['Slaagkans ×1,15, +10% buit', 'Wachttijden 75%'], 2: ['Slaagkans ×1,4, +25% buit', 'Wachttijden 55%'] };
+  const top = { 0: ['Het hele klikspel: klussen, rangen, families', 'Alle minigames en het casino'], 1: ['De Pixelstad', 'Slaagkans ×1,15, +10% buit', 'Wachttijden 75%'], 2: ['De Pixelstad', 'Slaagkans ×1,4, +25% buit', 'Wachttijden 55%'] };
   return `<section class="lp-sec lp-lidblok" id="lidmaatschap" aria-labelledby="h-lid">
  <div class="lp-wrap">
   <div class="lp-sec__head">${kicker('Lidmaatschap', 'jij')}<h2 class="lp-h2 lp-lidblok__h" id="h-lid">Gratis. <em>Of net iets meer.</em></h2>
-   <p class="lp-lede">${esc(N.brand || 'Onderwereld')} is gratis en blijft gratis. Binnenkort kun je er VIP of High roller bij nemen: sneller vooruit, meer ruimte. Betalen kan nog niet.</p></div>
+   <p class="lp-lede">Het klikspel is gratis en blijft gratis. De Pixelstad, waar je zelf door de stad loopt, is voor VIP en High roller. Betalen kan nog niet. Daarnaast gaat alles wat sneller en heb je meer ruimte.</p></div>
   <ul class="lp-lidrij">${L.TIERS.map((t, i) => `<li class="lp-lidmini lp-lidmini--${t.id}">${lidTag(t, i)}<b>${esc(t.n)}</b><span class="lp-lidmini__p">${L.eur(t.price)}<small>${i ? ' per maand' : ' voor altijd'}</small></span><ul>${top[i].map(x => `<li>${esc(x)}</li>`).join('')}</ul></li>`).join('')}</ul>
   <p class="lp-lidblok__voet">${tlink('/lidmaatschap', 'Alle voordelen vergelijken')}<span class="lp-note">Prijzen voorlopig.</span></p>
  </div>
@@ -412,18 +460,18 @@ function lidPage(N) {
   const L = LIDD(); if (!L) return '';
   const B = esc(N.brand || 'Onderwereld');
   const vragen = [
-    ['Moet ik betalen om te spelen?', `Nee. ${B} is gratis en blijft gratis. Alle ${N.crimes} klussen, ${N.ranks} rangen, ${N.fams} families en de minigames zijn zonder lidmaatschap te spelen, en je kunt elke rang gratis halen.`],
+    ['Moet ik betalen om te spelen?', `Nee. Het klikspel is gratis en blijft gratis. Alle ${N.crimes} klussen, ${N.ranks} rangen, ${N.fams} families en de minigames zijn zonder lidmaatschap te spelen, en je kunt elke rang gratis halen. De Pixelstad, waar je zelf door de stad loopt, is voor VIP en High roller. Betalen kan nog niet.`],
     ['Kan ik al betalen?', 'Nee, nog niet. De knoppen laten alleen zien hoe het straks werkt. Er wordt niets afgeschreven en er verandert niets aan je account. De prijzen zijn voorlopig.'],
-    ['Wat geeft een lidmaatschap precies?', 'Voordelen in het spel: meer slaagkans en buit, kortere wachttijden, meer straatcredit, betere rente en meer ruimte bij de bank, en meer plek voor je zaken en woningen. In de tabel hierboven staat alles, met de echte getallen uit het spel.'],
+    ['Wat geeft een lidmaatschap precies?', 'De Pixelstad, met hetzelfde account en dezelfde voortgang. En voordelen in het klikspel: meer slaagkans en buit, kortere wachttijden, meer straatcredit, betere rente en meer ruimte bij de bank, en meer plek voor je zaken en woningen. In de tabel hierboven staat alles, met de echte getallen uit het spel.'],
     ['En in het casino?', 'Hogere inzetlimieten, langer spelen en cashback op je inzet. De kasten betalen gemiddeld iets meer terug (zie RTP in de tabel). Het casino is alleen spelgeld en voor 18+: je kunt niets winnen of uitbetalen, ook niet met een lidmaatschap.'],
     ['Speel ik met een lidmaatschap om echt geld?', 'Nee. Alles in het spel blijft virtueel spelgeld. Een lidmaatschap verandert daar niets aan.']];
   return `<section class="lp-lidhero" aria-labelledby="h1">
  <div class="lp-wrap">
   ${kicker('Lidmaatschap', 'jij')}
   <h1 class="lp-h1 lp-lidhero__h" id="h1"><span>Gratis spelen.</span> <span><em>Of net iets meer.</em></span></h1>
-  <p class="lp-lede">${B} is gratis en blijft gratis. Wie wil, neemt straks VIP of High roller: alles gaat wat sneller en je hebt meer ruimte. Hieronder staat precies wat je krijgt.</p>
+  <p class="lp-lede">Het klikspel is gratis en blijft gratis. De Pixelstad, waar je zelf door de stad loopt, is voor VIP en High roller. Betalen kan nog niet. Met een lidmaatschap gaat ook in het klikspel alles wat sneller en heb je meer ruimte. Hieronder staat precies wat je krijgt.</p>
   <div class="lp-lidhero__cta"><a class="btn btn--lg" id="heroCta" href="/start" data-auth="register" data-cta="lid-hero">Speel gratis</a> <a class="tlink" href="#vergelijking">Alles naast elkaar${ic('arrow')}</a></div>
-  <ul class="lp-feitjes" aria-label="In het kort"><li>Spel blijft gratis</li><li>Betalen kan nog niet</li><li>Alleen spelgeld</li><li>${age(16)}</li></ul>
+  <ul class="lp-feitjes" aria-label="In het kort"><li>Klikspel blijft gratis</li><li>Betalen kan nog niet</li><li>Alleen spelgeld</li><li>${age(16)}</li></ul>
  </div>
 </section>
 <section class="lp-sec lp-lidplans" aria-label="De drie lidmaatschappen">
@@ -432,6 +480,7 @@ function lidPage(N) {
   <p class="lp-lidpay"><b>Betalen kan nog niet.</b> De prijzen zijn voorlopig, per maand en inclusief btw. Tik je op een knop, dan zie je alleen een melding.</p>
  </div>
 </section>
+${pixelstad(N, { lid: true })}
 <section class="lp-sec lp-lidcmp" id="vergelijking" aria-labelledby="h-cmp">
  <div class="lp-wrap">
   <div class="lp-sec__head">${kicker('Alles naast elkaar', 'jij')}<h2 class="lp-h2" id="h-cmp">${L.nRows()} voordelen. <em>Echte getallen.</em></h2>
@@ -448,10 +497,10 @@ ${lidScript()}`;
 
 function page(N, o) {
   o = o || {};
-  return hero(N, o) + lus(N) + grind(N) + games(N) + loopbaan(N) + imperium(N) + casino(N) + lidTeaser(N) + eerlijk(N) + slot(N);
+  return hero(N, o) + lus(N) + grind(N) + games(N) + pixelstad(N, o) + loopbaan(N) + imperium(N) + casino(N) + lidTeaser(N) + eerlijk(N) + slot(N);
 }
 
-const LPV = { facts, page, lidPage, lidTeaser, hero, lus, grind, games, loopbaan, imperium, casino, eerlijk, slot, faqList, klimSvg, gangSvg, haltRows, LP_GANG };
+const LPV = { facts, page, lidPage, lidTeaser, pixelstad, hero, lus, grind, games, loopbaan, imperium, casino, eerlijk, slot, faqList, klimSvg, gangSvg, haltRows, LP_GANG };
 root.LPV = LPV;
 if (typeof module !== 'undefined' && module.exports) module.exports = LPV;
 })(typeof window !== 'undefined' ? window : this);

@@ -57,8 +57,8 @@ G.init=function(host){
   ground=new TH.Mesh(new TH.PlaneGeometry(M.W,M.H),new TH.MeshLambertMaterial({map:gtex,alphaTest:.5}));ground.rotation.x=-Math.PI/2;ground.position.set(M.W/2,0,M.H/2);ground.receiveShadow=true;scene.add(ground);G.ground=ground;
   const wc=document.createElement('canvas');wc.width=wc.height=32;const wx=wc.getContext('2d');wx.fillStyle='#1f4f6e';wx.fillRect(0,0,32,32);
   for(let i=0;i<46;i++){const x=Math.random()*32|0,y=Math.random()*32|0;wx.fillStyle=Math.random()<.5?'#2f6f92':'#174056';wx.fillRect(x,y,3+(Math.random()*3|0),1)}
-  waterTex=X.nearestTex(wc);waterTex.wrapS=waterTex.wrapT=TH.RepeatWrapping;waterTex.repeat.set(140,120);
-  water=new TH.Mesh(new TH.PlaneGeometry(1000,900),new TH.MeshLambertMaterial({map:waterTex}));water.rotation.x=-Math.PI/2;water.position.set(M.W/2,-.55,M.H/2);water.receiveShadow=true;scene.add(water);
+  waterTex=X.nearestTex(wc);waterTex.wrapS=waterTex.wrapT=TH.RepeatWrapping;waterTex.repeat.set(200,180);
+  water=new TH.Mesh(new TH.PlaneGeometry(1400,1260),new TH.MeshLambertMaterial({map:waterTex}));water.rotation.x=-Math.PI/2;water.position.set(M.W/2,-.55,M.H/2);water.receiveShadow=true;scene.add(water);
   // de stad
   const gb=X.buildCity();const at=X.nearestTex(X.atlas),lt=X.nearestTex(X.lit);
   cityMesh=gb.mesh(X.atlasMat(at,lt));cityMesh.castShadow=true;cityMesh.receiveShadow=true;scene.add(cityMesh);G.city=cityMesh;
@@ -81,7 +81,7 @@ function savePos(){try{localStorage.setItem('stad_pos',JSON.stringify({x:+P.x.to
 G.savePos=savePos;
 // Pixelgrootte in echte schermpixels (geheel getal, anders worden de pixels ongelijk): de korte kant van het beeld is
 // ongeveer 360 pixels hoog (Fijn 480, Grof 260). Zo ziet het er op elke telefoon en elk scherm hetzelfde uit.
-function resize(){const dpr=Math.min(devicePixelRatio||1,3),w=innerWidth,h=innerHeight,minDev=Math.min(w,h)*dpr,target=(G.pixPref||400)*(G.camMode&&G.camMode!=='boven'?1.15:1);
+function resize(){const dpr=Math.min(devicePixelRatio||1,3),w=innerWidth,h=innerHeight,minDev=Math.min(w,h)*dpr,target=(G.pixPref||480)*(G.camMode&&G.camMode!=='boven'?1.15:1);
   const k=Math.max(1,Math.round(minDev/target));G.pix=k/dpr;const rw=Math.ceil(w*dpr/k),rh=Math.ceil(h*dpr/k);
   renderer.setSize(rw,rh,false);if(rt)rt.setSize(rw,rh);if(post)post.material.uniforms.uRes.value.set(rw,rh);camera.aspect=w/h;camera.fov=w/h<1?Math.min(62,34/Math.max(.55,w/h)*.8):34;G.fov0=camera.fov;camera.updateProjectionMatrix()}
 G.resize=()=>resize();
@@ -127,7 +127,7 @@ function makePost(){
         // vignet
         vec2 q=vUv-.5;float vg=dot(q,q);s*=1.-vg*uVig;s=mix(s,uFlash.rgb,uFlash.a*(.25+vg*2.2));
         // beperkte kleurdiepte met dither: echte pixel-art kleuren
-        float lv=40.;s=floor(s*lv+bayer(gl_FragCoord.xy)+.5)/lv;
+        float lv=72.;s=floor(s*lv+bayer(gl_FragCoord.xy)*.6+.5)/lv;
         gl_FragColor=vec4(clamp(s,0.,1.),1.);}`,depthTest:false,depthWrite:false});
   post=new TH.Mesh(new TH.PlaneGeometry(2,2),mat);post.frustumCulled=false;
   G.post=post}

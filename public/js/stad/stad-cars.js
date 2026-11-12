@@ -3,7 +3,7 @@
 (function(){
 'use strict';
 const TH=window.THREE,M=STAD_MAP,X=STAD_GFX,G=STAD,$s=id=>document.getElementById(id);
-const touch=matchMedia('(pointer:coarse)').matches,LANE=2,RW=M.RW;
+const touch=matchMedia('(pointer:coarse)').matches,LANE=M.LANE||2,RW=M.RW;
 const rr=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
 /* ---------- auto's van blokjes ---------- */
 const KINDS={city:[3.5,1.7,.62,.62,1.2,.9],hatch:[3.9,1.8,.66,.62,1.5,.6],sedan:[4.5,1.85,.62,.6,1.4,1.1],suv:[4.6,2,.9,.72,1.0,.7],sport:[4.4,1.95,.5,.46,1.6,1.2],van:[5,2,.9,1.0,.4,.3],pickup:[5,2,.8,.7,.9,2.0]};

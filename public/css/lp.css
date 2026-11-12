@@ -496,3 +496,37 @@ body.has-sticky{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 @media (prefers-reduced-motion:no-preference){@supports (animation-timeline:view()){
  .lp-ladder__bar i{animation:lpBarIn linear both;animation-timeline:view();animation-range:entry 10% cover 35%}
  @keyframes lpBarIn{from{transform:scaleX(0)}to{transform:scaleX(1)}}}}
+
+/* ---------- Pixelstad (voor leden) ---------- */
+@layer lp{
+.lp-stad__regel{margin-top:14px;font:800 var(--t-label)/1.4 var(--f-head);font-size:16px;letter-spacing:.04em;text-transform:uppercase;color:var(--fg);padding-left:12px;border-left:2px solid var(--w-jij);max-width:52ch}
+.lp-stad__grid{display:grid;gap:16px}
+.lp-stad__beeld{margin:0;background:#0b0d12;border:1px solid var(--line2);overflow:hidden}
+.lp-stad__svg{display:block;width:100%;height:auto;aspect-ratio:12/5;image-rendering:pixelated}
+.lp-stad__beeld figcaption{display:flex;flex-wrap:wrap;gap:4px 14px;padding:10px 14px;font:500 12px/1.4 var(--f-mono);color:var(--mute);border-top:1px solid var(--line2)}
+.lp-stad__beeld figcaption span::before{content:"";display:inline-block;width:6px;height:6px;margin-right:8px;background:var(--w-jij);vertical-align:1px}
+.lp-stad__tegels{display:grid;gap:10px}
+.lp-stad__tegels li{padding:14px 16px}
+.lp-stad__tegels h3{font:800 18px/1.15 var(--f-head);text-transform:uppercase;letter-spacing:.03em;color:var(--fg)}
+.lp-stad__tegels p{margin-top:6px;color:var(--soft);font-size:15px;line-height:1.45}
+.lp-stad__box{display:grid;gap:14px;margin-top:16px;padding:18px;background:linear-gradient(160deg,rgba(242,194,48,.07),var(--panel) 55%);border:1px solid var(--line2);border-left:2px solid var(--vip,#f2c230);border-radius:var(--r)}
+.lp-stad__boxtxt p{color:var(--soft);max-width:62ch;line-height:1.5}
+.lp-stad__boxtxt b{color:var(--fg)}
+.lp-stad__tags{display:flex;gap:6px;margin-bottom:10px}
+.lp-stad__cta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px}
+.lp-stad__cta .btn{width:100%}
+.lp-stad__klein{font:500 12px/1.5 var(--f-mono);color:var(--mute)}
+@media (min-width:600px){
+  .lp-stad__tegels{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lp-stad__cta .btn{width:auto}
+}
+@media (min-width:900px){
+  .lp-stad__grid{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:20px;align-items:start}
+  .lp-stad__beeld{position:sticky;top:calc(var(--mast-h) + 20px)}
+  .lp-stad__tegels{gap:12px}
+  .lp-stad__box{grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:22px 26px;gap:12px 32px}
+  .lp-stad__klein{grid-column:1/-1}
+  .lp-stad--lid .lp-stad__box{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:no-preference){.lp-stad__zw{animation:lpZw 1.2s steps(2) infinite}@keyframes lpZw{50%{fill:#ff5060}}}
+}

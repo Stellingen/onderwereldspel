@@ -13,18 +13,21 @@ const PRICE = { gratis: 0, vip: 4.99, hr: 9.99 };
 const PRICE_VOORLOPIG = true;
 const TIERS = [
   { id: 'gratis', n: 'Gratis', short: 'Gratis', tag: '', col: '#8a8f98', price: PRICE.gratis,
-    line: 'Het hele spel, voor iedereen.',
-    key: ['Alle klussen, rangen, families en spellen', 'Je voortgang op je account, op elk apparaat', 'Alle minigames: vluchten, achtervolgingen, ontsnappen', 'Je eigen casinokaart groeit mee met wat je speelt'] },
+    line: 'Het hele klikspel, voor iedereen.',
+    key: ['Alle klussen, rangen en families in het klikspel', 'Je voortgang op je account, op elk apparaat', 'Alle minigames: vluchten, achtervolgingen, ontsnappen', 'Je eigen casinokaart groeit mee met wat je speelt'] },
   { id: 'vip', n: 'VIP', short: 'VIP', tag: 'VIP', col: '#f2c230', price: PRICE.vip,
     line: 'Sneller vooruit, iets meer ruimte.',
-    key: ['Slaagkans ×1,15 en +10% buit', 'Wachttijden 75% van normaal', '+15% straatcredit, betere rente', '5 depositoplekken, €300.000 beleggen', 'Hogere inzetlimieten in het casino', 'Wapenkisten met skins in het casino', 'Zaken: tot 12 vestigingen · woningen +2 plekken', 'VIP-tag bij je naam'] },
+    key: ['De Pixelstad: loop, rijd en kraak zelf door de stad', 'Slaagkans ×1,15 en +10% buit', 'Wachttijden 75% van normaal', '+15% straatcredit, betere rente', '5 depositoplekken, €300.000 beleggen', 'Hogere inzetlimieten in het casino', 'Wapenkisten met skins in het casino', 'Zaken: tot 12 vestigingen · woningen +2 plekken', 'VIP-tag bij je naam'] },
   { id: 'hr', n: 'High roller', short: 'HR', tag: 'HIGH ROLLER', col: '#a855f7', price: PRICE.hr,
     line: 'Alles van VIP, en flink meer.',
-    key: ['Slaagkans ×1,4 en +25% buit', 'Wachttijden 55% van normaal', '+40% straatcredit, de beste rente', '10 depositoplekken, €1 mln. beleggen', 'Hoogste inzetlimieten en de High roller-tafel', 'Wapenkisten met skins, betere kansen', 'Zaken: tot 15 vestigingen · woningen +5 plekken', 'Diamanten geldklem en gouden dobbelsteen', 'HIGH ROLLER-tag bij je naam'] }
+    key: ['De Pixelstad: loop, rijd en kraak zelf door de stad', 'Slaagkans ×1,4 en +25% buit', 'Wachttijden 55% van normaal', '+40% straatcredit, de beste rente', '10 depositoplekken, €1 mln. beleggen', 'Hoogste inzetlimieten en de High roller-tafel', 'Wapenkisten met skins, betere kansen', 'Zaken: tot 15 vestigingen · woningen +5 plekken', 'Diamanten geldklem en gouden dobbelsteen', 'HIGH ROLLER-tag bij je naam'] }
 ];
 // Volledige vergelijking. Per rij: n = voordeel, v = [gratis, vip, hr], s = korte uitleg (optioneel),
 // nieuw = komt deze ronde in het spel, rtp = casino-uitbetaling (feitelijk, zonder nadruk). '–' = niet.
 const CATS = [
+  { id: 'spel', n: 'Spel', rows: [
+    { id: 'pixelstad', n: 'Pixelstad', s: 'Loop, rijd en kraak zelf door de stad. Zelfde account en voortgang', v: ['–', 'ja', 'ja'] }
+  ] },
   { id: 'misdaad', n: 'Misdaad', rows: [
     { id: 'kans', n: 'Slaagkans klussen', s: 'Na alle andere bonussen, altijd hooguit 95%', v: ['×1', '×1,15', '×1,4'] },
     { id: 'buit', n: 'Buit per klus', v: ['–', '+10%', '+25%'] },

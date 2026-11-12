@@ -15,19 +15,24 @@ const KIND={bedelen:'beg',zakken:'lift',horloge:'lift',winkeldief:'grab',fiets:'
  flessen:'grab',katalysator:'grab',apotheek:'grab',wapenlading:'grab',stroom:'tag',stadion:'rob',scheepswerf:'sneak',winkel:'rob',ramkraak:'rob',juwelier:'rob',bank:'rob',transport:'rob',casino:'rob',centralebank:'rob',goud:'rob',jet:'rob',vrachtwagen:'rob',tanker:'rob',rotterdam:'rob',goudreserve:'rob',jacht:'rob',container:'rob'};
 const KN={beg:'Bedelen',lift:'Zakkenrollen',grab:'Graaien',tag:'Taggen',sneak:'Inbraak',rob:'Overval',courier:'Koerier'};
 const kindOf=c=>KIND[c.id]||'courier';
-// plekken in de stad (worden op de dichtstbijzijnde begaanbare plek gezet)
-const SP={plein:[229,114,'Het Plein'],apotheek:[140,134.5,'de apotheek in het Centrum'],bank:[154,78,'de Onderbank'],casino:[229,76,'Casino Royaal'],drogist:[64,134.5,'de drogist in de Westbuurt'],juwelier:[160,145.5,'de juwelier in het Centrum'],
- avond:[100,93.5,'de avondwinkel in de Westbuurt'],elektro:[236,145.5,'de elektronicazaak op Oud-Zuid'],fiets:[183.5,110,'het fietsenrek aan de Gracht'],stoep:[120,93.5,'een portiek in de Westbuurt'],
- parkeer:[290,93.5,'de parkeergarage op de Zuidas'],bouw:[234,206,'de bouwplaats aan de Boulevard'],box:[325,80,'de garageboxen in De Haven'],geldauto:[166,86,'de geldauto voor de bank'],
- pier:[360,105,'de pier in De Haven'],hangar:[360,161,'de hangar op de pier'],yard:[324,24,'het containerterrein'],heler:[298.4,103,'Het Contact (de heler)'],
- kade:[200,60,'de kade bij de Gracht'],brug:[191,140,'de brug over de Gracht'],strand:[150,236,'het strand'],park:[150,18,'het Noorderpark'],villa:[80,26,'het Villapark'],zuidas:[279,136,'de Zuidas']};
+// plekken in de stad (vaste punten van de kaart, M.A; worden op de dichtstbijzijnde begaanbare plek gezet)
+const A_=(k,n,dx,dz)=>[M.A[k].x+(dx||0),M.A[k].z+(dz||0),n];
+const SP={plein:A_('plein','Het Plein'),apotheek:A_('apotheek','de apotheek in het Centrum'),bank:A_('bankPlein','de Onderbank'),casino:A_('casinoPlein','Casino Royaal'),drogist:A_('drogist','de drogist in de Westbuurt'),juwelier:A_('juwelier','de juwelier in het Centrum'),
+ avond:A_('avond','de avondwinkel in de Westbuurt'),elektro:A_('elektro','de elektronicazaak op Oud-Zuid'),fiets:A_('fietsrek','het fietsenrek aan de Gracht'),stoep:A_('stoep','een portiek in de Westbuurt'),
+ parkeer:A_('parkeer','de parkeergarage op de Zuidas'),bouw:A_('bouw','de bouwplaats aan de Boulevard'),box:A_('box','de garageboxen op het Bedrijventerrein'),geldauto:A_('geldauto','de geldauto voor de bank'),
+ pier:A_('pier','de pier in De Haven'),hangar:A_('hangar','de hangar in De Haven',0,1.5),yard:[(M.Z.yard[0]+M.Z.yard[2])/2,M.Z.yard[1]-2,'het containerterrein'],heler:A_('contact','Het Contact (de heler)'),
+ kade:A_('kade','de kade in De Haven'),brug:A_('brug','de brug over de Gracht'),strand:A_('strand','het strand'),park:A_('park','het Noorderpark'),villa:A_('villapark','het Villapark'),zuidas:A_('zuidas','de Zuidas')};
 const LOC={flessen:'stoep',katalysator:'parkeer',apotheek:'apotheek',wapenlading:'yard',stroom:'bouw',stadion:'zuidas',bedelen:'bank',zakken:'plein',horloge:'plein',winkeldief:'drogist',fiets:'fiets',pakket:'stoep',scooter:'brug',koper:'bouw',parkeer:'parkeer',autokraak:'parkeer',garagebox:'box',heling:'kade',
  spuiten:'zuidas',winkel:'avond',ramkraak:'elektro',juwelier:'juwelier',bank:'bank',centralebank:'bank',goudreserve:'bank',transport:'geldauto',casino:'casino',goud:'hangar',jet:'hangar',vrachtwagen:'box',tanker:'pier',rotterdam:'pier',jacht:'pier',container:'yard'};
 // sluip-gebieden (open terrein met bewaking) per inbraak
-const ZONE={villa:{r:[49,9,113,26],crack:[98,14],n:'het Villapark'},park:{r:[126,8,182,27],crack:[152,12],n:'het beeldenpark'},yard:{r:[310,8,338,42],crack:[330,12],n:'het containerterrein'},
- strand:{r:[20,229,180,246],crack:[100,231],n:'het strandpaviljoen'}};
+// villa: de binnentuin van een villablok in het Villapark (M.Z.villapark); park: het westelijke deel van het Noorderpark (M.Z.park);
+// yard: het containerterrein (M.Z.yard); strand: het stuk strand met de paviljoens ten westen van de gracht (M.Z.strand)
+const ZONE={villa:{r:[190,129,238,144],crack:[200,131.5],n:'het Villapark'},park:{r:[M.Z.park[0]+5,M.Z.park[1]+3,345,M.Z.park[3]-2],crack:[300,138],n:'het Noorderpark'},
+ yard:{r:[M.Z.yard[0]+1,M.Z.yard[1]+1,M.Z.yard[2]-1,M.Z.yard[3]-1],crack:[288,70],n:'het containerterrein'},strand:{r:[180,M.Z.strand[1],340,M.Z.strand[3]],crack:[255,535],n:'het strandpaviljoen'}};
 const ZLOC={scheepswerf:'yard',inbraak:'villa',kasteel:'villa',kunst:'park',kroon:'park',londen:'park',rivaal:'yard',diamant:'yard',geneve:'yard',pand:'strand'};
-const GETAWAY=[[14,60],[14,170],[30,32],[150,30],[214,28],[318,198],[150,232],[250,236],[60,232],[200,180],[110,186],[350,170],[286,190]];
+// vluchtplekken: rustige hoeken langs de randen van de stad (kust, strand, kades, parken) en een paar schuilplekken binnenin
+const GETAWAY=[[22,200],[22,460],[24,120],[100,540],[250,540],[450,540],[560,540],[214,136],[300,140],[220,22],[480,22],[700,22],[660,140],[785,300],[785,470],[700,640],
+ [577,300],[577,450],[347.5,450],[371,250],[160,507],[700,420]];
 const snap=(x,z)=>M.nearestWalk(x,z,12)||{x,z};
 const spot=k=>{const s=SP[k]||SP.plein,p=snap(s[0],s[1]);p.n=s[2];return p};
 

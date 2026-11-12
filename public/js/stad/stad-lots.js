@@ -97,7 +97,7 @@ function setup(scene){
     l.mark={p,ring,pin,sign:pin};G.marks.push(l.mark)});
   // poorten van Oostland: bord aan beide kanten
   const cv=X.textCanvas('OOSTLAND · JOUW TERREIN','#d6a63e','#16171a','#d6a63e'),tex=X.nearestTex(cv),w=cv.width/13*1.1;
-  [88,140,192].forEach(z=>[[-1,-Math.PI/2],[1,Math.PI/2]].forEach(([s,ry])=>{const m=new TH.Mesh(new TH.PlaneGeometry(w,1.1),new TH.MeshBasicMaterial({map:tex}));m.position.set(398+s*.56,6.1,z);m.rotation.y=ry;scene.add(m)}));
+  (M.GATES||[]).forEach(({x:gx,z})=>[[-1,-Math.PI/2],[1,Math.PI/2]].forEach(([s,ry])=>{const m=new TH.Mesh(new TH.PlaneGeometry(w,1.1),new TH.MeshBasicMaterial({map:tex}));m.position.set(gx+s*.56,7.1,z);m.rotation.y=ry;scene.add(m)}));
   sync(true);setInterval(()=>sync(false),1200)}
 function place(l,scene){const p=l.p,w=l.w;
   ['mesh','scaf'].forEach(k=>{if(l[k]){scene.remove(l[k]);l[k].geometry.dispose();G.lotMeshes=G.lotMeshes.filter(m=>m!==l[k]);l[k]=null}});

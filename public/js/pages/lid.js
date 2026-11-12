@@ -42,11 +42,11 @@ function ldPlan(t, i, cur) {
 V.lid = () => {
  const cur = typeof tier === 'function' ? tier() : 0, T = LID.TIERS;
  const me = cur ? `Je bent <b>${esc(TIER_NAME[cur])}</b>. Je voordelen staan hieronder ${cur === 2 ? 'in het paars' : 'in het goud'}.`
-  : 'Je speelt gratis. Dat blijft zo: het hele spel is zonder lidmaatschap te spelen.';
+  : 'Je speelt gratis. Dat blijft zo: het hele klikspel is zonder lidmaatschap te spelen. De Pixelstad is voor VIP en High roller.';
  return `<div class="ld">
- <header class="ld-hero">
+ <header class="ld-hero" id="pixelstad">
   <div class="ld-hero-t"><h1>Lidmaatschap</h1>
-   <p class="sub">Het spel is en blijft gratis. Met VIP of High roller gaat alles wat sneller en heb je meer ruimte: meer kans, meer buit, kortere wachttijden en hogere limieten.</p></div>
+   <p class="sub">Het klikspel is en blijft gratis. Met VIP of High roller speel je ook in de Pixelstad, waar je zelf door de stad loopt, rijdt en kraakt. En in het klikspel gaat alles wat sneller: meer kans, meer buit, kortere wachttijden en hogere limieten.</p></div>
   <div class="ld-me" style="--lc:${T[cur].col}"><span class="label">Nu</span><div>${cur ? vipTag() : '<i class="ld-free">GRATIS</i>'}<p>${me}</p></div></div>
  </header>
  <div class="ld-plans">${T.map((t, i) => ldPlan(t, i, cur)).join('')}</div>

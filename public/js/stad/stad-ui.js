@@ -167,7 +167,7 @@ $s('sdPhone').addEventListener('click',e=>{const b=e.target.closest('[data-app]'
 function settings(){const s=$s('sdSet');$s('sdHome').hidden=true;s.hidden=false;const pix=G.pixPref||0;let skin='';try{skin=localStorage.getItem('stad_skin')||''}catch(e){}
   const SK=['#f1caa5','#e9b98f','#d9a27a','#b97a52','#8d5a3a','#6e4630'];
   s.innerHTML=`<button class="sd-back" data-back>← Terug</button><h3>Instellingen</h3>
-   <div class="sd-row"><b>Beeld</b><div class="sd-seg">${[[540,'Scherp'],[0,'Normaal'],[300,'Grove pixels']].map(([v,n])=>`<button data-pix="${v}" class="${pix===v?'on':''}">${n}</button>`).join('')}</div></div>
+   <div class="sd-row"><b>Beeld</b><div class="sd-seg">${[[640,'Scherp'],[0,'Normaal'],[340,'Grove pixels']].map(([v,n])=>`<button data-pix="${v}" class="${pix===v?'on':''}">${n}</button>`).join('')}</div></div>
    <div class="sd-row"><b>Huidskleur</b><div class="sd-sk">${SK.map(c=>`<button data-skin="${c}" style="--c:${c}" class="${skin===c?'on':''}" aria-label="Huidskleur"></button>`).join('')}</div></div>
    <div class="sd-row"><b>Geluid</b><div class="sd-seg"><button data-snd="fx" class="${G.snd&&G.snd.fxOn?'on':''}">Effecten</button><button data-snd="mu" class="${G.snd&&G.snd.muOn?'on':''}">Muziek</button></div></div>
    <div class="sd-row"><b>Volume</b><input type="range" min="0" max="1" step=".05" value="${G.snd?G.snd.vol:.8}" data-vol aria-label="Volume"></div>

@@ -34,7 +34,7 @@ function draw(){const P=G.P;cx.setTransform(dpr,0,0,dpr,0,0);cx.imageSmoothingEn
     if(Z>=3.4){cx.font='700 11px system-ui,sans-serif';cx.fillStyle='#111';cx.textAlign='center';cx.fillText(p.name.replace(/^(Thuis: |Jouw )/,''),sx((r.x0+r.x1)/2),sz((r.z0+r.z1)/2)+4)}});
   // wijknamen (groot en vaag, alleen als je ver weg kijkt)
   cx.textAlign='center';cx.textBaseline='middle';
-  if(Z<3.2){cx.font=`800 ${Math.round(Math.max(10,Math.min(16,Z*6)))}px "Big Shoulders Display",system-ui,sans-serif`;M.DISTRICTS.forEach(d=>{if(d.x>=M.ESTATE.x0)return;cx.fillStyle='rgba(255,255,255,.55)';cx.fillText(d.n.toUpperCase(),sx(d.x),sz(d.z))})}
+  if(Z<3.2){cx.font=`800 ${Math.round(Math.max(10,Math.min(16,Z*6)))}px "Big Shoulders Display",system-ui,sans-serif`;M.DISTRICTS.forEach(d=>{if(M.estateAt(d.x,d.z))return;cx.fillStyle='rgba(255,255,255,.55)';cx.fillText(d.n.toUpperCase(),sx(d.x),sz(d.z))})}
   cx.font=`900 ${Math.round(Math.max(12,Math.min(26,Z*9)))}px "Big Shoulders Display",system-ui,sans-serif`;cx.fillStyle='rgba(242,194,48,.9)';cx.fillText('OOSTLAND',sx((es.x0+es.x1)/2),sz(es.z0+20));
   cx.font='700 10px ui-monospace,monospace';cx.fillStyle='rgba(242,194,48,.75)';if(Z>=1)cx.fillText('JOUW TERREIN',sx((es.x0+es.x1)/2),sz(es.z0+20)+Math.max(12,Z*6));
   // route

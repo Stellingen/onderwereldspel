@@ -370,7 +370,7 @@ const ROUTE_META = {
   '/families': { title: `Families · ${BRAND.name}`, desc: `De ${famN} families van ${BRAND.name}: wie ze zijn, wie ze binnenlaten en hoe je bij ze opklimt.` },
   '/rangen': { title: `Rangen · ${BRAND.name}`, desc: `De ${GD.ranks} rangen van ${BRAND.name}, van Rookie tot Peetvader, en wat elke rang opent.` },
   '/training': { title: `Training · ${BRAND.name}`, desc: `${GD.trainings} plekken om te trainen en manieren om bij te komen in ${BRAND.name}.` },
-  '/lidmaatschap': { title: `Lidmaatschap: VIP en High roller · ${BRAND.name}`, desc: `${BRAND.name} is gratis en blijft gratis. Bekijk wat VIP en High roller extra geven: alle voordelen naast elkaar, met de echte getallen uit het spel.`, home: !!LID_HTML, lid: true }
+  '/lidmaatschap': { title: `Lidmaatschap: VIP en High roller · ${BRAND.name}`, desc: `Het klikspel van ${BRAND.name} is gratis en blijft gratis. Bekijk wat VIP en High roller extra geven: de Pixelstad en alle voordelen naast elkaar, met de echte getallen uit het spel.`, home: !!LID_HTML, lid: true }
 };
 function routeMeta(p) {
   // /start: de voorpagina die meteen het venster "Begin je carrière" opent (campagnes, QR-codes); niet indexeren, canonical /

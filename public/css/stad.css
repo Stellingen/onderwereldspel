@@ -679,6 +679,112 @@ body.stad-in .sd-nws,body.sd-cine .sd-nws,body.sd-fotomode .sd-nws{display:none}
 .sd-kr-wire button.on{outline:2px solid #fff;outline-offset:-2px;background:#2c2e36}.sd-kr-wire button.done{opacity:.45}
 .sd-kr-cv2{width:120px;image-rendering:pixelated;background:#0f1014}
 .sd-kr .sd-kr-info{margin-top:8px}
+/* ---- spelletjes op het podium (stad-vak.js, stad-mini.js, stad-kraak.js): donkere wazige laag, groot paneel in het midden ---- */
+.sd-mfx{position:fixed;inset:0;z-index:43;background-color:rgba(5,6,10,.6);background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.24) 0 2px,transparent 2px 4px),radial-gradient(ellipse at 50% 50%,transparent 25%,rgba(0,0,0,.6) 100%);
+  -webkit-backdrop-filter:blur(3px) saturate(.55);backdrop-filter:blur(3px) saturate(.55);animation:sdMfx .18s steps(3);touch-action:none}
+.sd-mfx[hidden]{display:none}.sd-mfx.pass{pointer-events:none;opacity:0;transition:opacity .45s steps(5) .5s}
+@keyframes sdMfx{from{opacity:0}}
+body.stad-in .sd-mfx{display:none!important}
+body.sd-focus .sd-joy,body.sd-focus .sd-run,body.sd-focus .sd-prompt,body.sd-focus .sd-dot,body.sd-focus .sd-camtip,body.sd-focus .sd-keys,body.sd-focus .sd-area{visibility:hidden!important}
+.sd-mini.sd-stage{top:50%;bottom:auto;transform:translate(-50%,-50%);width:min(640px,calc(100vw - 32px));max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-x:hidden;overflow-y:auto;
+  padding:18px 22px 20px;gap:14px;outline:2px solid #f2c230;box-shadow:8px 8px 0 rgba(0,0,0,.6),inset 0 4px 0 #f2c230;image-rendering:pixelated}
+.sd-mini.sd-stage.wide{width:min(700px,calc(100vw - 32px))}
+.sd-mini.sd-stage.go{animation:sdStageIn .18s steps(4)}@keyframes sdStageIn{from{transform:translate(-50%,-42%);opacity:0}}
+.sd-stage .sd-mini-h{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding-right:34px}
+.sd-stage .sd-mini-h b{font:900 32px/1 var(--f-display);letter-spacing:.02em;text-shadow:3px 3px 0 #000}
+.sd-stage .sd-mini-h small{flex-basis:100%;font:600 13.5px/1.35 var(--f-body);color:#d4d0c6}
+.sd-stage .sd-mini-h .sd-x{right:-12px;top:-12px;font-size:34px!important;padding:4px 12px}
+.sd-stage .sd-mini-b{gap:14px}
+.sd-stage .sd-mini-go{min-height:66px;font:900 24px var(--f-display)!important;text-transform:uppercase;letter-spacing:.06em;touch-action:none;user-select:none;-webkit-user-select:none}
+.sd-stage .sd-mini-go kbd{font-size:12px!important;vertical-align:4px;margin-right:6px}
+.sd-stage .sd-mini-go.dn{filter:brightness(1.25);transform:translateY(2px)}
+/* vakmanschap */
+.sd-vak{display:grid;gap:5px;padding:7px 9px;background:#0b0c0f;border:1px solid #2b3038}
+.sd-vak span{font:700 10.5px/1.2 var(--f-mono);text-transform:uppercase;letter-spacing:.1em;color:#a9a59b}.sd-vak b{color:#f2c230;font-weight:800}.sd-vak em{font-style:normal;color:#ece8de;font-weight:800}
+.sd-vak>i{display:block;height:6px;background:#1b1e24;border:1px solid #000}.sd-vak>i>i{display:block;height:100%;background:repeating-linear-gradient(90deg,#ff7a1a 0 6px,#f2a01a 6px 8px);transition:width .6s steps(8)}
+.sd-vak.up{outline:2px solid #3fe395;animation:sdVakUp .3s steps(2) 3}@keyframes sdVakUp{50%{background:#12301e}}
+/* uitslag */
+.sd-res{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%) rotate(-2deg);display:grid;justify-items:center;gap:6px;padding:16px 10px;background:rgba(9,10,13,.95);
+  border-top:4px solid currentColor;border-bottom:4px solid currentColor;pointer-events:none;animation:sdResIn .2s steps(4)}
+.sd-stage.win .sd-res{color:#3fe395}.sd-stage.lose .sd-res{color:#ff3d52}
+.sd-res b{font:900 46px/1 var(--f-display);text-transform:uppercase;letter-spacing:.04em;text-shadow:4px 4px 0 #000}
+.sd-res small{font:800 15px var(--f-mono);color:#f2c230;letter-spacing:.06em}
+@keyframes sdResIn{from{transform:translateY(-50%) rotate(-2deg) scale(1.5);opacity:0}}
+.sd-stage.res{pointer-events:none}.sd-stage.res>.sd-mini-h,.sd-stage.res>.sd-mini-b{opacity:.4}
+/* gedeelde effecten */
+.sd-pop{position:absolute;left:50%;top:-10px;transform:translate(-50%,-100%);z-index:3;font:900 28px/1 var(--f-display);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;opacity:0;pointer-events:none;text-shadow:3px 3px 0 #000}
+.sd-pop.on{animation:sdPop .65s steps(6) forwards}.sd-pop.ok{color:#3fe395}.sd-pop.bad{color:#ff3d52}
+@keyframes sdPop{0%{opacity:1;transform:translate(-50%,-70%) scale(1.35)}70%{opacity:1;transform:translate(-50%,-110%)}100%{opacity:0;transform:translate(-50%,-130%)}}
+@keyframes sdShake{0%,100%{transform:none}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes sdHitG{0%{outline-color:#fff}100%{outline-color:#3fe395}}
+/* timing: grote balk */
+.sd-stage .sd-pick{gap:14px;padding-top:30px}
+.sd-stage .sd-pick-bar{height:76px;border:3px solid #000;outline:2px solid #3a3f49;overflow:visible;
+  background:#1b1e24 repeating-linear-gradient(90deg,transparent 0 calc(5% - 2px),#262a32 calc(5% - 2px) 5%)}
+.sd-stage .sd-pick-bar .z{background:#24703c;box-shadow:inset 0 0 0 3px #3fe395;transition:left .12s steps(3),width .12s steps(3)}
+.sd-stage .sd-pick-bar .z>i{position:absolute;left:50%;top:0;bottom:0;width:28%;margin-left:-14%;background:rgba(63,227,149,.45)}
+.sd-stage .sd-pick-bar .m{top:-14px;bottom:-14px;width:8px;margin-left:-4px;background:#fff;box-shadow:0 0 0 2px #000,3px 0 0 2px rgba(0,0,0,.35);z-index:2}
+.sd-stage .sd-pick-bar .m::before,.sd-stage .sd-pick-bar .m::after{content:"";position:absolute;left:-6px;width:20px;height:6px;background:#fff;box-shadow:0 0 0 2px #000}
+.sd-stage .sd-pick-bar .m::before{top:0}.sd-stage .sd-pick-bar .m::after{bottom:0}
+.sd-pick-bar .g{position:absolute;top:-6px;bottom:-6px;width:8px;margin-left:-4px;opacity:0;z-index:1;pointer-events:none}
+.sd-pick-bar .g.ok{background:#3fe395}.sd-pick-bar .g.bad{background:#ff3d52}.sd-pick-bar .g.on{animation:sdGhost .7s steps(5) forwards}
+@keyframes sdGhost{0%{opacity:1}100%{opacity:0}}
+.sd-pick-bar.hit{animation:sdHitG .3s steps(2)}.sd-stage .sd-pick-bar.hit{outline-color:#3fe395}
+.sd-stage .sd-pick-bar.bad{animation:sdShake .3s steps(6);outline-color:#ff3d52}
+.sd-pick-ft{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.sd-stage .sd-pick-pins{justify-content:flex-start;gap:8px}.sd-stage .sd-pick-pins i{width:22px;height:30px;border-width:3px;transition:transform .1s steps(2)}
+.sd-stage .sd-pick-pins i.ok{background:#3fe395;box-shadow:0 0 0 2px #0b0c0f,0 0 0 4px #3fe395}
+.sd-stage .sd-pick-miss{font:700 13px var(--f-mono);color:#c9c5bb;text-align:right}.sd-stage .sd-pick-miss.last{color:#ff8a96}
+/* vasthouden en snel drukken */
+.sd-hd,.sd-ms{display:grid;gap:8px}
+.sd-hd-bar,.sd-ms-bar{position:relative;display:block;height:60px;background:#1b1e24;border:3px solid #000;outline:2px solid #3a3f49}
+.sd-hd-bar>i,.sd-ms-bar>i{display:block;height:100%;width:0;background:repeating-linear-gradient(90deg,#3fe395 0 16px,#2f8a4a 16px 20px)}
+.sd-ms-bar>i{background:repeating-linear-gradient(90deg,#f2c230 0 16px,#b88a12 16px 20px)}
+.sd-hd-bar>b,.sd-ms-bar>b{position:absolute;inset:0;display:grid;place-items:center;font:900 26px var(--f-display);color:#fff;text-shadow:3px 3px 0 #000}
+.sd-hd.on .sd-hd-bar{outline-color:#3fe395}
+.sd-ms-t{display:block;height:8px;background:#1b1e24;border:2px solid #000}.sd-ms-t>i{display:block;height:100%;background:#ff7a1a}
+/* ritme, knokken en vissen: groter */
+.sd-stage .sd-rit-tr{height:76px;overflow:visible;outline:2px solid #3a3f49}.sd-stage .sd-rit-tr{overflow:hidden}
+.sd-stage .sd-rit-z{width:64px;margin-left:-32px;border-width:3px}
+.sd-stage .sd-rit-tr b[data-n]{width:52px;height:52px;margin:-26px 0 0 -26px;font-size:28px}
+.sd-stage .sd-rit-tr .sd-pop{left:14%;top:auto;bottom:4px;transform:translate(-50%,0);font-size:20px}
+.sd-stage .sd-rit-tr .sd-pop.on{animation:sdPop2 .5s steps(5) forwards}@keyframes sdPop2{0%{opacity:1}100%{opacity:0}}
+.sd-stage .sd-rit-b button{padding:18px 4px;min-height:66px;touch-action:none}.sd-stage .sd-rit-b b{font-size:28px}
+.sd-stage .sd-vt-bars i{height:18px}.sd-stage .sd-vt-bars small{font-size:12px}
+.sd-stage .sd-vt-mid{height:160px}.sd-stage .sd-vt-mid b{font-size:84px}.sd-stage .sd-vt-mid em{font-size:14px;bottom:8px}
+.sd-stage .sd-vt-ring{width:132px;height:132px;margin:-66px 0 0 -66px}.sd-stage .sd-vt-ring>i{border-width:6px}
+.sd-stage .sd-vt-mid.jab{animation:sdShake .2s steps(4)}
+.sd-stage .sd-vt-b button{min-height:68px;font-size:28px!important}.sd-stage .sd-vt-b .hit{font-size:20px!important}
+.sd-stage .sd-hl-bar{height:70px;border-width:3px}.sd-stage .sd-hl-bar .f{width:46px;height:46px;margin:-23px 0 0 -23px}
+.sd-stage .sd-hl .sd-wire-t.big{height:20px;border:2px solid #000}
+/* kraakwerk: groot slot, grote kluis, grote draden */
+.sd-kr.sd-stage .sd-kr-vis{position:relative;display:flex;justify-content:center;align-items:center;background:#0b0c0f;border:3px solid #000;outline:2px solid #3a3f49;padding:10px}
+.sd-kr.sd-stage .sd-kr-cv{width:min(100%,480px);height:auto;aspect-ratio:192/112;border:0;image-rendering:pixelated}
+.sd-kr-vis.ok{animation:sdKrOk .4s steps(2) 2}.sd-kr-vis.bad{animation:sdShake .3s steps(6)}
+@keyframes sdKrOk{50%{outline-color:#3fe395;background:#10261a}}
+.sd-kr.sd-stage .sd-kr-info{margin-top:0;gap:7px}.sd-kr.sd-stage .sd-kr-info b{font-size:19px;white-space:pre}
+.sd-kr.sd-stage .sd-kr-info small{font-size:14px;min-height:1.3em}
+.sd-kr-s.ok{color:#3fe395!important}.sd-kr-s.bad{color:#ff8a96!important}.sd-kr-s.on{animation:sdPop2 .1s steps(1) reverse}
+.sd-kr.sd-stage .sd-kr-meter{height:14px;border:2px solid #000}.sd-kr-tm>i{background:#f2c230}.sd-kr-tm>i.lo{background:#ff3d52}
+.sd-kr.sd-stage .sd-kr-pad{margin-top:0;gap:10px}.sd-kr.sd-stage .sd-kr-b{min-height:66px;font:900 22px var(--f-display)!important;text-transform:uppercase}
+.sd-kr.sd-stage .sd-kr-b kbd{font-size:12px!important;vertical-align:4px;margin-right:6px}
+.sd-kr.sd-stage .sd-kr-wire{margin:0;gap:0}
+.sd-kr.sd-stage .sd-kr-wire button{height:46px;width:78px;touch-action:manipulation}
+.sd-kr.sd-stage .sd-kr-wire button i{width:56px;height:14px}
+.sd-kr.sd-stage .sd-kr-cv2{flex:1 1 0;min-width:60px;max-width:260px;width:auto;height:calc(var(--n,4) * 46px)}
+@media (max-width:700px){
+  .sd-mini.sd-stage{top:auto;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));transform:none;width:auto!important;padding:14px 14px 14px;
+    max-height:calc(100vh - 60px);max-height:calc(100dvh - 60px - env(safe-area-inset-top,0px))}
+  .sd-mini.sd-stage.go{animation:sdStageInM .18s steps(4)}@keyframes sdStageInM{from{transform:translateY(28px);opacity:0}}
+  .sd-stage .sd-mini-h b{font-size:26px}.sd-stage .sd-mini-h small{font-size:12.5px}
+  .sd-stage .sd-mini-go{min-height:72px}
+  .sd-stage .sd-pick-bar{height:68px}
+  .sd-stage .sd-vt-mid{height:130px}.sd-stage .sd-vt-mid b{font-size:68px}
+  .sd-kr.sd-stage .sd-kr-b{min-height:72px}
+  .sd-kr.sd-stage .sd-kr-wire button{width:64px}.sd-kr.sd-stage .sd-kr-wire button i{width:44px}
+  .sd-res b{font-size:38px}
+}
+@media (max-height:560px) and (min-width:701px){.sd-stage .sd-vt-mid{height:110px}.sd-stage .sd-pick-bar{height:56px}.sd-kr.sd-stage .sd-kr-cv{width:min(100%,320px)}}
 .sd-dot.aim{background:#ffd35a;width:10px;height:10px;margin:-5px 0 0 -5px;box-shadow:0 0 0 2px #000,0 0 0 4px rgba(255,211,90,.35)}
 /* verhaal: opdracht in beeld, titelkaart en resultaat */
 .sd-vh{position:fixed;inset:0;pointer-events:none;z-index:30}

@@ -61,11 +61,17 @@ function authUI() {
   sticky && sticky.label();
 }
 document.addEventListener('click', e => { if (!e.target.closest('[data-logout]')) return; try { localStorage.removeItem('ow_token'); localStorage.removeItem('ow_lpname'); } catch (x) {} location.reload(); });
+// Pixelstad-blok: leden gaan naar de stad, gratis spelers zien wat een lidmaatschap geeft
+document.addEventListener('lp:me', e => {
+  const d = e.detail || {}, c = q('[data-li="stadCta"]'); if (!c) return;
+  c.innerHTML = (d.tier >= 1 || d.admin) ? `<a class="btn btn--lg" href="/stad">Naar de Pixelstad</a> <a class="tlink" href="/game">Naar het klikspel${ic('arrow')}</a>`
+    : `<a class="btn btn--lg" href="/lidmaatschap#pixelstad">Bekijk VIP en High roller</a> <a class="tlink" href="/game">Verder spelen${ic('arrow')}</a>`;
+});
 function session() {
   const t = getTok(); if (!t) return Promise.resolve();
   loggedIn = true; try { userName = localStorage.getItem('ow_lpname') || ''; } catch (e) {} authUI();
   return fetch('/api/me', { headers: { Authorization: 'Bearer ' + t } }).then(r => {
-    if (r.ok) return r.json().then(j => { try { document.dispatchEvent(new CustomEvent('lp:me', { detail: { tier: +j.tier || 0 } })); } catch (e) {} const nm = String(j.username || ''); if (nm !== userName) { userName = nm; try { localStorage.setItem('ow_lpname', nm); } catch (e) {} authUI(); } });
+    if (r.ok) return r.json().then(j => { try { document.dispatchEvent(new CustomEvent('lp:me', { detail: { tier: +j.tier || 0, admin: !!j.admin } })); } catch (e) {} const nm = String(j.username || ''); if (nm !== userName) { userName = nm; try { localStorage.setItem('ow_lpname', nm); } catch (e) {} authUI(); } });
     if (r.status === 401 || r.status === 403) { try { localStorage.removeItem('ow_token'); } catch (e) {} location.reload(); }
   }).catch(() => {});
 }
