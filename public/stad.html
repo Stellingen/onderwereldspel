@@ -51,7 +51,7 @@
     if(!me.ok)throw new Error('me');
     const mj=await me.json();
     window.__TOKEN__=token;window.__USER__=mj.username;window.__SINCE__=mj.since||null;window.__REDEEMED__=mj.redeemed||[];
-    window.__TIER__=mj.tier!=null?+mj.tier:null;window.__ADMIN__=!!mj.admin;window.__BETA__=!!mj.beta;window.__PUB__=!!mj.pub;
+    window.__TIER__=mj.tier!=null?+mj.tier:null;window.__ADMIN__=!!mj.admin;window.__PUB__=!!mj.pub;
     const tier=window.__TIER__!=null?window.__TIER__:((mj.redeemed||[]).includes('vip')?1:0);
     // alleen VIP en High roller (en beheerders)
     if(tier<1&&!window.__ADMIN__){fail(['Alleen voor VIP en High roller','De Pixelstad is het open-wereld-spel van Onderwereld: je loopt zelf door de stad en gaat gebouwen binnen. Word VIP of High roller om mee te spelen.'],

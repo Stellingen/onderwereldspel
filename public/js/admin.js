@@ -86,7 +86,7 @@ function renderStats(){const el=$('#stats');if(!el)return;const c=A.stats&&A.sta
   :Array(8).fill('<div class="a-tile sk"></div>').join('');
  el.querySelectorAll('[data-tf]').forEach(b=>b.onclick=()=>{A.f=b.dataset.tf;renderStats();renderFilters();loadList()})}
 function renderFilters(){const el=$('#filters');if(!el)return;
- const F=[['','Alle'],['online','Online'],['flag','Verdacht'],['vip','VIP'],['hr','High roller'],['banned','Verbannen'],['beta','Beta-testers'],['admin','Beheerders']],SO=[['actief','Laatst actief'],['xp','Hoogste rang'],['geld','Meeste geld'],['nieuw','Nieuwste'],['naam','Naam']];
+ const F=[['','Alle'],['online','Online'],['flag','Verdacht'],['vip','VIP'],['hr','High roller'],['banned','Verbannen'],['admin','Beheerders']],SO=[['actief','Laatst actief'],['xp','Hoogste rang'],['geld','Meeste geld'],['nieuw','Nieuwste'],['naam','Naam']];
  el.innerHTML=`<div class="a-chips">${F.map(([k,l])=>`<button class="${A.f===k?'on':''} ${k==='flag'?'fl':''}" data-f="${k}">${k==='flag'?WARN:''}${l}</button>`).join('')}</div>
   <label class="a-sort"><span>Sorteren</span><select id="sort">${SO.map(([k,l])=>`<option value="${k}" ${A.sort===k?'selected':''}>${l}</option>`).join('')}</select></label>`;
  el.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{A.f=b.dataset.f;renderFilters();renderStats();loadList()});$('#sort').onchange=e=>{A.sort=e.target.value;loadList()}}
@@ -96,7 +96,7 @@ function renderList(){const el=$('#list');if(!el)return;
  if(!A.list.length){el.innerHTML=`<div class="a-empty">${A.q?'Geen speler gevonden met "'+esc(A.q)+'"':'Nog geen spelers'}</div>`;return}
  el.innerHTML=A.list.map(p=>`<button class="a-row ${A.sel===p.id?'on':''} ${p.banned?'banned':''}" data-id="${p.id}">
   <span class="a-av">${esc(p.display).slice(0,1).toUpperCase()}${online(p.seen_s)?'<i class="on"></i>':''}</span>
-  <span class="a-rn"><b>${p.flags?`<i class="a-warn-i" title="${p.flags} open signaal${p.flags>1?'en':''}: open het profiel om te zien wat">${WARN}</i>`:''}${esc(p.display)}${tag(p.tier)}${p.admin?'<i class="tg adm">BEHEER</i>':''}${+p.beta?'<i class="tg beta">BETA</i>':''}${p.banned?'<i class="tg ban">VERBANNEN</i>':''}</b>
+  <span class="a-rn"><b>${p.flags?`<i class="a-warn-i" title="${p.flags} open signaal${p.flags>1?'en':''}: open het profiel om te zien wat">${WARN}</i>`:''}${esc(p.display)}${tag(p.tier)}${p.admin?'<i class="tg adm">BEHEER</i>':''}${p.banned?'<i class="tg ban">VERBANNEN</i>':''}</b>
    <small>${p.rankname?esc(p.rankname)+' · '+nl(p.xp)+' XP · '+(online(p.seen_s)?'<em>online</em>':ago(p.seen_s)):'Nog niet gespeeld'}</small></span>
   <span class="a-rm">${p.networth!=null?fmtK(p.networth):'–'}</span></button>`).join('');
  el.innerHTML=`<div class="a-count">${A.list.length<A.total?`${nl(A.list.length)} van ${nl(A.total)} spelers`:`${nl(A.total)} speler${A.total===1?'':'s'}`}</div>`+el.innerHTML+(A.list.length<A.total?`<button class="a-more" id="more">${A.loading?'Laden…':'Meer spelers laden'}</button>`:'');
@@ -115,7 +115,7 @@ function renderDetail(){const el=$('#detail');if(!el)return;
  el.innerHTML=`<div class="a-dhead"><button class="a-back" id="back" aria-label="Terug naar de lijst"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Spelers</button>
   <div class="a-who"><span class="a-av big">${esc(p.display).slice(0,1).toUpperCase()}${g&&online(g.seen_s)?'<i class="on"></i>':''}</span>
    ${openF.length?`<button class="a-warn ${A.flagOpen?'on':''}" id="flagB" title="${esc(openF.map(f=>flagName(f.kind)+(f.count>1?' ('+f.count+'×)':'')).join(' · '))}" aria-label="Mogelijk misbruik bekijken">${WARN}<span>${openF.length}</span></button>`:''}
-   <div class="a-whot"><h2>${esc(p.display)}${tag(p.tier)}${p.admin?'<i class="tg adm">BEHEER</i>':''}${+p.beta?'<i class="tg beta">BETA</i>':''}${p.banned?'<i class="tg ban">VERBANNEN</i>':''}<i class="tg ${+p.public_profile?'pub':'priv'}" title="${+p.public_profile?'Andere spelers zien zijn profiel':'Alleen hij en beheer zien zijn profiel'}">${+p.public_profile?'OPENBAAR PROFIEL':'PRIVÉ PROFIEL'}</i></h2>
+   <div class="a-whot"><h2>${esc(p.display)}${tag(p.tier)}${p.admin?'<i class="tg adm">BEHEER</i>':''}${p.banned?'<i class="tg ban">VERBANNEN</i>':''}<i class="tg ${+p.public_profile?'pub':'priv'}" title="${+p.public_profile?'Andere spelers zien zijn profiel':'Alleen hij en beheer zien zijn profiel'}">${+p.public_profile?'OPENBAAR PROFIEL':'PRIVÉ PROFIEL'}</i></h2>
    <p>${played?`${esc(RANKS[ri][0])} · level ${rankLevel(s.xp)}/5 · ${nl(s.xp)} XP`:g&&g.reset?'Gereset, begint opnieuw bij de volgende keer openen':'Heeft nog niet gespeeld'}</p>
    <p class="mute">Lid sinds ${date(p.created_at)} · ${g?(online(g.seen_s)?'<em>nu online</em>':'laatst actief '+ago(g.seen_s)):'nooit actief'} · id ${p.id}${g&&g.kicked?' · <span class="warn">spel moet herladen</span>':''}</p>
    ${p.banned?`<p class="bad">Verbannen${p.ban_reason?': '+esc(p.ban_reason):''}. Bij inloggen ziet hij "Dit profiel is verbannen, maak een nieuw profiel".</p>`:''}</div></div></div>
@@ -139,8 +139,6 @@ function renderDetail(){const el=$('#detail');if(!el)return;
    <div class="a-inline"><input id="xpAmt" inputmode="numeric" placeholder="XP erbij, bijv. 500" value="${esc(A.xp)}"><button class="a-btn ghost" id="xpGo" ${busy} ${Number.isFinite(parseAmt(A.xp))?'':'disabled'}>XP erbij</button></div></section>`:''}
   <section class="a-card"><h3>Lidmaatschap</h3><p class="a-desc">VIP en High roller krijgen meer kans, kortere wachttijden en een tag bij hun naam.</p><div class="a-tiers">${TIERS.map(([n,sub,c],t)=>`<button class="${c} ${p.tier_raw!=null&&p.tier===t?'on':p.tier_raw==null&&p.tier===t?'auto':''}" data-t="${t}" ${busy}><b>${n}</b><small>${sub}</small></button>`).join('')}</div>
    <p class="a-note">${p.tier_raw==null?`Staat op automatisch: ${p.tier===1?'telt als VIP door de VIP-code':'geen VIP-code gebruikt'}.`:`Vast ingesteld door een beheerder.`} De speler ziet de wijziging na herladen (gebeurt vanzelf).${p.tier_raw!=null?' <button class="a-link" id="tAuto">Terug naar automatisch</button>':''}</p></section>
-  <section class="a-card"><h3>Beta-tester</h3><p class="a-desc">Geeft toegang tot de realistische stad (<a href="/realistisch" target="_blank" rel="noopener">/realistisch</a>), een vroege test zonder pixels. Alleen beta-testers en beheerders zien de knop in het spel.</p>
-   <button class="a-btn ${+p.beta?'ghost':''}" id="bGo" ${busy}>${+p.beta?'Beta-toegang intrekken':'Beta-toegang geven'}</button><p class="a-note">${p.admin?'Beheerders hebben altijd toegang. ':''}${+p.beta?'Deze speler is beta-tester.':'Deze speler is geen beta-tester.'}</p></section>
   ${played?`<section class="a-card"><h3>Straatcredit</h3><p class="a-desc">Nodig om bij families binnen te komen.</p>${seg('cmode',[['add','Erbij'],['sub','Eraf'],['set','Op aantal zetten']],A.cred.mode)}
    <div class="a-inline"><input id="cAmt" inputmode="numeric" placeholder="aantal" value="${esc(A.cred.amt)}"><button class="a-btn" id="cGo" ${busy} ${cAfter==null?'disabled':''}>Opslaan</button></div>
    <div class="a-prev" id="cPrev">${cPrevHtml(s.cred,cAfter)}</div></section>
@@ -163,7 +161,7 @@ function renderDetail(){const el=$('#detail');if(!el)return;
   <section class="a-card wide"><h3>Aanpassingen door beheer</h3>${d.log.length?`<div class="a-log">${d.log.map(l=>logRow(l,true)).join('')}</div>`:'<p class="a-note">Nog niets aangepast.</p>'}</section>
   </div>`;
  bindDetail()}
-const ACT_NAME={money:'Geld',xp:'Rang / XP',cred:'Straatcredit',fix:'Hulp',tier:'Lidmaatschap',beta:'Beta',ban:'Verbanning',admin:'Beheer',reset:'Reset',kick:'Herladen',flags:'Signalen',note:'Signaal'};
+const ACT_NAME={money:'Geld',xp:'Rang / XP',cred:'Straatcredit',fix:'Hulp',tier:'Lidmaatschap',ban:'Verbanning',admin:'Beheer',reset:'Reset',kick:'Herladen',flags:'Signalen',note:'Signaal'};
 function logRow(l,mine){return `<div class="a-lrow"><span class="a-lt ${l.action}">${ACT_NAME[l.action]||esc(l.action)}</span><div><b>${mine?'':`<button class="a-link" data-open="${l.target_id}">${esc(l.target||'?')}</button> · `}${esc(l.detail||'')}</b><small>${esc(l.admin||'?')} · ${date(l.created_at)}</small></div></div>`}
 function renderLog(){const el=$('#logList');if(!el)return;if(!A.log){el.innerHTML='<div class="a-empty">Laden…</div>';return}
  el.innerHTML=A.log.length?A.log.map(l=>logRow(l)).join(''):'<div class="a-empty">Nog geen aanpassingen</div>';
@@ -205,7 +203,6 @@ function bindDetail(){const el=$('#detail'),p=A.d&&A.d.player;const on=(id,f)=>{
  el.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{const t=+b.dataset.t;if(p.tier_raw!=null&&p.tier===t)return;act('tier',{tier:t},'Lidmaatschap aangepast')});
  on('tAuto',()=>act('tier',{tier:null},'Lidmaatschap'));
  on('kGo',()=>act('kick',{},'Gedaan'));
- on('bGo',()=>act('beta',{on:!+p.beta},+p.beta?'Beta-toegang ingetrokken':'Beta-toegang gegeven'));
  on('aGo',()=>confirmDlg(p.admin?'Beheerrechten afnemen':'Beheerder maken',p.admin?`${p.display} kan daarna niet meer in dit dashboard.`:`${p.display} krijgt toegang tot dit dashboard en kan spelers aanpassen.`,p.admin?'Afnemen':'Beheerder maken',()=>act('admin',{on:!p.admin},'Beheer')));
  on('bGo',()=>confirmDlg('Speler verbannen',`${p.display} wordt meteen uitgelogd, kan niet meer inloggen, verdwijnt uit de ranglijst en ziet "Dit profiel is verbannen, maak een nieuw profiel".${A.ban?' Reden: '+A.ban:''}`,'Verbannen',()=>act('ban',{on:true,reason:A.ban},'Verbannen'),'red'));
  on('ubGo',()=>act('ban',{on:false},'Verbanning opgeheven'));

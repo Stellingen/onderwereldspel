@@ -84,7 +84,7 @@ app.get('/api/me', auth, async (req, res) => {
   const out = { username: req.user.u };
   if (db.state.ready) {
     try {
-      const [rows] = await db.q('SELECT created_at, username, tier, is_admin, banned, ban_reason, public_profile, beta FROM users WHERE id=?', [req.user.id]);
+      const [rows] = await db.q('SELECT created_at, username, tier, is_admin, banned, ban_reason, public_profile FROM users WHERE id=?', [req.user.id]);
       if (!rows.length) return res.status(401).json({ error: 'Account bestaat niet meer' });
       if (rows[0].banned) return res.status(403).json({ error: 'Dit profiel is verbannen' + (rows[0].ban_reason ? ' (' + rows[0].ban_reason + ')' : '') + '. Maak een nieuw profiel aan.', code: 'banned', reason: rows[0].ban_reason || '' });
       out.since = rows[0].created_at;
@@ -95,8 +95,6 @@ app.get('/api/me', auth, async (req, res) => {
       out.tier = rows[0].tier != null ? +rows[0].tier : (out.redeemed.includes('vip') ? 1 : 0);
       out.admin = !!rows[0].is_admin || admin.ADMIN_USERS().includes(rows[0].username);
       out.pub = !!rows[0].public_profile;
-      // beta-tester: mag de realistische stad (/realistisch) zien; beheerders altijd
-      out.beta = !!rows[0].beta || out.admin;
     } catch (e) { console.error(e); }
   }
   res.json(out);
@@ -391,14 +389,13 @@ app.get(['/index.html', '/index'], (req, res) => res.redirect(301, '/'));
 app.get(['/game', '/game.html'], (req, res) => sendPage(res, 'game.html', { title: `${BRAND.name} · Spelen`, path: '/game', noindex: true }));
 // Pixelstad: het open-wereld-spel voor VIP en High roller (zelfde account en voortgang als /game)
 app.get(['/stad', '/stad.html'], (req, res) => sendPage(res, 'stad.html', { title: `Pixelstad · ${BRAND.name}`, path: '/stad', noindex: true }));
-app.get(['/realistisch', '/realistisch.html'], (req, res) => sendPage(res, 'realistisch.html', { title: `Realistische stad (beta) · ${BRAND.name}`, path: '/realistisch', noindex: true }));
 app.get(['/admin', '/admin.html'], (req, res) => sendPage(res, 'admin.html', { title: `Beheer · ${BRAND.name}`, path: '/admin', noindex: true }));
 app.get('/manifest.webmanifest', (req, res) => {
   let man = {}; try { man = JSON.parse(tplFile('manifest.webmanifest')); } catch (e) {}
   man.name = BRAND.name; man.short_name = BRAND.short; man.description = BRAND.tagline + '. ' + BRAND.genre + '.';
   res.set('Cache-Control', 'no-cache').type('application/manifest+json').send(JSON.stringify(man, null, 2));
 });
-app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /game\nDisallow: /stad\nDisallow: /realistisch\nDisallow: /real/\n\nSitemap: ${SITE}/sitemap.xml\n`));
+app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /game\nDisallow: /stad\n\nSitemap: ${SITE}/sitemap.xml\n`));
 app.get('/sitemap.xml', (req, res) => {
   const urls = Object.keys(ROUTE_META).concat(GD.games.map(x => '/casino/' + x.slug), GD.fams.map(x => '/families/' + x.id));
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(u => `  <url><loc>${escH(SITE + u)}</loc></url>`).join('\n')}\n</urlset>\n`);
