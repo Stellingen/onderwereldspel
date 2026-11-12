@@ -83,7 +83,8 @@ function settings(){const pix=G.pixPref||0;let skin='',wz='';try{skin=localStora
   scr.innerHTML=head('Instellingen')+`<div class="sd-p2-set">
    <div class="sd-row"><b>Geluid</b><div class="sd-seg"><button data-snd="fx" class="${snd.fxOn?'on':''}">Effecten</button><button data-snd="mu" class="${snd.muOn?'on':''}">Muziek</button></div></div>
    <div class="sd-row"><b>Volume</b><input type="range" min="0" max="1" step=".05" value="${snd.vol!=null?snd.vol:.8}" data-vol aria-label="Volume"></div>
-   <div class="sd-row"><b>Beeld</b><div class="sd-seg">${[[480,'Scherp'],[0,'Normaal'],[260,'Grof']].map(([v,n])=>`<button data-pix="${v}" class="${pix===v?'on':''}">${n}</button>`).join('')}</div></div>
+   <div class="sd-row"><b>Camera</b><div class="sd-seg">${[['boven','Bovenaf'],['achter','Achter je'],['ogen','Ogen']].map(([v,n])=>`<button data-cam="${v}" class="${(G.camMode||'boven')===v?'on':''}">${n}</button>`).join('')}</div></div>
+   <div class="sd-row"><b>Beeld</b><div class="sd-seg">${[[540,'Scherp'],[0,'Normaal'],[300,'Grof']].map(([v,n])=>`<button data-pix="${v}" class="${pix===v?'on':''}">${n}</button>`).join('')}</div></div>
    <div class="sd-row"><b>Huidskleur</b><div class="sd-sk">${SK.map(c=>`<button data-skin="${c}" style="--c:${c}" class="${skin===c?'on':''}" aria-label="Huidskleur"></button>`).join('')}</div></div>
    <div class="sd-row"><b>Tijd van de dag</b><div class="sd-seg">${[['','Echt'],['1','Dag'],['0','Nacht']].map(([v,n])=>`<button data-day="${v}" class="${String(G.forceDay==null?'':G.forceDay)===v?'on':''}">${n}</button>`).join('')}</div></div>
    <div class="sd-row"><b>Weer</b><div class="sd-seg">${[['','Vanzelf'],['helder','Zon'],['regen','Regen'],['mist','Mist'],['sneeuw','Sneeuw']].map(([v,n])=>`<button data-weer="${v}" class="${wz===v?'on':''}">${n}</button>`).join('')}</div></div>
@@ -139,6 +140,7 @@ ov.addEventListener('click',e=>{const t=e.target;if(t===ov){close();return}
   if(t.closest('[data-now="wp"]')){const w=G.waypoint;close();if(w){if(w.pl)G.goPlace(M.placeById(w.pl));else G.goTo(w.x,w.z)}return}
   const b=t.closest('button');if(!b||app!=='set')return;
   if(b.dataset.snd&&G.snd){if(b.dataset.snd==='fx')G.snd.setFx(!G.snd.fxOn);else G.snd.setMu(!G.snd.muOn);settings();return}
+  if(b.dataset.cam!=null){G.setCam&&G.setCam(b.dataset.cam);settings();return}
   if(b.dataset.pix!=null){G.setPix(+b.dataset.pix||0);settings();return}
   if(b.dataset.weer!=null){G.weerZet&&G.weerZet(b.dataset.weer);settings();return}
   if(b.dataset.skin){try{localStorage.setItem('stad_skin',b.dataset.skin)}catch(e){}G.refreshLook&&G.refreshLook();settings();return}

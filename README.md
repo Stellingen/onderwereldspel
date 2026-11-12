@@ -1456,6 +1456,46 @@ Pixelstad; het klikspel is niet aangepast. Premiejagers zijn op verzoek niet geb
   je loonlijst waarschuwt je en laat één stoep vrij.
 - **Kaart**: het Autokerkhof De Sloop stond half op de weg naar de brug; het staat nu ten noorden van de weg.
 
+### Gangsterspel: camera, verhaal en kraakwerk (november 2026)
+Inspiratie: GTA en Mafia. De Pixelstad blijft een pixelspel, maar speelt nu ook van dichtbij. Het klikspel is niet veranderd.
+- **Camera (stad-cam.js).** Drie standen, wisselen met V, met de cameraknop rechtsboven of in de instellingen van de telefoon:
+  - **Bovenaf**: zoals altijd.
+  - **Achter je** (third-person):
+    - over je schouder; in de auto hangt de camera achter de auto en draait mee met de weg;
+    - op de pc klik je in het beeld om met de muis te kijken (Esc laat los) en zoomt het scrollwiel;
+    - op de telefoon veeg je om te kijken.
+  - **Door je ogen** (first-person): met een richtstip; in de auto kijk je over de motorkap. Wat je aankijkt, daar praat je mee.
+  - Gebouwen tussen jou en de camera schuiven de camera naar voren. In deze standen is er een lucht met zon of maan, sterren en pixelwolken die meegaan met het weer.
+- **Beeld (stad-game.js).** Fijnere pixels (standaard 400 lijnen, achter je en door je ogen 15% meer), zachte schaduw in hoeken en tegen muren (uit de diepte) en filmische kleuren (koele schaduwen, warme lichten).
+- **Verhaal (stad-verhaal.js).** Negen missies in drie hoofdstukken, met De Slang als rivaal. Elke missie betaalt één keer zwart geld op de schaal van de straatklussen (`zS`), plus XP en 40 straat-XP. Bewaard in `S.stadVerhaal`.
+  - Opdrachtgevers staan in de stad met een letter boven hun hoofd:
+    - Ome Joop (J) bij Café Het Gat;
+    - Kees Brouwer (K) in de haven;
+    - Madame Lin (L) bij Casino Royaal.
+  - Je vindt ze ook in de laag Verhaal op de kaart, als contact en in de telefoon-app Verhaal (met de voortgang en een routeknop).
+  - Soorten opdrachten:
+    - beschermgeld ophalen;
+    - een auto stelen en kortsluiten tegen de klok, met een tracker;
+    - iemand schaduwen zonder gezien te worden;
+    - foto's maken door je ogen;
+    - een vluchtende verklikker inhalen;
+    - knokken;
+    - sluipen langs bewaking met blikvelden;
+    - een kluis kraken;
+    - rijden langs adressen tegen de klok;
+    - zakkenrollen;
+    - de politie afschudden;
+    - een bankoverval als finale.
+  - Mislukt een missie, dan kun je het meteen opnieuw proberen. Tijdens een missie zie je:
+    - de opdracht onderin en een klok bovenin;
+    - een meter voor opgemerkt worden;
+    - een gouden lichtbaken, en de route als lichtpuntjes op straat.
+  - De route op straat verschijnt ook als je op de kaart een plek markeert (dan roze).
+- **Kraakwerk (stad-kraak.js).**
+  - **Slot openpeuteren**: zoek de hoek en draai; forceren breekt je haakje. Wordt nu ook gebruikt bij inbraken van de klussen; een gebroken haakje laat het alarm afgaan.
+  - **Kluis kraken**: draai en luister; de meter slaat uit bij het goede getal. Grote overvallen (bank, casino, juwelier, goud) krijgen nu een kluis-stap.
+  - **Bedrading**: verbind de draden op kleur tegen de klok. Dit vervangt het oude kortsluiten bij het stelen van geparkeerde auto's; beveiligde en dure auto's zijn moeilijker.
+
 ### Realistische stad (beta, alleen voor testers)
 
 `/realistisch` is een vroege test van de stad zonder pixels (`public/realistisch.html`, `public/real/`, three.js r185 in

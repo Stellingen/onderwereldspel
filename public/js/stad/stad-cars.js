@@ -127,7 +127,7 @@ function driveStep(dt){const K=G.K,c=mine;let thr=0,steer=0;
   const hit=v0-Math.abs(c.v);if(hit>4.5){c.dmg=Math.min(.6,(c.dmg||0)+hit*.006);G.shake&&G.shake(Math.min(1,hit*.08));G.snd&&G.snd.fx('hit');G.onCrash&&G.onCrash(c,hit)}
   c.mesh.position.set(c.x,0,c.z);c.mesh.rotation.y=c.ry;G.P.x=c.x;G.P.z=c.z;G.P.vx=fx*c.v;G.P.vz=fz*c.v;G.P.ry=c.ry;
   // camera achter de auto, tenzij je zelf net hebt gedraaid
-  if(Math.abs(c.v)>3&&performance.now()-(G.manualRotT||0)>1500){let want=c.ry+Math.PI-G.yawT;while(want>Math.PI)want-=Math.PI*2;while(want<-Math.PI)want+=Math.PI*2;G.yawT+=want*Math.min(1,dt*1.6)}}
+  if(Math.abs(c.v)>3&&performance.now()-(G.manualRotT||0)>1500){let want=c.ry+Math.PI-G.yawT;while(want>Math.PI)want-=Math.PI*2;while(want<-Math.PI)want+=Math.PI*2;G.yawT+=want*Math.min(1,dt*(G.camMode==='achter'?4.5:1.6))}}
 G.carStep=function(dt){if(!TRAF.length)for(let i=0;i<26;i++)spawnCar(i<3,false);
   TRAF.slice().forEach(c=>trafficStep(c,dt));policeTick(dt);
   // zwaailichten

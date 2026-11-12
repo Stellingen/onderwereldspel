@@ -81,9 +81,10 @@ function savePos(){try{localStorage.setItem('stad_pos',JSON.stringify({x:+P.x.to
 G.savePos=savePos;
 // Pixelgrootte in echte schermpixels (geheel getal, anders worden de pixels ongelijk): de korte kant van het beeld is
 // ongeveer 360 pixels hoog (Fijn 480, Grof 260). Zo ziet het er op elke telefoon en elk scherm hetzelfde uit.
-function resize(){const dpr=Math.min(devicePixelRatio||1,3),w=innerWidth,h=innerHeight,minDev=Math.min(w,h)*dpr,target=G.pixPref||360;
+function resize(){const dpr=Math.min(devicePixelRatio||1,3),w=innerWidth,h=innerHeight,minDev=Math.min(w,h)*dpr,target=(G.pixPref||400)*(G.camMode&&G.camMode!=='boven'?1.15:1);
   const k=Math.max(1,Math.round(minDev/target));G.pix=k/dpr;const rw=Math.ceil(w*dpr/k),rh=Math.ceil(h*dpr/k);
-  renderer.setSize(rw,rh,false);if(rt)rt.setSize(rw,rh);if(post)post.material.uniforms.uRes.value.set(rw,rh);camera.aspect=w/h;camera.fov=w/h<1?Math.min(62,34/Math.max(.55,w/h)*.8):34;camera.updateProjectionMatrix()}
+  renderer.setSize(rw,rh,false);if(rt)rt.setSize(rw,rh);if(post)post.material.uniforms.uRes.value.set(rw,rh);camera.aspect=w/h;camera.fov=w/h<1?Math.min(62,34/Math.max(.55,w/h)*.8):34;G.fov0=camera.fov;camera.updateProjectionMatrix()}
+G.resize=()=>resize();
 G.setPix=k=>{G.pixPref=k;try{localStorage.setItem('stad_pix',k||'')}catch(e){}resize()};
 try{const k=+localStorage.getItem('stad_pix');if(k>=200)G.pixPref=k}catch(e){}
 
@@ -92,10 +93,10 @@ function makePost(){
   rt=new TH.WebGLRenderTarget(2,2,{minFilter:TH.NearestFilter,magFilter:TH.NearestFilter,depthBuffer:true});
   rt.depthTexture=new TH.DepthTexture(2,2);rt.depthTexture.type=TH.UnsignedIntType;
   postCam=new TH.OrthographicCamera(-1,1,1,-1,0,1);
-  const mat=new TH.ShaderMaterial({uniforms:{tColor:{value:rt.texture},tDepth:{value:rt.depthTexture},uRes:{value:new TH.Vector2(2,2)},cameraNear:{value:camera.near},cameraFar:{value:camera.far},uNight:{value:0},uOutline:{value:1},uTint:{value:new TH.Vector3(1,1,1)},uFlash:{value:new TH.Vector4(1,1,1,0)},uSat:{value:1.12},uVig:{value:.35}},
+  const mat=new TH.ShaderMaterial({uniforms:{tColor:{value:rt.texture},tDepth:{value:rt.depthTexture},uRes:{value:new TH.Vector2(2,2)},cameraNear:{value:camera.near},cameraFar:{value:camera.far},uNight:{value:0},uOutline:{value:1},uTint:{value:new TH.Vector3(1,1,1)},uFlash:{value:new TH.Vector4(1,1,1,0)},uSat:{value:1.12},uVig:{value:.35},uAo:{value:1},uAoR:{value:1},uGrade:{value:1}},
     vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',
     fragmentShader:`#include <packing>
-      uniform sampler2D tColor,tDepth;uniform vec2 uRes;uniform float cameraNear,cameraFar,uNight,uOutline,uSat,uVig;uniform vec3 uTint;uniform vec4 uFlash;varying vec2 vUv;
+      uniform sampler2D tColor,tDepth;uniform vec2 uRes;uniform float cameraNear,cameraFar,uNight,uOutline,uSat,uVig,uAo,uAoR,uGrade;uniform vec3 uTint;uniform vec4 uFlash;varying vec2 vUv;
       float ld(vec2 uv){return -perspectiveDepthToViewZ(texture2D(tDepth,uv).x,cameraNear,cameraFar);}
       vec3 toS(vec3 c){c=max(c,0.);return mix(c*12.92,1.055*pow(c,vec3(1./2.4))-.055,step(.0031308,c));}
       float bayer(vec2 p){p=mod(floor(p),4.);float i=p.x+p.y*4.;
@@ -106,6 +107,12 @@ function makePost(){
         float behind=max(max(d-dl,d-dr),max(d-du,d-dd));        // ik lig achter een buur: contourlijn
         float front=max(max(dl-d,dr-d),max(du-d,dd-d));         // ik lig voor een buur: lichte rand
         float edge=step(th,behind)*uOutline,rim=step(th,front)*(1.-edge)*uOutline;
+        // schaduw in hoeken en tegen muren (uit de diepte): in 1/diepte is een vlak lineair, een binnenhoek ligt er 'achter'
+        float w0=1./d,ao=0.,an=0.;
+        for(int i=0;i<4;i++){vec2 dir=i==0?vec2(1.,0.):i==1?vec2(0.,1.):i==2?vec2(.7071,.7071):vec2(.7071,-.7071);
+          for(int j=1;j<=3;j++){float r=float(j*j)+1.;vec2 o=dir*px*r*uAoR;float wa=1./ld(vUv+o),wb=1./ld(vUv-o);
+            float ok=step(abs(wa-w0),w0*.35)*step(abs(wb-w0),w0*.35);ao+=clamp(((wa+wb)*.5-w0)/w0*14.,0.,1.)*ok;an+=1.;}}
+        ao=ao/an;c*=1.-clamp(ao*1.9,0.,.55)*uAo;
         c=mix(c,c*.32,edge*.9);c+=c*rim*.12;
         // gloed van lichte dingen (ramen, neon, lampen), vooral 's nachts
         vec3 b=vec3(0.);
@@ -115,6 +122,8 @@ function makePost(){
         c+=b*(.03+.055*uNight);
         // kleur: iets meer contrast en verzadiging
         vec3 s=toS(c)*uTint;float l=dot(s,vec3(.299,.587,.114));s=mix(vec3(l),s,uSat);s=(s-.5)*1.06+.5;
+        // filmische kleur: koele schaduwen, warme lichten, een zachte S-curve
+        float lg=dot(s,vec3(.299,.587,.114));vec3 gr=s*mix(vec3(.93,.97,1.07),vec3(1.05,1.0,.93),smoothstep(.15,.85,lg));gr=mix(gr,gr*gr*(3.-2.*gr),.28);s=mix(s,gr,uGrade);
         // vignet
         vec2 q=vUv-.5;float vg=dot(q,q);s*=1.-vg*uVig;s=mix(s,uFlash.rgb,uFlash.a*(.25+vg*2.2));
         // beperkte kleurdiepte met dither: echte pixel-art kleuren
@@ -174,7 +183,7 @@ function input(){
   cv.addEventListener('wheel',e=>{e.preventDefault();G.distT=Math.max(16,Math.min(70,G.distT*(e.deltaY>0?1.12:.89)))},{passive:false});
 }
 const ray=new TH.Raycaster(),v2=new TH.Vector2(),plane=new TH.Plane(new TH.Vector3(0,1,0),0),hitP=new TH.Vector3();
-function click(cx,cy){v2.set(cx/innerWidth*2-1,-(cy/innerHeight)*2+1);ray.setFromCamera(v2,camera);
+function click(cx,cy){if(G.camClick&&G.camClick(cx,cy))return;v2.set(cx/innerWidth*2-1,-(cy/innerHeight)*2+1);ray.setFromCamera(v2,camera);
   // eerst de markeringen (ring, ruit, bord), dan de gebouwen, dan de grond
   for(const m of marks){if(!m.ring.visible&&!m.pin.visible)continue;const h=ray.intersectObjects([m.pin,m.sign,m.ring].filter(o=>o&&o.visible!==false),false);if(h.length){goPlace(m.p);return}}
   const hc=ray.intersectObject(cityMesh,false),hl=ray.intersectObjects(G.lotMeshes||[],false);
@@ -235,14 +244,14 @@ function step(dt,ts){
   // camera
   let dy=G.yawT-G.yaw;G.yaw+=dy*Math.min(1,dt*8);const zk=G.camK!=null?G.camK:(G.talking&&!G.driving?.82:1);G.dist+=(G.distT*zk-G.dist)*Math.min(1,dt*(zk<1?3.5:6));
   const cp=Math.cos(G.pitch),spp=Math.sin(G.pitch);const tx=P.x+(G.camOff?G.camOff.x:0),tz=P.z+(G.camOff?G.camOff.z:0),ty=1.2;
-  camera.position.set(tx+Math.sin(G.yaw)*cp*G.dist,ty+spp*G.dist,tz+Math.cos(G.yaw)*cp*G.dist);camera.lookAt(tx,ty,tz);
+  if(!(G.camRig&&G.camRig(dt,camera))){camera.position.set(tx+Math.sin(G.yaw)*cp*G.dist,ty+spp*G.dist,tz+Math.cos(G.yaw)*cp*G.dist);camera.lookAt(tx,ty,tz)}
   if(G.shakeA>.01){const a=G.shakeA;camera.position.x+=(Math.random()-.5)*a;camera.position.y+=(Math.random()-.5)*a;camera.position.z+=(Math.random()-.5)*a;G.shakeA*=Math.pow(.02,dt)}
-  sun.position.set(tx+G.sunOff.x,G.sunOff.y,tz+G.sunOff.z);sun.target.position.set(tx,0,tz);
+  const shx=G.shadowC?G.shadowC.x:tx,shz=G.shadowC?G.shadowC.z:tz;sun.position.set(shx+G.sunOff.x,G.sunOff.y,shz+G.sunOff.z);sun.target.position.set(shx,0,shz);
   camera.updateMatrixWorld();cutV.set(P.x,1.2,P.z).project(camera);const rs=renderer.getSize(cutS);X.U.uPS.value.set((cutV.x*.5+.5)*rs.x,(cutV.y*.5+.5)*rs.y);
-  cutV.set(P.x,1.2,P.z).applyMatrix4(camera.matrixWorldInverse);X.U.uPZ.value=-cutV.z;X.U.uCutR.value=rs.y*.2*(G.paused?0:1);
+  cutV.set(P.x,1.2,P.z).applyMatrix4(camera.matrixWorldInverse);X.U.uPZ.value=-cutV.z;X.U.uCutR.value=rs.y*.2*(G.paused||(G.camMode&&G.camMode!=='boven')?0:1);
   // mensen
   G.missionStep&&!G.paused&&G.missionStep(dt);
-  const A=G.actors.slice(0,ACT_MAX);humans.count(1+NPC.length+A.length);humans.pose(0,{x:P.x,y:-60,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,look:P.look});if(G.avatarPose)G.avatarPose({x:P.x,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,v,dt,lean:v>7?.2:v>1?.05:0,hide:G.driving,crouch:G.hidden,arm:G.pArm||0});
+  const A=G.actors.slice(0,ACT_MAX);humans.count(1+NPC.length+A.length);humans.pose(0,{x:P.x,y:-60,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,look:P.look});if(G.avatarPose)G.avatarPose({x:P.x,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,v,dt,lean:v>7?.2:v>1?.05:0,hide:G.driving||G.camMode==='ogen',crouch:G.hidden,arm:G.pArm||0});
   NPC.forEach((n,i)=>{npcStep(n,dt);humans.pose(i+1,n)});A.forEach((a,i)=>humans.pose(1+NPC.length+i,a));humans.flush();humans.xray(false);
   // markeringen laten leven
   for(const m of marks){m.pin.rotation.y=ts*1.6;m.pin.position.y=3+Math.sin(ts*2.2+m.p.door.x)*.18;const s=1+Math.sin(ts*3)*.06;m.ring.scale.set(s,s,s);m.ring.material.opacity=G.near===m.p?1:(m.p.dyn&&!m.p.own?.4:.7)}

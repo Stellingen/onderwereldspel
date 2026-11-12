@@ -13,7 +13,7 @@ function level(xp){xp=xp==null?N().xp:xp;let L=1;while(L<MAXL&&xp>=need(L+1))L++
 const TITLES=[[1,'Onbekende'],[3,'Nieuwkomer'],[5,'Bekend gezicht'],[8,'Buurtfiguur'],[12,'Straatmaat'],[16,'Grote jongen'],[20,'Straatlegende'],[25,'Onderkoning'],[30,'Koning van de stad']];
 const title=L=>{let t=TITLES[0][1];TITLES.forEach(x=>{if(L>=x[0])t=x[1]});return t};
 // wat levert wat op
-const SXP={praat:1,roof:6,oma:5,fooi:2,heler:4,ontsnap:10,ontsnap3:10,verstop:3,missie:12,pakket:8,foto:2,taxi:1,kraak:5,lever:12,jack:10,vis:3,visz:9,bak:1,tag:6,wijk:60,bescherm:3,
+const SXP={verhaal:40,praat:1,roof:6,oma:5,fooi:2,heler:4,ontsnap:10,ontsnap3:10,verstop:3,missie:12,pakket:8,foto:2,taxi:1,kraak:5,lever:12,jack:10,vis:3,visz:9,bak:1,tag:6,wijk:60,bescherm:3,
   brons:15,zilver:25,goud:40,bekend:1,cadeau:2,gunst:3,verzoek:6,vriend:20,vertrouw:40,loon:15,omkoop:10,ram:15,voorpagina:6,agentkoffie:1,race:4,dobbel:2,optreden:8,uitkijk:10,event:12,zakrol:5,deal:4,hond:25,compl:1,knok:10,eet:1,selfie:2,stadfoto:2,dagvol:20,zoek:3,bal:1};
 const PERKS=[
  ['benen','Snelle benen','Je loopt en rent 4% sneller per rang',3],

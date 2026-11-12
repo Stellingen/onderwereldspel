@@ -13,7 +13,7 @@ const zS=k=>G.schaal?G.schaal.zwart(k):Math.round(50*k),wS=k=>Math.max(5,Math.ro
 const fl=(t,x,z,c)=>G.fx2&&G.fx2.float(t,x,z,c);
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 let EV=null,next=rr(70,130);
-const free=()=>!(G.mission&&G.mission())&&!(G.police&&G.police.active())&&!(G.race&&G.race.active())&&!G.paused&&!(typeof inJail==='function'&&inJail());
+const free=()=>!(G.mission&&G.mission())&&!G.verhaalOn&&!(G.police&&G.police.active())&&!(G.race&&G.race.active())&&!G.paused&&!(typeof inJail==='function'&&inJail());
 // een plek op de stoep op een afstand van jou, die je lopend kunt bereiken
 function plek(min,max,tiles){const P=G.P;for(let k=0;k<60;k++){const a=rr(0,6.28),r=rr(min,max),x=P.x+Math.cos(a)*r,z=P.z+Math.sin(a)*r,t=M.at(Math.floor(x),Math.floor(z));if(!(tiles||[T.WALK,T.PLAZA]).includes(t)||!M.canStand(x,z,.4))continue;if(M.estateAt(x,z)!==M.estateAt(P.x,P.z))continue;const path=M.findPath(P.x,P.z,x,z);if(path&&path.length)return {x,z}}return null}
 function banner(sm,t,c){const a=document.getElementById('sdArea');if(!a)return;a.querySelector('small').textContent=sm;a.querySelector('b').textContent=t;a.hidden=false;a.classList.toggle('bad',c==='bad');a.classList.remove('go');void a.offsetWidth;a.classList.add('go');clearTimeout(banner.t);banner.t=setTimeout(()=>{a.hidden=true;a.classList.remove('bad')},3000)}

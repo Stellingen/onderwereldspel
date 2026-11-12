@@ -84,11 +84,12 @@ function build(c){const k=kindOf(c),ch=typeof chance==='function'?chance(c):50,D
     pts.forEach((p,i)=>add({t:'hold',p,r:2,d:2.5+D*2,txt:tt[0]+' '+(i+1)+' van 3',act:tt[1]}));add({t:'getaway',p:far(s,45,90),txt:'Maak dat je wegkomt'});
     for(let i=0;i<1+Math.round(D*2);i++)m.guards.push(actor('cop',s.x+rr(-14,14),s.z+rr(-10,10),{R:8+D*4,half:.62,home:s,rad:18}))}
   else if(k==='sneak'){const z=ZONE[ZLOC[c.id]||'villa'],r=z.r;m.where=z.n;const cr=snap(z.crack[0],z.crack[1]);
-    add({t:'go',p:snap((r[0]+r[2])/2,r[1]-1),r:6,txt:'Ga naar '+z.n});add({t:'hold',p:cr,r:2,d:3+D*4,txt:'Kraak het slot',act:'Slot kraken'});
+    add({t:'go',p:snap((r[0]+r[2])/2,r[1]-1),r:6,txt:'Ga naar '+z.n});add({t:'hold',p:cr,r:2,d:3+D*4,txt:'Kraak het slot',act:'Slot kraken',kr:'slot'});
     const n=2+Math.round(D*2),lp=[];for(let i=0;i<n;i++){let p;for(let k=0;k<30;k++){p=snap(rr(r[0]+2,r[2]-2),rr(r[1]+1,r[3]-1));if(lp.every(q=>dist(q,p)>8))break}lp.push(p)}
     add({t:'loot',pts:lp,txt:'Pak de buit',kind:/kunst|kroon|londen/.test(c.id)?'art':/diamant|geneve/.test(c.id)?'gold':'bag'});add({t:'getaway',p:far(cr,60,120),txt:'Naar je vluchtauto'});
     for(let i=0;i<1+Math.round(D*3);i++)m.guards.push(actor('guard',rr(r[0]+3,r[2]-3),rr(r[1]+2,r[3]-2),{R:8+D*5,half:.66,zone:r}))}
   else if(k==='rob'){const s=spot(LOC[c.id]||'avond');m.where=s.n;add({t:'go',p:s,r:2.5,txt:'Ga naar '+s.n});add({t:'hold',p:s,r:2.6,d:2.5+D*2.5,txt:'Overval! Houd ze in bedwang',act:'Overvallen',alarm:1});
+    if(/bank|casino|goud|juwelier|centrale/.test(c.id))add({t:'hold',p:s,r:2.8,d:1,txt:'Kraak de kluis voor de politie er is',act:'Kluis kraken',kr:'kluis'});
     const n=1+Math.round(D*2),lp=[];for(let i=0;i<n;i++)lp.push(snap(s.x+rr(-7,7),s.z+rr(-7,7)));add({t:'loot',pts:lp,txt:'Grijp de buit',kind:/bank|transport|centrale|goud/.test(c.id)?'cash':'gold'});
     add({t:'getaway',p:far(s,80,140),txt:'Vlucht naar je vluchtauto'})}
   else{// koerier: ophalen, eventueel een gesprek, afleveren; soms een stille agent erachteraan
@@ -158,6 +159,9 @@ G.missionStep=function(dt){if(!MS)return;const m=MS,P=G.P,s=m.steps[m.i];if(!s)r
   // de stap zelf
   const hold=holding();
   if(s.t==='go'){if(dist(P,s.p)<s.r)next()}
+  else if(s.t==='hold'&&s.kr&&G.kraak){const ok=dist(P,s.p)<s.r;m.prog=0;m.hint=ok?'':'';s.cool=(s.cool||0)-dt;
+    if(ok&&(hold||G.K.e)&&!s.busy&&s.cool<=0){s.busy=1;const f=s.kr==='kluis'?G.kraak.kluis:G.kraak.slot;f({d:m.D}).then(r=>{s.busy=0;s.cool=.8;if(MS!==m)return;
+      if(r&&r.ok){G.ev&&G.ev('kraak');next()}else if(r!=='cancel'){if(s.kr==='slot'&&!m.alarm){alarm('Je haakje brak met een klap. De bewaking hoorde het!')}else{m.miss+=1;G.toast('Mis. Probeer het nog eens','bad')}}})}}
   else if(s.t==='hold'){const ok=dist(P,s.p)<s.r;if(ok&&hold){s.st+=dt;if(s.alarm&&!m.alarm&&s.st>.2)alarm('Overval! De politie is gebeld')}else s.st=Math.max(0,s.st-dt*1.5);m.prog=s.st/s.d;
     if(s.st>=s.d){if(s.take&&m.obj){scene.remove(m.obj);m.obj=null;m.carry=1}next()}}
   else if(s.t==='loot'){for(let i=s.left.length-1;i>=0;i--){if(dist(P,s.left[i])<1.4){scene.remove(s.objs[i]);s.left.splice(i,1);s.objs.splice(i,1);G.toast('Buit gepakt ('+(s.pts.length-s.left.length)+'/'+s.pts.length+')','ok')}}
@@ -205,7 +209,7 @@ function hud(on){const box=$s('sdMis'),ab=$s('sdAct');if(on===false){box.hidden=
   const left=MS.limit-MS.t;$s('sdMisTime').textContent=fmtT(left);$s('sdMisTime').classList.toggle('low',left<20);
   const sus=Math.max(MS.sus||0,MS.tsus||0);$s('sdMisSus').hidden=!(sus>.02)||MS.alarm;$s('sdMisSus').querySelector('i>i').style.width=sus*100+'%';
   // actieknop: vasthouden
-  const need=['hold','lift','beg'].includes(s.t)&&inRange(s);ab.hidden=!need;if(need){const a=s.act||(s.t==='lift'?'Grijpen':'Aanspreken');$s('sdActT').innerHTML=(touch?'Houd vast · ':'<kbd>Spatie</kbd> ')+E(a);
+  const need=['hold','lift','beg'].includes(s.t)&&inRange(s);ab.hidden=!need;if(need){const a=s.act||(s.t==='lift'?'Grijpen':'Aanspreken');$s('sdActT').innerHTML=(s.kr?(touch?'Tik · ':'<kbd>E</kbd> '):(touch?'Houd vast · ':'<kbd>Spatie</kbd> '))+E(a);
     ab.style.setProperty('--p',(s.t==='beg'?0:clamp(MS.prog||0,0,1))*100+'%')}MS.prog=s.t==='hold'||s.t==='lift'?MS.prog:MS.prog}
 $s('sdMisX').onclick=()=>{if(!MS)return;if(MS._ask&&performance.now()-MS._ask<3000){G.missionAbort();return}MS._ask=performance.now();G.toast('Nog een keer drukken om af te breken. Dat telt als mislukt.','bad')};
 // vasthouden met de knop (telefoon) of muis

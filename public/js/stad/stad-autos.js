@@ -131,7 +131,7 @@ function search(p){const c=kraakRef(),t=tierOf(p.m),k=(typeof lootMult==='functi
   setTimeout(()=>{if(dist(p,G.P)<3.5&&!G.driving)carMenu(p)},500)}
 /* ---------- kortsluiten en wegrijden ---------- */
 async function hotwire(p){const why=stealWhy(p);if(why){G.toast(why,'bad');return}const m=p.m,en=typeof carEn==='function'?carEn(m):6;S.energy-=en;S.cd=S.cd||{};S.cd.car=now()+(typeof carCd==='function'?carCd():30000);sv();
-  const r=await gameWire(p);if(r==='cancel'){G.toast('Je laat de draadjes hangen','info');return}
+  let r;if(G.kraak){const k=await G.kraak.draad({d:Math.min(1,.15+.18*(p.sec||0)+.08*(tierOf(m)-1)),title:'Kortsluiten · '+m.n});r=k==='cancel'?'cancel':k&&k.ok?'ok':'fail'}else r=await gameWire(p);if(r==='cancel'){G.toast('Je laat de draadjes hangen','info');return}
   if(r!=='ok'){if(p.sec)alarm(p,'autodiefstal');G.toast('Kortsluiten mislukt: de motor slaat niet aan','bad');p.wireFail=(p.wireFail||0)+1;return}
   G.snd&&G.snd.fx('engineStart');steal(p.mesh,p.m,p.data,p.kind,{sec:p.sec,x:p.x,z:p.z,ry:p.ry,src:'straat'});p.st='gestolen';const i=PK.indexOf(p);if(i>=0)PK.splice(i,1)}
 function steal(mesh,m,data,kind,o){const t=tierOf(m),v={d:{name:m.n,max:16+t*3.4,col:data.c,kind},x:o.x,z:o.z,ry:o.ry,v:0,mesh,stolen:{m,data,sec:o.sec,src:o.src,t0:performance.now(),rep:o.rep?1:0},dmg:0};

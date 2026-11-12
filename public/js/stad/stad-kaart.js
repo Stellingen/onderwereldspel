@@ -9,7 +9,7 @@ const pageName=k=>{const p=(typeof PAGES!=='undefined'&&PAGES.find(x=>x[0]===k))
 const secOf=k=>{const g=typeof NAV_GROUPS!=='undefined'&&NAV_GROUPS.find(g=>g[1].includes(k));return g||['Jij',[],'#f2c230']};
 const pic=k=>{try{return typeof svg==='function'&&typeof ICONS!=='undefined'&&ICONS[k]?svg(k):K.ic.route}catch(e){return K.ic.route}};
 const ownedPlaces=()=>M.places.filter(p=>p.dyn&&p.own&&p.zone!=='brug');
-const LAY={plek:1,doen:1,bezit:1,auto:1,politie:1};try{Object.assign(LAY,JSON.parse(localStorage.getItem('stad_kaart')||'{}'))}catch(e){}
+const LAY={verhaal:1,plek:1,doen:1,bezit:1,auto:1,politie:1};try{Object.assign(LAY,JSON.parse(localStorage.getItem('stad_kaart')||'{}'))}catch(e){}
 const mapCv=X.mapCanvas();
 /* ---------- opbouw ---------- */
 const ov=document.createElement('div');ov.className='sd-kaart';ov.id='sdKaart';ov.hidden=true;document.body.appendChild(ov);
@@ -58,6 +58,7 @@ function items(){const out=[];
   if(G.autoPoints)G.autoPoints().forEach(p=>out.push({k:'dl',x:p.x,z:p.z,n:p.t,c:'#f2c230',ic:K.ic.key,pri:6,big:1}));
   if(G.orderCar&&G.orderCar.st!=='gestolen')out.push({k:'dl',x:G.orderCar.x,z:G.orderCar.z,n:G.orderCar.m.n+' (heler)',c:'#ff7a1a',ic:pic('cars'),pri:7,big:1});
   if(LAY.doen&&G.spotMap)G.spotMap().forEach(o=>out.push(Object.assign({k:'do'},o)));
+  if(LAY.verhaal&&G.verhaalMap)G.verhaalMap().forEach(o=>out.push(Object.assign({k:'do'},o)));
   if(G.waypoint)out.push({k:'wp',x:G.waypoint.x,z:G.waypoint.z,n:G.waypoint.n||'Gemarkeerd',c:'#ff4fd8',ic:K.ic.route,pri:9,big:1});
   return out}
 let cells=[];
@@ -91,7 +92,7 @@ chip.addEventListener('click',e=>{if(e.target.closest('[data-x]')){clearWp();ret
 let gt=0;setInterval(()=>{if(!G.ready||G.paused||!G.waypoint)return;gt++;if(gt%3===0)gps();hudWp();if(beam)beam.material.opacity=.22+Math.sin(performance.now()/300)*.08;
   if(dist(G.waypoint.x,G.waypoint.z)<5){G.toast&&G.toast('Je bent er','ok');G.snd&&G.snd.fx('ok');clearWp()}},500);
 /* ---------- openen, sluiten, bedienen ---------- */
-function chipsHtml(){const L=[['plek','Plekken'],['doen','Te doen'],['bezit','Bezit'],['auto','Mijn auto']];if(G.police&&G.police.active&&G.police.active())L.push(['politie','Politie']);
+function chipsHtml(){const L=[['verhaal','Verhaal'],['plek','Plekken'],['doen','Te doen'],['bezit','Bezit'],['auto','Mijn auto']];if(G.police&&G.police.active&&G.police.active())L.push(['politie','Politie']);
   $s('sdKChips').innerHTML=L.map(([k,n])=>`<button data-lay="${k}" class="${LAY[k]?'on':''}">${n}</button>`).join('')}
 function open(){if(G.ui&&G.ui.closeAll)G.ui.closeAll();ov.hidden=false;if(!(G.ui&&G.ui.cur&&G.ui.cur()))G.pause();size();if(!open._z){Z=Math.max(minZ(),Math.min(maxZ,Math.min(VW,VH)/260));open._z=1}CX=G.P.x;CZ=G.P.z;clampView();card.hidden=true;chipsHtml();draw();G.snd&&G.snd.fx('open')}
 function close(){if(ov.hidden)return;ov.hidden=true;G.snd&&G.snd.fx('close');if(!(G.ui&&G.ui.cur&&G.ui.cur()))G.resume()}
