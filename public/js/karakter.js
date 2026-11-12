@@ -287,7 +287,7 @@ function ctlFit(){const own=st.first&&!karNew()?ownSets():[];const card=(f,piece
 function foot(){const F=document.getElementById('karF');if(!F)return;const fit=st.step==='fit',f=fit&&st.pick?(startFits().find(x=>x.id===st.pick)||ownSets().find(x=>x.id===st.pick)):null;
   const left=fit?`<button type="button" class="btn ghost" data-k="back">Terug</button>`:st.mode==='ask'?`<button type="button" class="btn ghost" data-k="later">Later</button>`:st.mode==='edit'?`<button type="button" class="btn ghost" data-k="cancel">Annuleren</button>`:'<span></span>';
   const right=fit?`<button type="button" class="btn" data-k="save" ${f?'':'disabled'}>${f?(f.id.startsWith('set:')||f.id==='eigen'?'Klaar':'Kies '+esc(f.n)):'Kies een outfit'}</button>`
-    :st.first&&startFits().length?`<button type="button" class="btn" data-k="next">Verder: startoutfit</button>`:`<button type="button" class="btn" data-k="save">Opslaan</button>`;
+    :st.first&&startFits().length?`<button type="button" class="btn" data-k="next">Verder<span class="kar-wide">: startoutfit</span></button>`:`<button type="button" class="btn" data-k="save">Opslaan</button>`;
   F.innerHTML=left+right}
 function head(){const fit=st.step==='fit';const T=fit?['Eén keer gratis','Kies je startoutfit','Je kunt hem later gewoon uittrekken.']
    :st.mode==='new'?['Nieuw dossier','Maak je karakter','Zo zien ze je, in het klikspel en in de Pixelstad.']

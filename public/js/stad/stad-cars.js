@@ -140,7 +140,8 @@ function pen(x,z,ry,hl,hw){const fx=Math.sin(ry),fz=Math.cos(ry),rx=fz,rz=-fx;le
   const R=Math.hypot(hl,hw)+.1,x0=Math.floor(x-R),x1=Math.ceil(x+R),z0=Math.floor(z-R),z1=Math.ceil(z+R);
   for(let tz=z0;tz<=z1;tz++)for(let tx=x0;tx<=x1;tx++){const s=solidT(tx-1,tz-1)+solidT(tx,tz-1)+solidT(tx-1,tz)+solidT(tx,tz);if(s===0||s===4)continue;
     const dx=tx-x,dz=tz-z,la=dx*fx+dz*fz,lb=dx*rx+dz*rz,pa=hl-Math.abs(la),pb=hw-Math.abs(lb);if(pa<=0||pb<=0)continue;
-    if(pa<pb){const k=-(Math.sign(la)||1)*(pa+EPS);add(fx*k,fz*k)}else{const k=-(Math.sign(lb)||1)*(pb+EPS);add(rx*k,rz*k)}}
+    // een paal op de hoek van de auto duwt hem opzij (dan glijd je erlangs), recht ervoor duwt hem terug
+    if(pa<pb&&!(Math.abs(lb)>hw*.5&&pb<.5)){const k=-(Math.sign(la)||1)*(pa+EPS);add(fx*k,fz*k)}else{const k=-(Math.sign(lb)||1)*(pb+EPS);add(rx*k,rz*k)}}
   return {x:xp+xn,z:zp+zn,hit,deep}}
 const fits=(x,z,ry,hl,hw)=>{const p=pen(x,z,ry,hl,hw);return !p.hit&&!p.deep};
 function resolve(c,hl,hw){let tx=0,tz=0;for(let i=0;i<5;i++){const p=pen(c.x,c.z,c.ry,hl,hw);if(!p.hit&&!p.deep)return {x:tx,z:tz,ok:true};
@@ -196,7 +197,8 @@ function daze(T,title){DZ.on=true;DZ.t=0;DZ.T=Math.max(DZ.T&&DZ.on?DZ.T-DZ.t:0,T
 function dazeEnd(quiet){if(!DZ.on)return;DZ.on=false;kl.hidden=true;document.body.classList.remove('sd-versuft');if(!quiet&&G.driving)G.fx2&&G.fx2.float('Weer bij de les',G.P.x,G.P.z,'#9fe8c0')}
 function dazeStep(dt){if(!DZ.on)return;DZ.t+=dt;$s('sdKlapB').style.width=Math.max(0,1-DZ.t/DZ.T)*100+'%';if(DZ.t>=DZ.T||!G.driving)dazeEnd(!G.driving)}
 // tegen iets aan: imp = snelheid richting het obstakel (m/s); by = de andere auto (of null voor een muur, paal of gebouw)
-function crash(c,imp,by,nx,nz){const now=performance.now();if(now-(c._crT||0)<300&&imp<(c._crI||0)+3)return;c._crT=now;c._crI=imp;if(imp<3.5)return;
+let simT=0;
+function crash(c,imp,by,nx,nz){const now=simT;if(now-(c._crT||-9)<.3&&imp<(c._crI||0)+3)return;c._crT=now;c._crI=imp;if(imp<3.5)return;
   const hx=c.x-nx*1.6,hz=c.z-nz*1.6;G.snd&&G.snd.fx('hit');G.shake&&G.shake(Math.min(1,imp*.05));burstAt(hx,hz,'#c8ccd2',Math.min(14,4+Math.round(imp/2)));
   const rammed=by&&by.v&&!by.parked&&!by.block&&(Math.sin(by.ry)*by.v*nx+Math.cos(by.ry)*by.v*nz)>Math.abs(c.v)*.5;
   if(imp<ACC||G.talking){addDmg(c,(imp-3)*1.1,{quiet:1});G.onCrash&&G.onCrash(c,imp);return}
@@ -274,7 +276,7 @@ function driveStep(dt){const K=G.K,c=mine;let thr=0,steer=0;
   c.mesh.position.set(c.x,0,c.z);c.mesh.rotation.y=c.ry;if(c._tilt)c.mesh.rotation.z=c._tilt;G.P.x=c.x;G.P.z=c.z;G.P.vx=fx*c.v;G.P.vz=fz*c.v;G.P.ry=c.ry;
   // camera achter de auto, tenzij je zelf net hebt gedraaid
   if(Math.abs(c.v)>3&&performance.now()-(G.manualRotT||0)>1500){let want=c.ry+Math.PI-G.yawT;while(want>Math.PI)want-=Math.PI*2;while(want<-Math.PI)want+=Math.PI*2;G.yawT+=want*Math.min(1,dt*(G.camMode==='achter'?4.5:1.6))}}
-G.carStep=function(dt){if(!TRAF.length)for(let i=0;i<26;i++)spawnCar(i<3,false);
+G.carStep=function(dt){simT+=dt;if(!TRAF.length)for(let i=0;i<26;i++)spawnCar(i<3,false);
   TRAF.slice().forEach(c=>trafficStep(c,dt));policeTick(dt);
   // zwaailichten
   const fl=Math.floor(performance.now()/180)%2;TRAF.forEach(c=>{const b=c.mesh.userData.bar;if(b){const on=c.chase||c.block||G.night>.5;b[0].visible=on?fl===0:true;b[1].visible=on?fl===1:true}});

@@ -228,11 +228,13 @@ function goalFor(v){if(!v||!v.stolen||v.dead)return null;const m=v.stolen.m;let 
 function setGoal(v){const g=goalFor(v);if(!g)return;goal=g;if(goalSpot){goalSpot.x=g.x;goalSpot.z=g.z}
   if(G.setWaypoint){const t=G.toast;G.toast=()=>{};try{G.setWaypoint(g.x,g.z,g.n)}catch(e){}finally{G.toast=t}myWp=G.waypoint||null}
   // grote kaart en minikaart: de bestemming pulseert (met een pijl aan de rand als hij buiten beeld is)
-  try{if(G.kaart&&G.kaart.highlight)G.kaart.highlight(g.x,g.z,g.n,{id:'autodoel',keep:true,c:'#f2c230',ic:g.k==='heler'?'bag':'moer',sh:'sq'})}catch(e){}
+  try{if(G.kaart&&G.kaart.highlight)G.kaart.highlight(g.x,g.z,g.k==='heler'?'Breng hem naar Ome Henk':'Zet hem hier neer',{id:'autodoel',keep:true,c:'#4da3ff',ic:g.k==='heler'?'bag':'moer',sh:'sq'})}catch(e){}
   G.toast(g.msg,'lvl');G.snd&&G.snd.fx('notify')}
 function clearGoal(){goal=null;if(myWp&&G.waypoint===myWp&&G.clearWaypoint)G.clearWaypoint();myWp=null;try{G.kaart&&G.kaart.unhighlight&&G.kaart.unhighlight('autodoel')}catch(e){}}
 G.autoGoal=()=>goal?{k:goal.k,x:goal.x,z:goal.z,n:goal.n}:null;
 {const oe=G.onEnterCar;G.onEnterCar=v=>{oe&&oe(v);if(v&&v.stolen&&!v.dead)setGoal(v)}}
+// uitstappen: route en markering weg (stap je weer in, dan staan ze er meteen weer)
+{const ox=G.onExitCar;G.onExitCar=v=>{ox&&ox(v);if(goal&&goal.v===v)clearGoal()}}
 {const orv=G.onRemoveVehicle;G.onRemoveVehicle=v=>{orv&&orv(v);if(goal&&goal.v===v)clearGoal()}}
 // het baken: een gouden lichtzuil, ringen op de grond, een draaiend ruitje en een bordje
 function beaconMk(){const g=new TH.Group(),add=(geo,mat,y)=>{const m=new TH.Mesh(geo,mat);m.position.y=y;m.renderOrder=4;g.add(m);return m};
@@ -370,9 +372,9 @@ function wrender(){if(!W)return;const T=W.T,d=Math.round(T.dmg()),st=T.stolen,ca
       <div class="sd-werk-end">${wbtn({k:'terug',t:'Terug',ghost:1},'end')}</div>`}
   else{const cR=costRep(T),cP=costPaint(T),cX=costPap(T),val=valNow(T),full=r10(T.full()),heat=T.heat();
     const pap=!st?(T.own?'Op jouw naam':'In orde'):T.papers()?'Geregistreerd':st.rep?'Gemeld als gestolen':'Nog niet gemeld';
-    const svc=[{k:'rep',t:'Repareren',ic:K.ic.build,sub:'Deuken uitkloppen · '+fmt(cR),dis:d<1||cash<cR,why:d<1?'Hij is nog heel':'Je hebt '+fmt(cR)+' contant nodig'},
+    const svc=[{k:'rep',t:'Repareren',ic:K.ic.moer||K.ic.build,sub:'Deuken uitkloppen · '+fmt(cR),dis:d<1||cash<cR,why:d<1?'Hij is nog heel':'Je hebt '+fmt(cR)+' contant nodig'},
       {k:'spuit',t:'Overspuiten',ic:K.ic.spuit,sub:(st&&!T.papers()?'Minder herkenbaar · ':'Nieuwe kleur · ')+fmt(cP),dis:cash<cP||!!(T.v&&T.v.verhaal),why:T.v&&T.v.verhaal?'Deze niet':'Je hebt '+fmt(cP)+' contant nodig'}];
-    if(st)svc.push({k:'pap',t:'Valse papieren',ic:K.ic.krant,sub:'Geregistreerd: verkoopt beter · '+fmt(cX),dis:T.papers()||cash<cX||dead,why:T.papers()?'Al geregistreerd':dead?'Total loss':'Je hebt '+fmt(cX)+' contant nodig'});
+    if(st)svc.push({k:'pap',t:'Valse papieren',ic:K.ic.akte||K.ic.krant,sub:'Geregistreerd: verkoopt beter · '+fmt(cX),dis:T.papers()||cash<cX||dead,why:T.papers()?'Al geregistreerd':dead?'Total loss':'Je hebt '+fmt(cX)+' contant nodig'});
     const end=[];
     if(st&&!W.chop){const full2=S.cars.length>=garCap(),rep=T.rep(),left=typeof saleLeft==='function'?saleLeft():0;
       end.push({k:'garage',t:'In je garage zetten',ic:K.ic.key,sub:'Waarde '+fmt(val),dis:full2||dead,why:dead?'Total loss':'Je garage zit vol ('+S.cars.length+'/'+garCap()+')'});
