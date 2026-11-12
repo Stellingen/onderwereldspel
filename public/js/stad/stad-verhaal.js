@@ -212,8 +212,8 @@ async function carUse(s){if(s.busy||G.driving)return;const R=RUN;if(!R.car.wired
     if(r==='cancel')return;if(!r.ok){G.toast('De motor slaat niet aan. Nog een keer.','bad');G.police&&Math.random()<.35&&G.police.report(G.P.x,G.P.z,{why:'autodiefstal',stars:1});return}R.car.wired=true}
   G.snd&&G.snd.fx('engineStart');G.enterCar(s.v)}
 async function miniUse(s){if(s.busy||!RUN)return;const R=RUN;s.busy=1;let r;
-  if(s.game==='timing')r=await G.mini.timing(Object.assign({allow:1},s.o||{}));
-  else if(s.game==='hold')r=await G.mini.hold({d:s.d||2,label:s.act});
+  if(s.game==='timing')r=await G.mini.timing(Object.assign({allow:1,vak:'bescherm'},s.o||{}));
+  else if(s.game==='hold')r=await G.mini.hold({d:s.d||2,label:s.act,vak:'smokkel'});
   else if(s.game==='kluis')r=await G.kraak.kluis({d:s.d,vak:'kluis'});
   else if(s.game==='slot')r=await G.kraak.slot({d:s.d,vak:'inbraak'});
   else if(s.game==='draad')r=await G.kraak.draad({d:s.d,vak:'kortsluit'});

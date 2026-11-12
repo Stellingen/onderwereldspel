@@ -204,10 +204,11 @@ function roofStart(n){const c=roofRef(),why=roofWhy(n);if(why){G.toast(why,'bad'
   G.shake&&G.shake(.35);G.snd&&G.snd.fx('grab');G.pArm=-1.5;
   if(fight){n.st='fight';bubble(n,pick(['Blijf van me af!','Probeer het maar!','Rot op!']),{col:'#ff9a9a'});setTimeout(()=>{G.snd&&G.snd.fx('hit');G.shake&&G.shake(.9);G.hitStop=.08;const hp=Math.round(rr(5,15));S.hp=Math.max(10,(S.hp||100)-hp);G.frozen=.6;G.pArm=0;G.toast('Hij verzet zich! Je krijgt een duw (−'+hp+' gezondheid)','bad');if(navigator.vibrate)try{navigator.vibrate(60)}catch(e){};try{save()}catch(e){}},500);crime(n.x,n.z,{victim:n,why:'straatroof',stars:1});return}
   n.st='handsup';bubble(n,pick(['Niet schieten!','Oké, oké!','Rustig!','Neem alles!']),{col:'#ffe0a0'});
-  R={n,c,t:0,need:clamp(2.6-.25*w,1,2.6)*(1-.3*ang)};hold(true);crime(n.x,n.z,{victim:n,why:'straatroof',stars:G.police&&G.police.active()?2:1})}
+  R={n,c,t:0,need:clamp(2.6-.25*w,1,2.6)*(1-.3*ang)};if(G.mini&&G.mini.hold){const me=R;R.mini=1;G.mini.hold({d:R.need,label:'Geld afpakken',vak:'roof',can:()=>R===me&&dist(me.n,G.P)<3.2&&!G.driving}).then(r=>{if(R!==me)return;if(r==='ok'||(r&&r.ok))me.t=me.need+1;else me.cancel=1})}else hold(true);crime(n.x,n.z,{victim:n,why:'straatroof',stars:G.police&&G.police.active()?2:1})}
 function roofStep(dt){if(!R)return;const n=R.n,d=dist(n,G.P);G.pArm=-1.5;
   if(d>3||G.driving){bubble(n,'Hè hè.');n.st='flee';n.t=0;n.from=G.P;R=null;hold(false);G.pArm=0;G.toast('Overval afgebroken','bad');return}
-  const h=!!(G.K[' ']||G.K.e||G.actHold);if(h)R.t+=dt;else R.t=Math.max(0,R.t-dt*.6);holdBar(R.t/R.need);
+  if(R.mini){if(R.cancel){bubble(n,'Hè hè.');n.st='flee';n.t=0;n.from=G.P;R=null;G.pArm=0;G.toast('Overval afgebroken','bad');return}if(R.t<R.need)return}
+  else{const h=!!(G.K[' ']||G.K.e||G.actHold);if(h)R.t+=dt;else R.t=Math.max(0,R.t-dt*.6);holdBar(R.t/R.need)}
   if(R.t>=R.need){const c=R.c,a=A[n.arch],al=(G.alert&&G.alert())||0,g=Math.max(1,Math.floor(rnd(c.min,c.max)*(typeof lootMult==='function'?lootMult():1)*(typeof crLootK==='function'?crLootK(c):1)*a.wallet*(1-al/200)));
     let cash=g,item=null;if(Math.random()<.3&&zak().length<G.zakMax()){const it=pick(ITEMS);item={n:it[0],v:Math.max(5,Math.round(g*.6*it[1]))};cash=Math.round(g*.5);zak().push(item)}
     S.cash+=cash;if(typeof addZwart==='function')addZwart(cash);if(typeof addXp==='function')addXp(Math.max(1,Math.round(c.xp*.75)));if(typeof addHeat==='function')addHeat(rnd(2,4));S.stats=S.stats||{};S.stats.roof=(S.stats.roof||0)+1;G.ev&&(G.ev('roof'),G.ev('roof:'+n.arch));

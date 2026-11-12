@@ -709,12 +709,12 @@ body.sd-focus .sd-joy,body.sd-focus .sd-run,body.sd-focus .sd-prompt,body.sd-foc
 .sd-stage.win .sd-res{color:#3fe395}.sd-stage.lose .sd-res{color:#ff3d52}
 .sd-res b{font:900 46px/1 var(--f-display);text-transform:uppercase;letter-spacing:.04em;text-shadow:4px 4px 0 #000}
 .sd-res small{font:800 15px var(--f-mono);color:#f2c230;letter-spacing:.06em}
-@keyframes sdResIn{from{transform:translateY(-50%) rotate(-2deg) scale(1.5);opacity:0}}
+@keyframes sdResIn{from{transform:translateY(-50%) rotate(-2deg) scale(1.4)}}
 .sd-stage.res{pointer-events:none}.sd-stage.res>.sd-mini-h,.sd-stage.res>.sd-mini-b{opacity:.4}
 /* gedeelde effecten */
 .sd-pop{position:absolute;left:50%;top:-10px;transform:translate(-50%,-100%);z-index:3;font:900 28px/1 var(--f-display);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;opacity:0;pointer-events:none;text-shadow:3px 3px 0 #000}
-.sd-pop.on{animation:sdPop .65s steps(6) forwards}.sd-pop.ok{color:#3fe395}.sd-pop.bad{color:#ff3d52}
-@keyframes sdPop{0%{opacity:1;transform:translate(-50%,-70%) scale(1.35)}70%{opacity:1;transform:translate(-50%,-110%)}100%{opacity:0;transform:translate(-50%,-130%)}}
+.sd-pop.on{animation:sdMgPop .65s steps(6) forwards}.sd-pop.ok{color:#3fe395}.sd-pop.bad{color:#ff3d52}
+@keyframes sdMgPop{0%{opacity:1;transform:translate(-50%,-70%) scale(1.35)}70%{opacity:1;transform:translate(-50%,-110%)}100%{opacity:0;transform:translate(-50%,-130%)}}
 @keyframes sdShake{0%,100%{transform:none}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 @keyframes sdHitG{0%{outline-color:#fff}100%{outline-color:#3fe395}}
 /* timing: grote balk */
@@ -771,7 +771,7 @@ body.sd-focus .sd-joy,body.sd-focus .sd-run,body.sd-focus .sd-prompt,body.sd-foc
 .sd-kr.sd-stage .sd-kr-wire{margin:0;gap:0}
 .sd-kr.sd-stage .sd-kr-wire button{height:46px;width:78px;touch-action:manipulation}
 .sd-kr.sd-stage .sd-kr-wire button i{width:56px;height:14px}
-.sd-kr.sd-stage .sd-kr-cv2{flex:1 1 0;min-width:60px;max-width:260px;width:auto;height:calc(var(--n,4) * 46px)}
+.sd-kr.sd-stage .sd-kr-cv2{flex:1 1 0;min-width:40px;max-width:260px;width:0;height:calc(var(--n,4) * 46px)}
 @media (max-width:700px){
   .sd-mini.sd-stage{top:auto;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));transform:none;width:auto!important;padding:14px 14px 14px;
     max-height:calc(100vh - 60px);max-height:calc(100dvh - 60px - env(safe-area-inset-top,0px))}

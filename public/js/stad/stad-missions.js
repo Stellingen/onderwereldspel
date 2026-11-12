@@ -137,7 +137,7 @@ function alarm(why){if(!MS||MS.alarm)return;MS.alarm=true;MS.miss+=2;G.toast(why
   if(MS.steps[MS.i].t==='lift'||MS.steps[MS.i].t==='beg'){MS.i=MS.steps.findIndex((s,i)=>i>=MS.i&&(s.t==='getaway'||s.t==='deliver'));if(MS.i<0)MS.i=MS.steps.length-1;stepStart()}
   hud()}
 const holding=()=>!!(G.K[' ']||G.K.f||G.actHold);
-G.missionAction=()=>{if(!MS)return false;const s=MS.steps[MS.i];if(!s)return false;return ['hold','lift','beg'].includes(s.t)&&inRange(s)};
+G.missionAction=()=>{if(!MS)return false;const s=MS.steps[MS.i];if(!s)return false;const r=['hold','lift','beg'].includes(s.t)&&inRange(s);if(r&&s.t==='hold')s.want=1;return r};
 function inRange(s){const P=G.P;if(G.driving)return false;if(s.t==='hold')return dist(P,s.p)<s.r;if(s.t==='lift')return MS.target&&dist(P,MS.target)<1.8;if(s.t==='beg')return dist(P,s.p)<9;return false}
 let rt=0;
 G.missionStep=function(dt){if(!MS)return;const m=MS,P=G.P,s=m.steps[m.i];if(!s)return;m.t+=dt;rt+=dt;
@@ -165,8 +165,14 @@ G.missionStep=function(dt){if(!MS)return;const m=MS,P=G.P,s=m.steps[m.i];if(!s)r
   const hold=holding();
   if(s.t==='go'){if(dist(P,s.p)<s.r)next()}
   else if(s.t==='hold'&&s.kr&&G.kraak){const ok=dist(P,s.p)<s.r;m.prog=0;m.hint=ok?'':'';s.cool=(s.cool||0)-dt;
-    if(ok&&(hold||G.K.e)&&!s.busy&&s.cool<=0){s.busy=1;const f=s.kr==='kluis'?G.kraak.kluis:G.kraak.slot;f({d:m.D,vak:s.kr==='kluis'?'kluis':'inbraak'}).then(r=>{s.busy=0;s.cool=.8;if(MS!==m)return;
+    if(ok&&(hold||G.K.e||s.want)&&!s.busy&&s.cool<=0){s.busy=1;s.want=0;const f=s.kr==='kluis'?G.kraak.kluis:G.kraak.slot;f({d:m.D,vak:s.kr==='kluis'?'kluis':'inbraak'}).then(r=>{s.busy=0;s.cool=.8;if(MS!==m)return;
       if(r&&r.ok){G.ev&&G.ev('kraak');next()}else if(r!=='cancel'){if(s.kr==='slot'&&!m.alarm){alarm('Je haakje brak met een klap. De bewaking hoorde het!')}else{m.miss+=1;G.toast('Mis. Probeer het nog eens','bad')}}})}}
+  else if(s.t==='hold'&&G.mini&&G.mini.hold){const ok=dist(P,s.p)<s.r;m.prog=0;s.cool=(s.cool||0)-dt;
+    // ook gewone 'vasthouden'-stappen als minigame in beeld (met vakmanschap): overval, graaien, taggen, afspraken
+    if(ok&&(hold||G.K.e||s.want)&&!s.busy&&s.cool<=0){s.busy=1;s.want=0;if(s.alarm&&!m.alarm)alarm('Overval! De politie is gebeld');
+      const vk={rob:'overval',grab:'graaien',tag:'tag',sneak:'inbraak',courier:'koerier'}[m.k]||'klus';
+      G.mini.hold({d:s.d,label:s.act||'Bezig',vak:vk,can:()=>MS===m&&dist(G.P,s.p)<s.r+.8&&!G.driving}).then(r=>{s.busy=0;s.cool=.6;if(MS!==m)return;
+        if(r==='ok'||(r&&r.ok)){if(s.take&&m.obj){scene.remove(m.obj);m.obj=null;m.carry=1}next()}})}}
   else if(s.t==='hold'){const ok=dist(P,s.p)<s.r;if(ok&&hold){s.st+=dt;if(s.alarm&&!m.alarm&&s.st>.2)alarm('Overval! De politie is gebeld')}else s.st=Math.max(0,s.st-dt*1.5);m.prog=s.st/s.d;
     if(s.st>=s.d){if(s.take&&m.obj){scene.remove(m.obj);m.obj=null;m.carry=1}next()}}
   else if(s.t==='loot'){for(let i=s.left.length-1;i>=0;i--){if(dist(P,s.left[i])<1.4){scene.remove(s.objs[i]);s.left.splice(i,1);s.objs.splice(i,1);G.toast('Buit gepakt ('+(s.pts.length-s.left.length)+'/'+s.pts.length+')','ok')}}

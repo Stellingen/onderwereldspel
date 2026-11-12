@@ -12,7 +12,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const fx=n=>{try{G.snd&&G.snd.fx(n)}catch(e){}};
 const NAMES={zakken:'zakkenrollen',roof:'beroven',overval:'overvallen',autokraak:'auto\'s openbreken',kortsluit:'kortsluiten',inbraak:'sloten openen',
   kluis:'kluizen kraken',vecht:'knokken',tag:'taggen',bescherm:'beschermgeld innen',openbreken:'kisten openbreken',zoeken:'doorzoeken',vissen:'vissen',
-  optreden:'optreden',timing:'timing',mash:'snel drukken',hold:'volhouden',ritme:'ritme',haal:'binnenhalen',slot:'sloten openen',draad:'bedrading'};
+  optreden:'optreden',timing:'timing',mash:'snel drukken',hold:'volhouden',ritme:'ritme',haal:'binnenhalen',slot:'sloten openen',draad:'bedrading',smokkel:'smokkelen',graaien:'graaien',koerier:'koerierswerk',klus:'klussen'};
 const MAXL=10,need=n=>4*n*n;
 const store=()=>{try{if(typeof S==='undefined'||!S)return {};if(!S.stadVak||typeof S.stadVak!=='object')S.stadVak={};return S.stadVak}catch(e){return {}}};
 const pts=k=>+store()[k]||0;
