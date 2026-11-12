@@ -148,6 +148,9 @@ if(window.__REDEEMED__)window.__REDEEMED__.forEach(c=>{if(!S.redeemed.includes(c
 S.redeemed=S.redeemed.filter(c=>LIVE_CODES[c]||RANK_CODES[c]);
 // casino: iedereen begint één keer op de nieuwe standaard 'Automatisch' (eerst zwart, dan wit)
 if(S.casPayV!==2){S.casPay='auto';S.casPayV=2}
+// karakter (karakter.js, nov. 2026): oude saves hebben er nog geen. Wie in de Pixelstad al een huidskleur koos, houdt die.
+// S.charDone blijft leeg tot je hem één keer opslaat (dan pas de vraag 'Maak snel je karakter aan' niet meer).
+if(!S.char||typeof S.char!=='object'){S.char=null;try{const sk=localStorage.getItem('stad_skin');if(sk&&/^#[0-9a-f]{6}$/i.test(sk))S.char={skin:sk}}catch(e){}}
 
 const rankIdx=xp=>{let i=0;RANKS.forEach((r,j)=>{if(xp>=r[1])i=j});return i};
 // Levels binnen een rang (1-5): hoe meer ervaring in je rang, hoe meer je verdient (+3% buit per level).
@@ -316,6 +319,8 @@ const TIER_K=[0,.15,.40];const tierK=()=>TIER_K[tier()]||0;
 const TIER_NAME=['Gewoon','VIP','High roller'];const lidName=()=>TIER_NAME[tier()];
 const TIER_LOOT=[0,.10,.25];const tierLoot=()=>TIER_LOOT[tier()]||0;
 const TIER_CB=[0,1,1.5];
+// Pixelstad: als bedankje iets meer aan buit en heling (VIP +5%, High roller +10%); zie G.lidBonus in stad/stad-doen.js
+const TIER_STAD=[0,.05,.10];
 // Straatcredit: je krijgt het voor goed uitgevoerde klussen. Betere uitrusting = meer respect op straat.
 // Per soort telt je beste item: tier × 4% (alles op het hoogste = +76%). Perfect uitgevoerd ×1,5, netjes ×1,2.
 const gearCredK=()=>GEAR_CATS.reduce((a,c)=>{const g=gearBest(c.id);return a+(g?(g.cls!=null?g.cls:GEAR.filter(x=>x.cat===c.id).indexOf(g))+1:0)},0)*.04; // wapens: klasse (cls), zodat extra wapens de credit niet opblazen

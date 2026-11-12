@@ -15,7 +15,7 @@ const rr=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.lengt
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const sv=()=>{try{save()}catch(e){}};
 const dayN=()=>Math.floor((Date.now()-6*3600e3+3600e3)/864e5);
-const zS=k=>G.schaal?G.schaal.zwart(k):Math.round(50*k);
+const zS=k=>G.schaal?(G.schaal.kost||G.schaal.zwart)(k):Math.round(50*k);   // alleen prijzen: zonder lidbonus
 const V=()=>G.volk;
 const SS=()=>{try{if(!S.stadSmeer||typeof S.stadSmeer!=='object')S.stadSmeer={};const s=S.stadSmeer;if(!s.pay)s.pay={};if(!s.no)s.no={};if(!s.kn)s.kn={};if(typeof s.k!=='number')s.k=0;return s}catch(e){return {pay:{},no:{},kn:{},k:0}}};
 function rng(seed){let s=seed>>>0;return ()=>{s=(s+0x6D2B79F5)>>>0;let t=Math.imul(s^(s>>>15),1|s);t=(t+Math.imul(t^(t>>>7),61|t))^t;return ((t^(t>>>14))>>>0)/4294967296}}

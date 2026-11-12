@@ -72,7 +72,7 @@ function navMe(st){const ri=rankIdx(S.xp),nx=RANKS[ri+1],pct=nx?Math.max(0,Math.
  return `<div class="navgroup me ${g[1].includes(page)?'cur':''}" style="--g:${g[2]};--g-rgb:${g[3]}">
   <a class="nav-dash ${page==='dash'?'on':''}" href="#dash" title="Jouw overzicht"><span class="nd-ic">${svg('dash')}</span><span class="nd-t"><b>Dashboard</b><small>${RANKS[ri][0]} · lv ${rankLevel(S.xp)}</small></span>
    <i class="nd-bar" aria-hidden="true"><i style="width:${pct.toFixed(1)}%"></i></i></a>
-  <div class="nav-duo"><a class="nav-sq ${page==='rank'?'on':''}" href="#rank">${svg('rank')}<span>Ranglijst</span><em>#${pos}</em></a><a class="nav-sq ${page==='profiel'?'on':''}" href="#profiel">${svg('profiel')}<span>Profiel</span>${claim?'<em class="b">€</em>':''}</a></div>${PAGES.some(p=>p[0]==='lid')?`<a class="nav-lid ${page==='lid'?'on':''}" href="#lid">${svg('lid')}<span>${isVip()?'Lidmaatschap':'VIP en High roller'}</span>${isVip()?vipTag(1):''}</a>`:''}</div>`}
+  <div class="nav-duo"><a class="nav-sq ${page==='rank'?'on':''}" href="#rank">${svg('rank')}<span>Ranglijst</span><em>#${pos}</em></a><a class="nav-sq ${page==='profiel'?'on':''}" href="#profiel">${typeof karBust==='function'?karBust({cls:'nav-kar',vb:'72 16 56 56'}):svg('profiel')}<span>Profiel</span>${claim?'<em class="b">€</em>':''}</a></div>${PAGES.some(p=>p[0]==='lid')?`<a class="nav-lid ${page==='lid'?'on':''}" href="#lid">${svg('lid')}<span>${isVip()?'Lidmaatschap':'VIP en High roller'}</span>${isVip()?vipTag(1):''}</a>`:''}</div>`}
 function renderNav(){
   const name=k=>PAGES.find(p=>p[0]===k)[1];
   const st=navStat(),link=k=>`<a class="navlink ${k===page?'on':''}" href="#${k}">${svg(k)}<span>${name(k)}</span>${st[k]?`<em class="nst">${st[k]}</em>`:''}${k==='jail'&&inJail()?'<span class="badge">!</span>':''}${k==='crimes'&&!inJail()&&S.energy>=EN_MAX?'<span class="badge ok">●</span>':''}${k==='profiel'&&typeof RANK_CODES!=='undefined'&&RANKS.slice(1,rankIdx(S.xp)+1).some(r=>!(S.redeemed||[]).includes(r[0].toLowerCase()))?'<span class="badge">€</span>':''}</a>`;
@@ -149,7 +149,7 @@ function renderMbar(){let bar=$('#mbar');if(!bar){bar=document.createElement('na
  const tile=k=>`<a class="ms-tile ${k===page?'on':''}" href="#${k}" data-close data-k="${msKey(name(k)+' '+navHint(k)+' '+(MS_PAGE_K[k]||''))}">${svg(k)}<b data-fit="10.5">${name(k)}</b><small>${k===page?'Je bent hier':navHint(k)}</small>${bd[k]?`<em class="${bd[k]==='●'?'ok':''}">${bd[k]==='●'?'vol':bd[k]}</em>`:''}</a>`;
  const rec=msRecent().filter(k=>k!==page&&PAGES.some(p=>p[0]===k)).slice(0,4);
  setHTML(sh,`<div class="ms-panel" role="dialog" aria-label="Alle pagina's"><div class="ms-grab"></div>
-  <div class="ms-head"><div><b>${esc(S.name)}${vipTag()}</b><span class="ms-money">${RANKS[ri][0]} · <em class="w">${fmtS(witNu())} wit</em>${zwart()>=1?` · <em class="z">${fmtS(zwart())} zwart</em>`:''}</span></div><button class="ms-x" data-close aria-label="Sluiten">✕</button></div>
+  <div class="ms-head">${typeof karBust==='function'?`<a class="ms-mug" href="#profiel" data-close title="Profiel">${karBust({vb:'60 8 80 92'})}</a>`:''}<div><b>${esc(S.name)}${vipTag()}</b><span class="ms-money">${RANKS[ri][0]} · <em class="w">${fmtS(witNu())} wit</em>${zwart()>=1?` · <em class="z">${fmtS(zwart())} zwart</em>`:''}</span></div><button class="ms-x" data-close aria-label="Sluiten">✕</button></div>
   <label class="ms-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
    <input type="search" id="msQ" placeholder="Zoek: kliniek, trainen, roulette…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" aria-label="Zoek in het menu" oninput="msFilter(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();msFirst()}">
    <button type="button" class="ms-clear" aria-label="Zoekveld leegmaken" onclick="const i=$('#msQ');i.value='';msFilter('');i.focus()">✕</button></label>
@@ -286,7 +286,7 @@ function renderRail(){
   const top=all.slice(0,5);
   setHTML(el,`
    <section class="rcard hud dos ${_rpop?'pop':''}">
-    <div class="dos-top"><a class="dos-name" href="#profiel" style="font-size:${nameFs(S.name,28,16)}px">${esc(S.name)}${vipTag()}</a>${statusTag()}</div>
+    <div class="dos-top">${typeof karBust==='function'?`<a class="dos-mug" href="#profiel" title="Profiel">${karBust({vb:'60 8 80 92'})}</a>`:''}<a class="dos-name" href="#profiel" style="font-size:${nameFs(S.name,28,16)}px">${esc(S.name)}${vipTag()}</a>${statusTag()}</div>
     <div class="dos-rank"><b>${RANKS[ri][0]}</b><span>lv ${rankLevel(S.xp)}</span><em>${nxt?Math.floor(S.xp).toLocaleString('nl-NL')+' / '+nxt[1].toLocaleString('nl-NL')+' XP':'Top bereikt'}</em></div>
     <div class="bar"><i style="width:${pct}%;background:var(--acc)"></i></div>
     <div class="dos-money">${moneyRows(pend)}</div>

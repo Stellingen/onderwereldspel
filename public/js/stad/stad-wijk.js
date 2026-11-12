@@ -139,7 +139,7 @@ function upkeep(){const d=dayN(),U=obj('stadWijkU',{});if(U.d===d)return;U.d=d;W
 const KOOI=[['Rooie Rinus',74,11,.78,.2],['Tante Sjaan',92,13,.72,.24],['De Slager',112,15,.66,.27],['Tatoeage-Tom',136,18,.6,.3],['De Beer van Noord',165,21,.54,.34]];
 const kS=()=>{const Q=obj('stadKooi',{});if(Q.d!==dayN()){Q.d=dayN();Q.n=0}return Q};
 let kooiN=null;
-const kooiFee=i=>Math.max(5,zS(.3)*(i+1)),kooiPrize=i=>Math.max(10,Math.round(zS(.9)*(i+1)/5)*5);
+const kooiFee=i=>Math.max(5,(G.schaal&&G.schaal.kost?G.schaal.kost(.3):zS(.3))*(i+1)),kooiPrize=i=>Math.max(10,Math.round(zS(.9)*(i+1)/5)*5);
 function kooiLine(){const Q=kS();return Q.n>=KOOI.length?'Je hebt ze vandaag allemaal gehad, kampioen. Morgen staan er nieuwe klaar.':'Welkom in De Kooi. Vandaag sta je tegenover '+KOOI[Q.n][0]+'. Inleg '+fmt(kooiFee(Q.n))+', de winnaar krijgt '+fmt(kooiPrize(Q.n))+'.'}
 function kooiLook(n){const i=Math.min(KOOI.length-1,kS().n);n.nm=KOOI[i][0];const L=[['#8a2f1a','#2a2c30','bald'],['#7a5a8a','#5a5a62','none'],['#e8e4da','#8a1f2a','bald'],['#151517','#2a2c30','beanie'],['#5a3a24','#151517','bald']][i];n.look.top=L[0];n.look.arm=i%2?n.look.skin:L[0];n.look.pants=L[1];n.look.hat=L[2];n.look.hatC='#151517';n.look.hair=i===1?'#d8d4cc':'#2a1d14'}
 G.npcService.vechter=(n,ch)=>{const Q=kS(),i=Q.n;if(i>=KOOI.length)return;let why='';if(S.energy<4)why='Te moe: 4 energie nodig';else if(S.cash<kooiFee(i))why='Inleg '+fmt(kooiFee(i))+' contant';else if(G.police&&G.police.active())why='Niet nu';else if(S.hp<25)why='Je bent er te slecht aan toe (laat je oplappen)';

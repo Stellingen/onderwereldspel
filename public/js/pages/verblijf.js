@@ -9,7 +9,7 @@ const stayP=()=>stay.kind?Math.min(1,(performance.now()-stay.t0)/stay.dur):0;
 const stayCd=k=>STAY[k].key?cdLeft(STAY[k].key):0;
 const docHp=()=>DOC.hp+furnFx('docHp');
 function stayTarget(k){const f=stay.kind===k&&stay.from?stay.from:{e:S.energy,h:S.hp,heat:S.heat},h=home();
- if(k==='rest')return {e:EN_MAX,h:Math.min(100,f.h+h.hp+furnFx('restHp')),heat:Math.max(0,f.heat-h.heat)};
+ if(k==='rest')return {e:Math.max(EN_MAX,f.e),h:Math.min(100,f.h+h.hp+furnFx('restHp')),heat:Math.max(0,f.heat-h.heat)};
  return {h:Math.min(100,f.h+docHp())}}
 function stayUseful(k){if(k==='rest')return S.energy<EN_MAX-.5||S.hp<100;return S.hp<100}
 function stayApply(p){const f=stay.from,T=stayTarget(stay.kind);

@@ -9,9 +9,10 @@ function news(){const n=S.npcs[rnd(0,S.npcs.length-1)].n;const T=[
   S.news.unshift(T[rnd(0,T.length-1)]());S.news=S.news.slice(0,6);renderTicker()}
 // (de nieuwsband bovenaan is weg; het nieuws staat nog in S.news)
 function renderTicker(){}
+// energie boven je max (bv. door zon in de Pixelstad) blijft staan: opladen haalt er nooit iets af, het stopt alleen
 function tick(){
   const t=now(),dt=(t-S.last)/60000;S.last=t;const mins=Math.min(dt,720);
-  if(mins>0){bizPayTick(mins,t);S._enAcc=(S._enAcc||0)+mins*60/EN_REGEN_S*(1+furnFx('enRegen')+fitFx('en')+sk('duur')*SK.duur.regen);if(S._enAcc>=1){S.energy=Math.min(EN_MAX,S.energy+Math.floor(S._enAcc));S._enAcc%=1}const hd=mins*2*(1+furnFx('heat'));S.heat=Math.max(0,S.heat-Math.floor(hd>=1?hd:Math.random()<hd?1:0));
+  if(mins>0){bizPayTick(mins,t);S._enAcc=(S._enAcc||0)+mins*60/EN_REGEN_S*(1+furnFx('enRegen')+fitFx('en')+sk('duur')*SK.duur.regen);if(S._enAcc>=1){S.energy=Math.max(S.energy,Math.min(EN_MAX,S.energy+Math.floor(S._enAcc)));S._enAcc%=1}const hd=mins*2*(1+furnFx('heat'));S.heat=Math.max(0,S.heat-Math.floor(hd>=1?hd:Math.random()<hd?1:0));
     if(typeof hideTick==='function')hideTick(mins,mins<.2);
     if(Math.random()<mins*6*(1+furnFx('hpRegen')))S.hp=Math.min(100,S.hp+1);
     if(typeof bankTick==='function')bankTick(mins);

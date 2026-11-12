@@ -16,7 +16,8 @@ const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const sv=()=>{try{save()}catch(e){}};
 const obj=(k,d)=>{try{if(!S[k]||typeof S[k]!=='object')S[k]=d;return S[k]}catch(e){return d}};
 const dayN=()=>Math.floor((Date.now()-6*3600e3+3600e3)/864e5);
-const zS=k=>G.schaal?G.schaal.zwart(k):Math.round(50*k),wS=k=>G.schaal?Math.round(G.schaal.wit()*k):Math.round(20*k);
+const zS=k=>G.schaal?G.schaal.zwart(k):Math.round(50*k),wS=k=>G.schaal?Math.round(G.schaal.wit()*k):Math.round(20*k),
+  zK=k=>G.schaal&&G.schaal.kost?G.schaal.kost(k):zS(k);   // prijzen (trakteren, cadeaus, lenen): zonder lidbonus
 const me=()=>String(window.__USER__||'jij');
 const masked=()=>!!(G.P&&G.P.look&&G.P.look.hat==='mask');
 function rng(seed){let s=seed>>>0;return ()=>{s=(s+0x6D2B79F5)>>>0;let t=Math.imul(s^(s>>>15),1|s);t=(t+Math.imul(t^(t>>>7),61|t))^t;return ((t^(t>>>14))>>>0)/4294967296}}
@@ -143,7 +144,7 @@ function korting(n){const v=val(idOf(n));let k=v>=45?.2:v>=25?.15:v>=10?.1:0;try
 const helerK=n=>{const v=val(idOf(n));return v>=45?.1:v>=25?.05:0};
 const bon=()=>obj('stadBon',{});
 function gunst(n,P,main){const r=rec(P.id,1),g=P.gunst,T=GUNST[g];if(!T||r.f===dayN())return;let txt=T[1],ok=true;const fl=(t,c)=>G.fx2&&G.fx2.float(t,G.P.x,G.P.z,c||'#7fd1c7');
-  if(g==='eten'){const e0=S.energy;S.energy=Math.min(typeof EN_MAX!=='undefined'?EN_MAX:100,S.energy+6);S.hp=Math.min(100,(S.hp||100)+6);fl('+'+Math.round(S.energy-e0)+' energie');G.pose='eet';setTimeout(()=>{if(G.pose==='eet')G.pose=null},2400)}
+  if(g==='eten'){const e0=S.energy;S.energy=Math.max(e0,Math.min(typeof EN_MAX!=='undefined'?EN_MAX:100,S.energy+6));S.hp=Math.min(100,(S.hp||100)+6);fl('+'+Math.round(S.energy-e0)+' energie');G.pose='eet';setTimeout(()=>{if(G.pose==='eet')G.pose=null},2400)}
   else if(g==='zorg'){if((S.hp||100)>=100){txt='Jij mankeert niks. Kom terug als je iets hebt.';ok=false}else{const h0=S.hp;S.hp=Math.min(100,S.hp+30);fl('+'+Math.round(S.hp-h0)+' gezondheid','#ff9ac2')}}
   else if(g==='rit'){bon().taxi=1;fl('Volgende taxi gratis','#f2c230')}
   else if(g==='monteur'){const L=(G.vehicles||[]).filter(v=>v.own&&((v.dmg||0)>0||v.flat));if(!L.length){txt='Je wagen is in orde. Kom terug als er iets aan mankeert.';ok=false}else{L.forEach(v=>{v.dmg=0;v.flat=0});G.carHud&&G.carHud();fl('Auto gemaakt','#f0b23a')}}
@@ -155,7 +156,7 @@ function gunst(n,P,main){const r=rec(P.id,1),g=P.gunst,T=GUNST[g];if(!T||r.f===d
   else if(g==='roddel'){const t=G.smeer&&G.smeer.roddel&&G.smeer.roddel();if(t)txt=t;else{G.rep&&G.rep.add(n.x,n.z,2);txt='Ze praten goed over je hier. Dat is ook wat waard.'}}
   else if(g==='deel'){const c=zS(.4);S.cash+=c;if(typeof addZwart==='function')addZwart(c);fl('+'+fmt(c),'#3fe395')}
   if(ok){r.f=dayN();G.ev&&G.ev('gunst');G.snd&&G.snd.fx('ok');sv()}K.say(txt,ok?'blij':null,main())}
-const trakP=()=>Math.max(5,Math.round(zS(.04)/5)*5),cadP=()=>Math.max(15,Math.round(zS(.15)/5)*5),goedP=v=>Math.max(10,Math.round(zS(v<=-40?.6:.25)/5)*5);
+const trakP=()=>Math.max(5,Math.round(zK(.04)/5)*5),cadP=()=>Math.max(15,Math.round(zK(.15)/5)*5),goedP=v=>Math.max(10,Math.round(zK(v<=-40?.6:.25)/5)*5);
 function geef(n,P,main){const r=rec(P.id,1),day=dayN(),a=trakP(),b=cadP(),pay=c=>{if(S.cash<c){G.toast('Niet genoeg contant geld','bad');return false}S.cash-=c;G.fx2&&G.fx2.float('−'+fmt(c),G.P.x,G.P.z,'#ffd35a');G.snd&&G.snd.fx('coin');return true};
   K.say(pick(['Voor mij?','Nou, dat hoeft toch niet.','Wat heb je bij je?']),null,[
    {t:'Trakteren · '+fmt(a),sub:r.td===day?'':'Koffie of een broodje',ic:K.ic.kop,dis:r.td===day,why:'Vandaag al gedaan',f:()=>{if(!pay(a))return;r.td=day;band(n,SOC.trakteer,{soc:1});K.say(pick(['Lekker. Dank je!','Daar was ik aan toe.','Jij bent een goeie.']),'blij',main())}},
@@ -181,7 +182,7 @@ function vraagNieuw(force){const q=VQ(),day=dayN(),now=Date.now();if(q.d!==day){
   if(!force&&(now<(q.nx||0)||q.n>=3||G.driving||G.talking||(G.police&&G.police.active())||(G.mission&&G.mission())||(G.race&&G.race.active&&G.race.active())))return false;
   const b=BD(),L=ROS.filter(p=>b[p.id]&&b[p.id].v>=10&&b[p.id].rb!==day&&!onder(p));if(!L.length){q.nx=now+5*60000;return false}
   const P=pick(L),r=rec(P.id,1);let k=pick(['langs','langs','leen','hulp']);if(k==='leen'&&(r.ln||r.v<25))k='langs';if(force&&VTXT[force])k=force;
-  const a=k==='leen'?Math.max(20,Math.round(zS(.3)/10)*10):0;Object.assign(q,{id:P.id,k,t:now+25*60000,a,n:(q.n||0)+1,nx:now+rr(9,15)*60000});
+  const a=k==='leen'?Math.max(20,Math.round(zK(.3)/10)*10):0;Object.assign(q,{id:P.id,k,t:now+25*60000,a,n:(q.n||0)+1,nx:now+rr(9,15)*60000});
   const n=plaats(P.id);if(k==='hulp'&&n){const pp=M.nearestWalk(n.x+rr(-3,3),n.z+rr(2.5,4),5)||{x:n.x+2.5,z:n.z+2.5},m=G.npcMake('rivaal',pp.x,pp.z);m.evt='lastig';m.fixed=1;m.st='stand';m.fixSt='stand';m.home={x:m.x,z:m.z,ry:Math.atan2(n.x-m.x,n.z-m.z)};m.ry=m.home.ry;m.nm=pick(['Een lastpak','Schreeuwer','Geldwolf']);pest=m}
   con(P);G.msg&&G.msg(P.id,pick(VTXT[k]).replace('{x}',fmt(a)),{k:'pers',id:P.id});sv();return true}
 function vraagKlaar(n,ok){const q=VQ(),P=REG[q.id];if(!P)return;const k=q.k;q.id=null;q.t=0;pestWeg();
@@ -199,7 +200,7 @@ function pestTick(){try{if(!pest)return;const q=vraagOn();if(!q||q.k!=='hulp'){p
     const P=REG[q.id],n=G.NPC.find(m=>m.rid===P.id);vraagKlaar(n,true);G.toast&&G.toast(P.nm+' is je dankbaar','ok');if(n&&dist(n,G.P)<30)G.bubble&&G.bubble(n,pick(['Dank je! Hij is weg.','Je bent een held.','Dat vergeet ik niet.']),{col:'#c8ffd8'});else G.msg&&G.msg(P.id,'Hij is weg. Dank je, dat vergeet ik niet.',null)}catch(e){}}
 function con(P){try{if(G.contacts&&!G.contacts[P.id])G.contacts[P.id]={n:P.nm,look:Object.assign({},P.look,{bg:'#16232a'}),col:'#7fd1c7'}}catch(e){}}
 function vraagKeuze(n,P,ch,main){const q=vraagOn();if(!q||q.id!==P.id)return;
-  if(q.k==='langs')ch.splice(0,0,{t:'Je wilde me spreken?',sub:'Je kreeg een bericht',ic:K.ic.hart,f:()=>{const e0=S.energy;S.energy=Math.min(typeof EN_MAX!=='undefined'?EN_MAX:100,S.energy+3);vraagKlaar(n,true);const de=Math.round(S.energy-e0);if(de>0)G.fx2&&G.fx2.float('+'+de+' energie',G.P.x,G.P.z,'#7fd1c7');else{const c=Math.max(5,Math.round(wS(.5)/5)*5);S.cash+=c;G.fx2&&G.fx2.float('+'+fmt(c),G.P.x,G.P.z,'#3fe395')}sv();K.say(pick(['Fijn dat je er bent. Hier, dit is voor jou.','Ik dacht aan je. Neem dit mee.','Zomaar. Omdat je altijd langskomt.']),'blij',main())}});
+  if(q.k==='langs')ch.splice(0,0,{t:'Je wilde me spreken?',sub:'Je kreeg een bericht',ic:K.ic.hart,f:()=>{const e0=S.energy;S.energy=Math.max(e0,Math.min(typeof EN_MAX!=='undefined'?EN_MAX:100,S.energy+3));vraagKlaar(n,true);const de=Math.round(S.energy-e0);if(de>0)G.fx2&&G.fx2.float('+'+de+' energie',G.P.x,G.P.z,'#7fd1c7');else{const c=Math.max(5,Math.round(wS(.5)/5)*5);S.cash+=c;G.fx2&&G.fx2.float('+'+fmt(c),G.P.x,G.P.z,'#3fe395')}sv();K.say(pick(['Fijn dat je er bent. Hier, dit is voor jou.','Ik dacht aan je. Neem dit mee.','Zomaar. Omdat je altijd langskomt.']),'blij',main())}});
   else if(q.k==='leen'){ch.splice(0,0,{t:'Lenen · '+fmt(q.a),sub:'Komt over twee dagen terug',ic:K.ic.euro,dis:S.cash<q.a,why:'Te weinig contant',f:()=>{S.cash-=q.a;rec(P.id,1).ln={d:dayN()+2,a:q.a};G.fx2&&G.fx2.float('−'+fmt(q.a),G.P.x,G.P.z,'#ffd35a');G.snd&&G.snd.fx('coin');vraagKlaar(n,true);K.say(pick(['Je redt me. Overmorgen heb je het terug.','Dank je. Dit vergeet ik niet.']),'blij',main())}},
     {t:'Nee, sorry',ic:K.ic.no,f:()=>{vraagKlaar(n,false);K.say(pick(['Oké. Ik vraag het wel aan iemand anders.','Jammer. Maar ik snap het.']),null,main())}})}
   else if(q.k==='hulp')ch.splice(0,0,{t:'Waar is hij?',sub:'Jaag hem weg: intimideren of uitdagen',ic:K.ic.scare,f:()=>{if(pest)G.setWaypoint&&G.setWaypoint(pest.x,pest.z,'Lastpak');const had=!!pest;if(!had)vraagKlaar(n,true);K.say(had?'Daar. Die met dat rode jack. Wees voorzichtig.':'Hij is net weggelopen. Toch bedankt dat je kwam.',had?'bang':'blij',main())}})}

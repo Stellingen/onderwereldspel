@@ -9,7 +9,7 @@ V.profiel=()=>{
  return `<h1>Profiel</h1>
  <div class="pf">
   <section class="card hud pf-id">
-   <div class="pf-mug">${esc(S.name).slice(0,1).toUpperCase()}</div>
+   ${typeof karBust==='function'?`<div class="pf-mug kar">${karBust({vb:'58 6 84 96'})}<button class="pf-kar" onclick="karOpen()" aria-label="Uiterlijk aanpassen"><span>Uiterlijk</span></button></div>`:`<div class="pf-mug">${esc(S.name).slice(0,1).toUpperCase()}</div>`}
    <div class="pf-main"><div class="label">${window.__TOKEN__?'Account':'Offline speler'}${since?' · lid sinds '+since:''}</div>
     <div class="pf-name">${esc(S.name)}${vipTag()}</div>${isVip()?`<div class="pf-vip ${isHR()?'hr':''}">${lidName()} · ${Math.round(tierK()*100)}% meer slaagkans, straatcredit en bankrente · wachttijden ${Math.round(waitK()*100)}% · +${Math.round(tierLoot()*100)}% buit · makkelijker vluchten en ontsnappen · ${isHR()?'anderhalf keer zoveel ':''}cashback op elke casino-inzet · in de slots vaker de bonus${isHR()?' · hoge inzetten':''}</div>`:''}
     <div class="pf-rank"><b>${RANKS[ri][0]} ${rankStars(S.xp)}</b><span>${nxt?Math.floor(S.xp).toLocaleString('nl-NL')+' / '+nxt[1].toLocaleString('nl-NL')+' XP':'Hoogste rang'}</span></div>
@@ -87,7 +87,7 @@ function pvShow(name){if(!name)return;pvOpen('<div class="pv-load">Profiel laden
    :j.admin&&!j.public?`<div class="pv-note adm">Privé profiel. Je ziet het omdat je beheerder bent.</div>`:'';
   const tile=(l,v,s_,c)=>`<div class="pv-t"><span class="label">${l}</span><b${c?` style="color:${c}"`:''}>${v}</b>${s_?`<small>${s_}</small>`:''}</div>`;
   const casino=(st.won||0)-(st.lost||0);
-  pvOpen(`<div class="pv-head">${typeof dollSvg==='function'?`<div class="pv-doll">${dollSvg(p.wear||{})}</div>`:''}${pvHead(j.name,j.xp,tagH,(since?'Lid sinds '+since+' · ':'')+pvAgo(j.seen_s)+(p.jail?' · <em class="bad">zit vast</em>':p.wanted?' · <em class="bad">gezocht</em>':''),note)}</div>
+  pvOpen(`<div class="pv-head">${typeof dollSvg==='function'?`<div class="pv-doll">${dollSvg(p.wear||{},{char:p.char&&typeof p.char==='object'?p.char:j.own&&typeof karGet==='function'?karGet():null})}</div>`:''}${pvHead(j.name,j.xp,tagH,(since?'Lid sinds '+since+' · ':'')+pvAgo(j.seen_s)+(p.jail?' · <em class="bad">zit vast</em>':p.wanted?' · <em class="bad">gezocht</em>':''),note)}</div>
    <div class="pv-grid">${tile('Vermogen',fmt(net),'contant en bank','var(--acc)')}${tile('Familie',F?esc(F.n):'Geen',fr,F?F.col:'')}${tile('Woning',H?esc(H.n):'Onbekend',H&&H.place?esc(H.place):'')}
     ${tile("Auto's",p.cars||0,'in de garage')}${tile('Bedrijven',p.units||0,'vestigingen')}${tile('Straatcredit',(p.cred||0).toLocaleString('nl-NL'),'','var(--violet)')}</div>
    <div class="pv-stats"><span class="label">Prestaties</span><div>${[['Klussen gelukt',st.crimes],['Mislukt',st.fails],["Auto's gestolen",st.cars],['Carjackings',st.jacks],['Huurmoorden',st.hits]].map(([l,v])=>`<span>${l}<b>${(+v||0).toLocaleString('nl-NL')}</b></span>`).join('')}

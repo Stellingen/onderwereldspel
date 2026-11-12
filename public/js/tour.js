@@ -22,7 +22,8 @@ const TOUR_STEPS=()=>[
  {t:'Klaar om te beginnen',p:'Begin met een makkelijke klus en kijk hoe het gaat. Deze rondleiding vind je terug op je dashboard en via <b>rondleiding</b> in het zoekmenu.',end:1,ic:'star'}];
 const tr={i:0,on:false,steps:null,raf:0};
 const tourMob=()=>matchMedia('(max-width:900px)').matches;
-const tourAuto=()=>typeof S!=='undefined'&&S&&!S.tour&&(S.xp||0)<1&&!(S.stats&&S.stats.crimes);
+// eerst je karakter (karakter.js start de rondleiding zelf als je klaar bent), dan pas de rondleiding
+const tourAuto=()=>typeof S!=='undefined'&&S&&!S.tour&&(S.xp||0)<1&&!(S.stats&&S.stats.crimes)&&!(typeof karPending==='function'&&karPending());
 function tourEl(st){if(!st.el)return null;const sel=st.el[tourMob()?1:0];let e=sel&&document.querySelector(sel);
  const ok=x=>{if(!x)return false;const r=x.getBoundingClientRect();return r.width>2&&r.height>2&&getComputedStyle(x).visibility!=='hidden'};
  if(!ok(e))e=document.querySelector(st.el[tourMob()?0:1]);return ok(e)?e:null}

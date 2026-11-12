@@ -7,7 +7,7 @@ const G=STAD,M=STAD_MAP,TH=window.THREE,K=G.kit,$s=id=>document.getElementById(i
 const sv=()=>{try{save()}catch(e){}};
 const obj=(k,d)=>{try{if(!S[k]||typeof S[k]!=='object')S[k]=d;return S[k]}catch(e){return d}};
 const ref=()=>(G.roofRef&&G.roofRef())||{min:20,max:60,xp:4};
-const scale=k=>{const c=ref();return Math.max(10,Math.round(((c.min+c.max)/2)*(typeof lootMult==='function'?lootMult():1)*k/5)*5)};
+const scale=k=>{const c=ref();return Math.max(10,Math.round(((c.min+c.max)/2)*(typeof lootMult==='function'?lootMult():1)*(G.lidBonus?G.lidBonus():1)*k/5)*5)};   // zwart geld, met lidbonus
 /* ---------- contacten en berichten ---------- */
 const CON={notaris:{n:'Notaris De Sleutel',look:{skin:'#e9b98f',hair:'#d8d4cc',top:'#1f2430',tie:'#7a1f2a',glasses:1,bg:'#2b2418'},col:'#f2c230'},
   contact:{n:'Het Contact',look:{skin:'#b97a52',hair:'#151517',top:'#1d1d1f',hat:'cap',hatC:'#2a2c30',bg:'#2a1414'},col:'#ff5a4a'},

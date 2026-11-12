@@ -25,7 +25,7 @@ ov.innerHTML=`<div class="sd-ph2-dev"><div class="sd-ph2-bar"><span id="sdP2Cloc
  <div class="sd-ph2-scr" id="sdP2Scr"></div><div class="sd-ph2-nav"><button data-back aria-label="Terug">‹</button><button data-home aria-label="Startscherm"><i></i></button><button data-close aria-label="Telefoon wegleggen">×</button></div></div>`;
 const scr=$s('sdP2Scr');let app='home',sub=null;
 const playerLook=()=>{const L=G.P&&G.P.look||{};let tie=null,chain=null;try{const ol=typeof outfitLook==='function'?outfitLook():null;if(ol&&ol.bovenlijf&&ol.bovenlijf.kind==='suit')tie=ol.bovenlijf.c2||'#7a1f2a';const w=S.fit&&S.fit.wear||{};if(/ketting|goud|chain/.test(w.nek||''))chain=1}catch(e){}
-  return {skin:L.skin,hair:L.hair,top:L.top,hat:L.hat,hatC:L.hatC,tie,chain,bg:'#1d2230'}};
+  return {skin:L.skin,hair:L.hair,hs:L.hs,fh:L.fh,eye:L.eye,mouth:L.mouth,top:L.top,hat:L.hat,hatC:L.hatC,tie,chain,bg:'#1d2230'}};
 /* ---------- schermen ---------- */
 const EXT={};
 function badge(k){if(EXT[k])return EXT[k].badge?EXT[k].badge():0;if(k==='berichten')return G.unread?G.unread():0;if(k==='dag'&&G.dag){const D=G.dag.get();return (D.ids||[]).filter(id=>{const d=G.dag.def(id);return d&&(D.p[id]||0)>=d[3]&&!D.claimed[id]}).length}if(k==='vastgoed')return (G.lots||[]).filter(l=>l.building).length;if(k==='naam'&&G.naam)return G.naam.points();if(k==='wijken'&&G.wijk)return G.wijk.open();return 0}
@@ -40,7 +40,7 @@ function nowCard(){const m=G.mission&&G.mission(),w=G.waypoint;
 function home(){const L=G.msgs?G.msgs().filter(m=>m.u).slice(0,2):[];
   scr.innerHTML=`<div class="sd-p2-home"><div class="sd-p2-hero"><canvas id="sdP2Me" width="24" height="24"></canvas><div><b>${E(window.__USER__||'Jij')}</b><small>${E(RANKS[rankIdx(S.xp)][0])} · ${E(M.districtAt(G.P.x,G.P.z))}</small></div>
    <div class="sd-p2-m"><span><i>Contant</i><b>${fmt(S.cash)}</b></span><span><i>Bank</i><b>${fmt(S.bank||0)}</b></span></div></div>
-   ${nowCard()}${L.map(m=>{const c=G.contacts[m.f]||G.contacts.stad;return `<button class="sd-p2-not" data-thread="${m.f}"><canvas data-por="${m.f}" width="24" height="24"></canvas><span><b>${E(c.n)}</b><small>${E(m.x)}</small></span></button>`}).join('')}
+   ${G.weerKaart?G.weerKaart():''}${nowCard()}${L.map(m=>{const c=G.contacts[m.f]||G.contacts.stad;return `<button class="sd-p2-not" data-thread="${m.f}"><canvas data-por="${m.f}" width="24" height="24"></canvas><span><b>${E(c.n)}</b><small>${E(m.x)}</small></span></button>`}).join('')}
    <div class="sd-p2-grid">${APPS.filter(a=>!DOCK.includes(a[0])).map(appBtn).join('')}</div></div>`;
   K.portrait(playerLook(),'blij',$s('sdP2Me'));scr.querySelectorAll('[data-por]').forEach(c=>K.portrait((G.contacts[c.dataset.por]||G.contacts.stad).look,null,c));
   dock()}
@@ -77,15 +77,15 @@ function snap(){const c=document.createElement('canvas');c.width=240;c.height=30
 function prestaties(){const H=S.stadAch||{},C=S.stadCol||{},f=Object.keys(C).length;
   scr.innerHTML=head('Prestaties',Object.keys(H).length+' van '+G.ACH.length)+`<div class="sd-p2-list"><div class="sd-p2-dag"><b>Pakketjes</b><i class="sd-p2-pb"><i style="width:${f/30*100}%"></i></i><span>${f}/30 · stegen, parken, kades</span></div>
    ${G.ACH.map(a=>{const v=Math.min(a[4],G.achVal(a)),ok=!!H[a[0]];return `<div class="sd-p2-ach${ok?' ok':''}"><i>${K.ic.star}</i><span><b>${E(a[1])}</b><small>${E(a[2])}</small>${ok?'':`<i class="sd-p2-pb"><i style="width:${v/a[4]*100}%"></i></i>`}</span><em>${ok?'✓':v+'/'+a[4]}</em></div>`}).join('')}</div>`}
-function settings(){const pix=G.pixPref||0;let skin='',wz='';try{skin=localStorage.getItem('stad_skin')||'';wz=localStorage.getItem('stad_weer')||''}catch(e){}const SK=['#f1caa5','#e9b98f','#d9a27a','#b97a52','#8d5a3a','#6e4630'],snd=G.snd||{};
+function settings(){const pix=G.pixPref||0;let skin='',wz='';try{skin=localStorage.getItem('stad_skin')||'';wz=sessionStorage.getItem('stad_weer')||''}catch(e){}const SK=['#f1caa5','#e9b98f','#d9a27a','#b97a52','#8d5a3a','#6e4630'],snd=G.snd||{};
   scr.innerHTML=head('Instellingen')+`<div class="sd-p2-set">
    <div class="sd-row"><b>Geluid</b><div class="sd-seg"><button data-snd="fx" class="${snd.fxOn?'on':''}">Effecten</button><button data-snd="mu" class="${snd.muOn?'on':''}">Muziek</button></div></div>
    <div class="sd-row"><b>Volume</b><input type="range" min="0" max="1" step=".05" value="${snd.vol!=null?snd.vol:.8}" data-vol aria-label="Volume"></div>
    <div class="sd-row"><b>Camera</b><div class="sd-seg">${[['boven','Bovenaf'],['achter','Achter je'],['ogen','Ogen']].map(([v,n])=>`<button data-cam="${v}" class="${(G.camMode||'boven')===v?'on':''}">${n}</button>`).join('')}</div></div>
    <div class="sd-row"><b>Beeld</b><div class="sd-seg">${[[640,'Scherp'],[0,'Normaal'],[340,'Grof']].map(([v,n])=>`<button data-pix="${v}" class="${pix===v?'on':''}">${n}</button>`).join('')}</div></div>
-   <div class="sd-row"><b>Huidskleur</b><div class="sd-sk">${SK.map(c=>`<button data-skin="${c}" style="--c:${c}" class="${skin===c?'on':''}" aria-label="Huidskleur"></button>`).join('')}</div></div>
-   <div class="sd-row"><b>Tijd van de dag</b><div class="sd-seg">${[['','Echt'],['1','Dag'],['0','Nacht']].map(([v,n])=>`<button data-day="${v}" class="${String(G.forceDay==null?'':G.forceDay)===v?'on':''}">${n}</button>`).join('')}</div></div>
-   <div class="sd-row"><b>Weer</b><div class="sd-seg">${[['','Vanzelf'],['helder','Zon'],['regen','Regen'],['mist','Mist'],['sneeuw','Sneeuw']].map(([v,n])=>`<button data-weer="${v}" class="${wz===v?'on':''}">${n}</button>`).join('')}</div></div>
+   ${typeof KAR!=='undefined'?`<div class="sd-row"><b>Uiterlijk</b><button class="btn sm" data-kar>Uiterlijk aanpassen</button></div>`:`<div class="sd-row"><b>Huidskleur</b><div class="sd-sk">${SK.map(c=>`<button data-skin="${c}" style="--c:${c}" class="${skin===c?'on':''}" aria-label="Huidskleur"></button>`).join('')}</div></div>`}
+   <div class="sd-row"><b>Tijd van de dag</b><div class="sd-seg">${[['','Vanzelf'],['1','Dag'],['0','Nacht']].map(([v,n])=>`<button data-day="${v}" class="${String(G.forceDay==null?'':G.forceDay)===v?'on':''}">${n}</button>`).join('')}</div></div>
+   <div class="sd-row"><b>Weer (alleen beeld)</b><div class="sd-seg">${[['','Vanzelf'],['zon','Zon'],['regen','Regen'],['storm','Storm'],['sneeuw','Sneeuw']].map(([v,n])=>`<button data-weer="${v}" class="${wz===v?'on':''}">${n}</button>`).join('')}</div></div>
    <div class="sd-row"><b>Besturing</b><p>${touch?'Stick linksonder om te lopen, ver duwen is rennen. Tik op iemand of op de knop boven zijn hoofd om te praten. Veeg om de camera te draaien, knijp om te zoomen.':'WASD lopen, Shift rennen, E praten, doen en naar binnen, T emotes, F auto, H hond, Z en C draaien, scrollen zoomt, J telefoon, M kaart, Esc terug.'}</p></div></div>`;
   const vr=scr.querySelector('[data-vol]');if(vr)vr.oninput=()=>G.snd&&G.snd.setVol(+vr.value)}
 function naamScr(){scr.innerHTML=head('Straatnaam',G.naam?G.naam.title():'')+(G.naam?G.naam.html():'')}
@@ -140,13 +140,14 @@ ov.addEventListener('click',e=>{const t=e.target;if(t===ov){close();return}
   if(b.dataset.cam!=null){G.setCam&&G.setCam(b.dataset.cam);settings();return}
   if(b.dataset.pix!=null){G.setPix(+b.dataset.pix||0);settings();return}
   if(b.dataset.weer!=null){G.weerZet&&G.weerZet(b.dataset.weer);settings();return}
+  if(b.dataset.kar!=null&&typeof KAR!=='undefined'){close();KAR.open({manual:1});return}
   if(b.dataset.skin){try{localStorage.setItem('stad_skin',b.dataset.skin)}catch(e){}G.refreshLook&&G.refreshLook();settings();return}
   if(b.dataset.day!=null){G.forceDay=b.dataset.day===''?null:+b.dataset.day;try{localStorage.setItem('stad_day',b.dataset.day)}catch(e){}G.applyLight&&G.applyLight();settings()}});
 addEventListener('keydown',e=>{if(ov.hidden)return;const k=e.key.toLowerCase();const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;
   if(k==='escape'||k==='backspace'){e.preventDefault();e.stopImmediatePropagation();if(sub){sub=null;draw()}else if(app!=='home')go('home');else close();return}
   if(k==='j'&&!e.repeat){e.preventDefault();e.stopImmediatePropagation();close()}},true);
 /* ---------- klok, batterij, stipje op de telefoonknop ---------- */
-function hud(){const d=new Date();$s('sdP2Clock').textContent=d.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});try{$s('sdP2Bat').textContent=Math.round(Math.max(0,Math.min(EN_MAX,S.energy))/EN_MAX*100)+'%'}catch(e){}
+function hud(){$s('sdP2Clock').textContent=G.klok?G.klok().txt+' · speldag':new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});try{$s('sdP2Bat').textContent=Math.round(Math.max(0,Math.min(EN_MAX,S.energy))/EN_MAX*100)+'%'}catch(e){}
   const n=(G.unread?G.unread():0)+badge('dag');const pb=$s('sdPhoneB');if(pb){pb.classList.toggle('dot',n>0);pb.dataset.n=n||''}}
 G.onMsg=()=>{hud();if(!ov.hidden&&app==='home')home()};setInterval(()=>{hud();if(!ov.hidden&&(app==='home'||app==='dag'))draw()},2000);
 })();

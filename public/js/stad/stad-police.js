@@ -76,7 +76,8 @@ G.policeCarStep=function(c,dt){if(c.wait>0){c.wait-=dt;c.mesh.position.y=-50;ret
   // als hij de speler ziet terwijl die vlakbij te voet is: uitstappen
   if(!G.driving&&!c.deployed&&dist(c,G.P)<16&&los(c,G.P))arrive(c,true);
   c.mesh.position.set(c.x,0,c.z);c.mesh.rotation.y=c.ry;
-  if(G.driving&&G.car&&dist(c,G.car)<4.5&&Math.abs(G.car.v)<3){c.hold=(c.hold||0)+dt;if(c.hold>1.6)caught()}else c.hold=0};
+  // stilstaan naast een politiewagen = gepakt; versuft na een klap telt het half (dan heb je nog een kans om weg te komen)
+  if(G.driving&&G.car&&dist(c,G.car)<4.5&&Math.abs(G.car.v)<3){c.hold=(c.hold||0)+dt*(G.versuft&&G.versuft()?.5:1);if(c.hold>1.6)caught()}else c.hold=0};
 function arrive(c,force){if(c.deployed)return;if(G.driving&&!force)return;c.deployed=true;P0.arrived=true;
   const s=Math.cos(c.ry),k=-Math.sin(c.ry);[[1.6,0],[-1.6,0]].forEach(([o])=>{const p=M.nearestWalk(c.x+s*o*1.4,c.z+k*o*1.4,8);if(p)addCop(p.x,p.z)});
   G.snd&&G.snd.fx('carDoor')}
@@ -90,7 +91,15 @@ function moveTo(a,tx,tz,sp,dt){const dx=tx-a.x,dz=tz-a.z,d=Math.hypot(dx,dz);if(
 function goPath(a,tx,tz,sp,dt){a.pt-=dt;const d=Math.hypot(tx-a.x,tz-a.z);if(d<7&&los(a,{x:tx,z:tz})){return moveTo(a,tx,tz,sp,dt)}
   if(a.pt<=0||!a.path||!a.path.length||a.stuck>.8){a.pt=.8+Math.random()*.4;a.path=M.findPath(a.x,a.z,tx,tz)||[{x:tx,z:tz}];a.stuck=0}
   const w=a.path[0];if(!w)return true;if(moveTo(a,w.x,w.z,sp,dt)||Math.hypot(w.x-a.x,w.z-a.z)<.5)a.path.shift();return !a.path.length&&d<1}
+// aangereden agent: even omver (zitten, sterretjes), dan weer overeind en verder
+function knock(a){a.down=2.6;a.sees=0;a.sp=0;G.bubble&&G.bubble(a,'Au!',{col:'#a9c8ff'})}
+function downStep(a,dt){a.down-=dt;const t=2.6-a.down;a.sp=0;
+  if(t<.45){const k=1-t/.45,nx=a.x+(a.kvx||0)*dt*k,nz=a.z+(a.kvz||0)*dt*k;if(M.canStand(nx,a.z,.3))a.x=nx;if(M.canStand(a.x,nz,.3))a.z=nz;const q=t/.45;a.y=-.84*q;a.lean=-.6*q;a.legL=a.legR=-1.5*q}
+  else if(a.down>.5){a.y=-.84;a.lean=-.5;a.legL=-1.5;a.legR=-1.3;a.armL=a.armR=.55;a.hy=Math.sin(t*5)*.45}
+  else{const k=1-a.down/.5;a.y=-.84*(1-k);a.lean=-.5*(1-k);a.legL=a.legR=-1.5*(1-k);a.armL=a.armR=undefined}
+  if(a.down<=0){a.down=0;a.y=0;a.lean=0;a.legL=a.legR=a.armL=a.armR=undefined;a.hy=0}}
 function copStep(a,dt){const P=G.P;
+  if(a.down>0){downStep(a,dt);return}
   if(a.st==='leave'){moveTo(a,a.away.x,a.away.z,3,dt);a.lt=(a.lt||0)+dt;if(a.lt>8||dist(a,P)>45)a.gone=1;return}
   const see=canSee(a);
   if(G.hidden&&see&&dist(a,P)<2&&Math.random()<dt*.25*2.5){caught();return}
@@ -125,7 +134,7 @@ function blockClear(){const b=BLK.cur;if(!b)return;BLK.cur=null;b.cars.forEach(c
   b.cops.forEach(a=>{if(a.st==='post'){a.st='leave';a.away={x:a.x+rr(-20,20),z:a.z+rr(-20,20)};a.lt=0}})}
 const landOK=(x,z)=>{x=Math.floor(x);z=Math.floor(z);if(x<0||z<0||x>=M.W||z>=M.H)return false;return M.ground[z*M.W+x]!==T.WATER};
 function ram(b,c){b.hit=1;b.hitT=b.t;const px=-b.e.uz,pz=b.e.ux;b.cars.forEach(k=>{const s=((k.x-b.e.x)*px+(k.z-b.e.z)*pz)>0?1:-1;k.px=px*s;k.pz=pz*s;k.push=1.5;k.spin=s*1.6;k.noCol=1;k.x+=k.px*2.3;k.z+=k.pz*2.3;k.mesh.position.set(k.x,0,k.z)});
-  c.v=Math.sign(c.v||1)*b.vPrev*.5;c.dmg=Math.min(.6,(c.dmg||0)+.14);G.shake&&G.shake(1);G.hitStop=.1;G.snd&&G.snd.fx('hit');G.flash&&G.flash('#ffffff',.5);G.fx2&&G.fx2.burst(c.x,1,c.z,'#c8ccd2',14);
+  c.v=Math.sign(c.v||1)*b.vPrev*.5;if(G.carDamage)G.carDamage(c,14);else c.dmg=Math.min(100,(c.dmg||0)+14);G.shake&&G.shake(1);G.hitStop=.1;G.snd&&G.snd.fx('hit');G.flash&&G.flash('#ffffff',.5);G.fx2&&G.fx2.burst(c.x,1,c.z,'#c8ccd2',14);
   P0.stars=clamp(P0.stars+1,1,3);need();hud();banner('Erdoorheen!','bad');G.ev&&G.ev('ram');G.carHud&&G.carHud();b.cops.forEach(a=>{if(a.st==='post')a.st='go'})}
 function blockStep(dt){const b=BLK.cur;BLK.cd-=dt;
   if(!b){if(G.driving&&G.car&&P0.stars>=2&&P0.arrived&&BLK.cd<=0&&Math.abs(G.car.v)>6&&!(G.mission&&G.mission())){const e=edgeAhead();if(e){blockPlace(e);BLK.cd=24}else BLK.cd=3}return}
@@ -141,7 +150,7 @@ function blockStep(dt){const b=BLK.cur;BLK.cd-=dt;
   if(b.hit)b.cars.forEach(k=>{if(k.push>0){k.x+=k.px*k.push*dt*4;k.z+=k.pz*k.push*dt*4;k.ry+=k.spin*k.push*dt;k.push-=dt*1.8}
     if(!landOK(k.x,k.z)&&!k.sunk){k.vy=(k.vy||0)+16*dt;k.y=(k.y||0)-k.vy*dt;k.mesh.rotation.z=(k.mesh.rotation.z||0)+dt*1.4*(k.spin>0?1:-1);if(k.y<-1&&!k.spl){k.spl=1;G.snd&&G.snd.fx('splash');G.fx2&&G.fx2.burst(k.x,.3,k.z,'#a9dcff',16)}if(k.y<-3.5){k.sunk=1;k.mesh.visible=false}}
     k.mesh.position.set(k.x,k.y||0,k.z);k.mesh.rotation.y=k.ry})}
-G.police.blok=()=>BLK.cur?{x:BLK.cur.e.x,z:BLK.cur.e.z}:null;G.police._b={BLK,edgeAhead,blockPlace,blockClear};
+G.police.blok=()=>BLK.cur?{x:BLK.cur.e.x,z:BLK.cur.e.z}:null;G.police._b={BLK,edgeAhead,blockPlace,blockClear};G.police.knock=knock;
 /* ---------- verstoppen ---------- */
 function hideNear(){const P=G.P;let best=null,bd=2.1;M.hides.forEach(h=>{let d;if(h.r){const dx=Math.max(0,Math.abs(P.x-h.x)-h.r[0]),dz=Math.max(0,Math.abs(P.z-h.z)-h.r[1]);d=Math.hypot(dx,dz)+.6}else d=Math.hypot(P.x-h.x,P.z-h.z);if(d<bd){bd=d;best=h}});return best}
 G.police.tryHide=function(){if(G.hidden){G.unhide();return true}if(!P0.on||G.driving)return false;const h=hideNear();if(!h)return false;G.hidden=true;G.ev&&G.ev('verstop');G.stopPath&&G.stopPath();G.snd&&G.snd.fx('hide');hud();return true};

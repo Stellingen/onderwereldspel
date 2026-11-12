@@ -34,7 +34,7 @@ function build() {
    <form class="lp-auth__form" id="authForm" method="post" action="/api/register" novalidate>
     <p class="lp-kicker lp-auth__kick" data-reg>Gratis · 16+ · Alleen spelgeld</p>
     <h2 class="lp-auth__h" id="authH" tabindex="-1">Begin je carrière</h2>
-    <ul class="lp-auth__krijg" data-reg><li>${ic('check')}Je start als ${esc(opts.first || 'Rookie')} met €${(+opts.startCash || 0).toLocaleString('nl-NL')} spelgeld</li><li>${ic('check')}Een korte rondleiding door de stad</li><li>${ic('check')}Je voortgang blijft bewaard, op elk apparaat</li></ul>
+    <ul class="lp-auth__krijg" data-reg><li>${ic('check')}Je start als ${esc(opts.first || 'Rookie')} met €${(+opts.startCash || 0).toLocaleString('nl-NL')} spelgeld</li><li>${ic('check')}Je eigen karakter, met een gratis startoutfit</li><li>${ic('check')}Een korte rondleiding door de stad</li><li>${ic('check')}Je voortgang blijft bewaard, op elk apparaat</li></ul>
     <p class="lp-auth__msg" id="authMsg" role="status" hidden></p>
     <div class="lp-auth__fld"><label for="authUser">Gebruikersnaam</label>
      <input id="authUser" name="username" autocomplete="username" maxlength="20" spellcheck="false" autocapitalize="off" required aria-describedby="userHint">

@@ -82,6 +82,7 @@ function lidCheck() {
  try {
   eq('kans', k.map(x => mul(1 + x)));
   eq('buit', TIER_LOOT.map(x => plus(x)));
+  if (typeof TIER_STAD !== 'undefined') eq('stadbuit', TIER_STAD.map(x => plus(x)));
   eq('wacht', TIER_WAIT.map(x => pct(x, 0)));
   eq('rust', TIER_WAIT.map(x => pct(x, 0)));
   eq('cred', k.map(x => plus(x)));

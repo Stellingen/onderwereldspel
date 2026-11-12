@@ -114,7 +114,7 @@ function skyStep(dt){if(!sky&&!makeSky())return;const sc=G.scene();sky.visible=m
   u.uTop.value.setHSL(hsl.h,Math.min(1,hsl.s*1.35+.08),hsl.l*(.62+.1*day));
   // het zonlicht komt van sunOff (vanaf het doel gezien): daar staat de zon. 's Nachts een vaste maan.
   const so=G.sunOff||{x:-40,y:80,z:25};if(day>.25)u.uSun.value.set(so.x,Math.max(so.y,8),so.z).normalize();else u.uSun.value.set(.4,.55,-.7).normalize();
-  u.uDay.value=day;u.uT.value+=dt;const w=G.weer?G.weer():'helder';u.uCloud.value=w==='helder'?.25:w==='bewolkt'?.85:w==='mist'?.6:1;
+  u.uDay.value=day;u.uT.value+=dt;const w=G.weer?G.weer():'helder';u.uCloud.value=w==='zon'?.08:w==='helder'?.25:w==='bewolkt'?.85:w==='mist'?.6:1;
   if(w==='regen'||w==='onweer'||w==='sneeuw'){u.uTop.value.lerp(u.uHor.value,.6)}}
 
 /* ---------- knop, stip en hints ---------- */

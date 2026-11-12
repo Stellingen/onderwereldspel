@@ -1,4 +1,4 @@
-// Pixelstad: de wereld zelf. Scène, camera, licht (echte dag en nacht), lopen, botsen, voetgangers en de besturing.
+// Pixelstad: de wereld zelf. Scène, camera, licht (dag en nacht in speltijd: één speldag van 4 uur), lopen, botsen, voetgangers en de besturing.
 // Getekend op lage resolutie en zonder vervaging opgeschaald: daardoor ziet alles er gepixeld uit.
 (function(){
 'use strict';
@@ -29,10 +29,20 @@ const rnd=a=>a[Math.floor(Math.random()*a.length)];
 function npcLook(){const hat=Math.random()<.18?rnd(['cap','beanie','hat']):Math.random()<.06?'bald':'none',sk=rnd(SKINS);const t=rnd(TOPS);
   return {skin:sk,hair:rnd(HAIRS),top:t,arm:Math.random()<.4?sk:t,pants:rnd(PANTS),shoe:rnd(['#2a2c30','#e8e4da','#5a3a24','#3a3f48']),hat,hatC:rnd(TOPS)}}
 
-/* ---------- dag en nacht: echte tijd in Nederland, zon op en onder naar de tijd van het jaar ---------- */
-function daylight(){const d=new Date(),doy=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5),hr=d.getHours()+d.getMinutes()/60;
-  const len=12+4.3*Math.sin(2*Math.PI*(doy-80)/365),rise=13.2-len/2,set=13.2+len/2;
-  const s=t=>Math.max(0,Math.min(1,t));const day=hr<12?s((hr-rise+.6)/1.2):s((set+.6-hr)/1.2);
+/* ---------- speltijd: één speldag (4 uur, zoals de uitbetalingen in het klikspel: 00:00, 04:00, 08:00 …) is één dag en nacht ---------- */
+// Een speluur duurt 10 echte minuten. De speldag begint om middernacht; de zon komt rond 05:00 op en gaat rond 21:00 onder
+// ('s zomers iets later, 's winters iets eerder), zodat de nacht ongeveer een derde van de speldag is, met schemer ervoor en erna.
+const GDAY=typeof DAY_MS!=='undefined'?DAY_MS:4*3600e3;
+const blokStart=t=>{if(typeof dayStart==='function')return dayStart(t);const d=new Date(t);return new Date(d.getFullYear(),d.getMonth(),d.getDate(),Math.floor(d.getHours()/4)*4).getTime()};
+const hhmm=h=>{const m=Math.floor(h*60)%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')};
+G.klok=function(t){t=t==null?Date.now():t;const s=blokStart(t),d=new Date(s),doy=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5),
+    len=16+.9*Math.sin(2*Math.PI*(doy-80)/365),h=Math.max(0,Math.min(23.99,(t-s)/GDAY*24));
+  return {h,rise:13-len/2,set:13+len/2,len,start:s,end:s+GDAY,txt:hhmm(h)}};
+G.klokTxt=h=>hhmm(h);
+// G.uur(h): echte tijd (ms) waarop het in de huidige speldag h uur is
+G.uur=h=>{const k=G.klok();return k.start+h/24*GDAY};
+function daylight(){const k=G.klok(),hr=k.h;
+  const s=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};const day=hr<13?s((hr-k.rise+.7)/1.4):s((k.set+.7-hr)/1.4);
   if(G.forceDay!=null)return G.forceDay;return day}
 function applyLight(){const day=daylight(),night=1-day;
   const sky=new TH.Color().setRGB(.08+.42*day,.1+.52*day,.16+.62*day);scene.background=sky;scene.fog.color=sky;
@@ -74,7 +84,8 @@ G.init=function(host){
   P.look=playerLook();
   applyLight();resize();addEventListener('resize',resize);
   input();G.ready=true;if(G.carsInit)try{G.carsInit()}catch(e){console.error(e)}G.resume();
-  setInterval(()=>{if(!G.paused){applyLight();P.look=playerLook()}},20000);
+  // de speltijd loopt zes keer zo snel als de klok: het licht vaker bijwerken
+  setInterval(()=>{if(!G.paused)applyLight()},4000);setInterval(()=>{if(!G.paused)P.look=playerLook()},20000);
   setInterval(savePos,4000);
 };
 function savePos(){try{localStorage.setItem('stad_pos',JSON.stringify({x:+P.x.toFixed(1),z:+P.z.toFixed(1),ry:+P.ry.toFixed(2),yaw:+G.yawT.toFixed(2)}))}catch(e){}}

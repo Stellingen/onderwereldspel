@@ -10,18 +10,22 @@ const geo=(w,h,d)=>{const k=w+'|'+h+'|'+d;return GEO[k]||(GEO[k]=new TH.BoxGeome
 function shade(c,k){const x=new TH.Color(c);x.multiplyScalar(k);return '#'+x.getHexString()}
 // (geen röntgen meer: de stad maakt zelf een doorkijkje rond je poppetje)
 function box(par,w,h,d,x,y,z,c){const m=new TH.Mesh(geo(w,h,d),mat(c));m.position.set(x,y,z);m.castShadow=true;par.add(m);return m}
-// wat je draagt
-function spec(){let L=null,w={};try{L=outfitLook()}catch(e){}try{w=(S.fit&&S.fit.wear)||{}}catch(e){}
-  const skin=(()=>{try{return localStorage.getItem('stad_skin')||'#d9a27a'}catch(e){return '#d9a27a'}})();
+// wat je draagt, plus je karakter (karakter.js: huid, kapsel, haarkleur, ogen, uitstraling, mond, baard).
+// o = {wear, char} voor een voorbeeld (de karaktermaker), anders jij zelf.
+function spec(o){o=o||{};let L=null,w={};try{w=o.wear||(S.fit&&S.fit.wear)||{}}catch(e){}try{L=outfitLook(w)}catch(e){}
+  let ch=null;try{ch=typeof KAR!=='undefined'?KAR.san(o.char||karGet()):null}catch(e){}
+  const skin=ch?ch.skin:(()=>{try{return localStorage.getItem('stad_skin')||'#d9a27a'}catch(e){return '#d9a27a'}})();
   const find=id=>typeof OUTFITS!=='undefined'&&OUTFITS.find(o=>o.id===id);
-  const nek=find(w.nek),pols=find(w.pols),handen=[w.kleding,w.hoofd,w.pols].map(find).find(o=>o&&o.look&&o.look.kind==='gloves');
-  const d={skin,hair:'#2a1d14',top:L&&L.bovenlijf||{kind:'tee',c:'#30353e',c2:'#454b55'},head:L&&L.hoofd||{kind:'none'},legs:L&&L.benen||{kind:'jeans',c:'#1d2531',c2:'#2c3a4d'},
+  const nek=find(w.nek),pols=find(w.pols),handen=[w.kleding,w.hoofd,w.pols].map(find).find(o=>o&&o.look&&o.look.kind==='gloves'),hl=(find(w.hoofd)||{}).look||{};
+  const d={skin,hair:ch?ch.hc:'#2a1d14',hs:ch?ch.hs:'kort',fh:ch?ch.fh:'',eye:ch?ch.eye:null,mood:ch?ch.mood:'neutraal',mouth:ch?ch.mouth:'normaal',
+    glasses:hl.glasses||(w.hoofd==='bril'?'#d9a520':null),sun:hl.sun||(w.hoofd==='zonnebril'?'#0b0b0d':null),band:hl.band||null,
+    top:L&&L.bovenlijf||{kind:'tee',c:'#30353e',c2:'#454b55'},head:L&&L.hoofd||{kind:'none'},legs:L&&L.benen||{kind:'jeans',c:'#1d2531',c2:'#2c3a4d'},
     shoes:L&&L.schoenen||{kind:'sneaker',c:'#3a3f48',c2:'#24282f'},nek:nek?nek.id:null,pols:pols&&pols.look?pols.look:pols?{band:'#d6a63e'}:null,gloves:handen?handen.look.c:null};
   if(d.top.kind==='thief')d.gloves=d.gloves||'#15171b';
   // sole: zit in de look van de schoen, anders licht voor sneakers en donker voor laarzen
   const so=find(w.schoenen);d.shoes.sole=so&&so.look&&so.look.sole||(d.shoes.kind==='boot'?'#1a120c':'#e8e4da');
   return d}
-function build(){const d=spec(),g=new TH.Group(),P={};const top=d.top,tk=top.kind||'tee',tc=top.c||'#30353e',t2=top.c2||shade(tc,1.3);
+function build(o){const d=spec(o),g=new TH.Group(),P={};const top=d.top,tk=top.kind||'tee',tc=top.c||'#30353e',t2=top.c2||shade(tc,1.3);
   const legs=d.legs,lc=legs.c||'#1d2531',l2=legs.c2||shade(lc,1.25),sh=d.shoes,hd=d.head,hk=hd.kind||'none';
   const root=new TH.Group();g.add(root);root.scale.setScalar(1.18);P.root=root;
   // benen
@@ -64,17 +68,60 @@ function build(){const d=spec(),g=new TH.Group(),P={};const top=d.top,tk=top.kin
   // hoofd
   const head=new TH.Group();head.position.set(0,.72,0);tor.add(head);P.head=head;
   box(head,.5,.5,.48,0,.25,0,d.skin);
-  P.eyeL=box(head,.07,.08,.02,-.11,.27,.245,'#15161a',false);P.eyeR=box(head,.07,.08,.02,.11,.27,.245,'#15161a',false);box(head,.06,.07,.05,0,.2,.25,shade(d.skin,.85),false);P.mouth=box(head,.14,.03,.02,0,.11,.245,hd.id==='grill'?'#e8b923':shade(d.skin,.6));
+  const cover=hk==='skimask',hatOn=hk==='cap'||hk==='hat'||hk==='beanie',hC=d.hair,hD=shade(hC,.74),brC=parseInt(hC.slice(1,3),16)>150?shade(hC,.62):shade(hC,.92),m=d.mood,fh=cover?'':d.fh;
+  // ogen: wit met je oogkleur en een pupil (knipperen schaalt de binnenste groep)
+  const eyeG=x=>{const o=new TH.Group();o.position.set(x,.27,.245);head.add(o);const e=new TH.Group();o.add(e);const ix=x<0?.012:-.012;
+    if(d.eye){box(e,.1,.075,.02,0,0,0,'#f1eee8',false);box(e,.05,.075,.024,ix,0,.003,d.eye,false);box(e,.024,.04,.028,ix,0,.006,'#111214',false)}else box(e,.07,.08,.02,0,0,0,'#15161a',false);return e};
+  P.eyeL=eyeG(-.11);P.eyeR=eyeG(.11);box(head,.06,.07,.05,0,.2,.25,shade(d.skin,.85),false);
+  if(!cover&&d.eye){
+    // wenkbrauwen en oogleden per uitstraling
+    const bro=(x,y,rz)=>{const b=box(head,.13,.035,.03,x,y,.258,brC,false);b.rotation.z=rz};
+    if(m==='boos'){bro(-.11,.335,-.4);bro(.11,.335,.4)}else if(m==='blij'){bro(-.11,.37,.08);bro(.11,.37,-.08)}else if(m==='koel'){bro(-.11,.335,0);bro(.11,.355,.16)}else{bro(-.11,.35,0);bro(.11,.35,0)}
+    if(m==='koel'){box(head,.11,.04,.03,-.11,.292,.27,shade(d.skin,.92),false);box(head,.11,.04,.03,.11,.292,.27,shade(d.skin,.92),false)}
+    if(m==='blij'){box(head,.11,.025,.03,-.11,.237,.268,d.skin,false);box(head,.11,.025,.03,.11,.237,.268,d.skin,false)}}
+  // baard en stoppels (onder de mond)
+  if(fh==='stoppel')box(head,.46,.2,.012,0,.11,.243,KAR_MIX(d.skin,hC,.42),false);
+  if(fh==='baard'){box(head,.5,.17,.05,0,.065,.235,hC);box(head,.4,.08,.32,0,-.02,.08,hC);box(head,.04,.24,.4,-.255,.15,-.01,hC,false);box(head,.04,.24,.4,.255,.15,-.01,hC,false)}
+  if(fh==='sik'||fh==='ringbaard')box(head,.09,.085,.03,0,.035,.25,hC,false);
+  if(fh==='ringbaard'){box(head,.03,.1,.03,-.09,.1,.25,hC,false);box(head,.03,.1,.03,.09,.1,.25,hC,false)}
+  if(fh==='snor'||fh==='ringbaard'||fh==='baard')box(head,.17,.04,.03,0,.162,.262,hC,false);
+  // mond: breedte en lippen, blij lacht, boos trekt de hoeken omlaag, koel grijnst scheef
+  const mz=fh==='baard'?.264:.247,mw={breed:.19,smal:.09}[d.mouth]||.14,dark='#4a1a16',lipC=hd.id==='grill'||hd.id==='diagrill'?'#e8b923':shade(d.skin,.6),lv=KAR_MIX(shade(d.skin,.78),'#b0504a',.35);
+  if(!cover&&m==='blij'){P.mouth=box(head,mw,.045,.02,0,.105,mz,dark,false);box(head,mw*.8,.018,.022,0,.115,mz+.002,'#f1eee8',false);box(head,.03,.03,.02,-(mw/2+.01),.128,mz,dark,false);box(head,.03,.03,.02,mw/2+.01,.128,mz,dark,false)}
+  else if(!cover&&m==='boos'){P.mouth=box(head,mw,.03,.02,0,.11,mz,dark,false);box(head,.03,.03,.02,-(mw/2+.01),.088,mz,dark,false);box(head,.03,.03,.02,mw/2+.01,.088,mz,dark,false)}
+  else if(!cover&&m==='koel'){P.mouth=box(head,mw*.85,.028,.02,-.012,.105,mz,lipC,false);box(head,.03,.03,.02,mw/2-.01,.126,mz,lipC,false)}
+  else P.mouth=box(head,mw,.03,.02,0,.11,mz,lipC,false);
+  if(!cover&&d.mouth==='vol'){box(head,mw*.86,.03,.016,0,.08,mz-.002,lv,false);box(head,mw*.7,.018,.016,0,.135,mz-.002,lv,false)}
   const hc=hd.c||'#2a2c30',h2=hd.c2||shade(hc,.7);
   if(hk==='cap'){box(head,.54,.16,.52,0,.55,0,hc);box(head,.5,.04,.26,0,.49,.34,h2)}
   else if(hk==='hat'){box(head,.8,.04,.76,0,.52,0,hc);box(head,.52,.24,.5,0,.66,0,hc);box(head,.53,.06,.51,0,.57,0,h2)}
   else if(hk==='beanie'){box(head,.54,.24,.52,0,.6,0,hc);box(head,.56,.08,.54,0,.49,0,h2)}
   else if(hk==='skimask'){box(head,.53,.53,.5,0,.26,0,hc);box(head,.34,.1,.02,0,.27,.255,d.skin,false);P.eyeL=box(head,.07,.07,.02,-.11,.27,.262,'#15161a',false);P.eyeR=box(head,.07,.07,.02,.11,.27,.262,'#15161a',false)}
-  else{box(head,.54,.14,.52,0,.54,0,d.hair);box(head,.54,.32,.1,0,.36,-.21,d.hair);box(head,.05,.18,.4,-.255,.4,-.02,d.hair,false);box(head,.05,.18,.4,.255,.4,-.02,d.hair,false)}
+  // haar: per kapsel; onder een pet, hoed of muts alleen wat aan de zijkant en achter
+  const H=(w,h,dd,x,y,z,c)=>box(head,w,h,dd,x,y,z,c||hC),HS=(w,h,dd,x,y,z,c)=>{H(w,h,dd,-x,y,z,c);H(w,h,dd,x,y,z,c)},hs=d.hs;
+  if(cover){if(hs==='lang')H(.56,.5,.12,0,.08,-.22,hD)}
+  else if(hatOn){if(hs==='lang'){H(.56,.66,.12,0,.18,-.21,hD);HS(.06,.5,.36,.265,.27,-.04)}else if(hs==='krul'||hs==='afro'){H(.6,.3,.12,0,.33,-.21,hD);HS(.09,.22,.42,.29,.36,-.04)}else if(hs!=='kaal')HS(.05,.14,.36,.255,.37,-.04)}
+  else if(hs==='kuif'){H(.54,.14,.52,0,.54,0);H(.54,.32,.1,0,.36,-.21);HS(.05,.18,.4,.255,.4,-.02);H(.42,.13,.2,0,.645,.13);H(.3,.06,.12,0,.71,.16,shade(hC,1.15))}
+  else if(hs==='opgeschoren'){H(.52,.05,.5,0,.515,0);H(.52,.2,.05,0,.4,-.235);HS(.02,.12,.36,.252,.42,-.04,hD)}
+  else if(hs==='lang'){H(.54,.12,.52,0,.54,0);H(.56,.66,.12,0,.18,-.21,hD);HS(.06,.5,.36,.265,.27,-.04)}
+  else if(hs==='krul'){H(.6,.2,.58,0,.56,0);[[-.17,.68,.12],[0,.7,.16],[.17,.68,.1],[-.1,.7,-.12],[.12,.7,-.1]].forEach(p=>H(.16,.14,.16,p[0],p[1],p[2]));H(.6,.38,.14,0,.33,-.21,hD);HS(.08,.26,.44,.28,.38,-.02)}
+  else if(hs==='afro'){H(.78,.48,.66,0,.64,-.08);HS(.1,.3,.5,.31,.36,-.08,hD)}
+  else if(hs==='knot'){H(.52,.08,.5,0,.52,0);H(.52,.24,.06,0,.39,-.23);H(.2,.18,.2,0,.66,-.1);H(.21,.04,.21,0,.6,-.1,hD)}
+  else if(hs!=='kaal'){H(.54,.14,.52,0,.54,0);H(.54,.32,.1,0,.36,-.21);HS(.05,.18,.4,.255,.4,-.02)}
+  // bril, zonnebril, zweetband (hoofdstukken zonder hoed)
+  if(!cover&&d.sun){[-.11,.11].forEach(x=>box(head,.15,.085,.02,x,.275,.268,d.sun,false));box(head,.07,.02,.02,0,.29,.268,d.sun,false);HS(.02,.02,.26,.255,.29,.13,d.sun)}
+  else if(!cover&&d.glasses){const f=d.glasses;[-.11,.11].forEach(x=>{box(head,.15,.016,.02,x,.315,.268,f,false);box(head,.15,.016,.02,x,.235,.268,f,false);box(head,.016,.08,.02,x-.067,.275,.268,f,false);box(head,.016,.08,.02,x+.067,.275,.268,f,false)});box(head,.06,.016,.02,0,.29,.268,f,false);HS(.016,.016,.26,.255,.29,.13,f)}
+  if(!cover&&!hatOn&&d.band)box(head,.53,.06,.51,0,.43,0,d.band);
   return {g,P,key:JSON.stringify(d)}}
+const KAR_MIX=(a,b,t)=>typeof KAR!=='undefined'&&KAR.mix?KAR.mix(a,b,t):a;
 let av=null;
 function ensure(){let k='';try{k=JSON.stringify(spec())}catch(e){}if(av&&av.key===k)return;const sc=G.scene();if(av)sc.remove(av.g);av=build();sc.add(av.g)}
 G.avatarSync=ensure;
+// los poppetje als voorbeeld (de karaktermaker): {char, wear} → THREE.Group, niet in de stad
+G.avatarMake=o=>build(o).g;
+// jouw karakter ook in het uiterlijk dat de rest van de stad leest (HUD-poppetje, telefoon, krant): huid, haar en gezicht
+(function(){const P=G.P;if(!P||typeof KAR==='undefined'||!KAR.stadLook)return;const d=Object.getOwnPropertyDescriptor(P,'look');if(d&&d.get)return;let cur=P.look?KAR.stadLook(P.look):P.look;
+  Object.defineProperty(P,'look',{configurable:true,enumerable:true,get(){return cur},set(v){cur=KAR.stadLook(v)}})})();
 // ---- beweging: elke frame een doelhouding (lopen, stilstaan, emote of bezigheid), waar het poppetje soepel naartoe beweegt ----
 // G.emote = {id,t0} (zwaaien, dansen …), G.pose = 'vis'|'spuit'|'zoek'|'eet'|'drink'|'aai'|'slaL'|'slaR'|'blok'|'duikL'|'duikR'|'au'|'klap'|'bel',
 // G.sitting = zitten, G.lookAt = {x,z} waar je hoofd naar kijkt, G.carry = rugzak met buit.

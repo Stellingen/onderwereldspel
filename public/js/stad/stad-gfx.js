@@ -176,14 +176,37 @@ function groundCanvas(){
   const pol=M.placeById('politie');if(pol){cx.strokeStyle='#e8e4d8';cx.lineWidth=1;for(let x=pol.x0+4;x<pol.x1-2;x+=8){cx.beginPath();cx.moveTo(x*GP+.5,(pol.z1+1)*GP);cx.lineTo(x*GP+.5,(pol.z1+9)*GP);cx.stroke()}}
   const st=M.props.find(p=>p.k==='statue');if(st){cx.fillStyle='#b4a894';for(let a=0;a<96;a++){const t=a/96*Math.PI*2;cx.fillRect(Math.round((st.x+Math.cos(t)*8)*GP),Math.round((st.z+Math.sin(t)*8)*GP),GP,GP)}}
   return cv}
-// kleine kaart (1 pixel per meter) voor de minikaart en de grote kaart
-function mapCanvas(){const cv=document.createElement('canvas');cv.width=W;cv.height=H;const cx=cv.getContext('2d'),img=cx.createImageData(W,H),d=img.data;
-  const C={};C[T.WATER]='#1d3d55';C[T.ROAD]='#3b3e45';C[T.WALK]='#7c7a74';C[T.SAND]='#c9b47c';C[T.PLAZA]='#7d7366';C[T.LOT]='#2a2c30';C[T.DOCK]='#6a6c6e';C[T.YARD]='#55575a';C[T.BRIDGE]='#6a5a4a';C[T.PARK]='#2f5f2a';C[T.GARDEN]='#3a6d32';C[T.GRASS]='#3c6c30';
+// kleine kaart (1 pixel per meter) voor de minikaart en de grote kaart (niet de 3D-grond: dat is groundCanvas).
+// Leesbaar als een stadsplattegrond: lichte brede wegen, duidelijk blauw water met een lichte waterlijn, groene parken met
+// boompjes, gebouwen in leisteen (hoger = lichter, met licht- en schaduwrand), bijzondere gebouwen in de kleur van hun soort op de
+// kaart, bruggen met donkere relingen en een heel lichte tint per wijk. Eén keer getekend en gedeeld.
+const MAPPL={jail:'#ff4d5e',politie:'#ff4d5e',bank:'#3fe395',casino:'#3fe395',wit:'#3fe395',biz:'#3fe395',crimes:'#ff8a1f',hits:'#ff8a1f',werk:'#ff8a1f',
+  shop:'#b48cff',look:'#b48cff',skills:'#b48cff',relax:'#b48cff',cars:'#4da3ff',sloop:'#4da3ff',fam:'#ff6f9f'};
+let MAPC=null;
+function mapCanvas(){if(MAPC)return MAPC;const cv=document.createElement('canvas');cv.width=W;cv.height=H;const cx=cv.getContext('2d'),img=cx.createImageData(W,H),d=img.data,Gd=M.ground;
+  const C={};C[T.WATER]='#2d6db3';C[T.ROAD]='#d3d7dd';C[T.WALK]='#a9afb8';C[T.SAND]='#e4d09a';C[T.PLAZA]='#c6bba6';C[T.LOT]='#5c626d';C[T.DOCK]='#9fa5ad';C[T.YARD]='#838993';C[T.BRIDGE]='#d3d7dd';C[T.PARK]='#4c9a4b';C[T.GARDEN]='#5f9a4e';C[T.GRASS]='#578d46';
   const CC={};Object.keys(C).forEach(k=>CC[k]=hex(C[k]));
-  for(let i=0;i<W*H;i++){const c=CC[M.ground[i]]||CC[T.GRASS];d[i*4]=c[0];d[i*4+1]=c[1];d[i*4+2]=c[2];d[i*4+3]=255}
+  const shore=hex('#5d9ad8'),wood=hex('#b48c62'),rail=hex('#2a2e36'),DT={};
+  // wijken: een heel lichte eigen tint (zie je pas als je het weet)
+  (M.DISTRICTS||[]).forEach((q,i)=>{const h=(i*137.5)%360/60,f=h-Math.floor(h),v=[[1,f,0],[1-f,1,0],[0,1,f],[0,1-f,1],[f,0,1],[1,0,1-f]][Math.floor(h)%6];DT[q.n]=v.map(t=>90+t*150)});
+  const isW=i=>Gd[i]===T.WATER;
+  for(let z=0;z<H;z++)for(let x=0;x<W;x++){const i=z*W+x,t=Gd[i];let c=CC[t]||CC[T.GRASS];const n=(hash(x,z,31)-.5)*.07;
+    if(t===T.WATER){if((x>0&&!isW(i-1))||(x<W-1&&!isW(i+1))||(z>0&&!isW(i-W))||(z<H-1&&!isW(i+W)))c=shore;else c=shade(c,1+n*.4)}
+    else if(t===T.BRIDGE){c=M.bridgeWalk[i]?wood:c;if((x>0&&isW(i-1))||(x<W-1&&isW(i+1))||(z>0&&isW(i-W))||(z<H-1&&isW(i+W)))c=rail}
+    else{if(t!==T.ROAD){const tc=DT[M.districtAt(x,z)];if(tc)c=mix(c,tc,.07)}c=shade(c,1+n)}
+    d[i*4]=cl(c[0]);d[i*4+1]=cl(c[1]);d[i*4+2]=cl(c[2]);d[i*4+3]=255}
   cx.putImageData(img,0,0);
-  M.buildings.forEach(b=>{const k=Math.min(1,.45+b.fl*.04);cx.fillStyle=b.pl?'#c9a86a':css(shade([120,118,112],k));cx.fillRect(b.x0,b.z0,b.x1-b.x0,b.z1-b.z0)});
-  return cv}
+  // bomen en heggen: donkergroene stipjes; containers op de kade: kleine gekleurde blokjes
+  M.props.forEach(p=>{if(p.k==='tree'||p.k==='stree'||p.k==='palm'){const s=(p.s||1)>1.05&&p.k==='tree'?2:1;cx.fillStyle=p.k==='palm'?'#3d7a3a':'#2c6630';cx.fillRect(Math.floor(p.x-s/2),Math.floor(p.z-s/2),s,s)}
+    else if(p.k==='hedge'){cx.fillStyle='#2c6630';cx.fillRect(Math.floor(p.x-1),Math.floor(p.z-1),2,2)}
+    else if(p.k==='wall'){cx.fillStyle='#3a3e46';cx.fillRect(p.x0,p.z0,p.x1-p.x0,p.z1-p.z0)}
+    else if(p.k==='container'){cx.fillStyle=['#a8483e','#3f6ea6','#4a8a55','#c98a3a','#7d8288'][p.v%5];const w=p.rot?3:7,h=p.rot?7:3;cx.fillRect(Math.round(p.x-w/2),Math.round(p.z-h/2),w,h)}});
+  // gebouwen: leisteen, hoger is lichter; rand licht (noord, west) en schaduw (zuid, oost)
+  M.buildings.forEach(b=>{const k=Math.min(1.3,.9+b.fl*.03);let base=shade(hex('#58606d'),k);if(b.pl&&MAPPL[b.pl])base=mix(base,hex(MAPPL[b.pl]),.42);
+    const w=b.x1-b.x0,h=b.z1-b.z0;cx.fillStyle=css(base);cx.fillRect(b.x0,b.z0,w,h);
+    cx.fillStyle=css(shade(base,1.2));cx.fillRect(b.x0,b.z0,w,1);cx.fillRect(b.x0,b.z0,1,h);
+    cx.fillStyle='rgba(18,20,26,.6)';cx.fillRect(b.x0,b.z1-1,w,1);cx.fillRect(b.x1-1,b.z0,1,h)});
+  MAPC=cv;return cv}
 
 /* =================== geometrie-bouwer =================== */
 function GB(){this.p=[];this.n=[];this.u=[];this.t=[]}

@@ -579,3 +579,35 @@ BIZ.sort((a,b)=>a.p-b.p);
  const L=['mes','pistool','uzi','ak','sniper','mg'];let c=-1;
  GEAR.filter(g=>g.cat==='wapen').forEach(g=>{const i=L.indexOf(g.id);c=i>=0?i:Math.max(0,Math.floor(c)+.5);g.cls=c})})();
 
+// Startoutfits (karakter.js): één keer gratis te kiezen bij het maken van je karakter, nooit te koop of in de winkel te zien.
+// Een klein voordeel in één richting (ongeveer een kwart van een goedkope set uit de winkel). Samen per outfit:
+// Zakenman +4% inkomen −3% borg · Straatvechter +3% energie +4% ontsnappen · Schim +1 kans +4% minder herkend ·
+// Coureur +4% vluchten +3% autowaarde · Charmeur +2% XP −3% wachttijd. look.js zet de stukken in OUTFITS (stijl 'start').
+const START_FITS=[
+ {id:'zaak',n:'Zakenman',d:'Je zaken verdienen iets meer.',col:'#b8a1ff',items:['stbril','stcolbert','stpantalon','stloafer']},
+ {id:'vecht',n:'Straatvechter',d:'Taai. Sneller fit, makkelijker uit de bajes.',col:'#ff5a4a',items:['stband','sttank','stjog','stkist']},
+ {id:'schim',n:'Schim',d:'Een klus lukt net iets vaker. Getuigen zien je minder.',col:'#8fa0bd',items:['stmuts','sthood','stcargo','stsluip']},
+ {id:'race',n:'Coureur',d:'Sneller weg, en je auto\'s brengen meer op.',col:'#ff7a1a',items:['stcap','stracejack','stjeans','strijschoen']},
+ {id:'charm',n:'Charmeur',d:'Deuren gaan open. Sneller weer aan de slag.',col:'#e879f9',items:['stzonbril','stoverhemd','stchino','stsuede']}];
+const START_ITEMS=[
+ {id:'stbril',slot:'hoofd',n:'Bril met gouden montuur',d:'Dun montuur. Je ziet eruit als iemand die rekent.',fx:{inc:.01},look:{kind:'none',c:'#c9a227',c2:'#c9a227',glasses:'#c9a227'}},
+ {id:'stcolbert',slot:'kleding',n:'Donker colbert',d:'Met een rode das. Net genoeg voor de bank.',fx:{inc:.02,bail:.01},look:{kind:'suit',c:'#2b3346',c2:'#7a1f2a',legs:{kind:'suit',c:'#2b3346',c2:'#3a4459'}}},
+ {id:'stpantalon',slot:'broek',n:'Nette pantalon',d:'Met een vouw erin.',fx:{bail:.01},look:{kind:'suit',c:'#2b3346',c2:'#3a4459'}},
+ {id:'stloafer',slot:'schoenen',n:'Bruine instappers',d:'Gepoetst, geen veters.',fx:{inc:.01,bail:.01},look:{kind:'dress',c:'#5a3a22',c2:'#3b2513'}},
+ {id:'stband',slot:'hoofd',n:'Zweetband',d:'Rood, strak om je hoofd.',fx:{en:.01},look:{kind:'none',c:'#c0261e',c2:'#c0261e',band:'#c0261e'}},
+ {id:'sttank',slot:'kleding',n:'Wit hemd',d:'Schoon wit hemd. Laat zien dat je niet bang bent.',fx:{esc:.02,en:.01},look:{kind:'tee',c:'#e9e6df',c2:'#cfcac0'}},
+ {id:'stjog',slot:'broek',n:'Zwarte trainingsbroek',d:'Met een rode bies.',fx:{en:.01,esc:.01},look:{kind:'track',c:'#1b1d22',c2:'#c0261e'}},
+ {id:'stkist',slot:'schoenen',n:'Gevechtskisten',d:'Zwaar leer, stalen neus.',fx:{esc:.01},look:{kind:'boot',c:'#2a2422',c2:'#121010'}},
+ {id:'stmuts',slot:'hoofd',n:'Zwarte muts',d:'Strak over je oren.',fx:{herken:.02},look:{kind:'beanie',c:'#1c1e23',c2:'#121316'}},
+ {id:'sthood',slot:'kleding',n:'Donkergrijze hoodie',d:'Geen logo. Capuchon binnen handbereik.',fx:{kans:1},look:{kind:'hoodie',c:'#2e3138',c2:'#4a4f58'}},
+ {id:'stcargo',slot:'broek',n:'Donkere cargobroek',d:'Zakken voor alles.',fx:{herken:.01},look:{kind:'thief',c:'#24272d',c2:'#3a3e46'}},
+ {id:'stsluip',slot:'schoenen',n:'Zachte sneakers',d:'Je hoort ze niet op de trap.',fx:{herken:.01},look:{kind:'sneaker',c:'#2a2d33',c2:'#45494f',sole:'#3a3d42'}},
+ {id:'stcap',slot:'hoofd',n:'Racepet',d:'Rood met een zwarte klep.',fx:{car:.01},look:{kind:'cap',c:'#c0261e',c2:'#16171a'}},
+ {id:'stracejack',slot:'kleding',n:'Racejack',d:'Zwart met rode strepen. Het ruikt nog naar benzine.',fx:{flee:.02,car:.01},look:{kind:'jacket',c:'#16171a',c2:'#c0261e'}},
+ {id:'stjeans',slot:'broek',n:'Zwarte spijkerbroek',d:'Strak en stevig.',fx:{car:.01},look:{kind:'jeans',c:'#1c2230',c2:'#2c3446'}},
+ {id:'strijschoen',slot:'schoenen',n:'Rijschoenen',d:'Dunne zool. Je voelt het gaspedaal.',fx:{flee:.02},look:{kind:'sneaker',c:'#c0261e',c2:'#16171a'}},
+ {id:'stzonbril',slot:'hoofd',n:'Zonnebril',d:'Ook binnen. Vooral binnen.',fx:{xp:.01},look:{kind:'none',c:'#0c0d10',c2:'#0c0d10',sun:'#0c0d10'}},
+ {id:'stoverhemd',slot:'kleding',n:'Zijden overhemd',d:'Wijnrood, bovenste knoopjes los.',fx:{cd:.02},look:{kind:'jacket',c:'#6a2a4a',c2:'#e9e6df'}},
+ {id:'stchino',slot:'broek',n:'Lichte pantalon',d:'Zandkleur. Voor terrassen.',fx:{xp:.01},look:{kind:'suit',c:'#c9b48f',c2:'#b39f7a'}},
+ {id:'stsuede',slot:'schoenen',n:'Suède loafers',d:'Zacht bruin.',fx:{cd:.01},look:{kind:'dress',c:'#7a5a3a',c2:'#4a3522'}}];
+

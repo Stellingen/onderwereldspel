@@ -4,7 +4,7 @@
 // Bronnen: state.js (TIER_K, TIER_LOOT, TIER_WAIT, TIER_CB, CZ_TIER, CZ_BAN, escChance), flee.js, carchase.js, hits.js, werk.js,
 // autos.js (SRCH_MAX/SRCH_CD), politie.js (SEIZE_KEEP), bank.js (BANK_T, DEP_TERMS, DEP_SLOTS_T, INV_CAP_T), caskaart.js (CC_T,
 // CC_CAP), kluiskraker.js (KK_TIER), visdief.js (VD_TIER), zoetebuit.js (ZB_TIER), draak.js (DR_TIER, JPT), vlucht.js (README),
-// look.js (geldklemmen, gouden dobbelsteen), data.js (BIZ_MAX). Nieuw deze ronde (collega's): woningen en zaken (zie `nieuw`).
+// look.js (geldklemmen, gouden dobbelsteen), data.js (BIZ_MAX), TIER_STAD (state.js; Pixelstad-bonus op buit en heling). Nieuw deze ronde (collega's): woningen en zaken (zie `nieuw`).
 // Puur gegevens en twee kleine helpers; geen DOM, werkt in de browser en in de vm van server.js.
 (function (root) {
 'use strict';
@@ -17,16 +17,17 @@ const TIERS = [
     key: ['Alle klussen, rangen en families in het klikspel', 'Je voortgang op je account, op elk apparaat', 'Alle minigames: vluchten, achtervolgingen, ontsnappen', 'Je eigen casinokaart groeit mee met wat je speelt'] },
   { id: 'vip', n: 'VIP', short: 'VIP', tag: 'VIP', col: '#f2c230', price: PRICE.vip,
     line: 'Sneller vooruit, iets meer ruimte.',
-    key: ['De Pixelstad: loop, rijd en kraak zelf door de stad', 'Slaagkans ×1,15 en +10% buit', 'Wachttijden 75% van normaal', '+15% straatcredit, betere rente', '5 depositoplekken, €300.000 beleggen', 'Hogere inzetlimieten in het casino', 'Wapenkisten met skins in het casino', 'Zaken: tot 12 vestigingen · woningen +2 plekken', 'VIP-tag bij je naam'] },
+    key: ['De Pixelstad: loop, rijd en kraak zelf door de stad', 'Pixelstad: +5% op buit en heling, als bedankje', 'Slaagkans ×1,15 en +10% buit', 'Wachttijden 75% van normaal', '+15% straatcredit, betere rente', '5 depositoplekken, €300.000 beleggen', 'Hogere inzetlimieten in het casino', 'Wapenkisten met skins in het casino', 'Zaken: tot 12 vestigingen · woningen +2 plekken', 'VIP-tag bij je naam'] },
   { id: 'hr', n: 'High roller', short: 'HR', tag: 'HIGH ROLLER', col: '#a855f7', price: PRICE.hr,
     line: 'Alles van VIP, en flink meer.',
-    key: ['De Pixelstad: loop, rijd en kraak zelf door de stad', 'Slaagkans ×1,4 en +25% buit', 'Wachttijden 55% van normaal', '+40% straatcredit, de beste rente', '10 depositoplekken, €1 mln. beleggen', 'Hoogste inzetlimieten en de High roller-tafel', 'Wapenkisten met skins, betere kansen', 'Zaken: tot 15 vestigingen · woningen +5 plekken', 'Diamanten geldklem en gouden dobbelsteen', 'HIGH ROLLER-tag bij je naam'] }
+    key: ['De Pixelstad: loop, rijd en kraak zelf door de stad', 'Pixelstad: +10% op buit en heling, als bedankje', 'Slaagkans ×1,4 en +25% buit', 'Wachttijden 55% van normaal', '+40% straatcredit, de beste rente', '10 depositoplekken, €1 mln. beleggen', 'Hoogste inzetlimieten en de High roller-tafel', 'Wapenkisten met skins, betere kansen', 'Zaken: tot 15 vestigingen · woningen +5 plekken', 'Diamanten geldklem en gouden dobbelsteen', 'HIGH ROLLER-tag bij je naam'] }
 ];
 // Volledige vergelijking. Per rij: n = voordeel, v = [gratis, vip, hr], s = korte uitleg (optioneel),
 // nieuw = komt deze ronde in het spel, rtp = casino-uitbetaling (feitelijk, zonder nadruk). '–' = niet.
 const CATS = [
   { id: 'spel', n: 'Spel', rows: [
-    { id: 'pixelstad', n: 'Pixelstad', s: 'Loop, rijd en kraak zelf door de stad. Zelfde account en voortgang', v: ['–', 'ja', 'ja'] }
+    { id: 'pixelstad', n: 'Pixelstad', s: 'Loop, rijd en kraak zelf door de stad. Zelfde account en voortgang', v: ['–', 'ja', 'ja'] },
+    { id: 'stadbuit', n: 'Pixelstad: buit en heling', s: 'Een klein bedankje voor leden, bovenop de gewone buit', v: ['–', '+5%', '+10%'] }
   ] },
   { id: 'misdaad', n: 'Misdaad', rows: [
     { id: 'kans', n: 'Slaagkans klussen', s: 'Na alle andere bonussen, altijd hooguit 95%', v: ['×1', '×1,15', '×1,4'] },

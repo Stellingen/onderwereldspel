@@ -1,0 +1,129 @@
+/* Pixelstad: auto's. Schadebalk in de snelheidsmeter, het ongeluk (versuft), de werkplaats van Garage Van der Plaat en de
+   spelletjes daar (deuken uitkloppen, overspuiten, valse papieren), en de knipperende bestemming op de grote kaart.
+   Alleen de Pixelstad (stad-cars.js, stad-autos.js). */
+
+/* ---------- snelheidsmeter: schade en labels ---------- */
+.sd-cdmg{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;margin-top:6px}
+.sd-cdmg[hidden]{display:none}
+.sd-cdmg small{font:700 10px var(--f-mono,ui-monospace,monospace);text-transform:uppercase;letter-spacing:.08em;color:#a9a59b;padding:0}
+.sd-cdmg>i{display:block;height:8px;min-width:70px;background:#1b1e24;border:1px solid #000;box-shadow:0 0 0 1px #3a3d44}
+.sd-cdmg>i>i{display:block;height:100%;width:0;background:#f2c230;transition:width .3s steps(6)}
+.sd-cdmg.mid>i>i{background:#ff9a2a}.sd-cdmg.hi>i>i{background:#ff3d52;animation:sdAutoBlink .5s steps(2) infinite}
+.sd-cdmg b{font:800 12px var(--f-mono,ui-monospace,monospace)!important;color:#ece8de!important;min-width:3.4em;text-align:right}
+.sd-spd em{grid-column:1/-1;font-style:normal;display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.sd-spd em:empty{display:none}
+.sd-spd em i{margin-left:0!important}
+.sd-reg{font-style:normal;font:800 10px var(--f-mono,ui-monospace,monospace);text-transform:uppercase;letter-spacing:.06em;padding:1px 5px;background:#1d3a2a;color:#3fe395}
+.sd-dmg.sd-fire{background:#ff6a1a;color:#111;animation:sdAutoBlink .6s steps(2) infinite}
+.sd-dmg.sd-dead{background:#000;color:#ff3d52;outline:1px solid #ff3d52}
+#sdOutCar.dz{opacity:.45}
+@keyframes sdAutoBlink{50%{opacity:.35}}
+
+/* ---------- ongeluk: flits, wiebelend beeld, 'versuft' ---------- */
+.sd-klap{position:fixed;inset:0;z-index:30;pointer-events:none;display:grid;justify-items:center;align-items:start;padding-top:max(150px,20vh);
+  background:radial-gradient(ellipse at 50% 50%,rgba(255,255,255,0) 35%,rgba(120,10,20,.38) 100%)}
+.sd-klap[hidden]{display:none}
+.sd-klap.go{animation:sdKlapIn .35s steps(4)}
+@keyframes sdKlapIn{0%{background-color:rgba(255,255,255,.55)}100%{background-color:rgba(255,255,255,0)}}
+.sd-klap-in{display:grid;justify-items:center;gap:6px;text-align:center}
+.sd-klap-in b{font:900 54px/1 var(--f-display);text-transform:uppercase;letter-spacing:.04em;color:#fff;text-shadow:4px 4px 0 #000,0 0 18px rgba(255,60,80,.6);animation:sdKlapB .9s steps(3) infinite}
+.sd-klap-in span{font:800 15px var(--f-head);text-transform:uppercase;letter-spacing:.14em;color:#ffd35a;text-shadow:2px 2px 0 #000;background:rgba(0,0,0,.55);padding:4px 10px}
+.sd-klap-in>i{display:block;width:180px;height:8px;background:rgba(0,0,0,.7);border:2px solid #000;outline:1px solid #ffd35a}
+.sd-klap-in>i>i{display:block;height:100%;width:100%;background:#ffd35a}
+@keyframes sdKlapB{50%{transform:translateX(-3px) rotate(-2deg)}}
+body.sd-versuft .stad-cv{animation:sdWobble 1.15s ease-in-out infinite;filter:blur(.6px) saturate(.7)}
+@keyframes sdWobble{0%,100%{transform:scale(1.05) rotate(0)}25%{transform:scale(1.06) rotate(.9deg) translateX(6px)}75%{transform:scale(1.06) rotate(-.9deg) translateX(-6px)}}
+@media (max-width:700px){.sd-klap-in b{font-size:42px}.sd-klap-in span{font-size:13px}}
+
+/* ---------- werkplaats ---------- */
+.sd-werk{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:44;width:min(600px,calc(100vw - 32px));max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-x:hidden;overflow-y:auto;
+  background:rgba(12,13,16,.97);border:2px solid #000;outline:2px solid #f2c230;box-shadow:8px 8px 0 rgba(0,0,0,.6),inset 0 4px 0 #f2c230;color:#ece8de;font-family:var(--f-body)}
+.sd-werk[hidden]{display:none}
+.sd-werk.go{animation:sdStageIn .18s steps(4)}
+.sd-werk-in{display:grid;gap:12px;padding:16px 18px 18px}
+.sd-werk-h{display:flex;gap:12px;align-items:center;position:relative;padding-right:34px}
+.sd-werk-por{width:56px;height:56px;image-rendering:pixelated;border:2px solid #000;outline:1px solid #f2c230;flex:none}
+.sd-werk-who{display:grid;gap:2px;min-width:0}
+.sd-werk-who small{font:700 10.5px var(--f-mono,ui-monospace,monospace);text-transform:uppercase;letter-spacing:.12em;color:#f2c230}
+.sd-werk-who b{font:900 28px/1 var(--f-display);text-transform:uppercase;letter-spacing:.02em;text-shadow:3px 3px 0 #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sd-werk-who p{margin:2px 0 0;font:600 13px/1.3 var(--f-body);color:#d4d0c6;min-height:1.3em}
+.sd-werk-h .sd-x{position:absolute;right:-8px;top:-8px;font-size:30px!important;padding:2px 10px;background:none;border:0;color:#ece8de;cursor:pointer;line-height:1}
+.sd-werk-car{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;padding:10px;background:#0b0c0f;border:2px solid #000;outline:1px solid #2b3038}
+.sd-werk-pic canvas{display:block;width:160px;height:96px;image-rendering:pixelated;border:2px solid #000}
+.sd-werk-st{display:grid;gap:7px;min-width:0}
+.sd-werk-row{display:grid;grid-template-columns:76px 1fr auto;gap:8px;align-items:center}
+.sd-werk-row span,.sd-werk-val span{font:700 10.5px var(--f-mono,ui-monospace,monospace);text-transform:uppercase;letter-spacing:.1em;color:#a9a59b}
+.sd-werk-row b{font:800 13px var(--f-mono,ui-monospace,monospace);text-align:right;white-space:nowrap}
+.sd-werk-row b.bad{color:#ff8a96}.sd-werk-row b.ok{color:#3fe395}
+.sd-werk-row span+b{grid-column:2/-1;text-align:left}
+.sd-werk-bar{display:block;height:10px;background:#1b1e24;border:1px solid #000;box-shadow:0 0 0 1px #3a3d44}
+.sd-werk-bar>i{display:block;height:100%;background:#f2c230}
+.sd-werk-bar.mid>i{background:#ff9a2a}.sd-werk-bar.hi>i{background:#ff3d52}
+.sd-werk-bar.heat>i{background:linear-gradient(90deg,#4d9dff,#ff9a2a 55%,#ff3d52)}
+.sd-werk-bar+b{grid-column:auto!important;text-align:right!important}
+.sd-werk-val{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding-top:4px;border-top:1px dashed #2b3038}
+.sd-werk-val b{font:900 24px/1 var(--f-display);color:#3fe395;letter-spacing:.01em}
+.sd-werk-val small{font:600 11.5px var(--f-mono,ui-monospace,monospace);color:#8a8f98}
+.sd-werk-svc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sd-werk-end{display:flex;flex-wrap:wrap;gap:8px}
+.sd-werk-b{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;min-height:58px;background:#1b1e24;border:2px solid #000;outline:1px solid #3a3d44;color:#ece8de;cursor:pointer;font:inherit;touch-action:manipulation}
+.sd-werk-b>i{display:grid;place-items:center;width:34px;height:34px;flex:none;background:#0b0c0f;border:2px solid #000;color:#f2c230}
+.sd-werk-b>i svg{width:20px;height:20px}
+.sd-werk-b span{display:grid;gap:2px;min-width:0}
+.sd-werk-b b{font:800 15px/1.1 var(--f-head);text-transform:uppercase;letter-spacing:.04em}
+.sd-werk-b small{font:600 11.5px/1.25 var(--f-body);color:#a9a59b}
+.sd-werk-b.svc{flex-direction:column;align-items:flex-start;gap:8px;min-height:112px}
+.sd-werk-b.end{flex:1 1 180px}
+.sd-werk-b.end:not(.ghost){background:#2a2410;outline-color:#f2c230}
+.sd-werk-b.end:not(.ghost)>i{color:#111;background:#f2c230}
+.sd-werk-b.ghost{background:#121418}
+.sd-werk-b:hover,.sd-werk-b.on{outline:2px solid #f2c230;background:#262a31}
+.sd-werk-b.on{box-shadow:0 0 0 4px rgba(242,194,48,.25)}
+.sd-werk-b.dis{opacity:.5;cursor:not-allowed}.sd-werk-b.dis small{color:#ff8a96}
+.sd-werk-b:active:not(.dis){transform:translateY(2px)}
+.sd-werk-q{margin:0;font:600 14px/1.4 var(--f-body);color:#d4d0c6}.sd-werk-q b{color:#ffd35a}
+.sd-werk-kl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.sd-werk-b.kl{flex-direction:column;align-items:center;gap:6px;min-height:76px;padding:8px 6px}
+.sd-werk-b.kl>i{width:100%;height:28px;background:var(--k);border:2px solid #000;box-shadow:inset 0 3px 0 rgba(255,255,255,.25),inset 0 -3px 0 rgba(0,0,0,.25)}
+.sd-werk-b.kl b{font-size:13px}
+.sd-werk-b.kl{position:relative}
+.sd-werk-b.kl.nu::after{content:"nu";position:absolute;right:4px;top:4px;font:800 9px var(--f-mono,ui-monospace,monospace);text-transform:uppercase;background:#000;color:#f2c230;padding:1px 4px}
+@media (max-width:700px){
+  .sd-werk{top:auto;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));transform:none;width:auto;max-height:calc(100vh - 60px);max-height:calc(100dvh - 60px - env(safe-area-inset-top,0px))}
+  .sd-werk.go{animation:sdStageInM .18s steps(4)}
+  .sd-werk-in{padding:12px 12px 14px;gap:10px}
+  .sd-werk-por{width:44px;height:44px}
+  .sd-werk-who b{font-size:22px}.sd-werk-who p{font-size:12px}
+  .sd-werk-car{grid-template-columns:96px 1fr;gap:10px;padding:8px}
+  .sd-werk-pic canvas{width:96px;height:58px}
+  .sd-werk-row{grid-template-columns:62px 1fr auto;gap:6px}
+  .sd-werk-val b{font-size:20px}
+  .sd-werk-svc{grid-template-columns:1fr}
+  .sd-werk-b.svc{flex-direction:row;align-items:center;min-height:54px}
+  .sd-werk-b.end{flex:1 1 140px;min-height:54px}
+  .sd-werk-kl{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+/* ---------- de spelletjes van de werkplaats ---------- */
+.sd-wg-vis{position:relative;display:flex;justify-content:center;align-items:center;background:#0b0c0f;border:3px solid #000;outline:2px solid #3a3f49;padding:8px}
+.sd-wg-vis.paper{background:#3a3226}
+.sd-wg-cv{display:block;width:min(100%,480px);height:auto;aspect-ratio:192/104;image-rendering:pixelated;touch-action:none}
+.sd-wg-drag{cursor:ns-resize}.sd-wg-pen{cursor:crosshair}
+.sd-wg-info{display:flex;flex-direction:column;gap:6px}
+.sd-wg-info b{font:800 18px var(--f-mono,ui-monospace,monospace);color:#f2c230;letter-spacing:.04em}
+.sd-wg-info small{font:600 14px var(--f-body);color:#c9c5bb;min-height:1.3em}
+.sd-wg-meter{display:block;height:14px;background:#000;border:2px solid #000;outline:1px solid #333}
+.sd-wg-meter>i{display:block;height:100%;width:0;background:#3fe395}
+.sd-wg-meter>i.lo{background:#ff3d52}
+.sd-wg-meter.tm>i{background:#f2c230}.sd-wg-meter.tm>i.lo{background:#ff3d52}
+.sd-wg .sd-kr-pad{display:flex;gap:10px}
+.sd-wg .sd-kr-b{flex:1;min-height:66px;font:900 26px var(--f-display)!important;touch-action:none;user-select:none;-webkit-user-select:none}
+.sd-wg .sd-kr-b.dn{filter:brightness(1.35);transform:translateY(2px)}
+@media (max-width:700px){.sd-wg .sd-kr-b{min-height:64px}.sd-wg-info b{font-size:16px}.sd-wg-info small{font-size:13px}}
+@media (max-height:560px) and (min-width:701px){.sd-wg-cv{width:min(100%,330px)}.sd-werk-b.svc{min-height:84px}}
+
+/* minder beweging als je dat zo hebt ingesteld */
+@media (prefers-reduced-motion:reduce){
+  body.sd-versuft .stad-cv{animation:none;filter:saturate(.7)}
+  .sd-klap.go,.sd-klap-in b,.sd-cdmg.hi>i>i,.sd-dmg.sd-fire,.sd-werk.go{animation:none}
+}

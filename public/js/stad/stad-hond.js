@@ -66,7 +66,7 @@ function strayStep(dt,ts){const P=G.P,s=stray;if(!s)return;const d=Math.hypot(P.
   s.draw(dt,ts);if(s.spot){s.spot.x=s.x;s.spot.z=s.z}}
 /* ---------- zwerfhond: aaien en meenemen ---------- */
 function dogPic(k){return cv=>{cv.width=40;cv.height=24;const c=cv.getContext('2d'),v=VACHT[k%VACHT.length],R=(x,y,w,h,f)=>{c.fillStyle=f;c.fillRect(x,y,w,h)};R(0,0,40,24,'#1a1d23');R(0,20,40,4,'#2f5a2a');R(9,10,18,8,v[0]);R(9,10,18,2,v[1]);R(25,5,9,9,v[0]);R(32,9,5,4,v[1]);R(36,9,2,2,'#15161a');R(26,3,3,4,v[1]);R(31,3,3,4,v[1]);R(30,8,2,2,'#15161a');R(10,18,3,3,v[1]);R(15,18,3,3,v[1]);R(21,18,3,3,v[1]);R(6,7,3,5,v[0]);if(H())R(24,11,2,6,'#c0261e')}}
-const prijs=()=>Math.max(100,Math.round(zS(5)/50)*50);
+const prijs=()=>Math.max(100,Math.round((G.schaal&&G.schaal.kost?G.schaal.kost(5):zS(5))/50)*50);   // prijs: zonder lidbonus
 function strayMenu(){if(G.talking||G.driving||!stray)return;G.talking=true;const s=stray,k=strayK();s.friend=Math.max(s.friend||0,6);
   const pet=()=>{G.pose='aai';G.P.ry=Math.atan2(s.x-G.P.x,s.z-G.P.z);hearts(s);s.sad=0;s.friend=40;G.snd&&G.snd.fx('woef');setTimeout(()=>{if(G.pose==='aai')G.pose=null},1400);K.say('Hij kwispelt en duwt zijn neus in je hand. Hij loopt een stukje met je mee.','blij',ch())};
   const ch=()=>[{t:'Aaien',ic:K.ic.hart,f:pet},{t:'Meenemen · '+fmt(prijs()),sub:S.cash<prijs()?'':'Dierenarts, halsband en een mand',ic:K.ic.poot,dis:S.cash<prijs(),why:'Kost '+fmt(prijs())+' contant',f:()=>{K.say('Hoe ga je hem noemen?',null,NAMEN.map(nm=>({t:nm,ic:K.ic.poot,f:()=>adopt(nm,k)})))}},{t:'Laat maar',ic:K.ic.no,f:()=>K.closeDialog()}];

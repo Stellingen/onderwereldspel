@@ -20,7 +20,19 @@ const dayKey=()=>{try{return new Date(Date.now()-6*3600e3).toLocaleDateString('n
 // schaal: zwart = de straatklussen van je rang (zoals straatroof), wit = gewoon werk van je rang per energiepunt
 const zScale=k=>{const c=(G.roofRef&&G.roofRef())||{min:20,max:60};return Math.max(5,Math.round(((c.min+c.max)/2)*(typeof lootMult==='function'?lootMult():1)*k/5)*5)};
 const witPE=()=>{try{const ri=rankIdx(S.xp);let j=JOBS[0];JOBS.forEach(x=>{if(x.r<=ri)j=x});return (j.p[0]+j.p[1])/2/j.en*(1+(typeof tierK==='function'?tierK():0)*.5)}catch(e){return 20}};
-G.schaal={zwart:zScale,wit:witPE};
+// Lidbonus in de Pixelstad: als bedankje iets meer aan buit en heling. VIP +5%, High roller +10% (TIER_STAD in state.js; een
+// beheerder telt als zijn eigen lidmaatschap). Bovenop de gewone buitbonus van het lidmaatschap die al in lootMult zit.
+const LID_K=typeof TIER_STAD!=='undefined'?TIER_STAD:[0,.05,.10];
+const lidT=()=>{try{return Math.max(0,Math.min(2,(typeof tier==='function'?tier():0)|0))}catch(e){return 0}};
+G.lidBonus=()=>1+(LID_K[lidT()]||0);
+G.lidTxt=()=>{const t=lidT(),p=Math.round((LID_K[t]||0)*100);return p?'+'+p+'% '+(t>=2?'High roller':'VIP'):''};
+G.lidCol=()=>lidT()>=2?'#c49bff':'#f2c230';
+// klein zwevend labeltje onder een uitbetaling: '+10% High roller'
+G.lidFloat=(x,z)=>{const t=G.lidTxt();if(!t)return;setTimeout(()=>{try{const el=document.createElement('div');el.className='sd-float sd-lidf';el.textContent=t;el.style.color=G.lidCol();
+  const v=new TH.Vector3(x,2.6,z).project(G.camera());el.style.left=(v.x*.5+.5)*innerWidth+'px';el.style.top=(-v.y*.5+.5)*innerHeight+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),1600)}catch(e){}},250)};
+const zBuit=k=>{const v=zScale(k);return v*G.lidBonus()===v?v:Math.max(5,Math.round(v*G.lidBonus()/5)*5)};
+// zwart = buit (met lidbonus), wit = gewoon werk (al met lidmaatschap in witPE), kost = de kale schaal voor prijzen en inzetten
+G.schaal={zwart:zBuit,wit:witPE,kost:zScale};
 const busy=()=>G.driving||G.talking||G.paused||G.hidden||(G.mini&&G.mini.active())||(G.mission&&G.mission());
 const say=(t,o)=>G.zeg&&G.zeg(t,o);
 const fl=(t,x,z,c)=>G.fx2&&G.fx2.float(t,x,z,c);
@@ -92,7 +104,7 @@ async function zoekBak(s){if(busy())return;const B=bakS();if(B.ids[s.id]){G.toas
   G.stopPath&&G.stopPath();G.pose='zoek';G.P.ry=Math.atan2(s.bx-G.P.x,s.bz-G.P.z);const r=await G.mini.hold({label:'Doorzoeken',vak:'zoeken',d:s.big?2:1.4,wait:2.5,can:()=>G.pose==='zoek'&&Math.hypot(s.x-G.P.x,s.z-G.P.z)<2.8&&!G.driving,tick:()=>{if(Math.random()<.1)G.snd&&G.snd.fx('step')}});
   if(G.pose==='zoek')G.pose=null;if(r!=='ok')return;S.energy-=1;B.ids[s.id]=1;const ri=rankIdx(S.xp),x=Math.random()*(s.big?.9:1),P=G.P;G.ev&&G.ev('bak');
   if(x<.05){const p=G.pakketTip&&G.pakketTip();if(p){G.toast('Een briefje: er ligt iets verstopt in '+p.w+'. Op je kaart gezet.','lvl');G.snd&&G.snd.fx('ok');sv();return}}
-  if(x<.09){const g=zScale(.5);S.cash+=g;fl('Portemonnee · +'+fmt(g),P.x,P.z,'#ffd35a');G.snd&&G.snd.fx('cash');say('Kijk nou.');sv();return}
+  if(x<.09){const g=zBuit(.5);S.cash+=g;fl('Portemonnee · +'+fmt(g),P.x,P.z,'#ffd35a');G.lidFloat(P.x,P.z);G.snd&&G.snd.fx('cash');say('Kijk nou.');sv();return}
   if(x<.21&&G.zak&&G.zak().length<G.zakMax()){const it=pick([['Oude telefoon',.3],['Kapotte laptop',.35],['Koperdraad',.25],['Merkschoenen',.3],['Oud horloge',.4]]);G.zak().push({n:it[0],v:Math.max(5,zScale(it[1]))});fl(it[0]+' (voor de heler)',P.x,P.z,'#ffd35a');G.snd&&G.snd.fx('grab');sv();return}
   if(x<.5){const g=Math.round(rr(3,22)*(1+ri*.6));S.cash+=g;fl('Statiegeld · +'+fmt(g),P.x,P.z,'#3fe395');G.snd&&G.snd.fx('coin');sv();return}
   if(x<.56){S.hp=Math.max(5,S.hp-1);fl('Een rat! −1 gezondheid',P.x,P.z,'#ff9a9a');G.snd&&G.snd.fx('scream');G.pose='au';setTimeout(()=>{if(G.pose==='au')G.pose=null},500);G.shake&&G.shake(.3);if(G.critter)G.critter('rat',s.bx,s.bz);sv();return}
@@ -146,7 +158,7 @@ async function vissen(s){if(busy()||fish)return;const V=visS();if(G.police&&G.po
   async function done(r){if(r!=='hook'){end(r==='late'?'Te laat. De vis is weg.':'');return}
     const v=rollVis(s.w),junk=Math.random();
     if(junk<.12){// geen vis maar rommel
-      end('');const P=G.P;if(junk<.01){const g=zScale(1.5);S.cash+=g;if(typeof addZwart==='function')addZwart(g);fl('Een kluisje! +'+fmt(g),P.x,P.z,'#ffd35a');G.snd&&G.snd.fx('cash');say('Hebbes.')}
+      end('');const P=G.P;if(junk<.01){const g=zBuit(1.5);S.cash+=g;if(typeof addZwart==='function')addZwart(g);fl('Een kluisje! +'+fmt(g),P.x,P.z,'#ffd35a');G.lidFloat(P.x,P.z);G.snd&&G.snd.fx('cash');say('Hebbes.')}
       else if(junk<.03){const p=G.pakketTip&&G.pakketTip();fl(p?'Flessenpost: een kaart naar '+p.w:'Een lege fles',P.x,P.z,'#ffd35a');if(p)G.snd&&G.snd.fx('ok')}
       else if(junk<.07){const g=Math.round(rr(5,25));S.cash+=g;fl('Roestige fiets · schroot +'+fmt(g),P.x,P.z,'#9aa1ab');G.snd&&G.snd.fx('coin')}
       else{fl('Een oude schoen',P.x,P.z,'#9aa1ab');say('Pff.')}sv();return}
@@ -254,4 +266,8 @@ const wait=setInterval(()=>{if(!G.ready||!G.addFixed||!G.post)return;clearInterv
   // eenmalig bericht over wat er nieuw is
   try{if(!localStorage.getItem('stad_nieuw3')){localStorage.setItem('stad_nieuw3','1');setTimeout(()=>G.msg&&G.msg('stad','Nieuw in de stad: emotes (T), vissen, dobbelen, straatraces, wijken om over te nemen en een zwerfhond in het Noorderpark.',{k:'app',a:'doen'}),5200)}}catch(e){}
   const f=G.onFrame;G.onFrame=dt=>{f&&f(dt);if(!G.paused)step(dt)}},250);
+// lidbonus klein in beeld naast je naam; tik voor uitleg
+const lidChip=setInterval(()=>{const m=document.querySelector('#stadUi .sd-who');if(!m)return;clearInterval(lidChip);const t=G.lidTxt();if(!t)return;
+  const b=document.createElement('button');b.type='button';b.className='sd-lidb'+(lidT()>=2?' hr':'');b.textContent=t.split(' ')[0];b.title=t+' op buit en heling in de Pixelstad';b.setAttribute('aria-label',b.title);
+  b.onclick=e=>{e.stopPropagation();G.toast(t.replace(/^\+(\d+)% (.*)$/,'Als $2 krijg je in de Pixelstad $1% extra op buit en heling. Bedankt dat je lid bent.'),'lvl')};m.appendChild(b)},500);
 })();

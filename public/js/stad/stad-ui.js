@@ -68,11 +68,13 @@ function hud(){try{
   $s('sdCash').textContent=fmt(S.cash);$s('sdBank').textContent='Bank '+fmt(S.bank||0);
   const ri=rankIdx(S.xp),nx=RANKS[ri+1],pct=nx?Math.max(0,Math.min(100,(S.xp-RANKS[ri][1])/(nx[1]-RANKS[ri][1])*100)):100;
   $s('sdName').innerHTML=E(window.__USER__||'Jij')+(typeof vipTag==='function'?vipTag(1):'');$s('sdRank').textContent=RANKS[ri][0]+' · lv '+rankLevel(S.xp);$s('sdXp').style.width=pct.toFixed(1)+'%';
-  const en=Math.max(0,Math.min(EN_MAX,Math.floor(S.energy))),hp=Math.max(0,Math.min(100,Math.round(S.hp)));
-  $s('sdEn').style.width=en/EN_MAX*100+'%';$s('sdEnV').textContent=en;$s('sdHp').style.width=hp+'%';$s('sdHpV').textContent=hp;$s('sdHp').parentNode.parentNode.classList.toggle('low',hp<30);
+  // energie: je max hangt in de Pixelstad af van het weer (stad-sfeer.js); erboven zitten kan (de balk is dan vol en licht op)
+  const mx=EN_MAX,en=Math.max(0,Math.floor(S.energy)),hp=Math.max(0,Math.min(100,Math.round(S.hp))),ev=$s('sdEnV'),evh=en+'<small>/'+mx+'</small>';
+  $s('sdEn').style.width=Math.min(100,en/mx*100)+'%';if(ev._h!==evh){ev._h=evh;ev.innerHTML=evh}ev.parentNode.classList.toggle('over',en>mx);$s('sdHp').style.width=hp+'%';$s('sdHpV').textContent=hp;$s('sdHp').parentNode.parentNode.classList.toggle('low',hp<30);
   const w=wantedLv(),we=$s('sdWanted');we.hidden=!w;if(w)we.innerHTML='<span>Gezocht</span><b>'+'★'.repeat(Math.min(5,w))+'<i>'+'★'.repeat(Math.max(0,5-Math.min(5,w)))+'</i></b>';
-  const d=new Date(),tm=d.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});$s('sdClock').textContent=tm;$s('sdTime').textContent=tm;
-  $s('sdBat').textContent=Math.round(en/EN_MAX*100)+'%';$s('sdPhCash').textContent=fmt(S.cash);$s('sdPhBank').textContent=fmt(S.bank||0);
+  // klok: speltijd (een speldag van 4 uur is één dag en nacht, zie G.klok in stad-game.js)
+  const tm=G.klok?G.klok().txt:new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});$s('sdClock').textContent=tm;$s('sdTime').textContent=tm;$s('sdTime').title='Speltijd';
+  $s('sdBat').textContent=Math.min(100,Math.round(en/mx*100))+'%';$s('sdPhCash').textContent=fmt(S.cash);$s('sdPhBank').textContent=fmt(S.bank||0);
   avatar()}catch(e){}}
 setInterval(hud,400);hud();
 // wijknaam: in beeld als je een nieuwe wijk in loopt (zoals in GTA)
@@ -84,7 +86,8 @@ const mapCv=X.mapCanvas(),mini=$s('sdMini'),mc=mini.getContext('2d');mc.imageSmo
 const PCOL={};M.places.forEach(p=>{PCOL[p.id]=secOf(p.page)[2]});
 const pcol=p=>p.dyn?(p.own?'#f2c230':'#7d828a'):PCOL[p.id];
 let pathPts=null;
-function drawMini(){const P=G.P,w=mini.width,s=1.3;mc.setTransform(1,0,0,1,0,0);mc.imageSmoothingEnabled=false;mc.fillStyle='#14304a';mc.fillRect(0,0,w,w);
+// nieuwe minikaart (zelfde iconen als de grote kaart, route, pijl naar je doel): stad-kaart.js; hieronder de oude als reserve
+function drawMini(){if(G.kaart&&G.kaart.mini){G.kaart.mini(mini,mc,pathPts);mmNorth();loc();return}const P=G.P,w=mini.width,s=1.3;mc.setTransform(1,0,0,1,0,0);mc.imageSmoothingEnabled=false;mc.fillStyle='#14304a';mc.fillRect(0,0,w,w);
   mc.save();mc.translate(w/2,w/2);mc.rotate(G.yaw);mc.scale(s,s);mc.translate(-P.x,-P.z);mc.drawImage(mapCv,0,0);
   if(pathPts&&P.path){mc.strokeStyle='#ff7a1a';mc.lineWidth=2;mc.setLineDash([3,2]);mc.beginPath();mc.moveTo(P.x,P.z);P.path.forEach(q=>mc.lineTo(q.x,q.z));mc.stroke();mc.setLineDash([])}
   if(G.missionPath&&G.missionPath.length){mc.strokeStyle='#ffd35a';mc.lineWidth=2.2;mc.setLineDash([3,2]);mc.beginPath();mc.moveTo(P.x,P.z);G.missionPath.forEach(q=>mc.lineTo(q.x,q.z));mc.stroke();mc.setLineDash([])}
@@ -97,8 +100,8 @@ function drawMini(){const P=G.P,w=mini.width,s=1.3;mc.setTransform(1,0,0,1,0,0);
   if(G.missionDots)G.missionDots().forEach(d=>{const r=d.big?3.4:2;mc.fillStyle='#000';mc.fillRect(d.x-r-.8,d.z-r-.8,2*r+1.6,2*r+1.6);mc.fillStyle=d.c;mc.fillRect(d.x-r,d.z-r,2*r,2*r)});
   mc.translate(P.x,P.z);mc.rotate(Math.atan2(Math.cos(P.ry),Math.sin(P.ry)));mc.fillStyle='#000';mc.beginPath();mc.moveTo(5,0);mc.lineTo(-3.4,3.4);mc.lineTo(-1.6,0);mc.lineTo(-3.4,-3.4);mc.closePath();mc.fill();
   mc.fillStyle='#fff';mc.beginPath();mc.moveTo(3.6,0);mc.lineTo(-2.4,2.4);mc.lineTo(-1,0);mc.lineTo(-2.4,-2.4);mc.closePath();mc.fill();mc.restore();
-  const r=mini.getBoundingClientRect().width/2-2;$s('sdNorth').style.transform=`translate(${Math.sin(-G.yaw)*-r}px,${-Math.cos(G.yaw)*r}px)`;
-  loc()}
+  mmNorth();loc()}
+function mmNorth(){const r=mini.getBoundingClientRect().width/2-2;$s('sdNorth').style.transform=`translate(${Math.sin(-G.yaw)*-r}px,${-Math.cos(G.yaw)*r}px)`}
 G.drawMini=drawMini;let mmT=0;G.onFrame=dt=>{mmT+=(dt||0);if(!(mmT<.08)){mmT=0;try{drawMini()}catch(e){console.error('minikaart',e)}}};
 
 /* ---------- ingang in de buurt ---------- */
