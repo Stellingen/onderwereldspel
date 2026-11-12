@@ -11,11 +11,18 @@ const sv=()=>{try{save()}catch(e){}};
 const obj=(k,d)=>{try{if(!S[k]||typeof S[k]!=='object')S[k]=d;return S[k]}catch(e){return d}};
 const dayN=()=>Math.floor((Date.now()-5*3600e3)/864e5);
 const zS=k=>G.schaal?G.schaal.zwart(k):Math.round(50*k);
+// Alle punten liggen op de middenlijn van een weg (M.VR / M.HR) en de bochten zitten op kruisingen.
+// Let op: de wegen x=320 en x=400 lopen niet door het Noorderpark (z 115-160), daar rijdt geen route.
+const X=M.XS,Z=M.ZS;
 const ROUTES=[
- {id:'centrum',n:'Rondje Centrum',pts:[[229,140],[304,140],[304,36],[130,36],[130,140],[229,140]]},
- {id:'haven',n:'Havensprint',pts:[[304,186],[304,36],[204,36],[204,88],[254,88]]},
- {id:'kust',n:'Kustrace',pts:[[254,192],[30,192],[30,36],[130,36],[130,88],[80,88],[80,192]]},
- {id:'oost',n:'Grote Prijs van Oostland',pts:[[404,150],[404,52],[562,52],[562,340],[404,340],[404,160]]}];
+ // rond het Centrum: van Het Plein naar het westen, langs de bank en het casino, de Zuidas af en over de gracht terug
+ {id:'centrum',n:'Rondje Centrum',pts:[[435,Z[4]],[X[3],Z[4]],[X[3],Z[2]],[X[7],Z[2]],[X[7],Z[5]],[X[5],Z[5]],[X[5],Z[4]],[435,Z[4]]]},
+ // van de Zuidas naar de noordkade, langs de Bajes en het Villapark, door De Haven en over de kade naar de IJ-oever
+ {id:'haven',n:'Havensprint',pts:[[X[6],285],[X[6],Z[0]],[X[2],Z[0]],[X[2],Z[1]],[X[7],Z[1]],[X[7],Z[0]],[X[10],Z[0]]]},
+ // langs de Boulevard naar de westkust, de hele kust omhoog en dwars door de Westbuurt terug naar de zee
+ {id:'kust',n:'Kustrace',pts:[[505,Z[7]],[X[0],Z[7]],[X[0],Z[2]],[X[2],Z[2]],[X[2],Z[6]],[X[4],Z[6]],[X[4],Z[7]],[X[5],Z[7]]]},
+ // Oostland rond, de Tuinwijk door en over de brug naar de finish op Het Eiland
+ {id:'oost',n:'Grote Prijs van Oostland',pts:[[X[8],275],[X[8],Z[1]],[X[10],Z[1]],[X[10],Z[5]],[X[9],Z[5]],[X[9],Z[7]],[X[8],Z[7]],[X[8],610],[770,610]]}];
 // tussenpunten op lange stukken, lengte en richttijden
 ROUTES.forEach(r=>{const cp=[];let len=0;for(let i=1;i<r.pts.length;i++){const a=r.pts[i-1],b=r.pts[i],d=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.round(d/95));len+=d;for(let k=1;k<=n;k++)cp.push({x:a[0]+(b[0]-a[0])*k/n,z:a[1]+(b[1]-a[1])*k/n})}
   r.cp=cp;r.len=len;r.par=[len/11.8,len/15,len/18.6];r.sx=r.pts[0][0];r.sz=r.pts[0][1];r.ry=Math.atan2(r.pts[1][0]-r.sx,r.pts[1][1]-r.sz)});
@@ -68,12 +75,13 @@ G.race={ROUTES,start,stop,route,active:()=>!!RC,medals:()=>ROUTES.reduce((a,r)=>
 /* ---------- opstarten ---------- */
 const wait=setInterval(()=>{if(!G.ready||!G.spot||!G.addFixed)return;clearInterval(wait);
   ROUTES.forEach((r,i)=>{try{// startboog over de weg
-      const px=Math.cos(r.ry),pz=-Math.sin(r.ry),B=[[.4,3,.4,-4.7,1.5,0,'#2a2c30'],[.4,3,.4,4.7,1.5,0,'#2a2c30'],[.7,.5,.7,-4.7,3.2,0,'#ff7a1a',1],[.7,.5,.7,4.7,3.2,0,'#ff7a1a',1],[1.3,.8,.1,-4.7,2.3,.26,'#f1efe9'],[1.3,.8,.1,4.7,2.3,.26,'#f1efe9']];
+      // palen net buiten het wegdek (halve wegbreedte M.RW), de streep over de hele breedte
+      const px=Math.cos(r.ry),pz=-Math.sin(r.ry),po=M.RW+.7,B=[[.4,3,.4,-po,1.5,0,'#2a2c30'],[.4,3,.4,po,1.5,0,'#2a2c30'],[.7,.5,.7,-po,3.2,0,'#ff7a1a',1],[.7,.5,.7,po,3.2,0,'#ff7a1a',1],[1.3,.8,.1,-po,2.3,.26,'#f1efe9'],[1.3,.8,.1,po,2.3,.26,'#f1efe9']];
       // geblokte startstreep op het wegdek
-      for(let k=0;k<10;k++)for(let j=0;j<2;j++)B.push([.8,.03,.8,-3.6+k*.8,.03,-.4+j*.8,(k+j)%2?'#111214':'#f1efe9']);
+      const nq=Math.round(2*M.RW/.8);for(let k=0;k<nq;k++)for(let j=0;j<2;j++)B.push([.8,.03,.8,-M.RW+.4+k*.8,.03,-.4+j*.8,(k+j)%2?'#111214':'#f1efe9']);
       const m=K.model(B,{noShadow:1});m.position.set(r.sx,0,r.sz);m.rotation.y=r.ry;G.scene().add(m);
       G.spot({k:'race',id:r.id,x:r.sx,z:r.sz,r:8,drive:1,driveOnly:1,prio:1,n:'Start race',sub:r.n,col:'#ff7a1a',h:3,ring:8,show:()=>!RC,act:()=>start(r),dot:'#ff7a1a',dotR:140,dotIf:()=>!RC,map:{n:'Straatrace · '+r.n,ic:K.ic.vlag,c:'#ff7a1a',pri:2}});
-      const q=M.nearestWalk(r.sx+px*6.6,r.sz+pz*6.6,4);if(q)G.spot({k:'raceb',x:q.x,z:q.z,r:2.6,n:'Straatrace',sub:r.n,col:'#ff7a1a',h:2.2,show:()=>!RC,act:()=>board(r)});
+      const q=M.nearestWalk(r.sx+px*(M.RW+M.SW/2+.6),r.sz+pz*(M.RW+M.SW/2+.6),4);if(q)G.spot({k:'raceb',x:q.x,z:q.z,r:2.6,n:'Straatrace',sub:r.n,col:'#ff7a1a',h:2.2,show:()=>!RC,act:()=>board(r)});
       if(i===0&&q)G.addFixed('racer',q.x+1.6,q.z,Math.PI)}catch(e){console.error(e)}});
   const f=G.onFrame;G.onFrame=dt=>{f&&f(dt);if(!G.paused)step(dt)}},270);
 })();

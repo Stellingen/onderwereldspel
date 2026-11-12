@@ -165,7 +165,7 @@ G.missionStep=function(dt){if(!MS)return;const m=MS,P=G.P,s=m.steps[m.i];if(!s)r
   const hold=holding();
   if(s.t==='go'){if(dist(P,s.p)<s.r)next()}
   else if(s.t==='hold'&&s.kr&&G.kraak){const ok=dist(P,s.p)<s.r;m.prog=0;m.hint=ok?'':'';s.cool=(s.cool||0)-dt;
-    if(ok&&(hold||G.K.e)&&!s.busy&&s.cool<=0){s.busy=1;const f=s.kr==='kluis'?G.kraak.kluis:G.kraak.slot;f({d:m.D}).then(r=>{s.busy=0;s.cool=.8;if(MS!==m)return;
+    if(ok&&(hold||G.K.e)&&!s.busy&&s.cool<=0){s.busy=1;const f=s.kr==='kluis'?G.kraak.kluis:G.kraak.slot;f({d:m.D,vak:s.kr==='kluis'?'kluis':'inbraak'}).then(r=>{s.busy=0;s.cool=.8;if(MS!==m)return;
       if(r&&r.ok){G.ev&&G.ev('kraak');next()}else if(r!=='cancel'){if(s.kr==='slot'&&!m.alarm){alarm('Je haakje brak met een klap. De bewaking hoorde het!')}else{m.miss+=1;G.toast('Mis. Probeer het nog eens','bad')}}})}}
   else if(s.t==='hold'){const ok=dist(P,s.p)<s.r;if(ok&&hold){s.st+=dt;if(s.alarm&&!m.alarm&&s.st>.2)alarm('Overval! De politie is gebeld')}else s.st=Math.max(0,s.st-dt*1.5);m.prog=s.st/s.d;
     if(s.st>=s.d){if(s.take&&m.obj){scene.remove(m.obj);m.obj=null;m.carry=1}next()}}

@@ -64,7 +64,7 @@ function contacten(){const C=[['notaris','Langskomen of kopen'],['garage','Breng
   scr.querySelectorAll('[data-por]').forEach(c=>K.portrait(G.contacts[c.dataset.por].look,null,c))}
 function call(k){G.snd&&G.snd.fx('phoneRing');
   if(k==='notaris'){close();G.vastgoed&&G.vastgoed.open()}else if(k==='garage'){close();G.bringCar&&G.bringCar()}else if(k==='contact'){go('dag')}else if(k==='taxi'){go('taxi')}
-  else if(k==='heler'){const h=G.NPC.find(n=>n.arch==='heler');if(h){close();G.setWaypoint&&G.setWaypoint(h.x,h.z,'Ome Henk (heler)')}}}
+  else if(k==='heler'){const h=G.helerContact||G.NPC.find(n=>n.arch==='heler'&&n.contact)||G.NPC.find(n=>n.arch==='heler');if(h){close();G.setWaypoint&&G.setWaypoint(h.x,h.z,'Ome Henk (heler)')}}}
 function taxi(){const home=M.places.find(p=>p.dyn==='plot'&&p.home),own=M.places.filter(p=>p.dyn&&p.own&&p.zone!=='brug'&&!p.home),pl=M.places.filter(p=>!p.dyn);
   const row=p=>{const d=Math.hypot(p.door.x-G.P.x,p.door.z-G.P.z),f=G.taxiFare(d);return `<button class="sd-p2-row" data-taxi="${p.id}"><i class="sd-p2-ri">${pic(p.page)}</i><span><b>${E(p.name.replace(/^(Thuis: |Jouw )/,''))}</b><small>${E(M.districtAt(p.door.x,p.door.z))} · ${Math.round(d)} m</small></span><em>${fmt(f)}</em></button>`};
   scr.innerHTML=head('Taxi Centrale','Betalen met contant geld')+`<div class="sd-p2-list">${home?'<h5>Thuis</h5>'+row(home):''}${own.length?'<h5>Jouw bezit</h5>'+own.map(row).join(''):''}<h5>In de stad</h5>${pl.map(row).join('')}</div>`}

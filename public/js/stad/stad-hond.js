@@ -32,7 +32,7 @@ Dog.prototype.moveTo=function(tx,tz,sp,dt){const dx=tx-this.x,dz=tz-this.z,d=Mat
   if(M.canStand(nx,this.z,.22)){this.x=nx;mv=true}if(M.canStand(this.x,nz,.22)){this.z=nz;mv=true}let r=Math.atan2(dx,dz)-this.ry;r=Math.atan2(Math.sin(r),Math.cos(r));this.ry+=r*Math.min(1,dt*12);this.v=mv?sp:0;this.stuck=mv?0:(this.stuck||0)+dt;return false};
 /* ---------- jouw hond (of de zwerfhond die het nog moet worden) ---------- */
 let dog=null,job=null,ball=null,barkT=0,sniffT=6,zoekCd=0,balXp=0,stray=null;
-const STRAY={x:162,z:20};
+const STRAY={x:M.A.park.x-40,z:M.A.park.z};   // in het Noorderpark
 function spawn(){const h=H();if(dog){G.scene().remove(dog.g);dog=null}if(stray){G.scene().remove(stray.g);stray=null}
   if(h){dog=new Dog(h.k||0);dog.P.band.visible=true;const p=M.nearestWalk(G.P.x+1.2,G.P.z+1,4)||G.P;dog.x=p.x;dog.z=p.z;dog.g.visible=!h.home}
   else{stray=new Dog(strayK());const p=M.nearestWalk(STRAY.x,STRAY.z,10)||STRAY;stray.x=stray.hx=p.x;stray.z=stray.hz=p.z;stray.sad=1}btn()}

@@ -72,9 +72,13 @@ function ach(a){const el=document.createElement('div');el.className='sd-ach';el.
 setInterval(()=>{if(G.ready&&!G.paused)achCheck()},5000);
 /* ---------- verstopte pakketjes ---------- */
 const PK=[];(function(){let s=91711;const rnd=()=>{s=Math.imul(s^(s>>>15),2246822507)>>>0;s=Math.imul(s^(s>>>13),3266489909)>>>0;s^=s>>>16;return (s>>>0)/4294967296};
-  const C=[];M.alleys.forEach(a=>{const ns=a.f==='N'||a.f==='S';C.push({x:ns?a.x0+2.3:a.cx,z:ns?a.cz:a.z0+2.3,w:'een steeg'})});
-  const T=M.T;for(let i=0;i<4000&&C.length<120;i++){const x=8+rnd()*(M.W-16),z=8+rnd()*(M.H-16),t=M.ground[(z|0)*M.W+(x|0)];if((t===T.PARK||t===T.YARD||t===T.SAND||t===T.DOCK)&&M.canStand(x,z,.6))C.push({x,z,w:t===T.PARK?'een park':t===T.SAND?'het strand':t===T.DOCK?'de kade':'een binnenplaats'})}
-  for(const c of C){if(PK.length>=30)break;if(PK.every(p=>Math.hypot(p.x-c.x,p.z-c.z)>24)&&M.canStand(c.x,c.z,.4))PK.push(Object.assign(c,{id:'p'+PK.length}))}})();
+  const C=[];M.alleys.forEach(a=>{const ns=a.f==='N'||a.f==='S';C.push({x:ns?a.x0+2.3:a.cx,z:ns?a.cz:a.z0+2.3,w:'een steeg'})});const C0=C.length;
+  const T=M.T,bj=M.Z.bajes,inBajes=(x,z)=>x>bj[0]-2&&x<bj[2]+2&&z>bj[1]-2&&z<bj[3]+2;
+  for(let i=0;i<6000&&C.length<C0+160;i++){const x=8+rnd()*(M.W-16),z=8+rnd()*(M.H-16),t=M.ground[(z|0)*M.W+(x|0)];if((t===T.PARK||t===T.YARD||t===T.SAND||t===T.DOCK)&&!inBajes(x,z)&&M.canStand(x,z,.6))C.push({x,z,w:t===T.PARK?'een park':t===T.SAND?'het strand':t===T.DOCK?'de kade':'een binnenplaats'})}
+  // door elkaar (vast zaadje), zodat de 30 over de hele stad verspreid liggen; eerst ver uit elkaar, daarna dichter als het moet
+  for(let i=C.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[C[i],C[j]]=[C[j],C[i]]}
+  for(const gap of [70,50,35,24])for(const c of C){if(PK.length>=30)break;if(!PK.includes(c)&&!inBajes(c.x,c.z)&&PK.every(p=>Math.hypot(p.x-c.x,p.z-c.z)>gap)&&M.canStand(c.x,c.z,.4))PK.push(c)}
+  PK.forEach((p,i)=>p.id='p'+i)})();
 G.pakketten=PK;
 const col=()=>obj('stadCol',{});
 let pkMesh=[];

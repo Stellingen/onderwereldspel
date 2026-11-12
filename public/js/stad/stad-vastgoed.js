@@ -1,11 +1,12 @@
-// Pixelstad: Notaris De Sleutel. Eén plek (en een app op je telefoon) voor al je vastgoed: je woningen en zaken op Oostland.
+// Pixelstad: Notaris De Sleutel. Eén plek (en een app op je telefoon) voor al je vastgoed: je woningen (Oostland en Het Eiland) en
+// je zaken (de industrie in het noorden, winkels en horeca aan de boulevard en in de Oosterstraat).
 // Mijn bezit: route erheen, naar binnen, thuis maken, upgraden, een vestiging erbij, verkopen. Te koop: alles wat je nog niet hebt,
 // met de gewone prijs uit het klikspel (act.buyHouse / act.rentHouse / act.bizBuy). Na het kopen zie je het gebouw verrijzen.
 (function(){
 'use strict';
 const G=STAD,M=STAD_MAP,K=G.kit,$s=id=>document.getElementById(id),E=K.E;
 const NOT={skin:'#e9b98f',hair:'#d8d4cc',top:'#1f2430',tie:'#7a1f2a',glasses:1,bg:'#2b2418'};
-const HI=['Goedendag. Alles op uw naam, en niemand die het hoeft te weten.','Welkom terug. Uw grond in Oostland ligt er netjes bij.','Tekenen kan hier. Vragen stellen doen we niet.','Ah, u weer. Wat mag het vandaag worden?'];
+const HI=['Goedendag. Alles op uw naam, en niemand die het hoeft te weten.','Welkom terug. Uw grond ligt er netjes bij.','Tekenen kan hier. Vragen stellen doen we niet.','Ah, u weer. Wat mag het vandaag worden?'];
 const hs=()=>typeof HOUSES!=='undefined'?HOUSES.filter(h=>h.id!=='brug'):[];
 const L=id=>typeof houseOf==='function'?houseOf(id):{id,n:id};
 const owned=id=>!!(S.owned&&S.owned[id]),rented=id=>!!(S.rent&&S.rent.id===id),isHome=id=>(S.home||'brug')===id;
@@ -14,7 +15,7 @@ const ri=()=>rankIdx(S.xp);
 const HSPEC={kraak:['kraak',2],boot:['beach2',1],kamer:['brick3',3,'gable'],studio:['brick',3,'gable'],gracht:['plaster',4,'gable'],jordaan:['brick2',5,'gable'],penthouse:['glass',9],ijpent:['glass2',11],omval:['glass',13],villa:['villa',2],gooi:['villa',3]};
 const BSPEC=M.BIZ_LOOK;
 const pl=(kind,id)=>M.placeById(kind==='biz'?'biz_'+id:'plot_'+id);
-const where=p=>p?(p.est?'Oostland · ':'')+M.districtAt(p.door.x,p.door.z):'';
+const where=p=>p?(p.est&&M.estateAt(p.door.x,p.door.z)?'Oostland · ':'')+M.districtAt(p.door.x,p.door.z):'';
 const lot=(kind,id)=>G.lotOf&&G.lotOf(kind,id);
 function thumbHouse(id){const s=HSPEC[id]||['brick',2],l=lot('house',id),have=owned(id)||rented(id);return K.thumb({fl:have?s[1]:0,st:s[0],roof:s[2],tall:/pent|omval/.test(id),wide:/villa|gooi|kraak/.test(id),pool:id==='villa'||id==='gooi',boat:id==='boot'&&have,building:l&&l.building,night:G.night>.6})}
 function thumbBiz(b){const n=units(b.id).length,mx=n?Math.max(...units(b.id)):0,l=lot('biz',b.id),sp=BSPEC[b.id]||['shop',1,.5,0,3];return K.thumb({fl:n?Math.min(sp[4],Math.max(1,Math.round(sp[1]+sp[2]*mx+sp[3]*Math.floor((n-1)/3)))):0,st:sp[0],roof:sp[5]?'gable':null,biz:1,wide:/hal|garage|port|jet|dealer|transport|groothandel|parkeer/.test(b.id),tall:/vastgoed|kantoor|rederij/.test(b.id),sign:b.col,building:l&&l.building,night:G.night>.6})}
@@ -50,7 +51,7 @@ function render(){if(ui.hidden)return;const H=hs(),B=typeof BIZ!=='undefined'?BI
   $s('sdVgTabs').innerHTML=[['mine','Mijn bezit'],['koop','Te koop'],...(bouw?[['bouw','In aanbouw ('+bouw+')']]:[])].map(([k,n])=>`<button data-tab="${k}" class="${tab===k?'on':''}">${n}</button>`).join('')+`<span class="sd-vg-sp"></span><button data-klik class="sd-vg-klik">Alle details ↗</button>`;
   let html='';
   if(tab==='mine'){html=(mineH.length?`<h4>Woningen</h4>${mineH.map(h=>houseCard(h,false)).join('')}`:'')+(mineB.length?`<h4>Zaken</h4>${mineB.map(b=>bizCard(b,false)).join('')}`:'');
-    if(!html)html=`<div class="sd-vg-empty"><b>Nog niets op je naam</b><p>Oostland ligt klaar. Kies een woning of zaak en de bouwploeg begint meteen.</p>${btn('Bekijk wat te koop is','data-tab="koop"',{ic:K.ic.key})}</div>`;
+    if(!html)html=`<div class="sd-vg-empty"><b>Nog niets op je naam</b><p>De kavels liggen klaar: woningen in Oostland en op Het Eiland, zaken in de haven, aan de boulevard en in de Oosterstraat. Kies er een en de bouwploeg begint meteen.</p>${btn('Bekijk wat te koop is','data-tab="koop"',{ic:K.ic.key})}</div>`;
     else html+=`<div class="sd-vg-hint">${K.ic.home}<span>Onder de brug in de stad kun je altijd gratis slapen.</span>${isHome('brug')?'':btn('Daar gaan wonen','data-home="brug"',{ghost:1})}</div>`}
   else if(tab==='koop'){html=`<div class="sd-vg-seg"><button data-sub="huis" class="${sub==='huis'?'on':''}">Woningen (${saleH.length})</button><button data-sub="zaak" class="${sub==='zaak'?'on':''}">Zaken (${saleB.length})</button></div>`
     +((sub==='huis'?saleH.sort((a,b)=>(a.r||0)-(b.r||0)).map(h=>houseCard(h,true)).join(''):saleB.sort((a,b)=>(a.r||0)-(b.r||0)).map(b=>bizCard(b,true)).join(''))||'<p class="sd-bd-none">Alles is al van jou.</p>')}
@@ -76,7 +77,7 @@ ui.addEventListener('click',e=>{const t=e.target.closest('button');if(e.target==
   if(t.dataset.in){const p=placeOf(t.dataset.in);close();if(G.ui&&G.ui.cur&&G.ui.cur())G.ui.leaveQuiet&&G.ui.leaveQuiet();G.ui&&G.ui.enterDirect(p);return}
   if(t.dataset.home){act.moveHouse(t.dataset.home);G.lotSync&&G.lotSync();K.type($s('sdVgSay'),'Genoteerd. Uw post gaat voortaan naar het nieuwe adres.',{blip:false});render();return}
   if(t.dataset.up){act.bizUpAll(t.dataset.up);G.lotSync&&G.lotSync();G.snd&&G.snd.fx('build');render();return}
-  if(t.dataset.bbuy){const id=t.dataset.bbuy,n0=units(id).length;act.bizBuy(id);if(units(id).length>n0){G.snd&&G.snd.fx('cash');G.lotSync&&G.lotSync();tab='mine';focus='b:'+id;render._scrolled=0;K.type($s('sdVgSay'),'Getekend. De bouwploeg is al onderweg naar Oostland.',{blip:false})}render();return}
+  if(t.dataset.bbuy){const id=t.dataset.bbuy,n0=units(id).length;act.bizBuy(id);if(units(id).length>n0){G.snd&&G.snd.fx('cash');G.lotSync&&G.lotSync();tab='mine';focus='b:'+id;render._scrolled=0;K.type($s('sdVgSay'),'Getekend. De bouwploeg is al onderweg'+(pl('biz',id)?' naar '+M.districtAt(pl('biz',id).door.x,pl('biz',id).door.z):'')+'.',{blip:false})}render();return}
   if(t.dataset.buy||t.dataset.bank){const id=t.dataset.buy||t.dataset.bank;act.buyHouse(id,t.dataset.bank?'bank':undefined);if(owned(id)){G.snd&&G.snd.fx('cash');G.lotSync&&G.lotSync();tab='mine';focus='h:'+id;render._scrolled=0;K.type($s('sdVgSay'),'Gefeliciteerd. De grond is van u, er wordt al gebouwd.',{blip:false})}render();return}
   if(t.dataset.rent){const id=t.dataset.rent;act.rentHouse(id);if(rented(id)){G.lotSync&&G.lotSync();tab='mine';focus='h:'+id;render._scrolled=0}render();return}
   if(t.dataset.sell){const k=t.dataset.sell;if(sellAsk!==k||performance.now()-sellT>4000){sellAsk=k;sellT=performance.now();render();return}sellAsk=null;act.sellHouse(k.slice(2));G.lotSync&&G.lotSync();G.snd&&G.snd.fx('money');render();return}});

@@ -89,7 +89,7 @@ const benches=[];G.benches=benches;
 /* =================== prullenbak en container: doorzoeken =================== */
 const bakS=()=>{const B=obj('stadBak',{});const k=dayKey();if(B.k!==k){B.k=k;B.ids={}}if(!B.ids)B.ids={};return B};
 async function zoekBak(s){if(busy())return;const B=bakS();if(B.ids[s.id]){G.toast('Hier heb je vandaag al gezocht','info');return}if(S.energy<1){G.toast('Te moe','bad');return}
-  G.stopPath&&G.stopPath();G.pose='zoek';G.P.ry=Math.atan2(s.bx-G.P.x,s.bz-G.P.z);const r=await G.mini.hold({label:'Doorzoeken',d:s.big?2:1.4,wait:2.5,can:()=>G.pose==='zoek'&&Math.hypot(s.x-G.P.x,s.z-G.P.z)<2.8&&!G.driving,tick:()=>{if(Math.random()<.1)G.snd&&G.snd.fx('step')}});
+  G.stopPath&&G.stopPath();G.pose='zoek';G.P.ry=Math.atan2(s.bx-G.P.x,s.bz-G.P.z);const r=await G.mini.hold({label:'Doorzoeken',vak:'zoeken',d:s.big?2:1.4,wait:2.5,can:()=>G.pose==='zoek'&&Math.hypot(s.x-G.P.x,s.z-G.P.z)<2.8&&!G.driving,tick:()=>{if(Math.random()<.1)G.snd&&G.snd.fx('step')}});
   if(G.pose==='zoek')G.pose=null;if(r!=='ok')return;S.energy-=1;B.ids[s.id]=1;const ri=rankIdx(S.xp),x=Math.random()*(s.big?.9:1),P=G.P;G.ev&&G.ev('bak');
   if(x<.05){const p=G.pakketTip&&G.pakketTip();if(p){G.toast('Een briefje: er ligt iets verstopt in '+p.w+'. Op je kaart gezet.','lvl');G.snd&&G.snd.fx('ok');sv();return}}
   if(x<.09){const g=zScale(.5);S.cash+=g;fl('Portemonnee · +'+fmt(g),P.x,P.z,'#ffd35a');G.snd&&G.snd.fx('cash');say('Kijk nou.');sv();return}
@@ -109,7 +109,9 @@ function atm(){if(busy())return;if(typeof inJail==='function'&&inJail())return;G
     L.push({t:'Alles opnemen',sub:b>0?fmt(b):'',ic:K.ic.money,dis:b<1,why:'Er staat niets op je rekening',f:()=>{act.bkQuick(b);G.snd&&G.snd.fx('cash');G.ev&&G.ev('pin');K.say(line(),null,ch())}});
     L.push({t:'Klaar',ic:K.ic.no,f:()=>K.closeDialog()});return L};
   K.dialog({name:'Geldautomaat',role:'Nederlandsche Onderbank',draw:drawAtm,lines:[line()],col:'#3ad6ff',choices:ch(),onClose:()=>{G.talking=false}})}
-const ATMS=[[161.5,75.5],[226,106.8],[258.6,118],[146,198.2],[322,118.6],[118,134.3],[156,186.2]];
+// op de stoep tegen een muur: bij de bank, op Het Plein (Café Het Gat), in het Centrum, de Westbuurt, bij Havenloods 7,
+// aan de boulevard (tegen een strandtent) en in de Oosterstraat
+const ATMS=[[M.A.bank.x+10,M.A.bank.z+.3],[438,262.5],[305,371.5],[95,301.2],[M.A.havenloods.x-12,M.A.havenloods.z+.3],[255,524.6],[563,458.5]];
 function setupAtms(){ATMS.forEach(([x,z])=>{const p=M.nearestWalk(x,z,5);if(!p)return;const w=wallSpot(p.x,p.z);if(!w)return;put(MOD.atm(),w.x,w.z,w.ry);const fx=w.x-w.dx*.95,fz=w.z-w.dz*.95,q=M.nearestWalk(fx,fz,2)||{x:fx,z:fz};
     G.spot({k:'atm',x:q.x,z:q.z,r:1.9,n:'Geldautomaat',col:'#3ad6ff',h:2.3,act:atm,dot:'#3ad6ff',dotR:60,map:{n:'Geldautomaat',ic:K.ic.bank,c:'#3ad6ff',pri:1}})})}
 /* =================== koffiekar en snackkar =================== */
@@ -164,9 +166,13 @@ function verkoopVis(n){const V=visS();if(!V.bag.length)return;const k=units('res
 function stek(x,z,w,nm){const p=M.nearestWalk(x,z,4);if(!p)return;let best=null;for(let a=0;a<8;a++){const an=a*Math.PI/4,dx=Math.sin(an),dz=Math.cos(an);for(let k=1;k<5;k+=.5){if(M.at(Math.floor(p.x+dx*k),Math.floor(p.z+dz*k))===T.WATER){if(!best||k<best.k)best={k,dx,dz,an};break}}}
   if(!best)return;put(MOD.stek(),p.x-best.dz*1.1,p.z+best.dx*1.1,best.an);
   G.spot({k:'vis',x:p.x,z:p.z,r:2,w,ry:best.an,wx:p.x+best.dx*(best.k+2.2),wz:p.z+best.dz*(best.k+2.2),n:'Vissen',sub:nm,col:'#3a8ad6',h:2.1,act:vissen,dot:'#3a8ad6',dotR:70,map:{n:'Visstek · '+nm,ic:K.ic.vis,c:'#3a8ad6',pri:1}})}
-const STEK=[[184.3,58,'g','De Gracht'],[184.3,168,'g','De Gracht'],[198.6,116,'g','De Gracht'],[370.5,105,'h','Havensteiger'],[370.5,49,'h','Havensteiger'],[92,248.6,'z','Het strand'],[250,248.6,'z','Het strand'],[494.6,304,'v','De vijver'],[462,7.4,'h','IJ-oever']];
+// op de kade, recht aan het water (de stek kijkt vanzelf naar het water): de gracht (beide kades), het havenkanaal, de pier en de
+// noordkade, de steiger van de IJ-oever, het strand, de vijver in de Tuinwijk en de jachthaven op Het Eiland
+const STEK=[[350.5,205,'g','De Gracht'],[369.5,345,'g','De Gracht'],[350.5,425,'g','De Gracht'],[578.5,345,'h','Havenkanaal'],[589.5,8,'h','Havensteiger'],[300,15,'h','Noordkade'],[710.5,7,'h','IJ-oever'],
+  [130,546.5,'z','Het strand'],[470,546.5,'z','Het strand'],[742,462.6,'v','De vijver'],[760.5,641,'z','Jachthaven']];
 /* =================== uitkijkpunten =================== */
-const KIJK=[['strand',40,248,'Strandpunt'],['haven',336.2,62,'Havenkraan'],['park',152,9,'Noorderpark'],['ij',540,8,'IJ-oever'],['west',8.5,110,'Westkust'],['vijver',524,285,'De vijver']];
+// de ids blijven gelijk (S.stadKijk hangt eraan); 'eiland' is nieuw
+const KIJK=[['strand',330,545,'Strandpunt'],['haven',476,17,'Havenkraan'],['park',M.A.park.x,M.A.park.z,'Noorderpark'],['ij',750,16,'IJ-oever'],['west',18,400,'Westkust'],['vijver',725,462,'De vijver'],['eiland',700,650,'Het Eiland']];
 let kijk=null;
 function uitkijk(s){if(busy()||kijk)return;const sc=scene();kijk={t:0,w:performance.now(),f0:sc.fog.far,n0:sc.fog.near,y0:G.yawT};G.camK=2.5;sc.fog.near=170;sc.fog.far=460;document.body.classList.add('sd-cine');G.snd&&G.snd.fx('open');G.stopPath&&G.stopPath();
   const H=obj('stadKijk',{});if(!H[s.id]){H[s.id]=Date.now();const n=Object.keys(H).length;G.ev&&G.ev('uitkijk');fl('Uitkijkpunt '+n+'/'+KIJK.length,G.P.x,G.P.z,'#ffd35a');if(n===KIJK.length){const g=zScale(6);S.cash+=g;G.msg&&G.msg('stad','Alle uitkijkpunten gevonden. De stad ligt aan je voeten. Bonus: '+fmt(g)+'.')}sv()}}
@@ -232,11 +238,11 @@ let tt=0;
 function step(dt){tt+=dt;if(tt>.08){tt=0;promptStep()}sitStep(dt);kijkStep(dt);if(bob&&bob.visible)bob.rotation.y+=dt}
 const wait=setInterval(()=>{if(!G.ready||!G.addFixed||!G.post)return;clearInterval(wait);
   try{setupBenches();setupBins();setupAtms()}catch(e){console.error(e)}
-  try{// koffiekar op Het Plein, snackkar en viskraam op de boulevard, de dobbelaar in de haven
-    put(MOD.koffie(),234.5,128.6,Math.PI);solid(234.5,128.6,1);G.addFixed('barista',232.6,128.4,Math.PI);
-    put(MOD.snack(),128,230.6,Math.PI);solid(128,230.6,1.1);G.addFixed('snack',125.9,230.4,Math.PI);
-    put(MOD.vis(),176,230.6,Math.PI);solid(176,230.6,1.1);G.addFixed('visboer',173.9,230.4,Math.PI);
-    const ed=M.nearestWalk(319,66,6)||{x:319,z:66};put(MOD.kist(),ed.x,ed.z+1.2,0);G.addFixed('dobbelaar',ed.x,ed.z,0);
+  try{// koffiekar op Het Plein, snackkar en viskraam aan de boulevard (op het zand naast de stoep), de dobbelaar op de kade van De Haven
+    put(MOD.koffie(),442,266,Math.PI);solid(442,266,1);G.addFixed('barista',440.1,265.8,Math.PI);
+    put(MOD.snack(),230,528,Math.PI);solid(230,528,1.1);G.addFixed('snack',227.5,527.8,Math.PI);
+    put(MOD.vis(),290,528,Math.PI);solid(290,528,1.1);G.addFixed('visboer',287.5,527.8,Math.PI);
+    const ed=M.nearestWalk(452,27.5,6)||{x:452,z:27.5};put(MOD.kist(),ed.x,ed.z+1.2,0);G.addFixed('dobbelaar',ed.x,ed.z,0);
     const kar=(arch,nm,ic,c)=>{const n=G.NPC.find(q=>q.arch===arch);if(n)G.spot({k:'npc',x:n.x,z:n.z,r:0,n:nm,dot:c,dotR:80,map:{n:nm,ic,c,pri:1}})};
     kar('barista','Koffiekar van Luigi',K.ic.kop,'#ffad6b');kar('snack','Snackkar van Ali',K.ic.kop,'#ffd166');kar('visboer','Ouwe Jaap (visboer)',K.ic.vis,'#7fb8d6');kar('dobbelaar','Snelle Eddy (dobbelen)',K.ic.dobbel,'#b8a1ff');
     // mensen op bankjes

@@ -29,9 +29,13 @@ function copLook(seed,v,old){const r=rng(seed),P=a=>a[Math.floor(r()*a.length)],
     hs:v?P(['staart','knot','bob']):P(['kort','opgeschoren','kalend','zij']),fh:v?'':P(['','','stoppel','snor','sik']),fw:P(v?[16,18]:[18,20]),jaw:P(v?['rond','spits']:['hoekig','rond']),age:old?2:r()<.5?1:0,
     eye:P(['#3a2a1a','#2a4a6a','#3a6a3a']),v:v?1:0,w:+(v?.92+r()*.1:1+r()*.16).toFixed(2),h:+(v?.96+r()*.08:1+r()*.1).toFixed(2),acc,bg:'#141c2e'}}
 const AG={},WIJKN={};
+// waar de wijkagent zijn ronde begint: een stuk stoep (of plein) in zijn eigen wijk, een eindje bij de wijkbaas vandaan
+function beatStart(w){const c=w.c,at=G.wijk&&G.wijk.at;for(let r=9;r<=48;r+=3)for(let a=0;a<12;a++){const t=a/12*Math.PI*2+r*.37,x=c[0]+Math.cos(t)*r,z=c[1]+Math.sin(t)*r;
+    if(side(x,z)&&M.canStand(x,z,.35)&&(!at||at(x,z)===w))return {x,z}}
+  return M.nearestWalk(c[0]+9,c[1]+7,16)||M.nearestWalk(c[0],c[1],20)}
 function setup(){const A=G.npcA,Wl=(G.wijk&&G.wijk.list)||[];
   A.wijkagent={n:'Wijkagent',col:'#4d7dff',wallet:0,tough:9,call:1,cop:1,fixed:'beat',look:()=>({top:'#1d2a4a',arm:'top',pants:'#151c30',shoe:'#0e0f12',hat:'pet',hatC:'#1d2a4a',hair:'#2a1d14'}),names:['Wijkagent'],talk:['Rustige dienst vandaag.','Ik ken iedereen in deze wijk.','Alles goed hier?','Heeft u iets gezien?']};
-  WA.forEach(([wid,nm,cor,v],i)=>{const w=Wl.find(x=>x.id===wid);if(!w)return;WIJKN[wid]=w.n;const p=M.nearestWalk(w.c[0]+9,w.c[1]+7,16)||M.nearestWalk(w.c[0],w.c[1],20);if(!p)return;
+  WA.forEach(([wid,nm,cor,v],i)=>{const w=Wl.find(x=>x.id===wid);if(!w)return;WIJKN[wid]=w.n;const p=beatStart(w);if(!p)return;
     const n=G.addFixed('wijkagent',p.x,p.z,0),id='a_'+wid,look=copLook(9100+i*77,v,cor<.25);n.nm='Agent '+nm.split(' ').slice(1).join(' ');n.rid=id;n.aid=id;n.wijk=wid;n.look=look;n.turn=0;n.v=1.05;n.st='beat';n.fixSt='beat';
     AG[id]={id,nm:n.nm,full:nm,jobN:'Wijkagent',zone:wid,arch:'wijkagent',trait:cor>.6?'roddelaar':'nuchter',kind:'agent',look,cor,n,wijk:wid};V()&&V().reg(AG[id])});
 }

@@ -22,7 +22,12 @@ const masked=()=>!!(G.P&&G.P.look&&G.P.look.hat==='mask');
 function rng(seed){let s=seed>>>0;return ()=>{s=(s+0x6D2B79F5)>>>0;let t=Math.imul(s^(s>>>15),1|s);t=(t+Math.imul(t^(t>>>7),61|t))^t;return ((t^(t>>>14))>>>0)/4294967296}}
 /* =================== wie woont waar =================== */
 const ZN={west:'Westbuurt',noord:'Noordkant',strand:'Boulevard',centrum:'Centrum',plein:'Het Plein',haven:'De Haven',zuidas:'Zuidas',oost:'Oostland'};
-const zoneAt=(x,z)=>{try{const w=G.wijk&&G.wijk.at(x,z);return w?w.id:'oost'}catch(e){return 'oost'}};
+// een van de zeven wijken, of 'oost' (Oostland, over het havenkanaal); de rest (haven-industrie, Oosterstraat, Het Eiland) is van niemand
+const zoneAt=(x,z)=>{try{const w=G.wijk&&G.wijk.at(x,z);return w?w.id:M.estateAt(x,z)?'oost':null}catch(e){return M.estateAt(x,z)?'oost':null}};
+// per zone het gebied waarin we een thuisplek zoeken (eenmalig uitgerekend)
+let ZBOX=null;
+function zoneBox(zn){if(!ZBOX&&G.wijk){ZBOX={};for(let z=2;z<M.H;z+=4)for(let x=2;x<M.W;x+=4){const k=zoneAt(x,z);if(!k)continue;const b=ZBOX[k]||(ZBOX[k]={x0:x,z0:z,x1:x,z1:z});if(x<b.x0)b.x0=x;if(x>b.x1)b.x1=x;if(z<b.z0)b.z0=z;if(z>b.z1)b.z1=z}}
+  return (ZBOX&&ZBOX[zn])||{x0:12,z0:12,x1:M.W-12,z1:M.H-12}}
 // beroep: naam, soort mens, kleding, gunst
 const JOB={bakker:['Bakker','burger','schort','eten'],kok:['Kok','burger','schort','eten'],zuster:['Verpleegkundige','burger','blouse','zorg'],arts:['Huisarts','zakenman','pak','zorg'],
   taxi:['Taxichauffeur','burger','leer','rit'],monteur:['Automonteur','burger','werk','monteur'],haven:['Havenwerker','burger','werk','tip'],advocaat:['Advocaat','zakenman','pak','alibi'],
@@ -226,7 +231,7 @@ function assign(n){if(n.arch==='agent'){G.smeer&&G.smeer.patrol&&G.smeer.patrol(
   let tot=0;const W=L.map(p=>{const w=val(p.id)>=10?2.5:1;tot+=w;return w});let q=Math.random()*tot,p=L[0];for(let i=0;i<L.length;i++){q-=W[i];if(q<=0){p=L[i];break}}become(n,p)}
 const i0=G.npcInit;G.npcInit=function(n){const had=!!n.arch;i0&&i0(n);if(had||n.fixed)return;try{assign(n)}catch(e){}};
 // een vaste plek per bewoner (voor 'Route' in de telefoon)
-function homeOf(p){if(p.home)return p.home;const r=rng(p.seed^0x9e37);for(let i=0;i<400;i++){const x=12+r()*(M.W-24),z=12+r()*(M.H-24);if(zoneAt(x,z)!==p.zone)continue;const t=M.ground[(z|0)*M.W+(x|0)];if(t!==M.T.WALK&&t!==M.T.PLAZA)continue;if(!M.canStand(x,z,.4))continue;const xi=x|0,zi=z|0,rd=(a,b)=>{const t=M.ground[(zi+b)*M.W+xi+a];return t===M.T.ROAD};if(i<320&&!(rd(2,0)||rd(-2,0)||rd(0,2)||rd(0,-2)||rd(3,0)||rd(-3,0)||rd(0,3)||rd(0,-3)))continue;return p.home={x,z}}
+function homeOf(p){if(p.home)return p.home;const r=rng(p.seed^0x9e37),bb=zoneBox(p.zone);for(let i=0;i<400;i++){const x=bb.x0+r()*(bb.x1-bb.x0),z=bb.z0+r()*(bb.z1-bb.z0);if(zoneAt(x,z)!==p.zone)continue;const t=M.ground[(z|0)*M.W+(x|0)];if(t!==M.T.WALK&&t!==M.T.PLAZA)continue;if(!M.canStand(x,z,.4))continue;const xi=x|0,zi=z|0,rd=(a,b)=>{const t=M.ground[(zi+b)*M.W+xi+a];return t===M.T.ROAD};if(i<320&&!(rd(2,0)||rd(-2,0)||rd(0,2)||rd(0,-2)||rd(3,0)||rd(-3,0)||rd(0,3)||rd(0,-3)))continue;return p.home={x,z}}
   return p.home={x:M.spawn.x,z:M.spawn.z}}
 function zoek(id){const P=REG[id];if(!P)return;const n=plaats(id);if(!n)return;if(!n.fixed&&n.dur>300&&!(vraagOn()&&VQ().id===id))n.dur=300;G.setWaypoint&&G.setWaypoint(n.x,n.z,P.nm)}
 /* =================== herkennen, groeten, bang zijn =================== */

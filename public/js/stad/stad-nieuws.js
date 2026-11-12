@@ -76,7 +76,8 @@ function render(scr,head){const L=NW(),Q=ST(),f=faam();Q.u=0;const lead=L[0],d=n
     if(named&&K.face)K.face({skin:P.skin,hair:P.hair,top:P.top,hat:P.hat==='mask'?'none':P.hat,hatC:P.hatC,bg:'#cfc8b8'},lead.m==='m'?'boos':'blij',c);
     else if(K.face)K.face({skin:'#2a2c30',hair:'#1a1b1e',top:'#1a1b1e',hs:'kort',bg:'#cfc8b8',eye:'#2a2c30',lip:'#2a2c30'},null,c)}sv()}
 /* ---------- krantenbakken op straat ---------- */
-const BAK=[[224.5,121],[150,152],[279,118],[84,152],[326,152],[150,226]];
+// het plein, het Centrum (bij het politiebureau), de Zuidas, de Westbuurt (bij de sportschool), de haven en de boulevard
+const BAK=[['plein',-8,2],['politie',-9,1.2],['zuidas',8,0],['gym',-9,0],['havenloods',-14,1.4],['boulevard',10,0]].map(([k,dx,dz])=>[M.A[k].x+dx,M.A[k].z+dz]);
 function setup(){BAK.forEach(([x,z])=>{const p=M.nearestWalk(x,z,6);if(!p)return;const m=K.model([[.7,1.1,.5,0,.55,0,'#2f5d9a'],[.74,.1,.54,0,1.14,0,'#1f3f6a'],[.5,.5,.04,0,.72,.26,'#f1efe9'],[.4,.06,.05,0,.86,.27,'#111214'],[.4,.04,.05,0,.74,.27,'#8a8f98'],[.4,.04,.05,0,.66,.27,'#8a8f98'],[.12,.3,.12,-.24,.15,-.14,'#1d1d1f'],[.12,.3,.12,.24,.15,-.14,'#1d1d1f']]);
     m.position.set(p.x,0,p.z);G.scene().add(m);const q=M.nearestWalk(p.x,p.z+.9,2)||p;
     G.spot&&G.spot({k:'krant',x:q.x,z:q.z,r:1.8,n:'Krant lezen',sub:'De Grachtenbode',col:'#a9dcff',h:1.9,act:()=>G.phone&&G.phone.open('nieuws'),map:{n:'Krantenbak',ic:K.ic.krant,c:'#a9dcff',pri:0}})})}

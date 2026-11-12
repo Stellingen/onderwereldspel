@@ -22,13 +22,13 @@ const zS=k=>G.schaal?G.schaal.zwart(k):Math.round(50*k);
 const fl=(t,x,z,c)=>G.fx2&&G.fx2.float(t,x,z,c);
 const REQ=40;
 const WIJK=[
- {id:'west',n:'Westbuurt',d:['Westbuurt','Westkust'],c:[74.5,160],baas:'Dikke Dries',lv:1,col:'#3fe395',look:{top:'#2f5d3a',pants:'#1d1d1f',hat:'beanie',hatC:'#151517',beard:1}},
- {id:'noord',n:'Noordkant',d:['Villapark','Noorderpark','Noordkade','De Bajes'],c:[140,24],baas:'Lange Loes',lv:2,col:'#7fd1c7',look:{top:'#2f6a8a',pants:'#151517',hat:'none',hair:'#c9a24a',long:1}},
- {id:'strand',n:'Boulevard',d:['Boulevard','Het Strand'],c:[70,227],baas:'Surf-Sjors',lv:2,col:'#ffd166',look:{top:'#f0b23a',arm:'skin',pants:'#3a5a8a',hat:'cap',hatC:'#e8584a',hair:'#c9a24a'}},
- {id:'centrum',n:'Centrum',d:['Centrum','De Gracht'],c:[135.5,165],baas:'Kale Karel',lv:3,col:'#b8a1ff',look:{top:'#3a2a4a',pants:'#1d1d1f',hat:'bald',chain:1}},
- {id:'plein',n:'Het Plein',d:['Het Plein','Oud-Zuid'],c:[229,186.5],baas:'Mooie Mo',lv:4,col:'#ff7fb3',look:{top:'#e8e4da',pants:'#2a2c30',hat:'hat',hatC:'#e8e4da',hair:'#151517',chain:1}},
- {id:'haven',n:'De Haven',d:['De Haven','Havenkanaal'],c:[332,180],baas:'IJzeren Inge',lv:5,col:'#ff7a1a',look:{top:'#5a5d63',pants:'#2a2c30',hat:'beanie',hatC:'#ff7a1a',hair:'#8a2f1a'}},
- {id:'zuidas',n:'Zuidas',d:['Zuidas'],c:[279,93.5],baas:'De Advocaat',lv:6,col:'#3ad6ff',look:{top:'#1f2430',pants:'#1f2430',hat:'none',hair:'#8a8c90',tie:'#c9a227',glasses:1}}];
+ {id:'west',n:'Westbuurt',d:['Westbuurt','Westkust'],c:[62,248],baas:'Dikke Dries',lv:1,col:'#3fe395',look:{top:'#2f5d3a',pants:'#1d1d1f',hat:'beanie',hatC:'#151517',beard:1}},
+ {id:'noord',n:'Noordkant',d:['Villapark','Noorderpark','Noordkade','De Bajes'],c:[300,140],baas:'Lange Loes',lv:2,col:'#7fd1c7',look:{top:'#2f6a8a',pants:'#151517',hat:'none',hair:'#c9a24a',long:1}},
+ {id:'strand',n:'Boulevard',d:['Boulevard','Het Strand'],c:[180,523],baas:'Surf-Sjors',lv:2,col:'#ffd166',look:{top:'#f0b23a',arm:'skin',pants:'#3a5a8a',hat:'cap',hatC:'#e8584a',hair:'#c9a24a'}},
+ {id:'centrum',n:'Centrum',d:['Centrum','De Gracht'],c:[328,345],baas:'Kale Karel',lv:3,col:'#b8a1ff',look:{top:'#3a2a4a',pants:'#1d1d1f',hat:'bald',chain:1}},
+ {id:'plein',n:'Het Plein',d:['Het Plein','Oud-Zuid'],c:[414,388],baas:'Mooie Mo',lv:4,col:'#ff7fb3',look:{top:'#e8e4da',pants:'#2a2c30',hat:'hat',hatC:'#e8e4da',hair:'#151517',chain:1}},
+ {id:'haven',n:'De Haven',d:['De Haven','Havenkanaal'],c:[535,32],baas:'IJzeren Inge',lv:5,col:'#ff7a1a',look:{top:'#5a5d63',pants:'#2a2c30',hat:'beanie',hatC:'#ff7a1a',hair:'#8a2f1a'}},
+ {id:'zuidas',n:'Zuidas',d:['Zuidas'],c:[520,302],baas:'De Advocaat',lv:6,col:'#3ad6ff',look:{top:'#1f2430',pants:'#1f2430',hat:'none',hair:'#8a8c90',tie:'#c9a227',glasses:1}}];
 const byD={};WIJK.forEach(w=>w.d.forEach(d=>byD[d]=w));
 const wijkAt=(x,z)=>byD[M.districtAt(x,z)]||null;
 const st=w=>{const W=obj('stadWijk',{});if(!W[w.id]||typeof W[w.id]!=='object')W[w.id]={};const s=W[w.id];if(!s.col)s.col={};if(!s.tags)s.tags={};return s};
@@ -45,7 +45,7 @@ async function fight(n,o){if(fighting||!G.mini)return null;fighting=true;const P
   const a=Math.atan2(P.x-n.x,P.z-n.z),q=M.nearestWalk(n.x+Math.sin(a)*1.7,n.z+Math.cos(a)*1.7,2);if(q&&Math.hypot(q.x-P.x,q.z-P.z)<6){P.x=q.x;P.z=q.z}P.vx=P.vz=0;P.ry=Math.atan2(n.x-P.x,n.z-P.z);
   const prev=n.st;n.st='duel';n.duel='klaar';n.t=0;G.pose='klaar';G.poseLock=true;G.camK=.62;G.camOff={x:(n.x-P.x)/2,z:(n.z-P.z)/2};G.lookAt=n;let side=0;
   const flash=(k,ms)=>{n.duel=k;setTimeout(()=>{if(n.st==='duel'&&n.duel===k)n.duel='klaar'},ms||260)},pose=(k,ms)=>{G.pose=k;setTimeout(()=>{if(G.pose===k&&fighting)G.pose='klaar'},ms||220)};
-  const r=await G.mini.vecht({name:o.name||n.nm,short:(o.name||n.nm).split(' ').pop(),sub:o.sub||'Ontwijk de klap, sla dan terug',hp:o.hp,dmg:o.dmg,win:o.win,block:o.block,pow:power(),on:ev=>{
+  const r=await G.mini.vecht({name:o.name||n.nm,short:(o.name||n.nm).split(' ').pop(),sub:o.sub||'Ontwijk de klap, sla dan terug',hp:o.hp,dmg:o.dmg,win:o.win,block:o.block,pow:power(),vak:'vecht',on:ev=>{
     if(ev==='jab'||ev==='crit'){side^=1;pose(side?'slaL':'slaR',200);flash('au',240);G.fx2&&G.fx2.burst(n.x,1.5,n.z,ev==='crit'?'#ffd35a':'#f1efe9',ev==='crit'?7:3);G.snd&&G.snd.fx('punch')}
     else if(ev==='blok'){side^=1;pose(side?'slaL':'slaR',200);flash('blok',300)}
     else if(ev.startsWith('tele')){n.duel='tele'}
@@ -84,7 +84,7 @@ function setupTags(){const per={};M.props.forEach((p,i)=>{if(p.k!=='graffiti')re
 function tagShow(){const d=dayN();TAGS.forEach(t=>{const v=st(t.w).tags[t.i];const on=v!=null&&d-v<4;if(on&&!t.m.material.map){if(!tagTex)tagTex={};const key=t.w.col;t.m.material.map=tagTex[key]||(tagTex[key]=myTagTex(key));t.m.material.needsUpdate=true}t.m.visible=on})}
 async function tag(t){if(G.driving||G.talking||(G.mini&&G.mini.active()))return;if(G.police&&G.police.active()){G.toast('Niet nu: de politie zit achter je aan','bad');return}if(S.energy<2){G.toast('Te moe: 2 energie nodig','bad');return}
   S.energy-=2;sv();const P=G.P;G.stopPath&&G.stopPath();P.ry=Math.atan2(t.wx-P.x,t.wz-P.z);G.pose='spuit';G.poseLock=true;
-  const r=await G.mini.timing({title:'Tag zetten',sub:'Druk als het streepje in het groen staat',n:3,w:.2+.02*perk('vingers'),sp:1.35,allow:1,label:'Spuit!',hit:()=>{G.snd&&G.snd.fx('spray');G.fx2&&G.fx2.burst(t.wx,1.5,t.wz,t.w.col,4)}});
+  const r=await G.mini.timing({title:'Tag zetten',sub:'Druk als het streepje in het groen staat',n:3,w:.2+.02*perk('vingers'),sp:1.35,allow:1,label:'Spuit!',vak:'tag',hit:()=>{G.snd&&G.snd.fx('spray');G.fx2&&G.fx2.burst(t.wx,1.5,t.wz,t.w.col,4)}});
   G.pose=null;G.poseLock=false;if(r==='cancel')return;
   if(!r.ok){G.toast('Verknoeid. De verf druipt van de muur.','bad');G.snd&&G.snd.fx('bad');return}
   st(t.w).tags[t.i]=dayN();st(t.w).seen=dayN();tagShow();G.rep&&G.rep.add(t.x,t.z,7);G.ev&&G.ev('tag');if(typeof addXp==='function')addXp(2);G.snd&&G.snd.fx('ok');fl('Jouw tag · '+t.w.n,P.x,P.z,t.w.col);sv();
@@ -103,7 +103,7 @@ function setupShops(){let ni=0;WIJK.forEach(w=>{const L=M.buildings.filter(b=>!b
 const due=s=>own(s.w)&&st(s.w).col[s.i]!==dayN();
 const pay=()=>Math.max(5,Math.round(zS(.5)*(1+.15*perk('incasso'))/5)*5);
 async function collect(s){if(!due(s)||G.driving||(G.mini&&G.mini.active()))return;if(S.energy<1){G.toast('Te moe','bad');return}if(G.police&&G.police.active()){G.toast('Niet nu','bad');return}
-  G.stopPath&&G.stopPath();G.pose='pak';const r=await G.mini.hold({label:'Beschermgeld ophalen',d:1.3,wait:2.5,can:()=>Math.hypot(s.x-G.P.x,s.z-G.P.z)<2.8&&G.pose==='pak'});if(G.pose==='pak')G.pose=null;if(r!=='ok'||!due(s))return;
+  G.stopPath&&G.stopPath();G.pose='pak';const r=await G.mini.hold({label:'Beschermgeld ophalen',vak:'bescherm',d:1.3,wait:2.5,can:()=>Math.hypot(s.x-G.P.x,s.z-G.P.z)<2.8&&G.pose==='pak'});if(G.pose==='pak')G.pose=null;if(r!=='ok'||!due(s))return;
   const g=pay(),W=st(s.w);S.energy-=1;W.col[s.i]=dayN();W.seen=dayN();S.cash+=g;if(typeof addZwart==='function')addZwart(g);if(typeof addHeat==='function')addHeat(1);G.ev&&G.ev('bescherm');G.snd&&G.snd.fx('cash');fl('+'+fmt(g)+' · '+s.n,s.x,s.z,'#ffd35a');
   G.zeg&&G.zeg(pick(['Zo. Tot morgen.','Netjes op tijd.','Dank u vriendelijk.']));if(typeof log==='function')log('Beschermgeld in '+s.w.n+': '+s.n+' betaalt '+fmt(g),'ok');sv();
   if(SHOPS.filter(o=>o.w===s.w).every(o=>!due(o)))G.toast(s.w.n+': alles opgehaald voor vandaag','ok')}
@@ -148,7 +148,8 @@ async function kooi(n){const Q=kS(),i=Q.n,F=KOOI[i];S.energy-=4;S.cash-=kooiFee(
   if(r.ok){const g=kooiPrize(i);S.cash+=g;if(typeof addZwart==='function')addZwart(g);Q.n=i+1;Q.top=Math.max(Q.top||0,i+1);Q.tot=(Q.tot||0)+1;if(typeof addXp==='function')addXp(6+4*i);G.ev&&G.ev('knok');G.ev&&G.ev('kooi');G.snd&&G.snd.fx('cash');fl('+'+fmt(g),n.x,n.z,'#ffd35a');
     if(Q.n>=KOOI.length){G.ev&&G.ev('kampioen');G.toast('Kampioen van De Kooi! Alle vijf verslagen.','lvl')}sv();setTimeout(()=>{kooiLook(n);n.st='stand';n.t=0},2400)}
   else{G.toast(r.cancel?'Je stapt uit de ring. Je inleg ben je kwijt.':F[0]+' wint. Je inleg ben je kwijt.','bad');setTimeout(()=>{n.st='stand';n.t=0},700)}}
-function setupKooi(){const p=M.nearestWalk(311.5,182,8);if(!p)return;const n=G.addFixed('vechter',p.x,p.z,-Math.PI/2);kooiN=n;kooiLook(n);
+// De Kooi: op de kade achter de hangar in De Haven (de ring en het bord staan oostelijk van de vechter)
+function setupKooi(){const p=M.nearestWalk(553,92,8);if(!p)return;const n=G.addFixed('vechter',p.x,p.z,-Math.PI/2);kooiN=n;kooiLook(n);
   const m=K.model([[.2,2.6,.2,-1.6,1.3,0,'#2a2c30'],[.2,2.6,.2,1.6,1.3,0,'#2a2c30'],[3.4,.9,.12,0,2.5,0,'#111214'],[3.0,.5,.14,0,2.5,.02,'#ff3d52',1],[.3,.3,.3,-1.6,2.75,0,'#ffd35a',1],[.3,.3,.3,1.6,2.75,0,'#ffd35a',1]]);m.position.set(p.x+2.4,0,p.z);m.rotation.y=Math.PI/2;G.scene().add(m);
   const sg=K.sign('DE KOOI','#ffffff','#b0221e','#111111',.7);sg.position.set(p.x+2.3,2.5,p.z);sg.rotation.y=-Math.PI/2;G.scene().add(sg);
   G.spot({k:'kooi',x:n.x,z:n.z,r:0,n:'Vechtclub De Kooi',dot:'#ff3d52',dotR:80,map:{n:'Vechtclub De Kooi',ic:K.ic.vuist,c:'#ff3d52',pri:2}})}

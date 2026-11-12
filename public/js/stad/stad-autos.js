@@ -24,12 +24,12 @@ const PAL=['#c9cfd6','#8a929c','#3a5fa8','#b8333a','#e6e1d6','#2f6b4a','#d8a23a'
 const hexRgb=h=>{const n=parseInt(String(h).slice(1),16);return [n>>16&255,n>>8&255,n&255]};
 const qcol=c=>{if(!/^#[0-9a-f]{6}$/i.test(c||''))return '#8a929c';const a=hexRgb(c);let b=PAL[0],bd=1e9;PAL.forEach(p=>{const q=hexRgb(p),d=(a[0]-q[0])**2+(a[1]-q[1])**2+(a[2]-q[2])**2;if(d<bd){bd=d;b=p}});return b};
 /* ---------- welk model staat er ---------- */
-function boostAt(x,z){const d=M.districtAt(x,z);return /Zuidas|IJ-oever|Villawijk/.test(d)?3:/Centrum|Plein|Oosterstraat/.test(d)?1.6:/Westbuurt|Haven|Tuinwijk/.test(d)?.6:1}
+function boostAt(x,z){const d=M.districtAt(x,z);return /Zuidas|IJ-oever|Villawijk|Eiland/.test(d)?3:/Centrum|Plein|Oosterstraat|Villapark|Oud-Zuid/.test(d)?1.6:/Westbuurt|Haven|Tuinwijk|Bedrijventerrein/.test(d)?.6:1}
 function rollModel(x,z){if(typeof pickCar!=='function'||typeof findTier!=='function'||typeof CARS==='undefined')return null;
   for(let i=0;i<6;i++){const m=pickCar(findTier(),boostAt(x,z));if(m)return m}return CARS[0]}
 function carData(m,spot){try{return spawnCar(m,spot)}catch(e){return {id:m.id,spot,year:2018,km:60000,staat:'Goed',v:Math.round((m.lo+m.hi)/2),c:'#8a929c',plate:'XX-000-X'}}}
 // verkeer: ook echte modellen (zie stad-cars.js)
-G.trafModel=function(A){const m=rollModel(A?A.x:200,A?A.z:120);if(!m)return null;const x=carData(m,'In het verkeer');x.c=qcol(x.c);return {m,x}};
+G.trafModel=function(A){const m=rollModel(A?A.x:M.A.pleinMid.x,A?A.z:M.A.pleinMid.z);if(!m)return null;const x=carData(m,'In het verkeer');x.c=qcol(x.c);return {m,x}};
 /* ---------- geparkeerde auto's ---------- */
 const PK=[];G.parked=PK;
 const LOOT=[['Laptoptas',1.3],['Navigatiesysteem',.8],['Zonnebril',.4],['Gereedschapskist',.7],['Sporttas',.5],['Pakket van een webshop',.7],['Golftas',1.6],['Dashcam',.6],['Designerjas',1.1],['Kinderzitje',.08]];
@@ -131,7 +131,7 @@ function search(p){const c=kraakRef(),t=tierOf(p.m),k=(typeof lootMult==='functi
   setTimeout(()=>{if(dist(p,G.P)<3.5&&!G.driving)carMenu(p)},500)}
 /* ---------- kortsluiten en wegrijden ---------- */
 async function hotwire(p){const why=stealWhy(p);if(why){G.toast(why,'bad');return}const m=p.m,en=typeof carEn==='function'?carEn(m):6;S.energy-=en;S.cd=S.cd||{};S.cd.car=now()+(typeof carCd==='function'?carCd():30000);sv();
-  let r;if(G.kraak){const k=await G.kraak.draad({d:Math.min(1,.15+.18*(p.sec||0)+.08*(tierOf(m)-1)),title:'Kortsluiten · '+m.n});r=k==='cancel'?'cancel':k&&k.ok?'ok':'fail'}else r=await gameWire(p);if(r==='cancel'){G.toast('Je laat de draadjes hangen','info');return}
+  let r;if(G.kraak){const k=await G.kraak.draad({d:Math.min(1,.15+.18*(p.sec||0)+.08*(tierOf(m)-1)),title:'Kortsluiten · '+m.n,vak:'kortsluit'});r=k==='cancel'?'cancel':k&&k.ok?'ok':'fail'}else r=await gameWire(p);if(r==='cancel'){G.toast('Je laat de draadjes hangen','info');return}
   if(r!=='ok'){if(p.sec)alarm(p,'autodiefstal');G.toast('Kortsluiten mislukt: de motor slaat niet aan','bad');p.wireFail=(p.wireFail||0)+1;return}
   G.snd&&G.snd.fx('engineStart');steal(p.mesh,p.m,p.data,p.kind,{sec:p.sec,x:p.x,z:p.z,ry:p.ry,src:'straat'});p.st='gestolen';const i=PK.indexOf(p);if(i>=0)PK.splice(i,1)}
 function steal(mesh,m,data,kind,o){const t=tierOf(m),v={d:{name:m.n,max:16+t*3.4,col:data.c,kind},x:o.x,z:o.z,ry:o.ry,v:0,mesh,stolen:{m,data,sec:o.sec,src:o.src,t0:performance.now(),rep:o.rep?1:0},dmg:0};
@@ -160,9 +160,11 @@ async function jack(c){const w=jackWhy();if(w){G.toast(w,'bad');return}S.energy-
 const units=id=>typeof bizUnits==='function'?bizUnits(id):[];
 function points(){const v=G.driving&&G.car&&G.car.stolen?G.car:null;if(!v)return [];const m=v.stolen.m,out=[];
   const gar=M.placeById('cars');out.push({k:'garage',x:gar.door.x,z:gar.door.z,n:'Garage Van der Plaat',t:'In je garage zetten'});
-  const hn=G.NPC.find(n=>n.arch==='heler'&&n.x>250);let o=null;try{o=typeof helerWants==='function'?helerWants(m.id):null}catch(e){}
+  const hn=G.helerContact||G.NPC.find(n=>n.arch==='heler'&&n.contact);let o=null;try{o=typeof helerWants==='function'?helerWants(m.id):null}catch(e){}
   let any=0;try{any=HELER_LV[helerLv()].any||0}catch(e){}
-  if(hn&&(o||any))out.push({k:'heler',x:hn.x+3,z:hn.z,n:'Ome Henk (heler)',t:o?'Afleveren bij de heler · ×'+String(o.k).replace('.',','):'Aan de heler verkopen · ×'+String(any).replace('.',','),o});
+  // afleveren op straat voor Ome Henk (hij kijkt naar de weg)
+  const hry=hn&&hn.home?hn.home.ry:-Math.PI/2;
+  if(hn&&(o||any))out.push({k:'heler',x:hn.x+Math.sin(hry)*5,z:hn.z+Math.cos(hry)*5,n:'Ome Henk (heler)',t:o?'Afleveren bij de heler · ×'+String(o.k).replace('.',','):'Aan de heler verkopen · ×'+String(any).replace('.',','),o});
   const sl=M.placeById('sloop');out.push({k:'sloop',x:sl.door.x,z:sl.door.z,n:'Autokerkhof De Sloop',t:S.sloop?'Slopen voor onderdelen':'Autokerkhof (nog niet van jou)'});
   const ch=M.placeById('biz_garage');if(ch&&units('garage').length)out.push({k:'chop',x:ch.door.x,z:ch.door.z,n:'Jouw chop shop',t:'Slopen in je eigen chop shop'});
   return out}

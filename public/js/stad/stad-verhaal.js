@@ -108,12 +108,12 @@ const MIS=[
  {id:'l2',g:'lin',n:'De Onderbank',k:14,xp:120,need:['l1'],
   intro:['Vannacht. De kluis van de Onderbank. Daar ligt het geld van de Slang.','Steel een snelle auto, kraak de kluis, pak wat je dragen kunt en kom naar mijn jacht op de pier. Niet stoppen.'],
   out:'Dat ging de krant halen, en de Slang is blut. Welkom bij de familie.',
-  steps:[{t:'car',at:[244,94],col:'#151517',kind:'sport',name:'Zwarte Porsche',wire:.6,txt:'Steel de <b>zwarte Porsche</b> bij het casino'},
-   {t:'drive',p:[154,84],r:5,txt:'Rij naar de <b>Onderbank</b>'},
-   {t:'mini',p:[154,77.5],game:'kluis',d:.75,act:'Kluis kraken',txt:'Kraak de <b>kluis</b>',timer:90},
-   {t:'loot',pts:[[151,78.5],[157,78.5],[154,79.5]],kind:'cash',txt:'Pak de <b>geldzakken</b>'},
+  steps:[{t:'car',at:A('casinoPlein',12,10),col:'#151517',kind:'sport',name:'Zwarte Porsche',wire:.6,txt:'Steel de <b>zwarte Porsche</b> bij het casino'},
+   {t:'drive',p:[M.A.bank.x,M.ZS[3]-M.RW+2],r:6,txt:'Rij naar de <b>Onderbank</b>'},
+   {t:'mini',p:A('bank',0,.6),game:'kluis',d:.75,act:'Kluis kraken',txt:'Kraak de <b>kluis</b>',timer:90},
+   {t:'loot',pts:[A('bank',-3,1.6),A('bank',3,1.6),A('bank',0,2.8)],kind:'cash',txt:'Pak de <b>geldzakken</b>'},
    {t:'wanted',stars:3,why:'bankoverval',until:'drive',txt:'Naar de auto en <b>weg hier</b>!'},
-   {t:'drive',p:[358,108],r:6,txt:'Naar het <b>jacht van Lin</b> op de pier',keepWanted:1},
+   {t:'drive',p:A('jacht',0,6),r:7,txt:'Naar het <b>jacht van Lin</b> op de pier',keepWanted:1},
    {t:'wanted',stars:0,txt:'<b>Schud de politie af</b>'}]}];
 const byId=id=>MIS.find(m=>m.id===id);
 const avail=g=>MIS.filter(m=>m.g===g&&!done(m.id)&&(m.need||[]).every(done));
@@ -208,15 +208,15 @@ function target(){const R=RUN,s=R&&R.s;if(!s)return null;if(s.t==='car')return s
 function route(){const p=target();if(!p){G.missionPath=null;return}G.missionPath=M.findPath(G.P.x,G.P.z,p.x,p.z)}
 /* spots voor de stap (actieknop bij een plek of de auto) */
 let SPT=null;function spotOn(o){spotOff();o.mis=1;o.drive=false;SPT=G.spot(o)}function spotOff(){if(SPT){G.unspot&&G.unspot(SPT);SPT=null}}
-async function carUse(s){if(s.busy||G.driving)return;const R=RUN;if(!R.car.wired){s.busy=1;const r=await G.kraak.draad({d:s.wire,title:'Kortsluiten · '+s.name});s.busy=0;if(!RUN||RUN!==R)return;
+async function carUse(s){if(s.busy||G.driving)return;const R=RUN;if(!R.car.wired){s.busy=1;const r=await G.kraak.draad({d:s.wire,title:'Kortsluiten · '+s.name,vak:'kortsluit'});s.busy=0;if(!RUN||RUN!==R)return;
     if(r==='cancel')return;if(!r.ok){G.toast('De motor slaat niet aan. Nog een keer.','bad');G.police&&Math.random()<.35&&G.police.report(G.P.x,G.P.z,{why:'autodiefstal',stars:1});return}R.car.wired=true}
   G.snd&&G.snd.fx('engineStart');G.enterCar(s.v)}
 async function miniUse(s){if(s.busy||!RUN)return;const R=RUN;s.busy=1;let r;
   if(s.game==='timing')r=await G.mini.timing(Object.assign({allow:1},s.o||{}));
   else if(s.game==='hold')r=await G.mini.hold({d:s.d||2,label:s.act});
-  else if(s.game==='kluis')r=await G.kraak.kluis({d:s.d});
-  else if(s.game==='slot')r=await G.kraak.slot({d:s.d});
-  else if(s.game==='draad')r=await G.kraak.draad({d:s.d});
+  else if(s.game==='kluis')r=await G.kraak.kluis({d:s.d,vak:'kluis'});
+  else if(s.game==='slot')r=await G.kraak.slot({d:s.d,vak:'inbraak'});
+  else if(s.game==='draad')r=await G.kraak.draad({d:s.d,vak:'kortsluit'});
   s.busy=0;if(RUN!==R)return;if(r==='cancel'||r==null)return;
   if(r===true||r.ok||r==='ok'){G.ev&&G.ev('kraak');next()}
   else{s.tries=(s.tries||0)+1;if(R.guards.length&&s.game!=='timing'){R.gsus=1;fail('Het ging mis en de bewaking hoorde je');return}G.toast(s.tries>2?'Nog één keer, anders is het voorbij':'Mis. Probeer het opnieuw','bad');if(s.tries>3)fail('Het lukte niet')}}
@@ -267,7 +267,7 @@ function step(dt){const R=RUN;if(!R)return;const P=G.P,s=R.s;if(!s)return;R.t+=d
     R.prog=1-s.left.length/s.pts.length;if(!s.left.length){next();return}break}
   case 'talk':{const d=dist(P,s.a);s.a.sp=0;s.a.ry=Math.atan2(P.x-s.a.x,P.z-s.a.z);R.hint=d<3.4?(touch?'Tik om te praten':'Druk op E om te praten'):'';if(s.wantTalk&&d<2.2&&!G.talking&&!G.driving){s.go()}break}
   case 'fight':{const d=dist(P,s.a);if(d>2.2){moveTo(s.a,P.x,P.z,4.6,dt);break}s.a.sp=0;s.wait-=dt;if(s.wait>0||s.busy||G.driving)break;s.busy=1;
-    G.mini.vecht({name:s.name,short:s.name.split(' ').pop(),sub:'Ontwijk de klap, sla dan terug',hp:s.hp,dmg:s.dmg||1,win:s.win||.65,pow:1}).then(r=>{if(RUN!==R)return;s.busy=0;
+    G.mini.vecht({name:s.name,short:s.name.split(' ').pop(),sub:'Ontwijk de klap, sla dan terug',hp:s.hp,dmg:s.dmg||1,win:s.win||.65,pow:1,vak:'vecht'}).then(r=>{if(RUN!==R)return;s.busy=0;
       if(r&&r.ok){G.snd&&G.snd.fx('punch');const nx=R.def.steps[R.i+1];if(!nx||nx.who!==s.who){s.a.flee=2;s.a.fleeTo=snap(s.a.x+rr(-30,30),s.a.z+rr(-30,30))}next()}else if(r==='cancel'){s.wait=2;G.toast('Je kunt niet weglopen. Vechten!','bad')}else fail('Je ging neer')});break}
   case 'run':{const a=s.a;s.left-=dt;R.prog=null;if(s.left<=0){fail('Hij is ontsnapt');return}
     s.rp=(s.rp||0)-dt;if(s.rp<=0&&(!a.fleeTo||a.stuck>.8||dist(a,a.fleeTo)<2||dist(a.fleeTo,P)<8)){s.rp=.6;const ang=Math.atan2(a.x-P.x,a.z-P.z)+rr(-.9,.9);a.fleeTo=snap(a.x+Math.sin(ang)*22,a.z+Math.cos(ang)*22);a.path=M.findPath(a.x,a.z,a.fleeTo.x,a.fleeTo.z)}

@@ -744,7 +744,7 @@ body.sd-focus .sd-joy,body.sd-focus .sd-run,body.sd-focus .sd-prompt,body.sd-foc
 .sd-hd.on .sd-hd-bar{outline-color:#3fe395}
 .sd-ms-t{display:block;height:8px;background:#1b1e24;border:2px solid #000}.sd-ms-t>i{display:block;height:100%;background:#ff7a1a}
 /* ritme, knokken en vissen: groter */
-.sd-stage .sd-rit-tr{height:76px;overflow:visible;outline:2px solid #3a3f49}.sd-stage .sd-rit-tr{overflow:hidden}
+.sd-stage .sd-rit-tr{height:76px;overflow:hidden;outline:2px solid #3a3f49}
 .sd-stage .sd-rit-z{width:64px;margin-left:-32px;border-width:3px}
 .sd-stage .sd-rit-tr b[data-n]{width:52px;height:52px;margin:-26px 0 0 -26px;font-size:28px}
 .sd-stage .sd-rit-tr .sd-pop{left:14%;top:auto;bottom:4px;transform:translate(-50%,0);font-size:20px}

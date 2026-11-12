@@ -52,15 +52,18 @@ const A={
   names:['Rico'],talk:['Kom met een auto, dan praten we.','Mijn rondje centrum staat nog steeds.','Goud haal je alleen met een echte bak.']},
  burger:{n:'Voorbijganger',col:'#a9dcff',wallet:.6,tough:2,call:.45,look:null,names:['Peter','Linda','Ahmed','Marieke','Joost','Fatima','Rik'],
   talk:['Druk vandaag, hè?','Pas op je tas hier, hoor.','Heb je dat nieuws gezien? Weer een overval.','Mooi weer voor de tijd van het jaar.']}};
-const TIPS=['Langs de gracht en in de haven kun je vissen. De visboer op de boulevard koopt alles.','Zwaai eens naar iemand (T). Mensen zwaaien terug.','Snelle Eddy dobbelt in de haven. Hij wint niet altijd.','Heb je respect in een wijk, dan kun je de wijkbaas uitdagen.','Rico zoekt racers bij het plein. Kom met een auto.','In het Noorderpark loopt een zwerfhond rond. Hij zoekt een baas.','Met een bivakmuts op herkent niemand je. Getuigen bellen dan minder snel.','In de stegen tussen de panden kun je je verstoppen achter een container.','\'s Nachts zien minder mensen wat je doet.','De heler bij Het Contact koopt alles wat je op straat vindt.','Bij Notaris De Sleutel koop je grond in Oostland.','Wie de politie belt, kun je nog tegenhouden. Als je snel bent.','Politieauto\'s kunnen niet door de stegen.','Hoe meer respect je in een wijk hebt, hoe minder mensen er de politie bellen.'];
+const TIPS=['Langs de gracht, op de kades in het noorden en op het strand kun je vissen. De visboer op de boulevard koopt alles.','Zwaai eens naar iemand (T). Mensen zwaaien terug.','Snelle Eddy dobbelt op de kade in de haven. Hij wint niet altijd.','Heb je respect in een wijk, dan kun je de wijkbaas uitdagen.','Rico zoekt racers bij het plein. Kom met een auto.','In het Noorderpark loopt een zwerfhond rond. Hij zoekt een baas.','Met een bivakmuts op herkent niemand je. Getuigen bellen dan minder snel.','In de stegen tussen de panden kun je je verstoppen achter een container.','\'s Nachts zien minder mensen wat je doet.','De heler bij Het Contact koopt alles wat je op straat vindt.','Bij Notaris De Sleutel koop je grond in Oostland en op Het Eiland, en panden voor je zaken.','Wie de politie belt, kun je nog tegenhouden. Als je snel bent.','Politieauto\'s kunnen niet door de stegen.','Hoe meer respect je in een wijk hebt, hoe minder mensen er de politie bellen.'];
 // welke soorten waar (en wanneer) lopen
 function archFor(x,z){const d=M.districtAt(x,z),night=G.night>.55,W={burger:3,toerist:1,student:1,oma:.6,zakenman:.4,rivaal:.15,agent:.25,jogger:.2};
-  if(/Noorderpark|Villapark|Westkust|Boulevard|Strand|Gracht/.test(d))W.jogger=1.6;if(G.rain)W.jogger*=.3;
+  if(/Noorderpark|Villapark|Westkust|Boulevard|Strand|Gracht|Eiland/.test(d))W.jogger=1.6;if(G.rain)W.jogger*=.3;
   if(/Plein|Centrum|Gracht/.test(d)){W.toerist=3.5;W.zakenman=.8}
   if(/Zuidas/.test(d)){W.zakenman=4;W.toerist=.6;W.student=.5}
   if(/Westbuurt|Westkust/.test(d)){W.student=2.5;W.oma=1.5;W.rivaal=.7}
-  if(/Haven|Bajes|Noordkade/.test(d)){W.rivaal=1.2;W.toerist=.2;W.oma=.2}
+  if(/Haven|Bajes|Noordkade|IJ-oever|Bedrijventerrein/.test(d)){W.rivaal=1.2;W.toerist=.2;W.oma=.2}
+  if(/IJ-oever|Bedrijventerrein/.test(d))W.zakenman=1.4;
   if(/Strand|Boulevard/.test(d)){W.toerist=3;W.student=1.5}
+  if(/Oosterstraat/.test(d)){W.student=2.2;W.toerist=1.6;W.rivaal=.6;W.oma=.3}
+  if(/Eiland/.test(d)){W.zakenman=2;W.oma=.8;W.toerist=.3;W.student=.2;W.rivaal=.3}
   if(M.estateAt(x,z)){W.zakenman=1.2;W.oma=1;W.rivaal=0;W.toerist=.4}
   if(night){W.oma*=.2;W.toerist*=.6;W.zakenman*=.5;W.rivaal*=2.2;W.student*=1.4;W.jogger*=.3}
   if(G.wijkOwn&&G.wijkOwn(x,z))W.rivaal*=.25;
@@ -75,9 +78,13 @@ G.addFixed=addFixed;
 // iemand van een bepaalde soort op een plek zetten (voor gebeurtenissen)
 G.npcMake=function(arch,x,z){const n=G.spawnNpc(false),p=M.nearestWalk(x,z,6)||{x,z},a=A[arch]||A.burger;n.x=p.x;n.z=p.z;n.arch=A[arch]?arch:'burger';n.look=lookFor(n.arch,null)||n.look;n.v=a.v?rr(a.v[0],a.v[1]):1.3;n.run=a.run?1:0;n.nm=pick(a.names);n.st='walk';n.t=0;n.klant=null;n.rid=null;n.aid=null;n.robbed=n.picked=0;G.NPC.push(n);return n};
 G.npcRemove=function(n){const i=G.NPC.indexOf(n);if(i>=0)G.NPC.splice(i,1)};
-function setupFixed(){const addFixed=G.addFixed;addFixed('muzikant',223.5,111.5,Math.PI);addFixed('heler',300.5,108.5,-Math.PI/2);
+// de muzikant speelt op Het Plein (kijkt naar het standbeeld), Ome Henk staat naast de deur van Het Contact (n.contact: zo vinden
+// andere onderdelen hem terug), Rooie Ron in een steeg in de Westbuurt
+function setupFixed(){const addFixed=G.addFixed;addFixed('muzikant',418,292,Math.PI);
+  const hp=M.placeById('hits'),hc=hp?hp.door:M.A.contact,f=hp?hp.face:'W',ew=f==='W'||f==='E',hry={W:-Math.PI/2,E:Math.PI/2,N:Math.PI,S:0}[f]||0;
+  const h=addFixed('heler',hc.x+(ew?0:5),hc.z+(ew?5:0),hry);h.nm='Ome Henk';h.contact=1;G.helerContact=h;
   const al=M.alleys.slice().sort((a,b)=>a.cx-b.cx);[al[2],al[Math.floor(al.length/2)],al[al.length-3]].filter(Boolean).forEach(a=>{const ns=a.f==='N'||a.f==='S';addFixed('zwerver',ns?a.x0+.7:a.cx,ns?a.cz:a.z0+.7,ns?Math.PI/2:0)});
-  const ha=al.find(a=>a.cx>60&&a.cx<130);if(ha)addFixed('heler',ha.cx,ha.cz,0)}
+  const wb=al.filter(a=>M.districtAt(a.cx,a.cz)==='Westbuurt'),ha=wb[Math.floor(wb.length/2)];if(ha){const r=addFixed('heler',ha.cx,ha.cz,0);r.nm='Rooie Ron'}}
 /* ---------- tekstwolkjes boven hoofden ---------- */
 const BUB=[];
 function bubbleTex(text,col){const cv=document.createElement('canvas'),c=cv.getContext('2d');c.font='bold 9px monospace';const w=Math.ceil(c.measureText(text).width)+10;cv.width=w;cv.height=17;
@@ -230,7 +237,7 @@ function zakWhy(n){const c=zakRef();if(!c)return 'Kan nu niet';if(typeof inJail=
 async function zakrol(n){const c=zakRef(),why=zakWhy(n);if(why){G.toast(why,'bad');return}const a=A[n.arch];K.closeDialog(true);S.energy-=crEn(c);S.cd=S.cd||{};S.cd.stadZakrol=now()+crimeCd(c);try{save()}catch(e){}
   n.st='hold';n.t=0;n.dur=14;G.pose='pak';G.poseLock=true;G.lookAt=n;
   const w=clamp(.25-.014*a.tough+.0025*skl('steal')+.03*perk('vingers'),.1,.36);
-  const r=await G.mini.timing({title:'Zakkenrollen',sub:'Hij let even niet op. Druk als het streepje in het groen staat.',n:2+(a.tough>2?1:0),w,sp:1.15+.11*a.tough,allow:0,label:'Pak!',tick:()=>dist(n,G.P)<3.4});
+  const r=await G.mini.timing({title:'Zakkenrollen',sub:'Hij let even niet op. Druk als het streepje in het groen staat.',n:2+(a.tough>2?1:0),w,sp:1.15+.11*a.tough,allow:0,label:'Pak!',vak:'zakken',tick:()=>dist(n,G.P)<3.4});
   G.pose=null;G.poseLock=false;G.lookAt=null;
   if(r==='cancel'){n.st='walk';n.t=0;G.toast('Je bedenkt je','info');return}
   if(r.ok){const al=G.alert()||0,g=Math.max(1,Math.floor(rnd(c.min,c.max)*(typeof lootMult==='function'?lootMult():1)*(typeof crLootK==='function'?crLootK(c):1)*a.wallet*.8*(1-al/200)));let item=null;
@@ -245,7 +252,8 @@ async function zakrol(n){const c=zakRef(),why=zakWhy(n);if(why){G.toast(why,'bad
   else{G.toast('Betrapt!','bad');if(Math.random()<a.call){n.st='call';n.t=0;n.callT=rr(2.5,5);n.cx=n.x;n.cz=n.z;n.why='zakkenrollen';n.stars=1;bubble(n,'112!',{col:'#ffd35a'})}else{n.st='flee';n.t=0;n.from=G.P;n.flee=6}}
   crime(n.x,n.z,{victim:n,why:'zakkenrollen',stars:1,rep:0})}
 /* ---------- dealen op straat: de regels van 'Werk en dealen' (act.dlSell), maar je klant staat echt voor je ---------- */
-function buurtAt(x,z){const d=M.districtAt(x,z);if(/Centrum|Plein|Gracht/.test(d))return 'centrum';if(/Oud-Zuid|Zuidas/.test(d))return 'zuid';if(/West/.test(d))return 'west';if(/Noord|Villapark|Bajes/.test(d))return 'noord';if(/Strand|Boulevard/.test(d))return 'pijp';return 'zo'}
+// dealbuurten (ids uit pages/dealen.js): de haven en de industrie horen bij Noord, Het Eiland bij (Oud-)Zuid, de Oosterstraat en Oostland bij Zuidoost
+function buurtAt(x,z){const d=M.districtAt(x,z);if(/Centrum|Plein|Gracht/.test(d))return 'centrum';if(/Oud-Zuid|Zuidas|Eiland/.test(d))return 'zuid';if(/West/.test(d))return 'west';if(/Noord|Villapark|Bajes|De Haven|IJ-oever|Bedrijventerrein/.test(d))return 'noord';if(/Strand|Boulevard/.test(d))return 'pijp';return 'zo'}
 function klantRoll(n){try{if(typeof DRUGS==='undefined'||typeof dlAvail!=='function')return;const p={student:.4,toerist:.32,zakenman:.22,rivaal:.3,burger:.16,zwerver:.2}[n.arch]||0;if(Math.random()<p){const av=dlAvail().filter(g=>g.id!=='kilo');if(av.length)n.klant=pick(av).id}}catch(e){}}
 function dealInfo(n){try{const g=DRUGS.find(x=>x.id===n.klant);if(!g||g.lv>dlLv())return null;const D=dlS(),mo=dlLv()===0,have=mo?dlCap(g):Math.min(dlCap(g),D.stock[g.id]||0);let why='';
     if(typeof inJail==='function'&&inJail())why='Je zit vast';else if(typeof cdLeft==='function'&&cdLeft('deal_'+g.id))why='Even wachten met '+g.n.toLowerCase();else if(S.energy<DL_EN)why='Te moe: '+DL_EN+' energie nodig';else if(have<1)why='Je hebt geen '+g.n.toLowerCase()+' bij je (inkopen bij Havenloods 7)';

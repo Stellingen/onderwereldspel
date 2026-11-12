@@ -98,13 +98,16 @@ let stepN=0;G.onFoot=function(run){stepN++;const P=G.P,t=M.at(Math.floor(P.x),Ma
 /* ---------- dieren ---------- */
 // duiven: groepjes op de grond die opvliegen
 const FL=[];let birdM=null,gullM=null,gullS=null;const BN=72,_o=new TH.Object3D(),_c=new TH.Color();
-const SPOTS_D=[[226,123],[233,116],[221,128],[154,78],[150,18],[60,60],[150,229],[100,229],[54,50],[229,78],[279,140],[20,110],[240,229],[160,14],[448,300]];
+// Het Plein, de pleintjes voor de bank, het casino en het politiebureau, het Noorderpark, de Westkust, de gracht, de boulevard,
+// het parkje in de Westbuurt, de Tuinwijk, de noordkade en Het Eiland
+const SPOTS_D=[[425,290],[440,287],[415,270],[285,230],[435,230],[285,300],[300,130],[380,140],[22,350],[349,400],[240,523],[80,205],[755,420],[300,22],[690,630]];
 function setupBirds(){const sc=G.scene();birdM=new TH.InstancedMesh(new TH.BoxGeometry(.26,.2,.42),new TH.MeshLambertMaterial({color:0xffffff}),BN);birdM.castShadow=true;birdM.frustumCulled=false;birdM.instanceMatrix.setUsage(TH.DynamicDrawUsage);sc.add(birdM);
   let k=0;SPOTS_D.forEach(([x,z],fi)=>{const p=M.nearestWalk(x,z,6);if(!p)return;const f={x:p.x,z:p.z,st:'ground',t:0,b:[]};const n=4+Math.floor(Math.random()*3);for(let i=0;i<n&&k<BN;i++,k++)f.b.push({i:k,ox:rr(-1.6,1.6),oz:rr(-1.6,1.6),ry:rr(0,6.28),ph:rr(0,6),col:pick(['#8a929c','#9aa1ab','#6a7078','#c9cfd6','#7a7480'])});FL.push(f)});
   for(let i=0;i<BN;i++){_c.set('#8a929c');birdM.setColorAt(i,_c)}FL.forEach(f=>f.b.forEach(b=>{_c.set(b.col);birdM.setColorAt(b.i,_c)}));birdM.count=k;if(birdM.instanceColor)birdM.instanceColor.needsUpdate=true;
   // meeuwen: vleugels als een brede platte balk, cirkelen boven water
   gullM=new TH.InstancedMesh(new TH.BoxGeometry(1.5,.06,.34),new TH.MeshLambertMaterial({color:0xf4f4f0}),8);gullM.castShadow=true;gullM.frustumCulled=false;gullM.instanceMatrix.setUsage(TH.DynamicDrawUsage);sc.add(gullM);
-  gullS=[[352,60,16],[358,118,13],[366,170,15],[90,244,17],[200,246,14],[150,240,20],[40,238,12],[470,8,12]].map(([x,z,r],i)=>({x,z,r,a:rr(0,6.28),v:rr(.25,.45)*(i%2?1:-1),y:rr(13,20),cry:rr(5,30)}))}
+  // boven de gracht, de zee langs het strand, de noordkust, het havenkanaal en de jachthaven van Het Eiland
+  gullS=[[360,345,7],[200,580,20],[450,575,17],[90,600,14],[420,6,6],[596,260,14],[596,430,13],[776,655,10]].map(([x,z,r],i)=>({x,z,r,a:rr(0,6.28),v:rr(.25,.45)*(i%2?1:-1),y:rr(13,20),cry:rr(5,30)}))}
 function birdStep(dt,ts){const P=G.P;if(!birdM)return;let upd=false;
   for(const f of FL){const d=Math.hypot(f.x-P.x,f.z-P.z);if(d>70){if(f.st!=='ground'){f.st='ground';f.t=0}continue}upd=true;
     if(f.st==='ground'){const sp=Math.hypot(P.vx,P.vz),hd=G.hondPos;if((d<(sp>7||G.driving?5.5:2.9)&&(sp>.5))||(hd&&hd.g.visible&&Math.hypot(f.x-hd.x,f.z-hd.z)<3.4)){f.st='fly';f.t=0;f.b.forEach(b=>{const a=Math.atan2(f.x+b.ox-P.x,f.z+b.oz-P.z)+rr(-.7,.7);b.vx=Math.sin(a)*rr(4,7);b.vz=Math.cos(a)*rr(4,7);b.vy=rr(4,7);b.x=f.x+b.ox;b.z=f.z+b.oz;b.y=.1});if(d<30)G.snd&&G.snd.fx('flutter')}
@@ -118,7 +121,7 @@ function birdStep(dt,ts){const P=G.P;if(!birdM)return;let upd=false;
     g.cry-=dt;if(g.cry<=0){g.cry=rr(9,34);if(G.night<.7&&Math.hypot(x-P.x,z-P.z)<45)G.snd&&G.snd.fx('gull')}});gullM.instanceMatrix.needsUpdate=true}
 // katten: zitten ergens, je kunt ze aaien; ratten: schieten weg
 const CATS=[];let rat=null;
-function setupCats(){const al=M.alleys;const C=[[200.5,70],[182.6,150],[96,228.6],[309.5,40]];[al[1],al[Math.floor(al.length*.4)],al[Math.floor(al.length*.75)]].filter(Boolean).forEach(a=>C.push([a.cx,a.cz]));
+function setupCats(){const al=M.alleys;const C=[[100,232],[369.5,300],[450,97],[700,458]];[al[1],al[Math.floor(al.length*.4)],al[Math.floor(al.length*.75)]].filter(Boolean).forEach(a=>C.push([a.cx,a.cz]));
   C.forEach(([x,z],i)=>{const p=M.nearestWalk(x,z,5);if(!p)return;const col=pick(['#1d1d1f','#d98a3a','#8a8c90','#e8e4da','#5a4030']),m=K.model([[.3,.3,.55,0,.22,0,col],[.28,.26,.26,0,.42,.3,col],[.08,.1,.06,-.09,.59,.34,col],[.08,.1,.06,.09,.59,.34,col],[.07,.07,.4,0,.3,-.42,col],[.05,.04,.02,-.06,.45,.44,'#c8ff6a',1],[.05,.04,.02,.06,.45,.44,'#c8ff6a',1]]);
     m.position.set(p.x,0,p.z);m.rotation.y=rr(0,6.28);G.scene().add(m);const c={x:p.x,z:p.z,hx:p.x,hz:p.z,m,st:'sit',t:0,pet:0};CATS.push(c);
     if(G.spot)c.spot=G.spot({k:'kat',x:p.x,z:p.z,r:1.7,n:'Aaien',col:'#ffb0d0',h:1.1,noRing:1,show:()=>c.st==='sit',act:()=>{if(G.driving||G.talking)return;G.pose='aai';G.P.ry=Math.atan2(c.x-G.P.x,c.z-G.P.z);G.snd&&G.snd.fx('miauw');G.bubble&&G.bubble(c,pick(['Prrr…','Miauw.','Mrrrow.']),{y:1.3,col:'#ffe0ee'});G.fx2&&G.fx2.burst(c.x,.9,c.z,'#ff7fb3',5);
@@ -136,12 +139,16 @@ function catStep(dt,ts){const P=G.P;for(const c of CATS){if(Math.hypot(c.x-P.x,c
   if(G.night>.6&&rat&&!rat.visible&&Math.random()<dt*.05){const h=M.hides.find(h=>h.k==='dumpster'&&Math.hypot(h.x-P.x,h.z-P.z)<7);if(h)G.critter('rat',h.x,h.z)}}
 // boten op zee
 const BOATS=[];
-function setupBoats(){[[20,266,1,5.5,'#e8e4da','#c0261e'],[330,278,-1,8,'#2f5d9a','#f1efe9']].forEach(([x,z,dir,v,c1,c2],i)=>{const m=K.model(i?[[2.4,.9,7,0,-.2,0,c1],[1.8,1.1,2.6,0,.75,-.8,c2],[1.6,.5,1.2,0,1.5,-.8,'#24323f'],[.3,.3,.3,0,.5,3.2,'#fff3c8',1]]:[[2,.7,5.5,0,-.25,0,c1],[.12,5.2,.12,0,2.6,.3,'#6a4a2c'],[.06,3.8,2.6,0,2.9,-1.1,c2],[.06,2.6,1.6,0,2.2,1.3,'#f1efe9']]);
-    m.position.set(x,-.3,z);G.scene().add(m);BOATS.push({m,x,z,dir,v})})}
-function boatStep(dt,ts){BOATS.forEach((b,i)=>{b.x+=b.dir*b.v*dt;if(b.x>384){b.dir=-1}if(b.x<12){b.dir=1}b.m.position.set(b.x,-.32+Math.sin(ts*1.3+i*2)*.07,b.z);b.m.rotation.y=b.dir>0?Math.PI/2:-Math.PI/2;b.m.rotation.z=Math.sin(ts*.9+i)*.04})}
+// x, z, richting, snelheid, kleuren, en tussen welke x ze heen en weer varen (zee ten zuiden van het strand, west van Het Eiland, en de noordkust)
+function setupBoats(){[[40,566,1,5.5,'#e8e4da','#c0261e',24,584],[420,624,-1,8,'#2f5d9a','#f1efe9',24,584],[300,6,1,4.5,'#f1efe9','#2f5d9a',210,576]].forEach(([x,z,dir,v,c1,c2,x0,x1],i)=>{const m=K.model(i%2?[[2.4,.9,7,0,-.2,0,c1],[1.8,1.1,2.6,0,.75,-.8,c2],[1.6,.5,1.2,0,1.5,-.8,'#24323f'],[.3,.3,.3,0,.5,3.2,'#fff3c8',1]]:[[2,.7,5.5,0,-.25,0,c1],[.12,5.2,.12,0,2.6,.3,'#6a4a2c'],[.06,3.8,2.6,0,2.9,-1.1,c2],[.06,2.6,1.6,0,2.2,1.3,'#f1efe9']]);
+    m.position.set(x,-.3,z);G.scene().add(m);BOATS.push({m,x,z,dir,v,x0,x1})})}
+function boatStep(dt,ts){BOATS.forEach((b,i)=>{b.x+=b.dir*b.v*dt;if(b.x>b.x1){b.dir=-1}if(b.x<b.x0){b.dir=1}b.m.position.set(b.x,-.32+Math.sin(ts*1.3+i*2)*.07,b.z);b.m.rotation.y=b.dir>0?Math.PI/2:-Math.PI/2;b.m.rotation.z=Math.sin(ts*.9+i)*.04})}
 /* ---------- geluid van de omgeving ---------- */
 let ambT=0,chT=rr(2,6);
-function ambStep(dt){ambT+=dt;const P=G.P;if(ambT>.6){ambT=0;const sea=clamp(1-Math.min(P.x<392?Math.abs(P.z-246)/34:9,Math.abs(P.x-366)/30,1),0,1);G.snd&&G.snd.amb&&G.snd.amb({rain:W.rain,sea:G.driving?sea*.4:sea,wind:Math.max(W.snow*.6,G.camK>1.5?.8:0)});
+// afstand tot de zee (en het brede havenkanaal): de kusten liggen op z 14 (noord), z 548 (strand), x 16 (west) en x 790 (oost);
+// Het Eiland ligt los in zee (x 596-790, z 574-652)
+const seaD=(x,z)=>x>=592&&z>=556?Math.min(z-574,652-z,x-596,790-x):Math.min(Math.abs(z-548),z-14,x-16,790-x,z>=176?Math.abs(x-596)-16:99);
+function ambStep(dt){ambT+=dt;const P=G.P;if(ambT>.6){ambT=0;const sea=clamp(1-Math.max(0,seaD(P.x,P.z))/32,0,1);G.snd&&G.snd.amb&&G.snd.amb({rain:W.rain,sea:G.driving?sea*.4:sea,wind:Math.max(W.snow*.6,G.camK>1.5?.8:0)});
     const mz=G.NPC&&G.NPC.find(n=>n.arch==='muzikant');if(mz&&G.snd&&G.snd.busk){const d=Math.hypot(mz.x-P.x,mz.z-P.z);G.snd.busk(mz.st==='play'&&d<26?clamp(1-d/26,0,1):0)}}
   chT-=dt;if(chT<=0){chT=rr(2.5,8);if(W.rain<.3&&!G.driving&&nearGreen(P.x,P.z)){const k=G.night>.6?(summer()?'cricket':''):'chirp';if(k)G.snd&&G.snd.fx(k)}}}
 /* ---------- weer en tijd in de HUD ---------- */

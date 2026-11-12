@@ -43,6 +43,7 @@ set(588,4,604,14,T.DOCK);set(700,4,712,14,T.DOCK);
 /* ---------- wegen en stoepen (over water worden het bruggen) ---------- */
 const VR=XS.map(x=>({x,a:ZS[0],b:ZS[ZS.length-1]}));
 const HR=ZS.map(z=>({z,a:XS[0],b:XS[XS.length-1]}));
+VR.find(v=>v.x===110).a=ZS[1];                               // De Bajes ligt over deze weg heen
 VR.push({x:640,a:515,b:610});                                 // de brug naar Het Eiland
 HR.push({z:610,a:640,b:770});                                 // de weg over Het Eiland
 const roads=[];VR.forEach(v=>roads.push([v.x-RW,v.a-RW,v.x+RW,v.b+RW]));HR.forEach(h=>roads.push([h.a-RW,h.z-RW,h.b+RW,h.z+RW]));
@@ -193,9 +194,9 @@ fill(c7x0,r6z0,c7x1,r6z1,Object.assign({},CEN,{st:['club','pub','casino','plaste
 {const [a,b]=bx(8),[c,d]=bz(6);fill(a,c,b,d,TUIN)}
 {const [a,b]=bx(8),[c,d]=bz(5);set(a,c+22,b,d,T.PARK)}
 set(c9a,r2z0+32,c10b,r2z1,T.GARDEN,[T.GRASS]);set(c9a,r3z0+30,c10b,r3z1,T.GARDEN,[T.GRASS]);set(c9a,r4z0+27,c10b,r4z1,T.GARDEN,[T.GRASS]);
-set(778,176,790,548,T.PARK);
+set(785,176,790,548,T.PARK,[T.GRASS]);
 // noord: Noorderpark, Villapark-groen, industrie
-const NPARK={x0:bx(3)[0],z0:r1z0,x1:bx(5)[1],z1:r1z1};set(bx(3)[0],r1z0,bx(5)[1],r1z1,T.PARK);set(XS[4]-RW-SW,r1z0,XS[5]+RW+SW,r1z1,T.PARK);
+const NPARK={x0:bx(3)[0],z0:r1z0,x1:bx(5)[1],z1:r1z1};set(bx(3)[0],r1z0,bx(5)[1],r1z1,T.PARK,[T.GRASS,T.DOCK,T.GARDEN]);
 // industrieblokken die geen kavels hebben: loodsen
 [[9,1]].forEach(([i,j])=>{const [a,b]=bx(i),[c,d]=bz(j);set(a,c,b,d,T.DOCK)});
 set(c8x0,r1z0,c8x1,r1z1,T.DOCK);set(c9x0,r0z0,c9x1,r0z1,T.DOCK);set(c10x0,r0z0,c10x1,r0z1,T.DOCK);set(c9x0,r1z0,c9x1,r1z1,T.DOCK);

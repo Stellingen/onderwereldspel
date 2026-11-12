@@ -72,7 +72,7 @@ function slot(o){o=o||{};return new Promise(res=>{const vk=o.vak||'slot',e=ease(
 /* ---------- kluis kraken ---------- */
 function kluis(o){o=o||{};return new Promise(res=>{const vk=o.vak||'kluis',e=ease(vk),d=clamp(o.d==null?.4:o.d,0,1),N=40,code=[0,1,2].slice(0,o.n||3).map(()=>Math.floor(rr(0,N)));
   let i=0,dial=Math.floor(rr(0,N)),v=0,hk=0,strikes=0,last=-1,done=false,tm=(o.time||(70-d*25))*(.85+.4*e);const maxS=(o.strikes||3)+(e>.7?1:0),rad=(6-d*3)*(.75+.6*e);
-  open(o.title||'Kluis kraken',touch?'Tik of houd ◀ ▶. Zet vast waar de meter het hoogst staat':'Draai met A en D (tik = één stap, W of S ingedrukt = langzaam), zet vast met spatie waar de meter het hoogst staat',
+  open(o.title||'Kluis kraken',touch?'Tik of houd ◀ ▶. Zet vast waar de meter het hoogst staat':'Draai met A en D (tik = één stap), zet vast met spatie waar de meter het hoogst staat',
    `<div class="sd-kr-vis"><canvas class="sd-kr-cv" width="${CW}" height="${CH}"></canvas></div><div class="sd-kr-info"><b class="sd-kr-n"></b><i class="sd-kr-meter"><i></i></i><small class="sd-kr-s">Luister naar het tikken</small></div>
     <div class="sd-kr-pad">${btn('L','◀')}${btn('tap',touch?'Vastzetten':'<kbd>Spatie</kbd> Vastzetten','go')}${btn('R','▶')}</div>`,vk);
   const cv=q('.sd-kr-cv'),c=cv.getContext('2d');
