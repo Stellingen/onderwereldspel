@@ -300,8 +300,8 @@ async function mDexOpgepakt(t){const S=L.A('schoolhek',234,371);L.tijd(15,10);if
 async function mEinde(t){await C.play([{fn:L.tril},{say:'nova',text:'Luca. Iemand heeft Dex verraden. Niet de politie: die wisten waar hij zou zijn. Precies waar. Precies wanneer.',t:4,mood:'koel'},
    {say:'luca',text:'Wie dan?',t:1.4},{say:'nova',text:'Het spoor leidt naar Sahara.',t:2.4},{fade:'out',t:1},{dream:true},
    L.cam(...(()=>{const s=L.A('sahara',655,909);return [s.x+14,9,s.z+18,s.x,2,s.z]})()),{fade:'in',t:.6},{wait:2.4},{fade:'out',t:.6},{dream:false},
-   {titel:'Seizoen 3',sub:'Coming soon',t:3.6},{fade:'in',t:1}]);
-  L.F('h2_klaar',Date.now());ST.goto('h2_vrij');
+   {titel:'Seizoen 3',sub:G.h3&&G.h3.live&&G.h3.live()?'De hoek':'Coming soon',t:3.6},{fade:'in',t:1}]);
+  L.F('h2_klaar',Date.now());if(G.h3&&G.h3.live&&G.h3.live()&&G.h3.mag()){G.h3.begin();return}ST.goto('h2_vrij');
   const vip=ST.vip&&ST.vip();ST.kaart(`<small>De Bezorger · Seizoen 2 uitgespeeld</small><b>Twee bazen, en een verrader</b>
    <p>Dex: <b>${L.F('dex_hulp')==='ray'?'vrij via Ray':L.F('dex_hulp')==='moeder'?'geholpen via zijn moeder':'alleen gelaten'}</b> · Verhaalgeld: <b>${L.eur(ST.geld())}</b></p>
    <p><b>Seizoen 3 · coming soon.</b> Je eigen hoek in de Westbuurt, een eerste crew, Inspecteur Bakker en Giulia die je ziet staan. Al je keuzes blijven bewaard.</p>
@@ -352,7 +352,8 @@ S('h2_dag',{muziek:null,async start(o){const t=nieuw();const dag=L.F('h2_dag')||
   else{await C.play([{fade:'out',t:.8},{titel:'Dag 4',sub:'De overkant',t:2.6},{fade:'in',t:.8}]);ST.avond(4);ST.goto('h2_dex')}}});
 S('h2_dex',{muziek:'spanning',async start(o){const t=nieuw();await mDexOpgepakt(t);if(t!==RUN)return;ST.goto('h2_slot')}});
 S('h2_slot',{muziek:'ray',async start(o){const t=nieuw();await mEinde(t)}});
-S('h2_vrij',{doel:'Seizoen 3 · coming soon. Extra diensten bij Giovanni',start(o){nieuw();if(G.h1)G.h1.dienstAan(true);L.zorgFiets()}});
+S('h2_vrij',{doel:'Seizoen 3 · coming soon. Extra diensten bij Giovanni',start(o){nieuw();if(G.h1)G.h1.dienstAan(true);L.zorgFiets();
+  setTimeout(()=>{if(ST.huidig()==='h2_vrij'&&G.h3&&G.h3.live&&G.h3.live()&&G.h3.mag())G.h3.begin()},2500)}});
 }
 
 /* =================== opstarten =================== */
