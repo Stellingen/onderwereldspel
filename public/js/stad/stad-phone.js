@@ -29,7 +29,7 @@ const playerLook=()=>{const L=G.P&&G.P.look||{};let tie=null,chain=null;try{cons
 /* ---------- schermen ---------- */
 const EXT={};
 function badge(k){if(EXT[k])return EXT[k].badge?EXT[k].badge():0;if(k==='berichten')return G.unread?G.unread():0;if(k==='dag'&&G.dag){const D=G.dag.get();return (D.ids||[]).filter(id=>{const d=G.dag.def(id);return d&&(D.p[id]||0)>=d[3]&&!D.claimed[id]}).length}if(k==='vastgoed')return (G.lots||[]).filter(l=>l.building).length;if(k==='naam'&&G.naam)return G.naam.points();if(k==='wijken'&&G.wijk)return G.wijk.open();return 0}
-function appBtn(a){const [k,n,ic,c,kind]=a;if(kind==='klik'&&!hasPage(k))return '';const icon=ic||pic(k==='klussen'?'crimes':k==='auto'?'cars':k==='klik'?'dash':k),col=c||secCol(k),b=badge(k);
+function appBtn(a){if(!a)return '';const [k,n,ic,c,kind]=a;if(kind==='klik'&&!hasPage(k))return '';if(G.storyApps&&!G.storyApps(k))return '';const icon=ic||pic(k==='klussen'?'crimes':k==='auto'?'cars':k==='klik'?'dash':k),col=c||secCol(k),b=badge(k);
   return `<button class="sd-p2-app" data-app="${k}"><i style="--c:${col}">${icon}${b?`<em>${b}</em>`:''}${kind==='klik'?'<u>↗</u>':kind==='rt'?`<u>${K.ic.route}</u>`:''}</i><span>${E(n)}</span></button>`}
 function nowCard(){const m=G.mission&&G.mission(),w=G.waypoint;
   if(G.police&&G.police.active())return `<div class="sd-p2-now bad"><small>Nu</small><b>Politie! ${'★'.repeat(G.police.stars())}</b><p>Ga uit het zicht: stegen, hoeken, containers.</p></div>`;
@@ -37,7 +37,7 @@ function nowCard(){const m=G.mission&&G.mission(),w=G.waypoint;
   if(w)return `<button class="sd-p2-now" data-now="wp"><small>Route</small><b>${E(w.n)}</b><p>${Math.round(Math.hypot(w.x-G.P.x,w.z-G.P.z))} m · tik om erheen te lopen</p></button>`;
   if(G.dag){const D=G.dag.get(),n=(D.ids||[]).length,done=(D.ids||[]).filter(id=>(D.p[id]||0)>=G.dag.def(id)[3]).length;if(done<n)return `<button class="sd-p2-now" data-app="dag"><small>Dagklussen · ${done}/${n}</small><b>${E(G.dag.def(D.ids.find(id=>(D.p[id]||0)<G.dag.def(id)[3]))[1])}</b><p>Elke dag om 6 uur drie nieuwe.</p></button>`}
   const C=S.stadCol||{},f=Object.keys(C).length;return `<button class="sd-p2-now" data-app="prestaties"><small>Verzamelen</small><b>${f}/30 pakketjes gevonden</b><p>Kijk in stegen, parken en op de kades.</p></button>`}
-function home(){const L=G.msgs?G.msgs().filter(m=>m.u).slice(0,2):[];
+function home(){if(G.storyHome){G.storyHome(scr,()=>APPS.filter(a=>!DOCK.includes(a[0])).map(appBtn).join(''));dock();return}const L=G.msgs?G.msgs().filter(m=>m.u).slice(0,2):[];
   scr.innerHTML=`<div class="sd-p2-home"><div class="sd-p2-hero"><canvas id="sdP2Me" width="24" height="24"></canvas><div><b>${E(window.__USER__||'Jij')}</b><small>${E(RANKS[rankIdx(S.xp)][0])} · ${E(M.districtAt(G.P.x,G.P.z))}</small></div>
    <div class="sd-p2-m"><span><i>Contant</i><b>${fmt(S.cash)}</b></span><span><i>Bank</i><b>${fmt(S.bank||0)}</b></span></div></div>
    ${G.weerKaart?G.weerKaart():''}${nowCard()}${L.map(m=>{const c=G.contacts[m.f]||G.contacts.stad;return `<button class="sd-p2-not" data-thread="${m.f}"><canvas data-por="${m.f}" width="24" height="24"></canvas><span><b>${E(c.n)}</b><small>${E(m.x)}</small></span></button>`}).join('')}
@@ -114,7 +114,7 @@ function close(){if(ov.hidden)return;ov.hidden=true;G.snd&&G.snd.fx('close');if(
 G.phone={open,close,toggle:()=>ov.hidden?open():close(),isOpen:()=>!ov.hidden,
   // een app erbij uit een andere module: {k, n, ic, c, render(scr, head, sub), click(t, close, go), badge()}
   add(o){if(EXT[o.k])return;EXT[o.k]=o;const i=APPS.findIndex(a=>a[0]===(o.after||'contacten'));APPS.splice(i<0?APPS.length:i+1,0,[o.k,o.n,o.ic,o.c,'in']);RENDER[o.k]=()=>o.render(scr,head,sub)}};
-function launch(k){const a=APPS.find(x=>x[0]===k);if(!a)return;const kind=a[4];
+function launch(k){const a=APPS.find(x=>x[0]===k);if(!a)return;if(G.storyApps&&!G.storyApps(k))return;const kind=a[4];
   if(kind==='in'){go(k);return}
   if(k==='kaart'){close();G.kaart&&G.kaart.open();return}
   if(k==='klussen'){close();if(G.ui&&G.ui.cur&&G.ui.cur())G.ui.leaveQuiet&&G.ui.leaveQuiet();G.openBoard&&G.openBoard();return}

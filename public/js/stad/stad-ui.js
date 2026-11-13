@@ -145,7 +145,7 @@ $s('sdInMap').addEventListener('click',()=>{if(!jailed())leaveQuiet();openMap()}
 $s('sdInPhone').addEventListener('click',()=>openPhone());
 function jailBtn(){const j=jailed(),b=$s('sdOut');b.disabled=!!(j&&!(cur&&cur.phone));b.querySelector('span').textContent=j&&!(cur&&cur.phone)?'Je zit vast':(cur&&cur.phone?'Telefoon weg':'Naar buiten')}
 // de bajes: zit je vast, dan ben je binnen tot je vrij bent
-setInterval(()=>{if(typeof inJail!=='function')return;const j=inJail();
+setInterval(()=>{if(typeof inJail!=='function'||G.story)return;const j=inJail();
   if(j&&(!cur||(!cur.jail&&!cur.phone&&!(cur.pl&&cur.pl.page==='jail'))))showInside({jail:1,pl:M.placeById('jail')},'De Bajes','jail');
   if(cur)jailBtn()},800);
 
@@ -219,6 +219,6 @@ addEventListener('keydown',e=>{const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$
   $s('sdHelpOk').onclick=()=>{h.hidden=true;try{localStorage.setItem('stad_help','1')}catch(e){}}})();
 
 // opstarten in de bajes als je vastzit
-if(jailed())setTimeout(()=>{if(!cur)showInside({jail:1,pl:M.placeById('jail')},'De Bajes','jail')},50);
+if(jailed()&&!window.__VERHAAL__)setTimeout(()=>{if(!cur)showInside({jail:1,pl:M.placeById('jail')},'De Bajes','jail')},50);
 G.ui={enter,enterDirect,leave,leaveQuiet,closeAll,openMap,openPhone,phoneApp,cur:()=>cur};
 })();

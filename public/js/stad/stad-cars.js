@@ -115,7 +115,7 @@ G.addVehicle=function(v){VEH.push(v);const st=VEH.filter(o=>!o.own&&o!==mine&&o!
 G.removeVehicle=function(v){if(!v)return;if(G.driving&&mine===v)exitCar(true);G.scene().remove(v.mesh);const i=VEH.indexOf(v);if(i>=0)VEH.splice(i,1);if(mine===v){mine=own;G.car=own}if(own===v)own=null;G.onRemoveVehicle&&G.onRemoveVehicle(v)};
 function enterCar(v){v=v||G.nearCar;if(!v||G.driving)return;if(v.dead){G.toast&&G.toast('Total loss. Die rijdt nergens meer heen.','bad');return}mine=v;G.car=v;G.snd&&G.snd.fx('carDoor');if(G.hidden&&G.unhide)G.unhide();G.driving=true;G.stopPath&&G.stopPath();G.distT=Math.max(G.distT,56);v.safe=null;v.stk=0;v.bad=0;hud();G.onEnterCar&&G.onEnterCar(v)}
 G.enterCar=enterCar;
-function exitCar(quiet){if(!G.driving||!mine)return;if(DZ.on&&!quiet){G.toast&&G.toast('Je zit nog even versuft…','info');return}G.driving=false;if(quiet)dazeEnd(true);const s=Math.cos(mine.ry),c=-Math.sin(mine.ry);const p=M.nearestWalk(mine.x+s*2.2,mine.z+c*2.2,6)||M.nearestWalk(mine.x,mine.z,8);if(p){G.P.x=p.x;G.P.z=p.z}G.P.vx=G.P.vz=0;mine.v=0;mine.kx=mine.kz=mine.spin=0;G.distT=46;savePos();hud();G.onExitCar&&G.onExitCar(mine)
+function exitCar(quiet){if(G.driving&&G.car&&G.car.fiets){G.fiets&&G.fiets.af(quiet);return}if(!G.driving||!mine)return;if(DZ.on&&!quiet){G.toast&&G.toast('Je zit nog even versuft…','info');return}G.driving=false;if(quiet)dazeEnd(true);const s=Math.cos(mine.ry),c=-Math.sin(mine.ry);const p=M.nearestWalk(mine.x+s*2.2,mine.z+c*2.2,6)||M.nearestWalk(mine.x,mine.z,8);if(p){G.P.x=p.x;G.P.z=p.z}G.P.vx=G.P.vz=0;mine.v=0;mine.kx=mine.kz=mine.spin=0;G.distT=46;savePos();hud();G.onExitCar&&G.onExitCar(mine)
   // je eigen auto die total loss is: Van der Plaat sleept hem weg naar de garage
   if(mine.dead&&mine===own){const v=mine;setTimeout(()=>{if(!(G.driving&&mine===v)){G.removeVehicle(v);G.toast&&G.toast('Van der Plaat heeft je '+v.d.name+' weggesleept. Maken kan in de garage.','info')}},2500)}}
 G.exitCar=exitCar;
@@ -286,7 +286,7 @@ G.carStep=function(dt){simT+=dt;if(!TRAF.length)for(let i=0;i<26;i++)spawnCar(i<
   TRAF.slice().forEach(c=>trafficStep(c,dt));policeTick(dt);
   // zwaailichten
   const fl=Math.floor(performance.now()/180)%2;TRAF.forEach(c=>{const b=c.mesh.userData.bar;if(b){const on=c.chase||c.block||G.night>.5;b[0].visible=on?fl===0:true;b[1].visible=on?fl===1:true}});
-  if(G.driving&&mine)driveStep(dt);
+  if(G.driving&&mine&&G.car===mine)driveStep(dt);
   dazeStep(dt);smokeStep(dt);
   // een gestolen auto koelt langzaam af (niet onder wat de politie al weet: gemeld = minstens lauw)
   VEH.forEach(v=>{const s=v.stolen;if(s&&!s.papers&&s.heat>0){const fl=s.paint?0:s.rep?30:8;if(s.heat>fl)s.heat=Math.max(fl,s.heat-dt*.12)}
@@ -294,8 +294,9 @@ G.carStep=function(dt){simT+=dt;if(!TRAF.length)for(let i=0;i<26;i++)spawnCar(i<
     if(v.dead&&!v.own&&!(G.driving&&mine===v)){v.deadT=(v.deadT||0)+dt;if(v.deadT>40&&Math.hypot(v.x-G.P.x,v.z-G.P.z)>30)G.removeVehicle(v)}});
   // instappen: het dichtstbijzijnde voertuig binnen 3,4 meter (geen wrakken)
   let near=null;if(!G.driving){let bd=3.4;VEH.forEach(v=>{if(v.dead)return;const d=Math.hypot(G.P.x-v.x,G.P.z-v.z);if(d<bd){bd=d;near=v}})}if(near!==G.nearCar){G.nearCar=near;hud()}
-  if(G.driving&&mine){$s('sdSpdV').textContent=Math.round(Math.abs(mine.v)*3.6);const dm=Math.round(mine.dmg||0),h=mine.stolen?Math.round((mine.stolen.heat||0)/10):0;if(dm!==hud._dm||h!==hud._h){hud._dm=dm;hud._h=h;hud()}}
-  if(G.snd)G.snd.engine(G.driving&&mine&&!mine.dead?mine.v:null);
+  if(G.driving&&G.car&&G.car.fiets)$s('sdSpdV').textContent=Math.round(Math.abs(G.car.v)*3.6);
+  else if(G.driving&&mine){$s('sdSpdV').textContent=Math.round(Math.abs(mine.v)*3.6);const dm=Math.round(mine.dmg||0),h=mine.stolen?Math.round((mine.stolen.heat||0)/10):0;if(dm!==hud._dm||h!==hud._h){hud._dm=dm;hud._h=h;hud()}}
+  if(G.snd)G.snd.engine(G.driving&&mine&&G.car===mine&&!mine.dead?mine.v:null);
   hudT+=dt;if(hudT>.5){hudT=0;hudPol()}};
 let hudT=0;
 /* ---------- knoppen en snelheidsmeter ---------- */
@@ -303,7 +304,7 @@ const ui=document.createElement('div');ui.id='sdCarUi';document.body.appendChild
 ui.innerHTML=`<button class="sd-carp" id="sdCarP" hidden></button><div class="sd-spd" id="sdSpd" hidden><b id="sdSpdV">0</b><small>km/u</small><span id="sdSpdN"></span><em id="sdSpdX"></em><div class="sd-cdmg" id="sdCDmg"><small>Schade</small><i><i id="sdCDmgB"></i></i><b id="sdCDmgV">0%</b></div><button id="sdOutCar">${touch?'Uitstappen':'<kbd>F</kbd> Uitstappen'}</button></div><div class="sd-pol" id="sdPol" hidden>Politie zit achter je</div>`;
 const heatTxt=h=>h>=60?'heet':h>=30?'lauw':'';
 function hud(){const p=$s('sdCarP'),n=G.nearCar;p.hidden=!n||G.driving;if(!p.hidden)p.innerHTML=(touch?'':'<kbd>F</kbd> ')+'Instappen · <b>'+(n?n.d.name:'')+'</b>'+(n&&n.stolen?' <i class="sd-hot">gestolen</i>':'')+(n&&(n.dmg||0)>=50?' <i class="sd-dmg">schade '+Math.round(n.dmg)+'%</i>':'');
-  $s('sdSpd').hidden=!G.driving;if(G.driving&&mine){$s('sdSpdN').textContent=mine.d.name;const dm=Math.round(mine.dmg||0),s=mine.stolen,ht=s&&!s.papers?heatTxt(s.heat||0):'';
+  $s('sdSpd').hidden=!G.driving;if(G.driving&&G.car&&G.car.fiets){$s('sdSpdN').textContent=G.car.d.name;$s('sdSpdX').innerHTML='';$s('sdCDmg').hidden=true}else if(G.driving&&mine){$s('sdSpdN').textContent=mine.d.name;const dm=Math.round(mine.dmg||0),s=mine.stolen,ht=s&&!s.papers?heatTxt(s.heat||0):'';
     $s('sdSpdX').innerHTML=(s?(s.papers?'<i class="sd-reg">geregistreerd</i>':'<i class="sd-hot">gestolen'+(ht?' · '+ht:'')+'</i>'):'')+(mine.flat?'<i class="sd-dmg">lekke banden</i>':'')+(mine.dead?'<i class="sd-dmg sd-dead">total loss</i>':dm>=85?'<i class="sd-dmg sd-fire">motor oververhit</i>':'');
     const b=$s('sdCDmg');b.hidden=dm<1;b.classList.toggle('mid',dm>=50);b.classList.toggle('hi',dm>=85);$s('sdCDmgB').style.width=dm+'%';$s('sdCDmgV').textContent=dm+'%';$s('sdOutCar').classList.toggle('dz',DZ.on)}
   document.body.classList.toggle('stad-drive',!!G.driving);document.body.classList.toggle('stad-hotcar',!!(G.driving&&mine&&mine.stolen&&!mine.stolen.papers))}

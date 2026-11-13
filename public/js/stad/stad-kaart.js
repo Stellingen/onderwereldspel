@@ -32,6 +32,7 @@ const CAT={
  klus:{g:'plek',lay:'plek',n:'Klussen & straat',s:'Café Het Gat, Het Contact, haven, heler',sh:'sq',c:'#ff8a1f',ic:'masker',imp:2},
  geld:{g:'plek',lay:'plek',n:'Geld',s:'Bank, casino, wasserette, notaris',sh:'sq',c:'#3fe395',ic:'euro',imp:2},
  winkel:{g:'plek',lay:'plek',n:'Winkels',s:'Wapens, kleding, gym, spa',sh:'sq',c:'#b48cff',ic:'bag',imp:2},
+ pizza:{g:'plek',lay:'plek',n:'Pizzeria',s:'Bella Napoli: bezorgen',sh:'sq',c:'#e2453a',ic:'pizza',imp:2},
  garage:{g:'plek',lay:'plek',n:'Garage & sloop',s:'Auto wegzetten of slopen',sh:'sq',c:'#4da3ff',ic:'moer',imp:2},
  overheid:{g:'plek',lay:'plek',n:'Politie & bajes',s:'Bureau en gevangenis',sh:'sq',c:'#ff4d5e',ic:'badge',imp:2},
  atm:{g:'doen',lay:'doen',n:'Geldautomaat',s:'Geld opnemen',sh:'ci',c:'#3fe395',ic:'atm',sm:1,dz:1.3},
@@ -109,24 +110,28 @@ function size(){const r=view.getBoundingClientRect();VW=Math.max(1,r.width);VH=M
 /* =================== wat er op de kaart staat =================== */
 const HL=[];let HLN=0;
 function safe(f){try{return f()}catch(e){return false}}
-function items(){const out=[],add=o=>{out.push(o);return o};
-  M.places.forEach(p=>{if(p.dyn)return;const d=PL[p.id]||['overig','door'];add({cat:d[0],id:p.id,x:p.door.x,z:p.door.z,n:p.name,sub:PLSUB[p.id]||pageName(p.page),ic:d[1],pri:5,big:p.id==='cars'||p.id==='crimes'?1:0})});
+// G.kaartMode (verhaal-kaart.js): eigen soorten en lagen; zonder base:true komen de Pixelstad-plekken er niet op
+const VMODE=()=>G.kaartMode||null,GRP=()=>VMODE()&&VMODE().groups||GROUPS,LYS=()=>VMODE()&&VMODE().lays||LAYS;
+function items(){const out=[],add=o=>{out.push(o);return o};const VM=VMODE();
+  if(VM&&VM.items)safe(()=>VM.items(add));
+  if(!VM||VM.base)M.places.forEach(p=>{if(p.dyn)return;const d=PL[p.id]||['overig','door'];add({cat:d[0],id:p.id,x:p.door.x,z:p.door.z,n:p.name,sub:PLSUB[p.id]||pageName(p.page),ic:d[1],pri:5,big:p.id==='cars'||p.id==='crimes'?1:0})});
   const home=M.places.find(p=>p.dyn==='plot'&&p.home);if(home)add({cat:'thuis',id:home.id,x:home.door.x,z:home.door.z,n:'Thuis',sub:home.name.replace(/^Thuis: /,''),pri:8,big:1});
   const own=ownedPlaces().filter(p=>!p.home);
   own.forEach(p=>{if(p.biz==='garage')add({cat:'garage',id:p.id,x:p.door.x,z:p.door.z,n:'Jouw chop shop',sub:'Slopen voor jezelf',ic:'moer',pri:7,big:1,own:1});
     else add({cat:'bezit',id:p.id,x:p.door.x,z:p.door.z,n:p.name.replace(/^(Thuis: |Jouw )/,''),sub:p.building?'In aanbouw':'Van jou',pri:4,own:1})});
-  if(!own.length)add({cat:'bezit',k:'oost',x:M.ESTATE.gate.x+40,z:M.ESTATE.gate.z+40,n:'Oostland',sub:'Nog niets van jou',pri:2,dim:1});
+  if(!own.length&&!VM)add({cat:'bezit',k:'oost',x:M.ESTATE.gate.x+40,z:M.ESTATE.gate.z+40,n:'Oostland',sub:'Nog niets van jou',pri:2,dim:1});
   const hl=G.helerContact||(G.NPC||[]).find(n=>n.arch==='heler'&&n.contact);if(hl)add({cat:'klus',x:hl.x,z:hl.z,n:'Ome Henk (heler)',sub:'Heler',ic:'bag',pri:4});
   const oc=(G.vehicles||[]).find(v=>v.own);if(oc)add({cat:'mijnauto',x:oc.x,z:oc.z,n:'Mijn auto',pri:6});
   const ap=G.autoPoints&&safe(()=>G.autoPoints());if(ap&&ap.forEach)ap.forEach(p=>add({cat:'aflever',x:p.x,z:p.z,n:p.n,sub:p.t,ic:AFL[p.k]||'key',pri:9,big:1}));
   if(G.orderCar&&G.orderCar.st!=='gestolen'&&G.orderCar.m)add({cat:'zoekauto',x:G.orderCar.x,z:G.orderCar.z,n:G.orderCar.m.n,sub:'Voor de heler',pri:8,big:1});
-  if(G.spots)G.spots.forEach(s=>{if(!s.map||(s.mapIf&&!safe(s.mapIf)))return;const cat=SPOT[s.k]||'overig',n=typeof s.map.n==='function'?safe(s.map.n):s.map.n;
+  if(G.spots)G.spots.forEach(s=>{if(!s.map||(s.mapIf&&!safe(s.mapIf)))return;if(G.story&&!s.story&&s.k!=='bank')return;const cat=SPOT[s.k]||'overig',n=typeof s.map.n==='function'?safe(s.map.n):s.map.n;
     add({cat,x:s.x,z:s.z,n:strip(n),ic:s.map.ic,c:cat==='overig'?(s.map.c||s.col):null,pri:s.map.pri||2,big:s.map.big&&cat!=='bgeld'?1:0,dim:s.k==='kijk'&&s.dotIf&&!safe(s.dotIf)})});
   else if(G.spotMap)(safe(()=>G.spotMap())||[]).forEach(o=>add({cat:'overig',x:o.x,z:o.z,n:strip(o.n),ic:o.ic,c:o.c,pri:o.pri||2}));
   if(G.verhaalMap)(safe(()=>G.verhaalMap())||[]).forEach(o=>{if(/^Doel/.test(o.n))add({cat:'doel',x:o.x,z:o.z,n:strip(o.n).replace(/^Doel:\s*/,''),sub:'Missie',pri:10,big:1});
     else add({cat:'opdr',x:o.x,z:o.z,n:strip(o.n),L:letterOf(o.n),dim:!o.big,pri:o.big?9:3,big:o.big?1:0})});
   if(G.missionDots){const ms=G.mission&&G.mission(),st=ms&&ms.steps&&ms.steps[ms.i];(safe(()=>G.missionDots())||[]).forEach(d=>{if(!d.big)return;if(out.some(q=>q.cat==='doel'&&Math.hypot(q.x-d.x,q.z-d.z)<5))return;
     add({cat:'doel',x:d.x,z:d.z,n:st&&st.txt?strip(st.txt):'Doel',sub:ms?'Klus':'Doel',pri:10,big:1})})}
+  if(G.bezorg&&G.bezorg.kaart)(safe(()=>G.bezorg.kaart())||[]).forEach(o=>add(o));
   if(G.waypoint)add({cat:'wp',x:G.waypoint.x,z:G.waypoint.z,n:G.waypoint.n||'Gemarkeerd',sub:'Jouw markering',pri:11,big:1});
   const now=performance.now();for(let i=HL.length-1;i>=0;i--){const h=HL[i];if((h.until&&now>h.until)||(!h.keep&&G.P&&Math.hypot(G.P.x-h.x,G.P.z-h.z)<6)){HL.splice(i,1);continue}
     add({cat:'hl',x:h.x,z:h.z,n:h.n,sub:'Hier moet je zijn',c:h.c,ic:h.ic,sh:h.sh,pri:12,big:1})}
@@ -182,14 +187,14 @@ function req(lay){if(lay)needLayout=true;if(!raf)raf=requestAnimationFrame(()=>{
 function draw(){if(ov.hidden)return;const P=G.P;cx.setTransform(dpr,0,0,dpr,0,0);cx.imageSmoothingEnabled=false;cx.fillStyle=SEA;cx.fillRect(0,0,VW,VH);
   cx.drawImage(mapCv,sx(0),sz(0),M.W*Z,M.H*Z);
   // Oostland: jouw terrein (groen gestippeld), jouw panden groen ingekleurd, vrije kavels dun gestippeld
-  const es=M.ESTATE;cx.save();cx.strokeStyle='rgba(95,211,90,.75)';cx.lineWidth=2;cx.setLineDash([7,5]);cx.strokeRect(sx(es.x0+1),sz(es.z0+1),(es.x1-es.x0-2)*Z,(es.z1-es.z0-2)*Z);cx.restore();
+  const es=M.ESTATE;if(VMODE()&&VMODE().drawUnder)safe(()=>VMODE().drawUnder(cx,sx,sz,Z));if(!VMODE()){cx.save();cx.strokeStyle='rgba(95,211,90,.75)';cx.lineWidth=2;cx.setLineDash([7,5]);cx.strokeRect(sx(es.x0+1),sz(es.z0+1),(es.x1-es.x0-2)*Z,(es.z1-es.z0-2)*Z);cx.restore();
   if(LAY.bezit&&Z>=1.3){cx.lineWidth=1;cx.setLineDash([3,3]);cx.strokeStyle='rgba(255,255,255,.35)';M.places.forEach(p=>{if(!p.est||p.own||!p.rect)return;const r=p.rect;cx.strokeRect(sx(r.x0)+.5,sz(r.z0)+.5,(r.x1-r.x0)*Z-1,(r.z1-r.z0)*Z-1)});cx.setLineDash([])}
-  if(LAY.bezit)ownedPlaces().forEach(p=>{const r=p.rect;if(!r)return;cx.fillStyle='rgba(95,211,90,.55)';cx.fillRect(sx(r.x0),sz(r.z0),(r.x1-r.x0)*Z,(r.z1-r.z0)*Z);cx.strokeStyle='#1d5a24';cx.lineWidth=1.5;cx.strokeRect(sx(r.x0)+.75,sz(r.z0)+.75,(r.x1-r.x0)*Z-1.5,(r.z1-r.z0)*Z-1.5)});
+  if(LAY.bezit)ownedPlaces().forEach(p=>{const r=p.rect;if(!r)return;cx.fillStyle='rgba(95,211,90,.55)';cx.fillRect(sx(r.x0),sz(r.z0),(r.x1-r.x0)*Z,(r.z1-r.z0)*Z);cx.strokeStyle='#1d5a24';cx.lineWidth=1.5;cx.strokeRect(sx(r.x0)+.75,sz(r.z0)+.75,(r.x1-r.x0)*Z-1.5,(r.z1-r.z0)*Z-1.5)});}
   // wijknamen: groot als je ver weg kijkt, weg als je inzoomt
   cx.textAlign='center';cx.textBaseline='middle';cx.lineJoin='round';
   if(Z<3.8){const a=Z<2.6?1:Math.max(0,(3.8-Z)/1.2),fs=Math.round(Math.max(10,Math.min(17,Z*7.5)));cx.font=`800 ${fs}px "Big Shoulders Display","Arial Narrow",sans-serif`;
     cx.globalAlpha=a;M.DISTRICTS.forEach(d=>{if(M.estateAt(d.x,d.z))return;const t=d.n.toUpperCase().split('').join(String.fromCharCode(8202));cx.strokeStyle='rgba(12,14,18,.9)';cx.lineWidth=4;cx.strokeText(t,sx(d.x),sz(d.z));cx.fillStyle='#fff';cx.fillText(t,sx(d.x),sz(d.z))});cx.globalAlpha=1}
-  {const fs=Math.round(Math.max(12,Math.min(24,Z*8)));cx.font=`900 ${fs}px "Big Shoulders Display","Arial Narrow",sans-serif`;const y=sz(es.z0+20);cx.strokeStyle='rgba(12,14,18,.9)';cx.lineWidth=4;cx.strokeText('OOSTLAND',sx((es.x0+es.x1)/2),y);cx.fillStyle='#8ff07f';cx.fillText('OOSTLAND',sx((es.x0+es.x1)/2),y);
+  if(!VMODE()){const fs=Math.round(Math.max(12,Math.min(24,Z*8)));cx.font=`900 ${fs}px "Big Shoulders Display","Arial Narrow",sans-serif`;const y=sz(es.z0+20);cx.strokeStyle='rgba(12,14,18,.9)';cx.lineWidth=4;cx.strokeText('OOSTLAND',sx((es.x0+es.x1)/2),y);cx.fillStyle='#8ff07f';cx.fillText('OOSTLAND',sx((es.x0+es.x1)/2),y);
     if(Z>=1){cx.font='700 10px ui-monospace,monospace';cx.strokeText('JOUW TERREIN',sx((es.x0+es.x1)/2),y+fs*.8);cx.fillStyle='#cfeec9';cx.fillText('JOUW TERREIN',sx((es.x0+es.x1)/2),y+fs*.8)}}
   // routes: donkere rand, felle lijn, witte stippels in het midden
   const route=(pts,col)=>{if(!pts||!pts.length)return;cx.lineJoin='round';cx.lineCap='round';cx.beginPath();cx.moveTo(sx(P.x),sz(P.z));pts.forEach(q=>cx.lineTo(sx(q.x),sz(q.z)));
@@ -221,7 +226,7 @@ function edgeArrows(){const P=G.P,T=[];
 function scaleBar(){const el=$s('sdKScale');const opts=[5,10,20,50,100,200,500];let m=opts.find(v=>v*Z>=56)||500;el.firstChild.style.width=Math.round(m*Z)+'px';el.lastChild.textContent=m+' m'}
 
 /* =================== legenda =================== */
-function legHtml(){return GROUPS.map(([g,gn])=>{const lay=LAYS.find(l=>l[0]===g),on=!lay||LAY[g];
+function legHtml(){LYS().forEach(l=>{if(LAY[l[0]]==null)LAY[l[0]]=1});return GRP().map(([g,gn])=>{const lay=LYS().find(l=>l[0]===g),on=!lay||LAY[g];
     const rows=Object.keys(CAT).filter(k=>CAT[k].g===g&&(!CAT[k].only||cnt[k])).map(k=>{const C=CAT[k],off=!C.fixed&&(ST.off[k]||!on);
       return `<button class="kleg-r${off?' off':''}${C.fixed?' fix':''}" data-cat="${k}" aria-pressed="${!off}"${C.fixed?' disabled':''}>${pinHtml({cat:k,L:k==='opdr'?'J':null})}<span><b>${E(C.n)}</b>${C.s?`<small>${E(C.s)}</small>`:''}</span><em data-n="${k}">${cnt[k]||''}</em></button>`}).join('');
     return `<section class="kleg-g${on?'':' off'}"><h4>${lay?`<button data-lay="${g}" aria-pressed="${!!on}"><i class="ksw"></i>${E(gn)}</button>`:`<span>${E(gn)}</span>`}</h4>${rows}</section>`}).join('')}
@@ -229,7 +234,7 @@ function legCounts(){if(leg.hidden)return;legB.querySelectorAll('[data-n]').forE
   const need=Object.keys(CAT).filter(k=>CAT[k].only&&cnt[k]).join();if(need!==legB._only){legB._only=need;legB.innerHTML=legHtml()}}
 function legShow(on){ST.leg=on?1:0;saveSt();leg.hidden=!on;mainEl.classList.toggle('leg-on',!!on);if(on){legB.innerHTML=legHtml();legB._only=Object.keys(CAT).filter(k=>CAT[k].only&&cnt[k]).join()}
   size();req(true)}
-function chipsHtml(){const L0=LAYS.filter(l=>l[0]!=='politie'||(G.police&&G.police.active&&G.police.active()));
+function chipsHtml(){LYS().forEach(l=>{if(LAY[l[0]]==null)LAY[l[0]]=1});const L0=LYS().filter(l=>l[0]!=='politie'||(G.police&&G.police.active&&G.police.active()));
   $s('sdKChips').innerHTML=L0.map(([k,n,sh,c])=>`<button data-lay="${k}" class="${LAY[k]?'on':''}" aria-pressed="${!!LAY[k]}" style="--c:${c}"><svg viewBox="0 0 26 26" aria-hidden="true">${SHP[sh]}</svg>${n}</button>`).join('')}
 function refreshUi(){chipsHtml();if(!leg.hidden)legB.innerHTML=legHtml();req(true)}
 
@@ -350,7 +355,7 @@ function mini(cvm,c,walk){const P=G.P;if(!P)return;if(cvm.width!==MMR){cvm.width
   const dot=(x,z,col,r)=>{const p=toS(x,z);if(!inR(p,r))return;c.fillStyle='#0b0c0f';c.fillRect(Math.round(p[0]-r-1),Math.round(p[1]-r-1),2*r+2,2*r+2);c.fillStyle=col;c.fillRect(Math.round(p[0]-r),Math.round(p[1]-r),2*r,2*r)};
   // stipjes: mensen in de buurt, plekken zonder kaarticoon, auto-afleverpunten, missie, politie
   if(G.npcDots)(safe(()=>G.npcDots())||[]).forEach(d=>dot(d.x,d.z,d.c,1.6));
-  if(G.spots)G.spots.forEach(sp=>{if(sp.map||!sp.dot)return;if(Math.hypot(sp.x-P.x,sp.z-P.z)>(sp.dotR||90))return;if(sp.dotIf&&!safe(sp.dotIf))return;if(sp.k==='verhaal')return;dot(sp.x,sp.z,sp.dot,sp.big?3:2)});
+  if(G.spots)G.spots.forEach(sp=>{if(sp.map||!sp.dot)return;if(G.story&&!sp.story)return;if(Math.hypot(sp.x-P.x,sp.z-P.z)>(sp.dotR||90))return;if(sp.dotIf&&!safe(sp.dotIf))return;if(sp.k==='verhaal')return;dot(sp.x,sp.z,sp.dot,sp.big?3:2)});
   if(G.missionDots)(safe(()=>G.missionDots())||[]).forEach(d=>{if(!d.big)dot(d.x,d.z,d.c,2.6)});
   const fl=RM()?0:Math.floor(performance.now()/350)%2;
   if(G.police&&G.police.dots)(safe(()=>G.police.dots())||[]).forEach(d=>{if(d.r)return;const p=toS(d.x,d.z);if(!inR(p,4))return;c.beginPath();c.arc(p[0],p[1],4.6,0,Math.PI*2);c.fillStyle='#0b0c0f';c.fill();c.beginPath();c.arc(p[0],p[1],3.2,0,Math.PI*2);c.fillStyle=d.c==='#ff3d52'?'#ff3d52':(fl?'#4d7dff':'#ff3d52');c.fill()});
@@ -369,5 +374,6 @@ function mini(cvm,c,walk){const P=G.P;if(!P)return;if(cvm.width!==MMR){cvm.width
   // jij: witte pijl met zwarte rand, in je looprichting
   c.save();c.translate(h,h);c.rotate(yaw+Math.atan2(Math.cos(P.ry),Math.sin(P.ry)));c.beginPath();c.moveTo(9,0);c.lineTo(-6,6.5);c.lineTo(-2.6,0);c.lineTo(-6,-6.5);c.closePath();c.lineJoin='round';c.lineWidth=3.2;c.strokeStyle='#0b0c0f';c.stroke();c.fillStyle='#fff';c.fill();c.restore()}
 
-G.kaart={open,close,isOpen:()=>!ov.hidden,draw:()=>{if(!ov.hidden)req(true)},highlight,unhighlight,mini,items,cats:CAT,pin:(cat,o)=>pinHtml(Object.assign({cat},o||{})),legend:on=>legShow(on==null?leg.hidden:!!on)};
+G.kaart={open,close,isOpen:()=>!ov.hidden,draw:()=>{if(!ov.hidden)req(true)},highlight,unhighlight,mini,items,cats:CAT,pin:(cat,o)=>pinHtml(Object.assign({cat},o||{})),legend:on=>legShow(on==null?leg.hidden:!!on),
+  fly:(x,z,zoom)=>flyTo(x,z,zoom),refresh:()=>{L.sig='';refreshUi()},el:ov,setWp,clearWp};
 })();

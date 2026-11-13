@@ -352,7 +352,7 @@ function finish(){const first=!S.charDone,isNew=st.mode==='new';S.char=san(st.ch
   if(first&&isNew&&typeof tourStart==='function')setTimeout(()=>{try{tourStart()}catch(e){}},600)}
 
 /* ---------- vanzelf: nieuw account meteen, bestaand account één keer per sessie (max. KAR_ASK keer Later) ---------- */
-function autoTry(n){if(st.open||typeof S==='undefined'||!S||S.charDone)return;const nw=karNew();if(!nw&&((S.charAsk||0)>=KAR_ASK||window.__karLater))return;
+function autoTry(n){if(st.open||typeof S==='undefined'||!S||S.charDone||window.__VERHAAL__)return;   // in het verhaal speel je Luca: geen karaktermakerconst nw=karNew();if(!nw&&((S.charAsk||0)>=KAR_ASK||window.__karLater))return;
   const G=window.STAD,md=document.getElementById('modal');
   const busy=window.__LOCKED__||document.getElementById('devLock')||(md&&!md.hidden)||(typeof tr!=='undefined'&&tr.on)||S.pendingArrest||document.querySelector('.cg-ov,.chase-ov,.ar-ov,.pv-ov')
     ||(isStad()&&(!G||!G.ready||(G.kit&&G.kit.dialogOpen&&G.kit.dialogOpen())||(G.phone&&G.phone.isOpen&&G.phone.isOpen())||(G.ui&&G.ui.cur&&G.ui.cur())));

@@ -1,0 +1,75 @@
+/* Pixelstad: fiets (adem, bel, balans) en bezorgen (de bonnetjes van Bella Napoli) */
+.sdf-ui,.sdf-bal,.sdb-card{--pan:rgba(12,13,16,.92);--ln:#2b3038;--rood:#e2453a;--warm:#ffb03a;font-family:var(--f-body,system-ui,sans-serif);color:#ebe8e2}
+.sdf-ui[hidden],.sdf-bal[hidden],.sdb-card[hidden]{display:none!important}
+/* adem en bel: boven de snelheidsmeter */
+.sdf-ui{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:21;display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none}
+.sdf-ui>*{pointer-events:auto}
+.sdf-adem{display:flex;align-items:center;gap:7px;padding:5px 8px;background:var(--pan);border:1px solid var(--ln);box-shadow:3px 3px 0 rgba(0,0,0,.5);opacity:.75;transition:opacity .2s}
+.sdf-adem.on,.sdf-adem.low{opacity:1}
+.sdf-adem small{font:700 10px var(--f-mono,monospace);text-transform:uppercase;letter-spacing:.1em;color:#9aa1ab}
+.sdf-adem>i{display:block;width:92px;height:8px;background:#1b1e24;border:1px solid #000}
+.sdf-adem>i>i{display:block;height:100%;width:100%;background:#7fd1c7;transition:width .1s linear}
+.sdf-adem.on>i>i{background:#ffd35a}.sdf-adem.low>i>i{background:#ff6a5a}
+.sdf-belb{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:#1b1e24;border:2px solid #e8c547;color:#f5e08a;font:800 12px var(--f-head,sans-serif);text-transform:uppercase;letter-spacing:.08em;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,.5)}
+.sdf-belb svg{width:16px;height:16px}
+.sdf-belb kbd{font:700 10px var(--f-mono,monospace);border:1px solid currentColor;padding:1px 4px}
+.sdf-belb:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.5)}
+@media (pointer:coarse){.sdf-ui{bottom:calc(250px + env(safe-area-inset-bottom,0px))}.sdf-belb{width:64px;height:64px;border-radius:50%;justify-content:center;flex-direction:column;gap:2px;padding:0;font-size:10px}.sdf-belb svg{width:22px;height:22px}}
+
+/* balans: een tas die kantelt, met een groen vak in het midden */
+.sdf-bal{position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:24;width:min(300px,calc(100vw - 32px));padding:10px 12px 9px;background:var(--pan);border:2px solid var(--warm);box-shadow:4px 4px 0 rgba(0,0,0,.55);text-align:center;pointer-events:none}
+.sdf-bal.go{animation:sdfIn .18s steps(3) both}
+@keyframes sdfIn{from{transform:translate(-50%,10px);opacity:0}to{transform:translateX(-50%);opacity:1}}
+.sdf-bal b{display:block;font:900 17px/1.1 var(--f-display,var(--f-head,sans-serif));text-transform:uppercase;letter-spacing:.04em;color:#fff3d6}
+.sdf-bal small{display:block;margin-top:5px;font:700 10.5px var(--f-mono,monospace);color:#9aa1ab;text-transform:uppercase;letter-spacing:.08em}
+.sdf-bal-g{position:relative;height:34px;margin:8px auto 0;width:140px;background:linear-gradient(90deg,#5a1a16 0,#3a2a1a 30%,#1d3a24 42%,#1d3a24 58%,#3a2a1a 70%,#5a1a16 100%);border:1px solid #000;image-rendering:pixelated}
+.sdf-bal-z{position:absolute;left:50%;top:0;bottom:0;width:2px;margin-left:-1px;background:#3fe395;opacity:.7}
+.sdf-bal-n{position:absolute;left:50%;top:3px;width:28px;height:28px;margin-left:-14px;transition:transform .05s linear}
+.sdf-bal-n svg{width:100%;height:100%;display:block}
+.sdf-bal-t{display:block;height:4px;margin-top:7px;background:#1b1e24}.sdf-bal-t>i{display:block;height:100%;background:var(--warm)}
+.sdf-bal.warn{border-color:#ff4d5e;animation:sdfShake .12s steps(2) infinite}
+@keyframes sdfShake{0%{transform:translate(calc(-50% - 2px),0)}100%{transform:translate(calc(-50% + 2px),0)}}
+.sdf-bal.ok{border-color:#3fe395}.sdf-bal.ok b{color:#3fe395}
+.sdf-bal.fout{border-color:#ff4d5e}.sdf-bal.fout b{color:#ff6a5a}
+
+/* het bonnetje: wie, waar, tijd, warmte, wat er in je tassen zit */
+.sdb-card{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:20;width:min(300px,calc(100vw - 380px));min-width:230px;background:#f3ead6;color:#1d1a16;
+  border:2px solid #1d1a16;box-shadow:4px 4px 0 rgba(0,0,0,.55);font:600 12px var(--f-body,system-ui,sans-serif);cursor:pointer;
+  -webkit-mask:linear-gradient(#000,#000) top/100% calc(100% - 6px) no-repeat,radial-gradient(circle at 5px 6px,#000 4px,transparent 4.5px) bottom/10px 6px repeat-x;
+  mask:linear-gradient(#000,#000) top/100% calc(100% - 6px) no-repeat,radial-gradient(circle at 5px 6px,#000 4px,transparent 4.5px) bottom/10px 6px repeat-x;padding-bottom:6px}
+body.sdb-on .sd-dest{display:none!important}
+.sdb-h{display:flex;justify-content:space-between;align-items:center;padding:5px 9px;background:#c62a22;color:#fff3d6;border-bottom:2px solid #1d1a16}
+.sdb-h b{font:900 14px/1 var(--f-display,var(--f-head,sans-serif));letter-spacing:.06em;text-transform:uppercase}
+.sdb-h b::before{content:"";display:inline-block;width:12px;height:8px;margin-right:6px;vertical-align:1px;background:linear-gradient(90deg,#1f7a3e 33%,#f1ece0 33% 66%,#c62a22 66%);border:1px solid #fff3d6}
+.sdb-h span{font:700 10px var(--f-mono,monospace);letter-spacing:.08em;text-transform:uppercase}
+.sdb-o{display:flex;align-items:center;gap:8px;padding:7px 9px 4px}
+.sdb-who{flex:1;min-width:0;display:flex;flex-direction:column}
+.sdb-who b{font:800 14px/1.15 var(--f-head,sans-serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sdb-who small{font:600 11px var(--f-mono,monospace);color:#6a5f4e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sdb-t{font:900 26px/1 var(--f-display,var(--f-head,sans-serif));font-variant-numeric:tabular-nums;color:#1d1a16}
+.sdb-t.bijna{color:#c06a00;animation:sdbBlink .5s steps(2) infinite}.sdb-t.laat{color:#c62a22}
+@keyframes sdbBlink{50%{opacity:.45}}
+.sdb-w{display:flex;align-items:center;gap:7px;padding:2px 9px 4px}
+.sdb-w small{font:700 10px var(--f-mono,monospace);text-transform:uppercase;letter-spacing:.08em;color:#6a5f4e}
+.sdb-w>i{flex:1;height:9px;background:#d9cdb2;border:1px solid #1d1a16}
+.sdb-w>i>i{display:block;height:100%;transition:width .25s linear}
+.sdb-w .w{background:#e2453a}.sdb-w .l{background:#e8a03a}.sdb-w .k{background:#5a8ad6}
+.sdb-w em{font:800 11px var(--f-head,sans-serif);font-style:normal;text-transform:uppercase;min-width:34px;text-align:right}
+.sdb-w em.w{background:none;color:#c62a22}.sdb-w em.l{background:none;color:#a86200}.sdb-w em.k{background:none;color:#2f5d9a}
+.sdb-bags{display:flex;gap:10px;padding:3px 9px 4px;border-top:1px dashed #b8a98a;margin-top:2px}
+.sdb-bag{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.sdb-bag small{font:700 9.5px var(--f-mono,monospace);text-transform:uppercase;color:#6a5f4e;margin-right:3px}
+.sdb-bag em{font:600 10px var(--f-mono,monospace);color:#9a8d72;font-style:normal}
+.sdb-bag i{display:block;width:18px;height:12px}.sdb-bag i svg{width:100%;height:100%;display:block}
+.sdb-bag i.sch{transform:rotate(-14deg) translateY(-1px)}
+.sdb-next{display:flex;flex-wrap:wrap;gap:3px 10px;padding:0 9px 3px;font:600 10.5px var(--f-mono,monospace);color:#6a5f4e}
+.sdb-next:empty{display:none}
+.sdb-next span::before{content:"→ "}
+.sdb-card.mini .sdb-w,.sdb-card.mini .sdb-bags,.sdb-card.mini .sdb-next{display:none}
+@media (max-width:700px){
+  .sdb-card{left:calc(8px + env(safe-area-inset-left,0px));transform:none;top:calc(196px + env(safe-area-inset-top,0px));width:min(236px,calc(100vw - 130px));min-width:0;font-size:11px}
+  .sdb-card:not(.open) .sdb-bags,.sdb-card:not(.open) .sdb-next{display:none}
+  .sdb-t{font-size:21px}.sdb-who b{font-size:12.5px}.sdb-o{padding:5px 7px 3px}.sdb-h{padding:4px 7px}
+  .sdf-bal{bottom:auto;top:44%}
+}
+@media (max-height:560px) and (min-width:701px){.sdb-card{top:8px;width:260px}}

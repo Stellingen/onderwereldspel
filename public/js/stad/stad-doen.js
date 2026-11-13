@@ -44,11 +44,13 @@ G.unspot=function(o){const i=SP.indexOf(o);if(i>=0)SP.splice(i,1)};
 const pr=document.createElement('div');pr.className='sd-npcp sd-spot';pr.hidden=true;document.body.appendChild(pr);
 const V3=new TH.Vector3();let cur=null,ring=null;
 function pickSpot(){const P=G.P;cur=null;if(G.talking||G.paused||G.hidden||(G.mini&&G.mini.active())||G.sitting)return;const mis=G.mission&&G.mission();let bd=1e9;
-  for(const s of SP){if(!s.act)continue;if(G.driving?!s.drive:s.driveOnly)continue;if(mis&&!s.mis)continue;const d=Math.hypot(s.x-P.x,s.z-P.z);if(d>s.r||d>=bd)continue;if(s.show&&!s.show())continue;bd=d;cur=s}
+  for(const s of SP){if(!s.act)continue;if(G.story&&!s.story&&!STORY_OK[s.k])continue;if(G.driving?!s.drive:s.driveOnly)continue;if(mis&&!s.mis)continue;const d=Math.hypot(s.x-P.x,s.z-P.z);if(d>s.r||d>=bd)continue;if(s.show&&!s.show())continue;bd=d;cur=s}
   if(cur){const door=G.near&&Math.hypot(P.x-G.near.door.x,P.z-G.near.door.z);if(door!=null&&door<bd-.3&&!cur.drive)cur=null}
   // staat er ook iemand voor je: die gaat voor, tenzij de plek duidelijk dichterbij is
   if(cur&&!cur.prio&&!G.driving){const n=G.lookNpc;if(n){const dn=Math.hypot(n.x-P.x,n.z-P.z);if(bd>dn-(LOW[cur.k]?1.2:.4))cur=null}}}
 const LOW={bak:1,bank:1,kat:1};
+// verhaalmodus (/verhaal): alleen plekken van het verhaal (s.story) en wat niets met klikspelgeld te maken heeft
+const STORY_OK={bank:1,kat:1};
 function promptStep(){if(!ring&&G.ready){ring=new TH.Mesh(new TH.RingGeometry(.5,.66,14),new TH.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.85,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.visible=false;G.scene().add(ring)}
   pickSpot();const s=cur;if(!s){pr.hidden=true;if(ring)ring.visible=false;return}
   if(ring){ring.visible=!s.noRing;ring.position.set(s.x,.07,s.z);ring.material.color.set(s.col||'#ffffff');const k=(s.ring||1)*(1+Math.sin(performance.now()/260)*.07);ring.scale.set(k,k,k)}
@@ -62,10 +64,10 @@ G.interact=function(){if(G.mini&&G.mini.active())return true;if(G.sitting&&!G.dr
   const pol=G.police&&G.police.active&&G.police.active();
   if(cur&&!pol){use(cur);return true}
   if(prevI&&prevI())return true;if(cur){use(cur);return true}return false};
-G.spotDots=()=>{const out=[],P=G.P;SP.forEach(s=>{if(!s.dot)return;const d=Math.hypot(s.x-P.x,s.z-P.z);if(d<(s.dotR||90)&&(!s.dotIf||s.dotIf()))out.push({x:s.x,z:s.z,c:s.dot,big:s.big})});
+G.spotDots=()=>{const out=[],P=G.P;SP.forEach(s=>{if(!s.dot)return;if(G.story&&!s.story&&!STORY_OK[s.k])return;const d=Math.hypot(s.x-P.x,s.z-P.z);if(d<(s.dotR||90)&&(!s.dotIf||s.dotIf()))out.push({x:s.x,z:s.z,c:s.dot,big:s.big})});
   // Scherpe neus: pakketjes in de buurt
   if(perk('neus')){const C=S.stadCol||{};(G.pakketten||[]).forEach(p=>{if(!C[p.id]&&Math.hypot(p.x-P.x,p.z-P.z)<55)out.push({x:p.x,z:p.z,c:'#ffd35a'})})}return out};
-G.spotMap=()=>SP.filter(s=>s.map&&(!s.mapIf||s.mapIf())).map(s=>({x:s.x,z:s.z,n:typeof s.map.n==='function'?s.map.n():s.map.n,c:s.map.c||s.col||'#fff',ic:s.map.ic||K.ic.route,pri:s.map.pri||2,big:s.map.big}));
+G.spotMap=()=>SP.filter(s=>s.map&&(!G.story||s.story||STORY_OK[s.k])&&(!s.mapIf||s.mapIf())).map(s=>({x:s.x,z:s.z,n:typeof s.map.n==='function'?s.map.n():s.map.n,c:s.map.c||s.col||'#fff',ic:s.map.ic||K.ic.route,pri:s.map.pri||2,big:s.map.big}));
 /* =================== modellen =================== */
 const scene=()=>G.scene();
 function put(m,x,z,ry){m.position.set(x,0,z);m.rotation.y=ry||0;scene().add(m);return m}

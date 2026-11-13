@@ -6,7 +6,7 @@
 // Verandert niets aan het klikspel zelf. Op /stad (dat dezelfde scripts laadt) doet dit bestand niets.
 (function(){
 'use strict';
-if(location.pathname.indexOf('/stad')===0)return;
+if(location.pathname.indexOf('/stad')===0||location.pathname.indexOf('/verhaal')===0)return;
 const vip=()=>(typeof tier==='function'&&tier()>=1)||!!window.__ADMIN__;
 if(!window.__TOKEN__)return;
 const css=`.nav-stad{position:relative}.nav-stad em,.ms-stad em{font-style:normal;font:800 9px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:#111;background:var(--acc);padding:1px 4px;margin-left:auto}
@@ -42,10 +42,15 @@ function inject(){const nav=document.getElementById('nav'),on=vip(),lk=on?'':' l
   if(nav&&!nav.querySelector('.nav-stad')){const a=document.createElement('a');a.className='navlink nav-stad'+lk;a.href='/stad';
     a.title=on?'Pixelstad: loop zelf door de stad':'Pixelstad: alleen voor VIP en High roller';a.innerHTML=ICO+'<span>Pixelstad</span><em>VIP</em>';
     const sp=nav.querySelector('.navspace');if(sp)sp.after(a);else nav.appendChild(a)}
+  // het verhaal De Bezorger: voor iedereen (Seizoen 1 gratis), eigen pagina /verhaal
+  if(nav&&!nav.querySelector('.nav-verhaal')){const a=document.createElement('a');a.className='navlink nav-stad nav-verhaal';a.href='/verhaal';
+    a.title='Verhaal: De Bezorger, Seizoen 1 gratis';a.innerHTML=ICO+'<span>De Bezorger</span><em>Verhaal</em>';const st=nav.querySelector('.nav-stad:not(.nav-verhaal)');if(st)st.after(a);else nav.appendChild(a)}
   const pn=document.querySelector('#msheet .ms-panel');
   if(pn&&!pn.querySelector('.ms-stad')){const a=document.createElement('a');a.className='ms-stad'+lk;a.href='/stad';
     a.innerHTML=ICO+'<span><b>Pixelstad</b><small>'+(on?'Loop, rijd en kraak zelf door de stad.':'Loop zelf door de stad. Alleen voor VIP en High roller.')+'</small></span><em>VIP</em>';
-    const h=pn.querySelector('.ms-search');if(h)h.after(a);else pn.appendChild(a)}}
+    const h=pn.querySelector('.ms-search');if(h)h.after(a);else pn.appendChild(a)}
+  if(pn&&!pn.querySelector('.ms-verhaal')){const a=document.createElement('a');a.className='ms-stad ms-verhaal';a.href='/verhaal';
+    a.innerHTML=ICO+'<span><b>De Bezorger</b><small>Het verhaal: speel Luca, van pizzabezorger tot de top. Seizoen 1 gratis.</small></span><em>Verhaal</em>';const st=pn.querySelector('.ms-stad:not(.ms-verhaal)');if(st)st.after(a);else pn.appendChild(a)}}
 inject();
 ['nav','msheet'].forEach(id=>{const el=document.getElementById(id);if(el)new MutationObserver(inject).observe(el,{childList:true})});
 setTimeout(()=>{const el=document.getElementById('msheet');if(el&&!el._scObs){el._scObs=1;new MutationObserver(inject).observe(el,{childList:true})}inject()},1500);
@@ -76,6 +81,7 @@ if(!vip()){
     ov.innerHTML=`<div class="sc-box"><small>Nieuw in de stad</small><h2>Hoe wil je spelen?</h2>
      <div class="sc-opts"><button class="sc-o" type="button" data-m="klik">${artK()}<span class="sc-t"><b>Klikspel</b><span>Zoals je gewend bent: alles met een paar klikken, snel en overzichtelijk. Gratis, en dat blijft zo.</span><span class="sc-btn"><i>Verder spelen</i></span></span></button>
      <div class="sc-o lock">${art()}<span class="sc-t"><b>Pixelstad <em>alleen voor leden</em></b><span>De stad waar je zelf rondloopt. Kluizen kraken, auto's kortsluiten, de politie afschudden. Voor VIP en High roller.</span><span class="sc-btn"><a href="/lidmaatschap#pixelstad">Bekijk lidmaatschap</a></span><small>Betalen kan nog niet.</small></span></div>
+     <a class="sc-o" href="/verhaal" style="text-decoration:none">${art()}<span class="sc-t"><b>Verhaal: De Bezorger <em>gratis</em></b><span>Speel Luca, 16, pizzabezorger in de stad. Seizoen 1 is voor iedereen.</span><span class="sc-btn"><i>Speel het verhaal</i></span></span></a>
      </div></div>`;
     const close=()=>{ov.remove();document.removeEventListener('keydown',key)};
     const key=e=>{if(e.key==='Escape')close()};

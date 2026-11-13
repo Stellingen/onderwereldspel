@@ -23,7 +23,7 @@ const TOUR_STEPS=()=>[
 const tr={i:0,on:false,steps:null,raf:0};
 const tourMob=()=>matchMedia('(max-width:900px)').matches;
 // eerst je karakter (karakter.js start de rondleiding zelf als je klaar bent), dan pas de rondleiding
-const tourAuto=()=>typeof S!=='undefined'&&S&&!S.tour&&(S.xp||0)<1&&!(S.stats&&S.stats.crimes)&&!(typeof karPending==='function'&&karPending());
+const tourAuto=()=>typeof S!=='undefined'&&S&&!S.tour&&!window.__VERHAAL__&&(S.xp||0)<1&&!(S.stats&&S.stats.crimes)&&!(typeof karPending==='function'&&karPending());
 function tourEl(st){if(!st.el)return null;const sel=st.el[tourMob()?1:0];let e=sel&&document.querySelector(sel);
  const ok=x=>{if(!x)return false;const r=x.getBoundingClientRect();return r.width>2&&r.height>2&&getComputedStyle(x).visibility!=='hidden'};
  if(!ok(e))e=document.querySelector(st.el[tourMob()?0:1]);return ok(e)?e:null}

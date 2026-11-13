@@ -54,8 +54,8 @@
     window.__TIER__=mj.tier!=null?+mj.tier:null;window.__ADMIN__=!!mj.admin;window.__PUB__=!!mj.pub;
     const tier=window.__TIER__!=null?window.__TIER__:((mj.redeemed||[]).includes('vip')?1:0);
     // alleen VIP en High roller (en beheerders)
-    if(tier<1&&!window.__ADMIN__){fail(['Deze stad is voor leden.','Het klikspel blijft gratis. In de Pixelstad loop, rijd en kraak je zelf, met dezelfde voortgang. Die is voor VIP en High roller.'],
-      '<div class="sd-gate-b"><a class="btn" href="/lidmaatschap#pixelstad">Word VIP en speel de Pixelstad</a><a class="btn ghost" href="/game">Verder in het klikspel</a></div>');return}
+    if(tier<1&&!window.__ADMIN__){fail(['Stad is voor VIP en High roller.','In de Stad loop, rijd en kraak je zelf met je eigen karakter en dezelfde voortgang. Het verhaal De Bezorger (Seizoen 1) is wel gratis: daar speel je Luca, in een eigen stad.'],
+      '<div class="sd-gate-b"><a class="btn" href="/verhaal">Speel het verhaal</a><a class="btn ghost" href="/lidmaatschap#pixelstad">Word VIP</a><a class="btn ghost" href="/game">Klikspel</a></div>');return}
     const sid=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');window.__SID__=sid;
     const st=await fetch('/api/state?sid='+sid,{headers:h});
     if(st.ok){const j=await st.json();window.__SERVER_REV__=j.rev||0;if(j&&j.state)window.__SERVER_STATE__=j.state}
@@ -68,12 +68,12 @@
     css=[...g.matchAll(/<link rel="stylesheet" href="(css\/[^"]+)">/g)].map(x=>x[1])}catch(e){}
   if(!files||!files.length){fail(['Laden mislukt','Ververs de pagina om het opnieuw te proberen.']);return}
   css.push('css/stad.css');
-  css.push('css/stad-auto.css');css.push('css/stad-kaart.css');
+  css.push('css/stad-auto.css');css.push('css/stad-kaart.css');css.push('css/stad-fiets.css');css.push('css/verhaal.css');
   await Promise.all(css.map(f=>new Promise(res=>{const l=document.createElement('link');l.rel='stylesheet';l.href='/'+f+V;l.onload=l.onerror=res;document.head.appendChild(l)})));
   for(const f of files){await new Promise(res=>{const s=document.createElement('script');s.src='/'+f+V;s.onload=res;s.onerror=res;document.body.appendChild(s)})}
   if(window.__TOKEN__&&!window.__SERVER_STATE__&&typeof pushState==='function')pushState();
   try{window.THREE=await import('/stad/vendor/three.module.min.js')}catch(e){fail(['Je browser kan dit niet tekenen','De Pixelstad heeft WebGL nodig. Speel verder in het klikspel.'],'<div class="sd-gate-b"><a class="btn" href="/game">Naar het klikspel</a></div>');return}
-  for(const f of ['js/stad/stad-map.js','js/stad/stad-gfx.js','js/stad/stad-game.js','js/stad/stad-cam.js','js/stad/stad-sfx.js','js/stad/stad-kit.js','js/stad/stad-face.js','js/stad/stad-vak.js','js/stad/stad-mini.js','js/stad/stad-kraak.js','js/stad/stad-avatar.js','js/stad/stad-emote.js','js/stad/stad-lots.js','js/stad/stad-cars.js','js/stad/stad-ui.js','js/stad/stad-missions.js','js/stad/stad-vastgoed.js','js/stad/stad-kaart.js','js/stad/stad-npc.js','js/stad/stad-police.js','js/stad/stad-leven.js','js/stad/stad-naam.js','js/stad/stad-phone.js','js/stad/stad-autos.js','js/stad/stad-doen.js','js/stad/stad-wijk.js','js/stad/stad-race.js','js/stad/stad-hond.js','js/stad/stad-events.js','js/stad/stad-sfeer.js','js/stad/stad-volk.js','js/stad/stad-smeer.js','js/stad/stad-nieuws.js','js/stad/stad-verhaal.js','js/stad/stad-geheim.js']){await new Promise(res=>{const s=document.createElement('script');s.src='/'+f+V;s.onload=res;s.onerror=res;document.body.appendChild(s)})}
+  for(const f of ['js/stad/stad-map.js','js/stad/stad-gfx.js','js/stad/stad-game.js','js/stad/stad-cam.js','js/stad/stad-sfx.js','js/stad/stad-kit.js','js/stad/stad-face.js','js/stad/stad-vak.js','js/stad/stad-mini.js','js/stad/stad-kraak.js','js/stad/stad-avatar.js','js/stad/stad-leeftijd.js','js/stad/stad-emote.js','js/stad/stad-lots.js','js/stad/stad-cars.js','js/stad/stad-ui.js','js/stad/stad-missions.js','js/stad/stad-vastgoed.js','js/stad/stad-kaart.js','js/stad/stad-npc.js','js/stad/stad-police.js','js/stad/stad-leven.js','js/stad/stad-naam.js','js/stad/stad-phone.js','js/stad/stad-autos.js','js/stad/stad-doen.js','js/stad/stad-wijk.js','js/stad/stad-race.js','js/stad/stad-hond.js','js/stad/stad-events.js','js/stad/stad-sfeer.js','js/stad/stad-volk.js','js/stad/stad-smeer.js','js/stad/stad-nieuws.js','js/stad/stad-verhaal.js','js/stad/stad-geheim.js','js/stad/stad-fiets.js','js/stad/stad-bezorg.js','js/stad/stad-keuze.js']){await new Promise(res=>{const s=document.createElement('script');s.src='/'+f+V;s.onload=res;s.onerror=res;document.body.appendChild(s)})}
   try{STAD.init(document.getElementById('stadWorld'))}catch(e){console.error(e);fail(['Je browser kan dit niet tekenen','De Pixelstad heeft WebGL nodig. Speel verder in het klikspel.'],'<div class="sd-gate-b"><a class="btn" href="/game">Naar het klikspel</a></div>');return}
   boot.remove();
 })();

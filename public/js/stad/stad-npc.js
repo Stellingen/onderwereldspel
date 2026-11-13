@@ -174,7 +174,7 @@ G.npcBrain=function(n,dt){const st=n.st||'walk',dP=dist(n,G.P);n.t=(n.t||0)+dt;n
     else{n.sp=0;n.grab=(n.grab||0)+dt;n.y=-.3;n.lean=.7;n.arm=-1.2;n.armR=-1.2;if(n.grab>1){n.grab=0;n.st='wave';n.t=0;n.dur=1.5;n.back='walk';bubble(n,pick(['Dank je!','Gratis geld!','Wat een held!','Yes!']),{col:'#c8ffd8'})}}return true}
   return false};
 /* ---------- agenten op straat: zien ze iets, dan begint de achtervolging ---------- */
-function copWatch(n,dt){n.cw=(n.cw||0)-dt;if(n.cw>0)return false;n.cw=.4;const P=G.P,d=dist(n,P);if(d>16||G.driving)return false;
+function copWatch(n,dt){if(G.story)return false;n.cw=(n.cw||0)-dt;if(n.cw>0)return false;n.cw=.4;const P=G.P,d=dist(n,P);if(d>16||G.driving)return false;
   const lv=typeof S!=='undefined'&&S.wanted?(typeof S.wanted==='object'?(S.wanted.lv||1):1):0;
   if((lv>0&&d<11*(1+(G.faam?G.faam():0)/250)&&los(n,P)&&!(G.police&&G.police.active()))&&!G.hidden){if(G.smeer&&G.smeer.blind(n))return false;bubble(n,'Hé! Jou ken ik!',{col:'#a9c8ff'});G.snd&&G.snd.fx('whistle');G.police&&G.police.start({stars:Math.min(3,lv),why:'gezocht',at:n,wanted:1});n.st='walk';return false}
   return false}
@@ -273,7 +273,7 @@ const COMPL_R={oma:'Och, wat lief van je.',zakenman:'Dank je. Maatwerk.',rivaal:
 const GRAP=[['Waarom nemen Amsterdammers nooit de trap? Omdat ze alles al op de fiets doen.','Haha!'],['Wat doet een agent in de gracht? Zijn fiets zoeken.','Die ken ik nog niet!'],['Mijn huur is zo hoog, ik woon er alleen nog in het weekend.','Zo herkenbaar.'],['Ik zocht een parkeerplek. Nu heb ik een hypotheek.','Haha, ja.'],['Een toerist vraagt de weg. Ik zeg: rechtdoor tot je natte voeten krijgt.','Ha!']];
 const SCHELD={oma:['Wel alle… Dat zeg je niet tegen een dame!',1],zakenman:['Mijn advocaat hoort hiervan.',0],rivaal:['Wat zei je daar? Kom hier!',2],agent:['Weet u wel tegen wie u praat? Doorlopen.',0],student:['Doe normaal, man.',0],toerist:['Sorry? I don\'t understand.',0],zwerver:['Ja ja. Jij ook.',0],jogger:['Geen adem voor jou.',0]};
 const WEG=[['bank','De bank'],['crimes','Café Het Gat'],['cars','De garage'],['biz','De notaris'],['casino','Het casino'],['shop','De wapenhandel']];
-function talk(n){const a=A[n.arch];G.talking=true;if(!n.spoke){n.spoke=1;G.ev&&G.ev('praat')}n.st='talk';n.t=0;target=null;G.lookAt=n;G.snd&&G.snd.fx('blip');const VP=G.volk?G.volk.contact(n):null,vij=!!(VP&&G.volk.val(VP.id)<=-40&&VP.kind!=='agent');
+function talk(n){if(G.story&&!n.story){if(G.story.npcPraat)G.story.npcPraat(n);else bubble(n,pick(['Hm?','Ja?','Sorry, ik heb haast.','Goeiedag.']));return}const a=A[n.arch];G.talking=true;if(!n.spoke){n.spoke=1;G.ev&&G.ev('praat')}n.st='talk';n.t=0;target=null;G.lookAt=n;G.snd&&G.snd.fx('blip');const VP=G.volk?G.volk.contact(n):null,vij=!!(VP&&G.volk.val(VP.id)<=-40&&VP.kind!=='agent');
   const wpn=weapon(),fin=[{t:'Tot ziens',ic:K.ic.hand,f:()=>K.closeDialog()}];
   const praat=()=>{const tip=Math.random()<.4;K.say(tip?pick(TIPS):pick(a.talk),tip?'blij':null,[
     {t:'Compliment geven',ic:K.ic.star,dis:n.compl,why:'Al gedaan',f:()=>{n.compl=1;G.ev&&G.ev('compl');G.volk&&G.volk.daad(n,'compl');rep(n.x,n.z,1);K.say(COMPL_R[n.arch]||'Dank je!',a.fight?null:'blij',main())}},

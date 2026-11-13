@@ -5,7 +5,7 @@
 const TH=window.THREE,M=STAD_MAP,X=STAD_GFX;
 const G={ready:false,paused:false,near:null,yaw:0,yawT:0,pitch:.92,dist:46,distT:46,pix:3};
 window.STAD=G;
-let renderer,scene,camera,sun,hemi,water,waterTex,cityMesh,ground,marks,humans,clock,rt,post,postCam,pools;
+let renderer,scene,camera,sun,hemi,water,waterTex,cityMesh,ground,marks,humans,clock,rt,post,postCam,pools,CW=null;
 const P={x:M.spawn.x,z:M.spawn.z,ry:Math.PI,vx:0,vz:0,ph:0,sp:0,run:false,path:null,goal:null};
 G.P=P;
 const NPC=[];const NPC_N=38;const ACT_MAX=30;G.actors=[];G.NPC=NPC;G.stam=1;G.shakeA=0;G.spMul=1;G.sunOff={x:-40,y:80,z:25};
@@ -63,15 +63,18 @@ G.init=function(host){
   sun=new TH.DirectionalLight(0xffffff,2);sun.castShadow=true;const sm=matchMedia('(max-width:700px)').matches?1024:2048;sun.shadow.mapSize.set(sm,sm);
   const sc=sun.shadow.camera;sc.left=-50;sc.right=50;sc.top=50;sc.bottom=-50;sc.near=1;sc.far=220;sun.shadow.bias=-.0006;sun.shadow.normalBias=.04;scene.add(sun);scene.add(sun.target);
   // grond (water zit er als gaten in) en water eronder
-  const gtex=X.nearestTex(X.groundCanvas(),true);
-  ground=new TH.Mesh(new TH.PlaneGeometry(M.W,M.H),new TH.MeshLambertMaterial({map:gtex,alphaTest:.5}));ground.rotation.x=-Math.PI/2;ground.position.set(M.W/2,0,M.H/2);ground.receiveShadow=true;scene.add(ground);G.ground=ground;
+  if(!(M.CHUNK&&X.chunkWorld)){const gtex=X.nearestTex(X.groundCanvas(),true);
+  ground=new TH.Mesh(new TH.PlaneGeometry(M.W,M.H),new TH.MeshLambertMaterial({map:gtex,alphaTest:.5}));ground.rotation.x=-Math.PI/2;ground.position.set(M.W/2,0,M.H/2);ground.receiveShadow=true;scene.add(ground);G.ground=ground}
   const wc=document.createElement('canvas');wc.width=wc.height=32;const wx=wc.getContext('2d');wx.fillStyle='#1f4f6e';wx.fillRect(0,0,32,32);
   for(let i=0;i<46;i++){const x=Math.random()*32|0,y=Math.random()*32|0;wx.fillStyle=Math.random()<.5?'#2f6f92':'#174056';wx.fillRect(x,y,3+(Math.random()*3|0),1)}
-  waterTex=X.nearestTex(wc);waterTex.wrapS=waterTex.wrapT=TH.RepeatWrapping;waterTex.repeat.set(200,180);
-  water=new TH.Mesh(new TH.PlaneGeometry(1400,1260),new TH.MeshLambertMaterial({map:waterTex}));water.rotation.x=-Math.PI/2;water.position.set(M.W/2,-.55,M.H/2);water.receiveShadow=true;scene.add(water);
+  waterTex=X.nearestTex(wc);const WWd=Math.max(1400,M.W+900),WHd=Math.max(1260,M.H+900);waterTex.wrapS=waterTex.wrapT=TH.RepeatWrapping;waterTex.repeat.set(WWd/7,WHd/7);
+  water=new TH.Mesh(new TH.PlaneGeometry(WWd,WHd),new TH.MeshLambertMaterial({map:waterTex}));water.rotation.x=-Math.PI/2;water.position.set(M.W/2,-.55,M.H/2);water.receiveShadow=true;scene.add(water);
   // de stad
-  const gb=X.buildCity();const at=X.nearestTex(X.atlas),lt=X.nearestTex(X.lit);
-  cityMesh=gb.mesh(X.atlasMat(at,lt));cityMesh.castShadow=true;cityMesh.receiveShadow=true;scene.add(cityMesh);G.city=cityMesh;
+  const at=X.nearestTex(X.atlas),lt=X.nearestTex(X.lit);
+  // grote kaart (verhaalstad): stad en grond in stukken, alleen dichtbij getekend (zie chunkWorld in stad-gfx.js)
+  if(M.CHUNK&&X.chunkWorld){CW=X.chunkWorld(scene,X.atlasMat(at,lt));G.chunks=CW;G.cityParts=CW.city;cityMesh=CW.city[0];G.city=cityMesh;G.ground={material:CW.loMat}}
+  else{const gb=X.buildCity();
+  cityMesh=gb.mesh(X.atlasMat(at,lt));cityMesh.castShadow=true;cityMesh.receiveShadow=true;scene.add(cityMesh);G.city=cityMesh}
   marks=X.placeMarks(scene);G.marks=marks;
   pools=X.lampPools(scene);
   makePost();
@@ -81,7 +84,7 @@ G.init=function(host){
   for(let i=0;i<NPC_N;i++)NPC.push(spawnNpc(true));
   // laatst bekende plek
   try{const s=JSON.parse(localStorage.getItem('stad_pos')||'null');if(s&&M.canStand(s.x,s.z)){P.x=s.x;P.z=s.z;P.ry=s.ry||0;G.yaw=G.yawT=s.yaw||0}}catch(e){}
-  P.look=playerLook();
+  P.look=playerLook();if(CW)CW.warm(P.x,P.z);
   applyLight();resize();addEventListener('resize',resize);
   input();G.ready=true;if(G.carsInit)try{G.carsInit()}catch(e){console.error(e)}G.resume();
   // de speltijd loopt zes keer zo snel als de klok: het licht vaker bijwerken
@@ -197,7 +200,7 @@ const ray=new TH.Raycaster(),v2=new TH.Vector2(),plane=new TH.Plane(new TH.Vecto
 function click(cx,cy){if(G.camClick&&G.camClick(cx,cy))return;v2.set(cx/innerWidth*2-1,-(cy/innerHeight)*2+1);ray.setFromCamera(v2,camera);
   // eerst de markeringen (ring, ruit, bord), dan de gebouwen, dan de grond
   for(const m of marks){if(!m.ring.visible&&!m.pin.visible)continue;const h=ray.intersectObjects([m.pin,m.sign,m.ring].filter(o=>o&&o.visible!==false),false);if(h.length){goPlace(m.p);return}}
-  const hc=ray.intersectObject(cityMesh,false),hl=ray.intersectObjects(G.lotMeshes||[],false);
+  const hc=CW?ray.intersectObjects(CW.city.filter(m=>m.visible),false):ray.intersectObject(cityMesh,false),hl=ray.intersectObjects(G.lotMeshes||[],false);
   // je eigen panden (en borden 'te koop') als ze dichterbij zijn dan de rest van de stad
   if(hl.length&&(!hc.length||hl[0].distance<=hc[0].distance+.01)){const pl=hl[0].object.userData.pl;if(pl){goPlace(pl);return}}
   if(hc.length){const p=hc[0].point;const b=M.buildings.find(b=>p.x>=b.x0-.6&&p.x<=b.x1+.6&&p.z>=b.z0-.6&&p.z<=b.z1+.6);
@@ -218,7 +221,7 @@ G.pause=function(){G.paused=true;cancelAnimationFrame(raf);for(const k in K)K[k]
 // na binnen zijn: buiten voor de deur staan, met je rug naar het gebouw
 G.placeAtDoor=function(pl){const f=pl.face,o=f==='S'?[0,1]:f==='N'?[0,-1]:f==='E'?[1,0]:[-1,0];const p=M.nearestWalk(pl.door.x+o[0]*.6,pl.door.z+o[1]*.6,6)||pl.door;P.x=p.x;P.z=p.z;P.ry=Math.atan2(o[0],o[1]);
   G.yawT=G.yaw=Math.atan2(-o[0],-o[1])+Math.PI;stopPath()};
-G.teleport=function(x,z){const p=M.nearestWalk(x,z,20);if(p){P.x=p.x;P.z=p.z;stopPath()}};
+G.teleport=function(x,z){const p=M.nearestWalk(x,z,20);if(p){P.x=p.x;P.z=p.z;stopPath();if(CW)CW.warm(P.x,P.z)}};
 function draw(){renderer.setRenderTarget(rt);renderer.render(scene,camera);renderer.setRenderTarget(null);renderer.render(post,postCam)}
 const cutV=new TH.Vector3(),cutS=new TH.Vector2();
 function frame(t){raf=requestAnimationFrame(frame);let dt=(t-last)/1000;if(!(dt>0))dt=0;dt=Math.min(.05,dt);last=t;if(G.paused)return;if(G.hitStop>0){G.hitStop-=dt;dt*=.05}step(dt,t/1000);draw()}
@@ -232,7 +235,7 @@ function step(dt,ts){
   if(G.talking||G.frozen>0){ix=iy=0;stopPath();if(G.frozen>0)G.frozen-=dt}
   if(G.hidden){if(Math.hypot(ix,iy)>.2&&G.unhide)G.unhide();else{ix=iy=0}}
   if((G.emote||G.sitting||G.pose)&&(Math.hypot(ix,iy)>.25||P.path)){if(G.poseLock){ix=iy=0;stopPath()}else G.standUp&&G.standUp()}
-  let run=!!K.shift||(G.joy.on&&Math.hypot(G.joy.x,G.joy.y)>.86)||G.runToggle;
+  let run=!!K.shift||(G.joy.on&&Math.hypot(G.joy.x,G.joy.y)>.86)||G.runToggle;if(G.noRun)run=false;
   const fx=-Math.sin(G.yaw),fz=-Math.cos(G.yaw),rx=Math.cos(G.yaw),rz=-Math.sin(G.yaw);
   let mx=rx*ix+fx*iy,mz=rz*ix+fz*iy;
   if(P.path&&!mx&&!mz){const wp=P.path[0];const dx=wp.x-P.x,dz=wp.z-P.z,d=Math.hypot(dx,dz);
@@ -258,11 +261,11 @@ function step(dt,ts){
   if(!(G.camRig&&G.camRig(dt,camera))){camera.position.set(tx+Math.sin(G.yaw)*cp*G.dist,ty+spp*G.dist,tz+Math.cos(G.yaw)*cp*G.dist);camera.lookAt(tx,ty,tz)}
   if(G.shakeA>.01){const a=G.shakeA;camera.position.x+=(Math.random()-.5)*a;camera.position.y+=(Math.random()-.5)*a;camera.position.z+=(Math.random()-.5)*a;G.shakeA*=Math.pow(.02,dt)}
   const shx=G.shadowC?G.shadowC.x:tx,shz=G.shadowC?G.shadowC.z:tz;sun.position.set(shx+G.sunOff.x,G.sunOff.y,shz+G.sunOff.z);sun.target.position.set(shx,0,shz);
-  camera.updateMatrixWorld();cutV.set(P.x,1.2,P.z).project(camera);const rs=renderer.getSize(cutS);X.U.uPS.value.set((cutV.x*.5+.5)*rs.x,(cutV.y*.5+.5)*rs.y);
+  camera.updateMatrixWorld();if(CW)CW.step(camera,P.x,P.z,scene.fog.far);cutV.set(P.x,1.2,P.z).project(camera);const rs=renderer.getSize(cutS);X.U.uPS.value.set((cutV.x*.5+.5)*rs.x,(cutV.y*.5+.5)*rs.y);
   cutV.set(P.x,1.2,P.z).applyMatrix4(camera.matrixWorldInverse);X.U.uPZ.value=-cutV.z;X.U.uCutR.value=rs.y*.2*(G.paused||(G.camMode&&G.camMode!=='boven')?0:1);
   // mensen
   G.missionStep&&!G.paused&&G.missionStep(dt);
-  const A=G.actors.slice(0,ACT_MAX);humans.count(1+NPC.length+A.length);humans.pose(0,{x:P.x,y:-60,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,look:P.look});if(G.avatarPose)G.avatarPose({x:P.x,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,v,dt,lean:v>7?.2:v>1?.05:0,hide:G.driving||G.camMode==='ogen',crouch:G.hidden,arm:G.pArm||0});
+  const A=G.actors.slice(0,ACT_MAX);humans.count(1+NPC.length+A.length);humans.pose(0,{x:P.x,y:-60,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,look:P.look});if(G.avatarPose)G.avatarPose({x:P.x,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,v,dt,lean:v>7?.2:v>1?.05:0,hide:G.driving||G.camMode==='ogen'||!!G.spelerWeg,crouch:G.hidden,arm:G.pArm||0});
   NPC.forEach((n,i)=>{npcStep(n,dt);humans.pose(i+1,n)});A.forEach((a,i)=>humans.pose(1+NPC.length+i,a));humans.flush();humans.xray(false);
   // markeringen laten leven
   for(const m of marks){m.pin.rotation.y=ts*1.6;m.pin.position.y=3+Math.sin(ts*2.2+m.p.door.x)*.18;const s=1+Math.sin(ts*3)*.06;m.ring.scale.set(s,s,s);m.ring.material.opacity=G.near===m.p?1:(m.p.dyn&&!m.p.own?.4:.7)}

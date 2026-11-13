@@ -15,6 +15,7 @@ const MODES=['boven','achter','ogen'],NAME={boven:'Bovenaf',achter:'Achter je',o
 let mode='boven';try{const v=localStorage.getItem('stad_cam');if(MODES.includes(v))mode=v}catch(e){}
 G.camMode=mode;
 const C={pitch:.2,pitchT:.2,tpD:5.4,tpDT:5.4,carD:8.5,fov:0,pos:new TH.Vector3(),look:new TH.Vector3(),init:false,lockWant:false,bob:0};
+G.camC=C;   // (verhaal: interieurs lezen pitch en afstand)
 // gebouwen blokkeren de camera, lage dingen (bankjes, containers) niet
 let B=null;function bmap(){B=new Uint8Array(M.W*M.H);M.buildings.forEach(b=>{for(let z=b.z0;z<b.z1;z++)for(let x=b.x0;x<b.x1;x++)if(x>=0&&z>=0&&x<M.W&&z<M.H)B[z*M.W+x]=1})}
 const wall=(x,z)=>{x=Math.floor(x);z=Math.floor(z);if(x<0||z<0||x>=M.W||z>=M.H)return false;return !!B[z*M.W+x]};
@@ -22,7 +23,7 @@ const wall=(x,z)=>{x=Math.floor(x);z=Math.floor(z);if(x<0||z<0||x>=M.W||z>=M.H)r
 /* ---------- wisselen ---------- */
 function setCam(m,quiet){if(!MODES.includes(m))m='boven';const was=mode;mode=m;G.camMode=m;try{localStorage.setItem('stad_cam',m)}catch(e){}
   if(m==='boven'){unlock();G.shadowC=null;G.yawT=G.yaw}else{if(was==='boven'){C.pitchT=C.pitch=m==='ogen'?.05:.2;C.init=false}if(m==='ogen')C.pitchT=C.pitch=clamp(C.pitch,-.2,.25)}
-  G.resize&&G.resize();ui();if(!quiet){G.toast&&G.toast('Camera: '+NAME[m]+(touch?'':' · V wisselt'+(m!=='boven'?', klik om te kijken met de muis':'')),'info');G.snd&&G.snd.fx('blip')}
+  if(typeof dot!=='undefined'&&dot)dot.hidden=m!=='ogen';G.resize&&G.resize();ui();if(!quiet){G.toast&&G.toast('Camera: '+NAME[m]+(touch?'':' · V wisselt'+(m!=='boven'?', klik om te kijken met de muis':'')),'info');G.snd&&G.snd.fx('blip')}
   G.onCam&&G.onCam(m)}
 G.setCam=setCam;G.camNext=()=>setCam(MODES[(MODES.indexOf(mode)+1)%3]);
 addEventListener('keydown',e=>{const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;if(G.paused||!G.ready)return;

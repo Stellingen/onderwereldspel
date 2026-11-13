@@ -12,7 +12,10 @@ function shade(c,k){const x=new TH.Color(c);x.multiplyScalar(k);return '#'+x.get
 function box(par,w,h,d,x,y,z,c){const m=new TH.Mesh(geo(w,h,d),mat(c));m.position.set(x,y,z);m.castShadow=true;par.add(m);return m}
 // wat je draagt, plus je karakter (karakter.js: huid, kapsel, haarkleur, ogen, uitstraling, mond, baard).
 // o = {wear, char} voor een voorbeeld (de karaktermaker), anders jij zelf.
-function spec(o){o=o||{};let L=null,w={};try{w=o.wear||(S.fit&&S.fit.wear)||{}}catch(e){}try{L=outfitLook(w)}catch(e){}
+// o.spec = een kant-en-klaar uiterlijk (verhaal: Luca en de cast); G.avatarSpec() = het uiterlijk van de speler overschrijven (verhaalmodus)
+const SPEC0={skin:'#d9a27a',hair:'#2a1d14',hs:'kort',fh:'',eye:'#5a3a22',mood:'neutraal',mouth:'normaal',glasses:null,sun:null,band:null,top:{kind:'tee',c:'#30353e'},head:{kind:'none'},legs:{kind:'jeans',c:'#1d2531'},shoes:{kind:'sneaker',c:'#3a3f48',c2:'#24282f',sole:'#e8e4da'},nek:null,pols:null,gloves:null};
+function specFill(x){const d=Object.assign({},SPEC0,x);['top','head','legs','shoes'].forEach(k=>{d[k]=Object.assign({},SPEC0[k],x[k]||{})});if(!d.shoes.sole)d.shoes.sole=d.shoes.kind==='boot'?'#1a120c':'#e8e4da';return d}
+function spec(o){o=o||{};if(o.spec)return specFill(o.spec);if(!o.wear&&!o.char&&G.avatarSpec){const x=G.avatarSpec();if(x)return specFill(x)}let L=null,w={};try{w=o.wear||(S.fit&&S.fit.wear)||{}}catch(e){}try{L=outfitLook(w)}catch(e){}
   let ch=null;try{ch=typeof KAR!=='undefined'?KAR.san(o.char||karGet()):null}catch(e){}
   const skin=ch?ch.skin:(()=>{try{return localStorage.getItem('stad_skin')||'#d9a27a'}catch(e){return '#d9a27a'}})();
   const find=id=>typeof OUTFITS!=='undefined'&&OUTFITS.find(o=>o.id===id);
@@ -107,6 +110,11 @@ function build(o){const d=spec(o),g=new TH.Group(),P={};const top=d.top,tk=top.k
   else if(hs==='krul'){H(.6,.2,.58,0,.56,0);[[-.17,.68,.12],[0,.7,.16],[.17,.68,.1],[-.1,.7,-.12],[.12,.7,-.1]].forEach(p=>H(.16,.14,.16,p[0],p[1],p[2]));H(.6,.38,.14,0,.33,-.21,hD);HS(.08,.26,.44,.28,.38,-.02)}
   else if(hs==='afro'){H(.78,.48,.66,0,.64,-.08);HS(.1,.3,.5,.31,.36,-.08,hD)}
   else if(hs==='knot'){H(.52,.08,.5,0,.52,0);H(.52,.24,.06,0,.39,-.23);H(.2,.18,.2,0,.66,-.1);H(.21,.04,.21,0,.6,-.1,hD)}
+  // (verhaal: ouder worden) kalend = alleen zij- en achterkant, bob, paardenstaart, zijscheiding
+  else if(hs==='kalend'){H(.54,.28,.08,0,.33,-.22);HS(.04,.18,.36,.26,.34,-.04)}
+  else if(hs==='bob'){H(.54,.12,.52,0,.54,0);H(.56,.44,.12,0,.28,-.21,hD);HS(.06,.36,.42,.265,.33,-.02)}
+  else if(hs==='staart'){H(.52,.07,.5,0,.52,0);H(.52,.22,.06,0,.39,-.23);H(.12,.4,.1,0,.3,-.31,hD)}
+  else if(hs==='zij'){H(.54,.12,.52,0,.54,0);H(.54,.32,.1,0,.36,-.21);HS(.05,.18,.4,.255,.4,-.02);H(.3,.07,.14,.1,.5,.2)}
   else if(hs!=='kaal'){H(.54,.14,.52,0,.54,0);H(.54,.32,.1,0,.36,-.21);HS(.05,.18,.4,.255,.4,-.02)}
   // bril, zonnebril, zweetband (hoofdstukken zonder hoed)
   if(!cover&&d.sun){[-.11,.11].forEach(x=>box(head,.15,.085,.02,x,.275,.268,d.sun,false));box(head,.07,.02,.02,0,.29,.268,d.sun,false);HS(.02,.02,.26,.255,.29,.13,d.sun)}
@@ -119,6 +127,8 @@ function ensure(){let k='';try{k=JSON.stringify(spec())}catch(e){}if(av&&av.key=
 G.avatarSync=ensure;
 // los poppetje als voorbeeld (de karaktermaker): {char, wear} → THREE.Group, niet in de stad
 G.avatarMake=o=>build(o).g;
+// los poppetje met zijn onderdelen (P: root, legL/R, torso, armL/R, head, hand, eyeL/R …) voor acteurs in cutscenes en interieurs
+G.avatarBuild=o=>build(o);G.avatarObj=()=>av&&av.g;G.avatarParts=()=>av&&av.P;
 // jouw karakter ook in het uiterlijk dat de rest van de stad leest (HUD-poppetje, telefoon, krant): huid, haar en gezicht
 (function(){const P=G.P;if(!P||typeof KAR==='undefined'||!KAR.stadLook)return;const d=Object.getOwnPropertyDescriptor(P,'look');if(d&&d.get)return;let cur=P.look?KAR.stadLook(P.look):P.look;
   Object.defineProperty(P,'look',{configurable:true,enumerable:true,get(){return cur},set(v){cur=KAR.stadLook(v)}})})();
@@ -188,6 +198,7 @@ G.avatarPose=function(h){if(!av)ensure();if(!av)return;const g=av.g,P=av.P,dt=Ma
   else if(po&&PO[po]){if(!moving){T.lL=T.lR=0}PO[po](tm);fast=po.startsWith('sla')||po==='au'||po.startsWith('duik')||po==='blok'?34:16;prop=PROP[po]||null}
   if(h.crouch){T.y=-.55;T.sy=.8;T.aR=-1.2;T.aL=-.4;T.tx=.2}
   // kijken naar wie of wat er voor je staat
+  if(G.armHook)try{G.armHook(T,P,h,moving)}catch(e){}
   const la=G.lookAt||G.lookNpc;if(la&&!run&&!(em&&em.id==='dans')){let a=Math.atan2(la.x-h.x,la.z-h.z)-h.ry;a=Math.atan2(sin(a),Math.cos(a));if(abs(a)<1.9&&Math.hypot(la.x-h.x,la.z-h.z)<9)T.hy=Math.max(-1.15,Math.min(1.15,a))}
   const k=Math.min(1,dt*fast),kh=Math.min(1,dt*7);
   for(const n in cur){const tv=T[n]==null?0:T[n];cur[n]+=(tv-cur[n])*(n==='hy'||n==='hx'?kh:k)}

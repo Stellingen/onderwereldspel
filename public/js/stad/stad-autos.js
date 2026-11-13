@@ -173,7 +173,7 @@ const WERK={};
 function werkAt(id){if(WERK[id])return WERK[id];const p=M.placeById(id);if(!p)return null;const f=p.face,o=f==='S'?[0,1]:f==='N'?[0,-1]:f==='E'?[1,0]:[-1,0];
   let x=p.door.x+o[0]*3.2,z=p.door.z+o[1]*3.2;const q=M.nearestWalk(x,z,5);if(q){x=q.x;z=q.z}return WERK[id]={x,z}}
 const helerNpc=()=>G.helerContact||(G.NPC||[]).find(n=>n.arch==='heler'&&n.contact);
-function points(){const v=G.driving&&G.car?G.car:null;if(!v)return [];const out=[],st=v.stolen,sh=!!st||(v.dmg||0)>=20;
+function points(){const v=G.driving&&G.car&&!G.car.fiets?G.car:null;if(!v)return [];const out=[],st=v.stolen,sh=!!st||(v.dmg||0)>=20;
   const gw=werkAt('cars');if(gw)out.push({k:'werk',id:'cars',x:gw.x,z:gw.z,n:'Garage Van der Plaat',t:st?'Werkplaats · afleveren':'Werkplaats · repareren',sh});
   if(hasChop()){const cw=werkAt('biz_garage');if(cw)out.push({k:'werk',id:'chop',x:cw.x,z:cw.z,n:'Jouw chop shop',t:st?'Werkplaats · slopen':'Werkplaats',sh})}
   if(st){const m=st.m,hn=helerNpc();let o=null;try{o=typeof helerWants==='function'?helerWants(m.id):null}catch(e){}

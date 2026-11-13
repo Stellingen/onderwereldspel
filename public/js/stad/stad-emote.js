@@ -28,6 +28,7 @@ const strooiCost=()=>{try{const c=G.roofRef&&G.roofRef();return Math.max(20,Math
 G.strooiCost=strooiCost;
 G.doEmote=function(id){const e=EMO.find(x=>x[0]===id);if(!e||!can())return false;G.stopPath&&G.stopPath();clearTimeout(endT);
   if(id==='zit'){G.emote=null;G.sitting=true;G.snd&&G.snd.fx('hide');G.onEmote&&G.onEmote('zit');return true}
+  if(id==='strooi'&&G.story){G.toast&&G.toast('Luca strooit niet met geld. Nog niet.','info');return false}
   if(id==='strooi'){const c=strooiCost();if(S.cash<c){G.toast('Daar heb je '+fmt(c)+' contant voor nodig','bad');return false}S.cash-=c;try{save()}catch(x){}G.snd&&G.snd.fx('cash');
     for(let i=0;i<3;i++)setTimeout(()=>{G.fx2&&G.fx2.burst(G.P.x,2.2,G.P.z,i%2?'#3fe395':'#ffd35a',9)},i*260);G.fx2&&G.fx2.float('−'+fmt(c),G.P.x,G.P.z,'#ffd35a')}
   G.sitting=false;G.emote={id,t0:performance.now()};

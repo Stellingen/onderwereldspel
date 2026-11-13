@@ -391,13 +391,16 @@ app.get(['/index.html', '/index'], (req, res) => res.redirect(301, '/'));
 app.get(['/game', '/game.html'], (req, res) => sendPage(res, 'game.html', { title: `${BRAND.name} · Spelen`, path: '/game', noindex: true }));
 // Pixelstad: het open-wereld-spel voor VIP en High roller (zelfde account en voortgang als /game)
 app.get(['/stad', '/stad.html'], (req, res) => sendPage(res, 'stad.html', { title: `Pixelstad · ${BRAND.name}`, path: '/stad', noindex: true }));
+// Verhaal "De Bezorger": eigen pagina en eigen (grotere) stad op dezelfde engine. Seizoen 1 is voor iedereen (ook gratis spelers);
+// de toegang per hoofdstuk regelt het verhaal zelf (hoofdstuk 2+ alleen VIP en High roller).
+app.get(['/verhaal', '/verhaal.html'], (req, res) => sendPage(res, 'verhaal.html', { title: `De Bezorger · ${BRAND.name}`, path: '/verhaal', noindex: true }));
 app.get(['/admin', '/admin.html'], (req, res) => sendPage(res, 'admin.html', { title: `Beheer · ${BRAND.name}`, path: '/admin', noindex: true }));
 app.get('/manifest.webmanifest', (req, res) => {
   let man = {}; try { man = JSON.parse(tplFile('manifest.webmanifest')); } catch (e) {}
   man.name = BRAND.name; man.short_name = BRAND.short; man.description = BRAND.tagline + '. ' + BRAND.genre + '.';
   res.set('Cache-Control', 'no-cache').type('application/manifest+json').send(JSON.stringify(man, null, 2));
 });
-app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /game\nDisallow: /stad\n\nSitemap: ${SITE}/sitemap.xml\n`));
+app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /game\nDisallow: /stad\nDisallow: /verhaal\n\nSitemap: ${SITE}/sitemap.xml\n`));
 app.get('/sitemap.xml', (req, res) => {
   const urls = Object.keys(ROUTE_META).concat(GD.games.map(x => '/casino/' + x.slug), GD.fams.map(x => '/families/' + x.id));
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(u => `  <url><loc>${escH(SITE + u)}</loc></url>`).join('\n')}\n</urlset>\n`);
