@@ -169,8 +169,10 @@ function facade(id){const a=deurBuiten(id);if(!a)return null;let best=null;
 B0.gevel=facade;
 const DOORS={};
 function doors(){if(!G.spot)return;for(const id in DEF){const d=DEF[id],a=deurBuiten(id);if(!a)continue;const k=Math.round(a.x*10)+','+Math.round(a.z*10);const cur=DOORS[id];if(cur&&cur.k===k)continue;
-    if(cur){G.unspot&&G.unspot(cur.spot);cur.deco&&cur.deco.parent&&cur.deco.parent.remove(cur.deco)}
-    const f=facade(id);const spot=G.spot({story:1,k:'deur',x:a.x,z:a.z,r:2.3,prio:1,n:d.deurTxt||'Naar binnen',sub:d.naam,col:d.kleur||'#ffd35a',h:2.6,show:()=>!inside&&!(G.cut&&G.cut.active())&&!(d.verborgen&&d.verborgen()),act:()=>B0.in(id),
+    if(cur){cur.spot&&G.unspot&&G.unspot(cur.spot);cur.deco&&cur.deco.parent&&cur.deco.parent.remove(cur.deco)}
+    // heeft de stad zelf al een ingang met binnen:id (M.places), dan geen tweede deurplek
+    const viaPlek=(M.places||[]).some(p=>p.binnen===id);
+    const f=facade(id);const spot=viaPlek?null:G.spot({story:1,k:'deur',x:a.x,z:a.z,r:2.3,prio:1,n:d.deurTxt||'Naar binnen',sub:d.naam,col:d.kleur||'#ffd35a',h:2.6,show:()=>!inside&&!(G.cut&&G.cut.active())&&!(d.verborgen&&d.verborgen()),act:()=>B0.in(id),
       map:d.kaart===false?null:{n:d.naam,ic:K.ic.door,c:d.kleur||'#ffd35a',pri:1}});
     let deco=null;if(d.buiten&&f){deco=new TH.Group();deco.binnenId=1;deco.position.set(f.x,0,f.z);deco.rotation.y=Math.atan2(f.nx,f.nz);f.eigen=!!(a.eigen||(M.A&&d.ankerId&&M.A[d.ankerId]));try{d.buiten(deco,f)}catch(e){console.error(e)}G.scene().add(deco)}
     DOORS[id]={k,spot,deco}}}
@@ -181,7 +183,11 @@ const v3=new TH.Vector3();let camPos=null;
 function rigAchter(dt,cam){const S=BUILT[inside],d=S.d,P=G.P,C=G.camC||{pitch:.2,tpD:5.4};const yaw=G.yaw,p=clamp(C.pitch!=null?C.pitch:.2,-.2,.9);
   const asp=innerWidth/innerHeight,por=asp<1,rx=Math.cos(yaw),rz=-Math.sin(yaw);const sh=por?.25:.45,px=P.x+rx*sh,pz=P.z+rz*sh,py=1.95;
   const dmax=Math.min(4.6,(C.tpD||5.4)*(por?1.2:.9)),dx=Math.sin(yaw)*Math.cos(p),dz=Math.cos(yaw)*Math.cos(p),dy=Math.sin(p);
-  let dd=dmax;for(let s=.3;s<=dmax;s+=.08){if(solidAt(S,px+dx*s,pz+dz*s,true)){dd=Math.max(.35,s-.32);break}}
+  const vrij=(yw)=>{const ax=Math.sin(yw)*Math.cos(p),az=Math.cos(yw)*Math.cos(p);for(let s=.3;s<=dmax;s+=.08){if(solidAt(S,px+ax*s,pz+az*s,true))return Math.max(.35,s-.32)}return dmax};
+  let dd=vrij(yaw);
+  // klem tegen een muur: de camera draait zelf een stukje naar de kant met de meeste ruimte (tenzij je net zelf draaide)
+  if(dd<2.4&&performance.now()-(G.manualRotT||0)>1500){let best=0,bd=dd;for(const o of [.45,-.45,.9,-.9,1.4,-1.4]){const v=vrij(yaw+o);if(v>bd+.4){bd=v;best=o}}if(best)G.yawT+=Math.sign(best)*Math.min(Math.abs(best),dt*2.6)}
+  B0.dicht=dd<1.05;
   // staat er vlak achter je een muur: de camera gaat omhoog en kijkt over je schouder naar voren (niet in je nek)
   const ceil=(d.plafond||3.4)-.3,tekort=Math.max(0,2.8-dd),fx=-Math.sin(yaw),fz=-Math.cos(yaw);
   const tgt=v3.set(px+dx*dd,Math.min(ceil,py+dy*dd+tekort*.75),pz+dz*dd);if(!camPos||!C.init){camPos=tgt.clone();C.init=true}else camPos.lerp(tgt,Math.min(1,dt*12));
@@ -199,7 +205,9 @@ function hookLight(){const l0=G.onLight;G.onLight=function(o){l0&&l0(o);if(!insi
 
 /* =================== elke frame =================== */
 let flT=0;
-function frame(dt){if(!inside)return;const S=BUILT[inside];if(!S)return;keepHidden();const t=performance.now()/1000;
+function frame(dt){if(!inside){if(B0.dicht){B0.dicht=false;if(!(G.cut&&G.cut.active()))G.spelerWeg=false}return}const S=BUILT[inside];if(!S)return;keepHidden();
+  // camera vlak achter je hoofd (klem tegen een muur): je poppetje even niet tekenen
+  if(!(G.cut&&G.cut.active()))G.spelerWeg=G.camMode==='achter'&&!!B0.dicht;const t=performance.now()/1000;
   // muren aan de kant van de camera laten zakken (alleen bovenaf), plafond alleen als je niet van boven kijkt
   const boven=G.camMode==='boven'||(G.cut&&G.cut.active()&&false);const cam=G.camera().position,P=G.P,ox=S.d.o.x,oz=S.d.o.z;
   S.walls.forEach(w=>{let cut=false;if(boven&&!w.nooit){const cx=ox+w.c.x,cz=oz+w.c.z;

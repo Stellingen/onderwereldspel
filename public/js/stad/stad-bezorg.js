@@ -306,7 +306,7 @@ function stadSpots(){if(!G.spot||!NAP||stadSpots.done)return;stadSpots.done=1;co
 
 /* =================== kaart =================== */
 if(K&&K.ic&&!K.ic.pizza)K.ic.pizza='<svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="2" width="12" height="3" fill="currentColor"/><rect x="3" y="5" width="10" height="2" fill="currentColor"/><rect x="4" y="7" width="8" height="2" fill="currentColor"/><rect x="5" y="9" width="6" height="2" fill="currentColor"/><rect x="6" y="11" width="4" height="2" fill="currentColor"/><rect x="7" y="13" width="2" height="2" fill="currentColor"/><rect x="5" y="5" width="2" height="2" fill="#0008"/><rect x="9" y="7" width="2" height="2" fill="#0008"/><rect x="7" y="9" width="1" height="1" fill="#0008"/></svg>';
-function kaart(){if(!NAP)return [];return [{cat:'pizza',id:'napoli',x:NAP.door.x,z:NAP.door.z,n:'Pizzeria Bella Napoli',sub:story()?'Giovanni':'Bijbaan: bezorgen',ic:'pizza',pri:5}]}
+function kaart(){if(!NAP||G.kaartMode)return [];return [{cat:'pizza',id:'napoli',x:NAP.door.x,z:NAP.door.z,n:'Pizzeria Bella Napoli',sub:story()?'Giovanni':'Bijbaan: bezorgen',ic:'pizza',pri:5}]}
 
 /* =================== elke frame =================== */
 let ready=false;

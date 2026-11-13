@@ -216,12 +216,12 @@ const UB=(()=>{const g=new TH.BoxGeometry(1,1,1).toNonIndexed();const r={p:Array
 let MATL=null,MATB=null;const mats=()=>{if(!MATL){MATL=new TH.MeshLambertMaterial({vertexColors:true});MATB=new TH.MeshBasicMaterial({vertexColors:true})}};
 const CC={};const lin=h=>CC[h]||(CC[h]=(()=>{const c=new TH.Color(isHex(h)?h:'#ff00ff');return [c.r,c.g,c.b]})());
 function Vox(){const A={p:[],n:[],c:[]},B={p:[],n:[],c:[]};
-  function put(T,w,h,d,x,y,z,col,rz,rx){const c=lin(col),p=UB.p,n=UB.n,cz=rz?cos(rz):1,sz=rz?sin(rz):0,cx=rx?cos(rx):1,sx=rx?sin(rx):0;
-    for(let i=0;i<p.length;i+=3){let X=p[i]*w,Y=p[i+1]*h,Z=p[i+2]*d,NX=n[i],NY=n[i+1],NZ=n[i+2];
+  function put(T,w,h,d,x,y,z,col,rz,rx,mask){const c=lin(col),p=UB.p,n=UB.n,cz=rz?cos(rz):1,sz=rz?sin(rz):0,cx=rx?cos(rx):1,sx=rx?sin(rx):0;
+    for(let i=0;i<p.length;i+=3){if(mask!=null&&!(mask>>((i/18)|0)&1))continue;let X=p[i]*w,Y=p[i+1]*h,Z=p[i+2]*d,NX=n[i],NY=n[i+1],NZ=n[i+2];
       if(rz){const a=X*cz-Y*sz,b=X*sz+Y*cz;X=a;Y=b;const na=NX*cz-NY*sz,nb=NX*sz+NY*cz;NX=na;NY=nb}
       if(rx){const a=Y*cx-Z*sx,b=Y*sx+Z*cx;Y=a;Z=b;const na=NY*cx-NZ*sx,nb=NY*sx+NZ*cx;NY=na;NZ=nb}
       T.p.push(X+x,Y+y,Z+z);T.n.push(NX,NY,NZ);T.c.push(c[0],c[1],c[2])}}
-  return {b:(w,h,d,x,y,z,col,rz,rx)=>put(A,w,h,d,x,y,z,col,rz,rx),gl:(w,h,d,x,y,z,col,rz,rx)=>put(B,w,h,d,x,y,z,col,rz,rx),
+  return {b:(w,h,d,x,y,z,col,rz,rx)=>put(A,w,h,d,x,y,z,col,rz,rx),bm:(w,h,d,x,y,z,col,mask)=>put(A,w,h,d,x,y,z,col,0,0,mask),gl:(w,h,d,x,y,z,col,rz,rx)=>put(B,w,h,d,x,y,z,col,rz,rx),
     into(par,o){mats();const mk=(T,m,sh)=>{if(!T.p.length)return null;const g=new TH.BufferGeometry();g.setAttribute('position',new TH.Float32BufferAttribute(T.p,3));g.setAttribute('normal',new TH.Float32BufferAttribute(T.n,3));g.setAttribute('color',new TH.Float32BufferAttribute(T.c,3));
         g.computeBoundingSphere();const me=new TH.Mesh(g,m);me.castShadow=sh;me.receiveShadow=false;me.userData.ul=1;par.add(me);return me};
       const a=mk(A,MATL,!(o&&o.noShadow));mk(B,MATB,false);return a}}}
@@ -341,6 +341,7 @@ function arm(V,L,O,sg){const k=O.k||'tee',c=k==='overhemd'&&O.jas?O.jas:(O.c||'#
   if(O.gl)V.b(.18,.04,.21,0,-.648,0,shade(hc,.75));
   if(O.wt&&sg<0){V.b(.2,.035,.235,0,-.635,0,O.wt);V.b(.014,.055,.07,.106*sg,-.635,0,shade(O.wt,1.2));V.b(.016,.04,.05,.108*sg,-.635,0,'#e8e4da')}}
 // het haar als veld van blokjes rond het hoofd (per kapsel een vorm); alleen de buitenste laag wordt gebouwd
+const NB=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
 const HSD={kort:{t:.05,s:.028,b:.035,hl:.4,lo:.3,bl:.17,n:.012},krul:{t:.13,s:.09,b:.11,hl:.405,lo:.16,bl:.0,n:.06,fr:1},krulkort:{t:.085,s:.05,b:.065,hl:.405,lo:.24,bl:.1,n:.04,fr:1},
   kuif:{t:.04,s:.014,b:.024,hl:.41,lo:.28,bl:.16,n:.01,kuif:1,fade:1},zij:{t:.05,s:.03,b:.035,hl:.4,lo:.29,bl:.15,n:.01,zij:1},opgeschoren:{t:.028,s:.012,b:.014,hl:.42,lo:.25,bl:.08,n:.004,fade:1},
   achterover:{t:.05,s:.022,b:.045,hl:.44,lo:.28,bl:.04,n:.006,glans:1},lang:{t:.05,s:.05,b:.06,hl:.39,lo:-.3,bl:-.38,n:.015,lang:1},bob:{t:.055,s:.055,b:.06,hl:.36,lo:.04,bl:.04,n:.01,lang:1},
@@ -354,7 +355,7 @@ function haar(V,L,O,Y,W,seed){let st=L.hs2||'kort';if(st==='kaal'||st==='vlecht'
   const cap={cap:.4,pet:.43,beanie:.36,hat:.46}[hat];
   const inHead=(x,y,z)=>abs(x)<hw&&y>0&&y<.5&&abs(z)<.24;
   const f=(x,y,z)=>{const ox=Math.max(abs(x)-hw,0),oy=Math.max(y-.5,0)+Math.max(-y,0),oz=Math.max(abs(z)-.24,0),d=Math.hypot(ox,oy,oz);if(d<=0)return false;
-    let T=S.s;if(z<-.1)T=Math.max(T,S.b);if(y>.42)T=Math.max(T,S.kuif?.04+(abs(x)<.17?Math.max(0,z+.05)*.28:0):S.t);if(S.kam)T=abs(x)<.06&&y>.38?S.t:S.s;
+    let T=S.s;if(z<-.1)T=Math.max(T,S.b);if(y>.42)T=Math.max(T,S.kuif?.03+(abs(x)<.16?Math.max(0,z+.02)*.3*(1-abs(x)/.2):0):S.t);if(S.kam)T=abs(x)<.06&&y>.38?S.t:S.s;
     if(S.n)T+=(noise(x,y,z)-.5)*2*S.n;if(d>T)return false;
     const back=z<-.08;if(y<(back?S.bl:S.lo)){if(!(S.lang&&y>(back?S.bl:S.lo)))return false}
     if(z>.15&&abs(x)<hw+.02&&y<S.hl){if(!(S.fr&&y>S.hl-.07&&noise(x+.03,y,z)>.55))return false}
@@ -372,16 +373,16 @@ function haar(V,L,O,Y,W,seed){let st=L.hs2||'kort';if(st==='kaal'||st==='vlecht'
   if(S.knot&&hat==='none')blob(0,.56,-.14,.085);
   const col0=L.hairBase||L.hair,g=L.grey||0,sk=L.skin,HL=mix(col0,'#b08a64',.55);if(!L.hairT)L.hairT=g>0?mix(L.hair,'#e6e2dc',Math.min(.6,g*.8)):L.hair;
   for(let k=0;k<NZ;k++)for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){if(!grid[ix(i,j,k)])continue;
-    const x=x0+(i+.5)*c,y=y0+(j+.5)*c,z=z0+(k+.5)*c;let open=false;
-    const nb=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];for(const q of nb){const a=i+q[0],b=j+q[1],d=k+q[2];if(a<0||b<0||d<0||a>=NX||b>=NY||d>=NZ||(!grid[ix(a,b,d)]&&!inHead(x0+(a+.5)*c,y0+(b+.5)*c,z0+(d+.5)*c))){open=true;break}}
-    if(!open)continue;
+    const x=x0+(i+.5)*c,y=y0+(j+.5)*c,z=z0+(k+.5)*c;let mask=0;
+    for(let q=0;q<6;q++){const N=NB[q],a=i+N[0],b=j+N[1],d=k+N[2];if(a<0||b<0||d<0||a>=NX||b>=NY||d>=NZ||(!grid[ix(a,b,d)]&&!inHead(x0+(a+.5)*c,y0+(b+.5)*c,z0+(d+.5)*c)))mask|=1<<q}
+    if(!mask)continue;
     const r=hsh(i,j,k,seed),r2=hsh(k,i,j,seed+7);const temple=abs(x)>hw-.03&&y<.44;
     let col=g>0?(temple?L.hairT:L.hair):col0;if(g>0&&r2<g*.22)col=mix(col,'#ece8e2',.55);
     if(S.fade&&(abs(x)>hw-.01||z<-.2)&&y<.42)col=mix(sk,col,.55);
     if(S.kam&&abs(x)>.06)col=mix(sk,col,.5);
     let kk=.86+clamp((y-.2)/.35,0,1)*.2+(r-.5)*.1;const lok=noise(x+.11,y,z-.07);
     if(S.fr&&(r>.8||lok>.78)){col=mix(col,HL,.3);kk+=.1}if(S.glans&&y>.44&&r>.7)col=mix(col,HL,.35);if(y>.5&&r>.86)col=mix(col,HL,.22);if(lok<.18)kk*=.82;
-    V.b(c*1.02,c*1.02,c*1.02,x,Y+y,z,shade(col,kk))}}
+    V.bm(c*1.02,c*1.02,c*1.02,x,Y+y,z,shade(col,kk),mask)}}
 function baard(V,L,Y,W,jw,seed){const f=L.fh2||'';if(!f)return;const hc=L.hairBase||L.hair,g=L.grey||0,sk=L.skin,c=.025;
   const fz=y=>y<.07?.21:y<.13?.23:.24,hwy=y=>y<.07?jw/2:y<.13?W*.47:W/2;
   const flat=f==='stoppel'||f==='dons',th=f==='baard'?.04:f==='kortbaard'?.016:.018;
@@ -395,12 +396,12 @@ function baard(V,L,Y,W,jw,seed){const f=L.fh2||'';if(!f)return;const hc=L.hairBa
   const colAt=(i,j)=>{const r=hsh(i,j,3,seed);let col=bc;if(g>.35&&r<g*.25)col=mix(bc,'#ece8e2',.45);return flat?mix(sk,col,(f==='dons'?.16:.26)+r*.05):shade(col,.93+r*.12)};
   // voorkant
   for(let x=-W/2;x<W/2;x+=c)for(let y=(f==='baard'?-.04:0);y<.24;y+=c){const cx=x+c/2,cy=y+c/2;if(abs(cx)>hwy(Math.max(0,cy)))continue;if(!inB(cx,cy))continue;const i=Math.round(cx/c),j=Math.round(cy/c);
-    const t=flat?.004:th*(f==='baard'?.6+hsh(i,j,5,seed)*.8:1);const z=fz(Math.max(0,cy));V.b(c,c,t,cx,Y+cy,z+t/2,colAt(i,j))}
+    const t=flat?.004:th*(f==='baard'?.6+hsh(i,j,5,seed)*.8:1);const z=fz(Math.max(0,cy));V.bm(c,c,t,cx,Y+cy,z+t/2,colAt(i,j),f==='baard'?31:16)}
   if(f==='snor'||f==='sik'||f==='dons')return;
   // zijkanten en onder de kaak
   for(const sg of [-1,1])for(let z=-.04;z<.22;z+=c)for(let y=0;y<.28;y+=c){const cz=z+c/2,cy=y+c/2;if(f==='ringbaard')continue;
-    const lim=cz<.05?.3:(flat||f==='kortbaard'?.15:.2);if(cy>lim)continue;const hx2=hwy(cy);const i=Math.round(cz/c),j=Math.round(cy/c)+40*sg;const t=flat?.004:th*.8;V.b(t,c,c,sg*(hx2+t/2),Y+cy,cz,colAt(i,j))}
-  if(f!=='ringbaard')for(let x=-jw/2;x<jw/2;x+=c)for(let z=0;z<.21;z+=c){const cx=x+c/2,cz=z+c/2,t=flat?.004:th;V.b(c,t,c,cx,Y-t/2,cz,colAt(Math.round(cx/c),Math.round(cz/c)+90))}
+    const lim=cz<.05?.3:(flat||f==='kortbaard'?.15:.2);if(cy>lim)continue;const hx2=hwy(cy);const i=Math.round(cz/c),j=Math.round(cy/c)+40*sg;const t=flat?.004:th*.8;V.bm(t,c,c,sg*(hx2+t/2),Y+cy,cz,colAt(i,j),f==='baard'?(sg>0?61:62):(sg>0?1:2))}
+  if(f!=='ringbaard')for(let x=-jw/2;x<jw/2;x+=c)for(let z=0;z<.21;z+=c){const cx=x+c/2,cz=z+c/2,t=flat?.004:th;V.bm(c,t,c,cx,Y-t/2,cz,colAt(Math.round(cx/c),Math.round(cz/c)+90),f==='baard'?59:8)}
   if(f==='baard')for(let x=-jw/2+.02;x<jw/2-.02;x+=c)V.b(c,.05,.05,x+c/2,Y-.04,.19,colAt(Math.round(x/c),77))}
 const MONDEN=['dicht','half','open','o','lach','boos','koel','bang'];
 function hoofd(head,P,L,O,seed){const V=Vox(),sk=L.skin,skD=shade(sk,.88),skDD=shade(sk,.74),skL=shade(sk,1.05),Y=.06;
@@ -527,7 +528,7 @@ function renderPortret(L,mood,size,mond){const R=G.renderer&&G.renderer();if(!R)
   m.g.position.set(0,0,0);m.g.rotation.set(0,.32,0);const hh=L.h||1;m.g.scale.setScalar(1);pr.sc.add(m.g);m.g.updateMatrixWorld(true);
   const v=new TH.Vector3();P.head.getWorldPosition(v);const hy=v.y+.3,hat=(L.o&&(L.o.hat==='hat'||L.o.hat==='pet'))?.06:0;
   const tgt=new TH.Vector3(0,hy-.02+hat,0),dist=4.15;pr.cam.position.set(sin(.2)*dist,hy+.1+hat,cos(.2)*dist);pr.cam.lookAt(tgt);pr.cam.updateProjectionMatrix();
-  pr.rim.color.set(mix('#ffffff',L.col||'#ffffff',.35));
+  pr.rim.color.set(mix('#ffffff',L.col||'#ffffff',.35));{const q=hx(L.skin||'#c8956a'),lum=(q[0]*.3+q[1]*.59+q[2]*.11)/255;pr.key.intensity=2.6+Math.max(0,.6-lum)*3.2}
   const oc=new TH.Color();R.getClearColor(oc);const oa=R.getClearAlpha(),ot=R.getRenderTarget(),osh=R.shadowMap.autoUpdate;
   R.setRenderTarget(rt);R.setClearColor(0x000000,0);R.clear(true,true,true);R.shadowMap.autoUpdate=false;R.render(pr.sc,pr.cam);R.shadowMap.autoUpdate=osh;
   const buf=new Uint8Array(size*size*4);R.readRenderTargetPixels(rt,0,0,size,size,buf);R.setRenderTarget(ot);R.setClearColor(oc,oa);pr.sc.remove(m.g);
@@ -575,7 +576,7 @@ U.cineOn=function(o){o=o||{};if(CINE.on||!G.ready)return false;const R=G.rendere
   const sv0={pix:G.pixPref,type:R.shadowMap.type};if(sun){const s=sun.shadow,c=s.camera;sv0.ms=s.mapSize.clone();sv0.cam=[c.left,c.right,c.top,c.bottom];sv0.rad=s.radius;sv0.bias=s.bias}CINE.saved=sv0;
   if(o.pix!==false){G.pixPref=o.pix||U.cinePix();G.resize&&G.resize()}
   // zachte schaduw met een fijnere schaduwkaart rond de scène
-  if(sun&&o.schaduw!==false){const s=sun.shadow,c=s.camera,n=touch?2048:4096;R.shadowMap.type=TH.PCFShadowMap;s.mapSize.set(n,n);if(s.map){s.map.dispose();s.map=null}c.left=-18;c.right=18;c.top=18;c.bottom=-18;c.updateProjectionMatrix();s.radius=touch?2:3;s.bias=-.0004;recompile()}
+  if(sun&&o.schaduw!==false){const s=sun.shadow,c=s.camera,n=touch?2048:4096,soft=!touch&&U.zachteSchaduw!==false;if(soft)R.shadowMap.type=TH.PCFShadowMap;s.mapSize.set(n,n);if(s.map){s.map.dispose();s.map=null}c.left=-18;c.right=18;c.top=18;c.bottom=-18;c.updateProjectionMatrix();s.radius=3;s.bias=-.0004;if(soft)recompile()}
   // randlicht van achteren en een zacht vullicht vanaf de camera
   if(!CINE.rim){CINE.rim=new TH.DirectionalLight(0xffe2c0,0);CINE.fill=new TH.DirectionalLight(0xc8d8ff,0)}
   sc.add(CINE.rim,CINE.rim.target,CINE.fill,CINE.fill.target);
@@ -585,7 +586,7 @@ U.cineOn=function(o){o=o||{};if(CINE.on||!G.ready)return false;const R=G.rendere
 U.cineOff=function(){if(!CINE.on)return false;CINE.on=false;const R=G.renderer(),sc=G.scene(),sun=findSun(),s0=CINE.saved||{};
   if(CINE.prev&&G.post){G.post.material=CINE.prev;CINE.prev=null}
   if(CINE.rim){sc.remove(CINE.rim,CINE.rim.target,CINE.fill,CINE.fill.target)}
-  if(sun&&s0.ms&&R.shadowMap.type!==s0.type){const s=sun.shadow,c=s.camera;R.shadowMap.type=s0.type;s.mapSize.copy(s0.ms);if(s.map){s.map.dispose();s.map=null}[c.left,c.right,c.top,c.bottom]=s0.cam;c.updateProjectionMatrix();s.radius=s0.rad;s.bias=s0.bias;recompile()}
+  if(sun&&s0.ms){const s=sun.shadow,c=s.camera,re=R.shadowMap.type!==s0.type;R.shadowMap.type=s0.type;s.mapSize.copy(s0.ms);if(s.map){s.map.dispose();s.map=null}[c.left,c.right,c.top,c.bottom]=s0.cam;c.updateProjectionMatrix();s.radius=s0.rad;s.bias=s0.bias;if(re)recompile()}
   if(s0.pix!==undefined&&G.pixPref!==s0.pix&&!CINE.cutPix){G.pixPref=s0.pix;G.resize&&G.resize()}
   lucaMirrorOff();CINE.focus=null;return true};
 U.cineAan=()=>CINE.on;U._cine=CINE;U._spk=()=>SPK;
@@ -673,9 +674,11 @@ function koppelCut(){const C=G.cut;if(!C||C._ul)return;C._ul=1;
   if(C.hq){C.hq.pix=U.cinePix();C.hq.portret=small()?112:136}}
 function koppelStory(){const S0=G.story;if(!S0||S0._ul)return;S0._ul=1;
   if(Array.isArray(S0.onStep))S0.onStep.push((id,def)=>{const t=def&&(def.outfit||def.soort||def.situatie);if(t){U.situatie(t);SITsrc='stap'}else if(SITsrc==='stap'){U.situatie(null)}})}
+function opwarmen(){if(!story())return;try{const c=document.createElement('canvas');tekenPortret('luca',null,c,{size:16});PCACHE.clear()}catch(e){}
+  try{const m=cineMat(),R=G.renderer();if(m&&G.post&&R&&R.compile){const was=G.post.material;G.post.material=m;R.compile(G.post,G.camera());G.post.material=was}}catch(e){}}
 let tick=0;
 const hook=setInterval(()=>{if(!G.ready)return;clearInterval(hook);koppelCut();koppelStory();sync(true);
-  const f0=G.onFrame;G.onFrame=function(dt){f0&&f0(dt);try{frame(dt)}catch(e){console.error(e)}}},150);
+  const f0=G.onFrame;G.onFrame=function(dt){f0&&f0(dt);try{frame(dt)}catch(e){console.error(e)}};setTimeout(()=>{(window.requestIdleCallback||setTimeout)(opwarmen)},2500)},150);
 function frame(dt){MINE.forEach(p=>{try{p.update(dt)}catch(e){}});
   const C=G.cut;if(C&&C.personen)C.personen.forEach(a=>{if(a.P&&a.P._ul)faceStep(a,dt)});
   if(CINE.on)cineFrame(dt);

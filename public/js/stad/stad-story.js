@@ -85,7 +85,7 @@ const STEPS={};let cur=null,curId=null,arrived=false,doneOnce=false;
 ST.step=function(id,def){STEPS[id]=def||{};if(id===st().step&&!curId&&G.ready)setTimeout(resume,50);return ST};
 ST.steps=STEPS;
 ST.huidig=()=>curId;
-ST.goto=function(id,o){o=o||{};const s=st();if(cur&&cur.stop)try{cur.stop()}catch(e){console.error(e)}
+ST.goto=function(id,o){o=o||{};resumed=true;const s=st();if(cur&&cur.stop)try{cur.stop()}catch(e){console.error(e)}
   s.step=id;sv();curId=id;cur=STEPS[id]||null;arrived=false;doneOnce=false;
   if(!cur){ST.doel(null);return}
   const w=typeof cur.waar==='function'?null:cur.waar;ST.doel(cur.doel||null,w||null);
@@ -226,9 +226,9 @@ function startPlek(){const s=st();if(s.pos&&M.canStand(s.pos.x,s.pos.z,.3))retur
 // (op /verhaal worden de Stad-modules niet geladen; dit vangt de gedeelde engine af)
 function guards(){
   // ingangen van klikspelschermen: in het verhaal niet (de deuren van het verhaal zijn G.binnen-plekken)
-  const e0=G.onEnter;G.onEnter=function(pl){if(pl&&pl.story&&e0)return e0(pl);if(pl&&pl.verhaal&&pl.act){pl.act();return}};
-  const n0=G.onNear;G.onNear=function(p){if(p&&(p.story||p.verhaal))return n0&&n0(p);n0&&n0(null)};
-  if(G.marks)G.marks.forEach(m=>{if(m.p&&(m.p.story||m.p.verhaal))return;[m.ring,m.pin,m.sign].forEach(o=>{if(o)o.visible=false});m.p._hid=1});
+  const e0=G.onEnter;G.onEnter=function(pl){if(pl&&pl.binnen&&G.binnen&&G.binnen.def&&G.binnen.def(pl.binnen)){G.binnen.in(pl.binnen);return}if(pl&&pl.story&&e0)return e0(pl);if(pl&&pl.verhaal&&pl.act){pl.act();return}};
+  const n0=G.onNear;G.onNear=function(p){if(p&&(p.story||p.verhaal||p.binnen))return n0&&n0(p);n0&&n0(null)};
+  if(G.marks)G.marks.forEach(m=>{if(m.p&&(m.p.story||m.p.verhaal||m.p.binnen))return;[m.ring,m.pin,m.sign].forEach(o=>{if(o)o.visible=false});m.p._hid=1});
   // je klikspel-auto staat niet in de verhaalstad
   try{(G.vehicles||[]).slice().forEach(v=>{if(v.own&&!v.fiets&&G.removeVehicle)G.removeVehicle(v)})}catch(e){}
   G.bringCar=()=>{G.toast&&G.toast('Luca heeft geen auto. Nog niet.','info')};
@@ -241,7 +241,7 @@ function guards(){
   // klikspel-bajes en andere schermen van het klikspel niet openen
   G.openBoard=()=>{};}
 // marks die later nog bijkomen (de engine maakt ze bij het opstarten) elke paar seconden verbergen
-setInterval(()=>{if(G.marks)G.marks.forEach(m=>{if(m.p&&!m.p.story&&!m.p.verhaal&&!m.p._hid){[m.ring,m.pin,m.sign].forEach(o=>{if(o)o.visible=false});m.p._hid=1}})},3000);
+setInterval(()=>{if(G.marks)G.marks.forEach(m=>{if(m.p&&!m.p.story&&!m.p.verhaal&&!m.p.binnen&&!m.p._hid){[m.ring,m.pin,m.sign].forEach(o=>{if(o)o.visible=false});m.p._hid=1}})},3000);
 
 /* ---------- welkom (de eerste keer) ---------- */
 function welkom(){const s=st();if(s.welkom)return;s.welkom=Date.now();sv();
