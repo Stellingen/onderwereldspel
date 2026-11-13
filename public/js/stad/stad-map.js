@@ -215,9 +215,14 @@ const nearRoadCorner=(x,z)=>XS.some(q=>Math.abs(q-x)<RW+SW+1)&&ZS.some(q=>Math.a
 const inPlot=(x,z,m)=>places.some(p=>p.rect&&x>p.rect.x0-(m||0)&&x<p.rect.x1+(m||0)&&z>p.rect.z0-(m||0)&&z<p.rect.z1+(m||0));
 const nearDoor=(x,z)=>places.some(p=>Math.hypot(p.door.x-x,p.door.z-z)<2.6);
 const free=(x,z,r)=>{if(inPlot(x,z,r+.5)||nearDoor(x,z))return false;for(let a=Math.floor(z-r);a<=Math.ceil(z+r);a++)for(let b=Math.floor(x-r);b<=Math.ceil(x+r);b++){if(!inb(b,a)||solid[a*W+b])return false;const t=g[a*W+b];if(t===T.WATER||t===T.ROAD||t===T.BRIDGE)return false}return true};
-// bomen in parken en tuinen
+// tuinpaden: een kruis door elk park-blok, van stoep tot stoep (alleen over park, nooit over de weg), en het pad langs de Westkust
+const parkPaths=[];for(let i=0;i<XS.length-1;i++)for(let j=0;j<ZS.length-1;j++){const [a,b]=bx(i),[c,d]=bz(j);if(b-a<20||d-c<20)continue;const mx=Math.floor((a+b)/2),mz=Math.floor((c+d)/2);
+  if(at(mx,mz)!==T.PARK)continue;parkPaths.push({x0:a,z0:mz-1,x1:b,z1:mz+1},{x0:mx-1,z0:c,x1:mx+1,z1:d})}
+parkPaths.push({x0:17,z0:176,x1:19,z1:515});
+const onPath=(x,z,r)=>parkPaths.some(p=>x>p.x0-r&&x<p.x1+r&&z>p.z0-r&&z<p.z1+r);
+// bomen in parken en tuinen (niet op de paden; de random-volgorde blijft gelijk)
 for(let i=0;i<26000;i++){const x=6+rng()*(W-12),z=6+rng()*(H-12),t=at(x|0,z|0);
-  if((t===T.PARK&&rng()<.5)||(t===T.GARDEN&&rng()<.16)){if(free(x,z,1.6))prop('tree',x,z,{s:.8+rng()*.6,v:ri(0,2),solid:.5})}}
+  if((t===T.PARK&&rng()<.5)||(t===T.GARDEN&&rng()<.16)){if(free(x,z,1.6)){const s=.8+rng()*.6,v=ri(0,2);if(!onPath(x,z,1.3))prop('tree',x,z,{s,v,solid:.5})}}}
 // palmen op het strand en Het Eiland
 for(let x=22;x<574;x+=ri(10,16)){const z=536+rng()*4;if(free(x,z,1))prop('palm',x,z,{s:.9+rng()*.4,solid:.4})}
 for(let x=604;x<760;x+=ri(12,18)){const z=640+rng()*6;if(at(x|0,z|0)===T.GRASS&&free(x,z,1))prop('palm',x,z,{s:.9+rng()*.4,solid:.4})}
@@ -256,7 +261,9 @@ alleys.forEach((a,i)=>{const f=a.f,ns=f==='N'||f==='S';
   if(inA){if(ns)block(a.x0,Math.floor(z-1),a.x0+1,Math.ceil(z+1));else block(Math.floor(x-1),a.z0,Math.ceil(x+1),a.z0+1)}else block(Math.floor(x-.9),Math.floor(z-.9),Math.ceil(x+.9),Math.ceil(z+.9));
   hides.push({x,z,k:'dumpster'});
   const wx=ns?a.x0:a.cx,wz=ns?a.cz:a.z0;
-  if(ns?solid[(a.cz|0)*W+(a.x0-1)]:solid[(a.z0-1)*W+(a.cx|0)])prop('graffiti',wx,wz,{ns:ns?1:0,v:i%5,len:Math.min(5,(ns?a.z1-a.z0:a.x1-a.x0)-2)});
+  // graffiti alleen op een echte gevel (een pand dat precies tegen de steeg staat), anders zweeft hij in de lucht
+  {const len=Math.min(5,(ns?a.z1-a.z0:a.x1-a.x0)-2),h=Math.max(2,len)/2;
+    if(buildings.some(b=>ns?Math.abs(b.x1-wx)<.3&&b.z0<=wz-h&&b.z1>=wz+h:Math.abs(b.z1-wz)<.3&&b.x0<=wx-h&&b.x1>=wx+h))prop('graffiti',wx,wz,{ns:ns?1:0,v:i%5,len})}
   if(i%2===0)prop('lamp',ns?a.x1-.35:a.cx,ns?a.cz:a.z1-.35,{})});
 props.filter(p=>p.k==='container').forEach(p=>hides.push({x:p.x,z:p.z,k:'container',r:p.rot?[1.5,3.5]:[3.5,1.5]}));
 // Oostland: poorten over de weg aan het eind van de bruggen over het havenkanaal
@@ -369,7 +376,7 @@ const NET=(function(){const key=(x,z)=>x+','+z,nodes={};const node=(x,z)=>nodes[
   HR.forEach(h=>{const xs=new Set([h.a,h.b]);VR.forEach(v=>{if(v.x>=h.a&&v.x<=h.b&&h.z>=v.a&&h.z<=v.b)xs.add(v.x)});const L=[...xs].sort((a,b)=>a-b);for(let i=0;i<L.length-1;i++){const A_=node(L[i],h.z),B=node(L[i+1],h.z);if(!A_.n.includes(B)){A_.n.push(B);B.n.push(A_)}}});
   return Object.values(nodes)})();
 function setSolid(r,on){block(Math.floor(r.x0),Math.floor(r.z0),Math.ceil(r.x1),Math.ceil(r.z1),on?1:0)}
-root.STAD_MAP={NET,districtAt,setSolid,ESTATE,EST_H,EST_B,BIZ_LOOK,alleys,hides,estateAt:(x,z)=>x>=ESTATE.x0&&z>=ESTATE.z0&&z<ESTATE.z1,W,H,FL,T,RW,SW,LANE,
+root.STAD_MAP={NET,districtAt,setSolid,ESTATE,EST_H,EST_B,BIZ_LOOK,alleys,hides,parkPaths,estateAt:(x,z)=>x>=ESTATE.x0&&z>=ESTATE.z0&&z<ESTATE.z1,W,H,FL,T,RW,SW,LANE,
   XS,ZS,VR,HR,RX:XS,RZ:ZS,RXE:[],RZE:[],GATES,A,Z,ground:g,solid,bridgeWalk,buildings,props,places,bridges,DISTRICTS,spawn,jailGate,
   at,walkable,canStand,nearestWalk,findPath,placeById:id=>places.find(p=>p.id===id),placeByPage:pg=>places.find(p=>p.page===pg)};
 })(typeof window!=='undefined'?window:globalThis);

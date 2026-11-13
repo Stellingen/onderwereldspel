@@ -247,7 +247,17 @@ G.npcService.muzikant=(n,ch)=>{const cd=(S.cd&&S.cd.stadOptreden||0)-now();let w
   ch.push({t:'Samen optreden',sub:why?'':'Ritmespel · het publiek geeft fooi',ic:K.ic.music,dis:!!why,why,f:()=>optreden(n)})};
 /* =================== opstarten =================== */
 let tt=0;
-function step(dt){tt+=dt;if(tt>.08){tt=0;promptStep()}sitStep(dt);kijkStep(dt);if(bob&&bob.visible)bob.rotation.y+=dt}
+function step(dt){tt+=dt;if(tt>.08){tt=0;promptStep();hintList()}hintDraw();sitStep(dt);kijkStep(dt);if(bob&&bob.visible)bob.rotation.y+=dt}
+/* kleine cirkels op de grond: hier kun je iets doen. Pas zichtbaar als je in de buurt bent (±16 m), dus geen bordjes in de lucht.
+   Sta je in de cirkel, dan zie je wat het is: de grote ring en het label (promptStep). s.hint:1 = altijd een cirkel, s.hint:0 = nooit. */
+const HINT={tag:1,kijk:1,vis:1,krant:1,ev:1,hond:1,geld:1,kooi:1,atm:1,race:1,baas:1,geheim:1};
+const HN=14;let hm=null,HL=[];const hO=new TH.Object3D(),hC=new TH.Color();
+function hintList(){HL=[];const P=G.P;if(!P||G.talking||G.paused||G.driving||G.sitting||(G.mini&&G.mini.active()))return;const mis=G.mission&&G.mission();
+  for(const s of SP){if(!s.act||s===cur||s.hint===0||!(s.hint||HINT[s.k]))continue;if(mis&&!s.mis)continue;const d=Math.hypot(s.x-P.x,s.z-P.z);if(d>(s.hintR||16))continue;if(s.show&&!s.show())continue;HL.push([d,s])}
+  HL.sort((a,b)=>a[0]-b[0]);if(HL.length>HN)HL.length=HN}
+function hintDraw(){if(!G.ready||!G.scene)return;if(!hm){hm=new TH.InstancedMesh(new TH.RingGeometry(.26,.44,16),new TH.MeshBasicMaterial({transparent:true,opacity:.8,depthWrite:false}),HN);hm.frustumCulled=false;hm.renderOrder=2;hm.count=0;G.scene().add(hm)}
+  const t=performance.now()/1000;let n=0;for(;n<HL.length;n++){const s=HL[n][1],k=1+Math.sin(t*3.2+s.x)*.1;hO.position.set(s.x,.06,s.z);hO.rotation.set(-Math.PI/2,0,0);hO.scale.set(k,k,k);hO.updateMatrix();hm.setMatrixAt(n,hO.matrix);hC.set(s.col||'#ffffff');hm.setColorAt(n,hC)}
+  hm.count=n;hm.instanceMatrix.needsUpdate=true;if(hm.instanceColor)hm.instanceColor.needsUpdate=true}
 const wait=setInterval(()=>{if(!G.ready||!G.addFixed||!G.post)return;clearInterval(wait);
   try{setupBenches();setupBins();setupAtms()}catch(e){console.error(e)}
   try{// koffiekar op Het Plein, snackkar en viskraam aan de boulevard (op het zand naast de stoep), de dobbelaar op de kade van De Haven

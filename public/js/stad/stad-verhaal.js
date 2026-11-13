@@ -168,10 +168,15 @@ function offer(g){const pp=PPL[g],list=avail(g);if(RUN)return;if(G.mission&&G.mi
 const CH={joop:'Hoofdstuk 1',kees:'Hoofdstuk 2',lin:'Hoofdstuk 3'};
 
 /* ---------- een missie spelen ---------- */
-let RUN=null;G.verhaal={run:()=>RUN,done,list:()=>MIS,start:id=>{const m=byId(id);if(m)start(m)},_next:()=>next(),_win:()=>win()};
+let RUN=null;G.verhaal={run:()=>RUN,done,list:()=>MIS,start:id=>{const m=byId(id);if(m)start(m)},_next:()=>next(),_win:()=>win(),
+  // losse missies van buiten (geheimen in de stad): zelfde motor, eigen personages
+  side:def=>{def.side=1;start(def)},ppl:PPL,mkActor,rmActor,snap};
+const chName=def=>def.side?'Geheim · '+(def.where||'Pixelstad'):CH[def.g]+' · '+PPL[def.g].n;
 function start(def){if(RUN)return;if(G.police&&G.police.active()){G.toast('Schud eerst de politie af','bad');return}ensure3d();
   RUN={def,i:-1,t:0,act:[],car:null,timer:null,guards:[],gsus:0,extra:{},fotoPrev:null};G.verhaalOn=true;
-  titleCard(def.n,CH[def.g]+' · '+PPL[def.g].n);G.snd&&G.snd.fx('go');hud(true);next()}
+  // personen die er al staan (geheimen): def.pre() maakt ze, de motor ruimt ze op
+  if(typeof def.pre==='function'){const o=def.pre()||{};Object.keys(o).forEach(k=>{RUN.extra[k]=o[k];RUN.act.push(o[k])})}
+  titleCard(def.n,chName(def));G.snd&&G.snd.fx('go');hud(true);next()}
 function cleanup(){if(!RUN)return;const R=RUN;try{G.kraak&&G.kraak.stop();G.mini&&G.mini.active()&&G.mini.stop();if(K.dialogOpen&&K.dialogOpen())K.closeDialog(true)}catch(e){}G.talking=false;G.lookAt=null;R.act.forEach(rmActor);R.guards.forEach(g=>{rmActor(g);if(g.cone){scene.remove(g.cone)}});R.guards=[];
   lootObjs.forEach(o=>scene.remove(o));lootObjs.length=0;mark(null);if(dia)dia.visible=false;spotOff();
   if(R.car){if(G.driving&&G.car===R.car.v&&G.exitCar)G.exitCar(true);G.removeVehicle&&G.removeVehicle(R.car.v)}
@@ -192,6 +197,7 @@ function next(){const R=RUN;if(!R)return;R.i++;const s=R.def.steps[R.i];if(!s){w
   if(s.t==='talk'||s.t==='fight'||s.t==='choice'||s.t==='run'||s.t==='lift'){let a=R.extra[s.who];if(!a){const at=s.pat||P;a=R.extra[s.who]=mkActor(s.who,at.x+(s.pat?0:2),at.z,{});R.act.push(a)}s.a=a}
   if(s.t==='tail'){let a=R.extra[s.who];if(!a){a=R.extra[s.who]=mkActor(s.who,s.from[0],s.from[1],{});R.act.push(a)}s.a=a;a.path=M.findPath(a.x,a.z,s.to[0],s.to[1])||[];s.lost=0;s.sus=0;
     if(s.to){const ag=R.extra.agent||(R.extra.agent=mkActor('agent',s.to[0]+2,s.to[1]-1,{}));if(!R.act.includes(ag))R.act.push(ag)}}
+  if(s.spawn)Object.keys(s.spawn).forEach(k=>{if(!R.extra[k]){const q=s.spawn[k];const a=R.extra[k]=mkActor(k,q[0],q[1],{ry:q[2]||0});R.act.push(a)}});
   if(s.t==='foto'){s.left=s.targets.slice();s.targets.forEach(t=>{if(Array.isArray(t)){const g=new TH.Group();const b=new TH.Mesh(new TH.BoxGeometry(.5,.32,.32),new TH.MeshLambertMaterial({color:0x2a2c30}));g.add(b);const l=new TH.Mesh(new TH.BoxGeometry(.1,.1,.06),new TH.MeshBasicMaterial({color:0xff3d52}));l.position.set(0,0,.18);g.add(l);g.position.set(t[0],t[2],t[1]);G.scene().add(g);lootObjs.push(g);g.userData.d=l}});if(G.camMode!=='ogen'&&G.setCam){R.fotoPrev=G.camMode;G.setCam('ogen',true);G.toast(touch?'Door je ogen: richt de stip en tik':'Door je ogen: richt de stip en druk op E (of klik)','info')}}
   if(s.t==='car'){const p=roadNear(s.at[0],s.at[1]);const v={d:{name:s.name,max:s.kind==='sport'?24:15,col:s.col,kind:s.kind},x:p.x,z:p.z,ry:Math.PI/2,v:0,mesh:G.carMesh(s.col,s.kind,false),dmg:0,verhaal:1};
     v.mesh.position.set(v.x,0,v.z);v.mesh.rotation.y=v.ry;G.scene().add(v.mesh);G.addVehicle(v);R.car={v,wired:!s.wire};s.v=v;
@@ -213,7 +219,7 @@ async function carUse(s){if(s.busy||G.driving)return;const R=RUN;if(!R.car.wired
   G.snd&&G.snd.fx('engineStart');G.enterCar(s.v)}
 async function miniUse(s){if(s.busy||!RUN)return;const R=RUN;s.busy=1;let r;
   if(s.game==='timing')r=await G.mini.timing(Object.assign({allow:1,vak:'bescherm'},s.o||{}));
-  else if(s.game==='hold')r=await G.mini.hold({d:s.d||2,label:s.act,vak:'smokkel'});
+  else if(s.game==='hold')r=await G.mini.hold({d:s.d||2,label:s.act,vak:s.vak||'smokkel'});
   else if(s.game==='kluis')r=await G.kraak.kluis({d:s.d,vak:'kluis'});
   else if(s.game==='slot')r=await G.kraak.slot({d:s.d,vak:'inbraak'});
   else if(s.game==='draad')r=await G.kraak.draad({d:s.d,vak:'kortsluit'});
@@ -304,7 +310,7 @@ ui.innerHTML=`<div class="sd-vh-top"><small id="vhCh"></small><b id="vhN"></b><e
 $s('vhX').addEventListener('click',()=>{if(RUN&&confirmQuit())fail('Je hebt de missie afgebroken')});
 let qT=0;function confirmQuit(){const n=performance.now();if(n-qT<2500)return true;qT=n;G.toast('Nog een keer tikken om af te breken','info');return false}
 function hud(on){if(on===false){ui.hidden=true;document.body.classList.remove('sd-vh-on');return}if(!RUN)return;ui.hidden=false;document.body.classList.add('sd-vh-on');const R=RUN,s=R.s;
-  $s('vhCh').textContent=CH[R.def.g]+' · '+PPL[R.def.g].n;$s('vhN').textContent=R.def.n;
+  $s('vhCh').textContent=chName(R.def);$s('vhN').textContent=R.def.n;
   const t=$s('vhT');t.hidden=!R.timer;if(R.timer){const l=Math.max(0,Math.ceil(R.timer.left));t.textContent=Math.floor(l/60)+':'+String(l%60).padStart(2,'0');t.classList.toggle('low',l<=15)}
   if(s){let txt=s.txt||'';if(s.t==='loot'&&s.pts.length>1)txt+=' ('+(s.pts.length-s.left.length)+'/'+s.pts.length+')';if(s.t==='foto'&&s.targets.length>1)txt+=' ('+(s.targets.length-s.left.length)+'/'+s.targets.length+')';
     if(s.t==='run')txt+=' · '+Math.max(0,Math.ceil(s.left))+' s';const o=$s('vhObj');if(o._t!==txt){o._t=txt;o.innerHTML=txt;o.classList.remove('go');void o.offsetWidth;o.classList.add('go')}}
@@ -335,7 +341,7 @@ const pa=setInterval(()=>{if(!G.phone||!G.phone.add||!G.ready)return;clearInterv
     render:(scr,head)=>{const n=MIS.filter(m=>done(m.id)).length;
       scr.innerHTML=head('Verhaal',n+' van '+MIS.length+' missies')+`<div class="sd-vl">${GIVERS.map(g=>{const pp=PPL[g],on=giverOn(g),ms=MIS.filter(m=>m.g===g);
         return `<div class="sd-vl-ch${on?'':' off'}" style="--c:${pp.col}"><div class="sd-vl-h"><i>${pp.L}</i><span><b>${E(CH[g])} · ${E(pp.n)}</b><small>${E(on?pp.role:'Nog niet bekend')}</small></span>${on&&avail(g).length&&!RUN?`<button class="btn" data-vroute="${g}">Route</button>`:''}</div>
-          <ul>${ms.map(m=>{const d=done(m.id),nx=!d&&(m.need||[]).every(done);return `<li class="${d?'ok':nx?'nx':''}"><span>${d?'✓':nx?'▶':'·'}</span>${on||d?E(m.n):'???'}<em>${d?'Gedaan':nx?fmtE(zS(m.k)):''}</em></li>`}).join('')}</ul></div>`}).join('')}</div>`},
+          <ul>${ms.map(m=>{const d=done(m.id),nx=!d&&(m.need||[]).every(done);return `<li class="${d?'ok':nx?'nx':''}"><span>${d?'✓':nx?'▶':'·'}</span>${on||d?E(m.n):'???'}<em>${d?'Gedaan':nx?fmtE(zS(m.k)):''}</em></li>`}).join('')}</ul></div>`}).join('')}</div>`+(G.geheimHtml?G.geheimHtml():'')},
     click:(t,close)=>{const b=t.closest('[data-vroute]');if(!b)return false;const pp=PPL[b.dataset.vroute];close();G.setWaypoint&&G.setWaypoint(pp.p.x,pp.p.z,pp.n);return true}})},500);
 // de opdrachtgevers als contacten in je telefoon (berichten)
 const cn=setInterval(()=>{if(!G.contacts)return;clearInterval(cn);GIVERS.forEach(g=>{const pp=PPL[g];if(!G.contacts[g])G.contacts[g]={n:pp.n,look:Object.assign({bg:'#1b1c22'},pp.look),col:pp.col}})},300);

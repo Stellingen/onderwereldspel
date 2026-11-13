@@ -170,8 +170,8 @@ function groundCanvas(){
     cx.strokeStyle='#9a968c';cx.lineWidth=2;cx.strokeRect(r.x0*GP+1,r.z0*GP+1,(r.x1-r.x0)*GP-2,(r.z1-r.z0)*GP-2)});
   M.places.forEach(p=>{if(p.dyn!=='plot'||p.zone==='boot'||p.zone==='brug')return;const r=p.rect;cx.fillStyle='#8a6a42';for(let x=r.x0*GP;x<r.x1*GP;x+=3){cx.fillRect(x,r.z0*GP,2,1);cx.fillRect(x,r.z1*GP-1,2,1)}for(let z=r.z0*GP;z<r.z1*GP;z+=3){cx.fillRect(r.x0*GP,z,1,2);cx.fillRect(r.x1*GP-1,z,1,2)}});
   // tuinpaden in de parken (een kruis door elk park-blok)
-  cx.fillStyle=css(C.path);if(M.Z){const pk=M.Z.park;cx.fillRect(pk[0]*GP,((pk[1]+pk[3])/2-1)*GP,(pk[2]-pk[0])*GP,2*GP);[.3,.7].forEach(f=>cx.fillRect((pk[0]+(pk[2]-pk[0])*f-1)*GP,pk[1]*GP,2*GP,(pk[3]-pk[1])*GP))}
-  cx.fillRect(18*GP,176*GP,2*GP,339*GP);
+  // alleen op park en gras: een pad loopt nooit over de weg of de stoep
+  cx.fillStyle=css(C.path);(M.parkPaths||[]).forEach(p=>{for(let z=p.z0;z<p.z1;z++)for(let x=p.x0;x<p.x1;x++){const t=M.at(x,z);if(t===T.PARK||t===T.GRASS)cx.fillRect(x*GP,z*GP,GP,GP)}});
   // parkeervakken voor het politiebureau, cirkel rond het standbeeld op het plein
   const pol=M.placeById('politie');if(pol){cx.strokeStyle='#e8e4d8';cx.lineWidth=1;for(let x=pol.x0+4;x<pol.x1-2;x+=8){cx.beginPath();cx.moveTo(x*GP+.5,(pol.z1+1)*GP);cx.lineTo(x*GP+.5,(pol.z1+9)*GP);cx.stroke()}}
   const st=M.props.find(p=>p.k==='statue');if(st){cx.fillStyle='#b4a894';for(let a=0;a<96;a++){const t=a/96*Math.PI*2;cx.fillRect(Math.round((st.x+Math.cos(t)*8)*GP),Math.round((st.z+Math.sin(t)*8)*GP),GP,GP)}}
