@@ -8,7 +8,7 @@
 // Release: LIVE hieronder. Zolang die uit staat, ziet de speler na Seizoen 1 "coming soon" (stad-h1.js).
 (function(){
 'use strict';
-const LIVE=false;
+const LIVE=true;
 const G=window.STAD,M=window.STAD_MAP,TH=window.THREE;if(!G||!M||!TH)return;
 const $s=id=>document.getElementById(id);
 const touch=matchMedia('(pointer:coarse)').matches;
