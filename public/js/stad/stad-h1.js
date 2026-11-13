@@ -20,6 +20,7 @@ const A=(k,fx,fz)=>{const a=M.A&&M.A[k];if(a&&a.x!=null)return {x:a.x,z:a.z};ret
 const P=()=>({x:G.P.x,z:G.P.z,ry:G.P.ry||0});
 const F=(k,v)=>v===undefined?ST.flag(k):ST.flag(k,v);
 const W=(id,x,z)=>B.p(id,x,z);
+function W3(id,x,y,z){const p=W(id,x,z);return [p[0],y,p[1]]}
 const binnen=async id=>{if(B.waar()!==id)await B.in(id,{forceer:true})};
 const buiten=async()=>{if(B.waar())await B.uit()};
 const fx=n=>{try{G.snd&&G.snd.fx(n)}catch(e){}};
@@ -364,7 +365,6 @@ stap('h1_sahara',{async start(o){const t=nieuw();fietsAf();const sch=G.fiets?G.f
    {say:'luca',text:'Er is er nog één! Ik kom zo!',t:2},
    {fade:'out',t:.4},{weg:'luca'}],{blijfZwart:false});
   if(t!==RUN)return;go('h1_ronde3')}});
-function W3(id,x,y,z){const p=W(id,x,z);return [p[0],y,p[1]]}
 
 stap('h1_ronde3',{doel:'De bar is leeg. Breng de laatste doos naar achteren',
   waar:()=>{const p=B.plek('sahara','tafel_achter')||{x:W('sahara',6.4,4)[0],z:W('sahara',6.4,4)[1]};return {binnen:'sahara',x:p.x,z:p.z+1.2,r:1.6}},
@@ -774,5 +774,5 @@ const iv=setInterval(()=>{if(!G.ready||!G.story||!G.cut||!G.binnen||!G.story.ste
   registreer();
   setTimeout(()=>{try{dienstInit();ansInit()}catch(e){console.error(e)}},800);
 },120);
-G.h1={vechten,tellen,dienstAan,seizoen2,stappen:()=>Object.keys((G.story&&G.story.steps)||{}).filter(k=>/^h\d|^start/.test(k))};
+G.h1={vechten,tellen,dienstAan,seizoen2,lib:{A,P,F,W,W3,walk,voor,naar,tijd,zorgFiets,fietsAf,binnen,buiten,cam,camNaar,rond,rondNaar,tril,mgOpen,css,scooter,zetBinnen,stapelOp,stapelsWeg,fx,zeg,sein,sleep,eur,pick,rr,clamp,hyp},stappen:()=>Object.keys((G.story&&G.story.steps)||{}).filter(k=>/^h\d|^start/.test(k))};
 })();
