@@ -113,7 +113,8 @@ const czLim=()=>typeof ccCard==='function'?ccCard().lim*ccT('lim'):20000;
 const CZ_GAME={kluis:1.4,vis:1.4,zoet:1.4,draak:1.4,roulette:1,bj:.85,tcp:.85,th:.85,coin:.8,mines:.55,avia:.55},CZ_TIER=[1,.65,.35],CZ_BAN=[30,20,10],CZ_EYE=[.25,1,2];
 // Betaalwijze (S.casPay): 'auto' (standaard) = eerst je zwarte geld, is dat op dan je witte; 'wit' = alleen wit; 'zwart' = alleen zwart.
 const casPayMode=()=>S.casPay==='zwart'?'zwart':S.casPay==='wit'?'wit':'auto';
-const casCash=()=>{const m=casPayMode();return m==='zwart'?zwart():m==='wit'?wit():S.cash};
+// tijdens een lopende bonus staat de winst al op je saldo (window.slotPending); die telt niet mee voor wat je kunt inzetten, anders verraadt de knop de uitslag
+const casCash=()=>{const m=casPayMode(),v=m==='zwart'?zwart():m==='wit'?wit():S.cash;return Math.max(0,v-(window.slotPending||0))};
 const casShort=()=>{const m=casPayMode();return m==='zwart'?'Niet genoeg zwart geld. Zet "Betalen met" op Automatisch of Wit.':m==='wit'&&zwart()>=1?'Niet genoeg wit geld. Zet "Betalen met" op Automatisch om ook je zwarte geld te gebruiken.':'Niet genoeg contant geld'};
 // ogen van de beveiliging: per periode van 40 s dicht, open of op jouw tafel gericht (voor iedereen hetzelfde ritme per speler)
 function czEyes(t){t=t||now();const P=40000,k=Math.floor(t/P),x=(t%P)/P;let h=2166136261;const sd=String(k)+(S.name||'');for(const c of sd)h=Math.imul(h^c.charCodeAt(0),16777619);const r=((h>>>0)%1000)/1000;
