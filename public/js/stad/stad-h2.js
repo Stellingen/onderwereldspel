@@ -34,7 +34,7 @@ const TICK=new Set();let hooked=false;function tick(f){if(!hooked){hooked=true;c
 // laat een auto langs een lijn rijden (Promise); op het eind wacht hij of verdwijnt hij
 function rij(g,pts,v,o){o=o||{};return new Promise(res=>{let i=1,x=pts[0].x,z=pts[0].z;g.position.set(x,0,z);G.scene().add(g);let alive=true,t=0,un=null;
   const stop=()=>{if(!alive)return;alive=false;un&&un();if(!o.blijf)g.parent&&g.parent.remove(g);res()};g.userData.stop=stop;
-  un=tick(dt=>{if(!alive||G.paused)return;t+=dt;const p=pts[i];if(!p){stop();return}const dx=p.x-x,dz=p.z-z,d=Math.hypot(dx,dz);const sp=(o.rem&&i===pts.length-1&&d<14?Math.max(1.5,v*d/14):v)*dt;
+  let pt=performance.now();un=tick(()=>{const nu=performance.now(),dt=Math.min(.25,(nu-pt)/1000);pt=nu;if(!alive||G.paused)return;t+=dt;const p=pts[i];if(!p){stop();return}const dx=p.x-x,dz=p.z-z,d=Math.hypot(dx,dz);const sp=(o.rem&&i===pts.length-1&&d<14?Math.max(1.5,v*d/14):v)*dt;
     if(d<sp+.05){x=p.x;z=p.z;i++}else{x+=dx/d*sp;z+=dz/d*sp;g.rotation.y=Math.atan2(dx,dz)}g.position.set(x,0,z);g.userData.x=x;g.userData.z=z;
     const lamp=g.userData.lamp;if(lamp){const on=(t*4|0)%2;lamp[0].visible=!!on;lamp[1].visible=!on}if(o.tick)o.tick(x,z)})})}
 
@@ -88,6 +88,9 @@ let RUN=0;const nieuw=()=>++RUN;
 function doelNaar(tekst,p,r,o){o=o||{};return new Promise(res=>{ST.doel(tekst,p.binnen?p:{x:p.x,z:p.z});const t0=RUN;const iv=setInterval(()=>{if(RUN!==t0){clearInterval(iv);res(false);return}
   if(G.cut&&G.cut.active())return;const w=B.waar();if(p.binnen?w===p.binnen&&(p.x==null||Math.hypot(G.P.x-p.x,G.P.z-p.z)<(r||2)):(!w&&Math.hypot(G.P.x-p.x,G.P.z-p.z)<(r||8))){clearInterval(iv);if(o.fietsAf!==false)L.fietsAf();res(true)}},250)})}
 const pct=()=>L.F('aanbod')||20;
+// over de schouder van a naar b kijken (camera achter a, een stukje opzij en hoger)
+function schouder(a,b,d,zij,h){const dx=a.x-b.x,dz=a.z-b.z,n=Math.hypot(dx,dz)||1,ux=dx/n,uz=dz/n;d=d||3.2;zij=zij==null?1.2:zij;h=h||2.4;
+  return L.cam(a.x+ux*d-uz*zij,h,a.z+uz*d+ux*zij,b.x,1.2,b.z)}
 
 async function mSchool(t,dag){const S=L.A('school',232,337);if(!await doelNaar('Naar school',S,9))return;await L.binnen('klas');if(t!==RUN)return;
   const seat=B.plek('klas','luca');const Q=[
@@ -176,21 +179,23 @@ async function mUitkijk(t){const g=L.A('parkeergarage',895,875),post={x:888,z:90
   if(res.gemist>0){ST.meter('hitte',10);ST.meter('loy_ray',-8)}else if(res.vals>1)ST.meter('loy_ray',-3);else{ST.meter('loy_ray',8);ST.geld(350,'van Ray')}
   await C.zeg('nova',res.gemist>0?'Ze hebben ons gezien. Twee man opgepakt, Luca. Twéé.':res.vals>1?'Je schreeuwt te vaak wolf. Volgende keer kijk je beter.':'Netjes. Je hebt ogen. Ray hoort het van me.',{t:3})}
 // minispel: auto's over de Boulevard; alleen bij politie een seintje
-function uitkijk(){return new Promise(async res=>{const lijn=[{x:700,z:918},{x:880,z:918},{x:880,z:860}],langs=[{x:700,z:918},{x:1040,z:918}];
+function uitkijk(){return new Promise(async res=>{const lijn=[{x:775,z:918},{x:880,z:918},{x:880,z:860}],langs=[{x:775,z:918},{x:990,z:918}];
   const el=L.mgOpen(`<h4>Op de uitkijk · parkeergarage</h4><p>Auto's op de Boulevard. Alleen bij politie: seintje geven. Let op: niet elke politieauto is blauw-wit.</p>
-    <div class="h1-hp"><span id="h2uN">Auto 1/6</span><span id="h2uS">0 seintjes</span></div><div class="h1-warn" id="h2uW">…</div>
+    <div class="h1-hp"><span id="h2uN">Auto 1/5</span><span id="h2uS">0 seintjes</span></div><div class="h1-warn" id="h2uW">…</div>
     <div class="h1-knop"><button data-s="fluit">Fluiten<kbd>${touch?'':'E'}</kbd></button><button class="b" data-s="bel">Bellen<kbd>${touch?'':'Q'}</kbd></button></div>`,'uitkijk');
   const w=el.querySelector('#h2uW');let cur=null,goed=0,vals=0,gemist=0,ns=0;
   const sein=s=>{if(!cur||cur.sein)return;cur.sein=s;ns++;el.querySelector('#h2uS').textContent=ns+' seintjes';L.fx(s==='fluit'?'whistle':'notify');if(cur.pol){goed++;w.textContent=s==='fluit'?'Gefloten! De mannen zijn binnen weg.':'Gebeld. Stil en op tijd.';w.className='h1-warn ok'}else{vals++;w.textContent='Vals alarm. Dat was een gewone auto.';w.className='h1-warn'}};
   el.addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(b)sein(b.dataset.s)});
   const key=e=>{const k=e.key.toLowerCase();if(k==='e'||k===' '){e.preventDefault();e.stopImmediatePropagation();sein('fluit')}else if(k==='q'){e.preventDefault();e.stopImmediatePropagation();sein('bel')}};addEventListener('keydown',key,true);
-  // camera: vanaf de hoek over de Boulevard
-  const reeks=['burger','burger','politie','burger','onopvallend','burger'].map((k,i)=>({k,i}));
-  for(const r of reeks){el.querySelector('#h2uN').textContent='Auto '+(r.i+1)+'/6';w.textContent='…';w.className='h1-warn';
+  // camera: vanaf de hoek over de Boulevard (zolang het minispel loopt)
+  const r0=G.camRig;G.camRig=(dt,cam)=>{cam.position.set(892,7.5,912);cam.lookAt(800,1.2,919);if(cam.fov!==55){cam.fov=55;cam.updateProjectionMatrix()}return true};
+  const reeks=['burger','politie','burger','onopvallend','burger'].map((k,i)=>({k,i}));
+  for(const r of reeks){el.querySelector('#h2uN').textContent='Auto '+(r.i+1)+'/5';w.textContent='…';w.className='h1-warn';
     const pol=r.k==='politie'||r.k==='onopvallend';const g=auto(r.k==='politie'?'#f1efe9':r.k==='onopvallend'?'#2a2c30':pick(['#b0221e','#3a6a9a','#c9c4b8','#2f5d3a','#d6a63e']),r.k==='politie');
     if(r.k==='onopvallend'){const lamp=new TH.Mesh(new TH.BoxGeometry(.3,.1,.3),new TH.MeshBasicMaterial({color:'#3a7bff'}));lamp.position.set(.5,1.42,.6);g.add(lamp);g.userData.lamp=[lamp,new TH.Object3D()]}
     cur={pol,sein:null};const pad=pol||Math.random()<.4?lijn:langs;
-    await rij(g,pad,pol?9:12,{});if(pol&&!cur.sein){gemist++;w.textContent='Gemist! Die reed zo de garage in.';w.className='h1-warn';L.fx('bad');await L.sleep(900)}else await L.sleep(400)}
+    await rij(g,pad,pol?11:15,{});if(pol&&!cur.sein){gemist++;w.textContent='Gemist! Die reed zo de garage in.';w.className='h1-warn';L.fx('bad');await L.sleep(900)}else await L.sleep(400)}
+  G.camRig=r0;try{const c=G.camera();c.fov=G.fov0||c.fov;c.updateProjectionMatrix()}catch(e){}if(G.camC)G.camC.init=false;
   removeEventListener('keydown',key,true);el.remove();res({goed,vals,gemist})})}
 
 async function mDexErbij(t){const d=L.A('dex',277,480);if(!await doelNaar('Dex wacht bij de hoek',d,5))return;const l=L.P(),q=L.voor(2.2),wist=L.F('dex')==='weet';
@@ -246,7 +251,7 @@ async function mInval(t){const S=L.A('sahara',655,909);L.F('inval',1);L.zorgFiet
      const v=Math.hypot(G.P.vx||0,G.P.vz||0);for(const a of ag){if(Math.hypot(a.x-G.P.x,a.z-G.P.z)<5&&v>6.2){gepakt=true;clearInterval(iv);res();return}}},150)});
    if(gepakt){await C.play([{say:'agent',text:'Hé! Jij daar! Waarom heb jij zo’n haast?',t:2.2,mood:'boos'},{say:'luca',text:'Ik… de pizza’s worden koud.',t:1.8,mood:'bang'},{say:null,text:'Hij schrijft je naam op. Luca De Santis. 16. Bezorger.',t:2.8}]);ST.meter('hitte',8);ST.meter('dossier',6);L.F('inval_uit','genoteerd')}
    else{L.F('inval_uit','stil');ST.meter('imago',2);L.sein('Niemand keek naar de pizzajongen','#3fe395')}}
-  ag.forEach((a,i)=>C.weg('inval'+i));G.draag.leeg();await L.buiten();
+  ag.forEach((a,i)=>C.weg('inval'+i));G.draag.leeg();await L.buiten();ST.doel(null);
   await C.play([{fn:L.tril},{say:'nova',text:'Mooi werk, Luca. Rafiq is zijn hele voorraad kwijt. Hij gaat zoeken wie er gepraat heeft. Zorg dat jij het niet bent.',t:4,mood:'koel'}]);ST.meter('loy_rafiq',-10)}
 
 async function mLekker(t){const S=L.A('sahara',655,909);if(!await doelNaar('Rafiq wil je zien in Sahara',S,8))return;await L.binnen('sahara');if(t!==RUN)return;
@@ -266,25 +271,27 @@ async function mDexOpgepakt(t){const S=L.A('schoolhek',234,371);L.tijd(15,10);if
   const lijn=wegLijn(S.x,S.z+6,90),l=L.P(),over=L.walk(S.x+(lijn[0].x===lijn[1].x?7:0),S.z+(lijn[0].z===lijn[1].z?7:0),6);
   const dx=L.walk((lijn[0].x+lijn[1].x)/2,(lijn[0].z+lijn[1].z)/2,6);const pol=auto('#f1efe9',true);
   const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:L.naar(l,dx)},{actor:'dex',at:[dx.x-8,dx.z-8],ry:L.naar({x:dx.x-8,z:dx.z-8},dx),prop:'tas'},
-   L.rond(l.x,l.z,L.naar(l,dx)+PI-.3,2.4,1.6,1.4),{fade:'in',t:.3},
+   schouder(l,dx,3.4,1.4,2.6),{fade:'in',t:.3},
    {say:null,text:'Dex komt aanfietsen. Rode BMX, tas op zijn rug. Hij zwaait naar je van de overkant.',t:3},{move:'dex',to:[dx.x,dx.z],t:2.4,anim:'run'},{anim:'dex',a:'zwaai',naar:'luca'},
    {fn:()=>{rij(pol,[lijn[0],{x:dx.x+1.5,z:dx.z+1.5}],14,{blijf:true,rem:true})}},{snd:'whistle'},{wait:2.2},
    {actor:'agent',at:[dx.x+2,dx.z+1.4],ry:L.naar({x:dx.x+2,z:dx.z+1.4},dx)},{actor:'agent2',at:[dx.x+1.2,dx.z+2.6],ry:L.naar({x:dx.x+1.2,z:dx.z+2.6},dx)},
    L.rond(dx.x,dx.z,.8,6,2.2,1.2),{say:'agent',text:'Stop! Tas af. Handen waar ik ze kan zien.',t:2.4,mood:'boos'},{anim:'dex',a:'handenop',prop:null},
    {say:null,text:'Ze halen de tas leeg op de stoep. Een pakketje in folie. Zo groot als een pak boter.',t:3.2},{anim:'agent2',a:'duw',naar:'dex'},
-   L.rond(l.x,l.z,L.naar(l,dx)+PI-.15,1.6,1.6,1.5),{say:null,text:'Dex kijkt naar de overkant. Naar jou. Hij zegt niets. Hij kijkt meteen weer weg.',t:3.4},
-   {fade:'out',t:.8},{weg:'dex'},{weg:'agent'},{weg:'agent2'},{fn:()=>{pol.userData.stop&&pol.userData.stop();pol.parent&&pol.parent.remove(pol)}},{fade:'in',t:.6},
+   L.rond(dx.x,dx.z,L.naar(dx,l)+.35,3.2,1.7,1.4),{say:null,text:'Dex kijkt naar de overkant. Naar jou. Hij zegt niets. Hij kijkt meteen weer weg.',t:3.4},
+   {fade:'out',t:.8},{weg:'dex'},{weg:'agent'},{weg:'agent2'},{weg:'luca'},{fn:()=>{pol.userData.stop&&pol.userData.stop();pol.parent&&pol.parent.remove(pol)}},
+   {binnen:'thuis'},{speler:false},{actor:'luca',at:L.W('thuis',12.6,10.2),ry:PI*.5,anim:'sit',sitY:-.45,prop:'telefoon'},{fn:()=>{const a=C.acteur('luca');if(a)a.g.binnenId=1;L.tijd(22,40)}},
+   L.cam(...L.W3('thuis',14.6,2.1,8.2),...L.W3('thuis',12.6,.9,10.2)),{fade:'in',t:.6},
    {say:null,text:'Die avond. Je kamer. Je twee telefoons op je bed. Allebei stil.',t:3},
    {keuze:[{t:'Een advocaat betalen via Ray',id:'ray',sub:'Dex snel vrij · Ray heeft iets van je tegoed'},{t:'Zijn moeder geld geven',id:'moeder',sub:'€2.000 · Dex vergeet dit nooit'},{t:'Niets doen',id:'niets',sub:'Hij noemt je naam niet'}],wie:'luca',text:'Wat doe je voor Dex?'}],{blijf:true});
-  if(t!==RUN)return;L.F('dex_opgepakt',1);
-  if(r==='ray'){await C.play([{fn:L.tril},{say:'luca',text:'Ray. Dex is opgepakt. Hij heeft een advocaat nodig.',t:2.4},{say:'ray',text:'Mr. Hoefnagel. Morgen staat hij buiten. En Luca? Nu sta jij bij mij in het krijt.',t:3.4,mood:'koel'}]);L.F('dex_hulp','ray');L.F('ray_tegoed',1);ST.meter('loy_dex',6);ST.meter('loy_ray',4);ST.koers(3,'zakelijk')}
-  else if(r==='moeder'){if(ST.geld()<2000){L.sein('Je hebt nog '+L.eur(2000-ST.geld())+' nodig','#ffd35a');await C.zeg('luca','Tweeduizend. Ik moet het bij elkaar krijgen. Extra ritten, extra diensten. Wat dan ook.',{t:3})}
+  if(t!==RUN)return;L.F('dex_opgepakt',1);const kamer=L.cam(...L.W3('thuis',14.6,2.1,8.2),...L.W3('thuis',12.6,.9,10.2));
+  if(r==='ray'){await C.play([kamer,{fn:L.tril},{say:'luca',text:'Ray. Dex is opgepakt. Hij heeft een advocaat nodig.',t:2.4},{say:'ray',text:'Mr. Hoefnagel. Morgen staat hij buiten. En Luca? Nu sta jij bij mij in het krijt.',t:3.4,mood:'koel'},{weg:'luca'}]);L.F('dex_hulp','ray');L.F('ray_tegoed',1);ST.meter('loy_dex',6);ST.meter('loy_ray',4);ST.koers(3,'zakelijk')}
+  else if(r==='moeder'){C.weg('luca');if(ST.geld()<2000){L.sein('Je hebt nog '+L.eur(2000-ST.geld())+' nodig','#ffd35a');await C.zeg('luca','Tweeduizend. Ik moet het bij elkaar krijgen. Extra ritten, extra diensten. Wat dan ook.',{t:3})}
     await ST.poort(2000,'Geld voor de moeder van Dex',{betaal:true});if(t!==RUN)return;
     const m=L.A('dex',277,480);if(!await doelNaar('Breng het geld naar de moeder van Dex',m,5))return;const l2=L.P(),q=L.voor(1.8);
     await C.play([{speler:false},{actor:'luca',at:[l2.x,l2.z],ry:l2.ry},{actor:'moeder_dex',at:[q.x,q.z],ry:L.naar(q,l2)},{snd:'deurbel'},L.rond(q.x,q.z,L.naar(q,l2)+1,2.8,1.6,1.4),
      {anim:'luca',a:'give',prop:'envelop',naar:'moeder_dex'},{say:'moeder_dex',text:'Wat is dit? …Luca. Nee. Dit kan ik niet aannemen.',t:2.6,mood:'bang'},{say:'luca',text:'Voor de advocaat. Dex zou hetzelfde doen.',t:2.2},
      {say:'moeder_dex',text:'Hij had altijd al één echte vriend.',t:2.4},{fade:'out',t:.4},{weg:'moeder_dex'},{weg:'luca'},{speler:true},{fade:'in',t:.4}]);L.F('dex_hulp','moeder');ST.meter('loy_dex',20)}
-  else{await C.zeg('luca','(Hij noemt mijn naam niet. Dat weet ik. Dat moet genoeg zijn.)',{t:3});L.F('dex_hulp','niets');ST.meter('loy_dex',-15);L.F('dex_vergeet_niet',1)}}
+  else{C.weg('luca');await C.zeg('luca','(Hij noemt mijn naam niet. Dat weet ik. Dat moet genoeg zijn.)',{t:3});L.F('dex_hulp','niets');ST.meter('loy_dex',-15);L.F('dex_vergeet_niet',1)}}
 
 async function mEinde(t){await C.play([{fn:L.tril},{say:'nova',text:'Luca. Iemand heeft Dex verraden. Niet de politie: die wisten waar hij zou zijn. Precies waar. Precies wanneer.',t:4,mood:'koel'},
    {say:'luca',text:'Wie dan?',t:1.4},{say:'nova',text:'Het spoor leidt naar Sahara.',t:2.4},{fade:'out',t:1},{dream:true},
