@@ -397,7 +397,7 @@ stap('h1_hejongen',{muziek:'lounge',async start(o){const t=nieuw();await buiten(
    {say:'rafiq',text:'Hé, jongen. Kom eens even terug.',t:2.6,mood:'koel'},
    {anim:'luca',a:'turn',ry:naar(ld,d)},rond(d.x,d.z,naar(d,ld)-.5,4,1.7,1.5),
    {move:'rafiq',to:[(d.x+ld.x)/2,(d.z+ld.z)/2],t:1.8},{anim:'rafiq',a:'give',prop:'geld',naar:'luca'},
-   {say:'rafiq',text:'Fooi.',t:1.4,mood:'koel'},{snd:'cash'},{fn:()=>ST.geld(50,'fooi')},{anim:'rafiq',a:'idle',prop:null},
+   {say:'rafiq',text:'Fooi.',t:1.4,mood:'koel'},{snd:'cash'},{fn:()=>ST.geld(300,'fooi')},{anim:'rafiq',a:'idle',prop:null},
    ...(nieuws?[{say:'rafiq',text:'Je keek goed rond daarbinnen. Nieuwsgierig, hè?',t:2.6,mood:'koel'},{say:'luca',text:'Ik… zocht de tafel.',t:1.8,mood:'bang'}]:[]),
    rond((d.x+ld.x)/2,(d.z+ld.z)/2,naar(d,ld)+1.4,2.4,1.6,1.5),
    {say:'rafiq',text:'Veel ruimte in die dozen van jou.',t:2.2},

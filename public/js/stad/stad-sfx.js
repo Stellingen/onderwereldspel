@@ -117,7 +117,7 @@ function startMusic(){const c=ac();if(!c||seq.on)return;seq.on=true;seq.next=c.c
 function stopMusic(){seq.on=false;clearInterval(seq.timer)}
 function schedule(){const c=ctx;if(!c||!seq.on)return;const S0=SONGS[seq.mode];if(!S0){if(SONGS[seq.want]){seq.mode=seq.want;seq.step=0;seq.bar=0;seq.prog=0;seq.next=c.currentTime+.05}return}const spb=60/S0.bpm/4;
   while(seq.next<c.currentTime+.25){const s=seq.step%16,T=seq.next-c.currentTime;
-    if(s===0&&seq.step>0){seq.bar++;if(seq.want!==seq.mode&&seq.bar%2===0){seq.mode=seq.want;seq.prog=Math.floor(Math.random()*SONGS[seq.mode].prog.length);seq.step=0;seq.bar=0;seq.next+=spb;return}
+    if(s===0&&seq.step>0){seq.bar++;if(seq.want!==seq.mode&&seq.bar%2===0){seq.mode=seq.want;seq.prog=SONGS[seq.mode]?Math.floor(Math.random()*SONGS[seq.mode].prog.length):0;seq.step=0;seq.bar=0;seq.next+=spb;return}
       if(seq.bar%8===0)seq.prog=Math.floor(Math.random()*S0.prog.length)}
     if(seq.mode!=='stil')note(S0,s,T,spb);seq.step++;seq.next+=spb}}
 function note(S0,s,T,spb){const P=S0.prog[seq.prog%S0.prog.length],ch=P[Math.floor((seq.bar%(P.length*2))/2)%P.length],root=ch[0],iv=CH[ch[1]]||CH.m;
