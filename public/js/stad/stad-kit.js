@@ -38,7 +38,7 @@ K.portrait=function(look,mood,cv){cv=cv||document.createElement('canvas');cv.wid
   return cv};
 /* ---------- tekst die verschijnt ---------- */
 K.type=function(el,text,o){o=o||{};const sp=o.speed||(G.textSpeed||40);let i=0,done=false,res;const pr=new Promise(r=>res=r);el.textContent='';
-  const t=setInterval(()=>{if(done)return;i+=Math.max(1,Math.round(sp/40));el.textContent=text.slice(0,i);if(i%3===0&&G.snd&&o.blip!==false)G.snd.fx('blip');if(i>=text.length){fin()}},1000/40);
+  const t=setInterval(()=>{if(done)return;i+=Math.max(1,Math.round(sp/40));el.textContent=text.slice(0,i);if(G.snd&&o.blip!==false){if(o.stem&&G.snd.praat){const ch=text.charCodeAt(i-1);if(i%2===0&&ch>64)G.snd.praat(o.stem,ch)}else if(i%3===0)G.snd.fx('blip')}if(i>=text.length){fin()}},1000/40);
   function fin(){if(done)return;done=true;clearInterval(t);el.textContent=text;res()}
   return {skip:fin,get done(){return done},then:f=>pr.then(f)}};
 /* ---------- gebouwplaatje (32×32) ---------- */

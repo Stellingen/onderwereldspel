@@ -1624,3 +1624,5 @@ Een verhaal in pixels, los van het klikspel en de Pixelstad. Je speelt Luca De S
 4. Het verkeerde huis: de bivakmutsen, het verhoor (stoer, bang of slim), Grote Ray en de envelop (verraden, zwijgen of liegen als je slim bent gebleven), de voorproef van Seizoen 2.
 
 Tussendoor: extra diensten bij Giovanni (zijmissie op de kaart) en een klus voor buurvrouw Ans die niet op de kaart staat.
+
+**Geluid in het verhaal** (`verhaal-sfeer.js`, `stad-sfx.js`): de muziek wisselt per scène (school, dagdroom, Bella Napoli, de lounge met darbuka, thuis, spanning, achtervolging, gevecht, Ray). Iedereen heeft een eigen stem: terwijl de ondertitel wordt getypt hoor je pixelgeluidjes met een eigen toonhoogte en klank per persoon, zodat je hoort wie er praat. Extra geluiden: deurbel, schoolbel, telmachine, trillende telefoon, lach. Na hoofdstuk 1 staat er "Seizoen 2 · coming soon".

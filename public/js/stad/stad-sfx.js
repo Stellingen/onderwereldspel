@@ -28,6 +28,12 @@ function noise(t,d,v,ftype,f0,f1,bus){const c=ac();if(!c)return;const T=c.curren
 /* ---------- effecten ---------- */
 const FX={
   blip:()=>tone(820+Math.random()*120,0,.035,'square',.05),
+  deurbel:()=>{tone(784,0,.5,'sine',.16);tone(622,.32,.7,'sine',.15)},
+  schoolbel:()=>{for(let i=0;i<14;i++)tone(i%2?880:1046,i*.11,.1,'square',.05)},
+  telmachine:()=>{for(let i=0;i<22;i++)noise(i*.028,.012,.06,'highpass',4200)},
+  tram:()=>{tone(1320,0,.12,'triangle',.12);tone(1320,.18,.12,'triangle',.12)},
+  tril:()=>{for(let i=0;i<3;i++)tone(95,i*.16,.11,'sawtooth',.08)},
+  lach:()=>{for(let i=0;i<4;i++)tone(240-i*14,i*.1,.08,'triangle',.08)},
   click:()=>tone(1500,0,.03,'square',.06),
   tab:()=>{tone(900,0,.03,'square',.06);tone(1300,.03,.03,'square',.05)},
   open:()=>{tone(523,0,.06,'square',.08);tone(784,.06,.08,'square',.08)},
@@ -94,12 +100,22 @@ const N=n=>440*Math.pow(2,(n-69)/12);
 const SONGS={
   dag:{bpm:92,prog:[[[57,'m7'],[62,'m7'],[55,'7'],[60,'M7']],[[60,'M7'],[57,'m7'],[65,'M7'],[67,'7']],[[62,'m7'],[67,'7'],[60,'M7'],[57,'m7']]],lead:.5,hat:.5,kick:[0,8],snare:[4,12],bassPat:[0,0,7,0,12,0,7,5]},
   nacht:{bpm:80,prog:[[[57,'m'],[53,'M'],[60,'M'],[55,'M']],[[52,'m'],[57,'m'],[53,'M7'],[55,'M']]],lead:.3,hat:.35,kick:[0,10],snare:[8],bassPat:[0,0,0,7,0,0,5,3]},
-  jacht:{bpm:146,prog:[[[52,'m'],[48,'M'],[50,'M'],[47,'M']],[[52,'m'],[52,'m'],[48,'M'],[50,'M']]],lead:.8,hat:1,kick:[0,4,8,12],snare:[4,12],bassPat:[0,12,0,12,0,12,7,10]}};
+  jacht:{bpm:146,prog:[[[52,'m'],[48,'M'],[50,'M'],[47,'M']],[[52,'m'],[52,'m'],[48,'M'],[50,'M']]],lead:.8,hat:1,kick:[0,4,8,12],snare:[4,12],bassPat:[0,12,0,12,0,12,7,10]},
+  // verhaal "De Bezorger": een stemming per scène (G.snd.sfeer)
+  school:{bpm:100,prog:[[[60,'M'],[65,'M'],[57,'m'],[67,'M']],[[65,'M'],[67,'M'],[64,'m'],[57,'m']]],lead:.55,hat:.45,kick:[0,8],snare:[4,12],bassPat:[0,0,7,0,0,0,7,12]},
+  droom:{bpm:68,prog:[[[60,'M7'],[64,'m7'],[65,'M7'],[62,'m7']],[[57,'m7'],[65,'M7'],[60,'M7'],[67,'7']]],lead:.9,hat:0,kick:[],snare:[],bassPat:[0,0,0,0,7,0,0,0],arpW:'triangle',arpUp:24,leadW:'sine',zacht:1},
+  napoli:{bpm:132,prog:[[[57,'m'],[64,'7'],[57,'m'],[62,'m']],[[62,'m'],[57,'m'],[64,'7'],[57,'m']]],lead:.95,hat:.7,kick:[0,6,12],snare:[3,9],bassPat:[0,7,0,7,0,7,5,7],scale:[0,2,3,5,7,8,11]},
+  lounge:{bpm:94,prog:[[[52,'M'],[53,'M'],[52,'M'],[50,'m']],[[52,'M'],[50,'m'],[53,'M'],[52,'M']]],lead:.85,hat:.3,kick:[0,10],snare:[],bassPat:[0,0,1,0,0,0,7,5],scale:[0,1,4,5,7,8,10],darb:1},
+  thuis:{bpm:76,prog:[[[60,'M'],[55,'M'],[57,'m'],[53,'M']],[[53,'M'],[60,'M'],[55,'M'],[57,'m']]],lead:.35,hat:.15,kick:[0],snare:[],bassPat:[0,0,7,0,5,0,7,0],arpW:'triangle'},
+  spanning:{bpm:70,prog:[[[45,'m'],[46,'M'],[45,'m'],[44,'M']]],lead:.12,hat:.12,kick:[0,3],snare:[],bassPat:[0,0,0,0,0,0,1,0],arpW:'sawtooth',zacht:1},
+  gevecht:{bpm:160,prog:[[[52,'m'],[55,'M'],[50,'M'],[52,'m']],[[52,'m'],[48,'M'],[50,'M'],[47,'M']]],lead:.9,hat:1,kick:[0,4,8,10,12],snare:[4,12],bassPat:[0,12,0,12,3,15,5,17]},
+  ray:{bpm:62,prog:[[[40,'m'],[41,'M'],[43,'M'],[40,'m']]],lead:.2,hat:.08,kick:[0,8],snare:[12],bassPat:[0,0,0,0,0,0,1,0],arpW:'sawtooth',zacht:1},
+  feest:{bpm:124,prog:[[[57,'m7'],[62,'m7'],[64,'7'],[57,'m7']]],lead:.6,hat:1,kick:[0,4,8,12],snare:[4,12],bassPat:[0,12,0,12,0,12,7,12]}};
 const CH={m:[0,3,7],M:[0,4,7],m7:[0,3,7,10],M7:[0,4,7,11],'7':[0,4,7,10]};
 const seq={on:false,mode:'dag',want:'dag',step:0,next:0,bar:0,prog:0,timer:0,fade:1};
 function startMusic(){const c=ac();if(!c||seq.on)return;seq.on=true;seq.next=c.currentTime+.1;seq.step=0;clearInterval(seq.timer);seq.timer=setInterval(schedule,40)}
 function stopMusic(){seq.on=false;clearInterval(seq.timer)}
-function schedule(){const c=ctx;if(!c||!seq.on)return;const S0=SONGS[seq.mode];if(!S0)return;const spb=60/S0.bpm/4;
+function schedule(){const c=ctx;if(!c||!seq.on)return;const S0=SONGS[seq.mode];if(!S0){if(SONGS[seq.want]){seq.mode=seq.want;seq.step=0;seq.bar=0;seq.prog=0;seq.next=c.currentTime+.05}return}const spb=60/S0.bpm/4;
   while(seq.next<c.currentTime+.25){const s=seq.step%16,T=seq.next-c.currentTime;
     if(s===0&&seq.step>0){seq.bar++;if(seq.want!==seq.mode&&seq.bar%2===0){seq.mode=seq.want;seq.prog=Math.floor(Math.random()*SONGS[seq.mode].prog.length);seq.step=0;seq.bar=0;seq.next+=spb;return}
       if(seq.bar%8===0)seq.prog=Math.floor(Math.random()*S0.prog.length)}
@@ -108,9 +124,11 @@ function note(S0,s,T,spb){const P=S0.prog[seq.prog%S0.prog.length],ch=P[Math.flo
   // bas (driehoek), op de achtsten
   if(s%2===0){const b=S0.bassPat[(s/2)%8];tone(N(root-24+b),T,spb*1.8,'triangle',.32,null,muBus)}
   // arpeggio (zacht blokgolfje)
-  if(s%2===1||seq.mode==='jacht'){const n=root+iv[(s>>1)%iv.length]+(s>=8?12:0);tone(N(n),T,spb*.9,'square',.045,null,muBus)}
+  if(s%2===1||seq.mode==='jacht'||seq.mode==='gevecht'){const n=root+iv[(s>>1)%iv.length]+(s>=8?12:0)+(S0.arpUp||0);tone(N(n),T,spb*(S0.zacht?1.6:.9),S0.arpW||'square',S0.zacht?.035:.045,null,muBus)}
   // melodie af en toe (pentatonisch boven het akkoord)
-  if(Math.random()<S0.lead*.18&&s%4===2){const pen=[0,3,5,7,10],n=root+12+pen[Math.floor(Math.random()*5)];tone(N(n),T,spb*3,'triangle',.07,null,muBus)}
+  if(Math.random()<S0.lead*.18&&s%4===2){const pen=S0.scale||[0,3,5,7,10],n=root+12+pen[Math.floor(Math.random()*pen.length)];tone(N(n),T,spb*3,S0.leadW||'triangle',.07,null,muBus)}
+  // darbuka (lounge): dum en tek
+  if(S0.darb){if(s===0||s===6||s===10)tone(180,T,.14,'sine',.32,90,muBus);if(s===4||s===8||s===12||s===14)noise(T,.05,.09,'bandpass',2600,null,muBus)}
   // drums
   if(S0.kick.includes(s))tone(130,T,.12,'sine',.5,45,muBus);
   if(S0.snare.includes(s))noise(T,.1,.13,'highpass',1800,null,muBus);
@@ -118,13 +136,24 @@ function note(S0,s,T,spb){const P=S0.prog[seq.prog%S0.prog.length],ch=P[Math.flo
   // de straatmuzikant: een gitaarloopje dat harder wordt als je dichterbij komt
   if(busk>0&&st.fx&&s%2===0){const pen=[0,3,5,7,10,12],n=root+pen[(s/2+seq.bar*3)%6];tone(N(n),T,spb*1.7,'triangle',.11*busk,null,fxBus);if(s%8===0)tone(N(root-12),T,spb*3.5,'triangle',.1*busk,null,fxBus)}}
 let busk=0;
+let sfeerOver=null;
+// stemmen per personage (verhaal): een korte toon per lettergreep terwijl de tekst wordt getypt
+const STEM={luca:[520,'square',.05,.045],dex:[660,'square',.04,.05],giovanni:[300,'triangle',.07,.07],rafiq:[220,'triangle',.08,.065],uitsmijter:[140,'sawtooth',.09,.04],
+  elena:[600,'triangle',.06,.06],marco:[250,'square',.07,.045],giulia:[720,'triangle',.05,.06],docent:[380,'square',.08,.04],ray:[110,'sawtooth',.11,.05],nova:[560,'sine',.06,.08],
+  agent:[440,'square',.06,.045],rapido:[600,'sawtooth',.045,.035],scooterdief:[480,'sawtooth',.04,.035],koerier:[460,'sawtooth',.045,.035],brugklasser:[820,'square',.04,.04],
+  oudere_jongen:[340,'sawtooth',.06,.04],buurvrouw_ans:[680,'triangle',.07,.06],buurman:[330,'triangle',.07,.05],masker:[170,'sawtooth',.08,.045],masker2:[200,'sawtooth',.07,.045],
+  nova_m:[520,'sine',.06,.08],receptioniste:[700,'sine',.05,.06],nietbetaler:[310,'sawtooth',.06,.045],klant_bang:[420,'triangle',.05,.04],teun:[180,'square',.08,.05],
+  bakker:[290,'square',.08,.05],sanne:[640,'triangle',.05,.06],verteller:[900,'sine',.025,.018]};
+function stemVan(id){if(STEM[id])return STEM[id];let h=0;for(const c of String(id||''))h=(h*31+c.charCodeAt(0))>>>0;return [260+h%420,['square','triangle','sawtooth'][h%3],.05+(h%4)*.01,.04]}
+function praat(id,code){if(!st.fx)return;const c=ac();if(!c||c.state!=='running')return;const v=stemVan(id),k=1+(((code||0)%7)-3)*.045;
+  tone(v[0]*k,0,v[2],v[1],v[3],v[0]*k*(id==='verteller'?1:.94))}
 function music(mode){seq.want=mode;if(mode!=='stil'&&st.mu&&!seq.on&&ctx&&ctx.state==='running')startMusic()}
 // stemming volgt het spel: achtervolging, missie, binnen, nacht of dag
 setInterval(()=>{if(!G||!G.ready)return;const chase=(G.police&&G.police.active&&G.police.active())||(G.mission&&G.mission()&&G.mission().alarm);
-  const inside=G.ui&&G.ui.cur&&G.ui.cur();music(chase?'jacht':inside?'stil':(G.night>.55?'nacht':'dag'))},700);
+  const inside=G.ui&&G.ui.cur&&G.ui.cur();music(sfeerOver||(chase?'jacht':inside?'stil':(G.night>.55?'nacht':'dag')))},700);
 function apply(){if(!ctx)return;fxBus.gain.setTargetAtTime(st.fx?.55:0,ctx.currentTime,.05);muBus.gain.setTargetAtTime(st.mu?.2:0,ctx.currentTime,.3);master.gain.setTargetAtTime(st.vol,ctx.currentTime,.05);
   if(st.mu&&!seq.on)startMusic()}
-G.snd={fx,siren,engine,music,amb,busk:v=>{busk=Math.max(0,Math.min(1,v||0))},
+G.snd={fx,siren,engine,music,amb,praat,stemmen:STEM,sfeer:m=>{sfeerOver=m&&SONGS[m]||m==='stil'?m:null;if(sfeerOver)music(sfeerOver)},get sfeerNu(){return seq.mode},busk:v=>{busk=Math.max(0,Math.min(1,v||0))},
   get fxOn(){return st.fx},get muOn(){return st.mu},get vol(){return st.vol},
   setFx(v){st.fx=!!v;set('stad_fx',v?'1':'0');apply();if(!v){siren(null);engine(null)}},setMu(v){st.mu=!!v;set('stad_mu',v?'1':'0');apply()},setVol(v){st.vol=Math.max(0,Math.min(1,+v||0));set('stad_vol',st.vol);apply()}};
 // pauze (tabblad weg): muziek zachter

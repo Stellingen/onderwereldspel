@@ -281,14 +281,14 @@ async function stap(s){if(!s)return;
 function zeg(id,text,s){if(skip)return Promise.resolve();const sub=$s('svSub');sub.hidden=false;sub.classList.remove('keuze');sub.classList.toggle('n',!id);sub.style.setProperty('--c',(A[id]&&A[id].col)||(id==='luca'?'#ff4fd8':'#e8e4da'));
   $s('svSubN').textContent=id?(s&&s.naam)||nm(id):'';setPor(id,s&&s.mood);$s('svSubK').innerHTML='';
   const a=acteur(id);if(a&&s&&s.praat!==false&&a.anim==='idle'){a.doe('talk');setTimeout(()=>{if(a.anim==='talk')a.doe('idle')},Math.max(1200,(text||'').length*55))}
-  tw=K.type($s('svSubT'),text||'',{blip:true});
+  tw=K.type($s('svSubT'),text||'',{blip:true,stem:id||'verteller'});
   const dur=s&&s.t?s.t:Math.max(1.6,1.0+(text||'').length*.06);
   return new Promise(res=>{let done=false;const fin=()=>{if(done)return;done=true;advance=null;WAITS.delete(fin);clearTimeout(tm);res()};
     const tm=setTimeout(()=>{if(tw&&!tw.done){tw.then(()=>setTimeout(fin,900))}else fin()},(dur+(s&&s.wacht?999:0))*1000);
     advance=fin;WAITS.add(fin)})}
 function drawK(){const k=keuzeOpen;if(!k)return;$s('svSubK').innerHTML=k.map((c,i)=>`<button class="${i===k.sel?'on':''}" data-i="${i}">${E(c.t)}${c.sub?`<small>${E(c.sub)}</small>`:''}</button>`).join('')}
 function keuze(s){skip=false;const sub=$s('svSub');sub.hidden=false;sub.classList.add('keuze');const id=s.wie||null;sub.classList.toggle('n',!id);$s('svSubN').textContent=id?nm(id):'';setPor(id,s.mood);
-  tw=K.type($s('svSubT'),s.text||'');const opts=s.keuze.slice();opts.sel=0;
+  tw=K.type($s('svSubT'),s.text||'',{stem:id||'verteller'});const opts=s.keuze.slice();opts.sel=0;
   return new Promise(res=>{opts.pick=async i=>{const c=opts[i];if(!c)return;keuzeOpen=null;$s('svSubK').innerHTML='';G.snd&&G.snd.fx('click');CUT.laatste=c.id!=null?c.id:i;try{if(c.f)await c.f()}catch(e){console.error(e)}res(CUT.laatste)};
     keuzeOpen=opts;const show=()=>{drawK()};if(tw)tw.then(show);else show();
     $s('svSubK').onclick=e=>{const b=e.target.closest('[data-i]');if(b&&keuzeOpen)keuzeOpen.pick(+b.dataset.i)}})}
