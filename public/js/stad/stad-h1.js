@@ -720,10 +720,10 @@ stap('h4_einde',{muziek:'ray',async start(o){const t=nieuw();await buiten();if(t
    {actor:'bakker',at:[pol.x,pol.z+3],ry:PI,look:{skin:'#e8c4a0',hair:'#8a8478',hs:'kort',eye:'#3a4a60',mood:'koel',top:{kind:'suit',c:'#3a3f48',c2:'#e8e4da'},legs:{kind:'jeans',c:'#3a3f48'},shoes:{kind:'boot',c:'#1a1a1c'}},anim:'point'},
    cam(pol.x+3,1.8,pol.z+6,pol.x,1.5,pol.z+3),{fade:'in',t:.4},{say:null,text:'Rechercheur Bakker prikt een foto op een bord. Een jongen in een rode jas.',t:3},{fade:'out',t:.4},
    cam(H.x+90,70,H.z+110,H.x,4,H.z),{fade:'in',t:.4},camNaar(H.x-40,30,H.z+50,H.x,2,H.z,3.4),{fade:'out',t:.5},{dream:false},
-   {titel:'Seizoen 2',sub:'Coming soon',t:3.6},{weg:'ray'},{weg:'bakker'},{speler:true},{fade:'in',t:1}]);
-  if(t!==RUN)return;F('h1_klaar',Date.now());if(G.h2&&G.h2.live&&G.h2.live()){G.h2.begin();return}go('h1_vrij');seizoen2()}});
+   {titel:'Seizoen 2',sub:G.h2&&G.h2.live&&G.h2.live()?'Twee bazen':'Coming soon',t:3.6},{weg:'ray'},{weg:'bakker'},{speler:true},{fade:'in',t:1}]);
+  if(t!==RUN)return;F('h1_klaar',Date.now());if(G.h2&&G.h2.live&&G.h2.live()&&G.h2.mag&&G.h2.mag()){G.h2.begin();return}go('h1_vrij');seizoen2()}});
 
-stap('h1_vrij',{doel:'Seizoen 2 · coming soon. Extra diensten bij Giovanni',start(o){dienstAan(true);zorgFiets();B.slot('rijtjeshuis',true,'Daar ga je nooit meer naar binnen');
+stap('h1_vrij',{doel:null,start(o){dienstAan(true);const zetDoel=()=>ST.doel(G.h2&&G.h2.live&&G.h2.live()?'Seizoen 2 is uit · extra diensten bij Giovanni':'Seizoen 2 · coming soon. Extra diensten bij Giovanni',null);zetDoel();setTimeout(zetDoel,2000);zorgFiets();B.slot('rijtjeshuis',true,'Daar ga je nooit meer naar binnen');
   // zodra Seizoen 2 live is, gaat het verhaal vanzelf verder
   setTimeout(()=>{if(ST.huidig()==='h1_vrij'&&G.h2&&G.h2.live&&G.h2.live())G.h2.begin()},2500)}});
 G.h1.test={agent,nietBetaler,rapido,dief,gevecht};
@@ -734,8 +734,8 @@ function seizoen2(){const vip=ST.vip&&ST.vip(),s=ST.st(),m=s.m||{},kz=m.koers||0
   const route=kz>8?'zakelijk':kz<-8?'straat':'nog open';
   ST.kaart(`<small>De Bezorger · Seizoen 1 uitgespeeld</small><b>Je werkt nu voor twee bazen</b>
    <p>Envelop: <b>${F('envelop')==='verraden'?'aangenomen':F('envelop')==='gelogen'?'half':'geweigerd'}</b> · Koers: <b>${route}</b> · Verhaalgeld: <b>${eur(s.geld)}</b></p>
-   <p><b>Seizoen 2 · coming soon.</b> De straat, de haven, Ray en Rafiq tegelijk. Al je keuzes blijven bewaard en komen terug.</p>
-   ${vip?'':'<p>Seizoen 2 en verder speel je straks met VIP of High roller.</p>'}<div class="sv-k-b">${vip?'':'<a class="btn ghost" href="/lidmaatschap#verhaal">Bekijk lidmaatschap</a>'}<button class="btn" data-x>Verder rondfietsen</button></div>`)}
+   ${G.h2&&G.h2.live&&G.h2.live()?'<p><b>Seizoen 2 is uit.</b> Twee bazen, twee telefoons. Al je keuzes gaan mee.</p>':'<p><b>Seizoen 2 · coming soon.</b> De straat, de haven, Ray en Rafiq tegelijk. Al je keuzes blijven bewaard en komen terug.</p>'}
+   ${vip?'':'<p>Seizoen 2 en verder speel je met VIP of High roller.</p>'}<div class="sv-k-b">${vip?'':'<a class="btn ghost" href="/lidmaatschap#verhaal">Bekijk lidmaatschap</a>'}<button class="btn" data-x>Verder rondfietsen</button></div>`)}
 
 /* =================== zijmissie: extra dienst bij Giovanni =================== */
 // Op de kaart als kleine zijmissie. Twee bestellingen, verhaalgeld + fooi. Kan tussen de hoofdmissies door (niet midden in een rit).

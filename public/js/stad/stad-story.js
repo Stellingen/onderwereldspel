@@ -198,8 +198,8 @@ function meterHtml(){const s=st();return MROW.filter(([k])=>k!=='dossier'||s.ch>
   if(k==='koers'){const p=(v+100)/2;return `<div class="sv-mr koers"><span>${n}</span><i class="sv-kb"><i style="left:${p}%"></i></i><em>${v>8?'zakelijk':v<-8?'straat':'midden'}</em></div>`}
   return `<div class="sv-mr"><span>${n}</span><i class="sv-mb"><i style="width:${v}%"></i></i><em>${Math.round(v)}</em></div>`}).join('')}
 function appRender(scr,head){const s=st(),k=ST.klok(),done=Object.keys(s.flags).length;
-  scr.innerHTML=head('Verhaal','De Bezorger · Seizoen 1')+`<div class="sv-app">
-   <div class="sv-app-hero"><canvas id="svAppPor" width="48" height="48"></canvas><div><b>Hoofdstuk ${s.ch} · Dozen</b><small>Avond ${s.avond} · ${k.txt}</small><small>${eur(s.geld)} · verhaalgeld</small></div></div>
+  scr.innerHTML=head('Verhaal','De Bezorger · Seizoen '+(s.ch||1))+`<div class="sv-app">
+   <div class="sv-app-hero"><canvas id="svAppPor" width="48" height="48"></canvas><div><b>Hoofdstuk ${s.ch} · ${({1:'Dozen',2:'Twee bazen',3:'De hoek',4:'Ploeg'})[s.ch]||''}</b><small>Avond ${s.avond} · ${k.txt}</small><small>${eur(s.geld)} · verhaalgeld</small></div></div>
    ${doelTxt?`<div class="sv-app-doel"><small>Nu</small><b>${E(doelTxt)}</b>${doelPos&&!doelPos.binnen?'<button class="btn sm" data-sv="route">Route</button>':''}</div>`:''}
    ${ST.inZiekenhuis()?'<div class="sv-app-doel bad"><small>Ziekenhuis</small><b>Het verhaal staat even stil</b></div>':''}
    <h5>Zo sta je ervoor</h5>${meterHtml()}

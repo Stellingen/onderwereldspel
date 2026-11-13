@@ -16,7 +16,11 @@ const PI=Math.PI,sin=Math.sin,cos=Math.cos;
 let ST,C,B,L;   // L = hulpjes uit hoofdstuk 1
 // testen kan alleen lokaal (localhost) met een vlag in localStorage; op de echte site telt alleen LIVE
 const live=()=>{if(LIVE)return true;try{return /^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&localStorage.getItem('verhaal_s2_test')==='1'}catch(e){return false}};
-G.h2={live,begin:()=>{if(!ST)return;const s=ST.st();s.ch=2;try{save()}catch(e){}ST.goto('h2_start')}};
+const mag=()=>{try{return !!(G.story&&G.story.vip&&G.story.vip())}catch(e){return false}};
+G.h2={live,mag,begin:()=>{if(!ST)return;if(!mag()){const s=ST.st();if(!s.s2lock||Date.now()-s.s2lock>864e5){s.s2lock=Date.now();try{save()}catch(e){}
+    ST.kaart(`<small>De Bezorger · Seizoen 2</small><b>Seizoen 2 is uit</b><p>Twee bazen, twee telefoons en Dex die voor de school wordt opgepakt. Seizoen 2 en verder speel je met VIP of High roller. Al je keuzes uit Seizoen 1 staan klaar.</p>
+     <div class="sv-k-b"><a class="btn" href="/lidmaatschap#verhaal">Bekijk lidmaatschap</a><button class="btn ghost" data-x>Later</button></div>`)}return false}
+  const s=ST.st();s.ch=2;try{save()}catch(e){}ST.goto('h2_start');return true}};
 
 /* =================== auto's (politie, burgers) =================== */
 function auto(kleur,politie){const g=new TH.Group(),m=c=>new TH.MeshLambertMaterial({color:c});const box=(w,h,d,c,x,y,z,em)=>{const mm=em?new TH.MeshBasicMaterial({color:c}):m(c);const o=new TH.Mesh(new TH.BoxGeometry(w,h,d),mm);o.position.set(x,y,z);o.castShadow=true;g.add(o);return o};
@@ -316,16 +320,18 @@ function speciaal(){if(speciaalSpot||!live()||!ST)return;const s=ST.st();if(!(s.
 
 /* =================== de stappen =================== */
 function registreer(){const S=(id,d)=>ST.step(id,d);
-S('h2_start',{muziek:'ray',async start(o){const t=nieuw();const s=ST.st();s.ch=2;try{save()}catch(e){}ST.avond(1);ST.tijd(9,30);await L.buiten();if(t!==RUN)return;L.zorgFiets();
+S('h2_start',{muziek:'ray',async start(o){const t=nieuw();const s=ST.st();s.ch=2;try{save()}catch(e){}ST.avond(1);ST.tijd(9,30);L.zorgFiets(L.A('thuis',198,483));
   const env=L.F('envelop');
-  await C.play([{fade:'out',t:.01},{titel:'Seizoen 2',sub:'Hoofdstuk 2 · Twee bazen',t:3.6},{fn:L.tril},
+  await L.binnen('thuis');if(t!==RUN)return;
+  await C.play([{fade:'out',t:.01},{speler:false},{actor:'luca',at:L.W('thuis',12.6,10.2),ry:PI*.5,anim:'sit',sitY:-.45,prop:'telefoon'},{fn:()=>{const a=C.acteur('luca');if(a)a.g.binnenId=1}},
+   L.cam(...L.W3('thuis',14.6,2.1,8.2),...L.W3('thuis',12.6,.9,10.2)),{fade:'in',t:1},{titel:'Seizoen 2',sub:'Hoofdstuk 2 · Twee bazen',t:3.6},{fn:L.tril},
    {say:null,text:'Twee telefoons. De ene van Rafiq. De andere van een nummer dat Luca niet heeft opgeslagen, maar wel uit zijn hoofd kent.',t:4},
    ...(env==='verraden'?[{say:'ray',text:'Goedemorgen, Luca. Vanaf vandaag werk je voor mij. En voor Rafiq. Want Rafiq mag niet weten dat je voor mij werkt.',t:4.2,mood:'koel'}]
      :env==='gelogen'?[{say:'ray',text:'Mijn mensen zoeken Teun nog. Tot ze hem vinden, werk jij voor mij. Gewoon zoals altijd voor Rafiq, en daarnaast voor mij.',t:4.4,mood:'koel'}]
      :[{say:'ray',text:'Je hebt mijn nummer niet gebeld. Dus bel ik jou. Ik bied het nog één keer aan: rijd voor mij. Rafiq hoeft het niet te weten.',t:4.4,mood:'koel'},
        {keuze:[{t:'"Oké. Maar Rafiq mag het nooit weten."',id:'ja'},{t:'"Ik denk erover na."',id:'later'}],wie:'luca',text:'Ray wacht.'},{fn:()=>{if(C.laatste==='later'){ST.meter('loy_ray',-3)}}},
        {say:'ray',text:'Nadenken is goed. Doe het snel.',t:2.2}]),
-   {say:null,text:'Vanaf nu plan je elke dag. School. Giovanni. Rafiq. Ray. Je kunt niet alles. Wie wacht, wordt achterdochtig.',t:4},{fade:'in',t:.5}]);
+   {say:null,text:'Vanaf nu plan je elke dag. School. Giovanni. Rafiq. Ray. Je kunt niet alles. Wie wacht, wordt achterdochtig.',t:4},{fade:'out',t:.5},{weg:'luca'},{speler:true},{fade:'in',t:.5}]);
   if(t!==RUN)return;L.F('h2_dag',1);L.F('h2_plan',null);L.F('h2_i',0);ST.goto('h2_dag')}});
 
 // één speldag: planning maken, dan de blokken afwerken
@@ -346,7 +352,7 @@ S('h2_dag',{muziek:null,async start(o){const t=nieuw();const dag=L.F('h2_dag')||
   else{await C.play([{fade:'out',t:.8},{titel:'Dag 4',sub:'De overkant',t:2.6},{fade:'in',t:.8}]);ST.avond(4);ST.goto('h2_dex')}}});
 S('h2_dex',{muziek:'spanning',async start(o){const t=nieuw();await mDexOpgepakt(t);if(t!==RUN)return;ST.goto('h2_slot')}});
 S('h2_slot',{muziek:'ray',async start(o){const t=nieuw();await mEinde(t)}});
-S('h2_vrij',{doel:'Seizoen 3 · coming soon. Extra diensten bij Giovanni',start(o){if(G.h1)G.h1.dienstAan(true);L.zorgFiets()}});
+S('h2_vrij',{doel:'Seizoen 3 · coming soon. Extra diensten bij Giovanni',start(o){nieuw();if(G.h1)G.h1.dienstAan(true);L.zorgFiets()}});
 }
 
 /* =================== opstarten =================== */
