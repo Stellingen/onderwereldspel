@@ -17,7 +17,7 @@
 /* ---------- verhaal: HUD ---------- */
 body.verhaal #sdCard,body.verhaal #sdWanted,body.verhaal .sd-keys{display:none!important}
 #svHud{pointer-events:none}
-.sv-card{display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;gap:4px 10px;align-items:center;width:258px;padding:9px 11px;background:var(--pan,var(--sv-pan));border:1px solid var(--ln,var(--sv-ln));box-shadow:4px 4px 0 rgba(0,0,0,.5),inset 0 2px 0 var(--sv-roze);clip-path:var(--cut,none);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.sv-card{display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;gap:4px 10px;align-items:center;width:auto;min-width:258px;max-width:380px;padding:9px 11px;background:var(--pan,var(--sv-pan));border:1px solid var(--ln,var(--sv-ln));box-shadow:4px 4px 0 rgba(0,0,0,.5),inset 0 2px 0 var(--sv-roze);clip-path:var(--cut,none);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .sv-card canvas{grid-row:1/3;width:44px;height:44px;image-rendering:pixelated;border:1px solid #000;background:#1a1d23}
 .sv-id{display:flex;flex-direction:column;min-width:0}.sv-id b{font:800 17px/1 var(--f-head,sans-serif);text-transform:uppercase;letter-spacing:.05em;color:#fff}.sv-id span{font:600 10px var(--f-mono,monospace);letter-spacing:.08em;text-transform:uppercase;color:var(--sv-roze)}
 .sv-geld{grid-column:2;display:flex;align-items:baseline;gap:6px}.sv-geld small{font:600 9.5px var(--f-mono,monospace);text-transform:uppercase;letter-spacing:.1em;color:#8a8f98}.sv-geld b{font:900 22px/1 var(--f-display,sans-serif);color:#3fe395;font-variant-numeric:tabular-nums}
@@ -70,8 +70,8 @@ body.verhaal.sv-binnen #sdDest{display:none!important}
 .sv-sub{position:absolute;left:50%;bottom:calc(11vh + 14px);transform:translateX(-50%);z-index:4;width:min(780px,calc(100vw - 24px));display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;padding:12px 16px 12px 12px;background:rgba(8,6,10,.86);border:1px solid rgba(255,255,255,.08);box-shadow:inset 3px 0 0 var(--c,#fff)}
 .sv-sub.n{grid-template-columns:1fr}.sv-sub.n canvas{display:none}
 .sv-sub canvas{width:112px;height:112px;image-rendering:pixelated;border:2px solid #000;background:#14101a}
-.sv-sub b{display:block;font:800 15px var(--f-head,sans-serif);text-transform:uppercase;letter-spacing:.08em;color:var(--c,#fff);margin:2px 0 5px}
-.sv-sub p{margin:0;font:500 19px/1.4 var(--f-body,'Schibsted Grotesk',system-ui,sans-serif);color:#fff;text-shadow:0 2px 0 #000;min-height:2.8em}
+.sv-sub b{display:block;font:800 calc(15px * var(--sv-sub,1)) var(--f-head,sans-serif);text-transform:uppercase;letter-spacing:.08em;color:var(--c,#fff);margin:2px 0 5px}
+.sv-sub p{margin:0;font:500 calc(19px * var(--sv-sub,1))/1.4 var(--f-body,'Schibsted Grotesk',system-ui,sans-serif);color:#fff;text-shadow:0 2px 0 #000;min-height:2.8em}
 .sv-sub-k{display:flex;flex-direction:column;gap:6px;margin-top:10px}.sv-sub-k button{text-align:left;padding:10px 12px;background:#16131c;border:1px solid #2e2836;color:#e8e4da;font:600 15px var(--f-body,sans-serif);cursor:pointer;display:flex;flex-direction:column;gap:2px}
 .sv-sub-k button small{font-size:12px;color:#9a96a0}.sv-sub-k button.on,.sv-sub-k button:hover{border-color:var(--c,var(--sv-roze));background:#211a28}
 .sv-skip{position:absolute;top:calc(11vh + 10px);right:14px;z-index:6;padding:7px 12px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.25);color:#e8e4da;font:700 12px var(--f-mono,monospace);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
@@ -82,3 +82,6 @@ body.verhaal.sv-binnen #sdDest{display:none!important}
 body.sv-incut #stadUi,body.sv-incut .sv-doel,body.sv-incut #sdCarUi,body.sv-incut .sd-npcp,body.sv-incut .sd-dot,body.sv-incut #svSein{display:none!important}
 @media (max-width:700px){.sv-sub{grid-template-columns:auto 1fr;gap:10px;padding:9px 10px;bottom:calc(11vh + 8px)}.sv-sub canvas{width:64px!important;height:64px!important}.sv-sub p{font-size:15.5px}.sv-sub b{font-size:13px}.sv-skip{top:calc(11vh + 6px);right:8px}}
 .sv-bfade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:69}
+
+body.sv-geen-ondertitels [data-ondertitel]{display:none!important}
+body.sv-geen-ondertitels .sv-sub.keuze:not([hidden]){display:grid!important}   /* keuzes blijven zichtbaar */

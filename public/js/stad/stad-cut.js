@@ -200,7 +200,7 @@ CUT.allesWeg=function(alles){for(const id in ACT){if(alles||!ACT[id].blijf)CUT.w
 const ui=document.createElement('div');ui.id='svCut';ui.hidden=true;
 ui.innerHTML=`<i class="sv-cb t"></i><i class="sv-cb b"></i><div class="sv-fade" id="svFade"></div><div class="sv-droom" id="svDroom"></div>
  <div class="sv-titel" id="svTitel" hidden><small></small><b></b></div>
- <div class="sv-sub" id="svSub" hidden><canvas id="svSubPor" width="48" height="48"></canvas><div><b id="svSubN"></b><p id="svSubT"></p><div class="sv-sub-k" id="svSubK"></div></div></div>
+ <div class="sv-sub" id="svSub" data-ondertitel hidden><canvas id="svSubPor" width="48" height="48"></canvas><div><b id="svSubN"></b><p id="svSubT"></p><div class="sv-sub-k" id="svSubK"></div></div></div>
  <button class="sv-skip" id="svSkip">${touch?'Overslaan':'Overslaan <kbd>Esc</kbd>'} ›</button><i class="sv-hold" id="svHold"></i>`;
 document.body.appendChild(ui);
 let active=false,skip=false,advance=null,tw=null,keuzeOpen=null,droom=false;
@@ -223,7 +223,8 @@ addEventListener('keydown',e=>{if(!active)return;const k=e.key.toLowerCase();con
   if(k==='e'||k===' '||k==='enter'){e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)tap();return}
   // geen telefoon, kaart, camera of lopen tijdens een cutscène
   if(['j','m','v','f','t','w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift'].includes(k)){e.stopImmediatePropagation();if(k.startsWith('arrow'))e.preventDefault()}},true);
-function doSkip(){if(!active||keuzeOpen)return;skip=true;if(tw)tw.skip();if(advance){const f=advance;advance=null;f()}WAITS.forEach(f=>f());WAITS.clear();G.snd&&G.snd.fx('tab')}
+const magSkip=()=>{try{return !(G.verhaalInst&&G.verhaalInst.get&&G.verhaalInst.get('skip')===false)}catch(e){return true}};
+function doSkip(){if(!active||keuzeOpen||!magSkip())return;skip=true;if(tw)tw.skip();if(advance){const f=advance;advance=null;f()}WAITS.forEach(f=>f());WAITS.clear();G.snd&&G.snd.fx('tab')}
 const WAITS=new Set();
 function wacht(s){return new Promise(res=>{if(skip||!(s>0)){res();return}const t=setTimeout(()=>{WAITS.delete(f);res()},s*1000);const f=()=>{clearTimeout(t);res()};WAITS.add(f)})}
 CUT.wacht=wacht;
@@ -277,7 +278,7 @@ async function stap(s){if(!s)return;
   if(s.binnen){if(G.binnen)await G.binnen.in(s.binnen,{fade:false});return}
   if(s.buiten){if(G.binnen)await G.binnen.uit({fade:false});return}
   if(s.fn){try{await s.fn()}catch(e){console.error(e)}return}}
-function zeg(id,text,s){if(skip)return Promise.resolve();const sub=$s('svSub');sub.hidden=false;sub.classList.toggle('n',!id);sub.style.setProperty('--c',(A[id]&&A[id].col)||(id==='luca'?'#ff4fd8':'#e8e4da'));
+function zeg(id,text,s){if(skip)return Promise.resolve();const sub=$s('svSub');sub.hidden=false;sub.classList.remove('keuze');sub.classList.toggle('n',!id);sub.style.setProperty('--c',(A[id]&&A[id].col)||(id==='luca'?'#ff4fd8':'#e8e4da'));
   $s('svSubN').textContent=id?(s&&s.naam)||nm(id):'';setPor(id,s&&s.mood);$s('svSubK').innerHTML='';
   const a=acteur(id);if(a&&s&&s.praat!==false&&a.anim==='idle'){a.doe('talk');setTimeout(()=>{if(a.anim==='talk')a.doe('idle')},Math.max(1200,(text||'').length*55))}
   tw=K.type($s('svSubT'),text||'',{blip:true});
@@ -286,7 +287,7 @@ function zeg(id,text,s){if(skip)return Promise.resolve();const sub=$s('svSub');s
     const tm=setTimeout(()=>{if(tw&&!tw.done){tw.then(()=>setTimeout(fin,900))}else fin()},(dur+(s&&s.wacht?999:0))*1000);
     advance=fin;WAITS.add(fin)})}
 function drawK(){const k=keuzeOpen;if(!k)return;$s('svSubK').innerHTML=k.map((c,i)=>`<button class="${i===k.sel?'on':''}" data-i="${i}">${E(c.t)}${c.sub?`<small>${E(c.sub)}</small>`:''}</button>`).join('')}
-function keuze(s){skip=false;const sub=$s('svSub');sub.hidden=false;const id=s.wie||null;sub.classList.toggle('n',!id);$s('svSubN').textContent=id?nm(id):'';setPor(id,s.mood);
+function keuze(s){skip=false;const sub=$s('svSub');sub.hidden=false;sub.classList.add('keuze');const id=s.wie||null;sub.classList.toggle('n',!id);$s('svSubN').textContent=id?nm(id):'';setPor(id,s.mood);
   tw=K.type($s('svSubT'),s.text||'');const opts=s.keuze.slice();opts.sel=0;
   return new Promise(res=>{opts.pick=async i=>{const c=opts[i];if(!c)return;keuzeOpen=null;$s('svSubK').innerHTML='';G.snd&&G.snd.fx('click');CUT.laatste=c.id!=null?c.id:i;try{if(c.f)await c.f()}catch(e){console.error(e)}res(CUT.laatste)};
     keuzeOpen=opts;const show=()=>{drawK()};if(tw)tw.then(show);else show();
@@ -297,6 +298,7 @@ CUT.play=async function(script,o){o=o||{};while(running)await running;let rel;ru
   if(G.kit.dialogOpen&&G.kit.dialogOpen())G.kit.closeDialog(true);if(G.phone&&G.phone.isOpen&&G.phone.isOpen())G.phone.close();
   const hq=Object.assign({},CUT.hq,o.hq||{});if(hq.pix){pixWas=G.pixPref;G.pixPref=hq.pix;G.resize&&G.resize()}
   CUT.onStart.forEach(f=>{try{f(o)}catch(e){}});
+  $s('svSkip').hidden=!magSkip();
   requestAnimationFrame(()=>ui.classList.add('on'));
   try{for(const s of script){await stap(s)}}catch(e){console.error(e)}
   // afronden

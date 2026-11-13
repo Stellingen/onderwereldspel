@@ -1598,3 +1598,29 @@ Inspiratie: GTA en Mafia. De Pixelstad blijft een pixelspel, maar speelt nu ook 
   - Elk geheim betaalt één keer: zwart geld via `G.schaal.zwart`, plus XP.
   - In de telefoon staat onder Verhaal het blok "Geheimen van de stad x van 12", met ??? voor wat je nog niet gevonden hebt. Bewaard in `S.stadVerhaal.d['g_…']` en `S.stadGeheim`.
   - De bouwplaats aan de Boulevard heeft nu een bouwkeet (vast), pallets, buizen en een zandhoop.
+
+## Verhaalmodus "De Bezorger" (/verhaal, november 2026)
+
+Een verhaal in pixels, los van het klikspel en de Pixelstad. Je speelt Luca De Santis (16), een pizzabezorger uit de Westbuurt. Luca heeft zijn eigen geld, meters, spullen en klok (`S.story`); het klikspel merkt er niets van. Seizoen 1 (hoofdstuk 1) is gratis voor iedereen, de rest is voor VIP en High roller. Leden kiezen bij de Pixelstad tussen Stad en Verhaal; gratis spelers gaan vanaf de Stad-poort naar het verhaal.
+
+**De stad** (`verhaal-map.js`, 1400 × 1200 m, ± 850 gebouwen) is een eigen stad rond het verhaal: Westbuurt (flats, school, Bella Napoli, buurthuis), Centrum met grachten, Oud-Zuid, Zuidas, Boulevard met strand en Lounge Sahara, de haven, het industrieterrein, Het Eiland met de villa en de ringweg. Trams (lijn 5 en 7) rijden echt. De wereld wordt in brokken van 160 m getekend.
+
+**Kern** (`stad-story.js`): stappen met doel en route, verhaalgeld, meters (Koers zakelijk ↔ straat, Imago, Hitte, Dossier, familie, loyaliteit), vlaggen die later terugkomen, een speldag van 30 minuten, geld-poorten (`G.story.poort(bedrag)`) en het ziekenhuis (neergeschoten = 10 minuten stilstand).
+
+**Cutscènes** (`stad-cut.js` + `stad-leeftijd.js`): camerapaden, acteurs die lopen, praten, geven en vechten, ondertitels met grote pixelportretten, keuzes in de ondertitel, dagdromen. Tijdens een cutscène een filmische beeldmodus: gedetailleerdere poppetjes, zachte schaduwen, randlicht, scherptediepte en filmkorrel. Overslaan en ondertitels volgen de instellingen.
+
+**Interieurs** (`stad-binnen.js`, `stad-interieur.js`): Lounge Sahara, Bella Napoli, de flat van de familie, het klaslokaal en het rijtjeshuis in Oud-Zuid. Dozen dragen met `G.draag`.
+
+**Fiets en bezorgen** (`stad-fiets.js`, `stad-bezorg.js`): de fiets met lading, balans bij tramrails en stoepranden, zand en natte wegen; bestellingen met tijd, warmte, aanbellen en zes soorten klanten. In de Pixelstad is dit een bijbaan bij Bella Napoli in de Westbuurt.
+
+**Ouder worden en kleding** (`stad-leeftijd.js`): iedereen wordt mee ouder met het verhaal (grijs, inhammen, rimpels, baard). Luca gaat van krullen naar kort haar en een baard; de speler kiest alleen het kapsel. Kleding volgt de plek, de situatie en de route (school, bezorger, thuis, straat, zakelijk, klus met handschoenen en masker).
+
+**Kaart en instellingen** (`verhaal-kaart.js`, `verhaal-instellingen.js`): de hoofdmissie licht goud op, zijmissies klein en blauw, speciale missies staan er niet op. Instellingen voor navigatiehulp, doelpijl, ondertitels, overslaan, camera, beeld, geluid en toetsen.
+
+**Hoofdstuk 1 · Dozen** (`stad-h1.js`), vier avonden:
+1. De eerste dienst: de les en de dagdroom, het schoolplein (ingrijpen of doorlopen), de fiets, Giovanni en de rode jas, drie bezorgingen, de tassendief (achtervolgen of laten gaan), de grote bestelling voor Lounge Sahara, drie rondes naar binnen en de achterkamer, "Hé, jongen" en het aanbod (nee zeggen levert een beter bod op), thuis en het geld (verstoppen, aan mama geven of sneakers).
+2. Iets extra's: de sporttas, vier adressen waarvan twee met iets extra's, de agent op de hoek (praten of wegfietsen), de klant die niet betaalt (aanbellen, achterom of Rafiq), Dex (vertellen of liegen).
+3. Regels: de bezorger van Rapido (vuistgevecht of zijn band lekprikken), geld tellen met Rafiq, Marco's verjaardag (cadeau), de nachtroute langs het strand met iemand achter je.
+4. Het verkeerde huis: de bivakmutsen, het verhoor (stoer, bang of slim), Grote Ray en de envelop (verraden, zwijgen of liegen als je slim bent gebleven), de voorproef van Seizoen 2.
+
+Tussendoor: extra diensten bij Giovanni (zijmissie op de kaart) en een klus voor buurvrouw Ans die niet op de kaart staat.

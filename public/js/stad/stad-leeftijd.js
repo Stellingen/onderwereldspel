@@ -58,7 +58,7 @@ const CAST={
  ray:{n:'Grote Ray',col:'#e8e4da',rol:'',born:1978,skin:'#4a2e20',eye:'#24160e',hair:'#16161a',grijs:43,hs:'kaal',fh:'kortbaard',mood:'koel',fw:20,jaw:'hoekig',h:1.1,w:1.22,
    kl:{std:{k:'suit',c:'#2a2c30',c3:'#16161a',b:'pantalon',bc:'#1a1a1c',s:'nette',sc:'#16161a',wt:'#c9cfd6'}}},
  nova:{n:'Nova',col:'#ff3d7a',rol:'Rechterhand van Ray',born:1994,v:1,skin:'#b97a52',eye:'#24160e',hair:'#16161a',hs:'staart',mood:'koel',fw:16,jaw:'spits',h:.96,
-   kl:{std:a=>({k:'leer',c:'#121316',c2:'#3a3d44',c3:'#121316',b:'jeans',bc:'#121316',s:'laars',sc:'#121316',gl:'#121316',hat:a<19?'mask':'none',hatC:'#16161a'})}},
+   kl:{std:(a,la)=>({k:'leer',c:'#121316',c2:'#3a3d44',c3:'#121316',b:'jeans',bc:'#121316',s:'laars',sc:'#121316',gl:'#121316',hat:la<19?'mask':'none',hatC:'#16161a'}),gewoon:{k:'leer',c:'#121316',c2:'#3a3d44',c3:'#121316',b:'jeans',bc:'#121316',s:'laars',sc:'#121316'}}},
  sanne:{n:'Sanne',col:'#ffb35a',rol:'Dochter van Giovanni',born:2007,v:1,skin:'#e8b890',eye:'#3d7a42',hair:'#6a3a20',hs:'bob',mouth:'vol',lip:'#b04a50',fw:16,h:.95,
    kl:{std:a=>a<21?{k:'blouse',c:'#e8e0cc',b:'jeans',bc:'#2c3a4d',s:'laars',sc:'#3a2418'}:{k:'blazer',c:'#3a2a3a',c3:'#f1efe9',b:'pantalon',bc:'#2a2028',s:'nette',sc:'#16161a',ch:'goud'}}},
  bakker:{n:'Inspecteur Bakker',col:'#a9dcff',rol:'Recherche',born:1970,skin:'#e6b896',eye:'#5a6a7a',hair:'#5a4a3a',grijs:44,kaal:47,kmax:2,hs:'kort',fh:'snor',bril:'#3a3c40',fw:20,w:1.08,
@@ -116,7 +116,7 @@ const ch=()=>{try{const s=G.story&&G.story.st&&G.story.st();return s&&s.ch||1}ca
 function lucaAge(){const L=lst(),c=ch();if(L.age!=null&&(L.ageCh==null||L.ageCh===c))return clamp(+L.age||16,12,30);return CH_AGE[c]||16}
 const yearNow=()=>LUCA_GEBOREN+lucaAge();
 function ageOf(id,la){const C=CAST[id];return (LUCA_GEBOREN+(la!=null?la:lucaAge()))-C.born}
-const val=(v,a)=>typeof v==='function'?v(a):v;
+const val=(v,a,la)=>typeof v==='function'?v(a,la):v;
 // grijs 0..1, kaalfase 0..3, rimpels 0..4, wallen 0..2
 const greyAt=(C,a)=>C.grijs==null?0:clamp((a-C.grijs)/25,0,1);
 const baldAt=(C,a)=>{if(C.kaal==null)return 0;const s=a<C.kaal?0:a<C.kaal+7?1:a<C.kaal+16?2:3;return Math.min(s,C.kmax!=null?C.kmax:3)};
@@ -176,7 +176,7 @@ function lookOf(id,o){o=o||{};id=cid(id);if(!id)return null;const C=CAST[id],la=
   // outfit
   let on=o.outfit||KLV[id]||null,O=null;
   if(id==='luca'){on=on||lucaOutfit();const st=STIJL[on];O=lucaKl(on,a,st?(L0.kl[st]|0):0)}
-  else{const kl=C.kl||{};if(on&&kl[on])O=val(kl[on],a);else if(on)O=algKl(on,C,a);if(!O)O=val(kl.std,a)||{k:'tee',c:'#30353e',b:'jeans',bc:'#1d2531',s:'sneaker',sc:'#3a3f48'};on=on||'std'}
+  else{const kl=C.kl||{};if(on&&kl[on])O=val(kl[on],a,la);else if(on)O=algKl(on,C,a);if(!O)O=val(kl.std,a,la)||{k:'tee',c:'#30353e',b:'jeans',bc:'#1d2531',s:'sneaker',sc:'#3a3f48'};on=on||'std'}
   O=Object.assign({},O);if(o.masker===true){O.hat='mask';O.hatC=O.hatC&&O.hat!=='none'?O.hatC:'#121316'}
   const hairBase=C.hair,hair=g>0?(g<.75?mix(hairBase,'#a9a6a1',Math.min(1,g*1.25)):mix('#a9a6a1','#e6e2dc',(g-.75)*4)):hairBase;
   const h=val(C.h,a)||1,w=val(C.w,a)||1;
@@ -409,13 +409,16 @@ function hoofd(head,P,L,O,seed){const V=Vox(),sk=L.skin,skD=shade(sk,.88),skDD=s
   // nek en schedel (smallere kaak, afgeronde kruin)
   V.b(.2,.1,.19,0,.03,0,skD);V.b(.21,.012,.2,0,.06,0,skDD);
   V.b(W,.36,.48,0,Y+.31,0,sk);V.b(W*.94,.07,.46,0,Y+.095,0,sk);V.b(jw,.07,.42,0,Y+.035,0,sk);V.b(W*.9,.03,.44,0,Y+.505,0,sk);V.b(jw*.5,.02,.012,0,Y+.025,.215,shade(sk,.95));
-  if(L.v)[-1,1].forEach(s=>V.b(.05,.025,.006,.15*s,Y+.19,.243,mix(sk,'#e07a72',.28)));
+  if(L.v)[-1,1].forEach(s=>V.b(.05,.025,.006,.15*s,Y+.19,.243,mix(sk,'#e07a72',.18)));
+  // geschilderde schaduw en licht (vorm, ook bij plat licht): haarlijn, jukbeenderen, neusflank, kaaklijn
+  {const S=HSD[L.hs2];if(S&&hat==='none'&&S.hl<.6&&!S.kaal)V.b(W*.9,.02,.006,0,Y+S.hl-.004,.2425,shade(sk,.84))}
+  [-1,1].forEach(s=>{V.b(.06,.022,.006,s*.145,Y+.214,.2425,shade(sk,1.07));V.b(.02,.1,.006,s*(W/2-.012),Y+.12,.2405,shade(sk,.9))});V.b(.014,.075,.008,.03,Y+.205,.2545,shade(sk,.86));
   // oren
   [-1,1].forEach(s=>{V.b(.04,.11,.09,s*(W/2+.015),Y+.255,-.01,sk);V.b(.012,.06,.04,s*(W/2+.036),Y+.255,0,skDD);
     if(L.oor&&(L.oor===2||s<0))V.b(.02,.03,.02,s*(W/2+.03),Y+.19,0,'#e8b923');if(O.oortje&&s>0){V.b(.02,.04,.02,W/2+.04,Y+.25,.02,'#1a1a1a');V.b(.01,.2,.01,W/2+.035,Y+.12,-.04,'#e8e4da')}});
   // ogen: oogkas, wit, iris, pupil, glans, wimperlijn; leden voor de stemming
   const eyeOf=s=>{const o=grp(head,.105*s,Y+.272,.24),e=grp(o),W2=Vox(),ix=-.008*s;
-    W2.b(.094,.046,.012,0,0,.006,'#e6e0d6');W2.b(.05,.048,.014,ix,0,.008,L.eye||'#3a2414');W2.b(.024,.03,.016,ix,0,.01,'#0d0d10');W2.gl(.012,.012,.017,ix+.012,.012,.011,'#ffffff');
+    W2.b(.1,.05,.012,0,0,.006,'#e6e0d6');W2.b(.052,.05,.014,ix,0,.008,L.eye||'#3a2414');W2.b(.052,.014,.015,ix,.018,.0085,shade(L.eye||'#3a2414',.6));W2.b(.024,.03,.016,ix,0,.01,'#0d0d10');W2.gl(.012,.012,.017,ix+.012,.012,.011,'#ffffff');
     W2.b(.112,.014,.018,0,.03,.008,'#1a1210');if(L.v)W2.b(.022,.012,.018,.06*s,.037,.008,'#1a1210');W2.into(e,{noShadow:true});
     const lu=grp(o,0,.022,.016),lb=Vox();lb.b(.118,.032,.012,0,0,0,sk);lb.b(.118,.008,.014,0,-.016,.001,shade(sk,.7));lb.into(lu,{noShadow:true});lu.visible=false;
     const ll=grp(o,0,-.024,.016),lc=Vox();lc.b(.112,.022,.012,0,0,0,sk);lc.into(ll,{noShadow:true});ll.visible=false;return {e,lu,ll}};
@@ -572,22 +575,26 @@ function cineMat(){if(CINE.mat)return CINE.mat;const m0=G.post&&G.post.material;
 const findSun=()=>{const sc=G.scene&&G.scene();if(!sc)return null;return sc.children.find(o=>o.isDirectionalLight&&o.castShadow&&o!==CINE.rim)||null};
 function recompile(){const sc=G.scene&&G.scene();if(!sc)return;sc.traverse(o=>{const m=o.material;if(!m)return;(Array.isArray(m)?m:[m]).forEach(x=>{x.needsUpdate=true})})}
 U.cinePix=()=>small()?560:touch?640:760;
-U.cineOn=function(o){o=o||{};if(CINE.on||!G.ready)return false;const R=G.renderer(),sc=G.scene(),sun=findSun();CINE.on=true;CINE.t=0;CINE.fd=-1;
+// instellingen van de verhaalmodus (Beeld): Grof = geen hogere resolutie en geen scherptediepte, Effecten uit = geen nabewerking, Schaduw uit = niets aan de schaduw
+const inst=k=>{try{return G.verhaalInst?G.verhaalInst.get(k):undefined}catch(e){return undefined}};
+const laag=()=>!!(G.pixPref&&G.pixPref<=360);
+function hqPix(){return laag()?(G.pixPref||480):Math.max(G.pixPref||0,U.cinePix())}
+U.cineOn=function(o){o=o||{};if(CINE.on||!G.ready)return false;const R=G.renderer(),sc=G.scene(),sun=inst('schaduw')===false?null:findSun();CINE.on=true;CINE.t=0;CINE.fd=-1;const low=o.laag!=null?o.laag:(CINE.laag!=null?CINE.laag:laag());
   const sv0={pix:G.pixPref,type:R.shadowMap.type};if(sun){const s=sun.shadow,c=s.camera;sv0.ms=s.mapSize.clone();sv0.cam=[c.left,c.right,c.top,c.bottom];sv0.rad=s.radius;sv0.bias=s.bias}CINE.saved=sv0;
-  if(o.pix!==false){G.pixPref=o.pix||U.cinePix();G.resize&&G.resize()}
+  CINE.pixSet=false;if(o.pix!==false&&!low){G.pixPref=o.pix||hqPix();CINE.pixSet=true;G.resize&&G.resize()}
   // zachte schaduw met een fijnere schaduwkaart rond de scène
   if(sun&&o.schaduw!==false){const s=sun.shadow,c=s.camera,n=touch?2048:4096,soft=!touch&&U.zachteSchaduw!==false;if(soft)R.shadowMap.type=TH.PCFShadowMap;s.mapSize.set(n,n);if(s.map){s.map.dispose();s.map=null}c.left=-18;c.right=18;c.top=18;c.bottom=-18;c.updateProjectionMatrix();s.radius=3;s.bias=-.0004;if(soft)recompile()}
   // randlicht van achteren en een zacht vullicht vanaf de camera
   if(!CINE.rim){CINE.rim=new TH.DirectionalLight(0xffe2c0,0);CINE.fill=new TH.DirectionalLight(0xc8d8ff,0)}
   sc.add(CINE.rim,CINE.rim.target,CINE.fill,CINE.fill.target);
   // nabewerking: scherptediepte met bokeh, filmkorrel, vignet
-  const m=cineMat();if(m&&G.post){CINE.prev=G.post.material;G.post.material=m}
+  const m=!low&&inst('effecten')!==false?cineMat():null;if(m&&G.post){CINE.prev=G.post.material;G.post.material=m}
   G.avatarSync&&G.avatarSync();return true};
 U.cineOff=function(){if(!CINE.on)return false;CINE.on=false;const R=G.renderer(),sc=G.scene(),sun=findSun(),s0=CINE.saved||{};
   if(CINE.prev&&G.post){G.post.material=CINE.prev;CINE.prev=null}
   if(CINE.rim){sc.remove(CINE.rim,CINE.rim.target,CINE.fill,CINE.fill.target)}
   if(sun&&s0.ms){const s=sun.shadow,c=s.camera,re=R.shadowMap.type!==s0.type;R.shadowMap.type=s0.type;s.mapSize.copy(s0.ms);if(s.map){s.map.dispose();s.map=null}[c.left,c.right,c.top,c.bottom]=s0.cam;c.updateProjectionMatrix();s.radius=s0.rad;s.bias=s0.bias;if(re)recompile()}
-  if(s0.pix!==undefined&&G.pixPref!==s0.pix&&!CINE.cutPix){G.pixPref=s0.pix;G.resize&&G.resize()}
+  if(CINE.pixSet){CINE.pixSet=false;G.pixPref=s0.pix;G.resize&&G.resize()}
   lucaMirrorOff();CINE.focus=null;return true};
 U.cineAan=()=>CINE.on;U._cine=CINE;U._spk=()=>SPK;
 // scherpstellen: {x,y,z} | id van een acteur | een poppetje | null (automatisch: wie praat of wie in het midden staat)
@@ -605,10 +612,10 @@ function cineFrame(dt){const cam=G.camera&&G.camera();if(!cam)return;CINE.t+=dt;
   if(u&&G.post&&G.post.material===CINE.mat){u.uTime.value=CINE.t;const fd=focusDepth(cam);if(fd>0){CINE.fd=CINE.fd<0?fd:CINE.fd+(fd-CINE.fd)*Math.min(1,dt*5)}else CINE.fd=-1;u.uFocus.value=CINE.fd;
     const ry=u.uRes.value.y||360;u.uAper.value=11*ry/720*(cam.fov<30?1.4:1);u.uMaxR.value=Math.max(2,Math.round(7*ry/720));}
   // licht: randlicht achter de mensen (warm overdag, koel 's nachts), vullicht vanaf de camera
-  if(CINE.rim){cam.getWorldDirection(v1);const tg=v2.copy(cam.position).addScaledVector(v1,Math.max(4,CINE.fd>0?CINE.fd:10));const right=v3.set(-v1.z,0,v1.x).normalize();
+  if(CINE.rim){CINE.rim.castShadow=CINE.fill.castShadow=false;cam.getWorldDirection(v1);const tg=v2.copy(cam.position).addScaledVector(v1,Math.max(4,CINE.fd>0?CINE.fd:10));const right=v3.set(-v1.z,0,v1.x).normalize();
     const n=G.night||0;CINE.rim.position.copy(tg).addScaledVector(v1,14).addScaledVector(right,7);CINE.rim.position.y+=9;CINE.rim.target.position.copy(tg);
-    CINE.rim.color.set(n>.5?'#9ab8ff':'#ffe2c0');CINE.rim.intensity=1.2+n*1.1;
-    CINE.fill.position.copy(cam.position).addScaledVector(right,-3);CINE.fill.position.y+=3;CINE.fill.target.position.copy(tg);CINE.fill.intensity=.35+n*.25}
+    CINE.rim.color.set(n>.5?'#9ab8ff':'#ffe2c0');CINE.rim.intensity=1.6+n*1.0;
+    CINE.fill.position.copy(cam.position).addScaledVector(right,-4);CINE.fill.position.y+=4;CINE.fill.target.position.copy(tg);CINE.fill.color.set(n>.5?'#c8d8ff':'#fff0dc');CINE.fill.intensity=.55+n*.3}
   lucaMirror()}
 // Luca (de speler) in een cutscène: het gedetailleerde poppetje beweegt precies mee met het gewone poppetje
 function lucaMirror(){if(!story()&&!CINE.ml)return;const av=G.avatarObj&&G.avatarObj(),AP=G.avatarParts&&G.avatarParts();
@@ -671,7 +678,8 @@ function koppelCut(){const C=G.cut;if(!C||C._ul)return;C._ul=1;
     if(!cid(id)&&id!=='luca'){if(G.kit&&G.kit.face&&C.face){c.width=c.height=48;G.kit.face(Object.assign({bg:'#14101a'},C.face(id)),mood||null,c)}return c}
     return tekenPortret(id,mood,c,{size:Math.round(sz/2)})};
   if(C.onStart)C.onStart.push(o=>{CINE.cutPix=true;U.cineOn({pix:false})});if(C.onEnd)C.onEnd.push(()=>{U.cineOff();CINE.cutPix=false});
-  if(C.hq){C.hq.pix=U.cinePix();C.hq.portret=small()?112:136}}
+  if(C.hq){C.hq.pix=hqPix();C.hq.portret=small()?112:136}}
+function hqTick(){const C=G.cut;if(!C||!C.hq||(C.active&&C.active()))return;CINE.laag=laag();C.hq.pix=hqPix()}
 function koppelStory(){const S0=G.story;if(!S0||S0._ul)return;S0._ul=1;
   if(Array.isArray(S0.onStep))S0.onStep.push((id,def)=>{const t=def&&(def.outfit||def.soort||def.situatie);if(t){U.situatie(t);SITsrc='stap'}else if(SITsrc==='stap'){U.situatie(null)}})}
 function opwarmen(){if(!story())return;try{const c=document.createElement('canvas');tekenPortret('luca',null,c,{size:16});PCACHE.clear()}catch(e){}
@@ -682,7 +690,7 @@ const hook=setInterval(()=>{if(!G.ready)return;clearInterval(hook);koppelCut();k
 function frame(dt){MINE.forEach(p=>{try{p.update(dt)}catch(e){}});
   const C=G.cut;if(C&&C.personen)C.personen.forEach(a=>{if(a.P&&a.P._ul)faceStep(a,dt)});
   if(CINE.on)cineFrame(dt);
-  tick+=dt;if(tick>1){tick=0;koppelCut();koppelStory();sync(false)}}
+  tick+=dt;if(tick>1){tick=0;koppelCut();koppelStory();hqTick();sync(false)}}
 
 /* =================== API =================== */
 U.CAST=CAST;U.personen=MINE;U.allesWeg=()=>{[...MINE].forEach(p=>p.weg())};U.ids=()=>Object.keys(CAST);U.id=cid;
