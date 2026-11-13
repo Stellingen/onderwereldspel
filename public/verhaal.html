@@ -78,7 +78,7 @@
     'js/stad/stad-avatar.js','js/stad/stad-emote.js','js/stad/stad-cars.js','js/stad/stad-ui.js','js/stad/stad-kaart.js','js/stad/stad-npc.js','js/stad/stad-police.js','js/stad/stad-phone.js','js/stad/stad-doen.js','js/stad/stad-sfeer.js'];
   // het verhaal: kern (G.story, G.cut, G.binnen, G.draag), dan wat de andere onderdelen bouwen (ontbrekende bestanden worden overgeslagen)
   const VERHAAL=['js/stad/stad-story.js','js/stad/stad-cut.js','js/stad/stad-binnen.js','js/stad/stad-draag.js','js/stad/stad-interieur.js',
-    'js/stad/stad-leeftijd.js','js/stad/verhaal-kaart.js','js/stad/verhaal-instellingen.js','js/stad/verhaal-tram.js','js/stad/stad-fiets.js','js/stad/stad-bezorg.js','js/stad/verhaal-sfeer.js','js/stad/stad-h1.js','js/stad/stad-h2.js','js/stad/stad-h3.js'];
+    'js/stad/stad-leeftijd.js','js/stad/verhaal-kaart.js','js/stad/verhaal-instellingen.js','js/stad/verhaal-tram.js','js/stad/stad-fiets.js','js/stad/stad-bezorg.js','js/stad/verhaal-sfeer.js','js/stad/verhaal-intro.js','js/stad/stad-h1.js','js/stad/stad-h2.js','js/stad/stad-h3.js'];
   for(const f of ENGINE)await load(f);
   for(const f of VERHAAL)await load(f);
   try{STAD.init(document.getElementById('stadWorld'))}catch(e){console.error(e);fail(['Je browser kan dit niet tekenen','Het verhaal heeft WebGL nodig. Speel verder in het klikspel.'],'<div class="sd-gate-b"><a class="btn" href="/game">Naar het klikspel</a></div>');return}

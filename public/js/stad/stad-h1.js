@@ -152,7 +152,10 @@ const LUCA_NAAM=()=>ST.flag('plein')==='ingegrepen'?'Luca':'Luca';
 
 function registreer(){
 /* ---------- begin ---------- */
-stap('start',{start(){go('h1_klas')}});
+stap('start',{async start(){const t=nieuw();
+  // eerst de intro (één keer), na het welkomstkaartje
+  if(!ST.flag('intro')&&G.verhaalIntro){let w=0;while(((!ST.st().welkom&&w<15)||document.querySelector('.sv-ov')||G.paused)&&w<1200){await sleep(300);w++}await sleep(400);if(t!==RUN)return;try{await G.verhaalIntro.play()}catch(e){console.error(e)}}
+  if(t!==RUN)return;go('h1_klas')}});
 
 /* ======================= AVOND 1 · De eerste dienst ======================= */
 stap('h1_klas',{doel:null,async start(o){const t=nieuw();ST.avond(1);ST.tijd(14,20);uitfit('school');fietsAf();await binnen('klas');if(t!==RUN)return;
@@ -167,7 +170,7 @@ stap('h1_klas',{doel:null,async start(o){const t=nieuw();ST.avond(1);ST.tijd(14,
    {say:'docent',text:'Belastingen. Van elke euro die jullie ooit verdienen, gaat een deel naar de staat.',t:4.2},
    cam(...W3('klas',10.2,2.1,3.4),...W3('klas',7.2,1.5,1.7)),camNaar(...W3('klas',9.6,2.0,3.0),...W3('klas',7.2,1.5,1.7),4,{wacht:false}),
    {say:'docent',text:'Inkomstenbelasting. Btw. En wie het niet betaalt, krijgt vroeg of laat een brief van een heel saaie meneer.',t:4.6},
-   cam(...W3('klas',13.4,1.5,5.7),seat.x,1.15,seat.z),camNaar(...W3('klas',13.1,1.45,6.3),seat.x,1.2,seat.z,3,{wacht:false}),
+   cam(...W3('klas',14.4,2.1,4.4),seat.x,1.1,seat.z),camNaar(...W3('klas',14.2,1.9,5.0),seat.x,1.1,seat.z,3,{wacht:false}),
    {say:null,text:'Luca kijkt naar buiten. Het raam, de flats, de lucht boven de haven…',t:3.2},
    // de dagdroom
    {fade:'out',t:.9},{dream:true},{buiten:true},{speler:false},
@@ -180,7 +183,7 @@ stap('h1_klas',{doel:null,async start(o){const t=nieuw();ST.avond(1);ST.tijd(14,
    {say:null,text:'Een helikopter boven de haven. Koffers. Mannen die naar hem luisteren.',t:3},
    {fn:schoolbel},{fade:'out',t:.25},{dream:false},{weg:'luca_d'},{binnen:'klas'},{speler:false},
    {weg:'luca'},{actor:'luca',at:[seat.x,seat.z],ry,anim:'schrik',sitY:-.42},{fn:()=>{const a=C.acteur('luca');if(a)a.g.binnenId=1}},
-   cam(...W3('klas',13.4,1.7,8.8),seat.x,1.1,seat.z),{fade:'in',t:.3},{fn:schoolbel},
+   cam(...W3('klas',14.5,2.3,10.4),seat.x-.4,1.0,seat.z),{fade:'in',t:.3},{fn:schoolbel},
    {say:'docent',text:'…en dat is de bel. Hoofdstuk vier lezen! Ook jij, De Santis.',t:3.2},
    {say:'dex',text:'Ey, droomkoning. Werken.',t:2.4,mood:'blij'},
    {say:'luca',text:'Ik droomde niet.',t:1.8},
