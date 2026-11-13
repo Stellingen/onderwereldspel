@@ -46,8 +46,10 @@ function stapelsWeg(){STAPELS.splice(0).forEach(g=>g.parent&&g.parent.remove(g))
 const cam=(px,py,pz,lx,ly,lz,o)=>({cam:Object.assign({pos:[px,py,pz],look:[lx,ly,lz]},o||{})});
 const camNaar=(px,py,pz,lx,ly,lz,t,o)=>({cam:Object.assign({to:{pos:[px,py,pz],look:[lx,ly,lz]},t:t||3},o||{})});
 // een schot vanaf een punt rond (x,z): hoek a, afstand d, hoogte h, kijkt naar (x, ly, z)
-const rond=(x,z,a,d,h,ly,o)=>cam(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,o);
-const rondNaar=(x,z,a,d,h,ly,t,o)=>camNaar(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,t,o);
+// op een staand scherm (telefoon) is het beeld smal: de camera een stukje verder weg
+const pk=()=>innerWidth<innerHeight?1.3:1;
+const rond=(x,z,a,d,h,ly,o)=>{d*=pk();return cam(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,o)};
+const rondNaar=(x,z,a,d,h,ly,t,o)=>{d*=pk();return camNaar(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,t,o)};
 // telefoon die trilt
 function tril(){try{navigator.vibrate&&G.verhaalInst&&G.verhaalInst.get&&G.verhaalInst.get('tril')!==false&&navigator.vibrate([60,60,60])}catch(e){}fx('notify')}
 // schoolbel (eigen geluid: twee tonen die lang doorklinken)
@@ -159,7 +161,7 @@ stap('h1_klas',{doel:null,async start(o){const t=nieuw();ST.avond(1);ST.tijd(14,
   await C.play([
    {fade:'out',t:.01},{speler:false},
    {actor:'luca',at:[seat.x,seat.z],ry,anim:'sit',sitY:-.42},{fn:()=>{const a=C.acteur('luca');if(a){a.g.binnenId=1;a.kijk=-.6}}},
-   cam(...W3('klas',13.6,2.7,1.5),...W3('klas',10.4,1.0,6.6)),{fade:'in',t:1.2},
+   cam(...W3('klas',13.8,3.0,1.2),...W3('klas',10.6,0.9,6.8)),{fade:'in',t:1.2},
    {titel:'Hoofdstuk 1',sub:'Dozen',t:3.4},
    {say:'docent',text:'Belastingen. Van elke euro die jullie ooit verdienen, gaat een deel naar de staat.',t:4.2},
    cam(...W3('klas',10.2,2.1,3.4),...W3('klas',7.2,1.5,1.7)),camNaar(...W3('klas',9.6,2.0,3.0),...W3('klas',7.2,1.5,1.7),4,{wacht:false}),
@@ -681,14 +683,14 @@ stap('h4_binnen',{async start(o){const t=nieuw();fietsAf();if(G.fiets)G.fiets.la
   const r=await C.play([rond(nv[0],nv[1],-.6,2.6,1.6,1.5),{anim:'nova_m',a:'talk'},
    {say:'nova_m',text:tel.stoer>=2?'Grote mond voor zo’n klein ventje.':'Het is nog maar een jong ventje. Hij weet niet eens wat hij vervoert.',t:3},
    {snd:'door'},{actor:'ray',at:W('rijtjeshuis',2.0,9.6),ry:naar({x:W('rijtjeshuis',2,9.6)[0],z:W('rijtjeshuis',2,9.6)[1]},L)},{fn:()=>{const a=C.acteur('ray');if(a)a.g.binnenId=1}},
-   cam(...W3('rijtjeshuis',4.6,1.0,7.0),...W3('rijtjeshuis',2.0,1.9,9.6)),
+   cam(...W3('rijtjeshuis',5.4,2.4,4.2),...W3('rijtjeshuis',2.0,1.4,9.6)),
    {say:null,text:'Een grote, kalme man komt binnen. Zonder masker. Iedereen gaat rechtop staan.',t:3.2},
    {anim:'masker',a:'idle'},{anim:'masker2',a:'idle'},{anim:'nova_m',a:'idle'},
-   {move:'ray',to:[lp[0]-.9,lp[1]+.5],t:2.2},{anim:'ray',a:'hurk',naar:'luca'},rond(lp[0],lp[1],PI*.75,1.6,1.1,1.0),
+   {move:'ray',to:[lp[0]-.9,lp[1]+.5],t:2.2},{anim:'ray',a:'hurk',naar:'luca'},rond(lp[0],lp[1],PI*.75,2.3,1.4,1.0),
    {say:'ray',text:'Hoe heet je?',t:1.6,mood:'koel'},{say:'luca',text:'…Luca.',t:1.4,mood:'bang'},
    {say:'ray',text:'Luca. Mooie naam. Weet je wie ik ben, Luca?',t:2.6},
    {anim:'ray',a:'duw',naar:'luca'},{move:'luca',to:[muur.x-1,muur.z],t:.35},{snd:'hit'},{anim:'luca',a:'bang'},
-   rond(muur.x-1,muur.z,-PI/2,2.2,1.5,1.4),{say:null,text:'Geen bloed. Wel angst.',t:2},
+   rond(muur.x-1,muur.z,.35,2.3,1.5,1.3),{say:null,text:'Geen bloed. Wel angst.',t:2},
    {move:'ray',to:[muur.x-2.1,muur.z+.3],t:1},{anim:'ray',a:'give',prop:'envelop',naar:'luca'},
    {say:'ray',text:'Vijfduizend euro. Voor jou. Vertel me wie je leverancier is, en je werkt voortaan voor mij.',t:3.6,mood:'koel'},
    {say:'ray',text:'Per rit verdien je meer dan bij hem in een maand.',t:2.6},
