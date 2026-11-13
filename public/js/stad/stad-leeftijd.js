@@ -37,7 +37,7 @@ const story=()=>!!(G.story&&G.story.on&&G.story.on());
 //   bc/b2, s schoen (sneaker nette laars slipper), sc/s2, hat (cap beanie pet mask hood hat), hatC, tie, bow, ch (goud zilver parel),
 //   wt horloge, gl handschoenen, zon, tas (rugzak), pochet, krijt (krijtstreep), riem, dubbel, col (col-trui), hood:'up'.
 const LUCA_GEBOREN=2010,START=2026;
-const CH_AGE={1:16,2:16,3:17,4:17,5:18,6:18,7:19,8:20,9:21,10:22};
+const CH_AGE={1:16,2:16,3:17,4:17,5:18,6:18,7:19,8:21,9:22,10:24};   // zoals de verhaalbijbel: Luca 16 → 24
 const CAST={
  luca:{n:'Luca',col:'#ff4fd8',rol:'Bezorger',born:2010,skin:'#c8956a',eye:'#3a2414',hair:'#1a1410',fw:18,jaw:'rond',mood:'neutraal',mouth:'normaal',
    hs:a=>a<18?'krul':a<19?'krulkort':a<21?'kort':'kuif',fh:a=>a<17?'':a<18?'dons':a<21?'stoppel':'kortbaard',h:a=>a<17?.95:a<18?.97:1},

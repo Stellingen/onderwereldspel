@@ -168,6 +168,7 @@ async function mRayGeld(t){const ad=G.bezorg.adres({klant:'student',min:180,max:
   const l2=L.P(),q=L.voor(2.2);const deel=r==='zak'?120:r==='straat'?300:200;
   await C.play([{speler:false},{actor:'luca',at:[l2.x,l2.z],ry:l2.ry},{actor:'nova',at:[q.x,q.z],ry:L.naar(q,l2),anim:'leun'},L.rond(q.x,q.z,L.naar(q,l2)+1,3.2,1.6,1.4),
    ...(r==='zak'?[{say:'nova',text:'Vierhonderd? Een regeling? …Met rente. Hm. Ray houdt van rente.',t:3,mood:'koel'}]:r==='straat'?[{say:'nova',text:'Alles. Netjes. Al heeft de halve straat je gezien.',t:2.8,mood:'koel'}]:[{say:'nova',text:'Een scooter. Creatief. Ray kent iemand die scooters koopt.',t:2.8,mood:'koel'}]),
+   ...(L.F('nova_gezien')?[{say:'nova',text:'Je zag me toch, die nacht bij het strand? In je achterlicht. Je bent niet gestopt. Dat vond Ray goed.',t:3.6,mood:'koel'}]:[]),
    {anim:'nova',a:'give',prop:'geld',naar:'luca'},{snd:'cash'},{fn:()=>ST.geld(deel,'van Ray')},{say:'nova',text:'Je deel. Ray rekent eerlijk. Zolang jij dat ook doet.',t:2.6},
    {fade:'out',t:.3},{weg:'nova'},{weg:'luca'},{speler:true},{fade:'in',t:.3}]);ST.meter('loy_ray',r==='straat'?6:4)}
 
@@ -220,6 +221,18 @@ async function mDexRit(t){const d=L.A('dex',277,480);if(!await doelNaar('Rijd me
   L.zorgFiets();const b=[0,1].map(i=>Object.assign({},G.bezorg.adres({klant:pick(['feest','student']),min:100,max:360}),{klant:pick(['feest','student']),pizzas:1,extra:true,id:'dx'+i})).filter(o=>o.x!=null);
   await G.bezorg.start(b,{onKlaar(r){if(r.ok)ST.geld(Math.round(500*pct()/100),'rit met Dex')}});if(t!==RUN)return;
   ST.meter('loy_dex',5);await C.zeg('dex',sp?'Zie je? Een team, broer. Niemand pakt ons.':'Oké, oké. Dit was eigenlijk best chill.',{t:2.6})}
+async function mElenaVindt(t){await L.binnen('thuis');if(t!==RUN)return;['marco','giulia','elena'].forEach(k=>B.toon('thuis',k,false));const plek=L.F('verstop')==='kast'?'achter je truien':'onder je matras';
+  const ep=L.W('thuis',12.4,9.6),lp=L.W('thuis',11.0,8.4);
+  const r=await C.play([{fade:'out',t:.01},{speler:false},{actor:'elena',at:ep,ry:PI,prop:'geld'},{actor:'luca',at:lp,ry:L.naar({x:lp[0],z:lp[1]},{x:ep[0],z:ep[1]})},{fn:()=>['elena','luca'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},
+   L.cam(...L.W3('thuis',14.6,2.1,8.2),...L.W3('thuis',12,.9,9.4)),{fade:'in',t:.6},
+   {say:null,text:'Elena verschoont je bed na haar nachtdienst. In haar hand: een rol briefjes. Ze vond hem '+plek+'.',t:3.6},
+   {say:'elena',text:'Luca. Wat is dit?',t:1.8,mood:'boos'},
+   {keuze:[{t:'"Gespaard. Fooi van maanden."',id:'fooi'},{t:'"Voor jou en papa. Voor zijn rug."',id:'voor'},{t:'Niks zeggen',id:'stil'}],wie:'luca',text:'Elena wacht.'}],{blijf:true});
+  if(t!==RUN)return;
+  await C.play(r==='fooi'?[{say:'elena',text:'Fooi. Ik zie elke nacht mensen die liegen over wat ze genomen hebben, Luca. Ik weet hoe liegen eruitziet.',t:3,mood:'boos'}]
+    :r==='voor'?[{say:'elena',text:'Voor ons? …Ik wil het niet. Niet zo. Ik wil weten waar het vandaan komt.',t:3.2,mood:'neutraal'},{say:'luca',text:'Het is eerlijk verdiend, mam.',t:1.8},{say:null,text:'Ze legt het geld op je bureau. Ze gelooft je niet. Ze laat het toch liggen.',t:3}]
+    :[{say:null,text:'Luca zegt niets. Elena legt het geld op het bureau en gaat zonder iets te zeggen naar bed. Die avond belt ze haar zus.',t:3.8}]);
+  ST.meter('fam_elena',r==='voor'?-3:-8);L.F('elena_vond',r);await C.play([{fade:'out',t:.4},{weg:'elena'},{weg:'luca'},{speler:true},{fade:'in',t:.4}]);['marco','giulia'].forEach(k=>B.toon('thuis',k,true))}
 async function mTelefoon(t){await L.binnen('thuis');if(t!==RUN)return;['marco','giulia','elena'].forEach(k=>B.toon('thuis',k,false));
   const tafel=B.plek('thuis','eettafel'),mp=L.W('thuis',7.4,4.2),lp=L.W('thuis',7.4,6.3);
   const r=await C.play([{fade:'out',t:.01},{speler:false},{actor:'marco',at:mp,ry:0,anim:'sit',sitY:-.4,prop:'telefoon'},{actor:'luca',at:lp,ry:PI,anim:'sit',sitY:-.4},
@@ -227,6 +240,8 @@ async function mTelefoon(t){await L.binnen('thuis');if(t!==RUN)return;['marco','
    {say:null,text:'Zeven uur ’s ochtends. Mama slaapt na haar nachtdienst. Marco zit aan de keukentafel. Voor hem ligt een telefoon. Niet die van Luca. De andere.',t:4.4},
    {say:'marco',text:'Deze zat in je jaszak. Hij ging vannacht vier keer. Onbekend nummer.',t:3},
    {say:'marco',text:'Ik ben niet dom, Luca. Ik werk dertig jaar in de haven. Ik weet wat een tweede telefoon is.',t:3.4},
+   ...(L.F('cadeau')==='duur'?[{say:'marco',text:'Eerst een horloge van vierhonderdvijftig euro. Nu dit.',t:2.6,mood:'boos'}]:[]),
+   ...(L.F('geld')==='mama'?[{say:'marco',text:'En die “fooi” voor je moeder. Ik heb het uitgerekend. Zoveel fooi bestaat niet.',t:3.2,mood:'boos'}]:[]),
    L.rond(lp[0],lp[1],PI-.5,2.2,1.5,1.2),
    {keuze:[{t:'"Hij is van Dex."',id:'dex',sub:'Hij belt de moeder van Dex'},{t:'"Voor werk. Giovanni wil me kunnen bereiken."',id:'werk',sub:'Hij belt Giovanni'},{t:'De waarheid half vertellen',id:'half',sub:'Hij houdt het voor mama geheim'}],wie:'luca',text:'Marco wacht.'}],{blijf:true});
   if(t!==RUN)return;
@@ -276,7 +291,7 @@ async function mDexOpgepakt(t){const S=L.A('schoolhek',234,371);L.tijd(15,10);if
   const dx=L.walk((lijn[0].x+lijn[1].x)/2,(lijn[0].z+lijn[1].z)/2,6);const pol=auto('#f1efe9',true);
   const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:L.naar(l,dx)},{actor:'dex',at:[dx.x-8,dx.z-8],ry:L.naar({x:dx.x-8,z:dx.z-8},dx),prop:'tas'},
    schouder(l,dx,3.4,1.4,2.6),{fade:'in',t:.3},
-   {say:null,text:'Dex komt aanfietsen. Rode BMX, tas op zijn rug. Hij zwaait naar je van de overkant.',t:3},{move:'dex',to:[dx.x,dx.z],t:2.4,anim:'run'},{anim:'dex',a:'zwaai',naar:'luca'},
+   {say:null,text:L.F('dex_routes')==='spannend'?'Dex komt aanfietsen. Rode BMX, tas op zijn rug, met één hand aan het stuur. Door rood, natuurlijk.':'Dex komt aanfietsen. Rode BMX, tas op zijn rug. Zelfs op zijn veilige route. Hij zwaait naar je van de overkant.',t:3.2},{move:'dex',to:[dx.x,dx.z],t:2.4,anim:'run'},{anim:'dex',a:'zwaai',naar:'luca'},
    {fn:()=>{rij(pol,[lijn[0],{x:dx.x+1.5,z:dx.z+1.5}],14,{blijf:true,rem:true})}},{snd:'whistle'},{wait:2.2},
    {actor:'agent',at:[dx.x+2,dx.z+1.4],ry:L.naar({x:dx.x+2,z:dx.z+1.4},dx)},{actor:'agent2',at:[dx.x+1.2,dx.z+2.6],ry:L.naar({x:dx.x+1.2,z:dx.z+2.6},dx)},
    L.rond(dx.x,dx.z,.8,6,2.2,1.2),{say:'agent',text:'Stop! Tas af. Handen waar ik ze kan zien.',t:2.4,mood:'boos'},{anim:'dex',a:'handenop',prop:null},
@@ -331,12 +346,14 @@ S('h2_start',{muziek:'ray',async start(o){const t=nieuw();const s=ST.st();s.ch=2
      :[{say:'ray',text:'Je hebt mijn nummer niet gebeld. Dus bel ik jou. Ik bied het nog één keer aan: rijd voor mij. Rafiq hoeft het niet te weten.',t:4.4,mood:'koel'},
        {keuze:[{t:'"Oké. Maar Rafiq mag het nooit weten."',id:'ja'},{t:'"Ik denk erover na."',id:'later'}],wie:'luca',text:'Ray wacht.'},{fn:()=>{if(C.laatste==='later'){ST.meter('loy_ray',-3)}}},
        {say:'ray',text:'Nadenken is goed. Doe het snel.',t:2.2}]),
+   ...(()=>{const v=L.F('verhoor')||{};return v.stoer>=2?[{say:'ray',text:'En Luca: die grote mond in Oud-Zuid. Die wil ik aan mijn kant, niet tegenover me.',t:3.2,mood:'koel'}]:v.slim>=2?[{say:'ray',text:'Je dacht na in Oud-Zuid. Met vier man om je heen. Dat zie ik niet vaak.',t:3,mood:'koel'}]:v.bang>=2?[{say:'ray',text:'Je was bang in Oud-Zuid. Goed. Bange mensen zijn voorzichtig.',t:3,mood:'koel'}]:[]})(),
    {say:null,text:'Vanaf nu plan je elke dag. School. Giovanni. Rafiq. Ray. Je kunt niet alles. Wie wacht, wordt achterdochtig.',t:4},{fade:'out',t:.5},{weg:'luca'},{speler:true},{fade:'in',t:.5}]);
   if(t!==RUN)return;L.F('h2_dag',1);L.F('h2_plan',null);L.F('h2_i',0);ST.goto('h2_dag')}});
 
 // één speldag: planning maken, dan de blokken afwerken
 const DAGEN={1:['school','giovanni','rafiq','ray'],2:['school','giovanni','rafiq','ray'],3:['school','giovanni','rafiq','dex']};
 S('h2_dag',{muziek:null,async start(o){const t=nieuw();const dag=L.F('h2_dag')||1;ST.avond(dag);if(G.h1)G.h1.dienstAan(false);
+  if(dag===2&&L.F('verstop_risico')&&!L.F('elena_vond')){await mElenaVindt(t);if(t!==RUN)return}
   if(dag===3&&!L.F('telefoon')){await mTelefoon(t);if(t!==RUN)return}
   let plan=L.F('h2_plan');if(!plan){ST.tijd(14,30);plan=await planning(dag,DAGEN[dag]);if(t!==RUN)return;L.F('h2_plan',plan);L.F('h2_i',0);DAGEN[dag].filter(k=>!plan.includes(k)).forEach(gemist)}
   for(let i=L.F('h2_i')||0;i<3;i++){if(t!==RUN)return;const k=plan[i];L.F('h2_i',i);L.tijd(...BLOKT[i]);L.sein(BLOK[i]+' · '+TAAK[k].n,TAAK[k].c);

@@ -77,9 +77,23 @@ async function mAfscheid(t){const N=L.A('napoli',419,492);if(!await doelNaar('Na
   B.toon('napoli','giovanni',true);L.F('jas_haak',1)}
 
 async function mVoorraad(t){const b=baas();
-  await C.play([{fn:L.tril},{say:b,text:b==='ray'?'Een hoek, Luca. De portiek bij de speeltuin. Nova brengt je spul. Drieduizend voor de eerste voorraad, en die betaal je zelf. Zo weet ik dat je het meent.':'Je wilt een hoek? De portiek bij de speeltuin. Drieduizend voor de eerste voorraad. Ik geef niks cadeau, jongen. Zelfs jou niet.',t:4.6,mood:'koel'}]);
-  if(t!==RUN)return;if(ST.geld()<3000)L.sein('Je hebt nog '+L.eur(3000-ST.geld())+' nodig: diensten, ritten, speciale klussen','#ffd35a');
-  if(G.h1)G.h1.dienstAan(true);await ST.poort(3000,'Eerste voorraad',{betaal:true});if(t!==RUN)return;if(G.h1)G.h1.dienstAan(false);L.F('h3_voorraad',1);L.F('h3_deel',.5)}
+  const extra=[];
+  if(b==='rafiq'&&L.F('dief_praat'))extra.push({say:'rafiq',text:'O, en jongen: mijn koerier vertelde dat jij ook voor Ray rijdt. Dacht je dat ik dat niet zou horen?',t:3.6,mood:'boos'});
+  else if(b==='rafiq'&&L.F('rafiq_twijfel'))extra.push({say:'rafiq',text:'Ik geloof nog steeds niet helemaal wat je me over Oud-Zuid vertelde. Maar geld is geld.',t:3.2,mood:'koel'});
+  if(L.F('kevin')==='regeling')extra.push({fn:L.tril},{say:'nova',text:'O, en Kevin heeft de rest betaald. Met rente, zoals jij had afgesproken. Ray zegt: jouw idee, jouw deel.',t:3.6,mood:'koel'},{fn:()=>{ST.geld(300,'Kevin betaalde de rest');ST.meter('loy_ray',3)}});
+  await C.play([{fn:L.tril},{say:b,text:b==='ray'?'Een hoek, Luca. De portiek bij de speeltuin. Nova brengt je spul. Drieduizend voor de eerste voorraad, en die betaal je zelf. Zo weet ik dat je het meent.':'Je wilt een hoek? De portiek bij de speeltuin. Drieduizend voor de eerste voorraad. Ik geef niks cadeau, jongen. Zelfs jou niet.',t:4.6,mood:'koel'},...extra]);
+  if(b==='rafiq'&&L.F('dief_praat')){ST.meter('loy_rafiq',-10);L.F('rafiq_weet',1)}
+  if(t!==RUN)return;if(ST.geld()<3000)L.sein('Je hebt nog '+L.eur(3000-ST.geld())+' nodig: koeriersritten bij de hoek en speciale klussen','#ffd35a');
+  ritAan(true);await ST.poort(3000,'Eerste voorraad',{betaal:true});if(t!==RUN)return;ritAan(false);L.F('h3_voorraad',1);
+  // Rafiqs geheime 'nee' uit hoofdstuk 1 telt mee zolang je voor hem werkt
+  L.F('h3_deel',b==='rafiq'&&L.F('aanbod')===30?.55:.5)}
+// koeriersritten voor je baas: zo verdien je de eerste voorraad bij elkaar (Giovanni doe je niet meer)
+let ritSpot=null,ritOk=false,ritCd=0;
+function ritAan(on){ritOk=!!on;const h=L.A('hoek',236,461);try{G.kaart&&G.kaart.missie&&G.kaart.missie('h3_rit',on?{soort:'zij',x:h.x,z:h.z,n:'Koeriersrit'}:null)}catch(e){}
+  if(ritSpot||!G.spot)return;ritSpot=G.spot({story:1,k:'rit',x:h.x,z:h.z,r:2.4,prio:2,n:'Koeriersrit',sub:'Twee adressen voor je baas',col:'#ff9a5a',h:2,
+    show:()=>ritOk&&!B.waar()&&!C.active()&&Date.now()>ritCd&&!(G.bezorg&&G.bezorg.actief()),
+    act:async()=>{ritCd=Date.now()+60e3;L.zorgFiets();const best=[0,1].map(i=>Object.assign({},G.bezorg.adres({klant:pick(['feest','chagrijn','student']),min:100,max:420}),{klant:pick(['feest','chagrijn']),pizzas:1,extra:true,id:'k'+i})).filter(o=>o.x!=null);
+      await G.bezorg.start(best,{loon:0,onKlaar(r){if(r.ok){ST.geld(250,'koeriersrit');ST.meter('hitte',1)}}})}})}
 
 async function mHoek1(t){const P0=L.A('portiek',182,390);if(!await doelNaar('Naar je hoek: de portiek bij de speeltuin',P0,5))return;L.tijd(17,0);const l=L.P(),q=L.voor(2.2),b=baas();
   const wie=b==='ray'?'nova':'koerier';
@@ -88,7 +102,9 @@ async function mHoek1(t){const P0=L.A('portiek',182,390);if(!await doelNaar('Naa
    {say:wie,text:'En: lees je klanten. Nette schoenen, oortje, te rustig? Dan verkoop je niks. Ook niet als hij zielig kijkt.',t:3.8},
    {anim:wie,a:'give',naar:'luca'},{anim:'luca',a:'give',prop:'tas'},{fade:'out',t:.3},{weg:wie},{weg:'luca'},{speler:true},{fade:'in',t:.3}]);
   if(t!==RUN)return;const r=await dienstOpHoek(t,{titel:'eerste avond',n:6,voorraad:10});if(t!==RUN)return;
-  await C.zeg('luca',r.fout?'(Dat ging niet overal goed. Morgen beter kijken.)':'(Zes klanten. Geen gedoe. Dit kan ik.)',{t:2.8})}
+  await C.zeg('luca',r.fout?'(Dat ging niet overal goed. Morgen beter kijken.)':'(Zes klanten. Geen gedoe. Dit kan ik.)',{t:2.8});
+  if(L.F('rapido')==='lek')await C.zeg('rapido','Hé Napoli! Geen jas meer? …Ik weet nog steeds dat jij mijn band lek stak.',{t:3});
+  else if(L.F('rapido')==='gewonnen')await C.zeg('rapido','Napoli. Jij verkoopt nu? …Ik zeg niks. Ik herinner me je vuist nog.',{t:3})}
 
 async function mCrew(t){const S=L.A('speeltuin',198,413);if(!await doelNaar('Er staan jongens bij jouw speeltuin',S,7))return;const l=L.P(),q=L.voor(3),q2=L.walk(q.x+1.6,q.z+.8,3),q3=L.walk(q.x-1.4,q.z+1,3);
   const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'hoekbaas',at:[q.x,q.z],ry:L.naar(q,l),anim:'armen'},{actor:'masker2',at:[q2.x,q2.z],ry:L.naar(q2,l),look:C.figurant&&C.figurant({v:false})},{actor:'oudere_jongen',at:[q3.x,q3.z],ry:L.naar(q3,l)},
@@ -120,9 +136,12 @@ async function mBakker(t){const p0=L.A('politie',655,349),p=L.walk(p0.x+3,p0.z+5
   await C.play([{fade:'out',t:.6},{speler:false},{actor:'bakker',at:[p.x-.3,p.z+.9],ry:0,anim:'point'},{actor:'collega',at:[p.x+1.3,p.z+.3],ry:-.4,prop:'telefoon'},
    L.cam(p.x+4.6,2.1,p.z-.8,p.x,1.5,p.z+2.2),{fade:'in',t:.6},{say:null,text:'Hoofdbureau. Een kantoor met koffievlekken. Op een kurken bord: foto’s, lijntjes, namen. Rafiq. Ray. Een grote lege plek in het midden.',t:4.4},
    {say:'collega',text:'Deze komt van een bewakingscamera bij de Boulevard. Een jongen met een rode fietsjas. Steeds op dezelfde avonden bij Sahara.',t:3.8},
+   ...(L.F('inval_uit')==='genoteerd'?[{say:'collega',text:'En hij werd genoteerd bij de inval in Sahara. Luca De Santis, zestien. “De pizza’s worden koud”, zei hij.',t:3.6}]:[]),
+   ...(L.F('kevin')==='gedreigd'?[{say:'collega',text:'Een buurvrouw in de Westbuurt belde: een jongen bedreigde een man in zijn portiek. Rode jas.',t:3.2}]:[]),
+   ...(L.F('agent')==='gevlucht'?[{say:'collega',text:'Een collega van de wijk: een bezorger fietste weg bij een controle. Ook een rode jas.',t:3}]:[]),
    {anim:'bakker',a:'point'},{say:'bakker',text:'Een pizzajongen.',t:1.6,mood:'koel'},{say:null,text:'Inspecteur Bakker prikt de korrelige foto midden op het bord.',t:2.6},
    L.cam(p.x+.6,1.6,p.z+.9,p.x,1.55,p.z+2.4),{say:'bakker',text:'Wie ben jij?',t:2,mood:'koel'},{fade:'out',t:.8},{weg:'bakker'},{weg:'collega'},{fn:()=>brd.parent&&brd.parent.remove(brd)},{speler:true},{fade:'in',t:.6}]);
-  ST.meter('dossier',8);L.F('bakker_bord',1)}
+  ST.meter('dossier',8+(L.F('inval_uit')==='genoteerd'?4:0)+(L.F('kevin')==='gedreigd'?3:0)+(L.F('agent')==='gevlucht'?3:0));L.F('bakker_bord',1)}
 
 async function mHoek2(t){const P0=L.A('portiek',182,390);if(!await doelNaar('Tweede avond op de hoek',P0,5))return;L.tijd(18,30);const hielp=L.F('sami');
   if(hielp)await C.zeg('brugklasser','Luca! Die man met die nette schoenen bij de tram. Die stond gisteren ook bij de school. Met een oortje.',{t:3.4});
@@ -135,6 +154,14 @@ async function mHoek2(t){const P0=L.A('portiek',182,390);if(!await doelNaar('Twe
     ST.geld(-Math.min(500,ST.geld()),'stash weg');L.F('sami_verraad',1)}
   else{L.F('sami_hielp',1);ST.meter('imago',2)}}
 
+async function mDiefSchuld(t){const l=L.P(),q=L.voor(2.2);
+  const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'scooterdief',at:[q.x,q.z],ry:L.naar(q,l),anim:'leun'},L.rond(q.x,q.z,L.naar(q,l)+1,3,1.6,1.4),
+   {say:'scooterdief',text:'Napoli. Je had nog iets voor me, weet je nog? Duizend. Anders weet Rafiq het vanavond.',t:3.6,mood:'koel'},
+   {keuze:[{t:'Betalen',id:'betaal',sub:'€1.000'},{t:'Weigeren',id:'nee',sub:'Hij praat'}],wie:'luca',text:'Hij meent het.'}],{blijf:true});
+  if(t!==RUN)return;const kan=ST.geld()>=1000;
+  if(r==='betaal'&&kan){await C.play([{anim:'luca',a:'give',prop:'geld',naar:'scooterdief'},{fn:()=>ST.geld(-1000,'zwijggeld')},{say:'scooterdief',text:'Zaken zijn zaken.',t:1.6,mood:'blij'}]);L.F('dief2','gekocht')}
+  else{await C.play([{say:'luca',text:kan?'Nee. Zeg het maar tegen hem.':'Ik heb het niet. Doe maar wat je moet doen.',t:2.2,mood:'koel'},{say:'scooterdief',text:'Jouw keuze.',t:1.4}]);L.F('dief_praat',1);L.F('rafiq_weet',1);if(L.F('envelop')!=='verraden')ST.meter('loy_rafiq',-10)}
+  await C.play([{fade:'out',t:.3},{weg:'scooterdief'},{weg:'luca'},{speler:true},{fade:'in',t:.3}])}
 async function mJongen(t){const l=L.P(),q=L.voor(2);
   const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'jongen13',at:[q.x,q.z],ry:L.naar(q,l)},L.rond(q.x,q.z,L.naar(q,l)+1,2.8,1.4,1.2),
    {say:'jongen13',text:'Jij bent Luca, toch? Iedereen kent je. Mag ik voor je lopen? Ik ben snel. Ik ben dertien, maar ik ben echt snel.',t:3.8,mood:'blij'},
@@ -156,6 +183,7 @@ async function mGiulia(t){const th=L.A('tramhalte',188,462),P0=L.A('portiek',182
    L.cam(d.x-1.4,y+2.6,d.z+4.6,d.x,y+1.2,d.z),{fade:'in',t:.8},{say:null,text:'Het dak van de flat. De hele stad onder hen: de haven, de Zuidas, het licht van de Boulevard.',t:3.6},
    {say:'giulia',text:'Ik studeer rechten, Luca. Weet je wat ik vandaag leerde? Hoeveel jaar je krijgt voor handel. Voor minderjarigen. En voor meerderjarigen.',t:4.4,mood:'boos'},
    {say:'giulia',text:'Over vier maanden ben je achttien.',t:2,mood:'neutraal'},
+   ...(L.F('marco_weet')?[{say:'giulia',text:'En papa weet het ook al half. Ik zag hoe hij naar je keek aan tafel.',t:2.8,mood:'neutraal'}]:[]),
    {keuze:[{t:'Liegen: "Ik stond daar gewoon met vrienden."',id:'lieg',sub:'Giulia sterk omlaag'},{t:'Half vertellen',id:'half'},{t:'Alles vertellen',id:'alles',sub:'Ze houdt het geheim, als je belooft te stoppen voor je 18e'}],wie:'luca',text:'Giulia kijkt je aan.'}],{blijf:true});
   if(t!==RUN)return;
   if(r==='lieg'){await C.play([{say:'luca',text:'Ik stond daar gewoon met vrienden.',t:1.8},{say:'giulia',text:'Met een tas. En twee kinderen op de uitkijk. Ik ben niet dom, Luca.',t:3,mood:'boos'},{say:null,text:'Ze gaat naar beneden. Ze doet de deur niet hard dicht. Dat is erger.',t:3}]);ST.meter('fam_giulia',-15);L.F('giulia','gelogen')}
@@ -204,16 +232,18 @@ S('h3_start',{muziek:'thuis',async start(o){const t=nieuw();const s=ST.st();s.ch
 S('h3_voorraad',{muziek:null,async start(o){const t=nieuw();await mVoorraad(t);if(t!==RUN)return;ST.goto('h3_hoek1')}});
 S('h3_hoek1',{muziek:'spanning',async start(o){const t=nieuw();await mHoek1(t);if(t!==RUN)return;ST.avond(2);ST.goto('h3_crew')}});
 S('h3_crew',{muziek:'spanning',async start(o){const t=nieuw();await mCrew(t);if(t!==RUN)return;await mBakker(t);if(t!==RUN)return;ST.goto('h3_hoek2')}});
-S('h3_hoek2',{muziek:'spanning',async start(o){const t=nieuw();await mHoek2(t);if(t!==RUN)return;await mJongen(t);if(t!==RUN)return;ST.avond(3);ST.goto('h3_giulia')}});
+S('h3_hoek2',{muziek:'spanning',async start(o){const t=nieuw();await mHoek2(t);if(t!==RUN)return;if(L.F('dief2')==='schuld'){await mDiefSchuld(t);if(t!==RUN)return}await mJongen(t);if(t!==RUN)return;ST.avond(3);ST.goto('h3_giulia')}});
 S('h3_giulia',{muziek:'thuis',async start(o){const t=nieuw();await mGiulia(t);if(t!==RUN)return;ST.avond(4);ST.goto('h3_nova')}});
 S('h3_nova',{muziek:'spanning',async start(o){const t=nieuw();await mNova(t);if(t!==RUN)return;ST.goto('h3_slot')}});
 S('h3_slot',{muziek:'ray',async start(o){const t=nieuw();await mEinde(t)}});
-S('h3_vrij',{doel:'Seizoen 4 · coming soon. Je hoek staat open',start(o){nieuw();if(G.h1)G.h1.dienstAan(true);L.zorgFiets()}});
+S('h3_vrij',{doel:'Seizoen 4 · coming soon. Je hoek staat open',start(o){nieuw();if(G.h1)G.h1.dienstAan(false);ritAan(true);L.zorgFiets()}});
 }
 
 const iv=setInterval(()=>{if(!G.ready||!G.story||!G.cut||!G.binnen||!G.h1||!G.h1.lib||!G.h2||!G.story.step)return;clearInterval(iv);
   ST=G.story;C=G.cut;B=G.binnen;L=G.h1.lib;try{cast()}catch(e){console.error(e)}
-  if(!live())return;registreer();setTimeout(hoekInit,1000);
+  if(!live())return;registreer();
+  // vanaf hoofdstuk 3 hangt de rode jas aan de haak: geen pizzadiensten meer
+  setTimeout(()=>{if((ST.st().ch||1)>=3&&G.h1)G.h1.dienstAan(false)},1800);setTimeout(hoekInit,1000);
   G.h3.test={hoekDienst,mAfscheid,mHoek1,mCrew,mBakker,mHoek2,mJongen,mGiulia,mNova,mEinde,nieuw:()=>nieuw()};
 },150);
 })();
