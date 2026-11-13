@@ -122,7 +122,7 @@ place({id:'politie',name:'Politiebureau Centrum',sign:'POLITIE',st:'police',fl:4
 set(c7a,r0b-20,c7b,r0b,T.PLAZA,[T.GRASS]);
 place({id:'bank',name:'Pixelbank',sign:'BANK',st:'bank',fl:4,face:'S',x0:c5a+4,z0:r1a+2,x1:c5b-4,z1:r1b-22,res:[c5a,r1a,c5b,r1b],ic:'bank'});
 set(c5a,r1b-22,c5b,r1b,T.PLAZA,[T.GRASS]);
-place({id:'ziekenhuis',name:'Ziekenhuis Pixelstad',sign:'ZIEKENHUIS',st:'hospital',fl:6,face:'S',x0:c9a+3,z0:r0a+2,x1:c9b-3,z1:r0b-20,res:[c9a,r0a,c9b,r0b],ic:'hart',
+place({id:'ziekenhuis',name:'Ziekenhuis Noordhaven',sign:'ZIEKENHUIS',st:'hospital',fl:6,face:'S',x0:c9a+3,z0:r0a+2,x1:c9b-3,z1:r0b-20,res:[c9a,r0a,c9b,r0b],ic:'hart',
   parts:[[c9a+3,r0a+2,c9b-3,r0b-20,6],[c9a+18,r0a+6,c9b-18,r0b-26,9,'hospital']]});
 set(c9a,r0b-20,c9b,r0b,T.PLAZA,[T.GRASS]);
 // Het Plein (de Dam van de Pixelstad)
@@ -665,7 +665,7 @@ const MAPPL={school:'#f2c230',thuis:'#5fd35a',napoli:'#ff8a3a',sahara:'#b48cff',
 // losse borden met tekst
 const SIGNS=[{t:'CENTRAAL STATION',x:660,z:229.8,y:15.5,ry:Math.PI,fg:'#1f2a6a',bg:'#f2c230',s:2.2},{t:'CENTRAAL STATION',x:660,z:280.2,y:15.5,ry:0,fg:'#1f2a6a',bg:'#f2c230',s:2.2},
  {t:'A10 · DE STAD UIT →',x:X.ring,z:520,y:6.6,ry:0,s:1.3,two:1},{t:'↑ A10 RING ZUID',x:X.ring,z:620,y:6.6,ry:Math.PI,s:1.3,two:1},{t:'→ A10 · UTRECHT · ANTWERPEN',x:1336,z:560,y:6.6,ry:-Math.PI/2,s:1.3,two:1},
- {t:'PIXELSTAD',x:1318,z:140,y:2.2,ry:-Math.PI/2,fg:'#1d1d1f',bg:'#ffffff',bd:'#c0261e',s:1.6,two:1},{t:'HET EILAND',x:X.brug+RS+1,z:1062,y:2.4,ry:Math.PI,fg:'#1d1d1f',bg:'#ffffff',s:1.2,two:1},
+ {t:'NOORDHAVEN',x:1318,z:140,y:2.2,ry:-Math.PI/2,fg:'#1d1d1f',bg:'#ffffff',bd:'#c0261e',s:1.6,two:1},{t:'HET EILAND',x:X.brug+RS+1,z:1062,y:2.4,ry:Math.PI,fg:'#1d1d1f',bg:'#ffffff',s:1.2,two:1},
  {t:'WESTBUURT COLLEGE',x:233,z:SCHOOL.z1-.4,y:3.4,ry:0,fg:'#1d1d1f',bg:'#f2c230',s:1.1}];
 
 /* ---------- tram ---------- */

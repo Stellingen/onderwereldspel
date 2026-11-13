@@ -203,12 +203,12 @@ function appRender(scr,head){const s=st(),k=ST.klok(),done=Object.keys(s.flags).
    ${doelTxt?`<div class="sv-app-doel"><small>Nu</small><b>${E(doelTxt)}</b>${doelPos&&!doelPos.binnen?'<button class="btn sm" data-sv="route">Route</button>':''}</div>`:''}
    ${ST.inZiekenhuis()?'<div class="sv-app-doel bad"><small>Ziekenhuis</small><b>Het verhaal staat even stil</b></div>':''}
    <h5>Zo sta je ervoor</h5>${meterHtml()}
-   <h5>Spelen</h5><div class="sv-app-b">${vip()?'<button class="btn ghost sm" data-sv="stad">Naar de Stad</button>':'<button class="btn ghost sm" data-sv="lock">Stad · alleen leden</button>'}<button class="btn ghost sm" data-sv="klik">Klikspel</button></div>
+   <h5>Spelen</h5><div class="sv-app-b">${vip()?'<button class="btn ghost sm" data-sv="stad">Naar de Stad</button>':'<button class="btn ghost sm" data-sv="lock">Stad · alleen leden</button>'}<button class="btn ghost sm" data-sv="klik">Klikspel</button>${G.verhaalIntro?'<button class="btn ghost sm" data-sv="intro">Intro opnieuw</button>':''}</div>
    <p class="sv-app-n">Het verhaal staat los van het klikspel: Luca heeft zijn eigen geld en spullen. Een speldag duurt hier 30 minuten.</p></div>`;
   try{K.face(Object.assign({bg:'#1d2230'},ST.lucaFace()),'neutraal',$s('svAppPor'))}catch(e){}}
 function appClick(t,close){const b=t.closest('[data-sv]');if(!b)return false;const a=b.dataset.sv;
   if(a==='route'&&doelPos){close();G.setWaypoint&&G.setWaypoint(doelPos.x,doelPos.z,doelTxt||'Doel');return true}
-  if(a==='stad'){ST.modus('stad');return true}if(a==='lock'){close();lockCard();return true}if(a==='klik'){ST.modus('klik');return true}return false}
+  if(a==='intro'&&G.verhaalIntro){if((G.binnen&&G.binnen.waar())||(G.bezorg&&G.bezorg.actief())){G.toast&&G.toast('Kan straks: ga eerst naar buiten en rond je rit af','info');return true}close();G.verhaalIntro.play({los:true});return true}if(a==='stad'){ST.modus('stad');return true}if(a==='lock'){close();lockCard();return true}if(a==='klik'){ST.modus('klik');return true}return false}
 // startscherm van de telefoon in het verhaal (stad-phone.js roept G.storyHome aan)
 G.storyHome=function(scr,appBtn){const s=st(),k=ST.klok();
   scr.innerHTML=`<div class="sd-p2-home"><div class="sd-p2-hero"><canvas id="sdP2Me" width="48" height="48"></canvas><div><b>Luca</b><small>Avond ${s.avond} · ${E(M.districtAt(G.P.x,G.P.z))}</small></div>

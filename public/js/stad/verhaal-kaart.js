@@ -46,7 +46,7 @@ G.kaart.plek=function(id,on){SHOW[id]=on?1:0;try{localStorage.setItem('verhaal_p
 function hfst(){try{return (story()&&story().st().ch)||1}catch(e){return 1}}
 function bekend(p){if(SHOW[p.id]===0)return false;if(SHOW[p.id]===1)return true;try{if(story()&&story().flag&&story().flag('plek_'+p.id))return true}catch(e){}return (p.ch||1)<=hfst()}
 /* ---------- de kaartmodus ---------- */
-G.kaartMode={title:'De Bezorger',
+G.kaartMode={title:'Noordhaven',
  groups:[['missie','Missies'],['vplek','Plekken'],['stad','Stad'],['route','Route']],
  lays:[['missie','Missies','dia','#ffd35a'],['vplek','Plekken','sq','#ff8a3a'],['stad','Stad','ci','#f2c230']],
  items(add){const h=hoofd();if(h)add({cat:'hoofd',x:h.x,z:h.z,n:h.n,sub:h.sub,pri:14,big:1,tgt:1,pulse:1});
