@@ -57,9 +57,10 @@ ST.klok=function(){const s=st(),h=s.tm/60;return {h:Math.floor(h),m:Math.floor(s
 ST.tijd=function(h,m){const s=st();s.tm=clamp((+h||0)*60+(+m||0),0,1439.9);sv();G.applyLight&&G.applyLight();hud()};
 ST.klokPauze=function(on){stil=Math.max(0,stil+(on?1:-1));return stil>0};
 ST.klokLoopt=()=>stil<=0&&!zhActief()&&!G.paused;
-// de rest van de engine leest G.klok(): hier is dat de verhaalklok (zon op 06:20, onder 21:40)
+// de rest van de engine leest G.klok(): hier is dat de verhaalklok. Seizoen 1 speelt in de herfst (zon op 07:55, onder 17:05:
+// de schoolbel gaat in de schemer); daarna zomertijd (zon op 06:20, onder 21:40).
 const klok0=G.klok;
-G.klok=function(t){const s=st(),h=clamp(s.tm/60,0,23.99),now=Date.now(),start=now-h/24*DAG_MS;return {h,rise:6.3,set:21.7,len:15.4,start,end:start+DAG_MS,txt:hhmm(s.tm),verhaal:1}};
+G.klok=function(t){const s=st(),h=clamp(s.tm/60,0,23.99),now=Date.now(),start=now-h/24*DAG_MS;const zon=(s.ch||1)<=1?[7.9,17.1]:[6.3,21.7];return {h,rise:zon[0],set:zon[1],len:zon[1]-zon[0],start,end:start+DAG_MS,txt:hhmm(s.tm),verhaal:1}};
 G.uur=h=>{const k=G.klok();return k.start+h/24*DAG_MS};
 G.klok0=klok0;
 let klT=0,lightT=0;

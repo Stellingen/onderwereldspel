@@ -373,7 +373,7 @@ function makeHumans(scene,max){
   // h: {x,z,ry,ph (loopfase),sp (snelheid 0..1),look:{skin,hair,top,arm,pants,shoe,hat:'none|cap|beanie|hat|mask',hatC}}
   const SC=new TH.Matrix4().makeScale(1.18,1.18,1.18),SC2=new TH.Matrix4();
   const RZ=new TH.Matrix4(),HM=new TH.Matrix4(),T2=new TH.Matrix4(),V1=new TH.Vector3();
-  function pose(i,h){root.makeRotationY(h.ry);root.setPosition(h.x,h.y||0,h.z);const LK=h.look||{};if(LK.h||LK.w){const bw=1.18*(LK.w||1);root.multiply(SC2.makeScale(bw,1.18*(LK.h||1),bw))}else root.multiply(SC);const sw=Math.sin(h.ph)*.75*Math.min(1,h.sp),bob=Math.abs(Math.cos(h.ph))*.06*Math.min(1,h.sp)+(h.hop||0),lean=h.lean||0;
+  function pose(i,h){if(h.verborgen){PARTS.forEach(k=>set(k,i,hide));return}root.makeRotationY(h.ry);root.setPosition(h.x,h.y||0,h.z);const LK=h.look||{};if(LK.h||LK.w){const bw=1.18*(LK.w||1);root.multiply(SC2.makeScale(bw,1.18*(LK.h||1),bw))}else root.multiply(SC);const sw=Math.sin(h.ph)*.75*Math.min(1,h.sp),bob=Math.abs(Math.cos(h.ph))*.06*Math.min(1,h.sp)+(h.hop||0),lean=h.lean||0;
     const at=(k,x,y,z,rx,sx,sy,sz,rz)=>{tmp.makeRotationX(rx||0);if(rz){tmp.premultiply(RZ.makeRotationZ(rz))}q.makeTranslation(x,y+bob,z).multiply(tmp);if(sx!=null)q.scale(V1.set(sx,sy,sz));tmp.multiplyMatrices(root,q);set(k,i,tmp);return tmp};
     const lL=h.legL!=null?h.legL:sw,lR=h.legR!=null?h.legR:-sw;
     at('legL',-.15,.84,0,lL);at('legR',.15,.84,0,lR);

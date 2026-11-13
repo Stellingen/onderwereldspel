@@ -15,10 +15,10 @@ const TEKST=[
  [18.60,'Niemand die naar hem keek.'],[20.21,'Niemand die dacht dat die jongen ooit iets zou worden.'],
  [23.28,'Acht jaar later heeft hij half Europa in handen.'],[26.38,'Cocaïne, macht, angst… alles.'],
  [29.57,'En nog steeds kent bijna niemand zijn gezicht.'],[32.72,'Dit is geen sprookje.'],
- [34.22,'Dit is hoe een pizzabezorger uit Pixelstad uitgroeide tot een van de gevaarlijkste mannen die dit continent heeft gekend.'],
+ [34.22,'Dit is hoe een pizzabezorger uit Noordhaven uitgroeide tot een van de gevaarlijkste mannen die dit continent heeft gekend.'],
  [41.55,'Het begon niet met een pistool.'],[43.40,'Het begon niet met een kluis vol geld.'],[45.66,'Het begon op een gewone avond…'],
  [47.94,'met een fooi van driehonderd euro…'],[50.03,'en een vraag die hij nooit had moeten beantwoorden.'],[53.49,'Dit is het verhaal van Luca De Santis.']];
-const EIND=[0.83,3.13,6.20,9.45,11.34,12.94,14.48,15.82,18.02,19.79,22.61,25.84,29.25,32.05,33.84,40.88,42.91,45.27,47.55,49.66,52.75,56.11];
+const EIND=[0.83,3.13,6.20,9.45,11.34,12.94,14.48,15.82,18.02,19.79,22.61,25.84,29.25,32.05,33.84,40.68,42.91,45.27,47.55,49.66,52.75,56.11];
 const A=(k,x,z)=>{const a=M.A&&M.A[k];return a&&a.x!=null?{x:a.x,z:a.z}:{x,z}};
 const walk=(x,z,r)=>(M.nearestWalk&&M.nearestWalk(x,z,r||6))||{x,z};
 
@@ -41,6 +41,17 @@ body.sv-geen-ondertitels #viSub{display:none}
 #viTitel span{font:600 clamp(12px,1.6vw,16px) monospace;letter-spacing:.4em;color:#ff4fd8;text-transform:uppercase}
 #viKaart{position:absolute;inset:0;background:radial-gradient(ellipse at 45% 45%,#141a24,#05070a 70%);opacity:0;transition:opacity .6s}#viKaart.on{opacity:1}
 #viKaart svg{position:absolute;inset:0;width:100%;height:100%}
+#viKaart .vk-l{fill:#101721;stroke:#2a3647;stroke-width:.16;stroke-linejoin:round}
+#viKaart .vk-r{fill:#101721;stroke:#2a3647;stroke-width:.16;stroke-linejoin:round;animation:vkR .5s ease-out forwards}
+@keyframes vkR{0%{fill:#101721;stroke:#2a3647}35%{fill:#8a1a1e;stroke:#ff6a4a}100%{fill:#3e1216;stroke:#d8231a}}
+#viKaart .vk-lijn{fill:none;stroke:#ff4a3a;stroke-width:.24;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.9;animation:vkL .55s ease-out forwards}
+@keyframes vkL{to{stroke-dashoffset:0}}
+#viKaart .vk-s,#viKaart .vk-sd{font:600 1.7px 'Space Grotesk',system-ui,sans-serif;letter-spacing:.03em}
+#viKaart .vk-s{opacity:0;animation:vkS .35s ease-out forwards}#viKaart .vk-s circle{fill:#f4f1ea}#viKaart .vk-s text{fill:#e8e4da;paint-order:stroke;stroke:#05070a;stroke-width:.5}
+@keyframes vkS{to{opacity:1}}
+#viKaart .vk-sd circle{fill:#4a5668}#viKaart .vk-sd text{fill:#4a5668;font-size:1.4px}
+#viKaart .vk-nh circle{fill:#ff4fd8}#viKaart .vk-nh text{fill:#ff4fd8;font:800 2.1px 'Space Grotesk',system-ui,sans-serif;letter-spacing:.12em;paint-order:stroke;stroke:#05070a;stroke-width:.6}
+#viKaart .vk-puls{fill:none!important;stroke:#ff4fd8;stroke-width:.25;transform-box:fill-box;transform-origin:center;animation:vkP 1.1s ease-out infinite}@keyframes vkP{0%{transform:scale(.4);opacity:1}100%{transform:scale(2.2);opacity:0}}
 #viFlits{position:absolute;inset:0;background:#fff;opacity:0}#viFlits.go{animation:viF .35s ease-out}@keyframes viF{0%{opacity:.75}100%{opacity:0}}
 #viVlak{position:absolute;inset:0;background:#000;opacity:0;transition:opacity .4s}#viVlak.on{opacity:1}
 `;document.head.appendChild(s)}
@@ -56,13 +67,29 @@ function balk(kop,s){mount();const b=$('viBar');if(!kop){b.classList.remove('on'
 function titel(groot,klein){mount();const t=$('viTitel');if(!groot){t.classList.remove('on');return}t.querySelector('b').textContent=groot;t.querySelector('span').textContent=klein||'';t.classList.add('on')}
 function vlak(on){mount();$('viVlak').classList.toggle('on',!!on)}
 function flits(){mount();const f=$('viFlits');f.classList.remove('go');void f.offsetWidth;f.classList.add('go')}
-// de kaart van Europa: steden als stippen, lijnen die vanuit de stad uitwaaieren
-function kaart(on){mount();const k=$('viKaart');if(!on){k.style.transition='none';k.classList.remove('on');void k.offsetWidth;k.style.transition='';return}
-  const S=[['Pixelstad',47,34,1],['Antwerpen',44,40],['Rotterdam',45,37],['Hamburg',55,27],['Parijs',40,49],['Marseille',44,70],['Barcelona',36,76],['Napels',60,79],['Málaga',24,86],['Berlijn',61,32],['Milaan',51,61],['Lyon',43,60]];
-  const lines=S.slice(1).map((c,i)=>`<line x1="47" y1="34" x2="${c[1]}" y2="${c[2]}" stroke="#d8231a" stroke-width=".35" stroke-dasharray="80" stroke-dashoffset="80" opacity=".9"><animate attributeName="stroke-dashoffset" from="80" to="0" begin="${(i*.18).toFixed(2)}s" dur="1.2s" fill="freeze"/></line>`).join('');
-  const dots=S.map((c,i)=>`<g><circle cx="${c[1]}" cy="${c[2]}" r="${c[3]?1.4:.8}" fill="${c[3]?'#ff4fd8':'#f4f1ea'}" opacity="0"><animate attributeName="opacity" from="0" to="1" begin="${(i*.18).toFixed(2)}s" dur=".3s" fill="freeze"/></circle><text x="${c[1]+1.6}" y="${c[2]+.9}" font-size="2.2" fill="#c9c4b8" font-family="monospace" opacity="0">${c[0]}<animate attributeName="opacity" from="0" to="1" begin="${(i*.18+.2).toFixed(2)}s" dur=".4s" fill="freeze"/></text></g>`).join('');
-  const grid=Array.from({length:21},(_,i)=>`<line x1="${i*5}" y1="0" x2="${i*5}" y2="100" stroke="#1d2633" stroke-width=".15"/><line x1="0" y1="${i*5}" x2="100" y2="${i*5}" stroke="#1d2633" stroke-width=".15"/>`).join('');
-  k.innerHTML=`<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">${grid}${lines}${dots}</svg>`;k.classList.add('on')}
+// de kaart van Europa: echte landsgrenzen (js/stad/verhaal-europa.js). Vanuit Noordhaven kleurt het netwerk land voor land rood,
+// met een lijn naar elke hoofdstad; de camera zoomt uit van Nederland naar half Europa.
+const ROOD=[['NL','Amsterdam'],['BE','Brussel'],['LU','Luxemburg'],['DE','Berlijn'],['GB','Londen'],['FR','Parijs'],['DK','Kopenhagen'],['CH','Bern'],['AT','Wenen'],['CZ','Praag'],['IE','Dublin'],['IT','Rome'],['PL','Warschau'],['ES','Madrid'],['PT','Lissabon']];
+let kaartRaf=0;
+function kaart(on){mount();const k=$('viKaart');cancelAnimationFrame(kaartRaf);if(!on){k.style.transition='none';k.classList.remove('on');void k.offsetWidth;k.style.transition='';return}
+  const E=window.STAD_EUROPA;if(!E){k.innerHTML='';k.classList.add('on');return}
+  const nh=E.steden.find(c=>c[3]===2)||['Noordhaven',62,40,2],nx=nh[1],ny=nh[2],stap=.13,t0=.25;
+  const volg={};ROOD.forEach(([c],i)=>volg[c]=i);
+  const landen=E.landen.map(([c,d])=>{const i=volg[c];
+    return `<path d="${d}" class="${i!=null?'vk-r':'vk-l'}"${i!=null?` style="animation-delay:${(t0+i*stap).toFixed(2)}s"`:''}/>`}).join('');
+  const hoofd={};ROOD.forEach(([c,n],i)=>hoofd[n]=i);
+  const lijnen=E.steden.filter(c=>hoofd[c[0]]!=null&&c[0]!=='Amsterdam').map(c=>{const dl=(t0+hoofd[c[0]]*stap+.05).toFixed(2);
+    return `<path d="M${nx} ${ny}Q${((nx+c[1])/2).toFixed(1)} ${(Math.min(ny,c[2])-Math.abs(c[1]-nx)*.18-2).toFixed(1)} ${c[1]} ${c[2]}" class="vk-lijn" pathLength="1" style="animation-delay:${dl}s"/>`}).join('');
+  const steden=E.steden.filter(c=>c[3]!==2).map(c=>{const i=hoofd[c[0]],aan=i!=null,dl=aan?(t0+i*stap+.25).toFixed(2):'0';const links=c[0]!=='Amsterdam'&&c[1]<nx-1&&c[0]!=='Londen';
+    return `<g class="${aan?'vk-s':'vk-sd'}"${aan?` style="animation-delay:${dl}s"`:''}><circle cx="${c[1]}" cy="${c[2]}" r="${aan?.62:.42}"/><text x="${(c[1]+(links?-1.1:1.1)).toFixed(1)}" y="${(c[2]+.75).toFixed(1)}"${links?' text-anchor="end"':''}>${c[0]}</text></g>`}).join('');
+  const thuis=`<g class="vk-nh"><circle cx="${nx}" cy="${ny}" r="2.2" class="vk-puls"/><circle cx="${nx}" cy="${ny}" r="1.05"/><text x="${nx-1.7}" y="${ny-1.5}" text-anchor="end">${STAD_NAAM.toUpperCase()}</text></g>`;
+  k.innerHTML=`<svg viewBox="0 0 ${E.W} ${E.H}" preserveAspectRatio="xMidYMid slice">${landen}${lijnen}${steden}${thuis}</svg>`;
+  const svg=k.querySelector('svg');k.classList.add('on');
+  // camera: van dichtbij Nederland naar half Europa (op een staand scherm blijft Nederland in beeld)
+  const asp=innerWidth/Math.max(1,innerHeight),eW=Math.max(64,Math.min(E.W,E.H*asp*1.02)),eH=eW/asp,ex=Math.max(0,Math.min(E.W-eW,nx-eW*(asp<1?.42:.46))),ey=Math.max(0,Math.min(E.H-Math.min(E.H,eH),ny-eH*.42));
+  const sW=eW*.3,sH=sW/asp,sx=nx-sW*.5,sy=ny-sH*.5,T=2.7,b=performance.now();
+  const ease=x=>1-Math.pow(1-x,3);
+  const f=()=>{const u=ease(Math.min(1,(performance.now()-b)/1000/T)),l=(a,c)=>a+(c-a)*u;svg.setAttribute('viewBox',`${l(sx,ex).toFixed(2)} ${l(sy,ey).toFixed(2)} ${l(sW,eW).toFixed(2)} ${l(sH,eH).toFixed(2)}`);if(u<1)kaartRaf=requestAnimationFrame(f)};f()}
 
 /* ---------- decor: politie, vuur, container, het bord, de fiets ---------- */
 const DINGEN=[];const reg=o=>{DINGEN.push(o);return o};
@@ -94,14 +121,26 @@ function bord(x,z,ry){const g=new TH.Group(),b=(w,h,d,c,px,py,pz)=>box(g,w,h,d,m
 function fiets(x,z,ry){try{const g=G.fiets&&G.fiets.model?G.fiets.model('#c0261e',true):null;if(!g)return null;g.position.set(x,0,z);g.rotation.y=ry||0;G.scene().add(g);
   if(G.cut&&G.cut.stapel){const s=G.cut.stapel(3);s.position.set(0,.98,-.62);s.scale.setScalar(.62);g.add(s)}return reg({g,weg(){g.parent&&g.parent.remove(g)}})}catch(e){return null}}
 
+/* ---------- een recht stuk stoep zonder gebouwen (voor de mensen die langslopen) ---------- */
+// zoekt door punt c de langste rechte strook (langs x of z) waar je overal kunt staan, en daarnaast een tweede rijbaan
+function stoep(c,len){const ok=(x,z)=>!M.canStand||M.canStand(x,z,.5);let best=null;
+  for(const ax of ['x','z'])for(let o=-4;o<=4;o+=.5){const Pt=t=>ax==='x'?[c.x+t,c.z+o]:[c.x+o,c.z+t];if(!ok(...Pt(0)))continue;
+    let lo=0,hi=0;while(lo>-len&&ok(...Pt(lo-.5)))lo-=.5;while(hi<len&&ok(...Pt(hi+.5)))hi+=.5;const L=hi-lo-Math.abs(o)*.6;if(!best||L>best.L)best={ax,o,lo,hi,L}}
+  if(!best)return null;const vrij=o=>{const Pt=t=>best.ax==='x'?[c.x+t,c.z+o]:[c.x+o,c.z+t];for(let t=best.lo;t<=best.hi;t+=.5)if(!ok(...Pt(t)))return false;return true};
+  const banen=[best.o];for(const d of [1.4,-1.4,1.9,-1.9,2.4,-2.4])if(banen.length<2&&vrij(best.o+d))banen.push(best.o+d);
+  // de open kant (straat) voor de camera: waar je verder van de stoep af nog kunt staan
+  const kant=ok(...(best.ax==='x'?[c.x,c.z+best.o+5]:[c.x+best.o+5,c.z]))?1:-1;
+  const punt=(t,o)=>best.ax==='x'?{x:c.x+t,z:c.z+o}:{x:c.x+o,z:c.z+t};
+  return Object.assign(best,{banen,kant,punt})}
+
 /* ---------- de klok van de intro: de audio, anders de echte tijd ---------- */
 let audio=null,t0=0,gestopt=false;
 // de audio bepaalt de tijd (zo blijven beeld en stem gelijk, ook als het laden even hapert), maar nooit sneller dan de echte klok
-function klok(){const w=(performance.now()-t0)/1000;if(audio&&!audio.paused&&audio.currentTime>0)return Math.min(audio.currentTime,w+.3);return w}
+function klok(){if(window.__introT!=null)return window.__introT;const w=(performance.now()-t0)/1000;if(audio&&!audio.paused&&audio.currentTime>0)return Math.min(audio.currentTime,w+.3);return w}
 // wacht tot moment T; G.cut.wacht keert meteen terug als de speler overslaat, dan stopt de intro
 async function tot(T){const C=G.cut;while(!gestopt&&klok()<T){const a=performance.now();await C.wacht(.05);if(performance.now()-a<2){gestopt=true;break}}}
 const zeg=i=>sub(TEKST[i][1]),stil=()=>sub(null);
-function startAudio(){try{audio=new Audio('/audio/verhaal/intro.mp3?v=1');audio.preload='auto';const v=G.snd&&G.snd.vol!=null?G.snd.vol:.8;audio.volume=Math.max(.15,Math.min(1,v));
+function startAudio(){try{audio=new Audio('/audio/verhaal/intro.mp3?v=2');audio.preload='auto';const v=G.snd&&G.snd.vol!=null?G.snd.vol:.8;audio.volume=Math.max(.15,Math.min(1,v));
   const p=audio.play();if(p&&p.catch)p.catch(()=>{});}catch(e){audio=null}t0=performance.now()}
 function stopAudio(){if(!audio)return;const a=audio;audio=null;let v=a.volume;const iv=setInterval(()=>{v-=.08;if(v<=0){clearInterval(iv);a.pause()}else a.volume=v},40)}
 
@@ -112,14 +151,18 @@ async function play(o){o=o||{};const C=G.cut,ST=G.story;if(!C||!ST)return;gestop
   if(G.binnen&&G.binnen.waar())await G.binnen.uit({fade:false});
   const Wb=A('hoek',236,461),E=A('villa_cosa',1252,1101),H=A('kranen',700,130),Pz=A('politie',655,349),S=A('school',232,337),N=A('napoli',419,492),Bv=A('boulevard',780,906),Zd=A('zakendistrict',1030,576),Sa=A('sahara',655,909),Dak=A('garagedak',930,875);
   const ep=walk(E.x,E.z-16,12),hp=walk(H.x+8,H.z+40,14),bp=walk(Pz.x+3,Pz.z+5,6),np=walk(N.x+3.2,N.z+1.6,4),sp=walk(Sa.x+1.8,Sa.z+3,4),bq=walk(Bv.x,Bv.z,6);
+  const st=stoep(bq,20),bl=st?st.punt(0,st.banen[0]):bq,bry=st?(st.ax==='x'?(st.kant>0?0:Math.PI):(st.kant>0?Math.PI/2:-Math.PI/2)):0;
+  const bc0=st?st.punt(6,st.banen[0]+5.5*st.kant):{x:bq.x+6,z:bq.z+7},bc1=st?st.punt(3.4,st.banen[0]+3.8*st.kant):{x:bq.x+3,z:bq.z+4},bc2=st?st.punt(10,st.banen[0]+16*st.kant):{x:bq.x+12,z:bq.z+18};
   const V_=s=>V+s;   // tijd in de mix
-  const licht=(h,m)=>{ST.tijd(h,m);G.applyLight&&G.applyLight()},nacht=()=>licht(1,15),avond=()=>licht(19,40),dag=()=>licht(16,30);
+  const licht=(h,m)=>{ST.tijd(h,m);G.applyLight&&G.applyLight()},onder=()=>{const k=G.klok&&G.klok();return k&&k.set?k.set:21.7},uurOp=u=>licht(Math.floor(u),Math.round((u%1)*60)%60);
+  // licht volgt de zon van het seizoen: 'avond' = schemer, 'dag' = ruim een uur ervoor
+  const nacht=()=>licht(1,15),avond=()=>uurOp(onder()+.15),dag=()=>uurOp(onder()-1.2);
   // Luca op 16 in de rode jas van Bella Napoli, en op 24 in pak (het uiterlijk komt uit G.uiterlijk, dus het klopt met de rest van het verhaal)
   const U=G.uiterlijk,L=U&&U.spec?U.spec('luca'):null;
   const jas=(U&&U.spec&&U.spec('luca',{outfit:'bezorger',lucaAge:16}))||Object.assign({},L||{},{top:{kind:'jacket',c:'#c0261e',c2:'#f1efe9'}});
   const pak=(U&&U.spec&&U.spec('luca',{outfit:'zakelijk',lucaAge:24}))||Object.assign({},L||{},{top:{kind:'suit',c:'#16181d',c2:'#e8e4da'},legs:{kind:'jeans',c:'#16181d'},shoes:{kind:'boot',c:'#0e0e10'}});
   const steps=[
-   {fade:'out',t:.01},{speler:false},{fn:()=>{mount();vlak(true);nacht();startAudio()}},
+   {fade:'out',t:.01},{speler:false},{fn:()=>{mount();vlak(true);nacht();G.fogVer=[100,320];startAudio()}},
    // Goedenavond — het nieuws
    {fn:()=>tot(V_(-.2))},{fn:()=>{flits();balk('Drie meldingen in één nacht','Live · nieuws');zeg(0)}},
    // de villa
@@ -141,10 +184,14 @@ async function play(o){o=o||{};const C=G.cut,ST=G.story;if(!C||!ST)return;gestop
    {fn:()=>tot(V_(14.75))},{fn:()=>zeg(7)},{anim:'luca_i',a:'idle',ry:Math.atan2(np.x+3.4-(np.x+1.1),np.z+1.4-(np.z-.6))},{cam:{pos:[np.x+3.4,1.6,np.z+1.4],look:[np.x+1.1,1.25,np.z-.6]}},
    {fn:()=>tot(V_(16.05))},{fn:()=>zeg(8)},{cam:{pos:[np.x-2.2,1.6,np.z+2.2],look:[np.x,.9,np.z],to:{pos:[np.x-1.4,1.3,np.z+1.4],look:[np.x,.9,np.z]},t:2,wacht:false}},
    // niemand die naar hem keek: de Boulevard, mensen lopen langs
-   {fn:()=>tot(V_(18.5))},{weg:'luca_i'},{fn:()=>{avond();zeg(9);C.zet('luca_i',bq.x,bq.z,0,{look:jas,anim:'idle'});
-     for(let i=0;i<9;i++){const a=C.persoon(C.figurant(),{x:bq.x-14+i*3.2,z:bq.z+(i%2?1.6:-1.4),ry:Math.PI/2});a.loop(bq.x+18-i*.5,a.z,{v:2.4+Math.random()});reg({weg(){a.weg()}})}}},
-   {cam:{pos:[bq.x+6,1.7,bq.z+7],look:[bq.x,1.4,bq.z],to:{pos:[bq.x+3,1.6,bq.z+4],look:[bq.x,1.4,bq.z]},t:3.5,wacht:false}},
-   {fn:()=>tot(V_(20.15))},{fn:()=>zeg(10)},{cam:{to:{pos:[bq.x+12,22,bq.z+18],look:[bq.x,1,bq.z]},t:3,wacht:false}},
+   {fn:()=>tot(V_(18.5))},{weg:'luca_i'},{fn:()=>{avond();zeg(9);C.zet('luca_i',bl.x,bl.z,bry,{look:jas,anim:'idle'});
+     // mensen lopen langs hem heen, in twee richtingen, alleen over de stoep (nooit door een gevel)
+     if(!st)return;const rijen=st.banen.length>1?st.banen:[st.banen[0],st.banen[0]+.9*st.kant];
+     for(let i=0;i<10;i++){const baan=rijen[i%2],heen=i%2===0,span=Math.max(2,st.hi-st.lo-2),ts=st.lo+1+((i*5.3)%span),te=heen?st.hi-.5:st.lo+.5;
+       if(Math.abs(ts)<1.3&&Math.abs(baan-st.banen[0])<.6)continue;
+       const a0=st.punt(ts,baan),a1=st.punt(te,baan),a=C.persoon(C.figurant(),{x:a0.x,z:a0.z,ry:Math.atan2(a1.x-a0.x,a1.z-a0.z)});a.loop(a1.x,a1.z,{v:1.5+Math.random()*.8});reg({weg(){a.weg()}})}}},
+   {cam:{pos:[bc0.x,1.7,bc0.z],look:[bl.x,1.4,bl.z],to:{pos:[bc1.x,1.6,bc1.z],look:[bl.x,1.4,bl.z]},t:3.5,wacht:false}},
+   {fn:()=>tot(V_(20.15))},{fn:()=>zeg(10)},{cam:{to:{pos:[bc2.x,20,bc2.z],look:[bl.x,1,bl.z]},t:3,wacht:false}},
    // acht jaar later: Europa
    {fn:()=>tot(V_(23.2))},{fn:()=>{kaart(true);zeg(11)}},
    // cocaïne, macht, angst… alles
@@ -153,8 +200,8 @@ async function play(o){o=o||{};const C=G.cut,ST=G.story;if(!C||!ST)return;gestop
    {fn:()=>tot(V_(27.95))},{fn:()=>{flits();sub('Cocaïne, macht, angst…')}},{cam:{pos:[ep.x-3,1.6,ep.z-4],look:[ep.x,1,ep.z]}},
    {fn:()=>tot(V_(28.8))},{fn:()=>{vlak(true);sub('Cocaïne, macht, angst… alles.')}},
    // niemand kent zijn gezicht: Luca, 24, op het dak, van achteren
-   {fn:()=>tot(V_(29.5))},{weg:'luca_i'},{actor:'luca_24',at:[Dak.x,Dak.z],ry:Math.PI*.75,look:pak,y:17},{fn:()=>{vlak(false);zeg(13)}},
-   {cam:{pos:[Dak.x+3.2,18.6,Dak.z+3.4],look:[Dak.x-30,10,Dak.z-30],to:{pos:[Dak.x+4.6,19.6,Dak.z+5.2],look:[Dak.x-30,10,Dak.z-30]},t:3,wacht:false}},
+   {fn:()=>tot(V_(29.5))},{weg:'luca_i'},{actor:'luca_24',at:[Dak.x,Dak.z],ry:Math.atan2(-36,-22),look:pak,y:17},{fn:()=>{vlak(false);zeg(13)}},
+   {cam:{pos:[Dak.x+2.1,19.5,Dak.z+2.9],look:[Dak.x-36,13,Dak.z-22],to:{pos:[Dak.x+3.1,19.9,Dak.z+4.1],look:[Dak.x-36,12,Dak.z-22]},t:3,wacht:false}},
    // geen sprookje
    {fn:()=>tot(V_(32.65))},{fn:()=>{vlak(true);stil();mid('Dit is geen sprookje.')}},
    // hoe een pizzabezorger uitgroeide…: over de stad
@@ -178,7 +225,7 @@ async function play(o){o=o||{};const C=G.cut,ST=G.story;if(!C||!ST)return;gestop
   // de ondertitels gaan uit aan het eind van elke zin
   const subIv=setInterval(()=>{const tt=klok()-V;if(tt>=26.3&&tt<29.5)return;let on=false;for(let i=0;i<TEKST.length;i++){if(tt>=TEKST[i][0]-.25&&tt<=EIND[i]+.35){on=true;break}}if(!on)stil()},150);
   try{await C.play(o.los?steps.concat([{fn:()=>vlak(false)},{fade:'in',t:.6}]):steps,{blijfZwart:!o.los})}finally{
-    clearInterval(subIv);stopAudio();opruimen();C.weg('luca_i');C.weg('luca_24');C.weg('rafiq');weg();
+    clearInterval(subIv);stopAudio();opruimen();G.fogVer=null;cancelAnimationFrame(kaartRaf);C.weg('luca_i');C.weg('luca_24');C.weg('rafiq');weg();
     try{G.verhaalSfeer&&G.verhaalSfeer.los()}catch(e){}
     if(o.los){ST.tijd(k0.h,k0.m);G.applyLight&&G.applyLight()}else ST.flag('intro',1)}}
 G.verhaalIntro={play,naam:STAD_NAAM,tekst:TEKST};

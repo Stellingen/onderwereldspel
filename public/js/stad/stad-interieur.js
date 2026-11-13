@@ -310,44 +310,100 @@ BN.add('thuis',{naam:'Thuis',kleur:'#7fd1ff',w:16,h:13,plafond:2.8,deur:{x:2.0,z
   buiten(g,f){if(f.eigen)return;const m=K.model([[1.5,2.4,.14,0,1.2,-.03,'#2a3a4a'],[1.3,2.2,.06,0,1.1,.04,'#3a4a5a'],[.3,.5,.06,.9,1.3,.06,'#c9cfd6'],[.24,.04,.02,.9,1.5,.1,'#3a3d44'],[.04,.04,.02,.84,1.4,.1,'#ffd35a',1],[1.8,.08,.6,0,2.5,.3,'#5a5a62']]);g.add(m)}});
 
 /* =================== KLASLOKAAL (Westbuurt College) =================== */
+// Het licht volgt de klok: 's ochtends koel daglicht, aan het eind van de middag laag oranje zonlicht door de ramen (de bel gaat
+// in de schemer), 's avonds alleen de tl-buizen. Het uitzicht door de ramen wisselt mee (dag / schemer).
+let klasRuit=null,klasZicht=null;
+function klasLicht(){const k=G.story&&G.story.klok?G.story.klok():{uur:13},u=k.uur!=null?k.uur:13,z=G.klok&&G.klok(),onder=z&&z.set?z.set:21.7;
+  const fase=u<11?'ochtend':u<onder-1.4?'middag':u<onder+.9?'schemer':'avond';
+  if(klasRuit&&klasZicht){const m=fase==='schemer'?klasZicht.schemer:fase==='avond'?klasZicht.avond:klasZicht.dag;if(klasRuit.material.map!==m){klasRuit.material.map=m;klasRuit.material.needsUpdate=true}}
+  return fase==='ochtend'?{bg:'#12161c',hemi:'#eef4ff',grond:'#8a8478',int:1.3,zon:1.0,zonKleur:'#f4f8ff',gloed:.2,vig:.32,sat:1.05,tint:[.98,1.0,1.03]}
+   :fase==='middag'?{bg:'#12161c',hemi:'#f4f2ea',grond:'#8a8478',int:1.3,zon:1.1,zonKleur:'#fff0d4',gloed:.22,vig:.34,sat:1.08,tint:[1.01,1.0,.98]}
+   :fase==='schemer'?{bg:'#140f12',hemi:'#e6e2f0',grond:'#6a5a50',int:1.12,zon:.8,zonKleur:'#ffb478',gloed:.36,vig:.4,sat:1.06,tint:[1.03,.99,.95]}
+   :{bg:'#08090c',hemi:'#c8d4f0',grond:'#4a4a50',int:.9,zon:.12,zonKleur:'#9ab0ff',gloed:.55,vig:.5,sat:1.04,tint:[.96,.99,1.05]}}
+function klasUitzicht(fase){return pc(96,32,(c,w,h)=>{const g=c.createLinearGradient(0,0,0,h);
+  if(fase==='dag'){g.addColorStop(0,'#6aa6dc');g.addColorStop(1,'#d8e8f0')}else if(fase==='schemer'){g.addColorStop(0,'#3a3a78');g.addColorStop(.45,'#c0607a');g.addColorStop(.8,'#ff9a52');g.addColorStop(1,'#ffd08a')}else{g.addColorStop(0,'#05070f');g.addColorStop(1,'#1a1a34')}
+  c.fillStyle=g;c.fillRect(0,0,w,h);
+  if(fase==='schemer'){R(c,60,h-11,7,4,'#ffe2a0');R(c,61,h-12,5,6,'#fff0c8')}            // de zon zakt achter de flats
+  if(fase==='dag'){R(c,40,3,7,2,'#ffffff');R(c,12,5,9,2,'#ffffff');R(c,70,4,6,2,'#ffffff')}
+  if(fase==='avond')for(let i=0;i<16;i++)R(c,(i*29)%w,(i*7)%9,1,1,'#ffffff');
+  for(let i=0;i<20;i++){const x=i*5,bh=7+((i*7)%6)*2,flat=fase==='dag'?['#8a7a6a','#9a8a78','#7a7a82'][i%3]:fase==='schemer'?['#2a2236','#352a40','#241e30'][i%3]:['#10101c','#14141f','#0d0d18'][i%3];
+    R(c,x,h-bh,5,bh,flat);for(let y=h-bh+2;y<h-1;y+=3)for(let xx=x+1;xx<x+4;xx+=2){const aan=fase!=='dag'&&((xx*7+y*5+i)%5<(fase==='avond'?3:2));R(c,xx,y,1,1,aan?'#ffd98a':fase==='dag'?'#5a6a7a':'#1a1a28')}}
+  // havenkranen in de verte
+  [[78,8],[86,9]].forEach(([x,hh])=>{R(c,x,h-hh-6,1,hh+6,fase==='dag'?'#c0392b':'#2a1a24');R(c,x-4,h-hh-6,9,1,fase==='dag'?'#c0392b':'#2a1a24')});
+  R(c,0,h-2,w,2,fase==='dag'?'#5a6a4a':'#1a1a22')})}
 BN.add('klas',{naam:'Westbuurt College',kleur:'#a9dcff',w:15,h:12,plafond:3.2,deur:{x:2.0,z:11.2},spawn:{x:2.0,z:10.5,ry:Math.PI},anker:anker('school'),ankerId:'school',deurTxt:'Naar binnen',
-  licht:{bg:'#12161c',hemi:'#f0f4ff',grond:'#8a8478',int:1.35,zon:1.1,zonKleur:'#fff4dc',gloed:.2,vig:.32,sat:1.08,tint:[1.0,1.0,1.0]},cam:{k:.42},
+  licht:klasLicht,cam:{k:.62},
   bouw(B){const T=B.tex,H=3.2;const st=T.stuc('#e8e2cc'),lino=T.linoleum('#9aa48a'),stG=T.stuc('#b8c8b8');
     B.vloer(1,1,14,11,lino,2);
     const wN=B.muur(.6,.6,14.4,1,{h:H,tex:st}),wW=B.muur(.6,.6,1,11.4,{h:H,tex:st}),wS1=B.muur(.6,11,1.3,11.4,{h:H,tex:st}),wS2=B.muur(2.7,11,14.4,11.4,{h:H,tex:st});
-    // de oostmuur is ramen: borstwering, kozijnen, glas met uitzicht
+    B.box(1.4,.6,.4,2.0,2.9,11.2,'#e8e2cc');   // boven de deur
+    // plinten langs de muren
+    B.box(13,.1,.04,7.5,.05,1.03,'#5a5a62');B.box(.04,.1,10,1.03,.05,6,'#5a5a62');B.box(11.2,.1,.04,8.6,.05,10.97,'#5a5a62');
+    // de oostmuur is ramen: borstwering, kozijnen, glas met uitzicht (wisselt met de tijd)
     const wE=B.muur(14,.6,14.4,11.4,{h:.95,tex:stG,stub:.3});
-    const vw=pc(64,24,(c,w,h)=>{const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#7ab0e0');g.addColorStop(1,'#d8e8f0');c.fillStyle=g;c.fillRect(0,0,w,h);for(let i=0;i<14;i++){const x=i*5,bh=6+((i*7)%5)*2;R(c,x,h-bh,5,bh,['#8a7a6a','#9a8a78','#7a7a82'][i%3]);for(let y=h-bh+2;y<h-1;y+=3)R(c,x+1,y,1,1,'#5a6a7a'),R(c,x+3,y,1,1,'#5a6a7a')}R(c,0,h-2,w,2,'#5a6a4a');R(c,40,3,6,2,'#ffffff');R(c,12,5,8,2,'#ffffff');R(c,52,2,3,3,'#fff4c0')});
-    const ruit=B.plaat(vw,9.6,1.9,14.02,1.95,6,-Math.PI/2,{glow:1});wE.extra.push(ruit);
+    klasZicht={dag:null,schemer:null,avond:null};['dag','schemer','avond'].forEach(f=>{const t=new TH.CanvasTexture(klasUitzicht(f));t.magFilter=t.minFilter=TH.NearestFilter;t.generateMipmaps=false;t.colorSpace=TH.SRGBColorSpace;klasZicht[f]=t});
+    const ruit=B.plaat(klasZicht.dag,9.6,1.9,14.02,1.95,6,-Math.PI/2,{glow:1});wE.extra.push(ruit);klasRuit=ruit;
     for(let z=1.2;z<11;z+=1.6){const k=new TH.Mesh(new TH.BoxGeometry(.12,2.1,.1),new TH.MeshLambertMaterial({color:'#e8e4da'}));k.position.set(14.05,2.0,z);B.root.add(k);wE.extra.push(k)}
+    const reg=new TH.Mesh(new TH.BoxGeometry(.1,.08,10.4),new TH.MeshLambertMaterial({color:'#e8e4da'}));reg.position.set(14.05,1.96,6);B.root.add(reg);wE.extra.push(reg);   // tussenregel
     const bov=new TH.Mesh(new TH.BoxGeometry(.4,.25,10.4),new TH.MeshLambertMaterial({map:st}));bov.position.set(14.2,H-.12,6);B.root.add(bov);wE.extra.push(bov);
-    B.box(.3,.05,10.4,13.85,.97,6,'#e8e4da');B.solid(13.9,1,14.5,11,true);
-    // zonlicht door de ramen
-    B.licht(12.6,2.4,4,'#fff0d0',3,8);B.licht(12.6,2.4,8.5,'#fff0d0',3,8);
-    B.plafond(1,1,14,11,H,'#f1efe9');
-    // tl-buizen
-    [[4.5,4],[4.5,8],[9.5,4],[9.5,8]].forEach(([x,z])=>{B.box(1.4,.06,.16,x,H-.05,z,'#f8fbff',1);B.box(1.5,.04,.22,x,H-.02,z,'#c9cfd6')});B.licht(7,2.8,6,'#f4f8ff',2.4,10);
-    // schoolbord met de les
+    B.box(.3,.05,10.4,13.85,.97,6,'#e8e4da');B.solid(13.2,1,14.5,11,true);
+    // radiatoren onder de ramen, planten en een stapel boeken op de vensterbank
+    [2.6,6.0,9.4].forEach(z=>{const r=[[.12,.62,1.6,0,.5,0,'#e8e4da']];for(let i=-7;i<=7;i++)r.push([.16,.58,.03,0,.5,i*.1,'#d8d4ca']);r.push([.06,.08,.06,0,.2,-.85,'#c9cfd6']);B.meubel(r,13.72,z)});
+    B.meubel(F.plant('#c8b890','#3a7a3a'),13.85,1.6);B.meubel([[.18,.16,.18,0,1.06,0,'#b8603a'],[.22,.2,.22,0,1.24,0,'#4a8a3a']],13.85,8.0);
+    B.meubel([[.3,.05,.22,0,1.02,0,'#c0261e'],[.28,.05,.2,0,1.07,0,'#2f6a8a'],[.3,.05,.21,0,1.12,0,'#e8b923']],13.85,4.4);
+    // zonlicht door de ramen (laag en warm aan het eind van de middag)
+    B.licht(12.4,2.0,3.4,'#ffe2c0',2.2,8);B.licht(12.4,2.0,8.4,'#ffe2c0',2.2,8);
+    // systeemplafond: tegels met naden, tl-armaturen, rookmelder, beamer
+    B.plafond(1,1,14,11,H,'#eceae2');
+    {const n=[];for(let x=1.6;x<14;x+=1.2)n.push([.02,.015,10,x,H-.008,6,'#b8b4aa']);for(let z=1.6;z<11;z+=1.2)n.push([13,.015,.02,7.5,H-.008,z,'#b8b4aa']);B.meubel(n,0,0)}
+    [[4.5,4],[4.5,8],[9.5,4],[9.5,8]].forEach(([x,z])=>{B.box(1.4,.06,.16,x,H-.05,z,'#f8fbff',1);B.box(1.5,.04,.24,x,H-.02,z,'#c9cfd6');B.box(1.5,.02,.04,x,H-.075,z-.1,'#a8acb2');B.box(1.5,.02,.04,x,H-.075,z+.1,'#a8acb2')});B.licht(7,2.8,6,'#f4f8ff',2.4,10);
+    B.meubel([[.18,.05,.18,0,H-.03,0,'#f1efe9'],[.06,.02,.06,0,H-.06,0,'#c0261e',1]],11.6,6.2);
+    B.meubel([[.06,.3,.06,0,H-.15,0,'#8a8c90'],[.42,.12,.34,0,H-.36,0,'#e8e4da'],[.1,.08,.04,0,H-.36,-.19,'#1a1a1c'],[.06,.06,.02,0,H-.36,-.215,'#7ab0e0',1]],7,4.6);
+    // schoolbord (whiteboard) met de les, wisser en stiften, een rolscherm erboven
     const bord=pc(96,40,(c,w,h)=>{R(c,0,0,w,h,'#f4f6f2');R(c,0,0,w,1,'#c9cfd6');c.font='bold 6px monospace';c.fillStyle='#1a3a8a';c.fillText('BELASTINGEN',4,8);c.font='4px monospace';c.fillStyle='#1a1a1c';
-      ['- inkomstenbelasting (box 1)','- btw: 21% / 9%','- heffingskorting','  bruto - belasting = netto'].forEach((t,i)=>c.fillText(t,4,16+i*6));c.strokeStyle='#c0261e';c.strokeRect(60,12,30,14);c.fillStyle='#c0261e';c.fillText('€ 2.000',64,21)});
+      ['- inkomstenbelasting (box 1)','- btw: 21% / 9%','- heffingskorting','  bruto - belasting = netto'].forEach((t,i)=>c.fillText(t,4,16+i*6));c.strokeStyle='#c0261e';c.strokeRect(60,12,30,14);c.fillStyle='#c0261e';c.fillText('€ 2.000',64,21);
+      c.fillStyle='#2a7a3a';c.fillText('huiswerk: H4',60,34)});
     B.plaat(bord,4.8,2.0,7,1.85,1.03,0,{muur:wN});B.box(5.0,.08,.12,7,.82,1.08,'#c9cfd6');B.box(4.96,2.08,.04,7,1.85,1.02,'#8a8c90');
-    // klok, posters
-    const klok=pc(16,16,(c)=>{c.fillStyle='#f1efe9';c.beginPath();c.arc(8,8,7,0,7);c.fill();c.strokeStyle='#1a1a1c';c.stroke();R(c,7.5,3,1,5,'#1a1a1c');R(c,8,8,4,1,'#1a1a1c')});B.plaat(klok,.5,.5,11.2,2.5,1.03,0,{alpha:1,muur:wN});
+    B.meubel([[.14,.05,.06,-1.6,.88,.02,'#2a2c30'],[.12,.03,.03,-1.2,.875,.03,'#1a3a8a'],[.12,.03,.03,-1.0,.875,.03,'#c0261e'],[.12,.03,.03,-.8,.875,.03,'#2a7a3a']],7,1.08);
+    B.box(5.2,.14,.16,7,3.0,1.1,'#e8e4da');B.box(.06,.05,.04,9.4,2.92,1.12,'#3a3d44');
+    // klok: tien voor vijf, het laatste uur
+    const klok=pc(16,16,(c)=>{c.fillStyle='#f1efe9';c.beginPath();c.arc(8,8,7,0,7);c.fill();c.strokeStyle='#1a1a1c';c.lineWidth=1;c.stroke();c.fillStyle='#1a1a1c';for(let i=0;i<12;i++){const a=i/12*Math.PI*2;R(c,8+Math.sin(a)*5.6-.5,8-Math.cos(a)*5.6-.5,1,1,'#1a1a1c')}
+      c.strokeStyle='#1a1a1c';c.lineWidth=1.2;c.beginPath();c.moveTo(8,8);c.lineTo(8+Math.sin(4.85/12*Math.PI*2)*3.4,8-Math.cos(4.85/12*Math.PI*2)*3.4);c.stroke();
+      c.lineWidth=.8;c.beginPath();c.moveTo(8,8);c.lineTo(8+Math.sin(50/60*Math.PI*2)*5.4,8-Math.cos(50/60*Math.PI*2)*5.4);c.stroke();c.strokeStyle='#c0261e';c.beginPath();c.moveTo(8,8);c.lineTo(8,3);c.stroke()});
+    B.plaat(klok,.5,.5,11.2,2.55,1.03,0,{alpha:1,muur:wN});
+    // posters, prikbord met briefjes, rooster
     const pst=(t,a,b)=>pc(20,28,(c,w,h)=>{R(c,0,0,w,h,a);R(c,2,2,w-4,10,b);c.font='4px monospace';c.fillStyle='#fff';c.fillText(t,2,20)});
     B.plaat(pst('EUROPA','#2f6a8a','#e8b923'),.8,1.1,1.03,1.8,4,Math.PI/2,{muur:wW});B.plaat(pst('STOP!','#c0261e','#f1efe9'),.8,1.1,1.03,1.8,7,Math.PI/2,{muur:wW});
-    // lessenaar docent
-    B.meubel(F.tafel(1.8,.8,.76,'#a07a4a','#8a8c90'),3.4,2.4);B.solid(2.5,2,4.3,2.8);B.meubel([[.36,.03,.26,-.4,.79,0,'#f1efe9'],[.3,.2,.02,.4,.9,-.1,'#16161a'],[.28,.18,.01,.4,.9,-.09,'#7ab0e0',1]],3.4,2.4);
+    const prik=pc(40,24,(c,w,h)=>{R(c,0,0,w,h,'#b88a5a');R(c,1,1,w-2,h-2,'#c89a6a');[['#f1efe9',3,3,9,7],['#ffe98a',14,2,8,8],['#a9dcff',25,4,10,6],['#f1efe9',5,13,10,8],['#ffb0d0',18,13,7,7],['#f1efe9',28,12,9,9]].forEach(([k,x,y,w2,h2])=>{R(c,x,y,w2,h2,k);R(c,x+w2/2,y,1,1,'#c0261e');for(let yy=y+3;yy<y+h2-1;yy+=2)R(c,x+1,yy,w2-2,1,'#9a948a')})});
+    B.plaat(prik,1.8,1.1,1.03,1.65,5.5,Math.PI/2,{muur:wW});
+    const roost=pc(16,20,(c,w,h)=>{R(c,0,0,w,h,'#f1efe9');R(c,0,0,w,3,'#1a3a6a');for(let y=5;y<h;y+=3)for(let x=1;x<w;x+=3)R(c,x,y,2,2,['#a9dcff','#ffe98a','#c8ffd8','#ffb0d0'][(x+y)%4])});
+    B.plaat(roost,.4,.5,12.6,1.6,1.03,0,{muur:wN});
+    // kluisjes langs de achtermuur
+    {const k=[];for(let i=0;i<10;i++){const x=-2.7+i*.6;k.push([.58,1.8,.44,x,.9,0,i%2?'#5a7a9a':'#56769a'],[.5,.03,.02,x,1.55,.23,'#3a4a5a'],[.5,.03,.02,x,1.5,.23,'#3a4a5a'],[.04,.12,.03,x+.2,1.0,.235,'#c9cfd6'],[.1,.06,.02,x,1.68,.235,'#f1efe9'])}
+      k.push([6.1,.06,.48,0,1.83,0,'#3a4a5a']);B.meubel(k,9.6,10.65,0,{solid:[6.1,.5]})}
+    // boekenkast in de hoek, prullenbak, wereldbol op het bureau
+    {const b=[[1.0,1.9,.36,0,.95,0,'#8a6a4a'],[.94,.03,.32,0,.5,.01,'#6a4a2a'],[.94,.03,.32,0,1.0,.01,'#6a4a2a'],[.94,.03,.32,0,1.5,.01,'#6a4a2a']];
+      [.27,.77,1.27,1.72].forEach((y,j)=>{let x=-.42;for(let i=0;i<9&&x<.4;i++){const w=.06+((i*7+j*3)%4)*.015,h=.2+((i*5+j)%3)*.03;b.push([w,h,.24,x+w/2,y+h/2-.0,0,['#c0261e','#2f6a8a','#e8b923','#2a7a3a','#e8e4da','#5a3a7a'][(i+j)%6]]);x+=w+.012}});
+      B.meubel(b,1.35,8.6,Math.PI/2,{solid:[1.0,.4]})}
+    B.meubel([[.3,.36,.3,0,.18,0,'#3a4a5a'],[.32,.03,.32,0,.37,0,'#2a3440'],[.12,.02,.1,.04,.38,.02,'#f1efe9']],1.5,2.0);
+    // lessenaar docent met stoel, laptop, koffie en een wereldbol
+    B.meubel(F.tafel(1.8,.8,.76,'#a07a4a','#8a8c90'),3.4,2.4);B.solid(2.5,2,4.3,2.8);B.meubel([[.36,.03,.26,-.4,.79,0,'#f1efe9'],[.3,.2,.02,.4,.9,-.1,'#16161a'],[.28,.18,.01,.4,.9,-.09,'#7ab0e0',1],[.08,.1,.08,-.75,.82,.2,'#f1efe9'],[.06,.02,.06,-.75,.875,.2,'#3a2418']],3.4,2.4);
+    B.meubel([[.06,.06,.06,0,.79,0,'#3a3d44'],[.04,.14,.04,0,.86,0,'#3a3d44'],[.2,.2,.2,0,1.03,0,'#2f6a8a'],[.12,.1,.12,.05,1.06,.05,'#3a8a4a'],[.08,.08,.06,-.06,.98,-.04,'#3a8a4a']],2.75,2.25);
+    B.meubel(F.stoel('#2a2c30','#5a5a62'),3.6,1.75);
     B.persoon('docent',{x:7.2,z:1.7,ry:0,anim:'schrijf',naam:'docent'});
-    // tafels in rijen (4 kolommen × 3 rijen), leerlingen
-    const COL=[3.2,6.0,8.8,11.6],ROW=[4.4,6.6,8.8];let n=0;
-    ROW.forEach((z,ri)=>COL.forEach((x,ci)=>{B.meubel(F.tafel(1.5,.6,.72,'#c8a878','#5a5a62'),x,z);B.solid(x-.75,z-.3,x+.75,z+.3);[-.38,.38].forEach((dx,k)=>{B.meubel(F.stoel('#2f6a8a','#5a5a62'),x+dx,z+.62,Math.PI);
+    // tafels in rijen (4 kolommen × 3 rijen), leerlingen, tassen naast de tafels, jassen over de stoelen
+    const COL=[3.2,6.0,8.8,11.6],ROW=[4.4,6.6,8.8];let n=0;const TAS=['#1a1c21','#c0261e','#2f6a8a','#3a7a3a','#e8b923','#5a3a7a'],JAS=['#2a2c30','#6a2a2a','#2a4a6a','#5a5a3a'];
+    ROW.forEach((z,ri)=>COL.forEach((x,ci)=>{B.meubel(F.tafel(1.5,.6,.72,'#c8a878','#5a5a62'),x,z);B.solid(x-.75,z-.3,x+.75,z+.3);[-.38,.38].forEach((dx,k)=>{const stoel=F.stoel('#2f6a8a','#5a5a62');
+      if((ri*8+ci*2+k)%3===0)stoel.push([.48,.34,.08,0,.82,-.25,JAS[(ri+ci+k)%4]]);B.meubel(stoel,x+dx,z+.62,Math.PI);
+      if((ri*5+ci*3+k)%4===1)B.meubel([[.3,.34,.18,0,.17,0,TAS[(ri+ci*2+k)%6]],[.24,.14,.03,0,.2,.1,'#16161a']],x+dx+(k?.36:-.36),z+.55,(k?.3:-.3));
       const luca=ri===1&&ci===3&&k===1,dex=ri===1&&ci===3&&k===0;const key='plek_'+ri+'_'+ci+'_'+k;B.plek(key,x+dx,.74,z);
       if(luca){B.plek('luca',x+dx,0,z+.66);return}if(dex){B.persoon('dex',{x:x+dx,z:z+.66,ry:Math.PI,anim:'dag',sitY:-.42,naam:'dex',kijk:.5});return}
-      if((n++)%3!==1)B.persoon(null,{x:x+dx,z:z+.66,ry:Math.PI,anim:['schrijfzit','sit','slaap','schrijfzit'][n%4],sitY:-.42,naam:'leerling'+n})});
-      B.meubel([[.3,.02,.22,-.35,.74,0,'#f1efe9'],[.3,.02,.22,.38,.74,.02,'#e8e4da'],[.04,.01,.18,-.2,.75,0,'#2a4a8a']],x,z)}));
-    // kapstok en tassen bij de deur, de deur
+      if((n++)%4!==1)B.persoon(null,{x:x+dx,z:z+.66,ry:Math.PI,anim:['schrijfzit','sit','slaap','schrijfzit','sit'][n%5],sitY:-.42,naam:'leerling'+n})});
+      B.meubel([[.3,.02,.22,-.35,.74,0,'#f1efe9'],[.3,.02,.22,.38,.74,.02,'#e8e4da'],[.04,.01,.18,-.2,.75,0,'#2a4a8a'],[.14,.02,.08,.3,.755,-.12,'#16161a']],x,z)}));
+    // kapstok en tassen bij de deur, de deur met een raampje
     B.meubel([[.4,.36,.26,0,.18,0,'#1a1c21'],[.4,.36,.26,.5,.18,.05,'#c0261e'],[.36,.3,.24,1.0,.15,0,'#2f6a8a']],4.2,10.5);
-    B.meubel(F.deur(1.2,2.2,'#a07a4a','#c9cfd6'),2.0,11.15);
+    B.meubel([[1.6,.06,.06,0,1.75,0,'#8a8c90'],[.05,.14,.05,-.6,1.68,.06,'#8a8c90'],[.05,.14,.05,0,1.68,.06,'#8a8c90'],[.05,.14,.05,.6,1.68,.06,'#8a8c90'],[.4,.7,.14,-.6,1.35,.1,'#3a4a2a'],[.4,.62,.14,.6,1.38,.1,'#5a2a3a']],4.4,10.9);
+    B.meubel(F.deur(1.2,2.2,'#a07a4a','#c9cfd6'),2.0,11.15);B.box(.36,.6,.02,2.0,1.62,11.1,'#a8d0e0',1);
     B.meubel(F.plant('#c8b890','#3a7a3a'),13.3,10.3);
     B.plek('bord',7,1.85,1.2)},
   buiten(g,f){if(f.eigen)return;const m=K.model([[3.4,2.8,.2,0,1.4,-.05,'#5a6a7a'],[1.6,2.4,.1,-.6,1.2,.06,'#2f6a8a'],[1.6,2.4,.1,1.0,1.2,.06,'#2f6a8a'],[1.4,2.1,.02,-.6,1.25,.12,'#a8d0e0',1],[1.4,2.1,.02,1.0,1.25,.12,'#a8d0e0',1],[4.4,.14,1.4,0,2.9,.7,'#e8e4da'],[4.6,.9,.16,0,3.55,.04,'#1a3a6a'],

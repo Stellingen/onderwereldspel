@@ -112,12 +112,14 @@ const SONGS={
   ray:{bpm:62,prog:[[[40,'m'],[41,'M'],[43,'M'],[40,'m']]],lead:.2,hat:.08,kick:[0,8],snare:[12],bassPat:[0,0,0,0,0,0,1,0],arpW:'sawtooth',zacht:1},
   feest:{bpm:124,prog:[[[57,'m7'],[62,'m7'],[64,'7'],[57,'m7']]],lead:.6,hat:1,kick:[0,4,8,12],snare:[4,12],bassPat:[0,12,0,12,0,12,7,12]}};
 const CH={m:[0,3,7],M:[0,4,7],m7:[0,3,7,10],M7:[0,4,7,11],'7':[0,4,7,10]};
-const seq={on:false,mode:'dag',want:'dag',step:0,next:0,bar:0,prog:0,timer:0,fade:1};
+// in het verhaal (verhaal.html) speelt er nooit chiptune: daar is echte muziek (verhaal-muziek.js)
+const VERHAAL=/verhaal/.test(location.pathname);
+const seq={on:false,mode:VERHAAL?'stil':'dag',want:VERHAAL?'stil':'dag',step:0,next:0,bar:0,prog:0,timer:0,fade:1};
 function startMusic(){const c=ac();if(!c||seq.on)return;seq.on=true;seq.next=c.currentTime+.1;seq.step=0;clearInterval(seq.timer);seq.timer=setInterval(schedule,40)}
 function stopMusic(){seq.on=false;clearInterval(seq.timer)}
 function schedule(){const c=ctx;if(!c||!seq.on)return;const S0=SONGS[seq.mode];if(!S0){if(SONGS[seq.want]){seq.mode=seq.want;seq.step=0;seq.bar=0;seq.prog=0;seq.next=c.currentTime+.05}return}const spb=60/S0.bpm/4;
   while(seq.next<c.currentTime+.25){const s=seq.step%16,T=seq.next-c.currentTime;
-    if(s===0&&seq.step>0){seq.bar++;if(seq.want!==seq.mode&&seq.bar%2===0){seq.mode=seq.want;seq.prog=SONGS[seq.mode]?Math.floor(Math.random()*SONGS[seq.mode].prog.length):0;seq.step=0;seq.bar=0;seq.next+=spb;return}
+    if(s===0&&seq.step>0){seq.bar++;if(seq.want!==seq.mode&&(seq.bar%2===0||seq.want==='stil')){seq.mode=seq.want;seq.prog=SONGS[seq.mode]?Math.floor(Math.random()*SONGS[seq.mode].prog.length):0;seq.step=0;seq.bar=0;seq.next+=spb;return}
       if(seq.bar%8===0)seq.prog=Math.floor(Math.random()*S0.prog.length)}
     if(seq.mode!=='stil')note(S0,s,T,spb);seq.step++;seq.next+=spb}}
 function note(S0,s,T,spb){const P=S0.prog[seq.prog%S0.prog.length],ch=P[Math.floor((seq.bar%(P.length*2))/2)%P.length],root=ch[0],iv=CH[ch[1]]||CH.m;
@@ -134,7 +136,7 @@ function note(S0,s,T,spb){const P=S0.prog[seq.prog%S0.prog.length],ch=P[Math.flo
   if(S0.snare.includes(s))noise(T,.1,.13,'highpass',1800,null,muBus);
   if(s%2===0&&Math.random()<S0.hat)noise(T,.03,.05,'highpass',7000,null,muBus);
   // de straatmuzikant: een gitaarloopje dat harder wordt als je dichterbij komt
-  if(busk>0&&st.fx&&s%2===0){const pen=[0,3,5,7,10,12],n=root+pen[(s/2+seq.bar*3)%6];tone(N(n),T,spb*1.7,'triangle',.11*busk,null,fxBus);if(s%8===0)tone(N(root-12),T,spb*3.5,'triangle',.1*busk,null,fxBus)}}
+  if(busk>0&&st.fx&&s%2===0&&!(G.cut&&G.cut.active&&G.cut.active())){const pen=[0,3,5,7,10,12],n=root+pen[(s/2+seq.bar*3)%6];tone(N(n),T,spb*1.7,'triangle',.11*busk,null,fxBus);if(s%8===0)tone(N(root-12),T,spb*3.5,'triangle',.1*busk,null,fxBus)}}
 let busk=0;
 let sfeerOver=null;
 // stemmen per personage (verhaal): een korte toon per lettergreep terwijl de tekst wordt getypt
@@ -147,13 +149,13 @@ const STEM={luca:[520,'square',.05,.045],dex:[660,'square',.04,.05],giovanni:[30
 function stemVan(id){if(STEM[id])return STEM[id];let h=0;for(const c of String(id||''))h=(h*31+c.charCodeAt(0))>>>0;return [260+h%420,['square','triangle','sawtooth'][h%3],.05+(h%4)*.01,.04]}
 function praat(id,code){if(!st.fx)return;const c=ac();if(!c||c.state!=='running')return;const v=stemVan(id),k=1+(((code||0)%7)-3)*.045;
   tone(v[0]*k,0,v[2],v[1],v[3],v[0]*k*(id==='verteller'?1:.94))}
-function music(mode){seq.want=mode;if(mode!=='stil'&&st.mu&&!seq.on&&ctx&&ctx.state==='running')startMusic()}
+function music(mode){if(VERHAAL)mode='stil';seq.want=mode;if(mode!=='stil'&&st.mu&&!seq.on&&ctx&&ctx.state==='running')startMusic()}
 // stemming volgt het spel: achtervolging, missie, binnen, nacht of dag
 setInterval(()=>{if(!G||!G.ready)return;const chase=(G.police&&G.police.active&&G.police.active())||(G.mission&&G.mission()&&G.mission().alarm);
   const inside=G.ui&&G.ui.cur&&G.ui.cur();music(sfeerOver||(chase?'jacht':inside?'stil':(G.night>.55?'nacht':'dag')))},700);
 function apply(){if(!ctx)return;fxBus.gain.setTargetAtTime(st.fx?.55:0,ctx.currentTime,.05);muBus.gain.setTargetAtTime(st.mu?.2:0,ctx.currentTime,.3);master.gain.setTargetAtTime(st.vol,ctx.currentTime,.05);
   if(st.mu&&!seq.on)startMusic()}
-G.snd={fx,siren,engine,music,amb,praat,stemmen:STEM,sfeer:m=>{sfeerOver=m&&SONGS[m]||m==='stil'?m:null;if(sfeerOver)music(sfeerOver)},get sfeerNu(){return seq.mode},busk:v=>{busk=Math.max(0,Math.min(1,v||0))},
+G.snd={fx,siren,engine,music,amb,praat,stemmen:STEM,ctx:()=>ac(),master:()=>{ac();return master},sfeer:m=>{sfeerOver=m&&SONGS[m]||m==='stil'?m:null;if(sfeerOver)music(sfeerOver)},get sfeerNu(){return seq.mode},busk:v=>{busk=Math.max(0,Math.min(1,v||0))},
   get fxOn(){return st.fx},get muOn(){return st.mu},get vol(){return st.vol},
   setFx(v){st.fx=!!v;set('stad_fx',v?'1':'0');apply();if(!v){siren(null);engine(null)}},setMu(v){st.mu=!!v;set('stad_mu',v?'1':'0');apply()},setVol(v){st.vol=Math.max(0,Math.min(1,+v||0));set('stad_vol',st.vol);apply()}};
 // pauze (tabblad weg): muziek zachter

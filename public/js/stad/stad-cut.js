@@ -235,11 +235,13 @@ function setDroom(on){droom=!!on;$s('svDroom').classList.toggle('on',droom);G.ca
 CUT.droom=setDroom;
 
 /* =================== camera =================== */
-let CAM=null;const v1=new TH.Vector3(),v2=new TH.Vector3();
+let CAM=null,vorigeCam=null;const v1=new TH.Vector3(),v2=new TH.Vector3();
 const arr=(p,d)=>p?new TH.Vector3(p[0],p[1],p[2]):d;
 function camSet(c){if(c==null){CAM=null;return 0}const cam=G.camera();
   if(c.volg){CAM={volg:c.volg,af:c.af||[0,2.2,4.5],kijk:c.kijk||[0,1.4,0],fov:c.fov||null,pos:cam.position.clone(),look:null};return 0}
-  const from={pos:arr(c.pos,cam.position.clone()),look:arr(c.look,null)};if(!from.look){cam.getWorldDirection(v1);from.look=cam.position.clone().add(v1.multiplyScalar(10))}
+  // zonder beginpunt: begin waar het vorige shot nu is (niet waar de camera in het vorige frame stond)
+  let nuP=null,nuL=null;if(CAM&&!CAM.volg&&CAM.from){const k=CAM.to&&CAM.t>0?ease(CAM.e/CAM.t):(CAM.to?1:0);nuP=CAM.from.pos.clone();nuL=CAM.from.look.clone();if(CAM.to){nuP.lerp(CAM.to.pos,k);nuL.lerp(CAM.to.look,k)}}
+  const from={pos:arr(c.pos,nuP||cam.position.clone()),look:arr(c.look,c.pos?null:nuL)};if(!from.look){cam.getWorldDirection(v1);from.look=cam.position.clone().add(v1.multiplyScalar(10))}
   const to=c.to?{pos:arr(c.to.pos,from.pos.clone()),look:arr(c.to.look,from.look.clone())}:null;
   CAM={from,to,t:c.t||0,e:0,fov:c.fov||null,fov2:c.to&&c.to.fov||null,shake:c.shake||0};if(skip&&to)CAM.e=CAM.t;
   return to&&c.wacht!==false?CAM.t:0}
@@ -294,7 +296,9 @@ function keuze(s){skip=false;const sub=$s('svSub');sub.hidden=false;sub.classLis
     $s('svSubK').onclick=e=>{const b=e.target.closest('[data-i]');if(b&&keuzeOpen)keuzeOpen.pick(+b.dataset.i)}})}
 // het hele script
 CUT.play=async function(script,o){o=o||{};while(running)await running;let rel;running=new Promise(r=>rel=r);
-  active=true;skip=false;spelerVerborgen=!!o.zonderSpeler;ui.hidden=false;document.body.classList.add('sv-incut');G.talking=true;G.story&&G.story.klokPauze&&G.story.klokPauze(true);
+  active=true;skip=false;spelerVerborgen=!!o.zonderSpeler;
+  // volgt deze scène direct op een scène met {blijf:true}? dan blijft de camera waar hij was (geen flits van de spelcamera)
+  if(vorigeCam&&performance.now()-vorigeCam.t<2000)CAM=vorigeCam.cam;vorigeCam=null;ui.hidden=false;document.body.classList.add('sv-incut');G.talking=true;G.story&&G.story.klokPauze&&G.story.klokPauze(true);
   if(G.kit.dialogOpen&&G.kit.dialogOpen())G.kit.closeDialog(true);if(G.phone&&G.phone.isOpen&&G.phone.isOpen())G.phone.close();
   const hq=Object.assign({},CUT.hq,o.hq||{});if(hq.pix){pixWas=G.pixPref;G.pixPref=hq.pix;G.resize&&G.resize()}
   CUT.onStart.forEach(f=>{try{f(o)}catch(e){}});
@@ -304,7 +308,7 @@ CUT.play=async function(script,o){o=o||{};while(running)await running;let rel;ru
   // afronden
   $s('svSub').hidden=true;$s('svTitel').hidden=true;keuzeOpen=null;advance=null;
   if(!o.blijfZwart)await fadeTo(0,.01);
-  if(!o.blijf)CUT.allesWeg(false);CAM=null;setDroom(false);spelerVerborgen=false;
+  if(!o.blijf)CUT.allesWeg(false);vorigeCam=o.blijf&&CAM?{cam:CAM,t:performance.now()}:null;CAM=null;setDroom(false);spelerVerborgen=false;
   ui.classList.remove('on');active=false;skip=false;ui.hidden=!o.blijfZwart;document.body.classList.remove('sv-incut');G.talking=false;G.frozen=0;G.story&&G.story.klokPauze&&G.story.klokPauze(false);
   if(hq.pix){G.pixPref=pixWas;G.resize&&G.resize()}
   G.spelerWeg=false;const av=G.avatarObj&&G.avatarObj();if(av)av.visible=true;

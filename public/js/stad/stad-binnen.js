@@ -196,7 +196,7 @@ function hookRig(){const r0=G.camRig;G.camRig=function(dt,cam){if(G.cut&&G.cut.r
   if(inside&&G.camMode==='boven'){if(cam.fov!==G.fov0&&G.fov0){cam.fov=G.fov0;cam.updateProjectionMatrix()}return false}return r0?r0(dt,cam):false}}
 
 /* =================== licht binnen =================== */
-function hookLight(){const l0=G.onLight;G.onLight=function(o){l0&&l0(o);if(!inside)return;const L=DEF[inside].licht||{};const bg=new TH.Color(L.bg||'#0a080c');
+function hookLight(){const l0=G.onLight;G.onLight=function(o){l0&&l0(o);if(!inside)return;const Ld=DEF[inside].licht;const L=(typeof Ld==='function'?Ld():Ld)||{};const bg=new TH.Color(L.bg||'#0a080c');
   o.scene.background=bg;o.scene.fog.color=bg;o.scene.fog.near=60;o.scene.fog.far=200;
   o.hemi.intensity=L.int!=null?L.int:.55;o.hemi.color.set(L.hemi||'#b8a8d8');o.hemi.groundColor.set(L.grond||'#2a2030');
   o.sun.intensity=L.zon!=null?L.zon:.35;o.sun.color.set(L.zonKleur||'#ffe8c8');G.sunOff={x:-7,y:34,z:11};

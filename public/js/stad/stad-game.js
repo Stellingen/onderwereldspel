@@ -262,7 +262,7 @@ function step(dt,ts){
   if(G.shakeA>.01){const a=G.shakeA;camera.position.x+=(Math.random()-.5)*a;camera.position.y+=(Math.random()-.5)*a;camera.position.z+=(Math.random()-.5)*a;G.shakeA*=Math.pow(.02,dt)}
   const shx=G.shadowC?G.shadowC.x:tx,shz=G.shadowC?G.shadowC.z:tz;sun.position.set(shx+G.sunOff.x,G.sunOff.y,shz+G.sunOff.z);sun.target.position.set(shx,0,shz);
   camera.updateMatrixWorld();if(CW)CW.step(camera,P.x,P.z,scene.fog.far);cutV.set(P.x,1.2,P.z).project(camera);const rs=renderer.getSize(cutS);X.U.uPS.value.set((cutV.x*.5+.5)*rs.x,(cutV.y*.5+.5)*rs.y);
-  cutV.set(P.x,1.2,P.z).applyMatrix4(camera.matrixWorldInverse);X.U.uPZ.value=-cutV.z;X.U.uCutR.value=rs.y*.2*(G.paused||(G.camMode&&G.camMode!=='boven')?0:1);
+  cutV.set(P.x,1.2,P.z).applyMatrix4(camera.matrixWorldInverse);X.U.uPZ.value=-cutV.z;X.U.uCutR.value=rs.y*.2*(G.paused||G.spelerWeg||(G.cut&&G.cut.active&&G.cut.active())||(G.camMode&&G.camMode!=='boven')?0:1);
   // mensen
   G.missionStep&&!G.paused&&G.missionStep(dt);
   const A=G.actors.slice(0,ACT_MAX);humans.count(1+NPC.length+A.length);humans.pose(0,{x:P.x,y:-60,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,look:P.look});if(G.avatarPose)G.avatarPose({x:P.x,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,v,dt,lean:v>7?.2:v>1?.05:0,hide:G.driving||G.camMode==='ogen'||!!G.spelerWeg,crouch:G.hidden,arm:G.pArm||0});

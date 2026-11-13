@@ -5,7 +5,7 @@
 //
 // Voor andere onderdelen:
 //   G.verhaalInst.get(k)      → waarde (met standaard). Sleutels: nav, pijl, subs, subGrootte ('s'|'m'|'l'|'xl'), skip, schudden,
-//                               schaduw, effecten, tril, camAfstand ('dicht'|'normaal'|'ver')
+//                               schaduw, effecten, tril, camAfstand ('dicht'|'normaal'|'ver'), verteller, npcDetail
 //   G.verhaalInst.set(k,v)    → zet en past meteen toe;  G.verhaalInst.open() / .close() / .isOpen();  G.verhaalInst.on(fn) (bij elke wijziging)
 //   CSS: html[data-sv-sub] = s|m|l|xl en --sv-sub (schaal 0.85…1.6) voor ondertitels; body.sv-geen-ondertitels als ze uit staan.
 //   Cutscenes: G.verhaalInst.get('skip') === false → niet overslaan.
@@ -14,7 +14,7 @@
 const G=window.STAD;if(!G)return;
 const K=G.kit,E=K.E,$s=id=>document.getElementById(id);
 const touch=matchMedia('(pointer:coarse)').matches;
-const DEF={nav:true,pijl:true,subs:true,subGrootte:'m',skip:true,schudden:true,schaduw:true,effecten:true,tril:true,camAfstand:'normaal'};
+const DEF={nav:true,pijl:true,subs:true,subGrootte:'m',skip:true,schudden:true,schaduw:true,effecten:true,tril:true,camAfstand:'normaal',verteller:true,npcDetail:true};
 const SUBS={s:.85,m:1,l:1.25,xl:1.6},AFST={dicht:32,normaal:46,ver:60};
 let LS={};try{LS=JSON.parse(localStorage.getItem('verhaal_inst')||'{}')||{}}catch(e){LS={}}
 const story=()=>G.story&&G.story.instelling?G.story:null;
@@ -96,9 +96,11 @@ function tabHtml(){const snd=G.snd||{};
     row('Afstand','Hoe ver de camera bovenaf van Luca hangt.',seg('camAfstand',[['dicht','Dichtbij'],['normaal','Normaal'],['ver','Ver']],get('camAfstand')))+
     row('Beeldkwaliteit','Scherp ziet er strakker uit, Grof is sneller op een oudere telefoon.',seg('pix',[[640,'Scherp'],[0,'Normaal'],[340,'Grof']],G.pixPref||0))+
     row('Schaduwen','Uit maakt het spel sneller.',sw('schaduw','Schaduwen'))+
-    row('Contouren en diepte','Zwarte randjes, schaduw in hoeken en een vignet.',sw('effecten','Contouren en diepte'));
+    row('Contouren en diepte','Zwarte randjes, schaduw in hoeken en een vignet.',sw('effecten','Contouren en diepte'))+
+    row('Gedetailleerde voorbijgangers','Mensen dichtbij zien eruit zoals in de cutscènes. Uit is sneller op een oudere telefoon.',sw('npcDetail','Gedetailleerde voorbijgangers'));
   if(tab==='geluid')return row('Geluidseffecten','',`<button class="vi-sw" role="switch" aria-checked="${!!snd.fxOn}" aria-label="Geluidseffecten" data-snd="fx"></button>`)+
     row('Muziek','',`<button class="vi-sw" role="switch" aria-checked="${!!snd.muOn}" aria-label="Muziek" data-snd="mu"></button>`)+
+    row('Verteller','De misdaadverslaggever uit de intro spreekt bij belangrijke momenten.',sw('verteller','Verteller'))+
     row('Volume','',`<input class="vi-range" type="range" min="0" max="1" step=".05" value="${snd.vol!=null?snd.vol:.8}" data-vol aria-label="Volume">`);
   const k=(a,b)=>`<kbd>${a}</kbd><span>${b}</span>`;
   return `<div class="vi-keys">${touch?

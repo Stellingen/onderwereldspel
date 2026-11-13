@@ -49,8 +49,12 @@ const camNaar=(px,py,pz,lx,ly,lz,t,o)=>({cam:Object.assign({to:{pos:[px,py,pz],l
 // een schot vanaf een punt rond (x,z): hoek a, afstand d, hoogte h, kijkt naar (x, ly, z)
 // op een staand scherm (telefoon) is het beeld smal: de camera een stukje verder weg
 const pk=()=>innerWidth<innerHeight?1.3:1;
-const rond=(x,z,a,d,h,ly,o)=>{d*=pk();return cam(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,o)};
-const rondNaar=(x,z,a,d,h,ly,t,o)=>{d*=pk();return camNaar(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,t,o)};
+// buiten: staat de camera in een muur, heg of gevel (of zit die tussen camera en onderwerp), dan draait hij een stukje mee of komt hij dichterbij
+const vrijPt=(x,z)=>!M.canStand||x>4000||M.canStand(x,z,.3);
+function vrijeHoek(x,z,a,d){if(x>4000)return [a,d];for(const f of [1,.82,.66])for(const da of [0,.3,-.3,.6,-.6,.9,-.9,1.25,-1.25]){const A=a+da,D=d*f;
+    if(vrijPt(x+sin(A)*D,z+cos(A)*D)&&vrijPt(x+sin(A)*D*.55,z+cos(A)*D*.55))return [A,D]}return [a,d]}
+const rond=(x,z,a,d,h,ly,o)=>{d*=pk();[a,d]=vrijeHoek(x,z,a,d);return cam(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,o)};
+const rondNaar=(x,z,a,d,h,ly,t,o)=>{d*=pk();[a,d]=vrijeHoek(x,z,a,d);return camNaar(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,t,o)};
 // telefoon die trilt
 function tril(){try{navigator.vibrate&&G.verhaalInst&&G.verhaalInst.get&&G.verhaalInst.get('tril')!==false&&navigator.vibrate([60,60,60])}catch(e){}fx('tril');setTimeout(()=>fx('notify'),420)}
 // schoolbel (eigen geluid: twee tonen die lang doorklinken)
@@ -98,6 +102,8 @@ function css(){if($s('h1Css'))return;const s=document.createElement('style');s.i
 .h1-biljet{height:96px;margin:6px auto 4px;width:200px;display:flex;align-items:center;justify-content:center;font:800 30px 'Space Grotesk',system-ui;color:#121016;border:3px solid #0006;position:relative;box-shadow:inset 0 0 0 6px #fff3,0 4px 0 #0006;transition:transform .12s}
 .h1-biljet:after{content:'';position:absolute;top:8px;bottom:8px;right:26px;width:8px;background:var(--strip,#e8e4da);opacity:.85}.h1-biljet small{position:absolute;left:8px;top:6px;font-size:11px;opacity:.7}
 .h1-biljet.vlieg{transform:translateX(160px) rotate(12deg);opacity:0}
+.h1-ff{position:fixed;right:max(16px,4vw);top:calc(11vh + 14px);z-index:100002;display:flex;align-items:center;gap:10px;pointer-events:none;color:#f1efe9;font:800 clamp(18px,3vw,28px) 'Space Grotesk',system-ui,sans-serif;text-shadow:0 2px 0 #000,0 0 12px #000;letter-spacing:.06em}
+.h1-ff b{color:#ff4a3a;animation:h1ff .5s steps(2) infinite}.h1-ff span{font-family:monospace;font-weight:700}@keyframes h1ff{50%{opacity:.35}}
 `;document.head.appendChild(s)}
 function mgOpen(html,cls){css();const el=document.createElement('div');el.className='h1-mg '+(cls||'');el.innerHTML=html;document.body.appendChild(el);return el}
 
@@ -158,21 +164,22 @@ stap('start',{async start(){const t=nieuw();
   if(t!==RUN)return;go('h1_klas')}});
 
 /* ======================= AVOND 1 · De eerste dienst ======================= */
-stap('h1_klas',{doel:null,async start(o){const t=nieuw();ST.avond(1);ST.tijd(14,20);uitfit('school');fietsAf();await binnen('klas');if(t!==RUN)return;
-  const seat=B.plek('klas','luca')||{x:W('klas',4,6)[0],y:0,z:W('klas',4,6)[1]},bord=B.plek('klas','bord')||{x:W('klas',7,1)[0],z:W('klas',7,1)[1]};
-  const Z=A('zakendistrict',1030,576),H=A('haven',735,120),S=A('school',232,337);
+stap('h1_klas',{doel:null,async start(o){const t=nieuw();ST.avond(1);ST.tijd(16,28);uitfit('school');fietsAf();await binnen('klas');if(t!==RUN)return;
+  const seat=B.plek('klas','luca')||{x:W('klas',4,6)[0],y:0,z:W('klas',4,6)[1]};
+  const Z=A('zakendistrict',1030,576),H=A('haven',735,120);
   const ry=PI;
   await C.play([
    {fade:'out',t:.01},{speler:false},
    {actor:'luca',at:[seat.x,seat.z],ry,anim:'sit',sitY:-.42},{fn:()=>{const a=C.acteur('luca');if(a){a.g.binnenId=1;a.kijk=-.6}}},
-   cam(...W3('klas',13.8,3.0,1.2),...W3('klas',10.6,0.9,6.8)),{fade:'in',t:1.2},
+   cam(...W3('klas',13.3,2.9,1.5),...W3('klas',9.6,0.9,7.4)),camNaar(...W3('klas',12.8,2.6,1.9),...W3('klas',9.6,0.9,7.4),6,{wacht:false}),{fade:'in',t:1.2},
    {titel:'Hoofdstuk 1',sub:'Dozen',t:3.4},
-   {say:'docent',text:'Belastingen. Van elke euro die jullie ooit verdienen, gaat een deel naar de staat.',t:4.2},
    cam(...W3('klas',10.2,2.1,3.4),...W3('klas',7.2,1.5,1.7)),camNaar(...W3('klas',9.6,2.0,3.0),...W3('klas',7.2,1.5,1.7),4,{wacht:false}),
-   {say:'docent',text:'Inkomstenbelasting. Btw. En wie het niet betaalt, krijgt vroeg of laat een brief van een heel saaie meneer.',t:4.6},
-   cam(...W3('klas',14.4,2.1,4.4),seat.x,1.1,seat.z),camNaar(...W3('klas',14.2,1.9,5.0),seat.x,1.1,seat.z,3,{wacht:false}),
-   {say:null,text:'Luca kijkt naar buiten. Het raam, de flats, de lucht boven de haven…',t:3.2},
-   // de dagdroom
+   {say:'docent',text:'Laatste uur, mensen. Nog even. Belastingen: van elke euro die jullie ooit verdienen, gaat een deel naar de staat.',t:4.4},
+   {say:'docent',text:'Inkomstenbelasting. Btw. En wie het niet betaalt, krijgt vroeg of laat een brief van een heel saaie meneer.',t:4.4},
+   cam(...W3('klas',13.1,1.65,4.9),seat.x,1.3,seat.z),camNaar(...W3('klas',13.0,1.6,5.4),seat.x,1.3,seat.z,9,{wacht:false}),
+   {say:null,text:'Luca kijkt naar buiten. De zon zakt achter de flats. Boven de haven kleurt de lucht oranje.',t:3.2},
+   // de verslaggever, dan de dagdroom
+   {fn:()=>G.verteller&&G.verteller('v01')},
    {fade:'out',t:.9},{dream:true},{buiten:true},{speler:false},
    {actor:'luca_d',at:[Z.x,Z.z],ry:PI*.25,look:lucaPak(),prop:'tas',anim:'idle'},
    cam(Z.x-40,46,Z.z+60,Z.x,8,Z.z),{fade:'in',t:.8},{snd:'whoosh'},
@@ -181,33 +188,34 @@ stap('h1_klas',{doel:null,async start(o){const t=nieuw();ST.avond(1);ST.tijd(14,
    {anim:'luca_d',a:'give',t:.8},{snd:'click'},
    cam(H.x+70,60,H.z+90,H.x,6,H.z),{snd:'whoosh'},camNaar(H.x-20,34,H.z+40,H.x,4,H.z,4),
    {say:null,text:'Een helikopter boven de haven. Koffers. Mannen die naar hem luisteren.',t:3},
-   {fn:schoolbel},{fade:'out',t:.25},{dream:false},{weg:'luca_d'},{binnen:'klas'},{speler:false},
+   // de schoolbel maakt hem wakker: het is al schemerig
+   {fn:schoolbel},{fade:'out',t:.25},{dream:false},{weg:'luca_d'},{fn:()=>{ST.tijd(17,8)}},{binnen:'klas'},{speler:false},
    {weg:'luca'},{actor:'luca',at:[seat.x,seat.z],ry,anim:'schrik',sitY:-.42},{fn:()=>{const a=C.acteur('luca');if(a)a.g.binnenId=1}},
-   cam(...W3('klas',14.5,2.3,10.4),seat.x-.4,1.0,seat.z),{fade:'in',t:.3},{fn:schoolbel},
+   cam(...W3('klas',13.1,1.8,4.5),seat.x-.3,1.25,seat.z),{fade:'in',t:.3},{fn:schoolbel},
    {say:'docent',text:'…en dat is de bel. Hoofdstuk vier lezen! Ook jij, De Santis.',t:3.2},
    {say:'dex',text:'Ey, droomkoning. Werken.',t:2.4,mood:'blij'},
    {say:'luca',text:'Ik droomde niet.',t:1.8},
    {say:'dex',text:'Je kwijlde op je boek, broer. Kom, buiten.',t:2.6,mood:'blij'},
-   {fade:'out',t:.5},{weg:'luca'},{speler:true},{fade:'in',t:.5}]);
-  if(t!==RUN)return;go('h1_naarbuiten')}});
-stap('h1_naarbuiten',{doel:'Ga naar buiten, naar het schoolplein',waar:()=>{const a=A('schoolhek',234,371);return {x:a.x,z:a.z,r:9}},
-  start(o){if(o.hervat&&!B.waar())return;},aankomst(){go('h1_plein')}});
+   {fade:'out',t:.5},{weg:'luca'}],{blijfZwart:true});
+  if(t!==RUN)return;go('h1_plein')}});
+// oude opslag: wie nog 'naar buiten' moest, gaat meteen door naar het schoolplein
+stap('h1_naarbuiten',{doel:null,start(o){setTimeout(()=>go('h1_plein'),50)}});
 
-stap('h1_plein',{muziek:'school',doel:'Het schoolplein',async start(o){const t=nieuw();await buiten();if(t!==RUN)return;
-  const h=A('schoolhek',234,371),p=walk(h.x,h.z-4,6),l=P();
+stap('h1_plein',{muziek:'school',doel:null,async start(o){const t=nieuw();if(B.waar())await B.uit({fade:false});if(t!==RUN)return;tijd(17,16);
+  const h=A('schoolhek',234,371),p=walk(h.x,h.z-4,6),l=walk(h.x-1.6,h.z-6.5,5);
   const oj=walk(p.x+2.4,p.z-1.2,4),bk=walk(p.x+3.2,p.z-.2,4),dx=walk(l.x-1,l.z+.6,3);
-  const r1=await C.play([{speler:false},
+  const r1=await C.play([{fade:'out',t:.01},{speler:false},
    {actor:'luca',at:[l.x,l.z],ry:naar(l,oj)},{actor:'dex',at:[dx.x,dx.z],ry:naar(dx,oj)},
    {actor:'oudere_jongen',at:[oj.x,oj.z],ry:naar(oj,bk),anim:'idle',prop:'pet'},{actor:'brugklasser',at:[bk.x,bk.z],ry:naar(bk,oj),anim:'handenop'},
-   rond(oj.x,oj.z,naar(oj,l)+.5,6,2.4,1.2),
+   rond(oj.x,oj.z,naar(oj,l)+.5,6,2.4,1.2),{fade:'in',t:.6},
    {say:'oudere_jongen',text:'Mooie pet, brugpieper. Nu is hij van mij.',t:2.8},
    {say:'brugklasser',text:'Geef terug, man. Die is van mijn broer…',t:2.6,mood:'bang'},
-   rond(l.x,l.z,naar(l,oj)+PI-.4,2.4,1.7,1.4),
+   rond(l.x,l.z,naar(l,oj)+.75,2.9,1.6,1.4),
    {say:'dex',text:'Laat zitten, Luca. Niet ons probleem.',t:2.4},
    {keuze:[{t:'Ingrijpen',id:'in',sub:'Dex vindt je stoer'},{t:'Doorlopen',id:'door',sub:'Niemand merkt het'}],wie:'luca',text:'Wat doe je?'}],{blijf:true});
   if(t!==RUN)return;
-  if(r1==='in'){await C.play([
-     {move:'luca',to:[oj.x-1.1,oj.z+.4],t:1.6},{anim:'luca',a:'point',naar:[oj.x,oj.z]},rond(oj.x,oj.z,naar(oj,l)-.6,3.6,1.8,1.4),
+  if(r1==='in'){await C.play([rond(oj.x,oj.z,naar(oj,l)-.6,3.6,1.8,1.4),
+     {move:'luca',to:[oj.x-1.1,oj.z+.4],t:1.6},{anim:'luca',a:'point',naar:[oj.x,oj.z]},
      {say:'luca',text:'Geef die pet terug.',t:1.8,mood:'koel'},
      {anim:'oudere_jongen',a:'duw',naar:'luca'},{say:'oudere_jongen',text:'Of wat, pizzajongen?',t:2},
      {move:'dex',to:[oj.x-.6,oj.z+1.3],t:.9,anim:'run'},{anim:'dex',a:'armen',naar:[oj.x,oj.z]},
@@ -216,15 +224,34 @@ stap('h1_plein',{muziek:'school',doel:'Het schoolplein',async start(o){const t=n
      {move:'oudere_jongen',to:[oj.x+9,oj.z-6],t:3,wacht:false},
      {anim:'brugklasser',a:'pet',prop:'pet'},{say:'brugklasser',text:'Bedankt… Ik ben Sami.',t:2.2,mood:'blij'},
      {say:'dex',text:'Kijk hem. Superheld van de Westbuurt.',t:2.2,mood:'blij'},
-     {fade:'out',t:.4},{speler:true},{fade:'in',t:.4}]);
+     {say:'luca',text:'Ik moet gaan. Giovanni wacht.',t:2},{fade:'out',t:.5}],{blijfZwart:true});
     F('plein','ingegrepen');F('sami',1);ST.meter('loy_dex',5);ST.meter('imago',3)}
   else{await C.play([
      {move:'luca',to:[l.x-5,l.z+5],t:2.6,wacht:false},{move:'dex',to:[dx.x-5,dx.z+5],t:2.6,wacht:false},
      rond(bk.x,bk.z,naar(bk,l)+PI,1.4,1.5,1.4),{say:null,text:'Sami kijkt je na. Hij onthoudt je gezicht.',t:2.6},
-     {say:'dex',text:'Slim. Niet jouw oorlog.',t:2},{fade:'out',t:.4},{speler:true},{fade:'in',t:.4}]);
+     {say:'dex',text:'Slim. Niet jouw oorlog.',t:2},{say:'luca',text:'Ik moet gaan. Giovanni wacht.',t:2},{fade:'out',t:.5}],{blijfZwart:true});
     F('plein','door')}
   C.allesWeg(false);['luca','dex','oudere_jongen','brugklasser'].forEach(k=>C.weg(k));
-  if(t!==RUN)return;go('h1_fiets')}});
+  if(t!==RUN)return;go('h1_onderweg')}});
+
+// snel vooruit: van school naar je werk, terwijl het donker wordt
+function snelVooruit(aan,van,tot){let el=$s('h1Ff');if(!aan){if(el)el.remove();return}css();if(!el){el=document.createElement('div');el.id='h1Ff';el.className='h1-ff';document.body.appendChild(el)}
+  el.innerHTML='<b>▶▶</b><span>'+String(van[0]).padStart(2,'0')+':'+String(van[1]).padStart(2,'0')+'</span>';const sp=el.querySelector('span');
+  const a=van[0]*60+van[1],b=tot[0]*60+tot[1],t0=performance.now(),T=3800;
+  const f=()=>{if(!el.isConnected)return;const u=Math.min(1,(performance.now()-t0)/T),m=Math.round(a+(b-a)*u);sp.textContent=String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');ST.tijd(Math.floor(m/60),m%60);if(u<1)requestAnimationFrame(f)};f()}
+stap('h1_onderweg',{doel:null,async start(o){const t=nieuw();if(B.waar())await B.uit({fade:false});if(t!==RUN)return;
+  const S=A('school',232,337),N=A('napoli',419,492),np=walk(N.x+2.6,N.z+2.4,4),nv=walk(N.x+7,N.z+5.5,6),k=ST.klok();
+  await C.play([{fade:'out',t:.01},{speler:false},
+   {actor:'luca',at:[nv.x,nv.z],ry:naar(nv,np),look:ST.lucaLook&&ST.lucaLook()},
+   cam(S.x+26,34,S.z+40,S.x,2,S.z),{fade:'in',t:.4},{fn:()=>snelVooruit(true,[k.h,k.m],[17,34])},{snd:'whoosh'},
+   camNaar((S.x+N.x)/2+20,42,(S.z+N.z)/2+30,(S.x+N.x)/2,0,(S.z+N.z)/2,1.9),
+   camNaar(N.x+16,9,N.z+18,N.x,1.6,N.z,1.9),
+   {fn:()=>snelVooruit(false)},{fn:()=>tijd(17,34)},
+   rond(np.x,np.z,naar(np,nv)+.7,6.5,2.2,1.4),
+   {move:'luca',to:[np.x,np.z],t:2.2},
+   {say:null,text:'Bella Napoli. Het neonbord zoemt al. Binnen ruikt het naar oregano.',t:2.6},
+   {fade:'out',t:.4},{weg:'luca'}],{blijfZwart:true});
+  snelVooruit(false);if(t!==RUN)return;go('h1_giovanni')}});
 
 stap('h1_fiets',{muziek:'school',doel:'Pak je fiets bij het fietsenrek',waar:()=>{const a=A('fietsenrek',210,361);return {x:a.x,z:a.z,r:3.2}},
   start(o){const r=A('fietsenrek',210,361),p=walk(r.x,r.z,3);if(G.fiets&&!G.fiets.actief()){const fp=G.fiets.pos();if(!fp||hyp(fp.x-p.x,fp.z-p.z)>3)G.fiets.spawn(p.x,p.z,0,{kleur:'#2c4a6a'})}},
@@ -244,7 +271,7 @@ stap('h1_napoli',{doel:'Fiets naar Bella Napoli',waar:()=>{const a=A('napoli',41
      zeg('luca','Rustig! Rustig, goeie hond…',{t:2});if(G.fiets&&G.fiets.actief())G.fiets.balans({waarom:'Een hond springt tegen je tas',duur:2.2}).then(ok=>{if(!ok)zeg('luca','Bijna. Die steeg neem ik niet meer.',{t:2.2})})}},
   aankomst(){fietsAf();go('h1_giovanni')}});
 
-stap('h1_giovanni',{async start(o){const t=nieuw();fietsAf();await binnen('napoli');if(t!==RUN)return;tijd(16,10);
+stap('h1_giovanni',{async start(o){const t=nieuw();fietsAf();await binnen('napoli');if(t!==RUN)return;tijd(17,36);
   B.toon('napoli','giovanni',false);
   const g=W('napoli',8,6.9),l=W('napoli',8,10.8),gp={x:g[0],z:g[1]},lp={x:l[0],z:l[1]};
   await C.play([{speler:false},
@@ -252,10 +279,11 @@ stap('h1_giovanni',{async start(o){const t=nieuw();fietsAf();await binnen('napol
    cam(gp.x+3.2,2.2,gp.z-1.4,gp.x,1.3,gp.z+1),{fade:'in',t:.6},
    {say:null,text:'Meel in de lucht. Een radio met Italiaanse liedjes. De oven tikt.',t:2.6},
    {anim:'giovanni',a:'talk',ry:0,naar:'luca'},{say:'giovanni',text:'Daar is hij! Mijn snelste jongen. Twee minuten te laat, maar de snelste.',t:3,mood:'blij'},
-   rond(lp.x,lp.z,PI+.7,2.6,1.7,1.4),{move:'giovanni',to:[gp.x,gp.z+2.4],t:1.4},
+   rond(lp.x,lp.z,PI+.7,3.3,1.75,1.5),{move:'giovanni',to:[gp.x,gp.z+2.4],t:1.4},
    {anim:'giovanni',a:'give',prop:'tas',naar:'luca'},
    {say:'giovanni',text:'Hier. De jas van Bella Napoli. En twee tassen. Draag ze met trots.',t:3},
    {fn:()=>{ST.jas(true);uitfit('bezorger')}},{snd:'grab'},{anim:'giovanni',a:'point',prop:null},
+   {fn:()=>G.verteller&&G.verteller('v02')},
    {say:'giovanni',text:"Twee pizza's per tas. Nooit scheef. En lach naar de klant, dan krijg je fooi.",t:3.4},
    {say:'giovanni',text:'Drie bestellingen. Een student, meneer De Wit — die wil praten, laat hem praten — en een kantoor op de Zuidas.',t:4},
    {say:'luca',text:'De Zuidas? Dat is aan de andere kant van de stad.',t:2.4},
@@ -355,7 +383,7 @@ stap('h1_sahara',{async start(o){const t=nieuw();fietsAf();const sch=G.fiets?G.f
    // binnen: de camera glijdt door de zaal
    {actor:'luca',at:W('sahara',11.1,25.6),ry:PI,dozen:4},{fn:()=>{const a=C.acteur('luca');if(a)a.g.binnenId=1}},
    cam(...W3('sahara',11,3.4,27.2),...W3('sahara',10,1.4,18)),{fade:'in',t:.8},
-   camNaar(...W3('sahara',17,2.6,22),...W3('sahara',6,1.2,16),5,{wacht:false}),
+   camNaar(...W3('sahara',17,2.6,22),...W3('sahara',6,1.2,16),9,{wacht:false}),{fn:()=>G.verteller&&G.verteller('v03')},
    {say:null,text:'Paars en goud licht. Rook van waterpijpen. Lage banken, een DJ in de hoek, voetbal op een groot scherm.',t:4},
    {move:'luca',to:W('sahara',4.6,17.6),t:3.4,anim:'carry'},
    {fn:()=>{stapelOp(B.plek('sahara','bar'),4)}},{anim:'luca',a:'idle',dozen:0},
@@ -382,7 +410,7 @@ stap('h1_ronde3',{doel:'De bar is leeg. Breng de laatste doos naar achteren',
   async aankomst(){const t=nieuw();const p=B.plek('sahara','tafel_achter');await G.draag.af({binnen:'sahara',plek:'tafel_achter'});if(t!==RUN)return;
    const r=C.acteur('rafiq');
    await C.play([cam(...W3('sahara',10.4,2.4,5.6),...W3('sahara',6,1.1,3)),
-    {snd:'telmachine'},{say:null,text:'Stapels geld. Een telmachine die ratelt — en stopt. Dozen die je niet hoort te zien. Het wordt stil.',t:4},
+    {snd:'telmachine'},{fn:()=>G.verteller&&G.verteller('v04')},{say:null,text:'De telmachine stopt. Het wordt stil.',t:2.4},
     {anim:'rafiq',a:'sit',naar:'luca'},cam(...W3('sahara',3.0,2.3,5.4),...W3('sahara',6.4,1.2,3.6)),
     {say:'luca',text:'Eh… mezze. Eet smakelijk.',t:2,mood:'bang'},{wait:.6}]);
    G.story.doel('Loop naar buiten',null);F('ronde3',1);go('h1_eruit')}});
@@ -393,7 +421,7 @@ stap('h1_hejongen',{muziek:'lounge',async start(o){const t=nieuw();await buiten(
   const d=A('sahara',655,909),l=P(),ld=walk(l.x+(l.x-d.x)*.4,l.z+(l.z-d.z)*.4,3);
   const nieuws=F('nieuwsgierig');
   const r1=await C.play([{speler:false},{actor:'luca',at:[ld.x,ld.z],ry:naar(d,ld)},{actor:'rafiq',at:[d.x,d.z],ry:naar(d,ld),anim:'leun'},
-   rond(ld.x,ld.z,naar(d,ld)+.4,3.4,1.5,1.4),{fade:'in',t:.3},{wait:.6},
+   rond(ld.x,ld.z,naar(d,ld)+.4,3.4,1.5,1.4),{fade:'in',t:.3},{fn:()=>G.verteller&&G.verteller('v05')},{wait:.3},
    {say:'rafiq',text:'Hé, jongen. Kom eens even terug.',t:2.6,mood:'koel'},
    {anim:'luca',a:'turn',ry:naar(ld,d)},rond(d.x,d.z,naar(d,ld)-.5,4,1.7,1.5),
    {move:'rafiq',to:[(d.x+ld.x)/2,(d.z+ld.z)/2],t:1.8},{anim:'rafiq',a:'give',prop:'geld',naar:'luca'},
@@ -456,8 +484,8 @@ stap('h1_verstop',{muziek:'thuis',doel:'Verstop het geld in je kamer',start(o){c
    if(!Object.keys(PL).length)go('h1_nacht')})},stop(){Object.keys(SP).filter(s=>s.startsWith('vs_')).forEach(spotWeg)}});
 
 stap('h1_nacht',{muziek:'thuis',async start(o){const t=nieuw();await binnen('thuis');if(t!==RUN)return;
-  await C.play([{fade:'out',t:.8},{say:null,text:'Luca ligt wakker. Hij hoort de deur van de flat dichtgaan: mama gaat naar haar dienst. Buiten rijdt een scooter voorbij. Hij telt het geld in zijn hoofd. Opnieuw. En opnieuw.',t:5},
-   {fn:()=>{ST.avond(2);ST.tijd(16,30)}},{titel:'Avond 2',sub:"Iets extra's",t:3},{fade:'in',t:.8}]);
+  await C.play([{fade:'out',t:.8},{say:null,text:'De deur van de flat valt dicht: mama gaat naar haar nachtdienst. Buiten rijdt een scooter voorbij.',t:3.4},{fn:()=>G.verteller&&G.verteller('v06')},
+   {fn:()=>{ST.avond(2);ST.tijd(16,30)}},{titel:'Avond 2',sub:"Iets extra's",t:3},{fn:()=>G.verteller&&G.verteller('v07')},{fade:'in',t:.8}]);
   if(t!==RUN)return;go('h2_tas')}});
 
 /* ======================= AVOND 2 · Iets extra's ======================= */
@@ -496,7 +524,7 @@ stap('h2_ritten',{doel:'Vier adressen: twee gewone, twee met iets extra’s',asy
 async function agent(t){const l=P(),q=voor(7,1.6);G.verhaalSfeer&&G.verhaalSfeer.zet('spanning');
   const r1=await C.play([{actor:'agent',at:[q.x,q.z],ry:naar(q,l),anim:'handenop'},{snd:'whistle'},rond(q.x,q.z,naar(q,l)+.7,6,2,1.3),
    {say:'agent',text:'Ho! Stop eens even, jongeman.',t:2},rond(l.x,l.z,(l.ry||0)+PI*.75,3,1.6,1.3),
-   {say:'agent',text:'Je achterlicht doet het niet. Weet je wat dat kost?',t:2.6},
+   {say:'agent',text:'Je achterlicht doet het niet. Weet je wat dat kost?',t:2.6},{fn:()=>G.verteller&&G.verteller('v08')},
    {keuze:[{t:'"Sorry, agent. Ik had het niet gezien."',id:'rustig'},{t:'"Ik heb haast, man."',id:'haast'},{t:'Wegfietsen',id:'weg',sub:'Hitte omhoog'}],wie:'luca',text:''}],{blijf:true});
   if(t!==RUN){C.weg('agent');return}
   if(r1==='weg'){await C.play([{snd:'whistle'},{say:'agent',text:'HÉ! Blijf staan!',t:1.4,mood:'boos'}]);C.weg('agent');F('agent','gevlucht');ST.meter('hitte',12);
@@ -585,7 +613,7 @@ stap('h3_tellen',{doel:'Rafiq wil je spreken in Lounge Sahara',waar:()=>{const a
     {say:'rafiq',text:'Ga zitten. Ik laat je iets zien.',t:2},
     rond(rp[0],rp[1],.6,1.6,1.4,.9),{anim:'rafiq',a:'tel',prop:'geld'},{snd:'telmachine'},
     {say:'rafiq',text:'Een rol tel je zonder te kijken. Met je duim. Twintig, veertig, zestig…',t:3.2},
-    {say:'rafiq',text:'Geld is stil. Mensen praten. Onthoud dat.',t:2.6,mood:'koel'},
+    {say:'rafiq',text:'Geld is stil. Mensen praten. Onthoud dat.',t:2.6,mood:'koel'},{fn:()=>G.verteller&&G.verteller('v09')},
     {say:'rafiq',text:'Nu jij. En let op: er zit vals tussen. Verkeerde kleur, geen strip.',t:3}],{blijf:true});
    if(t!==RUN)return;G.frozen=1e9;const res=await tellen();G.frozen=0;if(t!==RUN)return;
    const sc=res.score;ST.meter('loy_rafiq',sc>=80?8:sc>=50?4:-2);F('tellen',sc);
@@ -643,11 +671,11 @@ async function novaScene(t,st){const v=st._vol;if(!v)return;const l=P();
   await C.play([cam(l.x+sin(l.ry)*1.2,1.1,l.z+cos(l.ry)*1.2,v.x,1.5,v.z),{snd:'heart'},
    {say:null,text:'In het rode schijnsel van je achterlicht: een figuur. Een masker. Hij staat stil als jij stilstaat.',t:3.6},
    camNaar(v.x+sin(l.ry)*3,1.6,v.z+cos(l.ry)*3,v.x,1.5,v.z,1.4),{say:'luca',text:'Hallo? …Wie is daar?',t:2,mood:'bang'},
-   {fn:()=>{v.loop(v.x-sin(l.ry)*10,v.z-cos(l.ry)*10,{t:1.6})}},{wait:1.2},{say:null,text:'Weg. Alleen de mist en de zee.',t:2.4}]);
+   {fn:()=>{v.loop(v.x-sin(l.ry)*10,v.z-cos(l.ry)*10,{t:1.6})}},{wait:1.2},{say:null,text:'Weg. Alleen de mist en de zee.',t:2.4},{fn:()=>G.verteller&&G.verteller('v10')}]);
   volgerWeg(st);F('nova_gezien',1);ST.meter('hitte',2)}
 
 /* ======================= AVOND 4 · Het verkeerde huis ======================= */
-stap('h4_start',{async start(o){const t=nieuw();await C.play([{fade:'out',t:.8},{say:null,text:'Luca slaapt tot twaalf uur. Hij droomt niet.',t:2.6},{fn:()=>{ST.avond(4);ST.tijd(21,30)}},{titel:'Avond 4',sub:'Het verkeerde huis',t:3.2},{fade:'in',t:.8}]);
+stap('h4_start',{async start(o){const t=nieuw();await C.play([{fade:'out',t:.8},{say:null,text:'Luca slaapt tot twaalf uur. Hij droomt niet.',t:2.6},{fn:()=>{ST.avond(4);ST.tijd(21,30)}},{titel:'Avond 4',sub:'Het verkeerde huis',t:3.2},{fn:()=>G.verteller&&G.verteller('v11')},{fade:'in',t:.8}]);
   if(t!==RUN)return;go('h4_rit')}});
 stap('h4_rit',{muziek:'spanning',doel:'Laatste rit: een rijtjeshuis in Oud-Zuid',waar:()=>{const a=A('rijtjeshuis',858,754);return {x:a.x,z:a.z,r:8}},
   start(o){zorgFiets();dienstAan(false);B.slot('rijtjeshuis',true,'Je hebt hier niks te zoeken');this._stil=false;tijd(21,40);
@@ -687,7 +715,7 @@ stap('h4_binnen',{async start(o){const t=nieuw();fietsAf();if(G.fiets)G.fiets.la
    {say:'nova_m',text:tel.stoer>=2?'Grote mond voor zo’n klein ventje.':'Het is nog maar een jong ventje. Hij weet niet eens wat hij vervoert.',t:3},
    {fn:()=>G.verhaalSfeer&&G.verhaalSfeer.zet('ray')},{snd:'door'},{actor:'ray',at:W('rijtjeshuis',2.0,9.6),ry:naar({x:W('rijtjeshuis',2,9.6)[0],z:W('rijtjeshuis',2,9.6)[1]},L)},{fn:()=>{const a=C.acteur('ray');if(a)a.g.binnenId=1}},
    cam(...W3('rijtjeshuis',5.4,2.4,4.2),...W3('rijtjeshuis',2.0,1.4,9.6)),
-   {say:null,text:'Een grote, kalme man komt binnen. Zonder masker. Iedereen gaat rechtop staan.',t:3.2},
+   {say:null,text:'Een grote, kalme man komt binnen. Zonder masker. Iedereen gaat rechtop staan.',t:3.2},{fn:()=>G.verteller&&G.verteller('v12')},
    {anim:'masker',a:'idle'},{anim:'masker2',a:'idle'},{anim:'nova_m',a:'idle'},
    {move:'ray',to:[lp[0]-.9,lp[1]+.5],t:2.2},{anim:'ray',a:'hurk',naar:'luca'},rond(lp[0],lp[1],PI*.75,2.3,1.4,1.0),
    {say:'ray',text:'Hoe heet je?',t:1.6,mood:'koel'},{say:'luca',text:'…Luca.',t:1.4,mood:'bang'},
@@ -722,7 +750,7 @@ stap('h4_einde',{muziek:'ray',async start(o){const t=nieuw();await buiten();if(t
    {actor:'ray',at:[R.x,R.z],ry:0,anim:'leun'},cam(R.x+5,2.2,R.z+5,R.x,1.5,R.z),{fade:'in',t:.6},{wait:2},{fade:'out',t:.4},
    {actor:'bakker',at:[pol.x,pol.z+3],ry:PI,look:{skin:'#e8c4a0',hair:'#8a8478',hs:'kort',eye:'#3a4a60',mood:'koel',top:{kind:'suit',c:'#3a3f48',c2:'#e8e4da'},legs:{kind:'jeans',c:'#3a3f48'},shoes:{kind:'boot',c:'#1a1a1c'}},anim:'point'},
    cam(pol.x+3,1.8,pol.z+6,pol.x,1.5,pol.z+3),{fade:'in',t:.4},{say:null,text:'Rechercheur Bakker prikt een foto op een bord. Een jongen in een rode jas.',t:3},{fade:'out',t:.4},
-   cam(H.x+90,70,H.z+110,H.x,4,H.z),{fade:'in',t:.4},camNaar(H.x-40,30,H.z+50,H.x,2,H.z,3.4),{fade:'out',t:.5},{dream:false},
+   cam(H.x+90,70,H.z+110,H.x,4,H.z),{fade:'in',t:.4},camNaar(H.x-40,30,H.z+50,H.x,2,H.z,7.5,{wacht:false}),{fn:()=>G.verteller&&G.verteller('v13')},{fade:'out',t:.5},{dream:false},
    {titel:'Seizoen 2',sub:G.h2&&G.h2.live&&G.h2.live()?'Twee bazen':'Coming soon',t:3.6},{weg:'ray'},{weg:'bakker'},{speler:true},{fade:'in',t:1}]);
   if(t!==RUN)return;F('h1_klaar',Date.now());if(G.h2&&G.h2.live&&G.h2.live()&&G.h2.mag&&G.h2.mag()){G.h2.begin();return}go('h1_vrij');seizoen2()}});
 
@@ -771,7 +799,7 @@ const iv=setInterval(()=>{if(!G.ready||!G.story||!G.cut||!G.binnen||!G.story.ste
   ST=G.story;C=G.cut;B=G.binnen;K=G.kit;
   try{cast()}catch(e){console.error(e)}css();
   // Sahara is dicht tot de grote bestelling (behalve als je al verder bent)
-  const s=ST.st();const vroeg=['start','h1_klas','h1_naarbuiten','h1_plein','h1_fiets','h1_napoli','h1_giovanni','h1_ritten','h1_dief','h1_terug','h1_grote'];
+  const s=ST.st();const vroeg=['start','h1_klas','h1_naarbuiten','h1_plein','h1_onderweg','h1_fiets','h1_napoli','h1_giovanni','h1_ritten','h1_dief','h1_terug','h1_grote'];
   if(vroeg.includes(s.step))B.slot('sahara',true,'Lounge Sahara · alleen op uitnodiging');
   if(!['h4_rit','h4_binnen'].includes(s.step))B.slot('rijtjeshuis',true,'Je hebt hier niks te zoeken');
   registreer();

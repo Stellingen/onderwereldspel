@@ -88,7 +88,8 @@ G.onLight=function(o){L0=o;const day=o.day,night=o.night,S0=sunTimes(),hr=G.forc
   c=c.map((v,i)=>mix(v,SKY.gold[i],gold*.55));c=c.map((v,i)=>mix(v,[.56,.7,.9][i],warm*.45));c=c.map((v,i)=>mix(v,SKY.rain[i]*(.3+.7*day)*1.12,grey*.38));
   c=c.map((v,i)=>mix(v,SKY.rain[i]*(.25+.75*day)*(1-.22*wind),Math.max(rain,snow*.6)*.75));c=c.map((v,i)=>mix(v,SKY.mist[i]*(.3+.7*day),mist*.85));
   const sky=new TH.Color().setRGB(c[0],c[1],c[2]);o.scene.background=sky;o.scene.fog.color=sky;
-  if(!G.camK||G.camK<1.5){o.scene.fog.near=mix(mix(70,40,rain*(.7+.3*wind)),20,mist);o.scene.fog.far=mix(mix(190,120,Math.max(rain*(.8+.2*wind),snow*.5)),92,mist)}
+  if(G.fogVer){o.scene.fog.near=G.fogVer[0];o.scene.fog.far=G.fogVer[1]}   // cutscène met wijde shots: verder kijken
+  else if(!G.camK||G.camK<1.5){o.scene.fog.near=mix(mix(70,40,rain*(.7+.3*wind)),20,mist);o.scene.fog.far=mix(mix(190,120,Math.max(rain*(.8+.2*wind),snow*.5)),92,mist)}
   o.hemi.intensity=(.78+.95*day)*(1-.18*rain)*(1-.06*grey)*(1+.06*warm)*(1-.16*wind*rain);o.hemi.color.setRGB(mix(.5,1,day),mix(.62,1,day)-gold*.08,mix(1,1,day)-gold*.22-warm*.06);o.hemi.groundColor.setRGB(.22+.14*day,.22+.12*day,.3-.04*day);
   baseSun=(.34+2.0*day)*(1-.55*rain)*(1-.5*mist)*(1-.3*snow)*(1-.22*grey)*(1+.12*warm);o.sun.intensity=baseSun;sunCol.setRGB(mix(.55,1,day),mix(.68,.97,day)-gold*.25-warm*.02,mix(1,.93,day)-gold*.5-warm*.1);o.sun.color.copy(sunCol);
   if(o.post){const u=o.post.material.uniforms,ft=G.fotoTint||[1,1,1];u.uTint.value.set((mix(.9,1,day)+gold*.07+warm*.035)*ft[0],(mix(.97,1,day)+gold*.0+warm*.01)*ft[1],(mix(1.12,1,day)-gold*.1+rain*.04-warm*.04+grey*.02)*ft[2]);
