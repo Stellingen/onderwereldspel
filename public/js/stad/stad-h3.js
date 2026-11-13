@@ -40,15 +40,15 @@ const SOORT={
   agent:{n:'Agent in burger',hint:['Nette schoenen, kijkt telkens om','Oortje, vraagt "wat heb je allemaal?"','Te schoon, te rustig, staat te lang stil'],goed:['weiger','weg']},
   concurrent:{n:'Iemand van de concurrent',hint:['Vraagt naar je prijs en je leverancier','Koopt niks, kijkt naar je uitkijkers','Tatoeage van de Hoek-boys op zijn hand'],goed:['weg']}};
 function hoekDienst(o){o=o||{};return new Promise(res=>{L.css();const n=o.n||6;const reeks=o.reeks||Array.from({length:n},(_,i)=>i===2?'agent':pick(['student','student','verslaafde','student','concurrent','verslaafde']));
-  let voorraad=o.voorraad||10,geld=0,hitte=0,i=0,fout=0,klaar=false;const prijs=o.prijs||40;
+  let voorraad=o.voorraad||10,geld=0,hitte=0,i=0,fout=0,klaar=false,bezig=false;const prijs=o.prijs||40;
   const el=L.mgOpen(`<h4>De hoek · ${o.titel||'jouw portiek'}</h4><p>Lees de klant. Agent in burger? Weigeren. Concurrent? Wegsturen.</p>
     <div class="h1-hp"><span id="h3n">Klant 1/${n}</span><span id="h3v">Voorraad ${voorraad}</span><span id="h3g">€0</span></div>
     <div class="h3-k" style="background:#1d1924;border:2px solid #3a3442;padding:10px;margin:8px 0;min-height:64px"><b id="h3s" style="font-size:15px"></b><div id="h3h" style="color:#c9c4b8;font-size:13px;margin-top:4px"></div><div id="h3w" style="color:#ffd35a;font-size:12px;margin-top:4px"></div></div>
     <div class="h1-warn" id="h3r"></div>
     <div class="h1-knop"><button data-a="verkoop">Verkopen<kbd>${touch?'':'1'}</kbd></button><button data-a="duur" style="background:#ff9a5a;border-color:#b86a3a">Duurder<kbd>${touch?'':'2'}</kbd></button><button class="b" data-a="weiger">Weigeren<kbd>${touch?'':'3'}</kbd></button><button class="r" data-a="weg">Wegsturen<kbd>${touch?'':'4'}</kbd></button></div>`,'hoek');
-  const show=()=>{const k=reeks[i],S=SOORT[k];el.querySelector('#h3n').textContent='Klant '+(i+1)+'/'+n;el.querySelector('#h3s').textContent='Iemand komt aanlopen…';el.querySelector('#h3h').textContent=pick(S.hint);
+  const show=()=>{if(klaar||i>=reeks.length)return;bezig=false;const k=reeks[i],S=SOORT[k]||SOORT.student;el.querySelector('#h3n').textContent='Klant '+(i+1)+'/'+n;el.querySelector('#h3s').textContent='Iemand komt aanlopen…';el.querySelector('#h3h').textContent=pick(S.hint);
     el.querySelector('#h3w').textContent=o.waarschuw&&o.waarschuw(k,i)||'';el.querySelector('#h3r').textContent='';L.fx('step')};
-  const kies=a=>{if(klaar)return;const k=reeks[i],S=SOORT[k],ok=S.goed.includes(a);const r=el.querySelector('#h3r');
+  const kies=a=>{if(klaar||bezig)return;bezig=true;const k=reeks[i],S=SOORT[k]||SOORT.student,ok=S.goed.includes(a);const r=el.querySelector('#h3r');
     if(k==='agent'&&(a==='verkoop'||a==='duur')){hitte+=25;fout++;r.textContent='Het was een agent in burger. Hij noteert je gezicht.';r.className='h1-warn';L.fx('bad')}
     else if(k==='concurrent'&&a!=='weg'){fout++;hitte+=5;r.textContent=a==='verkoop'||a==='duur'?'Hij koopt, en weet nu je prijs.':'Hij blijft rondhangen en telt je uitkijkers.';r.className='h1-warn';L.fx('jank')}
     else if((a==='verkoop'||a==='duur')&&voorraad>0){const p=a==='duur'?(k==='student'&&Math.random()<.75?prijs*1.5:0):(k==='verslaafde'?prijs*.6:prijs);
