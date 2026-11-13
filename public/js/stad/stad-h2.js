@@ -90,7 +90,7 @@ function cast(){const CA=C.actors;const mk=(id,n,rol,col,look,face,o)=>{if(!CA[i
 // elke missie: async (t) → klaar. t = RUN-teken; als het verhaal ondertussen verder springt, stoppen we.
 let RUN=0;const nieuw=()=>++RUN;
 function doelNaar(tekst,p,r,o){o=o||{};return new Promise(res=>{ST.doel(tekst,p.binnen?p:{x:p.x,z:p.z});const t0=RUN;const iv=setInterval(()=>{if(RUN!==t0){clearInterval(iv);res(false);return}
-  if(G.cut&&G.cut.active())return;const w=B.waar();if(p.binnen?w===p.binnen&&(p.x==null||Math.hypot(G.P.x-p.x,G.P.z-p.z)<(r||2)):(!w&&Math.hypot(G.P.x-p.x,G.P.z-p.z)<(r||8))){clearInterval(iv);if(o.fietsAf!==false)L.fietsAf();res(true)}},250)})}
+  if(G.cut&&G.cut.active())return;const w=B.waar();if(p.binnen?w===p.binnen&&(p.x==null||Math.hypot(G.P.x-p.x,G.P.z-p.z)<(r||2)):(!w&&Math.hypot(G.P.x-p.x,G.P.z-p.z)<(r||8))){clearInterval(iv);if(o.fietsAf!==false)L.fietsAf();ST.doel(null);res(true)}},250)})}
 const pct=()=>L.F('aanbod')||20;
 // over de schouder van a naar b kijken (camera achter a, een stukje opzij en hoger)
 function schouder(a,b,d,zij,h){const dx=a.x-b.x,dz=a.z-b.z,n=Math.hypot(dx,dz)||1,ux=dx/n,uz=dz/n;d=d||3.2;zij=zij==null?1.2:zij;h=h||2.4;

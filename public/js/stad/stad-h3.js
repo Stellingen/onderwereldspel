@@ -6,7 +6,7 @@
 // Release: LIVE hieronder. Zolang die uit staat, ziet de speler na Seizoen 2 "coming soon" (stad-h2.js).
 (function(){
 'use strict';
-const LIVE=false;
+const LIVE=true;
 const G=window.STAD,M=window.STAD_MAP,TH=window.THREE;if(!G||!M||!TH)return;
 const $s=id=>document.getElementById(id);
 const touch=matchMedia('(pointer:coarse)').matches;
@@ -18,7 +18,7 @@ G.h3={live,mag,begin:()=>{if(!ST||!mag())return false;const s=ST.st();s.ch=3;try
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 let RUN=0;const nieuw=()=>++RUN;
 function doelNaar(tekst,p,r){return new Promise(res=>{ST.doel(tekst,{x:p.x,z:p.z});const t0=RUN;const iv=setInterval(()=>{if(RUN!==t0){clearInterval(iv);res(false);return}
-  if(G.cut&&G.cut.active())return;if(!B.waar()&&Math.hypot(G.P.x-p.x,G.P.z-p.z)<(r||8)){clearInterval(iv);L.fietsAf();res(true)}},250)})}
+  if(G.cut&&G.cut.active())return;if(!B.waar()&&Math.hypot(G.P.x-p.x,G.P.z-p.z)<(r||8)){clearInterval(iv);L.fietsAf();ST.doel(null);res(true)}},250)})}
 const baas=()=>L.F('envelop')==='verraden'?'ray':'rafiq';   // wie levert je hoek (hoofdstuk 1)
 
 /* =================== cast erbij =================== */
@@ -109,12 +109,19 @@ async function mCrew(t){const S=L.A('speeltuin',198,413);if(!await doelNaar('Er 
     L.F('crew',win?'weggejaagd':'verloren');ST.koers(6,'straat');ST.meter('hitte',6);ST.meter('loy_dex',win?6:2);if(!win)ST.meter('imago',-3)}
   await C.play([{fade:'out',t:.3},{weg:'hoekbaas'},{weg:'masker2'},{weg:'oudere_jongen'},{weg:'dex'},{weg:'luca'},{speler:true},{fade:'in',t:.3}])}
 
-async function mBakker(t){const p=L.A('politie',655,349);
-  await C.play([{fade:'out',t:.6},{speler:false},{actor:'bakker',at:[p.x+1,p.z+3],ry:PI,anim:'point'},{actor:'collega',at:[p.x+2.6,p.z+4.4],ry:PI*1.2,prop:'telefoon'},
-   L.cam(p.x+3.6,1.9,p.z+7.2,p.x+1,1.5,p.z+3),{fade:'in',t:.6},{say:null,text:'Hoofdbureau. Een kantoor met koffievlekken. Op een kurken bord: foto’s, lijntjes, namen. Rafiq. Ray. Een grote lege plek in het midden.',t:4.4},
+// het bord van de recherche: kurk, foto's, rode draadjes, en in het midden een jongen in een rode jas
+function bord(x,z,ry){const g=new TH.Group(),m=c=>new TH.MeshLambertMaterial({color:c}),b=(w,h,d,c,px,py,pz)=>{const o=new TH.Mesh(new TH.BoxGeometry(w,h,d),m(c));o.position.set(px,py,pz);g.add(o);return o};
+  b(2.6,1.6,.08,'#a8763e',0,1.55,0);b(2.7,.08,.1,'#3a2a1a',0,2.38,0);b(2.7,.08,.1,'#3a2a1a',0,.72,0);b(.08,1.8,.08,'#3a2a1a',-1.1,.9,.06);b(.08,1.8,.08,'#3a2a1a',1.1,.9,.06);
+  [[-.9,1.95,'#c9c4b8'],[-.9,1.25,'#c9c4b8'],[.85,1.9,'#c9c4b8'],[.85,1.2,'#c9c4b8']].forEach(([px,py,c])=>{b(.36,.42,.02,c,px,py,.05);b(.24,.2,.02,'#5a4a3a',px,py+.04,.06)});
+  b(.46,.54,.02,'#f1efe9',0,1.55,.05);b(.3,.3,.02,'#c0261e',0,1.5,.06);b(.16,.14,.02,'#c8956a',0,1.7,.07);
+  [[-.9,1.95],[-.9,1.25],[.85,1.9],[.85,1.2]].forEach(([px,py])=>{const d=Math.hypot(px,py-1.55),o=b(d,.02,.01,'#d8231a',px/2,(py+1.55)/2,.07);o.rotation.z=Math.atan2(py-1.55,px)});
+  g.position.set(x,0,z);g.rotation.y=ry;G.scene().add(g);return g}
+async function mBakker(t){const p0=L.A('politie',655,349),p=L.walk(p0.x+3,p0.z+5,6);const brd=bord(p.x,p.z+2.4,PI);
+  await C.play([{fade:'out',t:.6},{speler:false},{actor:'bakker',at:[p.x-.3,p.z+.9],ry:0,anim:'point'},{actor:'collega',at:[p.x+1.3,p.z+.3],ry:-.4,prop:'telefoon'},
+   L.cam(p.x+4.6,2.1,p.z-.8,p.x,1.5,p.z+2.2),{fade:'in',t:.6},{say:null,text:'Hoofdbureau. Een kantoor met koffievlekken. Op een kurken bord: foto’s, lijntjes, namen. Rafiq. Ray. Een grote lege plek in het midden.',t:4.4},
    {say:'collega',text:'Deze komt van een bewakingscamera bij de Boulevard. Een jongen met een rode fietsjas. Steeds op dezelfde avonden bij Sahara.',t:3.8},
    {anim:'bakker',a:'point'},{say:'bakker',text:'Een pizzajongen.',t:1.6,mood:'koel'},{say:null,text:'Inspecteur Bakker prikt de korrelige foto midden op het bord.',t:2.6},
-   {say:'bakker',text:'Wie ben jij?',t:2,mood:'koel'},{fade:'out',t:.8},{weg:'bakker'},{weg:'collega'},{speler:true},{fade:'in',t:.6}]);
+   L.cam(p.x+.6,1.6,p.z+.9,p.x,1.55,p.z+2.4),{say:'bakker',text:'Wie ben jij?',t:2,mood:'koel'},{fade:'out',t:.8},{weg:'bakker'},{weg:'collega'},{fn:()=>brd.parent&&brd.parent.remove(brd)},{speler:true},{fade:'in',t:.6}]);
   ST.meter('dossier',8);L.F('bakker_bord',1)}
 
 async function mHoek2(t){const P0=L.A('portiek',182,390);if(!await doelNaar('Tweede avond op de hoek',P0,5))return;L.tijd(18,30);const hielp=L.F('sami');
