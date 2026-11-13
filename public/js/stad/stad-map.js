@@ -280,7 +280,7 @@ for(let k=0;k<6;k++){const x=c7x0+3+(k%3)*8,z=r1z0+4+Math.floor(k/3)*9;prop('wre
 const POL=places.find(p=>p.id==='politie');[-12,-4,4,12].forEach(o=>prop('police',(POL.x0+POL.x1)/2+o,POL.z1+5,{rot:1}));
 const PLEIN={x0:c6x0,z0:r3z0,x1:c6x1,z1:r3z1,x:(c6x0+c6x1)/2-4,z:(r3z0+r3z1)/2+4};
 prop('statue',PLEIN.x,PLEIN.z,{solid:2.2});
-for(let i=0,n=0;i<6000&&n<60;i++){const x=20+rng()*760,z=20+rng()*620;if(at(x|0,z|0)===T.PARK&&free(x,z,1.4)){n++;prop('bench',x,z,{rot:ri(0,3),solid:.6})}}
+for(let i=0,n=0;i<6000&&n<60;i++){const x=20+rng()*760,z=20+rng()*620;if(at(x|0,z|0)===T.PARK&&free(x,z,1.4)){const rot=ri(0,3);if(onPath(x,z,1))continue;n++;prop('bench',x,z,{rot,solid:.6})}}
 // heg om Villa Cosa Nostra, muur om de bajes (met poort)
 (function(){const hedge=(x0,z0,x1,z1)=>{for(let x=x0;x<x1;x+=2)for(let z=z0;z<z1;z+=2)prop('hedge',x+1,z+1,{})};
   hedge(668,574,764,576);hedge(668,574,670,603);hedge(762,574,764,603);hedge(668,601,710,603);hedge(722,601,764,603);

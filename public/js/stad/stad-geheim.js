@@ -44,7 +44,7 @@ const SEC=[
   out:'Een goede daad. In deze stad is dat ook een soort geld.',k:1,xp:10,
   steps:[{t:'mini',p:[76,112.2],game:'hold',d:3,vak:'klus',act:'Band wisselen',txt:'Wissel de <b>band</b> van de auto'},
    {t:'talk',who:'mevrouw',mood:'blij',lines:['Wat ben jij handig! Hier, voor de moeite. Zeg maar niks tegen mijn man.'],txt:'Praat met <b>mevrouw Van Dam</b>'}]},
- {id:'g_brief',n:'De envelop onder het bankje',where:'Noorderpark',at:[308.8,136.5],obj:'envelop',label:'Een envelop',
+ {id:'g_brief',n:'De envelop onder het bankje',where:'Noorderpark',at:[300,140],bench:1,obj:'envelop',label:'Een envelop',
   intro:['Onder het bankje zit een envelop vastgeplakt.','Op de achterkant: "Pier. Vraag naar Mo." Er zit een sleuteltje in.'],yes:'Naar de pier',
   out:'Een envelop, een pakje en een nieuwe connectie op de Oosterstraat.',k:3,xp:20,
   steps:[{t:'go',p:[596,24],r:6,txt:'Ga naar <b>de pier</b> in de haven'},
@@ -57,17 +57,17 @@ const SEC=[
   steps:[{t:'mini',p:[250,522],game:'timing',act:'Kies een bekertje',o:{title:'Balletje-balletje',sub:'Druk als het streepje bij het balletje is',n:3,sp:2,w:.16,label:'Die!',vak:'graaien'},txt:'Volg het <b>balletje</b>'},
    {t:'talk',who:'gokker',mood:'boos',lines:['Eh... dat telt niet. Je keek vals. Geen geld voor jou.'],txt:'Haal je winst op'},
    {t:'fight',who:'gokker',name:'De bekertjesman',hp:70,win:.7,txt:'Hij wil niet betalen. <b>Overtuig hem</b>'}]},
- {id:'g_crew',n:'De Natte Verf',where:'Oosterstraat',at:[560.5,469],who:'spuiter',
+ {id:'g_crew',n:'De Natte Verf',where:'Oosterstraat',at:[560.5,463],who:'spuiter',
   intro:['Jij ziet eruit alsof je een spuitbus vast kunt houden. Wij zijn De Natte Verf.','Drie muren in deze steeg, anderhalve minuut. Lukt het, dan hoor je bij ons.'],yes:'Geef die bus',
   out:'Je tag staat nu naast die van De Natte Verf. Dat zegt iets in deze buurt.',k:2,xp:15,
-  steps:[{t:'mini',p:[559.5,476],game:'timing',act:'Tag zetten',o:{title:'Tag zetten',sub:'Druk als het streepje in het groen staat',n:3,sp:1.4,w:.2,label:'Spuit!',vak:'tag'},timer:90,txt:'Zet je <b>eerste tag</b>'},
-   {t:'mini',p:[559.5,487],game:'timing',act:'Tag zetten',o:{title:'Tag zetten',sub:'Sneller nu',n:3,sp:1.6,w:.19,label:'Spuit!',vak:'tag'},txt:'Nu de <b>tweede</b>'},
-   {t:'mini',p:[558.5,496],game:'timing',act:'Tag zetten',o:{title:'Tag zetten',sub:'De laatste',n:4,sp:1.7,w:.18,label:'Spuit!',vak:'tag'},txt:'En de <b>derde</b>'},
+  steps:[{t:'mini',p:[559.7,467],game:'timing',act:'Tag zetten',o:{title:'Tag zetten',sub:'Druk als het streepje in het groen staat',n:3,sp:1.4,w:.2,label:'Spuit!',vak:'tag'},timer:90,txt:'Zet je <b>eerste tag</b>'},
+   {t:'mini',p:[554,480.8],game:'timing',act:'Tag zetten',o:{title:'Tag zetten',sub:'Sneller nu',n:3,sp:1.6,w:.19,label:'Spuit!',vak:'tag'},txt:'Nu de <b>tweede</b>'},
+   {t:'mini',p:[557.8,500],game:'timing',act:'Tag zetten',o:{title:'Tag zetten',sub:'De laatste',n:4,sp:1.7,w:.18,label:'Spuit!',vak:'tag'},txt:'En de <b>derde</b>'},
    {t:'talk',who:'spuiter',timer:0,mood:'blij',lines:['Niet slecht! Welkom bij De Natte Verf. Hier, voor nieuwe bussen.'],txt:'Terug naar <b>Kiki</b>'}]},
  {id:'g_fiets',n:'Fietsendief',where:'De Gracht',at:[351.3,266.7],who:'studente',when:()=>!nacht(),
   intro:['Hij heeft mijn fiets! Die gast daar met de rode pet!','Alsjeblieft, haal hem terug!'],yes:'Ik pak hem',
   out:'Held van de gracht. Voor even.',k:1,xp:15,
-  steps:[{t:'run',who:'fietsdief',at:[356,262],time:35,txt:'<b>Haal de fietsendief in</b>'},
+  steps:[{t:'run',who:'fietsdief',at:[349.5,257],time:35,txt:'<b>Haal de fietsendief in</b>'},
    {t:'fight',who:'fietsdief',name:'De fietsendief',hp:60,win:.72,txt:'Hij wil vechten'},
    {t:'go',p:'studente',r:2.8,txt:'Breng de fiets terug naar de <b>studente</b>'},
    {t:'talk',who:'studente',mood:'blij',lines:['Mijn fiets! Dankjewel! Mijn vader heeft een snackbar. Zeg maar dat ik je stuur.'],txt:'Praat met de studente'}]},
@@ -76,11 +76,11 @@ const SEC=[
   out:'Het busje rijdt weg. In het dashboardkastje lag jouw deel.',k:3,xp:20,
   steps:[{t:'loot',pts:[[106,543],[121,544],[136,543]],kind:'box',timer:75,txt:'Pak de <b>kratten</b> bij de waterlijn'},
    {t:'go',p:[125,512],r:4,txt:'Breng ze naar het <b>busje</b> aan de Boulevard'}]},
- {id:'g_kluis',n:'De bouwkeet',where:'Boulevard',at:[145,463],obj:'keet',label:'Een bouwkeet met licht aan',
-  intro:['De bouwkeet staat op een kier. Binnen staat een kluis met de lonen: morgen is het betaaldag.','Twee bewakers lopen rondjes over het terrein.'],yes:'Ik ga erin',
+ {id:'g_kluis',n:'De bouwkeet',where:'Boulevard',at:[145,463],obj:'keet',label:'Licht op de bouwplaats',
+  intro:['De gele bouwkeet staat op een kier. Binnen staat een kluis met de lonen: morgen is het betaaldag.','Twee bewakers lopen rondjes over het terrein.'],yes:'Ik ga erin',
   out:'De lonen van een hele ploeg. Morgen staat het in de krant.',k:4,xp:25,
-  steps:[{t:'mini',p:[145,482],game:'kluis',d:.42,act:'Kluis kraken',guards:{zone:[124,466,166,503],n:2,R:8},txt:'Sluip naar de <b>kluis</b>. Blijf uit het licht van de bewaking'},
-   {t:'loot',pts:[[146,484]],kind:'cash',guards:1,txt:'Pak de <b>lonen</b>'},
+  steps:[{t:'mini',p:[147.6,482],game:'kluis',d:.42,act:'Kluis kraken',guards:{zone:[124,466,166,503],n:2,R:8},txt:'Sluip naar de <b>kluis</b>. Blijf uit het licht van de bewaking'},
+   {t:'loot',pts:[[147.4,483.6]],kind:'cash',guards:1,txt:'Pak de <b>lonen</b>'},
    {t:'wanted',stars:1,why:'inbraak',txt:'Het alarm gaat! <b>Schud de politie af</b>'}]},
  {id:'g_visser',n:'Wat de zee teruggaf',where:'Het Eiland',at:[760,626],who:'visser',
   intro:['Vannacht zag ik een speedboot iets overboord gooien, vlak bij de westpunt van het eiland.','Mijn rug wil niet meer. Als jij het vindt, delen we.'],yes:'Ik ga kijken',
@@ -110,12 +110,21 @@ const SEC=[
 /* ---------- in de stad: wie er staat, wat er ligt, de cirkel ---------- */
 const open=s=>!done(s.id)&&(!s.when||s.when());
 function setup(){const V=G.verhaal,P0=V.ppl;Object.keys(PPL).forEach(k=>{if(!P0[k])P0[k]=PPL[k]});
-  SEC.forEach(s=>{const p=walk(s.at[0],s.at[1]);s.x=p[0];s.z=p[1];
+  SEC.forEach(s=>{if(s.bench){const pk=M.Z.park,b=M.props.filter(q=>q.k==='bench'&&q.x>pk[0]&&q.x<pk[2]&&q.z>pk[1]&&q.z<pk[3]).sort((a,c)=>Math.hypot(a.x-s.at[0],a.z-s.at[1])-Math.hypot(c.x-s.at[0],c.z-s.at[1]))[0];if(b){s.bx=b.x;s.bz=b.z;s.at=[b.x,b.z]}}
+    const p=walk(s.at[0],s.at[1]);s.x=p[0];s.z=p[1];
     s.def={id:s.id,side:1,n:s.n,where:s.where,k:s.k,xp:s.xp,out:s.out,steps:s.steps,
       pre:s.who?()=>{idleOff(s);return {[s.who]:V.mkActor(s.who,s.x,s.z,{ry:s.ry||0})}}:null};
     s.spot=G.spot({k:'geheim',x:s.x,z:s.z,r:2.6,h:s.who?2.3:1.4,hint:1,hintR:14,col:GOLD,prio:1,
       n:s.who?PPL[s.who].n:s.label,sub:s.who?PPL[s.who].role:'Geheim',show:()=>open(s)&&!busy(),act:()=>talk(s)})});
+  bouwDecor();
   const f0=G.onFrame;G.onFrame=function(dt){f0&&f0(dt);try{frame(dt)}catch(e){console.error(e)}}}
+// de bouwplaats aan de Boulevard: een bouwkeet met licht (daar staat de kluis), pallets en een zandhoop. De keet is vast.
+function bouwDecor(){const z=M.Z&&M.Z.bouw;if(!z)return;const g=new TH.Group(),mat=c=>new TH.MeshLambertMaterial({color:c}),box=(x0,y0,z0,x1,y1,z1,c,basic)=>{const m=new TH.Mesh(new TH.BoxGeometry(x1-x0,y1-y0,z1-z0),basic?new TH.MeshBasicMaterial({color:c}):mat(c));m.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);g.add(m)};
+  const k={x0:148.4,z0:479.6,x1:153,z1:484.6};box(k.x0,0,k.z0,k.x1,2.6,k.z1,0xd6a63e);box(k.x0-.08,2.6,k.z0-.08,k.x1+.08,2.75,k.z1+.08,0x5a5d63);
+  box(k.x0-.05,.05,481.4,k.x0+.02,2.1,482.6,0x3a3c40);box(k.x0-.05,1.2,483.2,k.x0+.02,1.9,484.1,0xfff0a0,1);box(k.x0-.05,1.2,479.9,k.x0+.02,1.9,480.8,0xfff0a0,1);
+  for(let i=0;i<3;i++)box(156,i*.16,470+i*.05,157.4,i*.16+.14,471.2,0x8a6a42);box(126,0,496,129,.9,499,0xc2b28a);box(127,.9,496.8,128.4,1.4,498.2,0xc2b28a);
+  for(let i=0;i<4;i++){const m=new TH.Mesh(new TH.CylinderGeometry(.22,.22,4,8),mat(0x9aa1ab));m.rotation.z=Math.PI/2;m.position.set(160,.22+Math.floor(i/2)*.42,490+(i%2)*.46+(i>1?.23:0));g.add(m)}
+  G.scene().add(g);try{M.setSolid(k,1)}catch(e){}}
 const busy=()=>!!(G.verhaal.run()||(G.mission&&G.mission()));
 // personen: alleen als je in de buurt bent (en ze er mogen zijn); ze kijken je aan
 function idleOff(s){if(s.a){G.verhaal.rmActor(s.a);s.a=null}}
@@ -132,7 +141,7 @@ function objMesh(s){const g=new TH.Group(),mat=c=>new TH.MeshLambertMaterial({co
   else if(s.obj==='envelop'){box(.34,.03,.24,0xe8e4da,0,.5,0);box(.08,.035,.06,0xc8202a,0,.51,0)}
   else if(s.obj==='telefoon'){box(.16,.03,.3,0x151517,0,.02,0);const l=new TH.Mesh(new TH.BoxGeometry(.12,.035,.2),new TH.MeshBasicMaterial({color:0x3fe395}));l.position.set(0,.04,0);g.add(l);s.blink=l}
   else if(s.obj==='keet'){box(.06,1.5,.06,0x3a3c40,.8,.75,.6);const l=new TH.Mesh(new TH.BoxGeometry(.34,.24,.12),new TH.MeshBasicMaterial({color:0xfff0a0}));l.position.set(.8,1.55,.6);g.add(l);box(.5,.06,.5,0x3a3c40,.8,.03,.6)}
-  g.position.set(s.x,0,s.z);g.visible=false;G.scene().add(g);return g}
+  g.position.set(s.bx!=null?s.bx:s.x,0,s.bz!=null?s.bz:s.z);g.visible=false;G.scene().add(g);return g}
 
 /* ---------- aanspreken: wie het is en wat er speelt ---------- */
 function draw(kind){return pc=>{const c=pc.getContext('2d');c.imageSmoothingEnabled=false;c.fillStyle='#1b1c22';c.fillRect(0,0,40,24);const R=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h)};

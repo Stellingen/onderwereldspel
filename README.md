@@ -1579,3 +1579,22 @@ Inspiratie: GTA en Mafia. De Pixelstad blijft een pixelspel, maar speelt nu ook 
   of uit te zetten; L). Alleen gelijke soorten clusteren, labels overlappen niet, kleine dingen worden stipjes als je uitzoomt.
   "Ik ben hier" (H), zoomknoppen, schaalbalk, pijlen aan de rand. Minikaart (192 px) in dezelfde taal met route en randpijl.
   `G.kaart.highlight(x,z,label,{c,ic,sh,id,t,keep,route})` / `G.kaart.unhighlight(id)` laten een plek op beide kaarten pulseren.
+
+### Pixelstad: kaart nagelopen, cirkels bij interacties en geheimen van de stad (november 2026)
+
+- **Kaartfouten**:
+  - Tuinpaden staan nu als data in `M.parkPaths`: een kruis per park-blok, van stoep tot stoep. Ze worden alleen op park- en grastegels getekend, dus niet meer over de weg; het oude pad lag precies op de middenstreep van de weg x=320.
+  - Bomen en bankjes staan niet meer op paden; voor de bomen blijft de random-volgorde gelijk.
+  - Graffiti komt alleen nog op een echte gevel die de hele lengte dekt. Er zweefde één stuk in de lucht in een dubbele steeg op de Noordkade.
+  - Nagelopen met een script (props op weg, in water of in gebouwen, graffiti zonder muur, deuren) en met screenshots van alle wijken.
+- **Cirkels op de grond** (`stad-doen.js`, `hintList`/`hintDraw`):
+  - Plekken waar je iets kunt doen laten vanaf ±16 m een kleine gekleurde cirkel op de grond zien, in plaats van bordjes in de lucht. Dat geldt voor tags, uitkijkpunten, vissen, krant, gevallen lading, hond, beschermgeld, De Kooi, pinautomaat, race, wijkbaas en geheimen.
+  - Sta je in de cirkel, dan zie je wat het is: de grote ring plus het label met E/Tik.
+  - Per spot: `hint:1` (altijd een cirkel) of `hint:0` (nooit), en `hintR` voor de afstand.
+- **Geheimen van de stad** (`stad-geheim.js`):
+  - Twaalf kleine missies die niet op de kaart of minikaart staan. Je vindt ze door rond te lopen: aan een gouden cirkel, een persoon die er staat, of iets wat er ligt (koffer, envelop op een bankje, een telefoon die overgaat, licht op de bouwplaats).
+  - Ze draaien op de verhaalmotor via `G.verhaal.side(def)`. Personen die er al staan geef je mee met `def.pre()`, en `spawn` werkt nu bij elke stap.
+  - Sommige zijn er alleen overdag (lekke band, balletje-balletje, fietsendief), één alleen 's nachts (smokkelaars op het strand).
+  - Elk geheim betaalt één keer: zwart geld via `G.schaal.zwart`, plus XP.
+  - In de telefoon staat onder Verhaal het blok "Geheimen van de stad x van 12", met ??? voor wat je nog niet gevonden hebt. Bewaard in `S.stadVerhaal.d['g_…']` en `S.stadGeheim`.
+  - De bouwplaats aan de Boulevard heeft nu een bouwkeet (vast), pallets, buizen en een zandhoop.
