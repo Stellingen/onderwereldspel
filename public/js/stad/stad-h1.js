@@ -198,6 +198,9 @@ stap('h1_klas',{doel:null,async start(o){const t=nieuw();ST.avond(1);ST.tijd(16,
    {say:'dex',text:'Je kwijlde op je boek, broer. Kom, buiten.',t:2.6,mood:'blij'},
    {fade:'out',t:.5},{weg:'luca'}],{blijfZwart:true});
   if(t!==RUN)return;go('h1_plein')}});
+// oude opslag: 'h2_dex' bestond in Seizoen 1 (avond 2, Dex op de hoek) én in Seizoen 2 (Dex opgepakt). Nu twee namen;
+// wie nog op 'h2_dex' staat, gaat naar de juiste stap van zijn seizoen (dezelfde router staat in stad-h2.js)
+stap('h2_dex',{doel:null,start(){const ch=ST.st().ch||1;setTimeout(()=>go(ch>=2?'h2_dexvast':'h1_dexhoek'),30)}});
 // oude opslag: wie nog 'naar buiten' moest, gaat meteen door naar het schoolplein
 stap('h1_naarbuiten',{doel:null,start(o){setTimeout(()=>go('h1_plein'),50)}});
 
@@ -505,7 +508,7 @@ stap('h2_tas',{muziek:'spanning',doel:'Ga naar de achterkant van Bella Napoli',w
     {fade:'out',t:.4},{speler:true},{fade:'in',t:.4}]);
    ST.inv('pakketje',2);F('tas',1);if(t!==RUN)return;go('h2_ritten')}});
 
-stap('h2_ritten',{doel:'Vier adressen: twee gewone, twee met iets extra’s',async start(o){const t=nieuw();zorgFiets();if(!G.bezorg){go('h2_dex');return}dienstAan(false);
+stap('h2_ritten',{doel:'Vier adressen: twee gewone, twee met iets extra’s',async start(o){const t=nieuw();zorgFiets();if(!G.bezorg){go('h1_dexhoek');return}dienstAan(false);
   const pct=F('aanbod')||20;this._agent=0;this._agentDone=!!F('agent');const self=this;
   const fam=G.bezorg.adres({klant:'familie',min:90,max:360})||G.bezorg.plek('familie'),chg=G.bezorg.adres({klant:'chagrijn',min:90,max:360}),
     fst=G.bezorg.adres({klant:'feest',min:120,max:380}),nb=G.bezorg.adres({klant:'feest',min:120,max:400});
@@ -516,7 +519,7 @@ stap('h2_ritten',{doel:'Vier adressen: twee gewone, twee met iets extra’s',asy
      if(r.id==='x1'&&r.ok){const d=Math.round(500*pct/100);ST.geld(d,pct+'% voor Rafiq')}
      if(r.id==='nb')await nietBetaler(t,pct);
      if(self._n===1)self._agent=1}});
-  if(t!==RUN)return;sein(sum.ok+' van '+best.length+' bezorgd','#3fe395');go('h2_dex')},
+  if(t!==RUN)return;sein(sum.ok+' van '+best.length+' bezorgd','#3fe395');go('h1_dexhoek')},
   tick(dt){// de agent op de hoek: na de eerste bezorging, als je fietst
    if(this._agent&&!this._agentDone&&G.fiets&&G.fiets.actief()&&G.fiets.snelheid()>10){this._agent+=dt;if(this._agent>9){this._agentDone=true;agent(RUN)}}},
   stop(){try{G.bezorg&&G.bezorg.actief()&&G.bezorg.stop('stap')}catch(e){}}});
@@ -557,7 +560,7 @@ async function nietBetaler(t,pct){G.verhaalSfeer&&G.verhaalSfeer.zet('spanning')
   else{await C.play([{anim:'luca',a:'bel',prop:'telefoon'},{snd:'notify'},{say:'rafiq',text:'Laat maar. Ik regel het. Jij rijdt door.',t:2.4,mood:'koel'},
      {fade:'out',t:.3},{weg:'luca'},{speler:true},{fade:'in',t:.3}]);ST.geld(deel,pct+'% voor Rafiq');ST.meter('loy_rafiq',5);F('nb','rafiq')}}
 
-stap('h2_dex',{doel:'Dex wacht op je bij de hoek',waar:()=>{const a=A('dex',277,480);return {x:a.x,z:a.z,r:5}},start(){zorgFiets();dienstAan(true)},
+stap('h1_dexhoek',{doel:'Dex wacht op je bij de hoek',waar:()=>{const a=A('dex',277,480);return {x:a.x,z:a.z,r:5}},start(){zorgFiets();dienstAan(true)},
   async aankomst(){const t=nieuw();fietsAf();tijd(20,40);const l=P(),d=voor(2.2);
    const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:naar(l,d)},{actor:'dex',at:[d.x,d.z],ry:naar(d,l),anim:'leun'},rond(d.x,d.z,naar(d,l)+1,3.4,1.6,1.4),{fade:'in',t:.3},
     {say:'dex',text:'Pizzaman! Je was er niet bij de kooi.',t:2.2},{anim:'dex',a:'point',naar:'luca'},

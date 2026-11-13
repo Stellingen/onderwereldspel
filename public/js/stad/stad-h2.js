@@ -366,8 +366,10 @@ S('h2_dag',{muziek:null,async start(o){const t=nieuw();const dag=L.F('h2_dag')||
   if(t!==RUN)return;
   if(dag<3){await C.play([{fade:'out',t:.8},{say:null,text:dag===1?'Luca valt in slaap met twee telefoons onder zijn kussen.':'Twee telefoons. Twee bazen. Eén Luca. Hij slaapt vier uur.',t:3},{titel:'Dag '+(dag+1),sub:dag===1?'De uitkijk':'De tweede telefoon',t:2.6},{fade:'in',t:.8}]);
     L.F('h2_dag',dag+1);L.F('h2_plan',null);L.F('h2_i',0);ST.goto('h2_dag')}
-  else{await C.play([{fade:'out',t:.8},{titel:'Dag 4',sub:'De overkant',t:2.6},{fade:'in',t:.8}]);ST.avond(4);ST.goto('h2_dex')}}});
-S('h2_dex',{muziek:'spanning',async start(o){const t=nieuw();await mDexOpgepakt(t);if(t!==RUN)return;ST.goto('h2_slot')}});
+  else{await C.play([{fade:'out',t:.8},{titel:'Dag 4',sub:'De overkant',t:2.6},{fade:'in',t:.8}]);ST.avond(4);ST.goto('h2_dexvast')}}});
+S('h2_dexvast',{muziek:'spanning',async start(o){const t=nieuw();await mDexOpgepakt(t);if(t!==RUN)return;ST.goto('h2_slot')}});
+// oude opslag: 'h2_dex' was ook een stap in Seizoen 1 (Dex op de hoek); per seizoen naar de juiste stap
+S('h2_dex',{doel:null,start(){const ch=ST.st().ch||1;setTimeout(()=>ST.goto(ch>=2?'h2_dexvast':'h1_dexhoek'),30)}});
 S('h2_slot',{muziek:'ray',async start(o){const t=nieuw();await mEinde(t)}});
 S('h2_vrij',{doel:'Seizoen 3 · coming soon. Extra diensten bij Giovanni',start(o){nieuw();if(G.h1)G.h1.dienstAan(true);L.zorgFiets();
   setTimeout(()=>{if(ST.huidig()==='h2_vrij'&&G.h3&&G.h3.live&&G.h3.live()&&G.h3.mag())G.h3.begin()},2500)}});
