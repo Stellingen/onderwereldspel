@@ -144,7 +144,8 @@ B0.in=async function(id,o){o=o||{};const d=DEF[id];if(!d)return false;if(inside=
   if(fd){await new Promise(r=>setTimeout(r,60));await fade(0,.4)}return true};
 B0.uit=async function(o){o=o||{};if(!inside)return;const id=inside,d=DEF[id],S=BUILT[id];const fd=o.fade!==false;if(fd){G.snd&&G.snd.fx('door');await fade(1,.3)}
   inside=null;S.root.visible=false;S.persons.forEach(a=>{a.g.visible=false;a.slaap=true});showOutside();G.camK=null;document.body.classList.remove('sv-binnen');delete document.body.dataset.binnen;
-  const out=o.naar||deurBuiten(id)||wasOut;if(out){const p=M.nearestWalk(out.x,out.z,8)||out;G.P.x=p.x;G.P.z=p.z;G.P.vx=G.P.vz=0;const f=facade(id);if(f){G.P.ry=Math.atan2(f.nx,f.nz);G.yawT=G.yaw=G.P.ry+Math.PI}}
+  const out=o.naar||deurBuiten(id)||wasOut;if(out){const p=M.nearestWalk(out.x,out.z,8)||out;G.P.x=p.x;G.P.z=p.z;G.P.vx=G.P.vz=0;const f=facade(id);if(f){G.P.ry=Math.atan2(f.nx,f.nz);// camera aan de straatkant (niet achter je, boven het gebouw: dan zie je alleen gevel en dak)
+    G.yawT=G.yaw=G.P.ry+(G.camMode&&G.camMode!=='boven'?Math.PI:0)}}
   if(G.camC)G.camC.init=false;G.applyLight&&G.applyLight();
   try{if(G.story){G.story.st().binnen=null;try{save()}catch(e){}}}catch(e){}
   d.onUit&&d.onUit(S);(B0.onUit||[]).forEach(f=>{try{f(id)}catch(e){}});

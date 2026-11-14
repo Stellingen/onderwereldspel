@@ -328,7 +328,13 @@ addB({x0:DIJK.x0,z0:DIJK.z0,x1:DIJK.x1,z1:DIJK.z1,fl:4,st:'dijk',roof:'flat'});
 alleys.forEach(a=>set(a.x0,a.z0,a.x1,a.z1,T.YARD,[T.GRASS,T.GARDEN,T.PLAZA]));
 
 /* ---------- spullen (decor; sommige blokkeren) ---------- */
-function prop(k,x,z,o){const p=Object.assign({k,x,z},o||{});props.push(p);if(p.solid){const r=p.solid;block(Math.floor(x-r),Math.floor(z-r),Math.ceil(x+r),Math.ceil(z+r))}return p}
+// kleine ronde dingen (paal, boom, pollertje, prullenbak): voor routes blokkeert de tegel (2), maar lopen en fietsen botsen
+// tegen een echte cirkel, zodat je niet aan een onzichtbaar vierkant blijft haken
+const CIRC=new Map(),CC=4;const cKey=(cx,cz)=>cx*4096+cz;
+function prop(k,x,z,o){const p=Object.assign({k,x,z},o||{});props.push(p);if(p.solid){const r=p.solid;
+  if(r<=.5){const x0=Math.floor(x-r),z0=Math.floor(z-r),x1=Math.ceil(x+r),z1=Math.ceil(z+r);for(let a=Math.max(0,z0);a<Math.min(H,z1);a++)for(let b=Math.max(0,x0);b<Math.min(W,x1);b++)if(!solid[a*W+b])solid[a*W+b]=2;
+    const cr=k==='lamp'?.16:k==='bollard'?.13:k==='tree'||k==='stree'?Math.min(r,.3):k==='palm'?.26:r*.85,key=cKey(Math.floor(x/CC),Math.floor(z/CC));let L=CIRC.get(key);if(!L)CIRC.set(key,L=[]);L.push({x,z,r:cr})}
+  else block(Math.floor(x-r),Math.floor(z-r),Math.ceil(x+r),Math.ceil(z+r))}return p}
 function propR(k,x0,z0,x1,z1,o,sol){const p=Object.assign({k,x0,z0,x1,z1},o||{});props.push(p);if(sol)block(x0,z0,x1,z1);return p}
 const nearRoadCorner=(x,z)=>XS.some(q=>Math.abs(q-x)<RS+1)&&ZS.some(q=>Math.abs(q-z)<RS+1);
 const nearDoor=(x,z)=>places.some(p=>Math.hypot(p.door.x-x,p.door.z-z)<3);
@@ -512,7 +518,9 @@ VR.forEach(v=>{let s=null;for(let z=v.a-RW;z<=v.b+RW;z++){const b=at(v.x,z)===T.
 
 /* ---------- lopen en routes ---------- */
 const walkable=(x,z)=>{x=Math.floor(x);z=Math.floor(z);return inb(x,z)&&!solid[z*W+x]&&g[z*W+x]!==T.WATER};
-function canStand(x,z,r){r=r||.35;return walkable(x-r,z-r)&&walkable(x+r,z-r)&&walkable(x-r,z+r)&&walkable(x+r,z+r)}
+const walkP=(x,z)=>{x=Math.floor(x);z=Math.floor(z);if(!inb(x,z))return false;return solid[z*W+x]!==1&&g[z*W+x]!==T.WATER};
+function circHit(x,z,r){const cx=Math.floor(x/CC),cz=Math.floor(z/CC);for(let a=cx-1;a<=cx+1;a++)for(let b=cz-1;b<=cz+1;b++){const L=CIRC.get(cKey(a,b));if(!L)continue;for(const c of L){const dx=x-c.x,dz=z-c.z,rr=r+c.r;if(dx*dx+dz*dz<rr*rr)return c}}return null}
+function canStand(x,z,r){r=r||.35;return walkP(x-r,z-r)&&walkP(x+r,z-r)&&walkP(x-r,z+r)&&walkP(x+r,z+r)&&!circHit(x,z,r)}
 function nearestWalk(x,z,max){max=max||40;if(canStand(x,z))return{x,z};for(let r=1;r<=max;r++)for(let a=0;a<r*8;a++){const t=a/(r*8)*Math.PI*2,px=x+Math.cos(t)*r,pz=z+Math.sin(t)*r;if(canStand(px,pz))return{x:px,z:pz}}return null}
 // A* over het raster (8 richtingen), daarna rechte stukken waar dat kan. Snel genoeg voor een grote kaart: vaste typed-array-heap,
 // een iets 'gretige' schatting (×1.4) en eerst kijken of het doel wel bereikbaar is (samenhangende gebieden, één keer uitgerekend;
@@ -795,7 +803,7 @@ const placeById=id=>places.find(p=>p.id===id)||(ALIAS[id]?places.find(p=>p.id===
 const ESTATE={x0:-100,z0:-100,x1:-90,z1:-90,n:'',gate:{x:A.thuis.x,z:A.thuis.z}};
 root.STAD_MAP={NET,districtAt,setSolid,ESTATE,EST_H:[],EST_B:[],BIZ_LOOK:{},alleys,hides,parkPaths,estateAt:()=>false,W,H,FL,T,RW,SW,LANE,
   XS,ZS,VR,HR,RX:XS,RZ:ZS,RXE:[],RZE:[],GATES:[],A,Z:Zn,ground:g,solid,bridgeWalk,buildings,props,places,bridges,DISTRICTS,spawn,jailGate,
-  at,walkable,canStand,nearestWalk,findPath,placeById,placeByPage:pg=>places.find(p=>p.page===pg),
+  at,walkable,canStand,circHit,nearestWalk,findPath,placeById,placeByPage:pg=>places.find(p=>p.page===pg),
   // verhaalstad-extra's
   VERHAAL:true,CHUNK,PLEKKEN,ADRESSEN,TRAM,tramAt,HALTES,KRANEN,SPOOR,GRACHT,straatAt:(x,z)=>{const s=straatAt(x,z);return s?s.r.n:''},adres,
   STY_EXTRA,SIGNC,MAPPL,SIGNS,gfx:{prop:gfxProp,ground:gfxGround}};

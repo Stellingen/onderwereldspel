@@ -135,6 +135,18 @@ function adres(o){o=o||{};if(Array.isArray(M.ADRESSEN)&&M.ADRESSEN.length)return
   for(let pass=0;pass<3&&!best;pass++){const L=C.filter(b=>{const cx=(b.x0+b.x1)/2,cz=(b.z0+b.z1)/2,d=Math.hypot(cx-from.x,cz-from.z);return d>=mn*(pass?.6:1)&&d<=mx*(pass>1?2:1)&&(pass>1||pref(b))&&(!o.wijk||!M.districtAt||M.districtAt(cx,cz)===o.wijk||pass>0)&&!(o.niet||[]).includes(b.i)});
     for(let k=0;k<40&&L.length&&!best;k++){const d=doorOfB(pick(L));if(d)best=d}}
   return best}
+// een rondje om de zaak: adressen ongeveer even ver weg, verspreid over alle kanten en op volgorde van de klok,
+// zodat je vanaf de laatste vanzelf weer bij de zaak uitkomt (o.van = middelpunt, o.min/o.max = afstand)
+function rondje(kl,o){o=o||{};const from=o.van||NAP||G.P,mn=o.min||60,mx=o.max||160,n=kl.length;if(!Array.isArray(M.ADRESSEN)||!M.ADRESSEN.length)return kl.map(k=>plek(k));
+  const L=M.ADRESSEN.map(a=>Object.assign({},a,{ang:Math.atan2(a.x-from.x,a.z-from.z),d:Math.hypot(a.x-from.x,a.z-from.z)})).filter(a=>a.d>=mn&&a.d<=mx&&!(NAP&&a.b===NAP.b));
+  let best=null,bs=1e9;
+  for(let k=0;k<30;k++){const a0=Math.random()*Math.PI*2,used=[],out=[];let sc=0;
+    for(let i=0;i<n;i++){const ta=a0+i*2*Math.PI/n,want=KL_SOORT[kl[i]];let c=null,cs=1e9;
+      for(const a of L){if(used.includes(a.b))continue;const da=Math.abs(Math.atan2(Math.sin(a.ang-ta),Math.cos(a.ang-ta)));const q=da*60+(want&&!want.includes(a.soort)?35:0)+Math.abs(a.d-(mn+mx)/2)*.25;if(q<cs){cs=q;c=a}}
+      if(!c)break;used.push(c.b);out.push(c);sc+=cs}
+    if(out.length<n)continue;let len=0,p=from;out.concat([from]).forEach(q=>{len+=Math.hypot(q.x-p.x,q.z-p.z);p=q});sc+=len*.15;
+    if(sc<bs){bs=sc;best=out}}
+  return best?best.map(a=>({x:a.x,z:a.z,b:a.b,face:a.face,adres:a.adres,wijk:a.wijk,soort:a.soort})):kl.map(k=>plek(k))}
 const PLEK={};
 function plek(kl){if(PLEK[kl])return PLEK[kl];const a=adres({klant:kl,min:kl==='kantoor'?120:80,max:kl==='kantoor'?700:360,niet:Object.values(PLEK).map(p=>p.b)});if(a)PLEK[kl]=a;return a}
 
@@ -321,7 +333,7 @@ const hook=setInterval(()=>{if(!G.ready||!G.carStep)return;clearInterval(hook);c
   G.carStep=function(dt){c0(dt);try{if(!ready){ready=true;dressNapoli();stadSpots()}decorStep(dt);walkStep(dt);tick(dt)}catch(e){console.error('bezorg',e)}}},120);
 
 G.bezorg={start,stop,actief:()=>!!R,huidig:()=>cur()||null,lijst:()=>R?R.orders.slice():[],napoli:NAP?{x:NAP.door.x,z:NAP.door.z,door:{x:NAP.door.x,z:NAP.door.z},face:NAP.face,ry:NAP.ry,b:NAP.b,name:NAP.name}:null,
-  adres,plek,kaart,klanten:Object.keys(LOOKS),gesprek,aanbellen,huurFiets,terugzetten,dienst,rek:()=>decor.rack||null,fietsen:()=>decor.bikes.map(b=>({x:b.x,z:b.z,ry:b.ry,taken:b.taken})),
+  adres,plek,rondje,kaart,klanten:Object.keys(LOOKS),gesprek,aanbellen,huurFiets,terugzetten,dienst,rek:()=>decor.rack||null,fietsen:()=>decor.bikes.map(b=>({x:b.x,z:b.z,ry:b.ry,taken:b.taken})),
   // voor tests en het hoofdstukscript: warmte of tijd van de huidige bestelling bijstellen
   zet:(k,v)=>{const o=cur();if(o&&k in o)o[k]=v;return o}};
 })();

@@ -66,7 +66,7 @@ async function dienstOpHoek(t,o){o=o||{};G.frozen=1e9;const r=await hoekDienst(o
 async function mAfscheid(t){const N=L.A('napoli',419,492);if(!await doelNaar('Naar Bella Napoli',N,9))return;await L.binnen('napoli');if(t!==RUN)return;
   B.toon('napoli','giovanni',false);const g=L.W('napoli',7.2,8.0),l=L.W('napoli',8.2,10.6),s=L.W('napoli',5.2,8.8),j=B.plek('napoli','jassen');
   await C.play([{fade:'out',t:.01},{speler:false},{actor:'giovanni',at:g,ry:0},{actor:'luca',at:l,ry:PI},{actor:'sanne',at:s,ry:PI*.25},
-   {fn:()=>['giovanni','luca','sanne'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},L.cam(...L.W3('napoli',11.5,2.4,11.5),...L.W3('napoli',7.4,1.2,8.6)),{fade:'in',t:.8},
+   {fn:()=>['giovanni','luca','sanne'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},L.cam(...L.W3('napoli',11.5,2.3,11.5),...L.W3('napoli',7.4,1.6,8.6)),{fade:'in',t:.8},
    {titel:'Seizoen 3',sub:'Hoofdstuk 3 · De hoek',t:3.4},
    {say:null,text:'Luca is zeventien. Het is zijn laatste dienst. Hij weet het. Giovanni weet het ook.',t:3.4},
    ...(j?[{move:'luca',to:[j.x+.4,j.z+.6],t:1.6},{anim:'luca',a:'give'},{fn:()=>ST.jas(false)},{say:null,text:'Hij hangt de rode jas aan de haak.',t:2.2}]:[{fn:()=>ST.jas(false)}]),

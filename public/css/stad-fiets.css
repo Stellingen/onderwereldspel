@@ -10,6 +10,7 @@
 .sdf-adem>i{display:block;width:92px;height:8px;background:#1b1e24;border:1px solid #000}
 .sdf-adem>i>i{display:block;height:100%;width:100%;background:#7fd1c7;transition:width .1s linear}
 .sdf-adem.on>i>i{background:#ffd35a}.sdf-adem.low>i>i{background:#ff6a5a}
+.sdf-adem.moe{opacity:1;border-color:#ffb84a}.sdf-adem.moe small{color:#ffb84a}.sdf-adem.moe>i>i{background:#ffb84a}.sdf-adem[hidden]{display:none}
 .sdf-belb{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:#1b1e24;border:2px solid #e8c547;color:#f5e08a;font:800 12px var(--f-head,sans-serif);text-transform:uppercase;letter-spacing:.08em;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,.5)}
 .sdf-belb svg{width:16px;height:16px}
 .sdf-belb kbd{font:700 10px var(--f-mono,monospace);border:1px solid currentColor;padding:1px 4px}
@@ -73,3 +74,4 @@ body.sdb-on .sd-dest{display:none!important}
   .sdf-bal{bottom:auto;top:44%}
 }
 @media (max-height:560px) and (min-width:701px){.sdb-card{top:8px;width:260px}}
+body.sv-incut .sdf-ui,body.sv-incut .sdf-bal{display:none!important}

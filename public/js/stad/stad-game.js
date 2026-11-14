@@ -95,7 +95,7 @@ function savePos(){try{localStorage.setItem('stad_pos',JSON.stringify({x:+P.x.to
 G.savePos=savePos;
 // Pixelgrootte in echte schermpixels (geheel getal, anders worden de pixels ongelijk): de korte kant van het beeld is
 // ongeveer 360 pixels hoog (Fijn 480, Grof 260). Zo ziet het er op elke telefoon en elk scherm hetzelfde uit.
-function resize(){const dpr=Math.min(devicePixelRatio||1,3),w=innerWidth,h=innerHeight,minDev=Math.min(w,h)*dpr,target=(G.pixPref||480)*(G.camMode&&G.camMode!=='boven'?1.15:1);
+function resize(){const dpr=Math.min(devicePixelRatio||1,3),w=innerWidth,h=innerHeight,minDev=Math.min(w,h)*dpr,target=(G.pixPref||520)*(G.camMode&&G.camMode!=='boven'?1.15:1);
   const k=Math.max(1,Math.round(minDev/target));G.pix=k/dpr;const rw=Math.ceil(w*dpr/k),rh=Math.ceil(h*dpr/k);
   renderer.setSize(rw,rh,false);if(rt)rt.setSize(rw,rh);if(post)post.material.uniforms.uRes.value.set(rw,rh);camera.aspect=w/h;camera.fov=w/h<1?Math.min(62,34/Math.max(.55,w/h)*.8):34;G.fov0=camera.fov;camera.updateProjectionMatrix()}
 G.resize=()=>resize();
@@ -249,7 +249,11 @@ function step(dt,ts){
   if(G.hidden)sp=0;
   const tvx=mx*sp,tvz=mz*sp,acc=Math.min(1,dt*12);P.vx+=(tvx-P.vx)*acc;P.vz+=(tvz-P.vz)*acc;
   const nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
-  if(M.canStand(nx,P.z,.38))P.x=nx;else P.vx*=.2;if(M.canStand(P.x,nz,.38))P.z=nz;else P.vz*=.2;
+  // botsen: los per as (langs een muur glijden). Sta je al half in iets (na een scène, uit een auto), dan met een kleinere straal
+  // zodat je eruit kunt lopen; zit je echt vast, dan na een halve tel naar de dichtstbijzijnde vrije plek
+  const pr=M.canStand(P.x,P.z,.38)?.38:M.canStand(P.x,P.z,.2)?.2:0;
+  if(pr){if(M.canStand(nx,P.z,pr))P.x=nx;else P.vx*=.2;if(M.canStand(P.x,nz,pr))P.z=nz;else P.vz*=.2;P.vast=0}
+  else if(!G.spelerWeg&&!(G.cut&&G.cut.active&&G.cut.active())){P.vast=(P.vast||0)+dt;if(P.vast>.5){P.vast=0;let q=null;for(let r=.5;r<=6&&!q;r+=.5)for(let a=0;a<12;a++){const t=a/12*Math.PI*2,x=P.x+Math.cos(t)*r,z=P.z+Math.sin(t)*r;if(M.canStand(x,z,.38)){q={x,z};break}}if(q){P.x=q.x;P.z=q.z}}}
   v=Math.hypot(P.vx,P.vz);
   if(v>.3){const tr=Math.atan2(P.vx,P.vz);let d=tr-P.ry;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;P.ry+=d*Math.min(1,dt*14)}
   const f0=Math.floor(P.ph/Math.PI);P.ph+=dt*v*1.25;P.sp=Math.min(1.3,v/4.2);if(v>1.5&&Math.floor(P.ph/Math.PI)!==f0&&G.onFoot)G.onFoot(v>7,v);
@@ -270,7 +274,8 @@ function step(dt,ts){
   const A=G.actors.slice(0,ACT_MAX);humans.count(1+NPC.length+A.length);humans.pose(0,{x:P.x,y:-60,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,look:P.look});if(G.avatarPose)G.avatarPose({x:P.x,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,v,dt,lean:v>7?.2:v>1?.05:0,hide:G.driving||G.camMode==='ogen'||!!G.spelerWeg,crouch:G.hidden,arm:G.pArm||0});
   NPC.forEach((n,i)=>{npcStep(n,dt);humans.pose(i+1,n)});A.forEach((a,i)=>humans.pose(1+NPC.length+i,a));humans.flush();humans.xray(false);
   // markeringen laten leven
-  for(const m of marks){m.pin.rotation.y=ts*1.6;m.pin.position.y=3+Math.sin(ts*2.2+m.p.door.x)*.18;const s=1+Math.sin(ts*3)*.06;m.ring.scale.set(s,s,s);m.ring.material.opacity=G.near===m.p?1:(m.p.dyn&&!m.p.own?.4:.7)}
+  const inCut=!!(G.cut&&G.cut.active&&G.cut.active());
+  for(const m of marks){if(inCut){if(m.pin.visible||m.ring.visible){m._ch=[m.pin.visible,m.ring.visible];m.pin.visible=m.ring.visible=false}}else if(m._ch){m.pin.visible=m._ch[0];m.ring.visible=m._ch[1];m._ch=null}m.pin.rotation.y=ts*1.6;m.pin.position.y=3+Math.sin(ts*2.2+m.p.door.x)*.18;const s=1+Math.sin(ts*3)*.06;m.ring.scale.set(s,s,s);m.ring.material.opacity=G.near===m.p?1:(m.p.dyn&&!m.p.own?.4:.7)}
   waterTex.offset.x=(ts*.02)%1;waterTex.offset.y=(Math.sin(ts*.3)*.02);
   G.lotStep&&G.lotStep(dt);
   G.onFrame&&G.onFrame(dt)}

@@ -205,7 +205,7 @@ ui.innerHTML=`<i class="sv-cb t"></i><i class="sv-cb b"></i><div class="sv-fade"
 document.body.appendChild(ui);
 let active=false,skip=false,advance=null,tw=null,keuzeOpen=null,droom=false;
 CUT.active=()=>active;CUT.camNu=()=>({cam:!!CAMx,vorig:!!vorigeCam,running:!!running});
-CUT.hq={pix:560,portret:112,schaduw:true};CUT.onStart=[];CUT.onEnd=[];
+CUT.hq={pix:680,portret:112,schaduw:true};CUT.onStart=[];CUT.onEnd=[];
 function setPor(id,mood){const c=$s('svSubPor');const sz=(CUT.hq&&CUT.hq.portret)||112;c.style.width=c.style.height=sz+'px';if(!id){c.hidden=true;return}c.hidden=false;
   try{if(CUT.portret)return CUT.portret(id,mood,c);K.face(Object.assign({bg:'#14101a'},CUT.face(id)),mood||null,c)}catch(e){}}
 function nm(id){if(id==='luca')return 'Luca';const a=A[id];return a?a.n:(id||'')}
@@ -248,8 +248,12 @@ function camSet(c){if(c==null){CAMx=null;return 0}const cam=G.camera();
 /* ---------- automatisch kader: geen muur tussen camera en onderwerp, en het hoofd van wie je filmt staat in beeld ---------- */
 // Geldt voor elke cutscène (alle seizoenen). Uit voor één shot met {cam:{…,vrij:true}}.
 const v3=new TH.Vector3(),v4=new TH.Vector3(),kp=new TH.Vector3(),kl=new TH.Vector3(),kl0=new TH.Vector3();
+// hoogte per tegel (gebouwen tellen tot hun dak, muurtjes en hekken tot ~2,6 m; palen, bomen en pollers niet)
+let HGT=null;function hoogtes(M){HGT=new Float32Array(M.W*M.H);(M.buildings||[]).forEach(b=>{const h=(b.fl||1)*(M.FL||3.4)+1.4;for(let z=Math.max(0,b.z0);z<Math.min(M.H,b.z1);z++)for(let x=Math.max(0,b.x0);x<Math.min(M.W,b.x1);x++){const i=z*M.W+x;if(h>HGT[i])HGT[i]=h}})}
 function blok(x,z,y){const B=G.binnen;if(B&&B.waar&&B.waar()&&x>4000)return B.muurAt?B.muurAt(x,z):false;
-  const M=window.STAD_MAP;if(!M||!M.solid||x>4000)return false;const xi=Math.floor(x),zi=Math.floor(z);if(xi<0||zi<0||xi>=M.W||zi>=M.H)return false;return !!M.solid[zi*M.W+xi]&&y<9}
+  const M=window.STAD_MAP;if(!M||!M.solid||x>4000)return false;const xi=Math.floor(x),zi=Math.floor(z);if(xi<0||zi<0||xi>=M.W||zi>=M.H)return false;const i=zi*M.W+xi;
+  if(M.solid[i]!==1)return false;if(!HGT)hoogtes(M);return y<(HGT[i]||2.6)}
+CUT.blok=blok;
 function kader(p,l,f){
   // 1) een muur of gevel tussen camera en onderwerp: eerst om het onderwerp heen draaien (zelfde hoogte) tot er vrij zicht is;
   //    lukt dat niet, dan schuift de camera naar voren tot vlak voor de muur. De gekozen draaiing blijft het hele shot gelijk.
@@ -258,11 +262,23 @@ function kader(p,l,f){
   if(dh>.9&&!blok(l.x,l.z,l.y)){const b0=vrijTot(p.x,p.z,p.y,dh),a0=Math.atan2(dx,dz),sh=CAMx||{};
     const probeer=(da,fk)=>{const D=dh*fk;if(D<=.9)return false;const x=l.x+Math.sin(a0+da)*D,z=l.z+Math.cos(a0+da)*D;if(vrijTot(x,z,p.y,D))return false;p.set(x,p.y,z);return true};
     if(b0){let ok=sh._om&&probeer(sh._om[0],sh._om[1]);
-      if(!ok)zoek:for(const fk of [1,.82,.66])for(const da of [.3,-.3,.6,-.6,.9,-.9,1.25,-1.25,1.6,-1.6,2.1,-2.1,2.7,-2.7]){if(probeer(da,fk)){sh._om=[da,fk];ok=true;break zoek}}
+      // staat de muur vlak bij de camera (camera net in een muur of hoek), dan liever een stukje naar voren dan om het onderwerp
+      // heen naar zijn rug draaien
+      if(!ok&&b0>=Math.max(1.5,dh*.62)){const k=Math.max(.6,b0-.35)/dh;p.set(l.x+dx*k,l.y+(p.y-l.y)*k,l.z+dz*k);ok=true}
+      if(!ok)zoek:for(const fk of [1,.82,.66])for(const da of [.3,-.3,.6,-.6,.9,-.9,1.25,-1.25]){if(probeer(da,fk)){sh._om=[da,fk];ok=true;break zoek}}
+      if(!ok&&b0>=1.3){const k=Math.max(.6,b0-.35)/dh;p.set(l.x+dx*k,l.y+(p.y-l.y)*k,l.z+dz*k);ok=true}
+      if(!ok)zoek2:for(const fk of [1,.82,.66])for(const da of [1.6,-1.6,2.1,-2.1,2.7,-2.7]){if(probeer(da,fk)){sh._om=[da,fk];ok=true;break zoek2}}
       if(!ok){const k=Math.max(.6,b0-.4)/dh;p.set(l.x+dx*k,l.y+(p.y-l.y)*k,l.z+dz*k)}}
 }
+  // 1b) nooit ín een poppetje (ook niet bij een close-up van handen of een tafel): dan een stukje naar buiten, of erboven
+  for(const id in ACT){const a=ACT[id];if(!a||!a.g||!a.g.parent||a.g.visible===false||!a.P||!a.P.head)continue;const sc=a.schaal||1,R=.62*sc;
+    let hx=p.x-a.x,hz=p.z-a.z,hh=Math.hypot(hx,hz);if(hh>=R)continue;a.P.head.getWorldPosition(v3);if(p.y>v3.y+.75*sc)continue;
+    if(hh<1e-3){hx=p.x-l.x;hz=p.z-l.z;hh=Math.hypot(hx,hz);if(hh<1e-3){hx=Math.sin(a.ry||0);hz=Math.cos(a.ry||0);hh=1}}
+    const ux=hx/hh,uz=hz/hh;if(!blok(a.x+ux*(R+.05),a.z+uz*(R+.05),p.y)){p.x=a.x+ux*(R+.05);p.z=a.z+uz*(R+.05)}else p.y=v3.y+.8*sc}
   // 2) wie gefilmd wordt (een acteur bij het kijkpunt): niet in zijn hoofd, en het hoofd helemaal in beeld
   let best=null,bd=.8;for(const id in ACT){const a=ACT[id];if(!a||!a.g||!a.g.parent||a.g.visible===false)continue;const d=Math.hypot(a.x-l.x,a.z-l.z);if(d<bd){bd=d;best=a}}
+  // ook mensen die in een interieur wonen (de docent, Giovanni achter de toonbank): hun hoofd hoort ook in beeld
+  if(!best)for(const a of PERS){if(!a||!a.id||!a.g||!a.g.parent||a.g.visible===false||!a.P||!a.P.head)continue;const d=Math.hypot(a.x-l.x,a.z-l.z);if(d<bd){bd=d;best=a}}
   if(!best||!best.P||!best.P.head)return;best.P.head.getWorldPosition(v4);const sc=best.schaal||1,face=v4.y+.35*sc,top=v4.y+.78*sc;
   if(l.y>face+.4||l.y<.95)return;   // bewust boven het hoofd, of een close-up van handen, fiets of telefoon
   // 3) iemand anders staat met zijn hoofd tussen de camera en dit gezicht: eerst een stukje om het gezicht heen draaien
@@ -292,6 +308,13 @@ function kader(p,l,f){
   const dhl=Math.max(.3,Math.hypot(l.x-p.x,l.z-p.z)),hd=Math.max(.3,Math.hypot(v4.x-p.x,v4.z-p.z)),half=f*Math.PI/360;
   const pitch=Math.atan2(l.y-p.y,dhl),need=Math.atan2(top-p.y,hd)-Math.atan(.68*Math.tan(half));
   if(pitch<need)l.y=p.y+dhl*Math.tan(Math.min(need,1.25))}
+// 5) twee-shot: wie bij het onderwerp staat en in beeld is (niet vlak voor de lens), krijgt ook zijn hele hoofd in beeld
+function tweeShot(p,l,f){const half=f*Math.PI/360,asp=innerWidth/innerHeight,hw=Math.atan(Math.tan(half)*asp),fwd=Math.atan2(l.x-p.x,l.z-p.z),dhl=Math.max(.3,Math.hypot(l.x-p.x,l.z-p.z));let need=-9;
+  const zie=a=>{if(!a||!a.g||!a.g.parent||a.g.visible===false||!a.P||!a.P.head)return;if(Math.hypot(a.x-l.x,a.z-l.z)>3.6)return;a.P.head.getWorldPosition(kl0);
+    const da=Math.atan2(kl0.x-p.x,kl0.z-p.z)-fwd,ad=Math.abs(Math.atan2(Math.sin(da),Math.cos(da)));if(ad>hw*.92)return;const d=Math.hypot(kl0.x-p.x,kl0.z-p.z);if(d<1.3)return;
+    const top=kl0.y+.78*(a.schaal||1);need=Math.max(need,Math.atan2(top-p.y,d)-Math.atan(.8*Math.tan(half)))};
+  for(const id in ACT)zie(ACT[id]);for(const a of PERS)if(a.id&&!ACT[a.id])zie(a);
+  const pitch=Math.atan2(l.y-p.y,dhl);if(need>pitch)l.y=p.y+dhl*Math.tan(Math.min(need,1.15))}
 // eigen camerarig: G.binnen roept dit als eerste aan (ook buiten interieurs)
 CUT.rig=function(dt,cam){
   // tussen twee scènes ({blijf:true}) blijft het laatste shot nog even staan, zodat de spelcamera niet heel even in beeld flitst
@@ -301,7 +324,9 @@ CUT.rig=function(dt,cam){
     v1.set(a.x+s*o[2]+c*o[0],(a.y||0)+o[1],a.z+c*o[2]-s*o[0]);CAM.pos.lerp(v1,Math.min(1,dt*4));p=CAM.pos;v2.set(a.x+s*k[2]+c*k[0],(a.y||0)+k[1],a.z+c*k[2]-s*k[0]);l=v2}
   else{CAM.e=Math.min(CAM.t,CAM.e+dt);const k=CAM.to&&CAM.t>0?ease(CAM.e/CAM.t):(CAM.to?1:0);p=v1.copy(CAM.from.pos);l=v2.copy(CAM.from.look);if(CAM.to){p.lerp(CAM.to.pos,k);l.lerp(CAM.to.look,k)}}
   const asp=innerWidth/innerHeight,f0=CAM.fov||(asp<1?62:42);let f=f0;if(CAM.fov2&&CAM.t>0)f=f0+(CAM.fov2-f0)*ease(CAM.e/CAM.t);
-  if(!CAM.vrij){kp.copy(p);kl.copy(l);try{kader(kp,kl,f)}catch(e){}p=kp;l=kl}
+  if(!CAM.vrij){kp.copy(p);kl.copy(l);try{kader(kp,kl,f)}catch(e){}try{tweeShot(kp,kl,f)}catch(e){}p=kp;l=kl;
+    // nooit in een gebouw of muur: dan schuift de camera over de kijklijn naar voren tot hij vrij staat
+    try{if(blok(p.x,p.z,p.y)){const dx=l.x-p.x,dy=l.y-p.y,dz=l.z-p.z,D=Math.hypot(dx,dz);for(let s=.2;s<D-.5;s+=.2){const x=p.x+dx/D*s,z=p.z+dz/D*s,y=p.y+dy*(s/D);if(!blok(x,z,y)){p.set(x,y,z);break}}}}catch(e){}}
   cam.position.copy(p);if(CAM.shake){cam.position.x+=(Math.random()-.5)*CAM.shake;cam.position.y+=(Math.random()-.5)*CAM.shake}cam.lookAt(l);
   if(Math.abs(cam.fov-f)>.01){cam.fov=f;cam.updateProjectionMatrix()}
   G.shadowC={x:l.x,z:l.z};return true};

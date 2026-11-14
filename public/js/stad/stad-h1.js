@@ -257,21 +257,21 @@ function snelVooruit(aan,van,tot){let el=$s('h1Ff');if(!aan){if(el)el.remove();r
   const a=van[0]*60+van[1],b=tot[0]*60+tot[1],t0=performance.now(),T=3800;
   const f=()=>{if(!el.isConnected)return;const u=Math.min(1,(performance.now()-t0)/T),m=Math.round(a+(b-a)*u);sp.textContent=String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');ST.tijd(Math.floor(m/60),m%60);if(u<1)requestAnimationFrame(f)};f()}
 stap('h1_onderweg',{doel:null,async start(o){const t=nieuw();if(B.waar())await B.uit({fade:false});if(t!==RUN)return;
-  const S=A('school',232,337),N=A('napoli',419,492),np=walk(N.x+2.6,N.z+2.4,4),nv=walk(N.x+7,N.z+5.5,6),k=ST.klok();
+  // geen vlucht over de stad meer: gewoon een overgang in het zwart (de klok loopt door), en dan sta je bij de zaak
+  const N=A('napoli',419,492),np=walk(N.x+2.6,N.z+2.4,4),nv=walk(N.x+7,N.z+5.5,6),k=ST.klok();
   await C.play([{fade:'out',t:.01},{speler:false},
    {actor:'luca',at:[nv.x,nv.z],ry:naar(nv,np),look:ST.lucaLook&&ST.lucaLook()},
-   cam(S.x+26,34,S.z+40,S.x,2,S.z),{fade:'in',t:.4},{fn:()=>snelVooruit(true,[k.h,k.m],[17,34])},{snd:'whoosh'},
-   camNaar((S.x+N.x)/2+20,42,(S.z+N.z)/2+30,(S.x+N.x)/2,0,(S.z+N.z)/2,1.9),
-   camNaar(N.x+16,9,N.z+18,N.x,1.6,N.z,1.9),
+   {fn:()=>snelVooruit(true,[k.h,k.m],[17,34])},{snd:'whoosh'},{titel:'Na school',sub:'Op weg naar je werk',t:3.2},
    {fn:()=>snelVooruit(false)},{fn:()=>tijd(17,34)},
-   rond(np.x,np.z,naar(np,nv)+.7,6.5,2.2,1.4),
-   {move:'luca',to:[np.x,np.z],t:2.2},
+   // van opzij: Luca loopt het hele stuk door het beeld naar de deur
+   rond((np.x+nv.x)/2,(np.z+nv.z)/2,naar(nv,np)-PI/2,7.4,2.3,1.6),{fade:'in',t:.6},
+   {move:'luca',to:[np.x,np.z],t:2.4},
    {say:null,text:'Bella Napoli. Het neonbord zoemt al. Binnen ruikt het naar oregano.',t:2.6},
    {fade:'out',t:.4},{weg:'luca'}],{blijfZwart:true});
   snelVooruit(false);if(t!==RUN)return;go('h1_giovanni')}});
 
 stap('h1_fiets',{muziek:'school',doel:'Pak je fiets bij het fietsenrek',waar:()=>{const a=A('fietsenrek',210,361);return {x:a.x,z:a.z,r:3.2}},
-  start(o){const r=A('fietsenrek',210,361),p=walk(r.x,r.z,3);if(G.fiets&&!G.fiets.actief()){const fp=G.fiets.pos();if(!fp||hyp(fp.x-p.x,fp.z-p.z)>3)G.fiets.spawn(p.x,p.z,0,{kleur:'#2c4a6a'})}},
+  start(o){const r=A('fietsenrek',210,361),p=walk(r.x,r.z,3);if(G.fiets&&!G.fiets.actief()){const fp=G.fiets.pos();if(!fp||hyp(fp.x-p.x,fp.z-p.z)>3)G.fiets.spawn(p.x,p.z,0,{kleur:'#2c4a6a',type:'fiets'})}},
   async aankomst(){const t=nieuw();const fp=(G.fiets&&G.fiets.pos())||P(),l=P();
    await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:naar(l,fp)},
     rond(fp.x,fp.z,naar(fp,l)+.9,2.2,.6,.5),{move:'luca',to:[fp.x+.7,fp.z+.4],t:1},{anim:'luca',a:'hurk',t:.6},{snd:'click'},
@@ -302,18 +302,21 @@ stap('h1_giovanni',{async start(o){const t=nieuw();fietsAf();await binnen('napol
    {fn:()=>{ST.jas(true);uitfit('bezorger')}},{snd:'grab'},{anim:'giovanni',a:'point',prop:null},
    {fn:()=>G.verteller&&G.verteller('v02')},
    {say:'giovanni',text:"Twee pizza's per tas. Nooit scheef. En lach naar de klant, dan krijg je fooi.",t:3.4},
-   {say:'giovanni',text:'Drie bestellingen. Een student, meneer De Wit — die wil praten, laat hem praten — en een kantoor op de Zuidas.',t:4},
-   {say:'luca',text:'De Zuidas? Dat is aan de andere kant van de stad.',t:2.4},
-   {say:'giovanni',text:'Daarom heb je benen, ragazzo. Vai!',t:2.2,mood:'blij'},
+   {say:'giovanni',text:'Drie bestellingen, allemaal hier in de buurt. Een student, meneer De Wit — die wil praten, laat hem praten — en een gezin met drie kinderen.',t:4.2},
+   {say:'giovanni',text:'Een rondje om de zaak: de kaart wijst je de weg. Daarna kom je terug, dan heb ik een grote voor je.',t:3.4},
+   {say:'luca',text:'Een rondje. Dat red ik wel.',t:1.8},
+   {say:'giovanni',text:'Nooit scheef, ragazzo. Vai!',t:2,mood:'blij'},
    {fade:'out',t:.4},{weg:'giovanni'},{weg:'luca'},{speler:true},{fade:'in',t:.4}]);
   B.toon('napoli','giovanni',true);if(t!==RUN)return;go('h1_ritten')}});
 
 stap('h1_ritten',{doel:"Bezorg drie bestellingen (pak je fiets bij de deur)",async start(o){const t=nieuw();zorgFiets(A('napoli',419,492));
   if(!G.bezorg){go('h1_dief');return}
+  // een rondje om de zaak (ongeveer 100 m weg, alle kanten op, op volgorde): na de laatste ben je vanzelf weer bijna bij Bella Napoli
+  const N=A('napoli',419,492),R0=F('h1_rondje'),R3=Array.isArray(R0)&&R0.length===3&&R0.every(a=>a&&a.x!=null)?R0:(G.bezorg.rondje?G.bezorg.rondje(['student','oude_man','familie'],{van:N,min:65,max:165}):['student','oude_man','familie'].map(k=>G.bezorg.plek(k)));F('h1_rondje',R3);
   const best=[
-   Object.assign({},G.bezorg.plek('student'),{klant:'student',pizzas:1,id:'stu'}),
-   Object.assign({},G.bezorg.plek('oude_man'),{klant:'oude_man',pizzas:1,naam:'Meneer De Wit',id:'dewit'}),
-   Object.assign({},G.bezorg.plek('kantoor'),{klant:'kantoor',pizzas:2,id:'kantoor'})].filter(b=>b.x!=null);
+   Object.assign({},R3[0],{klant:'student',pizzas:1,id:'stu'}),
+   Object.assign({},R3[1],{klant:'oude_man',pizzas:1,naam:'Meneer De Wit',id:'dewit'}),
+   Object.assign({},R3[2],{klant:'familie',pizzas:2,id:'gezin'})].filter(b=>b&&b.x!=null);
   const sum=await G.bezorg.start(best,{onKlaar(r){if(r.klant==='oude_man'&&r.vriendelijk>0)F('dewit_geluisterd',1)}});
   if(t!==RUN)return;F('a1_fooi',sum.fooi||0);if((sum.klachten||0)>0)ST.meter('imago',-1);
   go('h1_dief')}});
@@ -388,19 +391,21 @@ stap('h1_zwaar',{doel:"Breng 6 pizza's en mezze naar Lounge Sahara",waar:()=>{co
 /* ---------- Lounge Sahara ---------- */
 stap('h1_sahara',{async start(o){const t=nieuw();fietsAf();const sch=G.fiets?G.fiets.scheef():0;if(G.fiets)G.fiets.last(0);
   await buiten();if(t!==RUN)return;tijd(21,40);
-  const d=A('sahara',655,909),l=P(),u=walk(d.x+1.8,d.z+1.4,3);
-  // buiten: de uitsmijter
+  const d=A('sahara',655,909),l=P(),u=walk(d.x+1.8,d.z+1.4,3),lt=walk(d.x,d.z+1.6,2),mid={x:(lt.x+u.x)/2,z:(lt.z+u.z)/2};
+  // buiten: de uitsmijter (eerst Luca die met de dozen aankomt, dan de twee van opzij)
   await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:naar(l,d),dozen:4},{actor:'uitsmijter',at:[u.x,u.z],ry:naar(u,l),anim:'armen'},
    rond(d.x,d.z,naar(d,l)+.5,7.5,2.2,2.2),{fade:'in',t:.4},
-   {move:'luca',to:[walk(d.x,d.z+1.6,2).x,walk(d.x,d.z+1.6,2).z],t:1.6,anim:'carry'},
+   {move:'luca',to:[lt.x,lt.z],t:1.6,anim:'carry'},{anim:'uitsmijter',a:'armen',naar:'luca'},
+   rond(mid.x,mid.z,naar(lt,u)+PI/2,4.8,2.1,1.9),
    {say:'uitsmijter',text:'Bestelling voor de baas?',t:2},{say:'luca',text:"Zes pizza's en mezze. Online betaald.",t:2.2},
    ...(sch>0?[{say:'uitsmijter',text:'Die bovenste hangt scheef, kleine.',t:2}]:[]),
    {anim:'uitsmijter',a:'dag'},{say:null,text:'Hij knikt. De zware deur gaat open.',t:2},
    {fade:'out',t:.5},{weg:'uitsmijter'},{weg:'luca'},{binnen:'sahara'},{speler:false},
    // binnen: de camera glijdt door de zaal
    {actor:'luca',at:W('sahara',11.1,25.6),ry:PI,dozen:4},{fn:()=>{const a=C.acteur('luca');if(a)a.g.binnenId=1}},
-   cam(...W3('sahara',11,3.4,27.2),...W3('sahara',10,1.4,18)),{fade:'in',t:.8},
-   camNaar(...W3('sahara',17,2.6,22),...W3('sahara',6,1.2,16),9,{wacht:false}),{fn:()=>G.verteller&&G.verteller('v03')},
+   // hoog uit de hoek bij de deur (over de hoofden van de gasten heen), dan langzaam de zaal in
+   cam(...W3('sahara',20.4,3.9,27.0),...W3('sahara',8,1.0,14.5)),{fade:'in',t:.8},
+   camNaar(...W3('sahara',16.5,3.5,21.5),...W3('sahara',5.5,1.0,15.5),9,{wacht:false}),{fn:()=>G.verteller&&G.verteller('v03')},
    {say:null,text:'Paars en goud licht. Rook van waterpijpen. Lage banken, een DJ in de hoek, voetbal op een groot scherm.',t:4},
    {move:'luca',to:W('sahara',4.6,17.6),t:3.4,anim:'carry'},
    {fn:()=>{stapelOp(B.plek('sahara','bar'),4)}},{anim:'luca',a:'idle',dozen:0},
@@ -548,8 +553,12 @@ stap('h1_verstop',{muziek:'thuis',doel:'Verstop het geld in je kamer',start(o){c
    if(!Object.keys(PL).length)go('h1_nacht')})},stop(){Object.keys(SP).filter(s=>s.startsWith('vs_')).forEach(spotWeg)}});
 
 stap('h1_nacht',{muziek:'thuis',async start(o){const t=nieuw();await binnen('thuis');if(t!==RUN)return;
-  await C.play([{fade:'out',t:.8},{say:null,text:'De deur van de flat valt dicht: mama gaat naar haar nachtdienst. Buiten rijdt een scooter voorbij.',t:3.4},{fn:()=>G.verteller&&G.verteller('v06')},
-   {fn:()=>{ST.avond(2);ST.tijd(16,30)}},{titel:'Avond 2',sub:"Iets extra's",t:3},{fn:()=>G.verteller&&G.verteller('v07')},{fade:'in',t:.8}]);
+  // geen lang zwart beeld: de flat bij nacht, de camera glijdt langzaam langs de gevel terwijl de verteller praat
+  const th=A('thuis',198,483);
+  await C.play([{fade:'out',t:.8},{buiten:true},{speler:false},rond(th.x,th.z,.2,17,7,5),{fade:'in',t:1},
+   rondNaar(th.x,th.z,-.25,13,5,4.5,9,{wacht:false}),
+   {say:null,text:'De deur van de flat valt dicht: mama gaat naar haar nachtdienst. Buiten rijdt een scooter voorbij.',t:3.4},{fn:()=>G.verteller&&G.verteller('v06')},{wait:3.2},
+   {fade:'out',t:.7},{fn:()=>{ST.avond(2);ST.tijd(16,30)}},{titel:'Avond 2',sub:"Iets extra's",t:2.6},{fn:()=>G.verteller&&G.verteller('v07')},{fade:'in',t:.8}]);
   if(t!==RUN)return;go('h2_tas')}});
 
 /* ======================= AVOND 2 · Iets extra's ======================= */
@@ -633,7 +642,12 @@ stap('h1_dexhoek',{doel:'Dex wacht op je bij de hoek',waar:()=>{const a=A('dex',
       {say:'dex',text:'Broer. Ik wil meedoen. Ik meen het. Zeg het tegen hem.',t:2.6,mood:'blij'},{say:'luca',text:'Ik zal kijken. Niemand mag het weten, Dex.',t:2.2}]);F('dex','weet');ST.meter('loy_dex',8)}
    else{await C.play([{say:'luca',text:'Fooi. Rijke mensen op de Zuidas.',t:2},{snd:'lach'},{say:'dex',text:'Ja ja. Fooi.',t:1.6},{say:null,text:'Dex lacht, maar zijn ogen niet.',t:2.2}]);F('dex','gelogen');ST.meter('loy_dex',-8)}
    await C.play([{fade:'out',t:.6},{weg:'dex'},{weg:'luca'},{speler:true},{fn:()=>{ST.avond(3);ST.tijd(17,30)}},{titel:'Avond 3',sub:'Regels',t:3},{fade:'in',t:.6}]);
-   if(t!==RUN)return;go('h3_rapido')}});
+   if(t!==RUN)return;go(G.verhaalScooter&&!F('scooter_aanbod')?'h3_scooter':'h3_rapido')}});
+
+/* ---------- avond 3: Giovanni en Mario's scooter (rijbewijs, zwart rijden of fietsen; verhaal-scooter.js) ---------- */
+stap('h3_scooter',{doel:'Giovanni wil je zien bij Bella Napoli',waar:()=>{const a=A('napoli',419,492);return {x:a.x,z:a.z,r:9}},
+  start(){if(!G.verhaalScooter||F('scooter_aanbod')){setTimeout(()=>go('h3_rapido'),30);return}zorgFiets();dienstAan(false)},
+  async aankomst(){const t=nieuw();fietsAf();tijd(17,45);try{await G.verhaalScooter.aanbod()}catch(e){console.error(e)}if(t!==RUN)return;go('h3_rapido')}});
 
 /* ======================= AVOND 3 · Regels ======================= */
 stap('h3_rapido',{doel:'Een bestelling op de Boulevard',async start(o){const t=nieuw();zorgFiets();dienstAan(false);this._ev=!!F('rapido');const self=this;if(!G.bezorg){go('h3_tellen');return}
@@ -671,17 +685,18 @@ stap('h3_tellen',{doel:'Rafiq wil je spreken in Lounge Sahara',waar:()=>{const a
   async aankomst(){const t=nieuw();fietsAf();await binnen('sahara');if(t!==RUN)return;tijd(19,10);
    const rp=W('sahara',6.4,2.2),lp=W('sahara',6.4,4.6);
    await C.play([{speler:false},{actor:'rafiq',at:rp,ry:0,anim:'tel'},{actor:'luca',at:lp,ry:PI},{fn:()=>['rafiq','luca'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},
-    cam(...W3('sahara',9.6,2.2,5.2),...W3('sahara',6.4,1.0,3.2)),{fade:'in',t:.5},
+    // van opzij: Rafiq en Luca aan weerszijden van de tafel (de achterkamer is maar 5 m diep)
+    cam(...W3('sahara',10.4,2.3,3.6),...W3('sahara',6.4,1.6,3.4)),{fade:'in',t:.5},
     ...(F('nb')==='rafiq'?[{say:'rafiq',text:'Meneer Vos heeft betaald. Hij is tegen een deur gelopen, zegt hij. Blauw oog.',t:3.2,mood:'koel'}]:[]),
     ...(F('agent')==='gevlucht'?[{say:'rafiq',text:'En jij fietst weg van agenten. In een rode jas. Slim, jongen. Heel slim.',t:3.2,mood:'boos'}]:[]),
     {say:'rafiq',text:'Ga zitten. Ik laat je iets zien.',t:2},
-    rond(rp[0],rp[1],.6,1.6,1.4,.9),{anim:'rafiq',a:'tel',prop:'geld'},{snd:'telmachine'},
+    cam(...W3('sahara',8.4,2.5,3.5),...W3('sahara',6.4,1.0,3.5)),{anim:'rafiq',a:'tel',prop:'geld'},{snd:'telmachine'},
     {say:'rafiq',text:'Een rol tel je zonder te kijken. Met je duim. Twintig, veertig, zestig…',t:3.2},
     {say:'rafiq',text:'Geld is stil. Mensen praten. Onthoud dat.',t:2.6,mood:'koel'},{fn:()=>G.verteller&&G.verteller('v09')},
     {say:'rafiq',text:'Nu jij. En let op: er zit vals tussen. Verkeerde kleur, geen strip.',t:3}],{blijf:true});
    if(t!==RUN)return;G.frozen=1e9;const res=await tellen();G.frozen=0;if(t!==RUN)return;
    const sc=res.score;ST.meter('loy_rafiq',sc>=80?8:sc>=50?4:-2);F('tellen',sc);
-   await C.play([{anim:'rafiq',a:'idle',prop:null},
+   await C.play([{anim:'rafiq',a:'idle',prop:null},cam(...W3('sahara',9.4,2.1,4.4),...W3('sahara',6.4,1.9,2.3)),
     {say:'rafiq',text:sc>=80?'…Niet slecht. Echt niet slecht. Mijn neef doet er twee keer zo lang over.':sc>=50?'Langzaam. Maar je leert.':'Dit was geen tellen, jongen. Dit was gokken.',t:3,mood:sc>=80?'blij':'koel'},
     ...(sc>=80?[{anim:'rafiq',a:'give',prop:'geld',naar:'luca'},{snd:'cash'},{fn:()=>ST.geld(150,'bonus')}]:[]),
     {fade:'out',t:.5},{weg:'rafiq'},{weg:'luca'},{speler:true},{fade:'in',t:.5}]);
@@ -768,9 +783,11 @@ stap('h4_binnen',{async start(o){const t=nieuw();fietsAf();if(G.fiets)G.fiets.la
    {fn:()=>['luca','klant_bang','masker','masker2','nova_m'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},
    cam(...W3('rijtjeshuis',9.6,2.2,9.4),...W3('rijtjeshuis',5,1.0,6.5)),{fade:'in',t:.25},{snd:'heart'},
    {say:null,text:'Bivakmutsen. De klant zit op de bank, gezicht naar de grond. Iemand trekt de doos uit je handen.',t:3.4},
-   rond(lp[0],lp[1],PI*.25+PI,1.8,1.7,1.5),{anim:'masker',a:'point',naar:'luca'},
+   cam(...W3('rijtjeshuis',2.3,2.0,5.3),...W3('rijtjeshuis',3.4,1.8,8.3)),{anim:'masker',a:'point',naar:'luca'},
    {say:'masker',text:'Voor wie werk jij? Wie stopt dit in je pizzadoos?',t:2.8,mood:'boos'}],{blijf:true});
-  for(const v of vragen){if(t!==RUN)return;const r=await C.play([rond(lp[0],lp[1],PI*1.1,2.2,1.6,1.4),
+  // twee-shots van opzij: Luca en wie de vraag stelt allebei met hun gezicht in beeld (geen achterhoofd vlak voor de lens)
+  const vraagCam=w=>w==='masker2'?cam(...W3('rijtjeshuis',4.3,2.0,4.8),...W3('rijtjeshuis',5.2,1.8,7.7)):cam(...W3('rijtjeshuis',2.3,2.0,5.3),...W3('rijtjeshuis',3.4,1.8,8.3));
+  for(const v of vragen){if(t!==RUN)return;const r=await C.play([vraagCam(v.wie),
      {keuze:v.o.map(([k,x])=>({t:x,id:k})),wie:v.wie,text:v.q}],{blijf:true});tel[r]=(tel[r]||0)+1;
     await C.play([{snd:r==='stoer'?'punch':'heart'},...(r==='stoer'?[{anim:v.wie,a:'duw',naar:'luca'},{anim:'luca',a:'schrik'}]:[]),{wait:.5}],{blijf:true})}
   if(t!==RUN)return;F('verhoor',tel);

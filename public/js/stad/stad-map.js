@@ -210,7 +210,13 @@ const HAVEN={wmin:14,wmax:20,dmin:14,dmax:17,fmin:2,fmax:3,st:STY.haven,roof:1,g
 alleys.forEach(a=>set(a.x0,a.z0,a.x1,a.z1,T.YARD,[T.GRASS,T.GARDEN,T.PLAZA]));
 
 /* ---------- spullen op straat (decor, sommige blokkeren) ---------- */
-function prop(k,x,z,o){const p=Object.assign({k,x,z},o||{});props.push(p);if(p.solid){const r=p.solid;block(Math.floor(x-r),Math.floor(z-r),Math.ceil(x+r),Math.ceil(z+r))}return p}
+// kleine ronde dingen (paal, boom, pollertje, prullenbak): voor routes blokkeert de tegel (2), maar lopen en fietsen botsen
+// tegen een echte cirkel, zodat je niet aan een onzichtbaar vierkant blijft haken
+const CIRC=new Map(),CC=4;const cKey=(cx,cz)=>cx*4096+cz;
+function prop(k,x,z,o){const p=Object.assign({k,x,z},o||{});props.push(p);if(p.solid){const r=p.solid;
+  if(r<=.5){const x0=Math.floor(x-r),z0=Math.floor(z-r),x1=Math.ceil(x+r),z1=Math.ceil(z+r);for(let a=Math.max(0,z0);a<Math.min(H,z1);a++)for(let b=Math.max(0,x0);b<Math.min(W,x1);b++)if(!solid[a*W+b])solid[a*W+b]=2;
+    const cr=k==='lamp'?.16:k==='bollard'?.13:k==='tree'||k==='stree'?Math.min(r,.3):k==='palm'?.26:r*.85,key=cKey(Math.floor(x/CC),Math.floor(z/CC));let L=CIRC.get(key);if(!L)CIRC.set(key,L=[]);L.push({x,z,r:cr})}
+  else block(Math.floor(x-r),Math.floor(z-r),Math.ceil(x+r),Math.ceil(z+r))}return p}
 const nearRoadCorner=(x,z)=>XS.some(q=>Math.abs(q-x)<RW+SW+1)&&ZS.some(q=>Math.abs(q-z)<RW+SW+1);
 const inPlot=(x,z,m)=>places.some(p=>p.rect&&x>p.rect.x0-(m||0)&&x<p.rect.x1+(m||0)&&z>p.rect.z0-(m||0)&&z<p.rect.z1+(m||0));
 const nearDoor=(x,z)=>places.some(p=>Math.hypot(p.door.x-x,p.door.z-z)<2.6);
@@ -300,7 +306,9 @@ const spawn={x:PLEIN.x+3,z:PLEIN.z+10};
 
 /* ---------- lopen en routes ---------- */
 const walkable=(x,z)=>{x=Math.floor(x);z=Math.floor(z);return inb(x,z)&&!solid[z*W+x]&&g[z*W+x]!==T.WATER};
-function canStand(x,z,r){r=r||.35;return walkable(x-r,z-r)&&walkable(x+r,z-r)&&walkable(x-r,z+r)&&walkable(x+r,z+r)}
+const walkP=(x,z)=>{x=Math.floor(x);z=Math.floor(z);if(!inb(x,z))return false;return solid[z*W+x]!==1&&g[z*W+x]!==T.WATER};
+function circHit(x,z,r){const cx=Math.floor(x/CC),cz=Math.floor(z/CC);for(let a=cx-1;a<=cx+1;a++)for(let b=cz-1;b<=cz+1;b++){const L=CIRC.get(cKey(a,b));if(!L)continue;for(const c of L){const dx=x-c.x,dz=z-c.z,rr=r+c.r;if(dx*dx+dz*dz<rr*rr)return c}}return null}
+function canStand(x,z,r){r=r||.35;return walkP(x-r,z-r)&&walkP(x+r,z-r)&&walkP(x-r,z+r)&&walkP(x+r,z+r)&&!circHit(x,z,r)}
 function nearestWalk(x,z,max){max=max||40;if(canStand(x,z))return{x,z};for(let r=1;r<=max;r++)for(let a=0;a<r*8;a++){const t=a/(r*8)*Math.PI*2,px=x+Math.cos(t)*r,pz=z+Math.sin(t)*r;if(canStand(px,pz))return{x:px,z:pz}}return null}
 // A* over het raster (8 richtingen, niet schuin langs hoeken), daarna rechte stukken waar dat kan. Buffers worden hergebruikt.
 const N_=W*H,gs=new Float32Array(N_),from=new Int32Array(N_),closed=new Uint8Array(N_),stamp=new Uint32Array(N_);let STAMP=0;
@@ -378,5 +386,5 @@ const NET=(function(){const key=(x,z)=>x+','+z,nodes={};const node=(x,z)=>nodes[
 function setSolid(r,on){block(Math.floor(r.x0),Math.floor(r.z0),Math.ceil(r.x1),Math.ceil(r.z1),on?1:0)}
 root.STAD_MAP={NET,districtAt,setSolid,ESTATE,EST_H,EST_B,BIZ_LOOK,alleys,hides,parkPaths,estateAt:(x,z)=>x>=ESTATE.x0&&z>=ESTATE.z0&&z<ESTATE.z1,W,H,FL,T,RW,SW,LANE,
   XS,ZS,VR,HR,RX:XS,RZ:ZS,RXE:[],RZE:[],GATES,A,Z,ground:g,solid,bridgeWalk,buildings,props,places,bridges,DISTRICTS,spawn,jailGate,
-  at,walkable,canStand,nearestWalk,findPath,placeById:id=>places.find(p=>p.id===id),placeByPage:pg=>places.find(p=>p.page===pg)};
+  at,walkable,canStand,circHit,nearestWalk,findPath,placeById:id=>places.find(p=>p.id===id),placeByPage:pg=>places.find(p=>p.page===pg)};
 })(typeof window!=='undefined'?window:globalThis);

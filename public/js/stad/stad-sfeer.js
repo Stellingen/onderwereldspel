@@ -324,8 +324,9 @@ function weerScr(scr,head){const t=Date.now(),k=weerNat(),kl=G.klok(t),night=G.n
    <p class="sd-p2-note">Een speldag (4 uur) is één dag en nacht. Een speluur duurt 10 minuten.</p></div>`}
 function phoneApp(){if(!G.phone||!G.phone.add)return;G.phone.add({k:'weer',n:'Weer',ic:wIcon('zon',false),c:'#7fc8ff',after:'contacten',render:(scr,head)=>weerScr(scr,head)})}
 /* ---------- titelkaart bij binnenkomst ---------- */
-function titleCard(){try{if(typeof inJail==='function'&&inJail())return;if(G.ui&&G.ui.cur&&G.ui.cur())return}catch(e){}
-  const d=new Date(),el=document.createElement('div');el.className='sd-title';el.innerHTML=`<i></i><div><small>${K.E(d.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'}))} · ${G.klok?G.klok().txt:''} · ${K.E(naamVan(W.k,G.night>.6))}</small><b>Pixelstad</b><span>${K.E(M.districtAt(G.P.x,G.P.z))}</span></div><i></i>`;
+function titleCard(){try{if(typeof inJail==='function'&&inJail())return;if(G.ui&&G.ui.cur&&G.ui.cur())return;if(G.cut&&G.cut.active&&G.cut.active())return}catch(e){}
+  const verhaal=!!(G.story&&G.story.pagina==='verhaal');
+  const d=new Date(),el=document.createElement('div');el.className='sd-title';el.innerHTML=`<i></i><div><small>${K.E(d.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'}))} · ${G.klok?G.klok().txt:''} · ${K.E(naamVan(W.k,G.night>.6))}</small><b>${verhaal?'Noordhaven':'Pixelstad'}</b><span>${K.E(M.districtAt(G.P.x,G.P.z))}</span></div><i></i>`;
   document.body.appendChild(el);G.dist=Math.min(74,G.distT*1.55);setTimeout(()=>el.classList.add('uit'),2300);setTimeout(()=>el.remove(),3100)}
 /* ---------- koppelen ---------- */
 weerDoel();Object.assign(W,Wt);phoneApp();
@@ -336,7 +337,9 @@ let enK=null;setInterval(()=>{const k0=W.k;weerDoel();if(W.k!==k0)hud();
 let slowT=0;
 const wait=setInterval(()=>{if(!G.ready||!G.post)return;clearInterval(wait);
   try{setupSky();setupBirds();setupCats();setupBoats();setupUmb()}catch(e){console.error(e)}
-  G.applyLight&&G.applyLight();titleCard();
+  G.applyLight&&G.applyLight();
+  // in het verhaal pas na een tel, en niet als er meteen een cutscène begint of je binnen staat
+  if(G.story&&G.story.pagina==='verhaal')setTimeout(()=>{if(!(G.cut&&G.cut.active&&G.cut.active())&&!(G.binnen&&G.binnen.waar&&G.binnen.waar())&&!document.body.classList.contains('sv-incut'))titleCard()},1500);else titleCard();
   const f=G.onFrame;G.onFrame=dt=>{f&&f(dt);if(G.paused)return;const ts=performance.now()/1000;try{skyStep(dt,ts);flashStep(dt);puffStep(dt);birdStep(dt,ts);catStep(dt,ts);boatStep(dt,ts);ambStep(dt);umbStep();
     if(performance.now()-slowT>1200){slowT=performance.now();volkStep();strandStep()}}catch(e){if(!G._sfErr){G._sfErr=1;console.error(e)}}}},220);
 })();

@@ -81,8 +81,8 @@ function hud(){try{
   avatar()}catch(e){}}
 setInterval(hud,400);hud();
 // wijknaam: in beeld als je een nieuwe wijk in loopt (zoals in GTA)
-function loc(){const P=G.P;if(!P)return;const n=M.districtAt(P.x,P.z);if(n===lastLoc)return;const first=!lastLoc;lastLoc=n;$s('sdLoc').textContent=n;if(first||G.paused)return;
-  const a=$s('sdArea');a.querySelector('small').textContent=M.estateAt&&M.estateAt(P.x,P.z)?'Oostland · jouw terrein':G.wijkOwn&&G.wijkOwn(P.x,P.z)?'Jouw wijk':'Pixelstad';a.classList.remove('bad');a.querySelector('b').textContent=n;a.hidden=false;a.classList.remove('go');void a.offsetWidth;a.classList.add('go');clearTimeout(areaT);areaT=setTimeout(()=>{a.hidden=true},3200)}
+function loc(){const P=G.P;if(!P)return;const n=M.districtAt(P.x,P.z);if(n===lastLoc)return;const first=!lastLoc;lastLoc=n;$s('sdLoc').textContent=n;if(first||G.paused||(G.cut&&G.cut.active&&G.cut.active())||G.spelerWeg)return;
+  const a=$s('sdArea');a.querySelector('small').textContent=M.estateAt&&M.estateAt(P.x,P.z)?'Oostland · jouw terrein':G.wijkOwn&&G.wijkOwn(P.x,P.z)?'Jouw wijk':(G.story&&G.story.pagina==='verhaal'?'Noordhaven':'Pixelstad');a.classList.remove('bad');a.querySelector('b').textContent=n;a.hidden=false;a.classList.remove('go');void a.offsetWidth;a.classList.add('go');clearTimeout(areaT);areaT=setTimeout(()=>{a.hidden=true},3200)}
 
 /* ---------- minikaart ---------- */
 const mapCv=X.mapCanvas(),mini=$s('sdMini'),mc=mini.getContext('2d');mc.imageSmoothingEnabled=false;

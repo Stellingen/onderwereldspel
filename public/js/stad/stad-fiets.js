@@ -123,6 +123,42 @@ function buildBike(o){o=o||{};const col=o.kleur||'#2d6c8c';
   const beam=new TH.Mesh(new TH.PlaneGeometry(3,5),new TH.MeshBasicMaterial({map:beamTex(),color:0xfff2c8,transparent:true,opacity:0,depthWrite:false,blending:TH.AdditiveBlending}));beam.rotation.x=-Math.PI/2;beam.position.set(0,.04,3.4);root.add(beam);
   root.traverse(m=>{if(m.isMesh&&m.material===ML)m.castShadow=true});
   return {root,lean,steer,wF,wR,crank,pedL,pedR,links,stand,bagF,bagR,boxes,bell,beam,col}}
+/* =================== de scooter van Bella Napoli (zelfde opbouw als de fiets, zodat rijden, tassen en camera gewoon werken) =================== */
+const RS_=.27;
+function scootWheel(){const k=new Kit();k.ring(RS_-.04,.08,.11,16,'#18191c',0,0,0);k.box(.12,.22,.22,0,0,0,'#c9cfd6');k.box(.13,.08,.08,0,0,0,'#5a5f66');return k.mesh()}
+function scooterBody(col){const k=new Kit(),c2=new TH.Color(col).multiplyScalar(.72).getStyle(),cr='#f1ece0',zw='#1b1c1f';
+  k.box(.34,.08,.64,0,.3,.12,zw);k.box(.36,.02,.6,0,.345,.12,'#3a3d42');                 // treeplank met rubber
+  k.box(.42,.34,.74,0,.53,-.42,col);k.box(.46,.12,.62,0,.38,-.42,c2);                     // achterkap met de motor
+  k.box(.06,.05,.5,.215,.6,-.42,cr);k.box(.06,.05,.5,-.215,.6,-.42,cr);                    // witte biesjes
+  k.box(.32,.1,.52,0,.76,-.36,'#2a2420');k.box(.34,.04,.54,0,.71,-.36,'#1a1714');          // zadel
+  k.box(.36,.64,.1,0,.62,.46,col);k.box(.3,.22,.14,0,.36,.38,col);k.box(.38,.04,.12,0,.95,.46,cr);// voorschild
+  k.box(.18,.08,.02,0,.7,.515,cr);k.box(.1,.05,.022,0,.7,.52,'#c62a22');                 // BN-plaatje op het schild
+  k.box(.08,.06,.04,0,.46,-.8,'#ff3a2a',1);k.box(.06,.05,.05,.18,.6,-.78,'#ffb02a',1);k.box(.06,.05,.05,-.18,.6,-.78,'#ffb02a',1);// achterlicht, knipperlichten
+  k.box(.48,.03,.48,0,.81,-.72,'#2a2c30');k.tube([.18,.8,-.5],[.2,.62,-.42],.03,'#2a2c30');k.tube([-.18,.8,-.5],[-.2,.62,-.42],.03,'#2a2c30');// drager voor de box
+  k.tube([.16,.24,-.18],[.17,.22,-.84],.07,'#8a9097');k.box(.09,.09,.09,.17,.22,-.86,'#5a5f66');// uitlaat
+  k.ring(RS_+.05,.03,.16,8,c2,0,RS_,-.6,.3,Math.PI-.2);                                     // spatbord achter
+  k.box(.34,.04,.3,0,.12,-.2,zw);                                                           // onderkant motor
+  return k.mesh()}
+function scooterFront(col){const k=new Kit(),cr='#f1ece0';// stuurgroep, oorsprong bij het stuur
+  k.tube([0,0,0],[0,-.52,.06],.07,'#3a3d42');k.box(.18,.36,.08,0,-.26,.0,col);
+  k.box(.58,.05,.05,0,.06,-.02,'#3a3d42');[-1,1].forEach(s=>k.box(.06,.06,.13,s*.31,.06,-.06,'#1b1c1f'));
+  k.box(.22,.13,.09,0,.02,.06,col);k.box(.13,.08,.03,0,.02,.115,'#fff6d0',1);k.box(.24,.03,.1,0,.1,.04,cr);
+  [-1,1].forEach(s=>{k.tube([s*.22,.06,-.02],[s*.28,.22,-.02],.02,'#c9cfd6');k.box(.1,.07,.02,s*.29,.25,-.02,'#9aa1a9')});// spiegeltjes
+  k.tube([.07,-.5,.06],[.07,RS_-1.0,.1],.05,'#3a3d42');k.ring(RS_+.05,.03,.16,7,col,0,RS_-1.0,.1,-.2,2.0);
+  return k.mesh()}
+function buildScooter(o){o=o||{};const col=o.kleur||'#c62a22';const root=new TH.Group(),lean=new TH.Group();root.add(lean);
+  lean.add(scooterBody(col));
+  const steer=new TH.Group();steer.position.set(0,1.0,.52);lean.add(steer);steer.add(scooterFront(col));
+  const wF=scootWheel();wF.position.set(0,RS_-1.0,.1);steer.add(wF);const wR=scootWheel();wR.position.set(0,RS_,-.6);lean.add(wR);
+  const crank=new TH.Group(),pedL=new TH.Group(),pedR=new TH.Group(),bell=new TH.Group(),bagF=new TH.Group();lean.add(crank,pedL,pedR,bagF);steer.add(bell);
+  const sk=new Kit();sk.tube([0,0,0],[.06,-.24,-.08],.04,'#2a2c30');const stand=sk.mesh();stand.position.set(.15,.28,-.12);lean.add(stand);
+  const bagR=bagMesh(.52,.44,.52,false);bagR.position.set(0,.825,-.72);lean.add(bagR);
+  const proto=boxMesh(),boxes={F:[],R:[]};for(let i=0;i<8;i++){const b=proto.clone();b.position.set(0,.825+.045+i*.075,-.72);lean.add(b);boxes.R.push(b);b.visible=false}
+  const beam=new TH.Mesh(new TH.PlaneGeometry(3.4,6),new TH.MeshBasicMaterial({map:beamTex(),color:0xfff2c8,transparent:true,opacity:0,depthWrite:false,blending:TH.AdditiveBlending}));beam.rotation.x=-Math.PI/2;beam.position.set(0,.04,3.9);root.add(beam);
+  root.traverse(m=>{if(m.isMesh&&m.material===ML)m.castShadow=true});
+  return {root,lean,steer,wF,wR,crank,pedL,pedR,links:[],stand,bagF,bagR,boxes,bell,beam,col,scooter:true}}
+G.scooterModel=o=>{const b=buildScooter(o);b.lean.rotation.z=-.08;return bake(b.root)};
+
 // los decorfietsje (voor het rek bij de pizzeria): alles samengevoegd tot één model
 function decorBike(col,bags){const b=buildBike({kleur:col});b.stand.visible=true;b.lean.rotation.z=-.12;posePedals(b,0,0);b.links.forEach(l=>l.visible=false);
   if(!bags){b.bagF.visible=false}b.beam.visible=false;return bake(b.root)}
@@ -162,7 +198,7 @@ function ik(leg,H,E,hint){_d.subVectors(E,H);let d=_d.length();const max=THIGH+S
   leg.ft.position.copy(_a)}
 
 /* =================== toestand =================== */
-const F={bike:null,on:false,rider:null,last:0,scheef:0,adem:1,sprint:false,bal:null,val:0,ring:0,
+const F={type:'fiets',pref:'fiets',bike:null,on:false,rider:null,last:0,scheef:0,adem:1,sprint:false,bal:null,val:0,ring:0,
   dbg:{ped:0,wall:0,car:0},x:0,z:0,ry:0,v:0,lat:0,lean:0,steerV:0,crank:0,wheel:0,bump:0,bumpV:0,tick:0,prevT:null,curbCd:0,railCd:0,surf:'',ogen:false,prevCar:null,kleur:null};
 const bikeObj={fiets:1,x:0,z:0,ry:0,v:0,d:{name:'Fiets',max:14},dmg:0,kind:'city',mesh:null};
 // welke kant: lokaal +x is links van de berijder
@@ -174,7 +210,7 @@ function posePedals(b,phase,pedalOn){const x=.16;
 function chainStep(b,phase){const n=b.links.length,top=[[.1,BB[1]+.12,BB[2]],[.1,R+.065,AX_R]],bot=[[.1,R-.065,AX_R],[.1,BB[1]-.12,BB[2]]];
   b.links.forEach((m,i)=>{let u=((i/n)+phase*.22)%1;if(u<0)u+=1;const s=u<.5?top:bot,t=(u%.5)*2;m.position.set(.1,s[0][1]+(s[1][1]-s[0][1])*t,s[0][2]+(s[1][2]-s[0][2])*t);
     m.rotation.x=Math.atan2(s[1][1]-s[0][1],s[1][2]-s[0][2])})}
-function setBoxes(){const b=F.bike;if(!b)return;const n=clamp(F.last|0,0,8),f=Math.floor(n/2),r=n-f;
+function setBoxes(){const b=F.bike;if(!b)return;const n=clamp(F.last|0,0,8),f=b.scooter?0:Math.floor(n/2),r=n-f;
   b.boxes.F.forEach((m,i)=>{m.visible=i<f;m.rotation.set(0,0,0);m.position.x=0});b.boxes.R.forEach((m,i)=>{m.visible=i<r;m.rotation.set(0,0,0);m.position.x=0});
   // scheve pizza's: de bovenste dozen hangen scheef
   let s=Math.min(F.scheef,n);const tilt=(m,k)=>{m.rotation.z=(k%2?-.22:.25);m.rotation.y=(k%2?.18:-.12);m.position.x=k%2?-.05:.05};
@@ -232,19 +268,24 @@ const SND={
   klap:()=>{ping(110,0,.2,.4,'sine');rattle(0,.25,.5,700);rattle(.05,.2,.25,3200)},
   stand:()=>rattle(0,.08,.2,2400),
   dozen:()=>rattle(0,.14,.22,1300),
-  op:()=>{rattle(0,.06,.18,2000);ping(880,.05,.05,.04,'square')}};
+  op:()=>{rattle(0,.06,.18,2000);ping(880,.05,.05,.04,'square')},
+  toeter:()=>{ping(415,0,.32,.1,'square');ping(523,0,.32,.08,'square');ping(415,.36,.22,.08,'square');ping(523,.36,.22,.06,'square')}};
 G.fietsSnd=SND;
 
 /* =================== spawnen, op- en afstappen =================== */
-function ensureBike(){if(F.bike)return F.bike;const b=buildBike({kleur:F.kleur||undefined});F.bike=b;G.scene().add(b.root);bikeObj.mesh=b.root;setBoxes();return b}
+function ensureBike(){if(F.bike)return F.bike;const b=F.type==='scooter'?buildScooter({kleur:F.kleur||undefined}):buildBike({kleur:F.kleur||undefined});bikeObj.d.name=F.type==='scooter'?'Scooter':'Fiets';bikeObj.d.max=F.type==='scooter'?16:14;F.bike=b;G.scene().add(b.root);bikeObj.mesh=b.root;setBoxes();return b}
 function place(){const b=F.bike;if(!b)return;b.root.position.set(F.x,F.bump,F.z);b.root.rotation.y=F.ry;bikeObj.x=F.x;bikeObj.z=F.z;bikeObj.ry=F.ry;bikeObj.v=F.v}
 const okAt=(x,z,ry)=>{const fx=Math.sin(ry),fz=Math.cos(ry);return M.canStand(x,z,.22)&&M.canStand(x+fx*.62,z+fz*.62,.17)&&M.canStand(x-fx*.6,z-fz*.6,.17)};
+// hoeveel van de drie punten (midden, voorwiel, achterwiel) ergens in zitten: 0 = vrij. Zit je al half vast, dan mag elke beweging
+// die het niet erger maakt (anders kom je er nooit meer uit)
+const penAt=(x,z,ry)=>{const fx=Math.sin(ry),fz=Math.cos(ry);return (M.canStand(x,z,.22)?0:1)+(M.canStand(x+fx*.62,z+fz*.62,.17)?0:1)+(M.canStand(x-fx*.6,z-fz*.6,.17)?0:1)};
 // een vrije plek voor de hele fiets (wielen en tassen), zo dicht mogelijk bij x,z; eerst in de gevraagde richting
 function freeAt(x,z,ry){const R=[ry,ry+Math.PI,ry+Math.PI/2,ry-Math.PI/2];if(okAt(x,z,ry))return {x,z,ry};
   for(let r=.5;r<=8;r+=.5)for(let a=0;a<16;a++){const t=a/16*Math.PI*2,px=x+Math.cos(t)*r,pz=z+Math.sin(t)*r;for(const q of R)if(okAt(px,pz,q))return {x:px,z:pz,ry:q}}
   const p=M.nearestWalk(x,z,12)||{x,z};return {x:p.x,z:p.z,ry}}
-function spawn(x,z,ry,o){o=o||{};if(o.kleur&&F.kleur!==o.kleur){F.kleur=o.kleur;if(F.bike&&!F.on){G.scene().remove(F.bike.root);F.bike=null}}
-  if(F.on)af(true);const p=freeAt(x,z,ry||0);F.x=p.x;F.z=p.z;F.ry=p.ry;F.v=0;F.lat=0;
+function spawn(x,z,ry,o){o=o||{};if(F.on)af(true);const ty=o.type||F.pref||'fiets';
+  if((o.kleur&&F.kleur!==o.kleur)||ty!==F.type){if(o.kleur)F.kleur=o.kleur;F.type=ty;if(F.bike){G.scene().remove(F.bike.root);F.bike=null;F.rider=null;bikeObj.mesh=null}}
+  const p=freeAt(x,z,ry||0);F.x=p.x;F.z=p.z;F.ry=p.ry;F.v=0;F.lat=0;
   ensureBike();F.bike.root.visible=true;parkPose();place();spotSync();return bikeObj}
 function parkPose(){const b=F.bike;if(!b)return;b.stand.visible=true;b.stand.rotation.x=0;F.lean=0;b.lean.rotation.z=-.13;b.steer.rotation.y=.35;posePedals(b,.4,0);if(F.rider)F.rider.g.visible=false;b.beam.material.opacity=0}
 function riderSync(force){if(!F.bike)return;const k=lookKey();if(!force&&F.rider&&F.rider.key===k)return;
@@ -260,7 +301,8 @@ function op(o){o=o||{};if(F.on)return true;if(!F.bike){toast('Er staat hier geen
   G.P.x=F.x;G.P.z=F.z;G.P.ry=F.ry;G.P.vx=G.P.vz=0;
   if(performance.now()-(G.manualRotT||0)>800)G.yawT=F.ry+Math.PI;
   spotSync();hud();if(G.carHud)G.carHud();document.body.classList.add('sd-fiets');
-  if(!op.told){op.told=1;toast(touch?'Stuur met de stick. Helemaal uit = staand trappen. Bel met de knop.':'W/S trappen en remmen · A/D sturen · Shift staand trappen · B bel · F afstappen','info')}
+  if(F.type==='scooter'&&!op.toldS){op.toldS=1;toast(touch?'Gas met de stick. Stick naar achteren = remmen en achteruit. Toeteren met de knop.':'W gas · S remmen en achteruit · A/D sturen · B toeter · F afstappen','info')}
+  else if(F.type!=='scooter'&&!op.told){op.told=1;toast(touch?'Stuur met de stick. Helemaal uit = hard trappen (kost energie). Stick naar achteren = remmen en achteruit.':'W/S trappen en remmen (S = ook achteruit) · A/D sturen · Shift hard trappen (kost energie) · B bel · F afstappen','info')}
   try{F.onOp&&F.onOp()}catch(e){}return true}
 function af(quiet){if(!F.on)return;F.on=false;G.driving=false;G.car=F.prevCar&&F.prevCar!==bikeObj?F.prevCar:null;F.v=0;F.lat=0;F.bal&&balEnd(null);
   const b=F.bike;riderShow(false);parkPose();place();
@@ -282,7 +324,7 @@ addEventListener('keydown',e=>{if(G.paused||e.repeat||!G.ready)return;const t=e.
   if(k==='b'&&F.on){bel()}},true);
 
 /* =================== bel =================== */
-function bel(){if(!F.on&&!F.bike)return;if(F.ring>0)return;F.ring=.55;SND.bel();
+function bel(){if(!F.on&&!F.bike)return;if(F.ring>0)return;F.ring=.55;if(F.type==='scooter')SND.toeter();else SND.bel();
   // mensen voor je stappen opzij
   const fx=Math.sin(F.ry),fz=Math.cos(F.ry);(G.NPC||[]).forEach(n=>{const dx=n.x-F.x,dz=n.z-F.z,a=dx*fx+dz*fz,s=Math.abs(dx*fz-dz*fx);if(a>0&&a<12&&s<3.2&&!n.fixed&&n.st!=='aangereden'){n.stop=0;n.dx=Math.abs(fz)>.5?(dx>0?1:-1):0;n.dz=Math.abs(fx)>.5?(dz>0?1:-1):0;
     if(Math.random()<.35&&G.bubble)G.bubble(n,pick(['Ja ja!','Oei!','Rustig aan!','Sorry!','Pizzajongen!']),{col:'#ffe0a0'})}});
@@ -338,42 +380,65 @@ function hitPeds(){if(F.v<2.5)return;const fx=Math.sin(F.ry),fz=Math.cos(F.ry);(
       const sd=(dx*fz-dz*fx)>0?1:-1,nx=n.x+fz*sd*.12,nz=n.z-fx*sd*.12;if(M.canStand(nx,nz,.3)){n.x=nx;n.z=nz}}})}
 function input(){const K=G.K||{};let thr=0,brk=0,steer=0,sprint=false;
   if(G.joy&&G.joy.on){const jx=G.joy.x,jy=G.joy.y,mag=Math.min(1,Math.hypot(jx,jy));if(mag>.18){const fx=-Math.sin(G.yaw),fz=-Math.cos(G.yaw),rx=Math.cos(G.yaw),rz=-Math.sin(G.yaw),wx=rx*jx+fx*jy,wz=rz*jx+fz*jy;
-      const r=wrap(Math.atan2(wx,wz)-F.ry);if(Math.abs(r)>2.3&&F.v>.6){brk=mag;steer=0}else{steer=clamp(r*1.7,-1,1);thr=mag*(Math.abs(r)>1.4&&F.v>4?.4:1)}sprint=mag>.9||!!G.runToggle}}
-  else{thr=(K.w||K.arrowup)?1:0;brk=(K.s||K.arrowdown)?1:0;steer=((K.a||K.arrowleft)?1:0)-((K.d||K.arrowright)?1:0);sprint=!!K.shift||!!G.runToggle}
-  if(G.talking||G.carFreeze||G.frozen>0||F.val>0){thr=0;brk=G.talking?1:brk;steer=0;sprint=false}
-  return {thr,brk,steer,sprint}}
+      const r=wrap(Math.atan2(wx,wz)-F.ry);F.wantRy=Math.atan2(wx,wz);
+      // stick naar achteren: eerst remmen, dan langzaam achteruit en tegelijk de neus naar de stick draaien (een keerbocht in drie keer)
+      if(Math.abs(r)>2.3&&F.v>.6){brk=mag;steer=0}else if(Math.abs(r)>2.3){brk=mag;steer=-Math.sign(r)}else{steer=clamp(r*1.7,-1,1);thr=mag*(Math.abs(r)>1.4&&F.v>4?.4:1)}sprint=mag>.9||!!G.runToggle}else F.wantRy=null}
+  else{F.wantRy=null;thr=(K.w||K.arrowup)?1:0;brk=(K.s||K.arrowdown)?1:0;steer=((K.a||K.arrowleft)?1:0)-((K.d||K.arrowright)?1:0);sprint=!!K.shift||!!G.runToggle}
+  let hold=false;if(G.talking||G.carFreeze||G.frozen>0||F.val>0){thr=0;brk=G.talking?1:brk;steer=0;sprint=false;hold=true}
+  return {thr,brk,steer,sprint,hold}}
 function rideStep(dt){const I=input(),e=ease(),n=F.last;
   // vallen: even liggen, dan weer overeind
   if(F.val>0){F.val-=dt;const k=F.val>.5?1:F.val/.5;F.lean+=(F.valSide*1.3*k-F.lean)*Math.min(1,dt*10);if(F.val<=0)F.lean=0;F.v=0;applyPose(dt,0,0);place();syncP(dt);return}
+  // losgezet: de fiets glijdt in een kwart seconde naar een vrije plek
+  if(F.glide){const g=F.glide;g.t=Math.min(1,g.t+dt/.32);const k=g.t*g.t*(3-2*g.t);F.x=g.x0+(g.x1-g.x0)*k;F.z=g.z0+(g.z1-g.z0)*k;F.ry=g.r0+wrap(g.r1-g.r0)*k;F.v=0;F.lat=0;if(g.t>=1)F.glide=null;applyPose(dt,0,0);place();syncP(dt);return}
   const su=surface(F.x,F.z);F.surf=su.k;
   let wg=1;try{wg=G.weerFx?clamp(+G.weerFx().grip||1,.4,1):1}catch(err){}
   const grip=clamp(Math.min(su.grip,1-(1-wg)*1.7),.32,1);
-  // adem: staand trappen kost adem, uitrollen en rustig trappen geeft hem terug
-  const canSpr=I.sprint&&I.thr>.2&&(F.adem>.02)&&!(F.sprint===false&&F.adem<.25&&F.ademLeeg);
-  F.sprint=canSpr;if(canSpr){F.adem=Math.max(0,F.adem-dt*(.085+.008*n)*(1-.3*e));if(F.adem<=0)F.ademLeeg=true}else{F.adem=Math.min(1,F.adem+dt*(I.thr>.2?.1:.2));if(F.adem>.3)F.ademLeeg=false}
-  const loadK=1-.04*n,accK=1/(1+.09*n),brkK=1/(1+.14*n),turnK=1/(1+.075*n);
-  const vmax=(canSpr?14.2:10.4)*loadK*su.max*(F.bal?.85:1);
+  // energie: hard trappen (Shift of de stick helemaal uit) kost energie, rustig fietsen en uitrollen geeft het terug.
+  // Op = moe: dan fiets je een tijdje trager (geen schudden of wiebelen) tot je energie weer is opgebouwd.
+  const sc=F.type==='scooter';
+  const canSpr=!sc&&!F.moe&&I.sprint&&I.thr>.2&&F.adem>0&&F.v>1.5;
+  F.sprint=canSpr;if(sc){F.adem=1;F.moe=false}
+  else if(canSpr){F.adem=Math.max(0,F.adem-dt*(.085+.008*n)*(1-.3*e));if(F.adem<=0){F.moe=true;moeMelding()}}
+  else F.adem=Math.min(1,F.adem+dt*(F.moe?.075:(I.thr>.2?.1:.2)));
+  if(F.moe&&F.adem>=.45){F.moe=false;try{F.onMoe&&F.onMoe(false)}catch(err){}}
+  const loadK=1-(sc?.015:.04)*n,accK=1/(1+(sc?.04:.09)*n),brkK=1/(1+(sc?.08:.14)*n),turnK=1/(1+(sc?.04:.075)*n);
+  const vmax=(sc?16.8:canSpr?14.2:F.moe?7.4:10.4)*loadK*su.max*(F.bal?.85:1);
   // gas, remmen en uitrollen
-  if(I.thr>0&&F.v<vmax)F.v=Math.min(vmax,F.v+(canSpr?7.2:5)*I.thr*accK*dt*(F.v<3?1.3:1));
+  if(I.thr>0&&F.v<vmax)F.v=Math.min(vmax,F.v+(sc?6.4:canSpr?7.2:F.moe?3.2:5)*I.thr*accK*dt*(F.v<3?1.3:1));
   if(F.v>vmax)F.v=Math.max(vmax,F.v-4.5*dt);
-  if(I.brk>0){if(F.v>.05){const was=F.v;F.v=Math.max(0,F.v-12*brkK*(.55+.45*grip)*I.brk*dt);if(was>6&&!F.remT){F.remT=.6;SND.rem()}}else F.v=Math.max(-1.3,F.v-3*dt)}
+  if(I.brk>0){if(F.v>.05){const was=F.v;F.v=Math.max(0,F.v-12*brkK*(.55+.45*grip)*I.brk*dt);if(was>6&&!F.remT){F.remT=.6;SND.rem()}}else if(!I.hold)F.v=Math.max(-1.6,F.v-3*dt);else F.v=Math.min(0,F.v+3*dt)}
   else if(I.thr<=0)F.v-=Math.sign(F.v)*Math.min(Math.abs(F.v),(.35+Math.abs(F.v)*.04)*su.roll*dt);
   if(F.remT>0)F.remT-=dt;
   // sturen: wendbaar bij lage snelheid, stabieler bij hoge; met lading en op gladde grond trager
   const sp=Math.abs(F.v),stIn=I.steer+(F.bal?Math.sin(F.bal.t*9)*.25:0);
   F.steerV+=(stIn-F.steerV)*Math.min(1,dt*(9*turnK));
   const rate=F.steerV*(2.8-1.35*Math.min(1,sp/14))*turnK*Math.min(1,(sp+.5)/2.2)*(.75+.25*grip)*(F.v<0?-1:1);
-  const r0=F.ry;F.ry+=rate*dt;if(!okAt(F.x,F.z,F.ry))F.ry=r0;
+  const r0=F.ry,p0=penAt(F.x,F.z,r0);let blk=false;F.ry+=rate*dt;
+  if(!okAt(F.x,F.z,F.ry)){// tegen een muur of paal aan draaien: schuif een paar centimeter zodat de draai past
+    let fixed=false;const nfx=Math.sin(F.ry),nfz=Math.cos(F.ry),nrx=Math.cos(F.ry),nrz=-Math.sin(F.ry);
+    for(const [a,b] of [[-.08,0],[.08,0],[0,.08],[0,-.08],[-.16,0],[-.1,.1],[-.1,-.1]]){const nx=F.x+nfx*a+nrx*b,nz=F.z+nfz*a+nrz*b;if(okAt(nx,nz,F.ry)){F.x=nx;F.z=nz;fixed=true;break}}
+    if(!fixed&&!(p0>0&&penAt(F.x,F.z,F.ry)<=p0)){F.ry=r0;if(Math.abs(rate)>.05)blk=true}}
   // glijden: op zand of een natte weg schuift de fiets in een scherpe bocht naar buiten
   if(grip<.98&&sp>5)F.lat+=(-rate*sp*(1-grip)*.55)*dt;F.lat*=Math.pow(.02+.2*(1-grip),dt);
   if(Math.abs(F.lat)>2.4&&grip<.75)val('Uitgegleden!');
   const fx=Math.sin(F.ry),fz=Math.cos(F.ry),rx=Math.cos(F.ry),rz=-Math.sin(F.ry);
   const dx=(fx*F.v+rx*F.lat)*dt,dz=(fz*F.v+rz*F.lat)*dt,x0=F.x,z0=F.z;let imp=0;
   if(okAt(F.x+dx,F.z+dz,F.ry)){F.x+=dx;F.z+=dz}
-  else if(okAt(F.x+dx,F.z,F.ry)&&Math.abs(dx)>1e-4){F.x+=dx;imp=Math.abs(fz*F.v);F.v*=Math.abs(fx)*.9+.05;F.lat*=.3}
-  else if(okAt(F.x,F.z+dz,F.ry)&&Math.abs(dz)>1e-4){F.z+=dz;imp=Math.abs(fx*F.v);F.v*=Math.abs(fz)*.9+.05;F.lat*=.3}
-  else{imp=Math.abs(F.v);F.v=-F.v*.15;F.lat=0;F.dbg.wall++}
-  if(!okAt(F.x,F.z,F.ry)){const p=M.nearestWalk(F.x,F.z,4);if(p){F.x=p.x;F.z=p.z}}
+  // langs een muur: één keer een tik (niet elke frame schudden), de snelheid langs de muur blijft en het stuur draait vanzelf mee
+  else if(okAt(F.x+dx,F.z,F.ry)&&Math.abs(dx)>1e-4){F.x+=dx;if(!(F.wallC>0))imp=Math.abs(fz*F.v);F.wallC=.3;F.v*=Math.max(Math.abs(fx)*.9+.05,.82);F.lat*=.3;langs(Math.sign(dx)*Math.PI/2,dt)}
+  else if(okAt(F.x,F.z+dz,F.ry)&&Math.abs(dz)>1e-4){F.z+=dz;if(!(F.wallC>0))imp=Math.abs(fx*F.v);F.wallC=.3;F.v*=Math.max(Math.abs(fz)*.9+.05,.82);F.lat*=.3;langs(dz>0?0:Math.PI,dt)}
+  else if(p0>0&&penAt(F.x+dx,F.z+dz,F.ry)<=p0){F.x+=dx;F.z+=dz}// zit je al half vast: wegrijden mag altijd
+  else{if(!(F.wallC>0))imp=Math.abs(F.v);F.wallC=.3;F.v=Math.abs(F.v)>6?-F.v*.15:0;F.lat=0;F.dbg.wall++;blk=true}// alleen bij een harde klap terugstuiteren, anders geen heen-en-weer
+  F.wallC=(F.wallC||0)-dt;
+  // vast? (je wilt rijden of draaien, maar komt nergens) Dan zet hij je zelf los, met de neus de kant op die je wilt
+  const prog=Math.hypot(F.x-x0,F.z-z0)+Math.abs(wrap(F.ry-r0))*.6,want=I.thr>.2||(I.brk>.2&&!I.hold)||Math.abs(I.steer)>.4;
+  if(want&&(blk||prog<dt*.3))F.stk=(F.stk||0)+dt;else F.stk=Math.max(0,(F.stk||0)-dt*2);
+  // ook als je heen en weer stuitert tegen een muur: kijk per ~1 tel of je netto ergens komt
+  const w=F.win||(F.win={x:F.x,z:F.z,ry:F.ry,t:0});if(want){w.t+=dt;if(w.t>1.1){const stil=Math.hypot(F.x-w.x,F.z-w.z)<.45&&Math.abs(wrap(F.ry-w.ry))<.45;w.x=F.x;w.z=F.z;w.ry=F.ry;w.t=0;if(stil)F.stk=9}}else{w.x=F.x;w.z=F.z;w.ry=F.ry;w.t=0}
+  if(penAt(F.x,F.z,F.ry)>0)F.inT=(F.inT||0)+dt;else F.inT=0;
+  if(F.stk>.75||F.inT>.4){loskomen();F.win=null;return}
+  if(Math.abs(I.steer)>.3)F.lastSteer=I.steer;
   const pc=pushCars(dt);if(pc.imp>imp)imp=pc.imp;
   if(imp>7.5)val(pc.by?'Tegen een auto!':'Klap!',imp>10);else if(imp>3.2){SND.hobbel(.6);G.shake&&G.shake(.12);if(F.last>0&&!F.bal&&Math.random()<.5)balans({waarom:'Bonk! Hou je tas recht'})}
   // een rijdende auto die jou raakt
@@ -386,6 +451,21 @@ function rideStep(dt){const I=input(),e=ease(),n=F.last;
   applyPose(dt,I.thr,I.steer);place();syncP(dt);
   // vrijloop: tikken als je uitrolt
   if(F.v>1.5&&I.thr<=0){F.tick+=dt*F.v*2.2;if(F.tick>1){F.tick=0;SND.tik(.025+Math.min(.035,F.v*.003))}}}
+// losmaken: zoek dichtbij (iets naar achteren of opzij) een stand waarin de fiets vrij staat én vooruit kan, met de neus zo dicht
+// mogelijk bij waar je heen wilt (de stick, of rechtdoor / de kant die je stuurde). Lukt dat niet, dan de dichtstbijzijnde vrije plek.
+function loskomen(){const want=F.wantRy!=null?F.wantRy:wrap(F.ry+(F.lastSteer||0)*.6),nu=performance.now();
+  // weer meteen vast (je blijft tegen de muur in trappen)? Dan draait hij je steeds verder weg
+  F.losN=nu-(F.losT||0)<3500?(F.losN||0)+1:0;F.losT=nu;const minDa=[0,.6,1.1,1.6][Math.min(3,F.losN)];
+  const fx=Math.sin(F.ry),fz=Math.cos(F.ry),rx=Math.cos(F.ry),rz=-Math.sin(F.ry);let best=null,bs=1e9;
+  for(const b of [0,.35,.7,1.05,1.4,1.8,2.4])for(const sd of [0,.45,-.45,.9,-.9,1.4,-1.4])for(const da of [0,.35,-.35,.7,-.7,1.1,-1.1,1.6,-1.6,2.2,-2.2,Math.PI]){
+    if(Math.abs(da)<minDa-.01)continue;const sc=Math.abs(da)*1.2+b*.5+Math.abs(sd)*.7;if(sc>=bs)continue;const x=F.x-fx*b+rx*sd,z=F.z-fz*b+rz*sd,ry=want+da;
+    if(!okAt(x,z,ry))continue;const hx=Math.sin(ry),hz=Math.cos(ry);if(!okAt(x+hx*1.3,z+hz*1.3,ry)||!okAt(x+hx*2.6,z+hz*2.6,ry))continue;best={x,z,ry};bs=sc}
+  if(!best)best=freeAt(F.x,F.z,want);
+  F.glide={x0:F.x,z0:F.z,r0:F.ry,x1:best.x,z1:best.z,r1:best.ry,t:0};F.v=0;F.lat=0;F.stk=0;F.inT=0;F.dbg.los=(F.dbg.los||0)+1;
+  if(!loskomen.told){loskomen.told=1;toast(touch?'Vast? Je fiets zet zichzelf los. Stick naar achteren = achteruit.':'Vast? Je fiets zet zichzelf los. S = remmen en achteruit.','info')}}
+function langs(t,dt){if(F.v<0)t=wrap(t+Math.PI);const nr=F.ry+wrap(t-F.ry)*Math.min(1,dt*3.5);if(okAt(F.x,F.z,nr))F.ry=nr}
+function moeMelding(){SND.hobbel(.25);float('Moe!',F.x,F.z,'#ffd35a');try{F.onMoe&&F.onMoe(true)}catch(e){}
+  if(!moeMelding.told){moeMelding.told=1;toast('Je energie is op: je fietst even trager tot je weer bij bent','info')}}
 function bumps(x0,z0,dt){F.curbCd-=dt;F.railCd-=dt;if(F.v<.5)return;
   const a=tileAt(x0,z0),b=tileAt(F.x,F.z),ra=isRoadT(a.t,a.i),rb=isRoadT(b.t,b.i),walkish=t=>t===T.WALK||t===T.PLAZA||(t===T.BRIDGE);
   if(ra!==rb&&(walkish(ra?b.t:a.t))&&F.curbCd<=0){F.curbCd=.6;const sp=F.v;F.bumpV=Math.min(1.6,sp*.11);SND.hobbel(.5+Math.min(.6,sp*.05));
@@ -397,36 +477,37 @@ function bumps(x0,z0,dt){F.curbCd-=dt;F.railCd-=dt;if(F.v<.5)return;
     if(hd<.5&&F.v>2.5&&!F.bal){const ch=(F.last>0?.85:.5)*(1-.5*ease());if(Math.random()<ch){if(F.last>0)balans({waarom:'Tramrails! Hou je tas recht'});else if(F.v>6&&hd<.3&&Math.random()<.4)val('Wiel in de tramrails!');else{F.v*=.7;float('Tramrails!',F.x,F.z,'#ffe0a0')}}}
     break}}
 // houding van fiets en berijder
-function applyPose(dt,thr,steer){const b=F.bike,rd=F.rider,sp=Math.abs(F.v),moving=sp>.25;
+function applyPose(dt,thr,steer){const b=F.bike,rd=F.rider,sp=Math.abs(F.v),moving=sp>.25,SC=!!b.scooter;
   // wielen en trappers
-  F.wheel+=F.v/R*dt;b.wF.rotation.x=F.wheel;b.wR.rotation.x=F.wheel;
-  const pedal=thr>0&&F.v>-.1&&!F.val;if(pedal)F.crank+=Math.max(2.2,F.v/R/GEAR)*dt*(F.sprint?1.15:1);else if(!moving){const tgt=Math.round((F.crank-.0)/Math.PI)*Math.PI;F.crank+=(tgt-F.crank)*Math.min(1,dt*3)}
+  F.wheel+=F.v/R*dt;b.wF.rotation.x=F.wheel*(SC?R/RS_:1);b.wR.rotation.x=F.wheel*(SC?R/RS_:1);
+  const pedal=!SC&&thr>0&&F.v>-.1&&!F.val;if(pedal)F.crank+=Math.max(2.2,F.v/R/GEAR)*dt*(F.sprint?1.15:1);else if(!moving){const tgt=Math.round((F.crank-.0)/Math.PI)*Math.PI;F.crank+=(tgt-F.crank)*Math.min(1,dt*3)}
   const ped=posePedals(b,F.crank,pedal);chainStep(b,F.wheel/GEAR);
   // stuur en schuin in de bocht (en wiebelen bij staand trappen); stilstaan = voet aan de grond, fiets een beetje schuin
   b.steer.rotation.y=F.steerV*.42*(1-Math.min(1,sp/13)*.55)+(F.bal?Math.sin(F.bal.t*13)*.12*F.bal.a:0);
-  let tl=0;if(!F.val){if(!moving&&!pedal)tl=.13;else tl=-F.steerV*Math.min(1,sp/6)*.38+(F.sprint?Math.sin(F.crank)*.05*Math.min(1,F.adem*4):0)+(F.bal?F.bal.a*.22:0)}
+  let tl=0;if(!F.val){if(!moving&&!pedal)tl=SC?.06:.13;else tl=-F.steerV*Math.min(1,sp/6)*.38+(F.bal?F.bal.a*.22:0)}
   if(!F.val)F.lean+=(tl-F.lean)*Math.min(1,dt*7);b.lean.rotation.z=F.lean;
   // hobbel (stoeprand, rails)
   F.bump+=F.bumpV*dt;F.bumpV-=14*dt;if(F.bump<0){F.bump=0;F.bumpV=F.bumpV<-1?-F.bumpV*.25:0}
   b.beam.material.opacity=Math.max(0,(G.night||0)-.35)*.55;
   if(!rd)return;
   // berijder: zitten, of staan op de trappers
-  const stand=F.sprint&&pedal,foot=!moving&&!pedal&&!F.val;
-  const hipY=stand?1.3+Math.abs(Math.sin(F.crank))*.04:1.07,hipZ=stand?-.14:-.31,tx=stand?.62:.5;
-  rd.g.position.set(stand?Math.sin(F.crank)*.06:0,hipY-.99,hipZ);rd.g.rotation.set(0,0,stand?-Math.sin(F.crank)*.1:0);
-  const P=rd.P;P.torso.rotation.set(tx,0,foot?.04:0);P.head.rotation.set(-tx*.8+(foot?.05:0),foot?Math.sin(performance.now()/1400)*.4:-F.steerV*.25,0);P.root.position.y=0;
+  // staand trappen: omhoog en voorover, zonder heen en weer te zwaaien; moe: zittend, wat ingezakt, hoofd omlaag
+  F.standK=(F.standK||0)+(((F.sprint&&pedal)?1:0)-(F.standK||0))*Math.min(1,dt*6);const sk=F.standK,foot=!moving&&!pedal&&!F.val,moe=!!F.moe;
+  const hipY=SC?.9:1.07+.21*sk+Math.abs(Math.sin(F.crank))*.015*sk,hipZ=SC?-.3:-.31+.17*sk,tx=SC?.12+Math.min(.12,sp*.008):.5+.12*sk+(moe?.1:0);
+  rd.g.position.set(0,hipY-.99,hipZ);rd.g.rotation.set(0,0,0);
+  const P=rd.P;P.torso.rotation.set(tx,0,foot?.04:0);P.head.rotation.set(-tx*.8+(foot?.05:0)+(moe?.18:0),foot?Math.sin(performance.now()/1400)*.4:-F.steerV*.25,0);P.root.position.y=0;
   // armen naar de handvatten
   const tp=new TH.Vector3(0,.84*1.18,0);const ch=Math.cos(tx),sh=Math.sin(tx);
   ['L','R'].forEach((s,i)=>{const arm=i?P.armR:P.armL,sx=i?.41:-.41;// schouder in de wereld (fiets-lokaal)
     const so=new TH.Vector3(sx*1.18,.66*1.18*ch,.66*1.18*sh).add(tp).add(rd.g.position);
-    const gx=Math.sign(sx)*.31,grip=new TH.Vector3(gx,1.24,.44-.24);// handvat in de stuurgroep, ruwweg (stuur draait mee)
-    const sa=b.steer.rotation.y;const gz=grip.z-.44;grip.x=gx*Math.cos(sa)+gz*Math.sin(sa);grip.z=.44-gx*Math.sin(sa)+gz*Math.cos(sa);grip.y=1.0+.24;
+    const pz=SC?.52:.44,gy=SC?1.06:1.24,gx=Math.sign(sx)*.31,grip=new TH.Vector3(gx,gy,pz-(SC?.06:.24));// handvat in de stuurgroep, ruwweg (stuur draait mee)
+    const sa=b.steer.rotation.y;const gz=grip.z-pz;grip.x=gx*Math.cos(sa)+gz*Math.sin(sa);grip.z=pz-gx*Math.sin(sa)+gz*Math.cos(sa);grip.y=gy;
     const dv=grip.sub(so);const dist=dv.length();// naar torso-ruimte (alleen de x-draaiing van de romp)
     const ly=dv.y*ch+dv.z*sh,lz=-dv.y*sh+dv.z*ch,lx=dv.x;const dir=new TH.Vector3(lx,ly,lz).normalize();
     arm.quaternion.setFromUnitVectors(DOWN,dir);arm.scale.set(1,clamp(dist/ARM,.5,1.05),1)});
   // benen: knie naar voren, voeten op de trappers (of links op de grond)
   const L=rd.L,hip=new TH.Vector3();['L','R'].forEach((s,i)=>{const sx=i?-HIPW:HIPW;hip.set(sx+rd.g.position.x,hipY-.02,hipZ+.02);
-    const p=i?ped.R:ped.L;let E=new TH.Vector3(i?-.16:.16,p[0]+.09,p[1]-.02),hint=null;
+    const p=i?ped.R:ped.L;let E=SC?new TH.Vector3(i?-.15:.15,.44,.16):new TH.Vector3(i?-.16:.16,p[0]+.09,p[1]-.02),hint=null;
     if(foot&&i===1){E.set(-.55,.1,-.05);hint=new TH.Vector3(-.4,0,1).normalize()}
     ik(L[s],hip,E,hint);L[s].ft.rotation.set(0,0,0)});
   // door je ogen: hoofd en romp weg (je ziet je armen, je knieën, het stuur en de voortas)
@@ -453,19 +534,22 @@ function bikeCam(dt,c){if(!BLD)bmap();c.getWorldDirection(_dir);const yaw=G.yaw;
 
 /* =================== HUD: adem en bel (de snelheid laat de auto-meter zien) =================== */
 const ui=document.createElement('div');ui.className='sdf-ui';ui.hidden=true;
-ui.innerHTML=`<div class="sdf-adem" id="sdfAdem" title="Adem (staand trappen)"><small>Adem</small><i><i id="sdfAdemB"></i></i></div><button class="sdf-belb" id="sdfBel" aria-label="Bellen">${touch?'':'<kbd>B</kbd>'}<svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><rect x="7" y="1" width="2" height="2" fill="currentColor"/><rect x="5" y="3" width="6" height="2" fill="currentColor"/><rect x="4" y="5" width="8" height="5" fill="currentColor"/><rect x="2" y="10" width="12" height="2" fill="currentColor"/><rect x="7" y="12" width="2" height="2" fill="currentColor"/></svg><span>Bel</span></button>`;
+ui.innerHTML=`<div class="sdf-adem" id="sdfAdem" title="Energie (hard trappen kost energie)"><small id="sdfAdemL">Energie</small><i><i id="sdfAdemB"></i></i></div><button class="sdf-belb" id="sdfBel" aria-label="Bellen">${touch?'':'<kbd>B</kbd>'}<svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><rect x="7" y="1" width="2" height="2" fill="currentColor"/><rect x="5" y="3" width="6" height="2" fill="currentColor"/><rect x="4" y="5" width="8" height="5" fill="currentColor"/><rect x="2" y="10" width="12" height="2" fill="currentColor"/><rect x="7" y="12" width="2" height="2" fill="currentColor"/></svg><span>Bel</span></button>`;
 document.body.appendChild(ui);
 $s('sdfBel').addEventListener('click',e=>{e.stopPropagation();bel()});
 ['pointerdown','touchstart'].forEach(n=>ui.addEventListener(n,e=>e.stopPropagation(),{passive:true}));
-function hud(){ui.hidden=!F.on;const o=$s('sdOutCar');if(o){const w=F.on?'Afstappen':'Uitstappen';o.innerHTML=touch?w:'<kbd>F</kbd> '+w}}
-let hudT=0;function hudStep(dt){hudT+=dt;if(hudT<.1)return;hudT=0;if(!F.on)return;$s('sdfAdemB').style.width=(F.adem*100).toFixed(0)+'%';$s('sdfAdem').classList.toggle('low',F.adem<.25);$s('sdfAdem').classList.toggle('on',F.sprint);
-  const n=$s('sdSpdN');if(n){const t=(F.last?F.last+(F.last>1?" pizza's":' pizza')+(F.scheef?' · '+F.scheef+' scheef':''):'Fiets')+(F.surf==='zand'?' · zand':F.surf==='gras'?' · gras':'');if(n.textContent!==t)n.textContent=t}}
+function hud(){ui.hidden=!F.on;try{const bl=$s('sdfBel').querySelector('span'),bt=F.type==='scooter'?'Toeter':'Bel';if(bl.textContent!==bt)bl.textContent=bt}catch(e){}const o=$s('sdOutCar');if(o){const w=F.on?'Afstappen':'Uitstappen';o.innerHTML=touch?w:'<kbd>F</kbd> '+w}}
+let hudT=0;function hudStep(dt){hudT+=dt;if(hudT<.1)return;hudT=0;if(!F.on)return;const am=$s('sdfAdem');am.hidden=F.type==='scooter';$s('sdfAdemB').style.width=(F.adem*100).toFixed(0)+'%';am.classList.toggle('low',F.adem<.25&&!F.moe);am.classList.toggle('on',F.sprint);am.classList.toggle('moe',!!F.moe);
+  const al=$s('sdfAdemL'),lt=F.moe?'Moe':'Energie';if(al.textContent!==lt)al.textContent=lt;
+  const n=$s('sdSpdN');if(n){const t=(F.last?F.last+(F.last>1?" pizza's":' pizza')+(F.scheef?' · '+F.scheef+' scheef':''):(F.type==='scooter'?'Scooter':'Fiets'))+(F.surf==='zand'?' · zand':F.surf==='gras'?' · gras':'');if(n.textContent!==t)n.textContent=t}}
 
 /* =================== elke frame =================== */
 let built=false;
 const stepHook=setInterval(()=>{if(!G.ready||!G.carStep)return;clearInterval(stepHook);const c0=G.carStep;
   G.carStep=function(dt){c0(dt);try{if(!built){built=true;buildRails(G.scene());buildSand(G.scene())}
       if(F.on)rideStep(dt);else if(F.bike&&F.v){F.v=0}
+      // scooter: motorgeluid (de auto-module zet het elke frame uit als je niet in je eigen auto zit; dit komt daarna)
+      if(F.on&&F.type==='scooter'&&G.snd&&G.snd.engine&&!G.paused)G.snd.engine(14+Math.abs(F.v)*2.3);
       // berijder bijwerken als je uiterlijk verandert
       F.lk=(F.lk||0)+dt;if(F.lk>3){F.lk=0;if(F.on)riderSync(false)}
       hudStep(dt);
@@ -473,7 +557,8 @@ const stepHook=setInterval(()=>{if(!G.ready||!G.carStep)return;clearInterval(ste
       if(F.on&&(!G.driving||G.car!==bikeObj)){F.on=false;riderShow(false);parkPose();place();ui.hidden=true;document.body.classList.remove('sd-fiets');if(G.driving&&G.car!==bikeObj){} }
     }catch(e){console.error('fiets',e)}}},100);
 
-G.fiets={spawn,op,af,actief:()=>F.on,last,balans,bel,weg,
+G.fiets={spawn,op,af,actief:()=>F.on,last,balans,bel,weg,type:()=>F.type,voorkeur:t=>{if(t)F.pref=t;return F.pref},moe:()=>!!F.moe,
+  set onMoe(f){F.onMoe=f},get onMoe(){return F.onMoe},
   scheef:n=>{if(n!=null){F.scheef=clamp(n|0,0,F.last);setBoxes()}return F.scheef},
   pos:()=>F.bike?{x:F.x,z:F.z,ry:F.ry}:null,snelheid:()=>Math.round(Math.abs(F.v)*3.6),adem:()=>F.adem,ondergrond:()=>F.surf,
   geparkeerd:()=>!!F.bike&&!F.on,obj:bikeObj,rails:RAILS,zand:SAND,model:decorBike,rijder:()=>riderSync(true),
