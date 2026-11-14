@@ -140,7 +140,7 @@ addEventListener('keydown',e=>{const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$
 let wasOpenedFromPause=false;
 ov.addEventListener('click',e=>{if(e.target.closest('[data-p="inst"],[data-p="toetsen"]'))wasOpenedFromPause=true},true);
 /* ---------- telefoon-app ---------- */
-const SETIC='<svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><rect x="6" y="1" width="4" height="3"/><rect x="6" y="12" width="4" height="3"/><rect x="1" y="6" width="3" height="4"/><rect x="12" y="6" width="3" height="4"/><rect x="3" y="3" width="10" height="10"/><rect x="6" y="6" width="4" height="4" fill="#0009"/></svg>';
+const SETIC='<svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true" fill="currentColor"><rect x="6" y="1" width="4" height="3"/><rect x="6" y="12" width="4" height="3"/><rect x="1" y="6" width="3" height="4"/><rect x="12" y="6" width="3" height="4"/><rect x="3" y="3" width="10" height="10"/><rect x="6" y="6" width="4" height="4" fill="#0009"/></svg>';
 if(G.phone&&G.phone.add){G.phone.add({k:'vinst',n:'Instellingen',ic:SETIC,c:'#a9dcff',story:1,after:'verhaal',
   render(scr,head){scr.innerHTML=head('Instellingen','De Bezorger')+`<div class="sd-p2-list"><button class="sd-p2-now" data-vi="inst"><small>Spel · beeld · geluid · toetsen</small><b>Alle instellingen</b><p>Navigatiehulp, ondertitels, cutscenes, camera en meer.</p></button>
     <button class="sd-p2-now" data-vi="nav"><small>Navigatiehulp</small><b>${get('nav')?'Aan':'Uit'}</b><p>Tik om ${get('nav')?'uit':'aan'} te zetten.</p></button>

@@ -18,10 +18,23 @@ const APPS=[['berichten','Berichten',K.ic.talk,'#3fe395','in'],['kaart','Kaart',
   ['profiel','Profiel',null,null,'klik'],['rank','Ranglijst',null,null,'klik'],['lid','Lid',null,null,'klik'],['casino','Casino',null,null,'rt'],['cars',"Auto's",null,null,'rt'],
   ['set','Instellingen',SETIC,'#a9dcff','in'],['klik','Klikspel',null,'#ff7a1a','go']];
 const DOCK=['berichten','kaart','klussen','vastgoed'];
+// Startscherm: de belangrijkste apps staan er meteen (dock + Snel), de rest zit in mapjes per categorie.
+const SNEL=['dag','doen','contacten','taxi','auto','nieuws','set','klik'];
+const MAPS=[['misdaad','Misdaad','#ff5a4a',['hits','shop','fam','wijken','naam']],
+  ['geld','Geld & bezit','#3fe395',['bank','vastgoed','cars','casino','dash','lid']],
+  ['jij','Jij','#a9dcff',['profiel','look','prestaties','rank','camera']],
+  ['vrij','Vrije tijd & mensen','#b8a1ff',['verhaal','bekenden','visboek','hond','weer']]];
+const DESC={berichten:'Van je contacten',kaart:'De hele stad',klussen:'Kraken, beroven, rijden',vastgoed:'Panden kopen en verhuren',dag:'Drie per dag, nieuw om 6 uur',naam:'Je straatnaam en talenten',
+  wijken:'Respect, wijkbazen, beschermgeld',doen:'Vissen, dobbelen, uitkijkpunten',contacten:'Bellen = iets regelen',taxi:'Snel naar een plek',auto:'Laat je auto brengen',camera:'Selfie en fotomodus',
+  visboek:'Alle vissen die je ving',hond:'Je hond',prestaties:'Doelen en pakketjes',bank:'Storten, opnemen, sparen',look:'Kleding en uiterlijk',shop:'Wapens en bescherming',fam:'Je familie en oorlogen',
+  hits:'Huurmoorden',dash:'Alles op een rij',profiel:'Jouw profiel',rank:'De beste spelers',lid:'VIP en High roller',casino:'Route naar het casino',cars:'Route naar de garage',set:'Geluid, camera, beeld',
+  klik:'Terug naar het klikspel',verhaal:'Verhalen van mensen in de stad',bekenden:'Mensen die je kent',nieuws:'Wat er speelt in de stad',weer:'Het weer van vandaag'};
+const NAAM={verhaal:'Stadsverhalen'};   // in de Stad: niet te verwarren met het verhaal De Bezorger
+let mapId=null,terugMap=null;
 const secCol=k=>{const g=typeof NAV_GROUPS!=='undefined'&&NAV_GROUPS.find(g=>g[1].includes(k));return g?g[2]:'#ff7a1a'};
 /* ---------- opbouw ---------- */
 const ov=document.createElement('div');ov.className='sd-ph2';ov.id='sdPh2';ov.hidden=true;document.body.appendChild(ov);
-ov.innerHTML=`<div class="sd-ph2-dev"><div class="sd-ph2-bar"><span id="sdP2Clock"></span><i class="sd-notch"></i><span class="sd-ph2-st"><i class="sd-sig"><i></i><i></i><i></i><i></i></i><b id="sdP2Bat"></b></span></div>
+ov.innerHTML=`<div class="sd-ph2-dev"><div class="sd-ph2-bar"><span id="sdP2Clock"></span><i class="sd-notch"></i><span class="sd-ph2-st"><i class="sd-sig"><i></i><i></i><i></i><i></i></i><b id="sdP2Bat"></b><button class="sd-ph2-x" data-close aria-label="Telefoon sluiten" title="Sluiten (J of Esc)"><b>✕</b><span>Sluiten</span></button></span></div>
  <div class="sd-ph2-scr" id="sdP2Scr"></div><div class="sd-ph2-nav"><button data-back aria-label="Terug">‹</button><button data-home aria-label="Startscherm"><i></i></button><button data-close aria-label="Telefoon wegleggen">×</button></div></div>`;
 const scr=$s('sdP2Scr');let app='home',sub=null;
 const playerLook=()=>{const L=G.P&&G.P.look||{};let tie=null,chain=null;try{const ol=typeof outfitLook==='function'?outfitLook():null;if(ol&&ol.bovenlijf&&ol.bovenlijf.kind==='suit')tie=ol.bovenlijf.c2||'#7a1f2a';const w=S.fit&&S.fit.wear||{};if(/ketting|goud|chain/.test(w.nek||''))chain=1}catch(e){}
@@ -30,18 +43,32 @@ const playerLook=()=>{const L=G.P&&G.P.look||{};let tie=null,chain=null;try{cons
 const EXT={};
 function badge(k){if(EXT[k])return EXT[k].badge?EXT[k].badge():0;if(k==='berichten')return G.unread?G.unread():0;if(k==='dag'&&G.dag){const D=G.dag.get();return (D.ids||[]).filter(id=>{const d=G.dag.def(id);return d&&(D.p[id]||0)>=d[3]&&!D.claimed[id]}).length}if(k==='vastgoed')return (G.lots||[]).filter(l=>l.building).length;if(k==='naam'&&G.naam)return G.naam.points();if(k==='wijken'&&G.wijk)return G.wijk.open();return 0}
 function appBtn(a){if(!a)return '';const [k,n,ic,c,kind]=a;if(kind==='klik'&&!hasPage(k))return '';if(G.storyApps&&!G.storyApps(k))return '';const icon=ic||pic(k==='klussen'?'crimes':k==='auto'?'cars':k==='klik'?'dash':k),col=c||secCol(k),b=badge(k);
-  return `<button class="sd-p2-app" data-app="${k}"><i style="--c:${col}">${icon}${b?`<em>${b}</em>`:''}${kind==='klik'?'<u>↗</u>':kind==='rt'?`<u>${K.ic.route}</u>`:''}</i><span>${E(n)}</span></button>`}
+  const nm=!G.storyHome&&NAAM[k]?NAAM[k]:n;
+  return `<button class="sd-p2-app" data-app="${k}"><i style="--c:${col}">${icon}${b?`<em>${b}</em>`:''}${kind==='klik'?'<u>↗</u>':kind==='rt'?`<u>${K.ic.route}</u>`:''}</i><span>${E(nm)}</span></button>`}
+const appOk=a=>a&&!(a[4]==='klik'&&!hasPage(a[0]))&&!(G.storyApps&&!G.storyApps(a[0]));
+const appIcon=a=>a[2]||pic(a[0]==='klussen'?'crimes':a[0]==='auto'?'cars':a[0]==='klik'?'dash':a[0]);
+// de apps per mapje (alles wat niet in het dock, Snel of een ander mapje zit, komt bij 'Vrije tijd')
+function mapApps(id){const vast=new Set(DOCK.concat(SNEL,['bezorger']));MAPS.forEach(m=>m[3].forEach(k=>vast.add(k)));
+  const m=MAPS.find(x=>x[0]===id);if(!m)return [];let L=m[3].map(k=>APPS.find(a=>a[0]===k));
+  if(id==='vrij')L=L.concat(APPS.filter(a=>!vast.has(a[0])));return L.filter(appOk)}
+function mapTile(m){const L=mapApps(m[0]);if(!L.length)return '';const b=L.reduce((t,a)=>t+(badge(a[0])||0),0);
+  return `<button class="sd-p2-map" data-map="${m[0]}" style="--c:${m[2]}"><i class="sd-p2-mini">${L.slice(0,4).map(a=>`<i style="--c:${a[3]||secCol(a[0])}">${appIcon(a)}</i>`).join('')}</i><span><b>${E(m[1])}</b><small>${E(L.map(a=>!G.storyHome&&NAAM[a[0]]?NAAM[a[0]]:a[1]).join(', '))}</small></span>${b?`<em>${b}</em>`:''}</button>`}
+function mapScr(){const m=MAPS.find(x=>x[0]===mapId)||MAPS[0],L=mapApps(m[0]);
+  scr.innerHTML=head(m[1],L.length+' apps')+`<div class="sd-p2-list">${L.map(a=>{const k=a[0],b=badge(k),nm=!G.storyHome&&NAAM[k]?NAAM[k]:a[1];
+    return `<button class="sd-p2-row sd-p2-arow" data-app="${k}"><i class="sd-p2-ri" style="color:${a[3]||secCol(k)}">${appIcon(a)}</i><span><b>${E(nm)}</b><small>${E(DESC[k]||'')}</small></span><em>${b?`<i>${b}</i>`:''}${a[4]==='klik'?'<u class="sd-p2-tag">Klikspel ↗</u>':a[4]==='rt'?'<u class="sd-p2-tag">Route</u>':'›'}</em></button>`}).join('')}</div>`}
 function nowCard(){const m=G.mission&&G.mission(),w=G.waypoint;
   if(G.police&&G.police.active())return `<div class="sd-p2-now bad"><small>Nu</small><b>Politie! ${'★'.repeat(G.police.stars())}</b><p>Ga uit het zicht: stegen, hoeken, containers.</p></div>`;
   if(m){const s=m.steps[m.i];return `<div class="sd-p2-now"><small>Missie · ${E(m.c.n)}</small><b>${E(s?s.txt:'')}</b></div>`}
   if(w)return `<button class="sd-p2-now" data-now="wp"><small>Route</small><b>${E(w.n)}</b><p>${Math.round(Math.hypot(w.x-G.P.x,w.z-G.P.z))} m · tik om erheen te lopen</p></button>`;
   if(G.dag){const D=G.dag.get(),n=(D.ids||[]).length,done=(D.ids||[]).filter(id=>(D.p[id]||0)>=G.dag.def(id)[3]).length;if(done<n)return `<button class="sd-p2-now" data-app="dag"><small>Dagklussen · ${done}/${n}</small><b>${E(G.dag.def(D.ids.find(id=>(D.p[id]||0)<G.dag.def(id)[3]))[1])}</b><p>Elke dag om 6 uur drie nieuwe.</p></button>`}
   const C=S.stadCol||{},f=Object.keys(C).length;return `<button class="sd-p2-now" data-app="prestaties"><small>Verzamelen</small><b>${f}/30 pakketjes gevonden</b><p>Kijk in stegen, parken en op de kades.</p></button>`}
-function home(){if(G.storyHome){G.storyHome(scr,()=>APPS.filter(a=>!DOCK.includes(a[0])).map(appBtn).join(''));dock();return}const L=G.msgs?G.msgs().filter(m=>m.u).slice(0,2):[];
+function home(){if(G.storyHome){G.storyHome(scr,()=>APPS.filter(a=>!DOCK.includes(a[0])).map(appBtn).join(''));dock();return}const L=G.msgs?G.msgs().filter(m=>m.u).slice(0,1):[];
   scr.innerHTML=`<div class="sd-p2-home"><div class="sd-p2-hero"><canvas id="sdP2Me" width="24" height="24"></canvas><div><b>${E(window.__USER__||'Jij')}</b><small>${E(RANKS[rankIdx(S.xp)][0])} · ${E(M.districtAt(G.P.x,G.P.z))}</small></div>
    <div class="sd-p2-m"><span><i>Contant</i><b>${fmt(S.cash)}</b></span><span><i>Bank</i><b>${fmt(S.bank||0)}</b></span></div></div>
-   ${G.weerKaart?G.weerKaart():''}${nowCard()}${L.map(m=>{const c=G.contacts[m.f]||G.contacts.stad;return `<button class="sd-p2-not" data-thread="${m.f}"><canvas data-por="${m.f}" width="24" height="24"></canvas><span><b>${E(c.n)}</b><small>${E(m.x)}</small></span></button>`}).join('')}
-   <div class="sd-p2-grid">${APPS.filter(a=>!DOCK.includes(a[0])).map(appBtn).join('')}</div></div>`;
+   ${G.keuze&&G.keuze.verhaal?`<button class="sd-p2-vh" data-bezorger><i>${K.ic.star}</i><span><small>Verhaal · Seizoen 1 gratis</small><b>De Bezorger</b><em>${(()=>{try{return S.story&&S.story.welkom?'Speel verder als Luca':'Speel Luca, 16, pizzabezorger'}catch(e){return 'Speel Luca'}})()}</em></span><u>Speel ›</u></button>`:''}
+   ${nowCard()}${L.map(m=>{const c=G.contacts[m.f]||G.contacts.stad;return `<button class="sd-p2-not" data-thread="${m.f}"><canvas data-por="${m.f}" width="24" height="24"></canvas><span><b>${E(c.n)}</b><small>${E(m.x)}</small></span></button>`}).join('')}
+   <h6 class="sd-p2-k">Snel</h6><div class="sd-p2-grid">${SNEL.map(k=>appBtn(APPS.find(a=>a[0]===k))).join('')}</div>
+   <h6 class="sd-p2-k">Alle apps</h6><div class="sd-p2-maps">${MAPS.map(mapTile).join('')}</div></div>`;
   K.portrait(playerLook(),'blij',$s('sdP2Me'));scr.querySelectorAll('[data-por]').forEach(c=>K.portrait((G.contacts[c.dataset.por]||G.contacts.stad).look,null,c));
   dock()}
 function dock(){let d=ov.querySelector('.sd-p2-dock');if(!d){d=document.createElement('div');d.className='sd-p2-dock';ov.querySelector('.sd-ph2-dev').insertBefore(d,ov.querySelector('.sd-ph2-nav'))}d.innerHTML=DOCK.map(k=>appBtn(APPS.find(a=>a[0]===k))).join('');d.hidden=app!=='home'}
@@ -105,17 +132,18 @@ function doenScr(){const P=G.P,sp=(G.spots||[]),near=k=>sp.filter(s=>s.k===k).so
    +'<h5>Handig</h5>'+row(K.ic.bank,'#3ad6ff','Geldautomaat','Storten en opnemen',rt(at,'Geldautomaat'),m(at))+row(K.ic.kop,'#ffad6b','Koffiekar','Espresso bij Luigi op Het Plein',{k:'npc',a:'barista',n:'Koffiekar'})+row(K.ic.kop,'#ffd166','Snackkar','Broodje shoarma op de boulevard',{k:'npc',a:'snack',n:'Snackkar'})
    +row(K.ic.photo,'#b8a1ff','Fotomodus','Maak een foto van de stad',{k:'foto'});
   scr.innerHTML=head('Te doen','Alleen in de Pixelstad')+`<div class="sd-p2-list">${h}<p class="sd-p2-note">Verder: bankjes om op te zitten, bakken om te doorzoeken, katten om te aaien. Druk op T voor emotes.</p></div>`}
-const RENDER={home,berichten,dag:dagScr,contacten,taxi,camera,prestaties,set:settings,naam:naamScr,wijken:wijkScr,hond:hondScr,visboek:visScr,doen:doenScr};
+const RENDER={home,map:mapScr,berichten,dag:dagScr,contacten,taxi,camera,prestaties,set:settings,naam:naamScr,wijken:wijkScr,hond:hondScr,visboek:visScr,doen:doenScr};
 function draw(){(RENDER[app]||home)();ov.querySelector('.sd-ph2-dev').classList.toggle('in',app!=='home');dock();hud()}
-function go(k,s){app=k;sub=s||null;G.snd&&G.snd.fx('tab');draw();scr.scrollTop=0}
+function go(k,s){if(k!=='map'&&app!=='map')terugMap=null;app=k;sub=s||null;G.snd&&G.snd.fx('tab');draw();scr.scrollTop=0}
+function terug(){if(sub){sub=null;draw();return}if(app==='map'){mapId=null;go('home');return}if(app!=='home'){if(terugMap){const m=terugMap;terugMap=null;mapId=m;go('map');return}go('home');return}close()}
 /* ---------- openen en sluiten ---------- */
-function open(k){if(G.ui&&G.ui.closeAll)G.ui.closeAll();if(G.kit.dialogOpen())G.kit.closeDialog(true);ov.hidden=false;ov.classList.remove('go');void ov.offsetWidth;ov.classList.add('go');app=k||'home';sub=null;if(!(G.ui&&G.ui.cur&&G.ui.cur()))G.pause();draw();G.snd&&G.snd.fx('open');if(navigator.vibrate&&touch)try{navigator.vibrate(15)}catch(e){}}
+function open(k){if(G.ui&&G.ui.closeAll)G.ui.closeAll();if(G.kit.dialogOpen())G.kit.closeDialog(true);ov.hidden=false;ov.classList.remove('go');void ov.offsetWidth;ov.classList.add('go');app=k||'home';sub=null;mapId=null;terugMap=null;if(!(G.ui&&G.ui.cur&&G.ui.cur()))G.pause();draw();G.snd&&G.snd.fx('open');if(navigator.vibrate&&touch)try{navigator.vibrate(15)}catch(e){}}
 function close(){if(ov.hidden)return;ov.hidden=true;G.snd&&G.snd.fx('close');if(!(G.ui&&G.ui.cur&&G.ui.cur()))G.resume()}
 G.phone={open,close,toggle:()=>ov.hidden?open():close(),isOpen:()=>!ov.hidden,
   // een app erbij uit een andere module: {k, n, ic, c, render(scr, head, sub), click(t, close, go), badge()}
   add(o){if(EXT[o.k])return;EXT[o.k]=o;const i=APPS.findIndex(a=>a[0]===(o.after||'contacten'));APPS.splice(i<0?APPS.length:i+1,0,[o.k,o.n,o.ic,o.c,'in']);RENDER[o.k]=()=>o.render(scr,head,sub)}};
 function launch(k){const a=APPS.find(x=>x[0]===k);if(!a)return;if(G.storyApps&&!G.storyApps(k))return;const kind=a[4];
-  if(kind==='in'){go(k);return}
+  if(kind==='in'){const vm=app==='map'?mapId:null;go(k);terugMap=vm;return}
   if(k==='kaart'){close();G.kaart&&G.kaart.open();return}
   if(k==='klussen'){close();if(G.ui&&G.ui.cur&&G.ui.cur())G.ui.leaveQuiet&&G.ui.leaveQuiet();G.openBoard&&G.openBoard();return}
   if(k==='vastgoed'){close();G.vastgoed&&G.vastgoed.open();return}
@@ -124,7 +152,9 @@ function launch(k){const a=APPS.find(x=>x[0]===k);if(!a)return;if(G.storyApps&&!
   if(kind==='rt'){const pl=M.placeByPage(k);close();if(G.ui&&G.ui.cur&&G.ui.cur())G.ui.leaveQuiet&&G.ui.leaveQuiet();G.resume();G.setWaypoint&&G.setWaypoint(pl.door.x,pl.door.z,pl.name,pl.id);return}
   if(kind==='klik'){ov.hidden=true;G.ui&&G.ui.phoneApp&&G.ui.phoneApp(k)}}
 ov.addEventListener('click',e=>{const t=e.target;if(t===ov){close();return}
-  if(t.closest('[data-close]')){close();return}if(t.closest('[data-home]')){go('home');return}if(t.closest('[data-back]')){if(sub){sub=null;draw()}else if(app!=='home')go('home');else close();return}
+  if(t.closest('[data-close]')){close();return}if(t.closest('[data-home]')){mapId=null;terugMap=null;go('home');return}if(t.closest('[data-back]')){terug();return}
+  if(t.closest('[data-bezorger]')){G.keuze&&G.keuze.verhaal&&G.keuze.verhaal();return}
+  const mp=t.closest('[data-map]');if(mp){mapId=mp.dataset.map;go('map');return}
   const ap=t.closest('[data-app]');if(ap){launch(ap.dataset.app);return}
   const th=t.closest('[data-thread]');if(th){app='berichten';sub=th.dataset.thread;draw();return}
   if(EXT[app]&&EXT[app].click&&EXT[app].click(t,close,go)){if(!ov.hidden)draw();return}
@@ -144,7 +174,7 @@ ov.addEventListener('click',e=>{const t=e.target;if(t===ov){close();return}
   if(b.dataset.skin){try{localStorage.setItem('stad_skin',b.dataset.skin)}catch(e){}G.refreshLook&&G.refreshLook();settings();return}
   if(b.dataset.day!=null){G.forceDay=b.dataset.day===''?null:+b.dataset.day;try{localStorage.setItem('stad_day',b.dataset.day)}catch(e){}G.applyLight&&G.applyLight();settings()}});
 addEventListener('keydown',e=>{if(ov.hidden)return;const k=e.key.toLowerCase();const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;
-  if(k==='escape'||k==='backspace'){e.preventDefault();e.stopImmediatePropagation();if(sub){sub=null;draw()}else if(app!=='home')go('home');else close();return}
+  if(k==='escape'||k==='backspace'){e.preventDefault();e.stopImmediatePropagation();terug();return}
   if(k==='j'&&!e.repeat){e.preventDefault();e.stopImmediatePropagation();close()}},true);
 /* ---------- klok, batterij, stipje op de telefoonknop ---------- */
 function hud(){$s('sdP2Clock').textContent=G.klok?G.klok().txt+' · speldag':new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});try{$s('sdP2Bat').textContent=Math.round(Math.max(0,Math.min(EN_MAX,S.energy))/EN_MAX*100)+'%'}catch(e){}

@@ -1262,6 +1262,12 @@ met scripts en stijlen wordt uit `/game` gelezen) en tekent de stad eromheen. He
   notaris, garage brengt je auto, Het Contact, de heler, taxi), Taxi (snel naar elke plek of je bezit, betalen met contant: €15 + €0,55
   per meter, minimaal €25; niet tijdens een achtervolging of missie), Camera (selfie van je poppetje in je outfit, opslaan als plaatje),
   Prestaties en Instellingen (geluid, muziek, volume, beeld, huidskleur, tijd, besturing). Dock: Berichten, Kaart, Klussen, Vastgoed.
+  **Indeling (november 2026)**: bovenaan je portret met contant en bank naast elkaar, een grote knop **De Bezorger** (naar het verhaal,
+  Seizoen 1 gratis), de 'Nu'-kaart en het laatste bericht. Daaronder **Snel** (Dagklussen, Te doen, Contacten, Taxi, Mijn auto, Nieuws,
+  Instellingen, Klikspel) en **Alle apps** in vier mapjes: Misdaad, Geld & bezit, Jij, Vrije tijd & mensen. Een mapje toont elke app met
+  een korte uitleg; apps die het klikspel openen hebben het label 'Klikspel ↗'. Terug vanuit een app gaat naar het mapje. De app
+  'Verhaal' van de Stad heet hier 'Stadsverhalen'. Rechtsboven altijd een duidelijke knop **Sluiten** (ook J of Esc). Op de computer is de
+  telefoon groter (430 × 880).
   Apps met ↗ openen het scherm van het klikspel (bank, kleding, wapens, familie, opdrachten, overzicht, profiel, ranglijst, lid); casino
   en auto's zetten een route. Rode getallen = ongelezen berichten of op te halen dagklussen (ook op de telefoonknop in de HUD).
 - **Bajes**: zit je vast, dan sta je binnen in De Bajes tot je vrij bent; daarna kom je buiten de poort uit.
@@ -1630,6 +1636,8 @@ Een stap `{anim:'x',ry:…}` draait iemand echt die kant op (een eerdere `naar` 
 **Voorbijgangers praten** (`verhaal-praat.js`): nieuwe soorten mensen (scholieren, bouwvakkers, moeders met buggy, skaters, koeriers, verpleging, opa's, hipsters), per wijk en tijd van de dag anders verdeeld. Ze zeggen dingen per soort, dagdeel en weer, voeren korte gesprekjes van vier regels met elkaar en reageren op Luca (de rode jas, hard fietsen, 's nachts, bekendheid, hitte). Spreekballonnen zijn in het verhaal kleiner.
 
 **Navigatie**: bij elk doel ('naar huis', een missie) staat het doel knipperend op de kaart en wordt de route meteen gezet; ook als het doel van de stap afhangt (`waar` als functie). Op de fiets loopt de route over de weg en niet over gras (`findPath(…,'fiets')`).
+
+**Fiets na het laden**: de fiets wordt met je plek bewaard. Kom je later terug, dan staat hij waar je hem liet, of naast je als je erop zat (oude saves zonder fietsplek: naast je, niet ver weg bij de pizzeria).
 
 **Pauze en instellingen**: het pauzemenu en de instellingen zijn weer klikbaar (de muisvergrendeling gaat eraf). Nieuw: *Muziek tijdens het spelen* (uit = alleen de spelmuziek stil, cutscènes houden muziek), *Verteller* en *Gedetailleerde voorbijgangers*. Uithoudingsvermogen gaat langer mee en het schudden bij leeg uithoudingsvermogen is zacht (en uit te zetten met 'schudden'). Na een botsing met de pizza's heb je meer tijd om bij te sturen.
 

@@ -228,7 +228,11 @@ G.storyHome=function(scr,appBtn){const s=st(),k=ST.klok();
   try{K.face(Object.assign({bg:'#1d2230'},ST.lucaFace()),'blij',$s('sdP2Me'))}catch(e){}};
 
 /* ---------- plek bewaren en hervatten ---------- */
-function bewaar(){const s=st();if(!(G.binnen&&G.binnen.waar&&G.binnen.waar())&&!(G.cut&&G.cut.active&&G.cut.active())&&G.P&&M.canStand(G.P.x,G.P.z,.3))s.pos={x:+G.P.x.toFixed(1),z:+G.P.z.toFixed(1),ry:+(G.P.ry||0).toFixed(2)};sv()}
+function bewaar(){const s=st(),buiten=!(G.binnen&&G.binnen.waar&&G.binnen.waar())&&!(G.cut&&G.cut.active&&G.cut.active());
+  if(buiten&&G.P&&M.canStand(G.P.x,G.P.z,.3))s.pos={x:+G.P.x.toFixed(1),z:+G.P.z.toFixed(1),ry:+(G.P.ry||0).toFixed(2)};
+  // en de fiets: waar hij staat, of dat je erop zit (dan komt hij na het laden naast je)
+  if(buiten&&G.fiets){const f=G.fiets.pos();s.fiets=f?{x:+f.x.toFixed(1),z:+f.z.toFixed(1),ry:+(f.ry||0).toFixed(2),op:G.fiets.actief()?1:0}:null}
+  sv()}
 ST.bewaar=bewaar;
 function startPlek(){const s=st();if(s.pos&&M.canStand(s.pos.x,s.pos.z,.3))return s.pos;const A=M.A||{};return A.thuis||A.school||A.sahara||M.spawn}
 

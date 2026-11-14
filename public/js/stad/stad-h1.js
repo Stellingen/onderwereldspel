@@ -33,7 +33,15 @@ function naar(a,b){return Math.atan2(b.x-a.x,b.z-a.z)}
 // tijd alleen vooruit zetten (de klok loopt vanzelf door; bij een scène zetten we hem op het juiste uur)
 function tijd(h,m){const k=ST.klok(),nu=k.h*60+k.m,doel=h*60+(m||0);if(doel>nu||nu-doel>600)ST.tijd(h,m||0)}
 // de fiets: altijd ergens in de buurt
-function zorgFiets(bij){if(!G.fiets)return;const fp=G.fiets.pos();const p=bij||P();if(G.fiets.actief())return;if(fp&&hyp(fp.x-p.x,fp.z-p.z)<60)return;const q=walk(p.x+1.6,p.z+1.2,6);G.fiets.spawn(q.x,q.z,p.ry||0,{kleur:'#c0261e'})}
+// Na het opnieuw laden (uitgelogd, morgen verder): de fiets staat waar je hem liet, of naast je als je erop zat.
+// Oude saves zonder fietsplek: de fiets komt naast je, niet ver weg bij de pizzeria.
+let fietsHersteld=false;
+function herstelFiets(){if(fietsHersteld||!G.fiets||G.fiets.actief()||G.fiets.pos())return false;if(B.waar&&B.waar())return false;fietsHersteld=true;
+  const s=ST.st(),sf=s&&s.fiets,p=P();
+  if(sf&&!sf.op&&hyp(sf.x-p.x,sf.z-p.z)<150&&M.canStand(sf.x,sf.z,.3)){G.fiets.spawn(sf.x,sf.z,sf.ry||0,{kleur:'#c0261e'});return true}
+  const q=walk(p.x+1.6,p.z+1.2,6);G.fiets.spawn(q.x,q.z,p.ry||0,{kleur:'#c0261e'});return true}
+G.h1herstelFiets=herstelFiets;
+function zorgFiets(bij){if(!G.fiets)return;if(herstelFiets())return;const fp=G.fiets.pos();const p=bij||P();if(G.fiets.actief())return;if(fp&&hyp(fp.x-p.x,fp.z-p.z)<60)return;const q=walk(p.x+1.6,p.z+1.2,6);G.fiets.spawn(q.x,q.z,p.ry||0,{kleur:'#c0261e'})}
 function fietsAf(){try{if(G.fiets&&G.fiets.actief())G.fiets.af(true)}catch(e){}}
 // kleding gaat vanzelf (klas = school, thuis = thuis, jas van Giovanni = bezorger); hier alleen een situatie wissen
 function uitfit(n){try{if(n==null&&G.uiterlijk&&G.uiterlijk.situatie)G.uiterlijk.situatie(null)}catch(e){}}

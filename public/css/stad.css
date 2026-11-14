@@ -479,6 +479,31 @@ body.sd-siren::before{content:"";position:fixed;inset:0;z-index:18;pointer-event
 .sd-p2-set{padding:6px 12px 16px}.sd-p2-set .sd-row{padding:10px 0;border-bottom:1px solid #22262d}.sd-p2-set input[type=range]{width:100%}
 #sdPhoneB.dot{position:relative}#sdPhoneB.dot::after{content:attr(data-n);position:absolute;right:-6px;top:-6px;min-width:16px;height:16px;padding:0 3px;display:grid;place-items:center;background:#ff3d52;color:#fff;font:800 10px var(--f-mono);border:2px solid #000}
 @media (max-width:700px){.sd-ph2{padding:0;align-items:stretch;justify-content:stretch}.sd-ph2-dev{width:100%;height:100dvh;border-radius:0;outline:0;border:0;box-shadow:none}}
+/* telefoon: duidelijke sluitknop, Snel + mapjes per categorie, De Bezorger bovenaan */
+.sd-ph2-x{display:inline-flex;align-items:center;gap:5px;margin-left:6px;height:26px;padding:0 10px 0 8px;background:#262a33;border:1px solid #3a404b;color:#fff!important;font:800 11px var(--f-mono)!important;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;border-radius:13px}
+.sd-ph2-x b{font:900 13px/1 var(--f-mono)}.sd-ph2-x:hover{background:#ff3d52;border-color:#ff3d52}
+.sd-p2-k{margin:4px 2px -2px;font:800 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.16em;color:#8a8f98}
+.sd-p2-maps{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sd-p2-map{position:relative;display:flex;flex-direction:column;gap:8px;align-items:flex-start;text-align:left;padding:10px;background:#15181d;border:1px solid #2b3038;border-top:3px solid var(--c);color:#ece8de!important;cursor:pointer;min-width:0}
+.sd-p2-map:active{transform:translateY(1px)}.sd-p2-map:hover{background:#1a1e25}
+.sd-p2-mini{display:grid;grid-template-columns:repeat(4,24px);gap:4px}.sd-p2-mini>i{display:grid;place-items:center;width:24px;height:24px;background:#0b0c0f;border:1px solid #2b3038;color:var(--c)}.sd-p2-mini svg{width:14px;height:14px}
+.sd-p2-map span{display:flex;flex-direction:column;gap:2px;min-width:0;width:100%}.sd-p2-map b{font:800 14px/1.15 var(--f-head)}
+.sd-p2-map small{font:500 11px/1.3 var(--f-body);color:#a9a59b;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sd-p2-map>em{position:absolute;right:8px;top:8px;min-width:18px;height:18px;padding:0 4px;display:grid;place-items:center;background:#ff3d52;color:#fff;font:800 10.5px var(--f-mono);font-style:normal;border:2px solid #000}
+.sd-p2-arow>em u,.sd-p2-tag{text-decoration:none;padding:2px 6px;background:#0b0c0f;border:1px solid #2b3038;color:#c9c5bb;font:700 10px var(--f-mono);white-space:nowrap}
+.sd-p2-arow>em{font-size:18px;color:#8a8f98}
+.sd-p2-vh{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px;background:linear-gradient(100deg,#2a0f2c,#1a0f22 70%);border:1px solid #6b2a6e;border-left:4px solid #ff4fd8;color:#ece8de!important;cursor:pointer}
+.sd-p2-vh>i{display:grid;place-items:center;width:42px;height:42px;background:#ff4fd8;color:#1a0f22;border:2px solid #000;flex:none}.sd-p2-vh>i svg{width:22px;height:22px}
+.sd-p2-vh>span{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}.sd-p2-vh small{font:700 10px var(--f-mono);text-transform:uppercase;letter-spacing:.14em;color:#ff8ae6}
+.sd-p2-vh b{font:900 19px/1.05 var(--f-display);text-transform:uppercase}.sd-p2-vh em{font:500 12px var(--f-body);font-style:normal;color:#d9cfe0}
+.sd-p2-vh>u{flex:none;text-decoration:none;padding:7px 10px;background:#ff4fd8;color:#1a0f22;font:900 12px var(--f-mono);text-transform:uppercase;border:2px solid #000}
+/* computer: een grotere telefoon */
+@media (min-width:701px){.sd-ph2-dev{width:min(430px,100%);height:min(880px,calc(100dvh - 32px))}.sd-ph2{padding:16px 28px}
+  .sd-p2-app>i{width:58px;height:58px}.sd-p2-app>i>svg{width:28px;height:28px}.sd-p2-app>span{font-size:11.5px}.sd-p2-home{padding:12px 14px 16px;gap:12px}}
+/* telefoon: schermvullend, sluitknop groot en altijd zichtbaar */
+@media (max-width:700px){.sd-ph2-bar{padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;background:#0b0c0f;border-bottom:1px solid #1d2128}.sd-ph2-bar .sd-notch{display:none}
+  .sd-ph2-x{height:34px;padding:0 14px 0 12px;font-size:12.5px!important;border-radius:17px;background:#2d313b}.sd-ph2-x b{font-size:15px}
+  .sd-ph2-nav{padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}}
 /* ---- meldingen, prestaties, taxi-overgang ---- */
 .sd-note{position:fixed;z-index:47;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(380px,calc(100vw - 20px));display:flex;gap:10px;align-items:center;padding:9px 12px;background:rgba(14,16,22,.97);border:1px solid #2b3038;border-left:4px solid var(--c,#3fe395);box-shadow:5px 5px 0 rgba(0,0,0,.5);text-align:left;color:#ece8de!important;cursor:pointer}
 .sd-note[hidden]{display:none}.sd-note.go{animation:sdNote 4.2s steps(30) forwards}@keyframes sdNote{0%{transform:translate(-50%,-130%)}6%,92%{transform:translate(-50%,0)}100%{transform:translate(-50%,-130%)}}
@@ -490,6 +515,7 @@ body.sd-siren::before{content:"";position:fixed;inset:0;z-index:18;pointer-event
 .sd-fade{position:fixed;inset:0;z-index:60;background:#000;pointer-events:none;animation:sdFadeIO 1.1s steps(8) forwards}@keyframes sdFadeIO{0%{opacity:0}40%,60%{opacity:1}100%{opacity:0}}
 body.stad-in .sd-note{top:calc(70px + env(safe-area-inset-top,0px))}
 .sd-p2-hero>div{display:flex;flex-direction:column;min-width:0}.sd-p2-hero>div b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sd-p2-hero>.sd-p2-m{display:grid;grid-template-columns:1fr 1fr;flex-direction:row}.sd-p2-hero>.sd-p2-m b{font-size:17px}
 .sd-dlg-por.wide{width:120px;height:72px}@media (max-width:560px){.sd-dlg-por.wide{width:80px;height:48px;top:-24px}}
 
 /* =================== auto's: prompt, spelletjes, garage =================== */
