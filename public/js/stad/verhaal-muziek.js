@@ -57,7 +57,26 @@ const VT={
  v10:'Iemand volgde hem die nacht. Hij zag alleen een masker in zijn achterlicht. Pas jaren later zou hij weten wie het was.',
  v11:'Iedereen in dit verhaal herinnert zich de avond in Oud-Zuid. Een rijtjeshuis. Gordijnen dicht. Een laatste rit.',
  v12:'Ze noemden hem Grote Ray. Geen masker, geen haast. Hij hoefde nooit hard te praten om gehoord te worden.',
- v13:'Twee telefoons. Twee bazen. En een jongen van zestien die dacht dat hij het onder controle had. Hij had het mis.'};
+ v13:'Twee telefoons. Twee bazen. En een jongen van zestien die dacht dat hij het onder controle had. Hij had het mis.',
+ v14:"Na Oud-Zuid had Luca twee telefoons. Eén voor zijn moeder en zijn baas. En één voor mannen die nooit hun achternaam noemden.",
+ v15:"Op school zat hij nog gewoon in de tweede rij. Huiswerk, proefwerken, een docent die hem kansen gaf. Niemand zag dat hij al een ander rooster had.",
+ v16:"Voor Grote Ray was geld innen geen geweld. Het was boekhouding. Luca leerde snel dat je met één zin meer bereikt dan met een vuist.",
+ v17:"Een parkeergarage aan de Boulevard. Tien uur 's avonds. Op de hoek een jongen die alleen maar hoefde te kijken. In mijn dossier staat zijn naam er niet bij. Nog niet.",
+ v18:"Dex kende hem al sinds de basisschool. Dezelfde straat, dezelfde voetbalkooi. Het was de enige vriendschap in dit verhaal zonder prijs. Dat bleef niet zo.",
+ v19:"Een vader die een telefoon vindt die hij nooit heeft gekocht. In de Westbuurt is dat het begin van een gesprek dat elk gezin kent.",
+ v20:"Die nacht viel de politie Lounge Sahara binnen. Vier busjes, een hond, en een tip die precies klopte. De vraag was alleen: van wie.",
+ v21:"Iemand had gepraat. Rafiq zocht een lek. En hij keek als eerste naar de jongen die overal binnen mocht komen.",
+ v22:"Ze haalden Dex weg bij het schoolhek, midden op de dag. Iedereen keek. Luca stond aan de overkant.",
+ v23:"Iemand in Sahara praatte met de verkeerde mensen. Wie dat was, en met wie, zou Luca pas veel later begrijpen.",
+ v24:"Zeventien. De rode jas hing aan de haak bij Bella Napoli. Giovanni wist het. Hij zei het alleen niet hardop.",
+ v25:"Een eigen hoek begint met een schuld. Drieduizend euro voorraad. En iemand die precies weet waar je woont.",
+ v26:"Een portiek bij een speeltuin in de Westbuurt. Overdag spelen er kinderen. 's Avonds stond Luca er.",
+ v27:"De Hoek-boys van Yassin waren er eerder. Op straat is dat geen argument. Het is een uitdaging.",
+ v28:"Inspecteur Bakker had één foto. Een pizzajongen in een rode jas. Hij hing hem in het midden van zijn bord. Ik deed precies hetzelfde.",
+ v29:"Milan was dertien. Hij keek naar Luca zoals Luca ooit naar Sahara keek. Zo gaat het door. Altijd.",
+ v30:"Zijn zus zag hem staan vanuit de tram. Ze wist het al maanden. Ze wachtte alleen tot hij het zelf zou zeggen.",
+ v31:"Ferry praatte te veel. In deze stad is dat een gezondheidsprobleem.",
+ v32:"Ik heb dit verhaal jaren gevolgd. Maar die avond begon het verhaal mij te volgen."};
 let vtEl=null,vtNode=null,vtG=null,vtSub=null;
 function vtMaak(){if(vtEl||!aan())return;vtEl=new Audio();vtEl.preload='auto';vtEl.playsInline=true;try{vtNode=ctx.createMediaElementSource(vtEl);vtG=ctx.createGain();vtNode.connect(vtG);vtG.connect((G.snd.master&&G.snd.master())||ctx.destination)}catch(e){vtG=null}}
 function vtCss(){if(document.getElementById('vtCss'))return;const s=document.createElement('style');s.id='vtCss';s.textContent=`
@@ -78,6 +97,16 @@ async function verteller(id){const t=VT[id];if(!t)return;
   while(!klaar&&(performance.now()-t0)/1000<dur+(vtEl&&!vtEl.paused?2:0)){const a=performance.now();if(C&&C.wacht){await C.wacht(.1);if(performance.now()-a<2)break}else await new Promise(r=>setTimeout(r,100))}
   try{if(vtEl&&!vtEl.paused)vtEl.pause()}catch(e){}vtTekst(null);duik=1;await new Promise(r=>setTimeout(r,250))}
 G.verteller=verteller;G.verteller.tekst=VT;
+// Hugo's eigen stem in een scène (zelfde stem als de verteller): speelt naast de ondertitel van de scène, blokkeert niet.
+// G.stem('h02') · G.stem(null) stopt. Stopt vanzelf aan het eind van een cutscène.
+let stEl=null,stG=null;
+function stem(id){try{if(!stEl&&aan()){stEl=new Audio();stEl.preload='auto';stEl.playsInline=true;try{const n=ctx.createMediaElementSource(stEl);stG=ctx.createGain();n.connect(stG);stG.connect((G.snd.master&&G.snd.master())||ctx.destination)}catch(e){stG=null}}
+  if(!stEl)return;try{stEl.pause()}catch(e){}if(!id){duik=1;return}
+  try{if(G.verhaalInst&&G.verhaalInst.get&&G.verhaalInst.get('verteller')===false)return}catch(e){}
+  const geluid=!G.snd||G.snd.fxOn||G.snd.muOn;if(!geluid)return;
+  stEl.src='/audio/verhaal/verteller/'+id+'.mp3'+V;if(stG)stG.gain.value=1.15;duik=.4;stEl.onended=()=>{duik=1};const p=stEl.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
+G.stem=stem;G.stemBezig=()=>!!(stEl&&!stEl.paused&&!stEl.ended);
+{const iv=setInterval(()=>{if(!G.cut||!G.cut.onEnd)return;clearInterval(iv);G.cut.onEnd.push(()=>stem(null))},300)}
 
 G.verhaalMuziek={zet,get nu(){return nu},deks:()=>DEKS.map(d=>({num:d.num,bezig:d.bezig,vol:+d.vol.toFixed(2),t:+(d.el.currentTime||0).toFixed(1),pauze:d.el.paused})),duik(k){duik=Math.max(0,Math.min(1,k))},NUM,STEMMING};
 })();

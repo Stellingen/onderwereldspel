@@ -96,7 +96,7 @@ const pct=()=>L.F('aanbod')||20;
 function schouder(a,b,d,zij,h){const dx=a.x-b.x,dz=a.z-b.z,n=Math.hypot(dx,dz)||1,ux=dx/n,uz=dz/n;d=d||3.2;zij=zij==null?1.2:zij;h=h||2.4;
   return L.cam(a.x+ux*d-uz*zij,h,a.z+uz*d+ux*zij,b.x,1.2,b.z)}
 
-async function mSchool(t,dag){const S=L.A('school',232,337);if(!await doelNaar('Naar school',S,9))return;await L.binnen('klas');if(t!==RUN)return;
+async function mSchool(t,dag){const S=L.A('school',232,337);if(!await doelNaar('Naar school',S,9))return;await L.binnen('klas');if(t!==RUN)return;if(G.verteller)await G.verteller('v15');if(t!==RUN)return;
   const seat=B.plek('klas','luca');const Q=[
    [['Wat is btw?','Belasting op wat je koopt','Belasting op je loon','Een boete'],0],
    [['Iemand verdient €100 en houdt €63 over. Hoeveel procent ging weg?','63%','37%','100%'],1],
@@ -110,8 +110,9 @@ async function mSchool(t,dag){const S=L.A('school',232,337);if(!await doelNaar('
   vr.forEach(([q,a])=>{sc.push({keuze:q.slice(1).map((x,i)=>({t:x,id:'q'+i,f:()=>{if(i===a)goed++}})),wie:'docent',text:q[0]});sc.push({fn:()=>{}})});
   sc.push({say:'docent',text:'…Hm. Niet slecht, De Santis. Niet slecht.',t:2},{fade:'out',t:.4},{weg:'luca'},{speler:true},{fade:'in',t:.4});
   // de reactie hangt af van de antwoorden: na de keuzes aanpassen
-  await C.play(sc.slice(0,-5));if(t!==RUN)return;
-  await C.play([{say:'docent',text:goed===2?'Twee goed. Jij snapt meer van geld dan je laat zien, De Santis.':goed===1?'Eén goed. Je hoofd zit ergens anders, hè?':'Nul. Waar ben jij met je gedachten?',t:2.8},
+  await C.play(sc.slice(0,-5),{blijf:true});if(t!==RUN)return;
+  // zelfde klas-shot, Luca blijft zitten (niet terug naar de spelcamera boven het lokaal)
+  await C.play([{speler:false},L.cam(...L.W3('klas',13.8,2.7,1.2),...L.W3('klas',10.6,1.3,6.8)),{say:'docent',text:goed===2?'Twee goed. Jij snapt meer van geld dan je laat zien, De Santis.':goed===1?'Eén goed. Je hoofd zit ergens anders, hè?':'Nul. Waar ben jij met je gedachten?',t:2.8},
     {say:'dex',text:goed===2?'Nerd.':'Hij denkt aan pizza.',t:1.6,mood:'blij'},{fade:'out',t:.4},{weg:'luca'},{speler:true},{fade:'in',t:.4}]);
   if(goed===2){ST.meter('fam_elena',2);L.sein('Goed cijfer · mama is trots','#3fe395')}ST.flag('school_'+dag,goed);await L.buiten()}
 
@@ -149,7 +150,7 @@ async function mDief(t){const l=L.P(),k=L.voor(2);
   C.weg('scooterdief');C.weg('luca')}
 
 async function mRayGeld(t){const ad=G.bezorg.adres({klant:'student',min:180,max:520})||{x:L.A('portiek',182,390).x,z:L.A('portiek',182,390).z,adres:'Portiek'};
-  await C.play([{fn:L.tril},{say:'nova',text:'Kevin. '+(ad.adres||'Westbuurt')+'. Loopt drie weken achter. Twaalfhonderd. Ray wil het vandaag.',t:3.6,mood:'koel'},{say:'luca',text:'En als hij het niet heeft?',t:1.8},{say:'nova',text:'Dan ben je creatief.',t:1.8}]);
+  await C.play([{fn:()=>G.verteller&&G.verteller('v16')},{fn:L.tril},{say:'nova',text:'Kevin. '+(ad.adres||'Westbuurt')+'. Loopt drie weken achter. Twaalfhonderd. Ray wil het vandaag.',t:3.6,mood:'koel'},{say:'luca',text:'En als hij het niet heeft?',t:1.8},{say:'nova',text:'Dan ben je creatief.',t:1.8}]);
   if(t!==RUN)return;L.zorgFiets();if(!await doelNaar('Geld ophalen bij Kevin',ad,6))return;
   const l=L.P(),k=L.voor(1.6),sc=L.scooter('#2a6ad0'),sp=L.walk(k.x+2.6,k.z+1,3);sc.position.set(sp.x,0,sp.z);G.scene().add(sc);
   const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'kevin',at:[k.x,k.z],ry:L.naar(k,l)},{snd:'deurbel'},L.rond(k.x,k.z,L.naar(k,l)+1,2.8,1.6,1.4),
@@ -175,8 +176,8 @@ async function mRayGeld(t){const ad=G.bezorg.adres({klant:'student',min:180,max:
 async function mUitkijk(t){const g=L.A('parkeergarage',895,875),post={x:888,z:906};
   await C.play([{fn:L.tril},{say:'nova',text:'Parkeergarage aan de Boulevard. Tien uur. Jij staat op de hoek en je kijkt. Zie je blauw: seintje.',t:3.6,mood:'koel'}]);if(t!==RUN)return;
   L.zorgFiets();if(!await doelNaar('Op de uitkijk bij de parkeergarage',post,4))return;L.tijd(22,0);
-  const l=L.P(),bus={x:g.x+3,z:g.z+2};
-  await C.play([{actor:'nova',at:[bus.x,bus.z],ry:L.naar(bus,l),anim:'leun'},L.rond(bus.x,bus.z,L.naar(bus,l)+.6,6,2.4,1.4),
+  const l=L.P(),bus=L.walk(g.x+(l.x-g.x)*.45,g.z+(l.z-g.z)*.45,5);// Nova op de stoep tussen de garage en jou (niet in de gevel)
+  await C.play([{actor:'nova',at:[bus.x,bus.z],ry:L.naar(bus,l),anim:'leun'},L.rond(bus.x,bus.z,L.naar(bus,l)-.45,4.0,2.4,1.9),{fn:()=>G.verteller&&G.verteller('v17')},
    {say:'nova',text:'Drie auto’s rijden zo de garage in. Wij doen de rest. Jij: ogen op de Boulevard.',t:3,mood:'koel'},
    {say:'nova',text:'En jongen. Een vals alarm kost ons evenveel als een gemist alarm.',t:2.8},{weg:'nova'}]);if(t!==RUN)return;
   G.frozen=1e9;const res=await uitkijk();G.frozen=0;if(t!==RUN)return;
@@ -204,7 +205,7 @@ function uitkijk(){return new Promise(async res=>{const lijn=[{x:775,z:918},{x:8
   removeEventListener('keydown',key,true);el.remove();res({goed,vals,gemist})})}
 
 async function mDexErbij(t){const d=L.A('dex',277,480);if(!await doelNaar('Dex wacht bij de hoek',d,5))return;const l=L.P(),q=L.voor(2.2),wist=L.F('dex')==='weet';
-  const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'dex',at:[q.x,q.z],ry:L.naar(q,l),anim:'leun'},L.rond(q.x,q.z,L.naar(q,l)+1,3.2,1.6,1.4),
+  const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'dex',at:[q.x,q.z],ry:L.naar(q,l),anim:'leun'},L.rond(q.x,q.z,L.naar(q,l)+1,3.2,1.6,1.4),{fn:()=>G.verteller&&G.verteller('v18')},
    ...(wist?[{say:'dex',text:'En? Heb je het gevraagd? Zeg dat je het gevraagd hebt.',t:2.6,mood:'blij'},{say:'luca',text:'Rafiq zegt ja. Jij wordt tweede koerier.',t:2.2},{anim:'dex',a:'juich'},{say:'dex',text:'JAAA! Broer!',t:1.6,mood:'blij'}]
      :[{say:'dex',text:'Fooi, hè? Rijke mensen op de Zuidas? Ik heb je gezien, Luca. Achter de pizzeria. Met die gast van Rafiq.',t:3.8,mood:'boos'},{say:'luca',text:'…Dex.',t:1.4},{say:'dex',text:'Je had het gewoon kunnen zeggen. Ik wil meedoen. En ik wil dat je me niet meer voorliegt.',t:3.4},{fn:()=>ST.meter('loy_dex',-4)}]),
    {say:'dex',text:'Welke routes krijg ik?',t:1.8},
@@ -227,17 +228,18 @@ async function mElenaVindt(t){await L.binnen('thuis');if(t!==RUN)return;['marco'
    L.cam(...L.W3('thuis',14.4,2.1,8.3),...L.W3('thuis',11.8,1.8,9.0)),{fade:'in',t:.6},
    {say:null,text:'Elena verschoont je bed na haar nachtdienst. In haar hand: een rol briefjes. Ze vond hem '+plek+'.',t:3.6},
    {say:'elena',text:'Luca. Wat is dit?',t:1.8,mood:'boos'},
-   L.cam(...L.W3('thuis',13.9,2.1,11.4),...L.W3('thuis',11.2,1.9,8.6)),
+   L.camNaar(...L.W3('thuis',14.0,2.2,8.6),...L.W3('thuis',11.9,1.9,9.0),3,{wacht:false}),
    {keuze:[{t:'"Gespaard. Fooi van maanden."',id:'fooi'},{t:'"Voor jou en papa. Voor zijn rug."',id:'voor'},{t:'Niks zeggen',id:'stil'}],wie:'luca',text:'Elena wacht.'}],{blijf:true});
   if(t!==RUN)return;
-  await C.play(r==='fooi'?[{say:'elena',text:'Fooi. Ik zie elke nacht mensen die liegen over wat ze genomen hebben, Luca. Ik weet hoe liegen eruitziet.',t:3,mood:'boos'}]
-    :r==='voor'?[{say:'elena',text:'Voor ons? …Ik wil het niet. Niet zo. Ik wil weten waar het vandaan komt.',t:3.2,mood:'neutraal'},{say:'luca',text:'Het is eerlijk verdiend, mam.',t:1.8},{say:null,text:'Ze legt het geld op je bureau. Ze gelooft je niet. Ze laat het toch liggen.',t:3}]
-    :[{say:null,text:'Luca zegt niets. Elena legt het geld op het bureau en gaat zonder iets te zeggen naar bed. Die avond belt ze haar zus.',t:3.8}]);
+  const kamer=L.cam(...L.W3('thuis',14.0,2.2,8.6),...L.W3('thuis',11.9,1.9,9.0));
+  await C.play(r==='fooi'?[kamer,{say:'elena',text:'Fooi. Ik zie elke nacht mensen die liegen over wat ze genomen hebben, Luca. Ik weet hoe liegen eruitziet.',t:3,mood:'boos'}]
+    :r==='voor'?[kamer,{say:'elena',text:'Voor ons? …Ik wil het niet. Niet zo. Ik wil weten waar het vandaan komt.',t:3.2,mood:'neutraal'},{say:'luca',text:'Het is eerlijk verdiend, mam.',t:1.8},{say:null,text:'Ze legt het geld op je bureau. Ze gelooft je niet. Ze laat het toch liggen.',t:3}]
+    :[kamer,{say:null,text:'Luca zegt niets. Elena legt het geld op het bureau en gaat zonder iets te zeggen naar bed. Die avond belt ze haar zus.',t:3.8}]);
   ST.meter('fam_elena',r==='voor'?-3:-8);L.F('elena_vond',r);await C.play([{fade:'out',t:.4},{weg:'elena'},{weg:'luca'},{speler:true},{fade:'in',t:.4}]);['marco','giulia'].forEach(k=>B.toon('thuis',k,true))}
 async function mTelefoon(t){await L.binnen('thuis');if(t!==RUN)return;['marco','giulia','elena'].forEach(k=>B.toon('thuis',k,false));
   const tafel=B.plek('thuis','eettafel'),mp=L.W('thuis',7.4,4.2),lp=L.W('thuis',7.4,6.3);
   const r=await C.play([{fade:'out',t:.01},{speler:false},{actor:'marco',at:mp,ry:0,anim:'sit',sitY:-.4,prop:'telefoon'},{actor:'luca',at:lp,ry:PI,anim:'sit',sitY:-.4},
-   {fn:()=>['marco','luca'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},L.cam(tafel.x+2.4,2.0,tafel.z+1.8,tafel.x,1.0,tafel.z),{fade:'in',t:.8},
+   {fn:()=>['marco','luca'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},L.cam(tafel.x+2.4,2.0,tafel.z+1.8,tafel.x,1.0,tafel.z),{fade:'in',t:.8},{fn:()=>G.verteller&&G.verteller('v19')},
    {say:null,text:'Zeven uur ’s ochtends. Mama slaapt na haar nachtdienst. Marco zit aan de keukentafel. Voor hem ligt een telefoon. Niet die van Luca. De andere.',t:4.4},
    {say:'marco',text:'Deze zat in je jaszak. Hij ging vannacht vier keer. Onbekend nummer.',t:3},
    {say:'marco',text:'Ik ben niet dom, Luca. Ik werk dertig jaar in de haven. Ik weet wat een tweede telefoon is.',t:3.4},
@@ -260,7 +262,7 @@ async function mInval(t){const S=L.A('sahara',655,909);L.F('inval',1);L.zorgFiet
   if(!await doelNaar('Breng de bestelling naar Lounge Sahara',S,8))return;if(G.fiets)G.fiets.last(0);
   await L.binnen('sahara');if(t!==RUN)return;G.draag.zet(3);const sp=L.W('sahara',11.1,25.4);G.P.x=sp[0];G.P.z=sp[1];G.P.ry=PI;
   const ag=[[8.5,21],[13.5,18.5],[6,24.5],[15.2,23]].map(([x,z],i)=>L.zetBinnen('inval'+i,...L.W('sahara',x,z),PI*(i%2?.5:1.5),{look:C.look('agent'),anim:i%2?'armen':'point'}));
-  const r=await C.play([L.cam(...L.W3('sahara',20.4,3.9,27.0),...L.W3('sahara',8,1.0,14.5)),{snd:'whistle'},
+  const r=await C.play([L.cam(...L.W3('sahara',20.4,3.9,27.0),...L.W3('sahara',8,1.0,14.5)),{fn:()=>G.verteller&&G.verteller('v20')},{snd:'whistle'},
    {say:'agent',text:'POLITIE! Iedereen blijft zitten! Handen op tafel!',t:2.6,mood:'boos'},{say:null,text:'Een inval. Blauwe jassen overal. Achterin hoor je de telmachine stoppen. Iemand gooit iets door een raam.',t:3.6},
    {keuze:[{t:'Rustig naar buiten lopen, dozen in je handen',id:'loop',sub:'Niet rennen'},{t:'Dozen laten vallen en rennen',id:'ren',sub:'Achtervolging'}],wie:'luca',text:'Je bent maar de pizzajongen. Toch?'}],{blijf:true});
   if(t!==RUN)return;
@@ -276,8 +278,9 @@ async function mInval(t){const S=L.A('sahara',655,909);L.F('inval',1);L.zorgFiet
 
 async function mLekker(t){const S=L.A('sahara',655,909);if(!await doelNaar('Rafiq wil je zien in Sahara',S,8))return;await L.binnen('sahara');if(t!==RUN)return;
   const rp=L.W('sahara',6.4,2.2),lp=L.W('sahara',6.4,4.6),z=L.F('envelop');
+  const telW=aan=>['teller0','teller1','bewaker'].forEach(n=>{try{B.toon('sahara',n,aan)}catch(e){}});telW(false);
   const r=await C.play([{speler:false},{actor:'rafiq',at:rp,ry:0,anim:'sit',sitY:-.45},{actor:'luca',at:lp,ry:PI},{fn:()=>['rafiq','luca'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},
-   L.cam(...L.W3('sahara',10.2,2.4,5.6),...L.W3('sahara',6.4,1.6,3.2)),{fade:'in',t:.5},
+   L.cam(...L.W3('sahara',10.2,2.4,5.6),...L.W3('sahara',6.4,1.6,3.2)),{fade:'in',t:.5},{fn:()=>G.verteller&&G.verteller('v21')},
    {say:'rafiq',text:'Ray’s mensen waren laatst in Oud-Zuid. Een rijtjeshuis. Een pizzajongen. Dat ben jij, toch?',t:3.6,mood:'koel'},
    ...(L.F('rafiq_weet')?[{say:'rafiq',text:'Je zei het zelf al. Goed. Nu wil ik weten wat je hém hebt verteld.',t:3}]:[]),
    {keuze:z==='gelogen'?[{t:'"Ik gaf ze een verkeerde naam. Teun, uit de haven."',id:'teun'},{t:'"Niks. Ik heb niks gezegd."',id:'niks'}]:[{t:'"Niks. Ik heb gezwegen. Hij gaf me zijn nummer."',id:'eerlijk'},{t:'"Niks. Ze lieten me gewoon gaan."',id:'lieg'}],wie:'luca',text:'Rafiq kijkt je aan zonder te knipperen.'}],{blijf:true});
@@ -285,13 +288,13 @@ async function mLekker(t){const S=L.A('sahara',655,909);if(!await doelNaar('Rafi
   if(r==='teun'){await C.play([{snd:'lach'},{say:'rafiq',text:'Teun? De kraanman? Ha! Die arme ziel heeft schulden tot aan zijn nek. Ray zal hem vinden… en niks vinden.',t:3.8,mood:'blij'},{say:'rafiq',text:'Slim. Gevaarlijk slim. Ik onthoud dat.',t:2.4,mood:'koel'}]);ST.meter('loy_rafiq',10)}
   else if(r==='eerlijk'){await C.play([{say:'rafiq',text:'Zijn nummer. En je komt het mij vertellen. Weet je hoe zeldzaam dat is?',t:3,mood:'koel'},{anim:'rafiq',a:'give',prop:'geld',naar:'luca'},{snd:'cash'},{fn:()=>ST.geld(500,'van Rafiq')},{say:'rafiq',text:'Houd dat nummer. Misschien hebben we het nog nodig.',t:2.6}]);ST.meter('loy_rafiq',12);L.F('rafiq_weet',1)}
   else{await C.play([{say:null,text:'Rafiq zegt niets. Dan glimlacht hij. Het is geen fijne glimlach.',t:3},{say:'rafiq',text:'Goed. Dan geloof ik je. Voor nu.',t:2.2,mood:'koel'}]);ST.meter('loy_rafiq',-4);L.F('rafiq_twijfel',1)}
-  await C.play([{fade:'out',t:.4},{weg:'rafiq'},{weg:'luca'},{speler:true},{fade:'in',t:.4}]);await L.buiten()}
+  await C.play([{fade:'out',t:.4},{weg:'rafiq'},{weg:'luca'},{fn:()=>telW(true)},{speler:true},{fade:'in',t:.4}]);await L.buiten()}
 
 async function mDexOpgepakt(t){const S=L.A('schoolhek',234,371);L.tijd(15,10);if(!await doelNaar('Naar school',S,10))return;
   const lijn=wegLijn(S.x,S.z+6,90),l=L.P(),over=L.walk(S.x+(lijn[0].x===lijn[1].x?7:0),S.z+(lijn[0].z===lijn[1].z?7:0),6);
   const dx=L.walk((lijn[0].x+lijn[1].x)/2,(lijn[0].z+lijn[1].z)/2,6);const pol=auto('#f1efe9',true);
   const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:L.naar(l,dx)},{actor:'dex',at:[dx.x-8,dx.z-8],ry:L.naar({x:dx.x-8,z:dx.z-8},dx),prop:'tas'},
-   schouder(l,dx,3.4,1.4,2.6),{fade:'in',t:.3},
+   schouder(l,dx,3.4,1.4,2.6),{fade:'in',t:.3},{fn:()=>G.verteller&&G.verteller('v22')},
    {say:null,text:L.F('dex_routes')==='spannend'?'Dex komt aanfietsen. Rode BMX, tas op zijn rug, met één hand aan het stuur. Door rood, natuurlijk.':'Dex komt aanfietsen. Rode BMX, tas op zijn rug. Zelfs op zijn veilige route. Hij zwaait naar je van de overkant.',t:3.2},{move:'dex',to:[dx.x,dx.z],t:2.4,anim:'run'},{anim:'dex',a:'zwaai',naar:'luca'},
    {fn:()=>{rij(pol,[lijn[0],{x:dx.x+1.5,z:dx.z+1.5}],14,{blijf:true,rem:true})}},{snd:'whistle'},{wait:2.2},
    {actor:'agent',at:[dx.x+2,dx.z+1.4],ry:L.naar({x:dx.x+2,z:dx.z+1.4},dx)},{actor:'agent2',at:[dx.x+1.2,dx.z+2.6],ry:L.naar({x:dx.x+1.2,z:dx.z+2.6},dx)},
@@ -322,10 +325,10 @@ async function mEinde(t){let p0=null;
   const f=B.gevel&&B.gevel('sahara'),sa=L.A('sahara',655,909),fx=f?f.x:sa.x,fz=f?f.z:sa.z,nx=f?f.nx:0,nz=f?f.nz:1,sx=-nz,sz=nx;
   await C.play([...bel,{fade:'in',t:.4},{fn:L.tril},{say:'nova',text:'Luca. Iemand heeft Dex verraden. Niet de politie: die wisten waar hij zou zijn. Precies waar. Precies wanneer.',t:4,mood:'koel'},
    {say:'luca',text:'Wie dan?',t:1.4},{say:'nova',text:'Het spoor leidt naar Sahara.',t:2.4},{fade:'out',t:1},{weg:'luca'},{dream:true},
-   L.cam(fx+nx*12+sx*6,2.6,fz+nz*12+sz*6,fx,2.4,fz),{fade:'in',t:.6},L.camNaar(fx+nx*8+sx*3.5,2.4,fz+nz*8+sz*3.5,fx,2.4,fz,3,{wacht:false}),{wait:2.6},{fade:'out',t:.6},{dream:false},
+   L.cam(fx+nx*12+sx*6,2.6,fz+nz*12+sz*6,fx,2.4,fz),{fade:'in',t:.6},{fn:()=>G.verteller&&G.verteller('v23')},L.camNaar(fx+nx*8+sx*3.5,2.4,fz+nz*8+sz*3.5,fx,2.4,fz,3,{wacht:false}),{wait:2.6},{fade:'out',t:.6},{dream:false},
    // de cliffhanger: in de achterkamer van Sahara belt Rafiq met iemand die "B." heet
    {fn:()=>{p0=B.waar()?null:{x:G.P.x,z:G.P.z,ry:G.P.ry,yaw:G.yawT};['teller0','teller1','bewaker'].forEach(n=>{try{B.toon('sahara',n,false)}catch(e){}})}},{binnen:'sahara'},{speler:false},{actor:'rafiq',at:L.W('sahara',6.4,2.2),ry:0,anim:'bel',prop:'telefoon'},{fn:()=>{const a=C.acteur('rafiq');if(a)a.g.binnenId=1}},
-   L.cam(...L.W3('sahara',3.0,2.6,5.3),...L.W3('sahara',6.4,2.2,2.2)),{fade:'in',t:.6},
+   L.cam(...L.W3('sahara',9.6,2.6,5.3),...L.W3('sahara',6.4,2.2,2.2)),{fade:'in',t:.6},
    {say:'rafiq',text:'Ja. Hij weet niks.',t:2.2,mood:'koel'},{say:'rafiq',text:'Nee. De jongen niet. Nog niet.',t:2.6,mood:'koel'},
    L.cam(...L.W3('sahara',5.2,2.7,4.7),...L.W3('sahara',6.4,2.3,2.2)),{fn:()=>L.belKaart&&L.belKaart('Telefoon van Rafiq','B.','In gesprek · 04:12')},{say:null,text:'Op het scherm van zijn telefoon staat maar één letter: B.',t:3.2},{fn:()=>L.belKaart&&L.belKaart(null)},
    {fade:'out',t:.8},{weg:'rafiq'},{fn:async()=>{['teller0','teller1','bewaker'].forEach(n=>{try{B.toon('sahara',n,true)}catch(e){}});try{if(bin&&bin!=='sahara')await B.in(bin,{fade:false,forceer:true});else await B.uit({fade:false,naar:p0})}catch(e){}}},
@@ -353,7 +356,8 @@ S('h2_start',{muziek:'ray',async start(o){const t=nieuw();const s=ST.st();s.ch=2
   const env=L.F('envelop');
   await L.binnen('thuis');if(t!==RUN)return;
   await C.play([{fade:'out',t:.01},{speler:false},{actor:'luca',at:L.W('thuis',12.6,10.2),ry:PI*.5,anim:'sit',sitY:-.45,prop:'telefoon'},{fn:()=>{const a=C.acteur('luca');if(a)a.g.binnenId=1}},
-   L.cam(...L.W3('thuis',14.5,1.95,11.0),...L.W3('thuis',12.6,1.65,10.2)),{fade:'in',t:1},{titel:'Seizoen 2',sub:'Hoofdstuk 2 · Twee bazen',t:3.6},{fn:L.tril},
+   L.cam(...L.W3('thuis',14.7,3.1,11.8),...L.W3('thuis',12.3,1.3,9.7),{vrij:true}),{fade:'in',t:1},L.camNaar(...L.W3('thuis',14.4,2.8,11.4),...L.W3('thuis',12.4,1.5,9.9),8,{wacht:false,vrij:true}),{fn:()=>G.verteller&&G.verteller('v14')},{titel:'Seizoen 2',sub:'Hoofdstuk 2 · Twee bazen',t:3.6},
+   L.cam(...L.W3('thuis',14.5,1.95,11.0),...L.W3('thuis',12.6,1.65,10.2)),{fn:L.tril},
    {say:null,text:'Twee telefoons. De ene van Rafiq. De andere van een nummer dat Luca niet heeft opgeslagen, maar wel uit zijn hoofd kent.',t:4},
    ...(env==='verraden'?[{say:'ray',text:'Goedemorgen, Luca. Vanaf vandaag werk je voor mij. En voor Rafiq. Want Rafiq mag niet weten dat je voor mij werkt.',t:4.2,mood:'koel'}]
      :env==='gelogen'?[{say:'ray',text:'Mijn mensen zoeken Teun nog. Tot ze hem vinden, werk jij voor mij. Gewoon zoals altijd voor Rafiq, en daarnaast voor mij.',t:4.4,mood:'koel'}]
@@ -394,6 +398,6 @@ const iv=setInterval(()=>{if(!G.ready||!G.story||!G.cut||!G.binnen||!G.h1||!G.h1
   ST=G.story;C=G.cut;B=G.binnen;L=G.h1.lib;try{cast()}catch(e){console.error(e)}
   if(!live())return;registreer();
   setInterval(()=>{try{speciaal()}catch(e){}},45e3);
-  G.h2.test={planning,uitkijk,mInval,mDexOpgepakt,mTelefoon,mRayGeld,mLekker,mDexErbij,mSchool,wegLijn,auto,nieuw:()=>nieuw()};
+  G.h2.test={planning,uitkijk,mUitkijk,mElenaVindt,mGiovanni,mRafiq,mDexRit,mDief,mEinde,mInval,mDexOpgepakt,mTelefoon,mRayGeld,mLekker,mDexErbij,mSchool,wegLijn,auto,nieuw:()=>nieuw()};
 },150);
 })();

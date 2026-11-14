@@ -66,7 +66,7 @@ async function dienstOpHoek(t,o){o=o||{};G.frozen=1e9;const r=await hoekDienst(o
 async function mAfscheid(t){const N=L.A('napoli',419,492);if(!await doelNaar('Naar Bella Napoli',N,9))return;await L.binnen('napoli');if(t!==RUN)return;
   B.toon('napoli','giovanni',false);const g=L.W('napoli',7.2,8.0),l=L.W('napoli',8.2,10.6),s=L.W('napoli',5.2,8.8),j=B.plek('napoli','jassen');
   await C.play([{fade:'out',t:.01},{speler:false},{actor:'giovanni',at:g,ry:0},{actor:'luca',at:l,ry:PI},{actor:'sanne',at:s,ry:PI*.25},
-   {fn:()=>['giovanni','luca','sanne'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},L.cam(...L.W3('napoli',11.5,2.3,11.5),...L.W3('napoli',7.4,1.6,8.6)),{fade:'in',t:.8},
+   {fn:()=>['giovanni','luca','sanne'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},L.cam(...L.W3('napoli',11.5,2.3,11.5),...L.W3('napoli',7.4,1.6,8.6)),{fade:'in',t:.8},{fn:()=>G.verteller&&G.verteller('v24')},
    {titel:'Seizoen 3',sub:'Hoofdstuk 3 · De hoek',t:3.4},
    {say:null,text:'Luca is zeventien. Het is zijn laatste dienst. Hij weet het. Giovanni weet het ook.',t:3.4},
    ...(j?[{move:'luca',to:[j.x+.4,j.z+.6],t:1.6},{anim:'luca',a:'give'},{fn:()=>ST.jas(false)},{say:null,text:'Hij hangt de rode jas aan de haak.',t:2.2}]:[{fn:()=>ST.jas(false)}]),
@@ -81,7 +81,7 @@ async function mVoorraad(t){const b=baas();
   if(b==='rafiq'&&L.F('dief_praat'))extra.push({say:'rafiq',text:'O, en jongen: mijn koerier vertelde dat jij ook voor Ray rijdt. Dacht je dat ik dat niet zou horen?',t:3.6,mood:'boos'});
   else if(b==='rafiq'&&L.F('rafiq_twijfel'))extra.push({say:'rafiq',text:'Ik geloof nog steeds niet helemaal wat je me over Oud-Zuid vertelde. Maar geld is geld.',t:3.2,mood:'koel'});
   if(L.F('kevin')==='regeling')extra.push({fn:L.tril},{say:'nova',text:'O, en Kevin heeft de rest betaald. Met rente, zoals jij had afgesproken. Ray zegt: jouw idee, jouw deel.',t:3.6,mood:'koel'},{fn:()=>{ST.geld(300,'Kevin betaalde de rest');ST.meter('loy_ray',3)}});
-  await C.play([{fn:L.tril},{say:b,text:b==='ray'?'Een hoek, Luca. De portiek bij de speeltuin. Nova brengt je spul. Drieduizend voor de eerste voorraad, en die betaal je zelf. Zo weet ik dat je het meent.':'Je wilt een hoek? De portiek bij de speeltuin. Drieduizend voor de eerste voorraad. Ik geef niks cadeau, jongen. Zelfs jou niet.',t:4.6,mood:'koel'},...extra]);
+  await C.play([{fn:()=>G.verteller&&G.verteller('v25')},{fn:L.tril},{say:b,text:b==='ray'?'Een hoek, Luca. De portiek bij de speeltuin. Nova brengt je spul. Drieduizend voor de eerste voorraad, en die betaal je zelf. Zo weet ik dat je het meent.':'Je wilt een hoek? De portiek bij de speeltuin. Drieduizend voor de eerste voorraad. Ik geef niks cadeau, jongen. Zelfs jou niet.',t:4.6,mood:'koel'},...extra]);
   if(b==='rafiq'&&L.F('dief_praat')){ST.meter('loy_rafiq',-10);L.F('rafiq_weet',1)}
   if(t!==RUN)return;if(ST.geld()<3000)L.sein('Je hebt nog '+L.eur(3000-ST.geld())+' nodig: koeriersritten bij de hoek en speciale klussen','#ffd35a');
   ritAan(true);await ST.poort(3000,'Eerste voorraad',{betaal:true});if(t!==RUN)return;ritAan(false);L.F('h3_voorraad',1);
@@ -97,7 +97,7 @@ function ritAan(on){ritOk=!!on;const h=L.A('hoek',236,461);try{G.kaart&&G.kaart.
 
 async function mHoek1(t){const P0=L.A('portiek',182,390);if(!await doelNaar('Naar je hoek: de portiek bij de speeltuin',P0,5))return;L.tijd(17,0);const l=L.P(),q=L.voor(2.2),b=baas();
   const wie=b==='ray'?'nova':'koerier';
-  await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:wie,at:[q.x,q.z],ry:L.naar(q,l),prop:'tas'},L.rond(q.x,q.z,L.naar(q,l)+1,3.4,1.7,1.4),{fade:'in',t:.3},
+  await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:wie,at:[q.x,q.z],ry:L.naar(q,l),prop:'tas'},L.rond(q.x,q.z,L.naar(q,l)+1,3.4,1.7,1.4),{fade:'in',t:.3},{fn:()=>G.verteller&&G.verteller('v26')},
    {say:wie,text:'Tien zakjes. Veertig per stuk. De helft is van jou. Twee jongens op de uitkijk: bij de speeltuin en bij de tramhalte.',t:3.8,mood:'koel'},
    {say:wie,text:'En: lees je klanten. Nette schoenen, oortje, te rustig? Dan verkoop je niks. Ook niet als hij zielig kijkt.',t:3.8},
    {anim:wie,a:'give',naar:'luca'},{anim:'luca',a:'give',prop:'tas'},{fade:'out',t:.3},{weg:wie},{weg:'luca'},{speler:true},{fade:'in',t:.3}]);
@@ -108,7 +108,7 @@ async function mHoek1(t){const P0=L.A('portiek',182,390);if(!await doelNaar('Naa
 
 async function mCrew(t){const S=L.A('speeltuin',198,413);if(!await doelNaar('Er staan jongens bij jouw speeltuin',S,7))return;const l=L.P(),q=L.voor(3),q2=L.walk(q.x+1.6,q.z+.8,3),q3=L.walk(q.x-1.4,q.z+1,3);
   const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'hoekbaas',at:[q.x,q.z],ry:L.naar(q,l),anim:'armen'},{actor:'masker2',at:[q2.x,q2.z],ry:L.naar(q2,l),look:C.figurant&&C.figurant({v:false})},{actor:'oudere_jongen',at:[q3.x,q3.z],ry:L.naar(q3,l)},
-   L.rond(q.x,q.z,L.naar(q,l)+.9,5,2,1.4),{fade:'in',t:.3},
+   L.rond(q.x,q.z,L.naar(q,l)+.9,5,2,1.4),{fade:'in',t:.3},{fn:()=>G.verteller&&G.verteller('v27')},
    {say:'hoekbaas',text:'Jij bent die pizzajongen. Deze speeltuin was van ons voordat jij je fietsje kreeg.',t:3.2,mood:'koel'},
    {say:'hoekbaas',text:'Twee hoeken, één straat. Dat gaat niet, broer.',t:2.4},
    {keuze:[{t:'Zaken doen: zij verkopen jouw spul',id:'zak',sub:'Zakelijk · minder per zakje, meer hoeken'},{t:'Ze vannacht wegjagen, met Dex',id:'straat',sub:'Straat · gevecht'}],wie:'luca',text:'Yassin wacht.'}],{blijf:true});
@@ -140,7 +140,7 @@ async function mBakker(t){const p0=L.A('politie',655,349),p=L.walk(p0.x+3,p0.z+5
    ...(L.F('kevin')==='gedreigd'?[{say:'collega',text:'Een buurvrouw in de Westbuurt belde: een jongen bedreigde een man in zijn portiek. Rode jas.',t:3.2}]:[]),
    ...(L.F('agent')==='gevlucht'?[{say:'collega',text:'Een collega van de wijk: een bezorger fietste weg bij een controle. Ook een rode jas.',t:3}]:[]),
    {anim:'bakker',a:'point'},{say:'bakker',text:'Een pizzajongen.',t:1.6,mood:'koel'},{say:null,text:'Inspecteur Bakker prikt de korrelige foto midden op het bord.',t:2.6},
-   L.cam(p.x+.6,1.6,p.z+.9,p.x,1.55,p.z+2.4),{say:'bakker',text:'Wie ben jij?',t:2,mood:'koel'},{fade:'out',t:.8},{weg:'bakker'},{weg:'collega'},{fn:()=>brd.parent&&brd.parent.remove(brd)},{speler:true},{fade:'in',t:.6}]);
+   L.cam(p.x+.6,1.6,p.z+.9,p.x,1.55,p.z+2.4),{say:'bakker',text:'Wie ben jij?',t:2,mood:'koel'},{fn:()=>G.verteller&&G.verteller('v28')},{fade:'out',t:.8},{weg:'bakker'},{weg:'collega'},{fn:()=>brd.parent&&brd.parent.remove(brd)},{speler:true},{fade:'in',t:.6}]);
   ST.meter('dossier',8+(L.F('inval_uit')==='genoteerd'?4:0)+(L.F('kevin')==='gedreigd'?3:0)+(L.F('agent')==='gevlucht'?3:0));L.F('bakker_bord',1)}
 
 async function mHoek2(t){const P0=L.A('portiek',182,390);if(!await doelNaar('Tweede avond op de hoek',P0,5))return;L.tijd(18,30);const hielp=L.F('sami');
@@ -163,7 +163,7 @@ async function mDiefSchuld(t){const l=L.P(),q=L.voor(2.2);
   else{await C.play([{say:'luca',text:kan?'Nee. Zeg het maar tegen hem.':'Ik heb het niet. Doe maar wat je moet doen.',t:2.2,mood:'koel'},{say:'scooterdief',text:'Jouw keuze.',t:1.4}]);L.F('dief_praat',1);L.F('rafiq_weet',1);if(L.F('envelop')!=='verraden')ST.meter('loy_rafiq',-10)}
   await C.play([{fade:'out',t:.3},{weg:'scooterdief'},{weg:'luca'},{speler:true},{fade:'in',t:.3}])}
 async function mJongen(t){const l=L.P(),q=L.voor(2);
-  const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'jongen13',at:[q.x,q.z],ry:L.naar(q,l)},L.rond(q.x,q.z,L.naar(q,l)+1,2.8,1.4,1.2),
+  const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'jongen13',at:[q.x,q.z],ry:L.naar(q,l)},L.rond(q.x,q.z,L.naar(q,l)+1,2.8,1.4,1.2),{fn:()=>G.verteller&&G.verteller('v29')},
    {say:'jongen13',text:'Jij bent Luca, toch? Iedereen kent je. Mag ik voor je lopen? Ik ben snel. Ik ben dertien, maar ik ben echt snel.',t:3.8,mood:'blij'},
    {keuze:[{t:'Wegsturen: "Ga naar school, Milan."',id:'weg',sub:'Imago omhoog'},{t:'Aannemen',id:'aan',sub:'Meer geld · een keuze die terugkomt'}],wie:'luca',text:'Hij is dertien.'}],{blijf:true});
   if(t!==RUN)return;
@@ -174,9 +174,9 @@ async function mJongen(t){const l=L.P(),q=L.voor(2);
   await C.play([{fade:'out',t:.3},{weg:'jongen13'},{weg:'luca'},{speler:true},{fade:'in',t:.3}])}
 
 async function mGiulia(t){const th=L.A('tramhalte',188,462),P0=L.A('portiek',182,390),d=L.A('flatdak',198,491);
-  await C.play([{fade:'out',t:.4},{speler:false},{actor:'luca',at:[P0.x,P0.z],ry:0,anim:'leun'},{actor:'giulia',at:[th.x,th.z],ry:L.naar(th,P0)},L.cam(th.x-3,2.2,th.z+3,P0.x,1.4,P0.z),{fade:'in',t:.5},
+  await C.play([{fade:'out',t:.4},{speler:false},{actor:'luca',at:[P0.x,P0.z],ry:0,anim:'leun'},{actor:'giulia',at:[th.x,th.z],ry:L.naar(th,P0)},L.cam(th.x-3,2.2,th.z+3,P0.x,1.4,P0.z),{fade:'in',t:.5},{fn:()=>G.verteller&&G.verteller('v30')},
    {say:null,text:'Giulia, in de tram naar de universiteit. Ze kijkt naar buiten. Naar de portiek. Naar haar broertje, met een tas en twee jongens op de uitkijk.',t:4.2},
-   L.rond(th.x,th.z,L.naar(th,P0)+PI,1.6,1.6,1.6),{say:null,text:'Ze zegt niets. Die avond aan tafel kijkt ze hem de hele tijd aan.',t:3.2},{fade:'out',t:.6},{weg:'giulia'},{weg:'luca'},{speler:true},{fade:'in',t:.5}]);
+   L.rond(th.x,th.z,L.naar(th,P0)+.55,2.3,2.4,2.1),{say:null,text:'Ze zegt niets. Die avond aan tafel kijkt ze hem de hele tijd aan.',t:3.2},{fade:'out',t:.6},{weg:'giulia'},{weg:'luca'},{speler:true},{fade:'in',t:.5}]);
   if(t!==RUN)return;if(!await doelNaar('Giulia wacht op het dak van de flat',L.A('thuis',198,483),8))return;
   const y=d.y||34;
   const r=await C.play([{fade:'out',t:.4},{speler:false},{actor:'luca',at:[d.x-.8,d.z],ry:PI*.5,y},{actor:'giulia',at:[d.x+.8,d.z],ry:-PI*.5,y},{fn:()=>L.tijd(22,10)},
@@ -193,7 +193,7 @@ async function mGiulia(t){const th=L.A('tramhalte',188,462),P0=L.A('portiek',182
   await C.play([{fade:'out',t:.5},{weg:'luca'},{weg:'giulia'},{speler:true},{fade:'in',t:.5}])}
 
 async function mNova(t){const s=L.A('stashflat',92,660);
-  await C.play([{fn:L.tril},{say:'nova',text:'Klus. Een man in de flats bij het water. Ferry. Hij bewaart iets voor ons, en hij praat. In de kroeg, tegen zijn vriendin, tegen iedereen. We halen het op.',t:4.4,mood:'koel'}]);
+  await C.play([{fn:()=>G.verteller&&G.verteller('v31')},{fn:L.tril},{say:'nova',text:'Klus. Een man in de flats bij het water. Ferry. Hij bewaart iets voor ons, en hij praat. In de kroeg, tegen zijn vriendin, tegen iedereen. We halen het op.',t:4.4,mood:'koel'}]);
   if(t!==RUN)return;L.zorgFiets();if(!await doelNaar('Naar Ferry, bij de flats aan het water',s,6))return;L.tijd(21,0);const l=L.P(),q=L.voor(1.8),n=L.walk(l.x+1.4,l.z+.6,3);
   const r=await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'nova',at:[n.x,n.z],ry:L.naar(n,q)},{actor:'prater',at:[q.x,q.z],ry:L.naar(q,l)},{snd:'deurbel'},
    L.rond(q.x,q.z,L.naar(q,l)+1.1,3.2,1.7,1.4),{say:'prater',text:'Hé! De vrouw met het masker! En wie is dit? Jij bent die pizzajongen! Ik heb over je gehoord, man, iedereen heeft het over je!',t:3.8,mood:'blij'},
@@ -211,12 +211,12 @@ async function mNova(t){const s=L.A('stashflat',92,660);
 // Eind Seizoen 3: Dex is vrij, en hij heeft iets gehoord: een podcast. Een misdaadverslaggever, Hugo Lindeboom, vertelt alles.
 // (Dat is de stem uit de intro.) Ray wil dat het stopt. De finale is in Lindebooms appartement aan de Damstraat.
 async function mEinde(t){const d=L.A('dex',277,480);if(!await doelNaar('Dex is vrij. Hij wacht bij de hoek',d,6))return;const l=L.P(),q=L.voor(2.2);const boos=L.F('dex_vergeet_niet');
-  await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'dex',at:[q.x,q.z],ry:L.naar(q,l),anim:'armen'},L.rond(q.x,q.z,L.naar(q,l)+1,3.2,1.6,1.4),{fade:'in',t:.3},
+  await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'dex',at:[q.x,q.z],ry:L.naar(q,l),anim:'armen'},L.rond(q.x,q.z,L.naar(q,l)-1,3.2,1.6,1.4),{fade:'in',t:.3},
    {say:'dex',text:boos?'Twee maanden, Luca. Twee maanden heb ik je naam niet genoemd. En jij deed niks.':L.F('dex_hulp')==='moeder'?'Mijn moeder heeft het me verteld. Van het geld. Dat vergeet ik nooit, broer.':'Mr. Hoefnagel. Dure pakken. Ray betaalde. Ik weet dat jij dat regelde.',t:3.8,mood:boos?'boos':'neutraal'},
    {say:'dex',text:'Maar luister. Ze wisten precies waar ik zou zijn. Precies wanneer. En weet je hoe ik dat weet?',t:3.4,mood:'boos'},
    {anim:'dex',a:'bel',prop:'telefoon'},{say:'dex',text:'Ik hoorde het in een podcast. "Onderstroom". Iemand vertelt alles: Sahara, de hoek, mijn arrestatie. En een jongen in een rode jas.',t:4.2,mood:'boos'},
    {say:'luca',text:'Wie?',t:1.2},{say:'dex',text:'Hugo Lindeboom. Misdaadverslaggever. Hij zegt dat hij in de volgende aflevering een naam noemt.',t:3.4},
-   {say:null,text:'Die stem. Luca kent die stem. Rustig, warm, alsof hij je een verhaal voor het slapengaan vertelt.',t:3.6},
+   {say:null,text:'Die stem. Luca kent die stem. Rustig, warm, alsof hij je een verhaal voor het slapengaan vertelt.',t:3.6},{fn:()=>G.verteller&&G.verteller('v32')},
    {fade:'out',t:.5},{weg:'dex'},{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry,anim:'bel',prop:'telefoon'},L.rond(l.x,l.z,(l.ry||0)+.9,2.8,1.7,1.5),{fade:'in',t:.5},
    {fn:L.tril},{say:'ray',text:'Je hebt het gehoord. Lindeboom. Hij heeft een bord met al onze gezichten erop. En jij hangt in het midden.',t:4,mood:'koel'},
    {say:'ray',text:'Maandag om acht uur zegt hij je naam. Dat gebeurt niet. Damstraat 35, aan de gracht. Vanavond.',t:3.8,mood:'koel'},
@@ -240,21 +240,21 @@ async function mHugo(t){const A=(G.hugoAdres&&G.hugoAdres())||L.A('gracht',575,4
    {say:null,text:'De deur zit niet op slot. Binnen: drie schermen, een microfoon, en een rood lampje. ON AIR.',t:3.4},
    {move:'luca',to:lp,t:2.4},
    L.cam(...W3(6.8,2.4,3.9),...W3(4.0,1.85,2.3)),
-   {say:'hugo',text:'…niemand keek naar hem. Dat was zijn kracht. Een jongen op een fiets, rode jas, zes pizza’s op de bagagedrager…',t:4.2},
+   {fn:()=>G.stem&&G.stem('h01')},{say:'hugo',text:'…niemand keek naar hem. Dat was zijn kracht. Een jongen op een fiets, rode jas, zes pizza’s op de bagagedrager…',t:7.6},
    {say:null,text:'Die stem. Vanaf het allereerste begin was het deze stem.',t:3},
    L.cam(...W3(8.2,1.75,4.2),...W3(8.9,1.62,1.1)),L.camNaar(...W3(8.8,1.68,2.6),...W3(8.9,1.62,1.1),4,{wacht:false}),
    {say:null,text:'Het bord. Foto’s, knipsels, rode draadjes. Rafiq. Ray. Nova. Dex. Ze lopen allemaal naar één foto in het midden.',t:4},
    ...(fotoS1?[{say:null,text:'Ook die foto van die eerste nacht in Oud-Zuid. Luca bij de deur, met een pizzadoos. Hij was het. Al die tijd.',t:4}]:[]),
    {anim:'hugo',a:'idle',ry:0},{actor:'hugo',at:W(4.2,3.1),ry:0},L.cam(...W3(3.0,1.85,4.9),...W3(4.2,1.95,3.1)),
-   {say:'hugo',text:'Luca De Santis. Ik vroeg me al af wanneer je zou komen.',t:3,mood:'koel'},
-   {say:'hugo',text:'Weet je hoe lang ik je volg? Sinds die eerste avond. Zes pizza’s voor Lounge Sahara.',t:3.6},
+   {fn:()=>G.stem&&G.stem('h02')},{say:'hugo',text:'Luca De Santis. Ik vroeg me al af wanneer je zou komen.',t:3.9,mood:'koel'},
+   {fn:()=>G.stem&&G.stem('h03')},{say:'hugo',text:'Weet je hoe lang ik je volg? Sinds die eerste avond. Zes pizza’s voor Lounge Sahara.',t:5.8},
    {keuze:[{t:'"Wie weet dit nog meer?"',id:'wie'},{t:'"Waarom ik?"',id:'waarom'},{t:'Niks zeggen',id:'stil'}],wie:'luca',text:'Hij is niet bang. Nog niet.'}],{blijf:true});
   if(t!==RUN)return;
   await C.play([
-   ...(r==='wie'?[{say:'hugo',text:'Niemand. Nog niet. Maandag om acht uur weet iedereen het.',t:3,mood:'koel'}]
-     :r==='waarom'?[{say:'hugo',text:'Omdat niemand naar je keek. Behalve ik. Een jongen van zestien die een stad overneemt. Dat is het verhaal van mijn leven.',t:4.2}]
-     :[{say:'hugo',text:'Je zegt niks. Dat dacht ik al. Je praat nooit, hè? Daarom ben je zo goed.',t:3.4}]),
-   {say:'hugo',text:'Je kunt mij stoppen, Luca. Maar verhalen stoppen niet.',t:3,mood:'koel'},
+   ...(r==='wie'?[{fn:()=>G.stem&&G.stem('h04')},{say:'hugo',text:'Niemand. Nog niet. Maandag om acht uur weet iedereen het.',t:4.7,mood:'koel'}]
+     :r==='waarom'?[{fn:()=>G.stem&&G.stem('h05')},{say:'hugo',text:'Omdat niemand naar je keek. Behalve ik. Een jongen van zestien die een stad overneemt. Dat is het verhaal van mijn leven.',t:8.1}]
+     :[{fn:()=>G.stem&&G.stem('h06')},{say:'hugo',text:'Je zegt niks. Dat dacht ik al. Je praat nooit, hè? Daarom ben je zo goed.',t:5.5}]),
+   {fn:()=>G.stem&&G.stem('h07')},{say:'hugo',text:'Je kunt mij stoppen, Luca. Maar verhalen stoppen niet.',t:4.1,mood:'koel'},
    {anim:'luca',a:'point',prop:'pistool',naar:[hp[0],hp[1]+.35]},L.cam(...W3(4.9,1.95,4.6),...W3(4.2,2.0,3.1)),{snd:'heart'},
    {say:'hugo',text:'…Ah.',t:1.6,mood:'bang'},
    {fade:'out',t:.15},{snd:'schot'},{wait:1.6},{weg:'hugo'},{anim:'luca',a:'idle',prop:null},
@@ -263,7 +263,7 @@ async function mHugo(t){const A=(G.hugoAdres&&G.hugoAdres())||L.A('gracht',575,4
    {move:'luca',to:W(4.0,2.6),t:2},{anim:'luca',a:'give',prop:'schijf'},{snd:'grab'},
    {say:null,text:'Luca trekt de harde schijf uit de computer. Van het bord neemt hij de foto uit het midden mee.',t:3.4},
    L.cam(...W3(4.7,1.6,2.9),...W3(4.2,1.32,1.5)),{snd:'notify'},
-   {say:null,text:'Op het middelste scherm: “Back-up voltooid. Aflevering 7 staat gepland: maandag 08:00.”',t:3.8},
+   {say:null,text:'Op het middelste scherm: “Back-up voltooid. Aflevering 7 staat gepland: maandag 08:00.”',t:3.8},{fn:()=>G.stem&&G.stem('h08')},{say:null,text:'Uit de speakers, zijn eigen stem, de trailer: “Dit was Onderstroom. Maandag om acht uur: de naam die niemand hardop durft te zeggen.”',t:6.2},
    {snd:'notify'},{fn:()=>L.belKaart&&L.belKaart('Nieuw bericht · nu','B.','“Ik heb de kopie. Tot maandag.”')},{say:null,text:'Op het bureau licht zijn telefoon op. Een bericht van “B.”: “Ik heb de kopie. Tot maandag.”',t:4},{fn:()=>L.belKaart&&L.belKaart(null)},
    {anim:'luca',a:'idle',prop:null},{say:'luca',text:'…',t:1.6},
    {fade:'out',t:1.2},{say:null,text:'De stem die je vanaf het begin hoorde, was die van Hugo Lindeboom. Zijn laatste aflevering gaat maandag gewoon de lucht in.',t:4.6},

@@ -582,7 +582,10 @@ stap('h1_nacht',{muziek:'thuis',async start(o){const t=nieuw();await binnen('thu
   await C.play([{fade:'out',t:.8},{buiten:true},{speler:false},rond(th.x,th.z,.2,17,7,5),{fade:'in',t:1},
    rondNaar(th.x,th.z,-.25,13,5,4.5,9,{wacht:false}),
    {say:null,text:'De deur van de flat valt dicht: mama gaat naar haar nachtdienst. Buiten rijdt een scooter voorbij.',t:3.4},{fn:()=>G.verteller&&G.verteller('v06')},{wait:3.2},
-   {fade:'out',t:.7},{fn:()=>{ST.avond(2);ST.tijd(16,30)}},{titel:'Avond 2',sub:"Iets extra's",t:2.6},{fn:()=>G.verteller&&G.verteller('v07')},{fade:'in',t:.8}]);
+   {fade:'out',t:.7},{fn:()=>{ST.avond(2);ST.tijd(16,30)}},{titel:'Avond 2',sub:"Iets extra's",t:2.6},
+   // geen zwart onder de verteller: Bella Napoli in de middag
+   ...(()=>{const n=A('napoli',419,492),f=B.gevel&&B.gevel('napoli'),nx=f?f.nx:0,nz=f?f.nz:1;return [cam(n.x+nx*11-nz*5,2.6,n.z+nz*11+nx*5,n.x,2.0,n.z),{fade:'in',t:.8},camNaar(n.x+nx*8-nz*3,2.4,n.z+nz*8+nx*3,n.x,2.0,n.z,6,{wacht:false})]})(),
+   {fn:()=>G.verteller&&G.verteller('v07')},{fade:'out',t:.5}]);
   if(t!==RUN)return;go('h2_tas')}});
 
 /* ======================= AVOND 2 · Iets extra's ======================= */
@@ -780,7 +783,10 @@ async function novaScene(t,st){const v=st._vol;if(!v)return;const l=P();
   volgerWeg(st);F('nova_gezien',1);ST.meter('hitte',2)}
 
 /* ======================= AVOND 4 · Het verkeerde huis ======================= */
-stap('h4_start',{async start(o){const t=nieuw();await C.play([{fade:'out',t:.8},{say:null,text:'Luca slaapt tot twaalf uur. Hij droomt niet.',t:2.6},{fn:()=>{ST.avond(4);ST.tijd(21,30)}},{titel:'Avond 4',sub:'Het verkeerde huis',t:3.2},{fn:()=>G.verteller&&G.verteller('v11')},{fade:'in',t:.8}]);
+stap('h4_start',{async start(o){const t=nieuw();await C.play([{fade:'out',t:.8},{say:null,text:'Luca slaapt tot twaalf uur. Hij droomt niet.',t:2.6},{fn:()=>{ST.avond(4);ST.tijd(21,30)}},{titel:'Avond 4',sub:'Het verkeerde huis',t:3.2},
+   // de verteller over het rijtjeshuis in Oud-Zuid (gordijnen dicht), niet over zwart
+   ...(()=>{const r=A('rijtjeshuis',858,754),f=B.gevel&&B.gevel('rijtjeshuis'),nx=f?f.nx:0,nz=f?f.nz:1;return [{buiten:true},{dream:true},cam(r.x+nx*14+nz*6,3.2,r.z+nz*14-nx*6,r.x,2.2,r.z),{fade:'in',t:.8},camNaar(r.x+nx*9+nz*3,2.6,r.z+nz*9-nx*3,r.x,2.2,r.z,7,{wacht:false})]})(),
+   {fn:()=>G.verteller&&G.verteller('v11')},{fade:'out',t:.5},{dream:false}]);
   if(t!==RUN)return;go('h4_rit')}});
 stap('h4_rit',{muziek:'spanning',doel:'Laatste rit: een rijtjeshuis in Oud-Zuid',waar:()=>{const a=A('rijtjeshuis',858,754);return {x:a.x,z:a.z,r:8}},
   start(o){zorgFiets();dienstAan(false);B.slot('rijtjeshuis',true,'Je hebt hier niks te zoeken');this._stil=false;tijd(21,40);
@@ -792,7 +798,7 @@ stap('h4_rit',{muziek:'spanning',doel:'Laatste rit: een rijtjeshuis in Oud-Zuid'
 stap('h4_binnen',{async start(o){const t=nieuw();fietsAf();if(G.fiets)G.fiets.last(0);B.slot('rijtjeshuis',false);
   const d=A('rijtjeshuis',858,754),l=P();
   if(!B.waar()){const ad=naar(d,l),ls=walk(d.x+Math.sin(ad)*3.2,d.z+Math.cos(ad)*3.2,2),md={x:(ls.x+d.x)/2,z:(ls.z+d.z)/2};
-   await C.play([{speler:false},{actor:'luca',at:[ls.x,ls.z],ry:naar(ls,d),dozen:1},rond(md.x,md.z,ad+PI/2,5.2,1.9,1.6),{fade:'in',t:.3},
+   await C.play([{speler:false},{actor:'luca',at:[ls.x,ls.z],ry:naar(ls,d),dozen:1},rond(md.x,md.z,ad+PI/2.6,4.4,2.5,1.9),{fade:'in',t:.3},
     {move:'luca',to:[walk(d.x,d.z,2).x,walk(d.x,d.z,2).z],t:1.4,anim:'carry'},{snd:'deurbel'},{wait:1.2},
     {say:null,text:'De deur gaat open. Maar niet door de klant.',t:2.4},{snd:'door'},{snd:'scream'},{fade:'out',t:.15},{weg:'luca'},{binnen:'rijtjeshuis'}],{blijfZwart:true})}
   else await binnen('rijtjeshuis');
@@ -852,7 +858,7 @@ stap('h4_binnen',{async start(o){const t=nieuw();fietsAf();if(G.fiets)G.fiets.la
 
 stap('h4_einde',{muziek:'ray',async start(o){const t=nieuw();await buiten();if(t!==RUN)return;zorgFiets();tijd(23,40);
   try{G.fiets&&G.fiets.op()}catch(e){}const l=P(),R=A('hoek',236,461),H=A('haven',735,120),pol=A('politie',655,349),env=F('envelop');
-  await C.play([{cam:{volg:'luca',af:[2.6,3.5,-6.6],kijk:[0,2.1,1.4]}},{fade:'in',t:1},
+  await C.play([{cam:{volg:'luca',af:[2.8,3.3,6.4],kijk:[0,2.0,0]}},{fade:'in',t:1},
    {say:null,text:env==='verraden'?'Luca op de fiets. Vijfduizend euro onder zijn jas. Het voelt zwaarder dan zes pizza’s.':env==='gelogen'?'Luca op de fiets. Een halve envelop en een naam die niet klopt.':'Luca op de fiets. Geen envelop. Wel een nummer in zijn zak.',t:3.6},
    {snd:'notify'},{fn:tril},{say:null,text:'Zijn telefoon trilt. Rafiq.',t:2},{snd:'notify'},{fn:tril},{say:null,text:'Hij trilt nog een keer. Onbekend nummer.',t:2.4},
    // de cliffhanger: iemand heeft hem vanavond gefotografeerd

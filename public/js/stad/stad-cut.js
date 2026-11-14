@@ -385,6 +385,8 @@ CUT.play=async function(script,o){o=o||{};while(running)await running;let rel;ru
   CUT.onStart.forEach(f=>{try{f(o)}catch(e){}});
   $s('svSkip').hidden=!magSkip();
   requestAnimationFrame(()=>ui.classList.add('on'));
+  // zonder eigen camera (een telefoontje) speelt de scène in de spelcamera: zet die aan de straatkant
+  if(!vorigeCam)try{vrijeKant()}catch(e){}
   try{for(const s of script){await stap(s)}}catch(e){console.error(e)}
   // afronden
   $s('svSub').hidden=true;$s('svTitel').hidden=true;keuzeOpen=null;advance=null;
