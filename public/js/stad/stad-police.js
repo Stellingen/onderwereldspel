@@ -33,7 +33,7 @@ const LOSE=[0,8,14,20];
 function active(){return P0.on}
 function settings(){// adem: je training telt (fleeParams uit het klikspel), lidmaatschap ook
   let P=null;try{P=typeof fleeParams==='function'?fleeParams(Math.max(1,Math.min(5,P0.level||2)),{}):null}catch(e){}
-  const c=P?P.c:0,u=P?P.u:0,a=P?P.a:0,tk=P&&P.X?P.X.tk:0;G.useStam=true;G.stamDrain=.2*(1-.4*c)/(1+.5*tk);G.stamRegen=.1*(1+.6*u);G.windSp=7.2*(.95+.08*a);if(G.stam==null)G.stam=1}
+  const c=P?P.c:0,u=P?P.u:0,a=P?P.a:0,tk=P&&P.X?P.X.tk:0;G.useStam=true;G.stamDrain=.12*(1-.4*c)/(1+.5*tk);G.stamRegen=.15*(1+.6*u);G.windSp=7.2*(.95+.08*a);if(G.stam==null)G.stam=1}
 function copSpeed(){return P0.mode==='flee'?7.9+.25*(P0.level||2):8.2+.3*P0.stars}
 function loseT(){return P0.mode==='flee'?6+2*(P0.level||2):LOSE[clamp(P0.stars,1,3)]}
 function begin(o){const fresh=!P0.on;P0.on=true;P0.mode=o.mode||P0.mode||'roof';P0.stars=clamp(Math.max(P0.stars,o.stars||1),1,3);P0.why=o.why||P0.why;if(o.ref)P0.ref=o.ref;

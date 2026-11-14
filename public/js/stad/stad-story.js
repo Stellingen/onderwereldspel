@@ -89,12 +89,17 @@ ST.huidig=()=>curId;
 ST.goto=function(id,o){o=o||{};resumed=true;const s=st();if(cur&&cur.stop)try{cur.stop()}catch(e){console.error(e)}
   s.step=id;sv();curId=id;cur=STEPS[id]||null;arrived=false;doneOnce=false;
   if(!cur){ST.doel(null);return}
-  const w=typeof cur.waar==='function'?null:cur.waar;ST.doel(cur.doel||null,w||null);
+  // ook als 'waar' een functie is: meteen een doel op de kaart, met route (en dat blijft bijgewerkt, zie stepTick)
+  let w=cur.waar;if(typeof w==='function'){try{w=w()}catch(e){w=null}}ST.doel(cur.doel||null,w&&w.x!=null?w:null);waarT=0;
   if(cur.start)try{const r=cur.start(o);if(r&&r.catch)r.catch(e=>console.error(e))}catch(e){console.error(e)}
   (ST.onStep||[]).forEach(f=>{try{f(id,cur)}catch(e){}})};
 ST.onStep=[];
 ST.klaar=function(){if(!cur||doneOnce)return;doneOnce=true;const n=cur.na;if(typeof n==='string')ST.goto(n);else if(typeof n==='function')try{n()}catch(e){console.error(e)}};
+let waarT=0;
 function stepTick(dt){if(!cur||G.paused)return;if(G.cut&&G.cut.active&&G.cut.active())return;
+  // doel volgt een bewegende plek (of verschijnt zodra de plek bekend is)
+  waarT+=dt;if(waarT>1.5&&typeof cur.waar==='function'&&!arrived){waarT=0;let w=null;try{w=cur.waar()}catch(e){}
+    if(w&&w.x!=null&&(!doelPos||Math.hypot(w.x-doelPos.x,w.z-doelPos.z)>3||!!w.binnen!==!!doelPos.binnen))ST.doel(doelTxt||cur.doel||null,w,{stil:true})}
   if(cur.tick)try{cur.tick(dt)}catch(e){console.error(e)}
   if(!cur)return;
   const w=typeof cur.waar==='function'?cur.waar():cur.waar;
@@ -110,11 +115,11 @@ function resume(){if(resumed)return;const s=st();herstel(s);if(!STEPS[s.step])re
 
 /* ---------- doelregel en route ---------- */
 let doelTxt=null,doelPos=null;
-ST.doel=function(text,pos){doelTxt=text||null;doelPos=pos&&pos.x!=null?pos:null;
+ST.doel=function(text,pos,o){doelTxt=text||null;doelPos=pos&&pos.x!=null?pos:null;
   if(doelPos&&ST.navOn()&&!pos.binnen){try{G.setWaypoint&&G.setWaypoint(doelPos.x,doelPos.z,text||'Doel')}catch(e){}}
   else if(!doelPos){try{G.clearWaypoint?G.clearWaypoint():(G.waypoint=null)}catch(e){}}
   try{G.kaart&&G.kaart.highlight&&G.kaart.highlight(doelPos)}catch(e){}
-  hud();if(text){const d=$s('svDoel');if(d){d.classList.remove('nieuw');void d.offsetWidth;d.classList.add('nieuw')}}};
+  hud();if(text&&!(o&&o.stil)){const d=$s('svDoel');if(d){d.classList.remove('nieuw');void d.offsetWidth;d.classList.add('nieuw')}}};
 ST.doelTekst=()=>doelTxt;ST.doelPlek=()=>doelPos;
 
 /* ---------- geld-poorten ---------- */

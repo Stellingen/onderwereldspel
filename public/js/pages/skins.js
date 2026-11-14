@@ -259,13 +259,16 @@ function skRange(r){const G=skGuns(),L=SK_R[r].pats;let a=Infinity,b=0;L.forEach
 function wkPick(id){if(wk.spin)return;wk.c=id;wk.res=null;wk.strip=null;try{SFX.chip()}catch(e){}render()}
 // de strip: positie hangt alleen af van de tijd, dus hertekenen tijdens het draaien kan geen kwaad
 const wkEase=p=>1-Math.pow(1-p,4);
+// de echte plek van het winnende vakje (in px, gemeten): zo staat de streep altijd op de uitslag, ook als een vakje toch anders uitvalt
+function wkDoelPx(el,idx,jit){const ch=el&&el.children[idx];return ch?ch.offsetLeft+ch.offsetWidth*(.5+jit):null}
 function wkFrame(){const s=wk.spin;if(!s)return;const p=Math.min(1,(performance.now()-s.t0)/s.dur),x=(s.idx+.5+s.jit)*wkEase(p),el=document.getElementById('wkStrip');
- if(el){el.style.transform=`translate3d(calc(var(--wk-step) * -${x.toFixed(4)}),0,0)`;const cell=Math.floor(x);if(cell!==s.cell){s.cell=cell;const t=performance.now();if(t-(s.tk||0)>40){s.tk=t;try{SFX.tick()}catch(e){}}}}
+ if(el){const px=wkDoelPx(el,s.idx,s.jit);el.style.transform=px!=null?`translate3d(${(-px*wkEase(p)).toFixed(1)}px,0,0)`:`translate3d(calc(var(--wk-step) * -${x.toFixed(4)}),0,0)`;const cell=Math.floor(x);if(cell!==s.cell){s.cell=cell;const t=performance.now();if(t-(s.tk||0)>40){s.tk=t;try{SFX.tick()}catch(e){}}}}
  if(p<1)requestAnimationFrame(wkFrame);else wkDone()}
 function wkDone(){const s=wk.spin;if(!s)return;wk.spin=null;wk.strip={items:s.items,idx:s.idx,jit:s.jit};wk.res={k:s.k,c:s.c};if(typeof casSesFlush==='function')casSesFlush('kist');
  const r=skRar(s.k);try{r>=4?SFX.big():r>=2?SFX.win(r*2-2):r===1?SFX.win(1):SFX.chip()}catch(e){}
  if(r>=3)toast(`${SK_R[r].n}: ${SKP[s.k.split(':')[0]].n} op je ${skGunName(s.k.split(':')[1])} (${fmt(skVal(s.k))})`,'lvl');
- if(page==='casino'&&casinoTab==='kist')render();else renderTop()}
+ if(page==='casino'&&casinoTab==='kist')render();else renderTop();
+ const el=document.getElementById('wkStrip'),px=wkDoelPx(el,wk.strip.idx,wk.strip.jit);if(el&&px!=null)el.style.transform=`translate3d(${(-px).toFixed(1)}px,0,0)`}
 Object.assign(act,{
  wkOpen(){if(wk.spin)return;if(!skOk()){toast('Deze deur blijft dicht','bad');return}if(inJail())return;const C=wkCase(wk.c);
   if(casCash()<C.p){toast(casShort(),'bad');return}skInit();

@@ -67,7 +67,8 @@ function archFor(x,z){const d=M.districtAt(x,z),night=G.night>.55,W={burger:3,to
   if(M.estateAt(x,z)){W.zakenman=1.2;W.oma=1;W.rivaal=0;W.toerist=.4}
   if(night){W.oma*=.2;W.toerist*=.6;W.zakenman*=.5;W.rivaal*=2.2;W.student*=1.4;W.jogger*=.3}
   if(G.wijkOwn&&G.wijkOwn(x,z))W.rivaal*=.25;
-  const tot=Object.values(W).reduce((a,b)=>a+b,0);let r=Math.random()*tot;for(const k in W){r-=W[k];if(r<=0)return k}return 'burger'}
+  if(G.npcGewicht)try{G.npcGewicht(W,d,night,x,z)}catch(e){}
+  const tot=Object.values(W).reduce((a,b)=>a+(b>0?b:0),0);let r=Math.random()*tot;for(const k in W){if(!(W[k]>0)||!A[k])continue;r-=W[k];if(r<=0)return k}return 'burger'}
 function lookFor(arch,base){const a=A[arch];if(!a.look)return base;const L=a.look(),sk=pick(SK);
   return Object.assign({skin:sk,hair:L.hair||pick(['#2a1d14','#151517','#4a2e1a','#8a6a3a']),hat:'none'},L,{arm:L.arm==='skin'?sk:L.arm==='top'?L.top:L.arm,pants:L.pants==='same'?L.top:L.pants})}
 G.npcInit=function(n){if(n.arch)return;const a=archFor(n.x,n.z);n.arch=a;n.look=lookFor(a,n.look);const sp=A[a].v;if(sp)n.v=rr(sp[0],sp[1]);if(A[a].run)n.run=1;n.nm=pick(A[a].names);n.st='walk';n.t=0;klantRoll(n)};
@@ -92,7 +93,7 @@ function bubbleTex(text,col){const cv=document.createElement('canvas'),c=cv.getC
   c.font='bold 9px monospace';c.fillStyle='#111';c.textBaseline='middle';c.fillText(text,5,7);const t=new TH.CanvasTexture(cv);t.magFilter=t.minFilter=TH.NearestFilter;t.colorSpace=TH.SRGBColorSpace;return {t,w}}
 function bubble(who,text,o){o=o||{};if(!G.ready)return;let b=BUB.find(b=>b.who===who)||BUB.find(b=>b.life<=0);
   if(!b){if(BUB.length>=10)b=BUB.reduce((a,c)=>a.life<c.life?a:c);else{b={sp:new TH.Sprite(new TH.SpriteMaterial({depthTest:false,transparent:true})),life:0};b.sp.renderOrder=20;G.scene().add(b.sp);BUB.push(b)}}
-  if(b.tx)b.tx.dispose();const {t,w}=bubbleTex(text,o.col);b.tx=t;b.sp.material.map=t;b.sp.material.needsUpdate=true;b.sp.scale.set(w/17*1.1,1.1,1);b.who=who;b.life=o.life||2.6;b.y=o.y||3.0;b.sp.visible=true}
+  if(b.tx)b.tx.dispose();const {t,w}=bubbleTex(text,o.col);b.tx=t;b.sp.material.map=t;b.sp.material.needsUpdate=true;const bk=M.VERHAAL?.68:1.1;b.sp.scale.set(w/17*bk,bk,1);b.who=who;b.life=o.life||2.6;b.y=o.y||3.0;b.sp.visible=true}
 function bubStep(dt){BUB.forEach(b=>{if(b.life<=0)return;b.life-=dt;const w=b.who;if(!w||b.life<=0){b.sp.visible=false;b.life=0;return}b.sp.position.set(w.x,b.y+(w.y||0),w.z);b.sp.material.opacity=Math.min(1,b.life*3)})}
 G.bubble=bubble;
 /* ---------- deeltjes en zwevende tekst ---------- */
@@ -164,7 +165,7 @@ G.npcBrain=function(n,dt){const st=n.st||'walk',dP=dist(n,G.P);n.t=(n.t||0)+dt;n
   if(st==='wait'){n.sp=0;n.armL=-1.3;n.armLz=.45;n.hx=.4;if(n.t>n.dur)back(n);return true}
   if(st==='photo'){n.sp=0;n.arm=-1.5;n.armR=-1.5;n.hx=-.05;if(!n.shot&&n.t>1.2){n.shot=1;if(dP<22){burst(n.x+Math.sin(n.ry)*.5,1.7,n.z+Math.cos(n.ry)*.5,'#ffffff',4);if(dP<12)G.snd&&G.snd.fx('click')}if(dP<12&&Math.random()<.5)bubble(n,pick(['Cheese!','Beautiful!','Wow!']))}if(n.t>n.dur)back(n);return true}
   if(st==='chat'){const m=n.mate;if(!m||m.st!=='chat'||m.mate!==n){n.mate=null;back(n);return true}n.sp=0;face(n,m.x,m.z);const turn=Math.floor(n.t/1.7)%2===(n.lead?0:1);
-    if(turn){n.armR=-.9+Math.sin(n.t*7)*.35;n.armRz=.25;if(n.said!==Math.floor(n.t/1.7)){n.said=Math.floor(n.t/1.7);if(dP<16)bubble(n,pick(CHAT),{life:1.6})}}else n.hx=Math.sin(n.t*5)*.08;
+    if(turn){n.armR=-.9+Math.sin(n.t*7)*.35;n.armRz=.25;if(n.said!==Math.floor(n.t/1.7)){n.said=Math.floor(n.t/1.7);if(dP<16)bubble(n,(G.npcChat&&G.npcChat(n))||pick(CHAT),{life:1.9})}}else n.hx=Math.sin(n.t*5)*.08;
     if(n.t>n.dur){n.mate=null;n.said=0;back(n)}return true}
   // ---- reacties op jou ----
   if(st==='wave'){n.sp=0;face(n,G.P.x,G.P.z);n.armR=0;n.armRz=2.85+Math.sin(n.t*11)*.32;if(n.t>(n.dur||1.7)){n.st=n.back||'walk';n.t=0}return true}
@@ -332,7 +333,8 @@ G.interact=function(){if(R)return true;if(G.police&&G.police.tryHide&&G.police.t
 G.canvas&&G.canvas.addEventListener('pointerup',e=>{if(!target||e.button)return});
 G.npcDots=()=>{const out=[],ns=perk('neus');if(R)out.push({x:R.n.x,z:R.n.z,c:'#ffd35a'});G.NPC.forEach(n=>{if(ns&&n.klant&&n.st==='walk'&&dist(n,G.P)<50)out.push({x:n.x,z:n.z,c:'#3fe395'});if(n.st==='call')out.push({x:n.x,z:n.z,c:'#ffd35a'});else if(n.arch==='agent'&&dist(n,G.P)<70)out.push({x:n.x,z:n.z,c:'#4d7dff'})});return out};
 /* ---------- praatjes op straat ---------- */
-let chatT=4;function chatter(dt){chatT-=dt;if(chatT>0)return;chatT=rr(5,10);const near=G.NPC.filter(n=>n.st==='walk'&&dist(n,G.P)<16&&dist(n,G.P)>3);if(!near.length)return;const n=pick(near),a=A[n.arch];
+let chatT=4;function chatter(dt){chatT-=dt;if(chatT>0)return;const vh=!!(window.STAD_MAP&&window.STAD_MAP.VERHAAL);chatT=vh?rr(2.6,5):rr(5,10);const near=G.NPC.filter(n=>n.st==='walk'&&dist(n,G.P)<(vh?22:16)&&dist(n,G.P)>3);if(!near.length)return;const n=pick(near),a=A[n.arch];
+  const eigen=G.npcPraat&&G.npcPraat(n);if(eigen){bubble(n,eigen);return}
   const L=G.night>.55?['Koud, hè.','Nog één biertje dan.','Waar is mijn fiets?','Wat een stilte.']:(a.talk||[]).map(t=>t.split(/[.?!]/)[0]).filter(t=>t.length<26).concat(['Hoi!','Goedemiddag.','Pff, druk.']);bubble(n,pick(L))}
 /* ---------- elke frame ---------- */
 let tt=0;const _of=G.onFrame;

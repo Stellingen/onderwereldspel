@@ -259,7 +259,7 @@ function setWp(x,z,n,plId){const p=M.nearestWalk(x,z,30)||{x,z};G.waypoint={x:p.
   const sc=G.scene();if(!beam){beam=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,60,10,1,true),new THREE.MeshBasicMaterial({color:0xff4fd8,transparent:true,opacity:.3,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));beam.renderOrder=4;sc.add(beam)}
   beam.visible=true;beam.position.set(p.x,30,p.z);G.toast&&G.toast('Route gezet: '+n,'info');hudWp();req(true)}
 function clearWp(){G.waypoint=null;G.gpsPath=null;if(beam)beam.visible=false;hudWp();req(true)}
-function gps(){const w=G.waypoint;if(!w)return;G.gpsPath=M.findPath(G.P.x,G.P.z,w.x,w.z)}
+function gps(){const w=G.waypoint;if(!w)return;const fiets=(G.fiets&&G.fiets.actief&&G.fiets.actief())||G.driving;const p=G.fiets&&G.fiets.actief&&G.fiets.actief()&&G.fiets.pos?G.fiets.pos():G.P;G.gpsPath=M.findPath(p.x,p.z,w.x,w.z,fiets?'fiets':undefined)}
 G.setWaypoint=setWp;G.clearWaypoint=clearWp;
 // chip onder de minikaart: waar je heen gaat en hoe ver nog
 const chip=document.createElement('button');chip.className='sd-wp';chip.id='sdWp';chip.hidden=true;document.body.appendChild(chip);

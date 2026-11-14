@@ -217,7 +217,9 @@ G.goTo=goTo;G.goPlace=goPlace;G.stopPath=stopPath;
 /* ---------- elke frame ---------- */
 let raf=0,last=0;
 G.resume=function(){if(!G.ready)return;G.paused=false;G.canvas.style.visibility='';last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)};
-G.pause=function(){G.paused=true;cancelAnimationFrame(raf);for(const k in K)K[k]=0;savePos()};
+G.pause=function(){G.paused=true;cancelAnimationFrame(raf);for(const k in K)K[k]=0;savePos();
+  // muis los (eerste persoon / over de schouder): anders gaan klikken naar het spel in plaats van naar het menu
+  try{if(document.pointerLockElement)document.exitPointerLock()}catch(e){}};
 // na binnen zijn: buiten voor de deur staan, met je rug naar het gebouw
 G.placeAtDoor=function(pl){const f=pl.face,o=f==='S'?[0,1]:f==='N'?[0,-1]:f==='E'?[1,0]:[-1,0];const p=M.nearestWalk(pl.door.x+o[0]*.6,pl.door.z+o[1]*.6,6)||pl.door;P.x=p.x;P.z=p.z;P.ry=Math.atan2(o[0],o[1]);
   G.yawT=G.yaw=Math.atan2(-o[0],-o[1])+Math.PI;stopPath()};
@@ -273,7 +275,7 @@ function step(dt,ts){
   G.lotStep&&G.lotStep(dt);
   G.onFrame&&G.onFrame(dt)}
 function pathLeft(){if(!P.path)return 0;let d=0,px=P.x,pz=P.z;for(const w of P.path){d+=Math.hypot(w.x-px,w.z-pz);px=w.x;pz=w.z}return d}
-G.shake=a=>{G.shakeA=Math.max(G.shakeA,a)};
+G.shake=a=>{try{if(G.verhaalInst&&G.verhaalInst.get&&G.verhaalInst.get('schudden')===false)return}catch(e){}G.shakeA=Math.max(G.shakeA,Math.min(a,.35))};
 G.refreshLook=()=>{P.look=playerLook()};G.applyLight=()=>applyLight();
 G.camera=()=>camera;G.render=draw;G.scene=()=>scene;G.renderer=()=>renderer;G.daylight=daylight;
 })();

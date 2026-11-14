@@ -233,13 +233,20 @@ function praat(o,a){const d={warm:o.warm,laat:o.t>o.tijd,scheef:o.scheef,klant:o
     choices:g.A.map(ch=>({t:ch.t,f:()=>done(ch)})),
     onClose:()=>{G.talking=false;try{G.draag&&G.draag.leeg&&G.draag.leeg()}catch(e){}custGone();if(!o.klaar)uitbetalen(o,g.A[1]||g.A[0],d);volgende()}})}
 // fooi: basis van het antwoord × warmte × op tijd, min scheve pizza's. Verhaal: hele euro's via G.story.geld; Stad: wit geld.
+// de klant geeft je het geld: arm naar voren, een briefje dat naar je toe vliegt, '+€…' boven je hoofd
+function geefGeld(o,f){try{const a=cust,TH=window.THREE;const geef=!o.betaald||f>0;if(!geef)return;
+  if(a){a.geef=1.5;a.armR=-1.45;setTimeout(()=>{if(a)a.armR=null},1300)}
+  if(a&&TH&&G.scene){const m=new TH.Mesh(new TH.BoxGeometry(.32,.02,.16),new TH.MeshBasicMaterial({color:f>0?'#7fd09a':'#8ab4e8'}));const sc=G.scene();sc.add(m);
+    const x0=a.x+Math.sin(a.ry)*.5,z0=a.z+Math.cos(a.ry)*.5,t0=performance.now();
+    const f_=()=>{const u=Math.min(1,(performance.now()-t0)/650),x1=G.P.x,z1=G.P.z;m.position.set(x0+(x1-x0)*u,1.55+Math.sin(u*Math.PI)*.35-u*.2,z0+(z1-z0)*u);m.rotation.y+=.25;if(u<1)requestAnimationFrame(f_);else sc.remove(m)};f_()}
+  fx('cash');G.fx2&&G.fx2.float(f>0?'+€'+f+' fooi':'Afgerekend',G.P.x,G.P.z,f>0?'#3fe395':'#ffd35a')}catch(e){}}
 function uitbetalen(o,ch,d){if(o.klaar)return {fooi:0,txt:''};o.klaar=true;
   const wk=d.warm>=65?1:d.warm>=35?.5:0,tk=d.laat?0:1;let f=Math.max(0,Math.round(((ch.f||0)+(ch.v>0&&wk===1?1:0))*wk*tk-Math.min(1,o.scheef)*(ch.f>2?1:0)));
   if(o.klant==='student'&&f>0)f=Math.min(f,2);
   const klacht=!!(ch.k||d.warm<35||(d.laat&&o.t>o.tijd*1.5));
   // in de Stad: loon per rit en fooi, wit geld
   let loon=0,txt='';
-  if(story()){loon=R&&R.opts.loon!=null?R.opts.loon:2;try{if(loon>0)G.story.geld(loon,'rit');if(f>0)G.story.geld(f,'fooi')}catch(e){}}
+  if(story()){loon=R&&R.opts.loon!=null?R.opts.loon:2;try{if(loon>0)G.story.geld(loon,'rit');if(f>0)G.story.geld(f,'fooi')}catch(e){}geefGeld(o,f)}
   else{const w=G.schaal&&G.schaal.wit?G.schaal.wit():20;loon=R&&R.opts.loon!=null?R.opts.loon:Math.max(5,Math.round(w*.9/5)*5);const fs=f>0?Math.max(5,Math.round(w*.3*f/5)*5):0;
     try{S.cash+=loon+fs;S.stats=S.stats||{};S.stats.bezorgd=(S.stats.bezorgd||0)+1;sv()}catch(e){}f=fs;fx('cash');try{G.fx2&&G.fx2.float('+'+fmtE(loon+fs)+(fs?' (fooi '+fmtE(fs)+')':''),G.P.x,G.P.z,'#ffd35a')}catch(e){}}
   if(ch.flag&&story())try{G.story.flag(ch.flag,1)}catch(e){}

@@ -54,23 +54,27 @@ function rotP(x,z,ry){const c=Math.cos(ry),s=Math.sin(ry);return [x*c+z*s,-x*s+z
 function build(id){const d=DEF[id];if(BUILT[id])return BUILT[id];const sc=G.scene(),root=new TH.Group();root.position.set(d.o.x,0,d.o.z);root.visible=false;sc.add(root);
   const W=d.w||24,H=d.h||20,gw=Math.ceil(W/CELL),gh=Math.ceil(H/CELL),grid=new Uint8Array(gw*gh);
   const S={id,d,root,W,H,gw,gh,grid,bx:[],walls:[],ceils:[],lights:[],ticks:[],extras:{},plekken:{},verstop:{},spots:[],persons:[],smoke:[],hoog:[]};
+  // Hogere plafonds (de poppetjes zijn ruim 2,7 m): muren en plafonds gaan Δ omhoog; lampen en armaturen aan het plafond gaan mee,
+  // snoeren worden langer, de rest (meubels, deuren, ramen) blijft staan. d.plafond wordt de nieuwe hoogte (voor de camera).
+  const P0=d.plafond0!=null?d.plafond0:(d.plafond||3.4),DH=d.hoger||0;d.plafond0=P0;d.plafond=P0+DH;
+  const hoogBox=b=>{if(!DH)return b;const h=b[1],y=b[4],top=y+h/2,bot=y-h/2;if(bot<1.5||top<P0-.09)return b;const c=b.slice();if(h<=.22)c[4]=y+DH;else{c[1]=h+DH;c[4]=y+DH/2}return c};
   const mark=(x0,z0,x1,z1,v)=>{for(let z=Math.floor(z0/CELL);z<Math.ceil(z1/CELL);z++)for(let x=Math.floor(x0/CELL);x<Math.ceil(x1/CELL);x++)if(x>=0&&z>=0&&x<gw&&z<gh)grid[z*gw+x]=Math.max(grid[z*gw+x],v)};
   const Bp={W,H,T,tex:T,o:d.o,root,
-    box:(w,h,dd,x,y,z,col,glow,ry)=>{S.bx.push([w,h,dd,x,y,z,col,glow?1:0,ry||0])},
+    box:(w,h,dd,x,y,z,col,glow,ry)=>{const b=hoogBox([w,h,dd,x,y,z]);S.bx.push([w,b[1],dd,x,b[4],z,col,glow?1:0,ry||0])},
     // meubel: lijst blokjes [w,h,d,x,y,z,kleur,gloei] rond (0,0), op plek (x,z) gedraaid met ry
-    meubel:(boxes,x,z,ry,o)=>{ry=ry||0;boxes.forEach(b=>{const p=rotP(b[3],b[5],ry);S.bx.push([b[0],b[1],b[2],x+p[0],b[4],z+p[1],b[6],b[7]?1:0,(b[8]||0)+ry])});
+    meubel:(boxes,x,z,ry,o)=>{ry=ry||0;boxes.forEach(b0=>{const b=hoogBox(b0),p=rotP(b[3],b[5],ry);S.bx.push([b[0],b[1],b[2],x+p[0],b[4],z+p[1],b[6],b[7]?1:0,(b[8]||0)+ry])});
       if(o&&o.solid){const s=o.solid;const q=Math.abs(Math.sin(ry))>.7;const hw=(q?s[1]:s[0])/2,hd=(q?s[0]:s[1])/2;mark(x-hw,z-hd,x+hw,z+hd,o.hoog?2:1)}},
     solid:(x0,z0,x1,z1,hoog)=>mark(x0,z0,x1,z1,hoog?2:1),
     vloer:(x0,z0,x1,z1,tex,ts,col)=>{const m=new TH.Mesh(uvPlane(x1-x0,z1-z0,ts||2),mat(tex,col));m.rotation.x=-Math.PI/2;m.position.set((x0+x1)/2,.01,(z0+z1)/2);m.receiveShadow=true;root.add(m);return m},
     // muur als blok; n = richting de kamer in ([0,1] = naar het zuiden). Zonder n: binnenmuur (zakt weg aan de kant van de camera)
-    muur:(x0,z0,x1,z1,o)=>{o=o||{};const h=o.h||3.4,w=x1-x0,dd=z1-z0,ts=o.ts||2;const m=new TH.Mesh(uvBox(w,h,dd,ts),mat(o.tex||null,o.tex?null:(o.kleur||'#8a8478')));m.position.set((x0+x1)/2,h/2,(z0+z1)/2);m.castShadow=true;m.receiveShadow=true;root.add(m);
+    muur:(x0,z0,x1,z1,o)=>{o=o||{};const h0=o.h||3.4,h=h0>=2.5?h0+DH:h0,w=x1-x0,dd=z1-z0,ts=o.ts||2;const m=new TH.Mesh(uvBox(w,h,dd,ts),mat(o.tex||null,o.tex?null:(o.kleur||'#8a8478')));m.position.set((x0+x1)/2,h/2,(z0+z1)/2);m.castShadow=true;m.receiveShadow=true;root.add(m);
       const sh=o.stub||.32;const st=new TH.Mesh(uvBox(w,sh,dd,ts),mat(o.tex||null,o.tex?null:(o.kleur||'#8a8478')));st.position.set((x0+x1)/2,sh/2,(z0+z1)/2);st.visible=false;st.receiveShadow=true;root.add(st);
       const cap=new TH.Mesh(new TH.BoxGeometry(w+.02,.05,dd+.02),mat(null,o.rand||'#1a1714'));cap.position.set((x0+x1)/2,sh+.02,(z0+z1)/2);cap.visible=false;root.add(cap);
       const extra=[];S.walls.push({m,st,cap,extra,n:o.n||null,c:{x:(x0+x1)/2,z:(z0+z1)/2},ax:w>=dd?'x':'z',x0,x1,z0,z1,cut:false,nooit:!!o.nooit});mark(x0,z0,x1,z1,2);return S.walls[S.walls.length-1]},
     // dingen die aan een muur hangen (verdwijnen mee als de muur wegzakt)
     aanMuur:(wall,obj)=>{wall.extra.push(obj);return obj},
-    plafond:(x0,z0,x1,z1,h,col,tex)=>{const m=new TH.Mesh(uvPlane(x1-x0,z1-z0,2),mat(tex||null,tex?null:(col||'#2a2622')));m.rotation.x=Math.PI/2;m.position.set((x0+x1)/2,h,(z0+z1)/2);root.add(m);S.ceils.push(m);return m},
-    licht:(x,y,z,col,int,dist,o)=>{o=o||{};int*=LMUL;const l=new TH.PointLight(col,int,(dist||10)*1.3,o.decay!=null?o.decay:1.5);l.position.set(x,y,z);root.add(l);S.lights.push({l,base:int,o});return l},
+    plafond:(x0,z0,x1,z1,h,col,tex)=>{h+=DH;const m=new TH.Mesh(uvPlane(x1-x0,z1-z0,2),mat(tex||null,tex?null:(col||'#2a2622')));m.rotation.x=Math.PI/2;m.position.set((x0+x1)/2,h,(z0+z1)/2);root.add(m);S.ceils.push(m);return m},
+    licht:(x,y,z,col,int,dist,o)=>{o=o||{};int*=LMUL;if(DH&&y>=P0-.45)y+=DH*.6;const l=new TH.PointLight(col,int,(dist||10)*1.3,o.decay!=null?o.decay:1.5);l.position.set(x,y,z);root.add(l);S.lights.push({l,base:int,o});return l},
     plaat:(cv,w,h,x,y,z,ry,o)=>{o=o||{};const t=cv.isTexture?cv:new TH.CanvasTexture(cv);if(!cv.isTexture){t.magFilter=t.minFilter=TH.NearestFilter;t.generateMipmaps=false;t.colorSpace=TH.SRGBColorSpace}
       const m=new TH.Mesh(new TH.PlaneGeometry(w,h),o.glow?new TH.MeshBasicMaterial({map:t,transparent:!!o.alpha}):new TH.MeshLambertMaterial({map:t,transparent:!!o.alpha}));m.position.set(x,y,z);m.rotation.y=ry||0;m.receiveShadow=!o.glow;root.add(m);if(o.muur)o.muur.extra.push(m);return m},
     persoon:(who,o)=>{o=o||{};if(!G.cut||!G.cut.persoon)return null;const a=G.cut.persoon(who,Object.assign({},o,{x:d.o.x+(o.x||0),z:d.o.z+(o.z||0)}));a.binnen=id;a.g.binnenId=1;a.g.visible=false;a.slaap=true;S.persons.push(a);if(o.naam)S.extras[o.naam]=a;return a},
@@ -82,6 +86,9 @@ function build(id){const d=DEF[id];if(BUILT[id])return BUILT[id];const sc=G.scen
     tick:f=>{S.ticks.push(f)},
     hoog:(m)=>{S.hoog.push(m)}};
   try{d.bouw(Bp)}catch(e){console.error('interieur '+id,e)}
+  if(DH){const wm=new Set();S.walls.forEach(w=>{wm.add(w.m);wm.add(w.st);wm.add(w.cap)});S.ceils.forEach(c=>wm.add(c));
+    root.children.forEach(m=>{if(!m.isMesh||wm.has(m)||!m.geometry||!m.geometry.parameters||m.geometry.parameters.height==null||m.geometry.type!=='BoxGeometry')return;const h=m.geometry.parameters.height*m.scale.y,top=m.position.y+h/2,bot=m.position.y-h/2;
+      if(bot>=1.5&&top>=2.85){m.scale.y*=(h+DH)/h;m.position.y+=DH/2}})}
   if(S.bx.length){const m=K.model(S.bx);m.traverse(o=>{if(o.isMesh){o.receiveShadow=true}});root.add(m)}
   // rook: één puntenwolk per interieur
   if(S.smoke.length)S.puffs=mkPuffs(root,S);
@@ -143,7 +150,9 @@ B0.uit=async function(o){o=o||{};if(!inside)return;const id=inside,d=DEF[id],S=B
   d.onUit&&d.onUit(S);(B0.onUit||[]).forEach(f=>{try{f(id)}catch(e){}});
   if(fd){await new Promise(r=>setTimeout(r,60));await fade(0,.4)}};
 B0.onIn=[];B0.onUit=[];
-B0.waar=()=>inside;
+B0.waar=()=>inside;B0.plafond=id=>{const d=DEF[id];return d?d.plafond:null};
+// muur (hoog) op een wereldplek in het interieur waar je nu bent; buiten het interieur telt als muur (voor de cutscène-camera)
+B0.muurAt=(x,z)=>{const S=inside&&BUILT[inside];return S?solidAt(S,x,z,true):false};
 B0.add=function(id,def){def.o={x:ORIG.x+(slotN++)*170,z:ORIG.z};DEF[id]=def;if(G.ready&&G.spot)setTimeout(()=>doors(),0);return B0};
 B0.def=id=>DEF[id];B0.lijst=()=>Object.keys(DEF);
 B0.o=id=>DEF[id]&&DEF[id].o;

@@ -224,9 +224,10 @@ async function mDexRit(t){const d=L.A('dex',277,480);if(!await doelNaar('Rijd me
 async function mElenaVindt(t){await L.binnen('thuis');if(t!==RUN)return;['marco','giulia','elena'].forEach(k=>B.toon('thuis',k,false));const plek=L.F('verstop')==='kast'?'achter je truien':'onder je matras';
   const ep=L.W('thuis',12.4,9.6),lp=L.W('thuis',11.0,8.4);
   const r=await C.play([{fade:'out',t:.01},{speler:false},{actor:'elena',at:ep,ry:PI,prop:'geld'},{actor:'luca',at:lp,ry:L.naar({x:lp[0],z:lp[1]},{x:ep[0],z:ep[1]})},{fn:()=>['elena','luca'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},
-   L.cam(...L.W3('thuis',14.6,2.1,8.2),...L.W3('thuis',12,.9,9.4)),{fade:'in',t:.6},
+   L.cam(...L.W3('thuis',14.6,2.6,8.0),...L.W3('thuis',11.9,1.7,9.1)),{fade:'in',t:.6},
    {say:null,text:'Elena verschoont je bed na haar nachtdienst. In haar hand: een rol briefjes. Ze vond hem '+plek+'.',t:3.6},
    {say:'elena',text:'Luca. Wat is dit?',t:1.8,mood:'boos'},
+   L.cam(...L.W3('thuis',14.2,2.5,9.0),...L.W3('thuis',11.0,2.0,8.4)),
    {keuze:[{t:'"Gespaard. Fooi van maanden."',id:'fooi'},{t:'"Voor jou en papa. Voor zijn rug."',id:'voor'},{t:'Niks zeggen',id:'stil'}],wie:'luca',text:'Elena wacht.'}],{blijf:true});
   if(t!==RUN)return;
   await C.play(r==='fooi'?[{say:'elena',text:'Fooi. Ik zie elke nacht mensen die liegen over wat ze genomen hebben, Luca. Ik weet hoe liegen eruitziet.',t:3,mood:'boos'}]
@@ -299,10 +300,10 @@ async function mDexOpgepakt(t){const S=L.A('schoolhek',234,371);L.tijd(15,10);if
    L.rond(dx.x,dx.z,L.naar(dx,l)+.35,3.2,1.7,1.4),{say:null,text:'Dex kijkt naar de overkant. Naar jou. Hij zegt niets. Hij kijkt meteen weer weg.',t:3.4},
    {fade:'out',t:.8},{weg:'dex'},{weg:'agent'},{weg:'agent2'},{weg:'luca'},{fn:()=>{pol.userData.stop&&pol.userData.stop();pol.parent&&pol.parent.remove(pol)}},
    {binnen:'thuis'},{speler:false},{actor:'luca',at:L.W('thuis',12.6,10.2),ry:PI*.5,anim:'sit',sitY:-.45,prop:'telefoon'},{fn:()=>{const a=C.acteur('luca');if(a)a.g.binnenId=1;L.tijd(22,40)}},
-   L.cam(...L.W3('thuis',14.6,2.1,8.2),...L.W3('thuis',12.6,.9,10.2)),{fade:'in',t:.6},
+   L.cam(...L.W3('thuis',14.7,2.7,8.0),...L.W3('thuis',12.6,1.55,10.2)),{fade:'in',t:.6},
    {say:null,text:'Die avond. Je kamer. Je twee telefoons op je bed. Allebei stil.',t:3},
    {keuze:[{t:'Een advocaat betalen via Ray',id:'ray',sub:'Dex snel vrij · Ray heeft iets van je tegoed'},{t:'Zijn moeder geld geven',id:'moeder',sub:'€2.000 · Dex vergeet dit nooit'},{t:'Niets doen',id:'niets',sub:'Hij noemt je naam niet'}],wie:'luca',text:'Wat doe je voor Dex?'}],{blijf:true});
-  if(t!==RUN)return;L.F('dex_opgepakt',1);const kamer=L.cam(...L.W3('thuis',14.6,2.1,8.2),...L.W3('thuis',12.6,.9,10.2));
+  if(t!==RUN)return;L.F('dex_opgepakt',1);const kamer=L.cam(...L.W3('thuis',14.7,2.7,8.0),...L.W3('thuis',12.6,1.55,10.2));
   if(r==='ray'){await C.play([kamer,{fn:L.tril},{say:'luca',text:'Ray. Dex is opgepakt. Hij heeft een advocaat nodig.',t:2.4},{say:'ray',text:'Mr. Hoefnagel. Morgen staat hij buiten. En Luca? Nu sta jij bij mij in het krijt.',t:3.4,mood:'koel'},{weg:'luca'}]);L.F('dex_hulp','ray');L.F('ray_tegoed',1);ST.meter('loy_dex',6);ST.meter('loy_ray',4);ST.koers(3,'zakelijk')}
   else if(r==='moeder'){C.weg('luca');if(ST.geld()<2000){L.sein('Je hebt nog '+L.eur(2000-ST.geld())+' nodig','#ffd35a');await C.zeg('luca','Tweeduizend. Ik moet het bij elkaar krijgen. Extra ritten, extra diensten. Wat dan ook.',{t:3})}
     await ST.poort(2000,'Geld voor de moeder van Dex',{betaal:true});if(t!==RUN)return;
@@ -339,7 +340,7 @@ S('h2_start',{muziek:'ray',async start(o){const t=nieuw();const s=ST.st();s.ch=2
   const env=L.F('envelop');
   await L.binnen('thuis');if(t!==RUN)return;
   await C.play([{fade:'out',t:.01},{speler:false},{actor:'luca',at:L.W('thuis',12.6,10.2),ry:PI*.5,anim:'sit',sitY:-.45,prop:'telefoon'},{fn:()=>{const a=C.acteur('luca');if(a)a.g.binnenId=1}},
-   L.cam(...L.W3('thuis',14.6,2.1,8.2),...L.W3('thuis',12.6,.9,10.2)),{fade:'in',t:1},{titel:'Seizoen 2',sub:'Hoofdstuk 2 · Twee bazen',t:3.6},{fn:L.tril},
+   L.cam(...L.W3('thuis',14.7,2.7,8.0),...L.W3('thuis',12.6,1.55,10.2)),{fade:'in',t:1},{titel:'Seizoen 2',sub:'Hoofdstuk 2 · Twee bazen',t:3.6},{fn:L.tril},
    {say:null,text:'Twee telefoons. De ene van Rafiq. De andere van een nummer dat Luca niet heeft opgeslagen, maar wel uit zijn hoofd kent.',t:4},
    ...(env==='verraden'?[{say:'ray',text:'Goedemorgen, Luca. Vanaf vandaag werk je voor mij. En voor Rafiq. Want Rafiq mag niet weten dat je voor mij werkt.',t:4.2,mood:'koel'}]
      :env==='gelogen'?[{say:'ray',text:'Mijn mensen zoeken Teun nog. Tot ze hem vinden, werk jij voor mij. Gewoon zoals altijd voor Rafiq, en daarnaast voor mij.',t:4.4,mood:'koel'}]

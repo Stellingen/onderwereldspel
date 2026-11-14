@@ -294,16 +294,17 @@ const BAL_UI=document.createElement('div');BAL_UI.className='sdf-bal';BAL_UI.hid
 document.body.appendChild(BAL_UI);
 function balans(o){o=o||{};if(F.bal)return F.bal.p;if(!F.on)return Promise.resolve(true);const e=ease();
   const dur=(o.duur||2.1)*(1-.25*e),dir=Math.random()<.5?-1:1;let res;const p=new Promise(r=>res=r);
-  F.bal={t:0,dur,a:dir*rr(.28,.42),va:dir*rr(.6,1.1),k:1.5-.5*e,res,p,why:o.waarom||'',noise:rr(0,9)};
+  F.bal={t:0,dur,a:dir*rr(.17,.26),va:dir*rr(.32,.48),k:1.3-.35*e,res,p,why:o.waarom||'',noise:rr(0,9)};
   $s('sdfBalT').textContent=o.waarom||'Hou je tas recht!';BAL_UI.hidden=false;BAL_UI.classList.remove('ok','fout');void BAL_UI.offsetWidth;BAL_UI.classList.add('go');
   SND.hobbel(1);G.shake&&G.shake(.18);return p}
 function balStep(dt,steerIn){const b=F.bal;if(!b)return;b.t+=dt;
   // instabiel: de hoek groeit vanzelf, plus geschud; tegensturen duwt hem terug
   const drift=Math.sin(b.t*5.3+b.noise)*.9+Math.sin(b.t*11.7)*.45,spd=clamp(F.v/8,.4,1.3);
-  b.va+=(b.a*b.k*1.6+drift*.9*spd+steerIn*2.6)*dt;b.va*=Math.pow(.25,dt);b.a+=b.va*dt;
+  // rustiger dan eerst: meer tijd om bij te sturen, en tegensturen werkt sterker
+  b.va+=(b.a*b.k*1.3+drift*.55*spd+steerIn*3.4)*dt;b.va*=Math.pow(.18,dt);b.a+=b.va*dt;
   $s('sdfBalN').style.transform=`translateX(${clamp(b.a,-1,1)*46}px) rotate(${clamp(b.a,-1,1)*38}deg)`;$s('sdfBalB').style.width=Math.max(0,1-b.t/b.dur)*100+'%';
   BAL_UI.classList.toggle('warn',Math.abs(b.a)>.6);
-  if(Math.abs(b.a)>=1){balEnd(false);return}if(b.t>=b.dur)balEnd(true)}
+  if(Math.abs(b.a)>=1&&b.t>.6){balEnd(false);return}if(Math.abs(b.a)>1)b.a=Math.sign(b.a);if(b.t>=b.dur)balEnd(true)}
 function balEnd(ok){const b=F.bal;if(!b)return;F.bal=null;BAL_UI.classList.remove('go','warn');
   if(ok==null){BAL_UI.hidden=true;b.res(true);return}
   BAL_UI.classList.add(ok?'ok':'fout');$s('sdfBalT').textContent=ok?'Netjes!':'Scheef!';setTimeout(()=>{if(!F.bal)BAL_UI.hidden=true},ok?700:1100);
@@ -349,7 +350,7 @@ function rideStep(dt){const I=input(),e=ease(),n=F.last;
   const grip=clamp(Math.min(su.grip,1-(1-wg)*1.7),.32,1);
   // adem: staand trappen kost adem, uitrollen en rustig trappen geeft hem terug
   const canSpr=I.sprint&&I.thr>.2&&(F.adem>.02)&&!(F.sprint===false&&F.adem<.25&&F.ademLeeg);
-  F.sprint=canSpr;if(canSpr){F.adem=Math.max(0,F.adem-dt*(.16+.012*n)*(1-.3*e));if(F.adem<=0)F.ademLeeg=true}else{F.adem=Math.min(1,F.adem+dt*(I.thr>.2?.07:.14));if(F.adem>.3)F.ademLeeg=false}
+  F.sprint=canSpr;if(canSpr){F.adem=Math.max(0,F.adem-dt*(.085+.008*n)*(1-.3*e));if(F.adem<=0)F.ademLeeg=true}else{F.adem=Math.min(1,F.adem+dt*(I.thr>.2?.1:.2));if(F.adem>.3)F.ademLeeg=false}
   const loadK=1-.04*n,accK=1/(1+.09*n),brkK=1/(1+.14*n),turnK=1/(1+.075*n);
   const vmax=(canSpr?14.2:10.4)*loadK*su.max*(F.bal?.85:1);
   // gas, remmen en uitrollen
@@ -403,7 +404,7 @@ function applyPose(dt,thr,steer){const b=F.bike,rd=F.rider,sp=Math.abs(F.v),movi
   const ped=posePedals(b,F.crank,pedal);chainStep(b,F.wheel/GEAR);
   // stuur en schuin in de bocht (en wiebelen bij staand trappen); stilstaan = voet aan de grond, fiets een beetje schuin
   b.steer.rotation.y=F.steerV*.42*(1-Math.min(1,sp/13)*.55)+(F.bal?Math.sin(F.bal.t*13)*.12*F.bal.a:0);
-  let tl=0;if(!F.val){if(!moving&&!pedal)tl=.13;else tl=-F.steerV*Math.min(1,sp/6)*.38+(F.sprint?Math.sin(F.crank)*.09:0)+(F.bal?F.bal.a*.22:0)}
+  let tl=0;if(!F.val){if(!moving&&!pedal)tl=.13;else tl=-F.steerV*Math.min(1,sp/6)*.38+(F.sprint?Math.sin(F.crank)*.05*Math.min(1,F.adem*4):0)+(F.bal?F.bal.a*.22:0)}
   if(!F.val)F.lean+=(tl-F.lean)*Math.min(1,dt*7);b.lean.rotation.z=F.lean;
   // hobbel (stoeprand, rails)
   F.bump+=F.bumpV*dt;F.bumpV-=14*dt;if(F.bump<0){F.bump=0;F.bumpV=F.bumpV<-1?-F.bumpV*.25:0}
@@ -441,12 +442,12 @@ const wallAt=(x,z)=>{x=Math.floor(x);z=Math.floor(z);return x>=0&&z>=0&&x<M.W&&z
 const rigHook=setInterval(()=>{if(!G.camRig)return;clearInterval(rigHook);const rig0=G.camRig;
   G.camRig=function(dt,c){const r=rig0(dt,c);if(!r||!F.on||G.paused)return r;try{bikeCam(dt,c)}catch(e){console.error(e)}return r}},100);
 addEventListener('wheel',e=>{if(F.on&&G.camMode==='achter')cam.d=clamp(cam.d*(e.deltaY>0?1.1:.9),3.2,11)},{passive:true});
-function bikeCam(dt,c){if(!BLD)bmap();c.getWorldDirection(_dir);const yaw=G.yaw;
-  if(G.camMode==='achter'){let p=Math.asin(clamp(-_dir.y,-1,1));p=clamp(p,.12,.85);const por=innerWidth<innerHeight,d=cam.d*(por?1.35:1),ly=1.75+(F.sprint?.15:0);
+function bikeCam(dt,c){if(!BLD)bmap();c.getWorldDirection(_dir);const yaw=G.yaw;F.camS=(F.camS||0)+((F.sprint?1:0)-(F.camS||0))*Math.min(1,dt*2.5);const S_=F.camS;
+  if(G.camMode==='achter'){let p=Math.asin(clamp(-_dir.y,-1,1));p=clamp(p,.12,.85);const por=innerWidth<innerHeight,d=cam.d*(por?1.35:1),ly=1.75+.15*S_;
     const lx=F.x,lz=F.z,cp=Math.cos(p),sp=Math.sin(p),dx=Math.sin(yaw)*cp,dz=Math.cos(yaw)*cp;let dd=d;for(let s=.4;s<=d;s+=.25){if(wallAt(lx+dx*s,lz+dz*s)&&ly+sp*s<40){dd=Math.max(.8,s-.45);break}}
     _v.set(lx+dx*dd,Math.max(.4,ly+sp*dd),lz+dz*dd);if(!cam.init||cam.pos.distanceTo(_v)>12){cam.pos.copy(_v);cam.init=true}else cam.pos.lerp(_v,Math.min(1,dt*11));
     c.position.copy(cam.pos);c.lookAt(lx,ly+.15,lz)}
-  else if(G.camMode==='ogen'){cam.init=false;const fx=Math.sin(F.ry),fz=Math.cos(F.ry),ey=(F.sprint?2.38:2.1)+F.bump,back=F.sprint?-.05:-.22;
+  else if(G.camMode==='ogen'){cam.init=false;const fx=Math.sin(F.ry),fz=Math.cos(F.ry),ey=2.1+.28*S_+F.bump*.5,back=-.22+.17*S_;
     c.position.set(F.x+fx*back,ey,F.z+fz*back);c.lookAt(c.position.x+_dir.x,c.position.y+_dir.y,c.position.z+_dir.z)}
   else cam.init=false}
 

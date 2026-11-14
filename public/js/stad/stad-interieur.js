@@ -54,7 +54,7 @@ function stadRaam(nacht){return pc(48,32,(c,w,h)=>{const g=c.createLinearGradien
 
 /* =================== LOUNGE SAHARA =================== */
 // hal 20×15 (z 13–28), gang naar achteren (x 1.6–3.8, z 6–13), achterkamer 11×5 (z 1–6)
-BN.add('sahara',{naam:'Lounge Sahara',kleur:'#ff4fd8',w:23,h:29.5,plafond:3.8,deur:{x:11.1,z:27.5},spawn:{x:11.1,z:25.3,ry:Math.PI},anker:anker('sahara'),ankerId:'sahara',
+BN.add('sahara',{naam:'Lounge Sahara',kleur:'#ff4fd8',w:23,h:29.5,plafond:3.8,hoger:.6,deur:{x:11.1,z:27.5},spawn:{x:11.1,z:25.3,ry:Math.PI},anker:anker('sahara'),ankerId:'sahara',
   licht:{bg:'#07050a',hemi:'#9a7ac8',grond:'#3a2038',int:1.0,zon:.5,zonKleur:'#c8a0ff',gloed:1,vig:.55,sat:1.22,tint:[1.02,.97,1.06]},cam:{k:.56},
   bouw(B){const T=B.tex,PLUM='#3a1f3e',GOUD='#d6a63e',NEON='#b45cff',NEON2='#ff4fd8',H=3.8;
     const wand=T.stuc('#3c2040'),wand2=T.stuc('#2a1a2c'),gangW=T.stuc('#4a2a24'),beton=T.beton('#6a6660'),hout=T.planken('#3a2418'),gangV=T.tapijt('#3a1418'),betonV=T.beton('#4a4844');
@@ -147,7 +147,10 @@ BN.add('sahara',{naam:'Lounge Sahara',kleur:'#ff4fd8',w:23,h:29.5,plafond:3.8,de
     B.meubel([[.05,.05,.05,0,3.0,0,'#1a1714'],[.18,.12,.18,0,2.88,0,'#ffd98a',1]],2.7,8.2);B.meubel([[.05,.05,.05,0,3.0,0,'#1a1714'],[.18,.12,.18,0,2.88,0,'#ffd98a',1]],2.7,11.2);
     B.licht(2.7,2.7,8.2,'#ffc070',1.6,4.5,{flik:1});B.licht(2.7,2.7,11.2,'#ffc070',1.4,4.5);
     B.box(.9,1.6,.4,2.0,.8,7.0,'#5a5048');B.solid(1.6,6.8,2.45,7.2); // meterkast
-    B.meubel(F.deur(1.2,2.3,'#4a3a2a','#c9cfd6'),2.7,6.25);
+    // de deur naar de achterkamer: muurstukken naast en boven de deur (geen kier meer), de deur staat open naar binnen
+    B.muur(1.6,6,2.04,6.3,{h:3.2,tex:gangW});B.muur(3.36,6,3.8,6.3,{h:3.2,tex:gangW});{const l=new TH.Mesh(new TH.BoxGeometry(1.32,.78,.3),new TH.MeshLambertMaterial({map:gangW}));l.position.set(2.7,2.81,6.15);B.root.add(l);aS2.extra.push(l)}
+    B.meubel([[1.42,.12,.18,0,2.36,0,'#3a2a1a'],[.1,2.36,.18,-.66,1.18,0,'#3a2a1a'],[.1,2.36,.18,.66,1.18,0,'#3a2a1a'],
+      [1.2,2.3,.06,-.47,1.15,-.59,'#4a3a2a',0,1.35],[.05,.05,.08,-.38,1.12,-.98,'#c9cfd6',0,1.35]],2.7,6.15);
     // ===== achterkamer: tafel vol geld, telmachine, dozen =====
     B.meubel(F.tafel(3.8,1.6,.8,'#4a4440','#2a2420'),6.4,3.4);B.solid(4.5,2.6,8.3,4.2);
     const geld=[];for(let i=0;i<22;i++){const x=-1.6+((i*7)%11)*.3,z=-.55+((i*5)%4)*.33,h=.06+((i*13)%5)*.04;geld.push([.26,h,.13,x,.8+h/2,z,i%4?'#6a9a5a':'#b0a0d0'],[.27,.012,.035,x,.8+h-.002,z,'#c9a227'])}
@@ -183,7 +186,7 @@ BN.add('sahara',{naam:'Lounge Sahara',kleur:'#ff4fd8',w:23,h:29.5,plafond:3.8,de
 
 /* =================== PIZZERIA BELLA NAPOLI =================== */
 // keuken achter (z 1–8.3) met houtoven, winkel voor (z 8.3–13): toonbank, kassa, menubord
-BN.add('napoli',{naam:'Bella Napoli',kleur:'#3fe395',w:16,h:14,plafond:3.3,deur:{x:8,z:13.1},spawn:{x:8,z:12.3,ry:Math.PI},anker:anker('napoli'),ankerId:'napoli',
+BN.add('napoli',{naam:'Bella Napoli',kleur:'#3fe395',w:16,h:14,plafond:3.3,hoger:.8,deur:{x:8,z:13.1},spawn:{x:8,z:12.3,ry:Math.PI},anker:anker('napoli'),ankerId:'napoli',
   licht:{bg:'#0e0a08',hemi:'#ffe0c0',grond:'#4a3020',int:.8,zon:.45,zonKleur:'#fff0d8',gloed:.55,vig:.42,sat:1.14,tint:[1.04,1.0,.95]},cam:{k:.4},
   bouw(B){const T=B.tex,H=3.3;const tegW=T.wandtegel('#e8e4da'),stuc=T.stuc('#e8d8b8'),vloer=T.tegels('#4a4440','#cfc6b4',4),baks=T.baksteen('#8a3b2a');
     B.vloer(1,1,15,13,vloer,2.2);
@@ -250,7 +253,7 @@ BN.add('napoli',{naam:'Bella Napoli',kleur:'#3fe395',w:16,h:14,plafond:3.3,deur:
 
 /* =================== DE FLAT VAN DE SANTIS =================== */
 // woonkamer (x 1–10, z 1–7.6) met keuken (noordoost), gang (z 7.6–9.4), Luca's kamer (x 10.2–15, z 7.6–12)
-BN.add('thuis',{naam:'Thuis',kleur:'#7fd1ff',w:16,h:13,plafond:2.8,deur:{x:2.0,z:9.0},spawn:{x:2.6,z:8.6,ry:Math.PI/2},anker:anker('thuis'),ankerId:'thuis',deurTxt:'Naar huis',
+BN.add('thuis',{naam:'Thuis',kleur:'#7fd1ff',w:16,h:13,plafond:2.8,hoger:1.0,deur:{x:2.0,z:9.0},spawn:{x:2.6,z:8.6,ry:Math.PI/2},anker:anker('thuis'),ankerId:'thuis',deurTxt:'Naar huis',
   licht:{bg:'#0a0a10',hemi:'#d8d0c0',grond:'#3a3028',int:1.0,zon:.5,zonKleur:'#ffe8c8',gloed:.45,vig:.48,sat:1.08,tint:[1.02,1,.97]},cam:{k:.38},
   bouw(B){const T=B.tex,H=2.8;const beh=T.behang('#d8cdb0','#c8b890'),behL=T.behang('#5a6a7a','#4a5a6a'),stuc=T.stuc('#d8d4c8'),lam=T.planken('#8a6a4a'),lino=T.linoleum('#b8b0a0'),tapL=T.tapijt('#4a5060');
     B.vloer(1,1,10.2,7.6,lam,2);B.vloer(10.2,1,15,7.6,lino,2);B.vloer(1,7.6,10.2,9.6,lam,2);B.vloer(10.2,7.6,15,12,tapL,1);
@@ -331,7 +334,7 @@ function klasUitzicht(fase){return pc(96,32,(c,w,h)=>{const g=c.createLinearGrad
   // havenkranen in de verte
   [[78,8],[86,9]].forEach(([x,hh])=>{R(c,x,h-hh-6,1,hh+6,fase==='dag'?'#c0392b':'#2a1a24');R(c,x-4,h-hh-6,9,1,fase==='dag'?'#c0392b':'#2a1a24')});
   R(c,0,h-2,w,2,fase==='dag'?'#5a6a4a':'#1a1a22')})}
-BN.add('klas',{naam:'Westbuurt College',kleur:'#a9dcff',w:15,h:12,plafond:3.2,deur:{x:2.0,z:11.2},spawn:{x:2.0,z:10.5,ry:Math.PI},anker:anker('school'),ankerId:'school',deurTxt:'Naar binnen',
+BN.add('klas',{naam:'Westbuurt College',kleur:'#a9dcff',w:15,h:12,plafond:3.2,hoger:.8,deur:{x:2.0,z:11.2},spawn:{x:2.0,z:10.5,ry:Math.PI},anker:anker('school'),ankerId:'school',deurTxt:'Naar binnen',
   licht:klasLicht,cam:{k:.62},
   bouw(B){const T=B.tex,H=3.2;const st=T.stuc('#e8e2cc'),lino=T.linoleum('#9aa48a'),stG=T.stuc('#b8c8b8');
     B.vloer(1,1,14,11,lino,2);
@@ -411,7 +414,7 @@ BN.add('klas',{naam:'Westbuurt College',kleur:'#a9dcff',w:15,h:12,plafond:3.2,de
     const s=K.sign('WESTBUURT COLLEGE','#ffffff','#1a3a6a','#e8b923',.55);s.position.set(0,3.55,.13);g.add(s)}});
 
 /* =================== RIJTJESHUIS (Oud-Zuid, avond 4) =================== */
-BN.add('rijtjeshuis',{naam:'Rijtjeshuis',kleur:'#ff6a5a',w:12,h:11,plafond:2.7,deur:{x:2.0,z:10.0},spawn:{x:2.0,z:9.4,ry:Math.PI},anker:anker('rijtjeshuis'),ankerId:'rijtjeshuis',deurTxt:'Aanbellen',
+BN.add('rijtjeshuis',{naam:'Rijtjeshuis',kleur:'#ff6a5a',w:12,h:11,plafond:2.7,hoger:1.0,deur:{x:2.0,z:10.0},spawn:{x:2.0,z:9.4,ry:Math.PI},anker:anker('rijtjeshuis'),ankerId:'rijtjeshuis',deurTxt:'Aanbellen',
   licht:{bg:'#060508',hemi:'#8a8070',grond:'#2a2018',int:.6,zon:.2,zonKleur:'#ffd8a0',gloed:.4,vig:.62,sat:1.0,tint:[1.04,.98,.92]},cam:{k:.36},
   bouw(B){const T=B.tex,H=2.7;const beh=T.behang('#7a6a4a','#6a5a3a'),hout=T.parket('#6a4a2a'),gang=T.planken('#5a4030');
     B.vloer(1,1,11,7.4,hout,2);B.vloer(1,7.4,4,10.2,gang,2);B.vloer(4,7.4,11,10.2,hout,2);

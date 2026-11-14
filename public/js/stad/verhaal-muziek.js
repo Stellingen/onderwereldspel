@@ -21,7 +21,9 @@ function ontgrendel(){if(ontgrendeld)return;if(!aan())return;ontgrendeld=true;fo
   try{vtMaak();if(vtEl){vtEl.src=STIL;const p=vtEl.play();if(p&&p.then)p.then(()=>vtEl.pause()).catch(()=>{})}}catch(e){}
   if(wil)zet(wil,true)}
 ['pointerdown','keydown','touchend'].forEach(e=>addEventListener(e,ontgrendel,{passive:true}));
-function luid(){const m=G.snd?(G.snd.muOn?1:0):1;return m*duik}
+// 'Muziek tijdens het spelen' uit (instellingen): stil tijdens het rondlopen en fietsen, wél muziek in cutscènes
+function spelStil(){try{const uit=G.verhaalInst&&G.verhaalInst.get&&G.verhaalInst.get('spelMuziek')===false;return uit&&!(G.cut&&G.cut.active&&G.cut.active())&&!document.querySelector('#viOv:not([hidden])')}catch(e){return false}}
+function luid(){const m=G.snd?(G.snd.muOn?1:0):1;return m*duik*(spelStil()?0:1)}
 function start(id,vanaf){const n=NUM[id];if(!n)return null;const d=dek();if(!d)return null;d.bezig=true;d.num=id;d.vol=0;d.doel=1;
   if(!d.el.src||d.el.src.indexOf('/muziek/'+id+'.mp3')<0)d.el.src='/audio/verhaal/muziek/'+id+'.mp3'+V;
   const zetTijd=()=>{try{d.el.currentTime=vanaf}catch(e){}};if(d.el.readyState>=1)zetTijd();else d.el.addEventListener('loadedmetadata',zetTijd,{once:true});

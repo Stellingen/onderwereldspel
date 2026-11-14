@@ -531,7 +531,8 @@ function comps(){if(COMP)return COMP;COMP=COMP0||(COMP0=new Int32Array(N_));COMP
 // dichtstbijzijnde punt in gebied c rond (x,z)
 function nearestIn(c,x,z,max){const C=comps();for(let r=0;r<=max;r++)for(let a=0;a<Math.max(1,r*8);a++){const t=a/Math.max(1,r*8)*Math.PI*2,px=x+Math.cos(t)*r,pz=z+Math.sin(t)*r,ix=Math.floor(px),iz=Math.floor(pz);
   if(inb(ix,iz)&&C[iz*W+ix]===c&&canStand(px,pz))return{x:px,z:pz}}return null}
-function findPath(ax,az,bx_,bz_){
+// modus 'fiets': over de weg (gras, park, zand en tuinen kosten veel meer; de rechte stukken snijden ook geen gras af)
+function findPath(ax,az,bx_,bz_,modus){const fiets=modus==='fiets',GRS=t=>t===T.GRASS||t===T.PARK||t===T.GARDEN||t===T.SAND||t===T.YARD;
   const s=nearestWalk(ax,az,6);let e=nearestWalk(bx_,bz_,30);if(!s||!e)return null;
   const C=comps(),cs=C[Math.floor(s.z)*W+Math.floor(s.x)];if(C[Math.floor(e.z)*W+Math.floor(e.x)]!==cs){e=nearestIn(cs,e.x,e.z,120);if(!e)return null}
   const sx=Math.floor(s.x),sz=Math.floor(s.z),ex=Math.floor(e.x),ez=Math.floor(e.z);
@@ -543,10 +544,10 @@ function findPath(ax,az,bx_,bz_){
   const DX=[1,-1,0,0,1,1,-1,-1],DZ=[0,0,1,-1,1,-1,1,-1],DC=[1,1,1,1,1.414,1.414,1.414,1.414];
   while(HN&&n++<900000){const i=hpop();if(i===ei)break;touch(i);if(closed[i])continue;closed[i]=1;const x=i%W,z=(i/W)|0;
     for(let d=0;d<8;d++){const dx=DX[d],dz=DZ[d],nx=x+dx,nz=z+dz;if(!ok(nx,nz))continue;if(dx&&dz&&(!ok(x+dx,z)||!ok(x,z+dz)))continue;
-      const ni=nz*W+nx;touch(ni);const ng=gs[i]+DC[d]*(g[ni]===T.ROAD?1.6:1);if(ng<gs[ni]){gs[ni]=ng;from[ni]=i;hpush(ni,ng+h(nx,nz)*1.4)}}}
+      const ni=nz*W+nx;touch(ni);const tg=g[ni],ng=gs[i]+DC[d]*(fiets?(tg===T.ROAD||tg===T.BRIDGE?1:GRS(tg)?9:tg===T.WALK?2.2:1.8):(tg===T.ROAD?1.6:1));if(ng<gs[ni]){gs[ni]=ng;from[ni]=i;hpush(ni,ng+h(nx,nz)*1.4)}}}
   if(from[ei]<0&&ei!==si)return null;
   const raw=[];for(let i=ei;i!==-1&&i!==si;i=from[i])raw.push([i%W+.5,((i/W)|0)+.5]);raw.reverse();
-  const clear=(a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz),n=Math.ceil(L*3);for(let k=0;k<=n;k++){const x=a[0]+dx*k/n,z=a[1]+dz*k/n;if(!canStand(x,z,.3))return false}return true};
+  const clear=(a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz),n=Math.ceil(L*3);for(let k=0;k<=n;k++){const x=a[0]+dx*k/n,z=a[1]+dz*k/n;if(!canStand(x,z,.3))return false;if(fiets&&GRS(g[Math.floor(z)*W+Math.floor(x)]))return false}return true};
   const out=[];let cur=[s.x,s.z];for(let k=0;k<raw.length;){let j=Math.min(raw.length-1,k+60);while(j>k&&!clear(cur,raw[j]))j--;out.push(raw[j]);cur=raw[j];k=j+1}
   if(out.length)out[out.length-1]=[e.x,e.z];
   return out.map(([x,z])=>({x,z}));

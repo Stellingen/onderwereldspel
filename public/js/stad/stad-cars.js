@@ -18,6 +18,16 @@ function carMesh(col,kind,police){const key=col+kind+(police?'p':'');let geo=mes
     [[-1,1],[1,1],[-1,-1],[1,-1]].forEach(([sx,sz])=>gb.box(sx*W/2-(sx>0?.22:-.02)-.1,0,sz*(L/2-.75)-.35,sx*W/2+(sx>0?.02:.22)-.1+(sx>0?.1:0),.64,sz*(L/2-.75)+.35,sw('#16171a')));
     gb.box(-W/2+.15,y0+.2,L/2-.02,-W/2+.55,y0+.42,L/2+.04,sw('#fff3c8','#fff3c8'));gb.box(W/2-.55,y0+.2,L/2-.02,W/2-.15,y0+.42,L/2+.04,sw('#fff3c8','#fff3c8'));
     gb.box(-W/2+.15,y0+.22,-L/2-.04,-W/2+.5,y0+.42,-L/2+.02,sw('#b0221e','#ff3a2a'));gb.box(W/2-.5,y0+.22,-L/2-.04,W/2-.15,y0+.42,-L/2+.02,sw('#b0221e','#ff3a2a'));
+    // details: glas met stijlen in de kleur van de auto, bumpers, wieldoppen, spiegels, kentekens (geel), deurnaad
+    const yc=y0+bh,zf=L/2-cf,zr=-L/2+cr,glas=sw('#5d7486','#000000'),glasD=sw('#3a4d5c','#000000'),bump=sw('#26282c'),dop=sw('#c9cfd6'),kent=sw('#f2c230'),naad=sw('#000000');
+    gb.box(-W/2+.2,yc+.06,zf-.03,W/2-.2,yc+ch-.06,zf+.015,glas);                       // voorruit
+    gb.box(-W/2+.2,yc+.06,zr-.015,W/2-.2,yc+ch-.06,zr+.03,glasD);                      // achterruit
+    const mid=(zf+zr)/2;[-1,1].forEach(sx=>{gb.box(sx>0?W/2-.13:-W/2+.11,yc+.07,zr+.12,sx>0?W/2-.11:-W/2+.13,yc+ch-.08,mid-.06,glas);gb.box(sx>0?W/2-.13:-W/2+.11,yc+.07,mid+.06,sx>0?W/2-.11:-W/2+.13,yc+ch-.08,zf-.12,glas);
+      gb.box(sx*W/2-(sx>0?.01:-.01)-.01,y0+.1,mid-.015,sx*W/2+(sx>0?.012:-.012),y0+bh-.06,mid+.015,naad);                                                  // deurnaad
+      gb.box(sx>0?W/2:-W/2-.16,yc-.02,zf-.1,sx>0?W/2+.16:-W/2,yc+.1,zf+.06,sw(col));                                                                  // spiegel
+      [-1,1].forEach(sz=>gb.box(sx>0?W/2-.02:-W/2-.12,.2,sz*(L/2-.75)-.17,sx>0?W/2+.05:-W/2-.05,.46,sz*(L/2-.75)+.17,dop))});                            // wieldoppen
+    gb.box(-W/2+.04,y0-.04,L/2-.06,W/2-.04,y0+.16,L/2+.08,bump);gb.box(-W/2+.04,y0-.04,-L/2-.08,W/2-.04,y0+.16,-L/2+.06,bump);                          // bumpers
+    gb.box(-.26,y0+.02,L/2+.08,.26,y0+.14,L/2+.1,kent);gb.box(-.26,y0+.02,-L/2-.1,.26,y0+.14,-L/2-.08,kent);                                             // kentekens
     geo=meshCache[key]=gb.mesh(G.city.material).geometry}
   const m=new TH.Mesh(geo,G.city.material);m.castShadow=true;
   if(police){const bar=new TH.Group(),k=KINDS[kind]||KINDS.sedan,y=.32+k[2]+k[3]+.05;
@@ -31,11 +41,20 @@ const off=d=>({x:-d.z*LANE,z:d.x*LANE});
 const pOut=(n,d)=>{const o=off(d);return {x:n.x+d.x*(RW+.6)+o.x,z:n.z+d.z*(RW+.6)+o.z}};
 const pIn=(n,d)=>{const o=off(d);return {x:n.x-d.x*(RW+.6)+o.x,z:n.z-d.z*(RW+.6)+o.z}};
 const CC=['#c23b2e','#2f5d9a','#e8e4da','#2a2c30','#d7a530','#3f7a4a','#7a3c8a','#8a929c','#1d1d1f'];
-function spawnCar(police,near){let A,B;for(let k=0;k<60;k++){A=pick(N);B=pick(A.n);const mx=(A.x+B.x)/2,mz=(A.z+B.z)/2,d=Math.hypot(mx-G.P.x,mz-G.P.z);if(!near||(d>45&&d<150))break}
+// in beeld van de camera? (dan niet daar laten verschijnen: geen auto's die uit het niets opduiken)
+const FR=new TH.Frustum(),FM=new TH.Matrix4(),FV=new TH.Vector3();
+function inBeeld(x,z){try{const cam=G.camera();FM.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse);FR.setFromProjectionMatrix(FM);for(const y of [.8,2]){FV.set(x,y,z);if(FR.containsPoint(FV))return true}}catch(e){}return false}
+function vrijePlek(x,z,r){return !TRAF.some(o=>Math.hypot(o.x-x,o.z-z)<r)}
+function spawnCar(police,near,force){let A,B,t0=.5,ok=false;for(let k=0;k<120&&!ok;k++){A=pick(N);B=pick(A.n);if(!A||!B)continue;t0=.35+Math.random()*.3;
+    // de echte plek op de rijbaan (niet het midden van de straat): daar mag geen andere auto staan
+    const d0=dirOf(A,B),a=pOut(A,d0),b=pIn(B,d0),mx=a.x+(b.x-a.x)*t0,mz=a.z+(b.z-a.z)*t0,d=Math.hypot(mx-G.P.x,mz-G.P.z);
+    if(!near){ok=vrijePlek(mx,mz,8);continue}
+    ok=d>80&&d<170&&!inBeeld(mx,mz)&&vrijePlek(mx,mz,16)}
+  if(!ok&&!(force&&A&&B))return null;   // geen vrije plek: liever een auto minder dan twee auto's in elkaar
   // gewone auto's krijgen een echt model uit het spel (stad-autos.js), zodat je ziet wat je kunt carjacken
   const md=!police&&G.trafModel?G.trafModel(A):null,kd=police?'sedan':md?kindOf(md.m.b):pick(['city','hatch','sedan','suv','van']);
   const c={police,A,B,d:dirOf(A,B),t:Math.random(),v:0,max:police?12:rr(8,12),kind:kd,mesh:carMesh(police?'#eef0f2':md?md.x.c:pick(CC),kd,police),mode:'edge',md};
-  G.scene().add(c.mesh);TRAF.push(c);place(c);return c}
+  c.t=t0;G.scene().add(c.mesh);TRAF.push(c);place(c);return c}
 function edgePts(c){return [pOut(c.A,c.d),pIn(c.B,c.d)]}
 function place(c){let x,z,ry;if(c.mode==='edge'){const [a,b]=edgePts(c);x=a.x+(b.x-a.x)*c.t;z=a.z+(b.z-a.z)*c.t;ry=Math.atan2(c.d.x,c.d.z)}
   else{const t=c.t,u=1-t,P0=c.cv[0],P1=c.cv[1],P2=c.cv[2];x=u*u*P0.x+2*u*t*P1.x+t*t*P2.x;z=u*u*P0.z+2*u*t*P1.z+t*t*P2.z;const dx=2*u*(P1.x-P0.x)+2*t*(P2.x-P1.x),dz=2*u*(P1.z-P0.z)+2*t*(P2.z-P1.z);ry=Math.atan2(dx,dz)}
@@ -43,7 +62,9 @@ function place(c){let x,z,ry;if(c.mode==='edge'){const [a,b]=edgePts(c);x=a.x+(b
 function startTurn(c){const B=c.B,opts=B.n.filter(n=>n!==c.A),C=opts.length?pick(opts):c.A,d2=dirOf(B,C),P0=pIn(B,c.d),P2=pOut(B,d2);
   const P1=Math.abs(c.d.x*d2.x+c.d.z*d2.z)>.9?{x:(P0.x+P2.x)/2,z:(P0.z+P2.z)/2}:(Math.abs(c.d.x)<.5?{x:P0.x,z:P2.z}:{x:P2.x,z:P0.z});
   c.mode='turn';c.cv=[P0,P1,P2];c.len=Math.hypot(P1.x-P0.x,P1.z-P0.z)+Math.hypot(P2.x-P1.x,P2.z-P1.z);c.t=0;c.node=B;c.next={A:B,B:C,d:d2}}
-function busy(node,self){return TRAF.some(o=>o!==self&&o.mode==='turn'&&o.node===node)}
+function busy(node,self){if(TRAF.some(o=>o!==self&&o.mode==='turn'&&o.node===node))return true;
+  // staat er iemand vlak voor de kruising op de straat waar ik heen wil? dan wachten (anders rijden we in elkaar)
+  return TRAF.some(o=>o!==self&&o.mode==='edge'&&o.A===node&&o.t<.12)}
 function blockedAhead(c){const fx=Math.sin(c.ry),fz=Math.cos(c.ry);const chk=(x,z,r)=>{const dx=x-c.x,dz=z-c.z,ahead=dx*fx+dz*fz,side=Math.abs(dx*fz-dz*fx);return ahead>0&&ahead<r&&side<1.6};
   if(!G.driving&&chk(G.P.x,G.P.z,5.5))return true;if(G.driving&&G.car&&chk(G.car.x,G.car.z,7))return true;return TRAF.some(o=>o!==c&&chk(o.x,o.z,6.5))}
 function trafficStep(c,dt){if(c.block)return;if(c.chase)return G.policeCarStep?G.policeCarStep(c,dt):chaseStep(c,dt);
@@ -54,8 +75,13 @@ function trafficStep(c,dt){if(c.block)return;if(c.chase)return G.policeCarStep?G
   if(c.mode==='edge'){const [a,b]=edgePts(c),L=Math.hypot(b.x-a.x,b.z-a.z)||1;c.t+=c.v*dt/L;
     if(c.t>=1){if(busy(c.B,c)){c.t=1;c.v=0}else startTurn(c)}}
   else{c.t+=c.v*dt/Math.max(1,c.len);if(c.t>=1){c.A=c.next.A;c.B=c.next.B;c.d=c.next.d;c.mode='edge';c.t=0}}
-  place(c);
-  if(Math.hypot(c.x-G.P.x,c.z-G.P.z)>190){G.scene().remove(c.mesh);TRAF.splice(TRAF.indexOf(c),1);spawnCar(c.police,true)}}
+  const ox=c.x,oz=c.z,ory=c.ry;place(c);
+  // harde grens: kom je binnen 3,8 m van een auto vóór je, dan zet je de stap terug en sta je stil
+  const fx=Math.sin(c.ry),fz=Math.cos(c.ry);if(TRAF.some(o=>{if(o===c)return false;const dx=o.x-c.x,dz=o.z-c.z,a=dx*fx+dz*fz,sd=Math.abs(dx*fz-dz*fx);return a>.25&&a<3.8&&sd<1.7})){
+    if(c.mode==='edge'){const [a,b]=edgePts(c),L=Math.hypot(b.x-a.x,b.z-a.z)||1;c.t=Math.max(0,c.t-c.v*dt/L)}else c.t=Math.max(0,c.t-c.v*dt/Math.max(1,c.len));c.v=0;place(c)}
+  let weg=Math.hypot(c.x-G.P.x,c.z-G.P.z)>190&&!inBeeld(c.x,c.z);
+  if(!weg&&!c.police&&(c._ov=(c._ov||0)+dt)>1.5){c._ov=0;if(!inBeeld(c.x,c.z)&&TRAF.some(o=>o!==c&&!o.chase&&Math.hypot(o.x-c.x,o.z-c.z)<2.6))weg=true}
+  if(weg){G.scene().remove(c.mesh);TRAF.splice(TRAF.indexOf(c),1);spawnCar(c.police,true)}}
 /* ---------- politie ---------- */
 let lostT=0,cool=0;
 function drivable(x,z){return M.walkable(x,z)}
@@ -92,7 +118,7 @@ function policeTick(dt){if(cool>0)cool-=dt;if(!G.police||G.police.active()||cool
   const st=G.driving&&mine&&mine.stolen;if(st&&!st.papers&&!(G.mission&&G.mission())&&(st.heat||0)>15){
     const pol=TRAF.find(c=>c.police&&!c.chase&&!c.block&&Math.hypot(c.x-mine.x,c.z-mine.z)<24&&G.los&&G.los(c,G.P));
     if(pol&&Math.random()<dt*Math.pow(st.heat/100,1.5)*.6){G.police.start({stars:1,why:'gestolen auto',car:pol});G.toast&&G.toast('De politie herkent de gestolen '+mine.d.name+'!','bad');cool=25}}}
-G.traf={spawn:(pol,near)=>spawnCar(pol,near),remove:c=>{G.scene().remove(c.mesh);const i=TRAF.indexOf(c);if(i>=0)TRAF.splice(i,1);if(c.police&&TRAF.filter(o=>o.police&&!o.chase).length<3)spawnCar(true,true)},carMesh,list:TRAF};
+G.traf={spawn:(pol,near)=>spawnCar(pol,near,true),remove:c=>{G.scene().remove(c.mesh);const i=TRAF.indexOf(c);if(i>=0)TRAF.splice(i,1);if(c.police&&TRAF.filter(o=>o.police&&!o.chase).length<3)spawnCar(true,true)},carMesh,list:TRAF};
 /* ---------- je eigen auto ---------- */
 function myCars(){try{return (S.cars||[]).map((c,i)=>({c,i})).filter(o=>o.c&&o.c.id)}catch(e){return[]}}
 function bestCar(){const L=myCars();if(!L.length)return null;let pref=-1;try{pref=+localStorage.getItem('stad_carIdx')}catch(e){}const f=L.find(o=>o.i===pref);if(f)return f;return L.slice().sort((a,b)=>(b.c.v||0)-(a.c.v||0))[0]}
@@ -282,7 +308,10 @@ function driveStep(dt){const K=G.K,c=mine;let thr=0,steer=0;
   c.mesh.position.set(c.x,0,c.z);c.mesh.rotation.y=c.ry;if(c._tilt)c.mesh.rotation.z=c._tilt;G.P.x=c.x;G.P.z=c.z;G.P.vx=fx*c.v;G.P.vz=fz*c.v;G.P.ry=c.ry;
   // camera achter de auto, tenzij je zelf net hebt gedraaid
   if(Math.abs(c.v)>3&&performance.now()-(G.manualRotT||0)>1500){let want=c.ry+Math.PI-G.yawT;while(want>Math.PI)want-=Math.PI*2;while(want<-Math.PI)want+=Math.PI*2;G.yawT+=want*Math.min(1,dt*(G.camMode==='achter'?4.5:1.6))}}
+let aanvulT=0;
 G.carStep=function(dt){simT+=dt;if(!TRAF.length)for(let i=0;i<26;i++)spawnCar(i<3,false);
+  // aanvullen als er onderweg een auto niet terug kon komen (er was geen vrije plek)
+  if((aanvulT+=dt)>4){aanvulT=0;if(TRAF.filter(c=>!c.chase&&!c.block).length<26)spawnCar(false,true)}
   TRAF.slice().forEach(c=>trafficStep(c,dt));policeTick(dt);
   // zwaailichten
   const fl=Math.floor(performance.now()/180)%2;TRAF.forEach(c=>{const b=c.mesh.userData.bar;if(b){const on=c.chase||c.block||G.night>.5;b[0].visible=on?fl===0:true;b[1].visible=on?fl===1:true}});

@@ -1613,7 +1613,27 @@ Een verhaal in pixels, los van het klikspel en de Pixelstad. Je speelt Luca De S
 
 **Voorbijgangers** (`verhaal-npc.js`): wie dichter dan ±22 m bij je loopt, krijgt hetzelfde gedetailleerde poppetje als in de cutscènes (gezicht, kleding, haar, pet), in dezelfde kleuren als de snelle versie op afstand. Hooguit 12 tegelijk; uit te zetten in de instellingen (Beeld).
 
-**Camera's in cutscènes**: een shot rond een persoon draait vanzelf weg van muren, heggen en gevels; een camerabeweging begint waar het vorige shot staat; na een keuze blijft de camera staan (geen flits van de spelcamera). Tijdens een cutscène geen 'doorkijkgat' in gebouwen. Wijde shots in de intro kijken verder (`G.fogVer`).
+**Camera's in cutscènes**: een shot rond een persoon draait vanzelf weg van muren, heggen en gevels (buiten én binnen); een camerabeweging begint waar het vorige shot staat; tussen twee scènes en na een keuze blijft het laatste shot staan (geen flits van de spelcamera). Tijdens een cutscène geen 'doorkijkgat' in gebouwen. Wijde shots in de intro kijken verder (`G.fogVer`). Voor elk shot geldt een automatisch kader (`kader()` in `stad-cut.js`, alle seizoenen; uit per shot met `{cam:{…,vrij:true}}`):
+- staat er een muur of hoge kast tussen camera en persoon, dan draait de camera om de persoon heen tot er vrij zicht is (het hele shot dezelfde kant), anders schuift hij naar voren;
+- staat iemand met zijn hoofd tussen de camera en het gezicht, dan draait de camera een stukje om het gezicht heen, anders kijkt hij over hem heen;
+- de camera staat minstens op kinhoogte en (als er ruimte is) ±1,9 m van het gezicht, en het gezicht staat in beeld: geen shots van alleen mond en borst meer;
+- binnen nooit door het plafond.
+
+Een stap `{anim:'x',ry:…}` draait iemand echt die kant op (een eerdere `naar` vervalt). De scènes thuis (het geld, Marco's verjaardag, Luca's kamer in Seizoen 2) en de achterkamer van Sahara zijn opnieuw in beeld gezet.
+
+**Rafiq en de fooi**: bij de uitgang houdt de uitsmijter Luca tegen en stuurt hem terug naar de achterkamer. Daar zit Rafiq aan zijn tafel, staat op, loopt om de tafel heen en geeft hem de €300 (je ziet de briefjes), daarna het aanbod. Pas dan loop je naar buiten. Bezorgen: bij het afrekenen geeft de klant je zichtbaar geld (briefje vliegt naar je toe, `+€… fooi`).
+
+**Plafonds**: binnen zijn de plafonds hoger (`hoger` per interieur, thuis +1 m), zodat de camera achter je en de eerste persoon niet meer tegen het plafond zitten. Kasten, deuren en ramen blijven zoals ze zijn. De deur naar de achterkamer van Sahara heeft nu muur aan beide kanten en een bovendorpel.
+
+**Verkeer** (`stad-cars.js`): auto's verschijnen alleen op een vrije plek buiten beeld (80–170 m), houden minstens 3,8 m afstand, wachten bij een kruising als de straat erachter vol staat en verdwijnen pas ver weg en buiten beeld. Komt er geen vrije plek, dan liever een auto minder; de stad vult langzaam aan. Twee auto's die toch in elkaar staan worden buiten beeld opgeruimd. Nieuwe details: ramen, stijlen, spiegels, wieldoppen, bumpers, gele kentekens.
+
+**Voorbijgangers praten** (`verhaal-praat.js`): nieuwe soorten mensen (scholieren, bouwvakkers, moeders met buggy, skaters, koeriers, verpleging, opa's, hipsters), per wijk en tijd van de dag anders verdeeld. Ze zeggen dingen per soort, dagdeel en weer, voeren korte gesprekjes van vier regels met elkaar en reageren op Luca (de rode jas, hard fietsen, 's nachts, bekendheid, hitte). Spreekballonnen zijn in het verhaal kleiner.
+
+**Navigatie**: bij elk doel ('naar huis', een missie) staat het doel knipperend op de kaart en wordt de route meteen gezet; ook als het doel van de stap afhangt (`waar` als functie). Op de fiets loopt de route over de weg en niet over gras (`findPath(…,'fiets')`).
+
+**Pauze en instellingen**: het pauzemenu en de instellingen zijn weer klikbaar (de muisvergrendeling gaat eraf). Nieuw: *Muziek tijdens het spelen* (uit = alleen de spelmuziek stil, cutscènes houden muziek), *Verteller* en *Gedetailleerde voorbijgangers*. Uithoudingsvermogen gaat langer mee en het schudden bij leeg uithoudingsvermogen is zacht (en uit te zetten met 'schudden'). Na een botsing met de pizza's heb je meer tijd om bij te sturen.
+
+**Casino, wapenkisten**: de rol stopt precies op het vakje dat je wint (tegels hebben een vaste breedte, de eindpositie wordt in pixels gemeten).
 
 **Fiets en bezorgen** (`stad-fiets.js`, `stad-bezorg.js`): de fiets met lading, balans bij tramrails en stoepranden, zand en natte wegen; bestellingen met tijd, warmte, aanbellen en zes soorten klanten. In de Pixelstad is dit een bijbaan bij Bella Napoli in de Westbuurt.
 

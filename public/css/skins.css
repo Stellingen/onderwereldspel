@@ -19,11 +19,12 @@
 .wk-win{position:relative;height:calc(var(--wk-step) * .8);overflow:hidden;border-radius:10px;background:radial-gradient(120% 140% at 50% 50%,#15181e 0%,#0a0b0e 70%);box-shadow:inset 0 0 0 1px var(--line2);
  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12%,#000 88%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 12%,#000 88%,transparent 100%)}
 .wk-strip{position:absolute;left:50%;top:0;bottom:0;display:flex;will-change:transform}
-.wk-t{--rc:#888;flex:0 0 var(--wk-step);height:100%;padding:8px 4px}
-.wk-ti{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 6px 9px;border-radius:8px;overflow:hidden;
+/* vaste breedte per vakje (min-width:0): lange namen mogen het vakje niet breder maken, anders klopt de streep niet met de uitslag */
+.wk-t{--rc:#888;flex:0 0 var(--wk-step);width:var(--wk-step);min-width:0;max-width:var(--wk-step);height:100%;padding:8px 4px;overflow:hidden}
+.wk-ti{position:relative;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 6px 9px;border-radius:8px;overflow:hidden;
  background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 6%,#14171c),color-mix(in srgb,var(--rc) 20%,#14171c));box-shadow:inset 0 -3px 0 var(--rc),inset 0 0 0 1px rgba(255,255,255,.05)}
 .wk-ti svg{width:100%;height:auto;max-height:62%;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
-.wk-ti small{font-family:var(--f-mono);font-size:9.5px;color:#c9ccd2;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk-ti small{font-family:var(--f-mono);font-size:9.5px;color:#c9ccd2;max-width:100%;min-width:0;width:100%;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wk-t.win .wk-ti{box-shadow:inset 0 -3px 0 var(--rc),inset 0 0 0 2px var(--rc),0 0 24px -4px var(--rc)}
 .wk-mark{position:absolute;left:50%;top:0;bottom:0;width:2px;margin-left:-1px;background:#ffd35a;box-shadow:0 0 10px #ffd35a;pointer-events:none}
 .wk-mark::before,.wk-mark::after{content:"";position:absolute;left:50%;width:0;height:0;border:7px solid transparent;transform:translateX(-50%)}

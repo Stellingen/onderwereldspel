@@ -14,7 +14,7 @@
 const G=window.STAD;if(!G)return;
 const K=G.kit,E=K.E,$s=id=>document.getElementById(id);
 const touch=matchMedia('(pointer:coarse)').matches;
-const DEF={nav:true,pijl:true,subs:true,subGrootte:'m',skip:true,schudden:true,schaduw:true,effecten:true,tril:true,camAfstand:'normaal',verteller:true,npcDetail:true};
+const DEF={nav:true,pijl:true,subs:true,subGrootte:'m',skip:true,schudden:true,schaduw:true,effecten:true,tril:true,camAfstand:'normaal',verteller:true,npcDetail:true,spelMuziek:true};
 const SUBS={s:.85,m:1,l:1.25,xl:1.6},AFST={dicht:32,normaal:46,ver:60};
 let LS={};try{LS=JSON.parse(localStorage.getItem('verhaal_inst')||'{}')||{}}catch(e){LS={}}
 const story=()=>G.story&&G.story.instelling?G.story:null;
@@ -100,6 +100,7 @@ function tabHtml(){const snd=G.snd||{};
     row('Gedetailleerde voorbijgangers','Mensen dichtbij zien eruit zoals in de cutscènes. Uit is sneller op een oudere telefoon.',sw('npcDetail','Gedetailleerde voorbijgangers'));
   if(tab==='geluid')return row('Geluidseffecten','',`<button class="vi-sw" role="switch" aria-checked="${!!snd.fxOn}" aria-label="Geluidseffecten" data-snd="fx"></button>`)+
     row('Muziek','',`<button class="vi-sw" role="switch" aria-checked="${!!snd.muOn}" aria-label="Muziek" data-snd="mu"></button>`)+
+    row('Muziek tijdens het spelen','Uit = stil tijdens lopen en fietsen. In cutscènes speelt de muziek gewoon.',sw('spelMuziek','Muziek tijdens het spelen'),'sub'+(snd.muOn?'':' off'))+
     row('Verteller','De misdaadverslaggever uit de intro spreekt bij belangrijke momenten.',sw('verteller','Verteller'))+
     row('Volume','',`<input class="vi-range" type="range" min="0" max="1" step=".05" value="${snd.vol!=null?snd.vol:.8}" data-vol aria-label="Volume">`);
   const k=(a,b)=>`<kbd>${a}</kbd><span>${b}</span>`;
@@ -116,7 +117,7 @@ function html(){if(view==='pauze')return `<div class="vi-box"><div class="vi-top
    <div class="vi-body" id="viBody">${tabHtml()}</div>
    <div class="vi-foot"><button class="vi-btn" data-reset>Standaard</button><button class="vi-btn go" data-x>Klaar</button></div></div>`}
 function draw(){const sc=$s('viBody')?$s('viBody').scrollTop:0;ov.innerHTML=html();const b=$s('viBody');if(b)b.scrollTop=sc;const vr=ov.querySelector('[data-vol]');if(vr)vr.oninput=()=>G.snd&&G.snd.setVol(+vr.value)}
-function open(v,t){if(G.kaart&&G.kaart.isOpen&&G.kaart.isOpen())G.kaart.close();if(G.phone&&G.phone.isOpen&&G.phone.isOpen())G.phone.close();
+function open(v,t){try{if(document.pointerLockElement)document.exitPointerLock()}catch(e){}if(G.kaart&&G.kaart.isOpen&&G.kaart.isOpen())G.kaart.close();if(G.phone&&G.phone.isOpen&&G.phone.isOpen())G.phone.close();
   view=v||'inst';if(t)tab=t;wasPaused=!!G.paused;ov.hidden=false;draw();if(!wasPaused&&G.pause)G.pause();G.snd&&G.snd.fx('open');
   setTimeout(()=>{const f=ov.querySelector(view==='pauze'?'[data-p="verder"]':'.vi-tabs .on');if(f)try{f.focus({preventScroll:true})}catch(e){}},30)}
 function close(){if(ov.hidden)return;ov.hidden=true;G.snd&&G.snd.fx('close');const busy=(G.ui&&G.ui.cur&&G.ui.cur())||(G.cut&&G.cut.active&&G.cut.active());if(!wasPaused&&!busy&&G.resume)G.resume()}

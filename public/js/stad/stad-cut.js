@@ -204,7 +204,7 @@ ui.innerHTML=`<i class="sv-cb t"></i><i class="sv-cb b"></i><div class="sv-fade"
  <button class="sv-skip" id="svSkip">${touch?'Overslaan':'Overslaan <kbd>Esc</kbd>'} ›</button><i class="sv-hold" id="svHold"></i>`;
 document.body.appendChild(ui);
 let active=false,skip=false,advance=null,tw=null,keuzeOpen=null,droom=false;
-CUT.active=()=>active;
+CUT.active=()=>active;CUT.camNu=()=>({cam:!!CAMx,vorig:!!vorigeCam,running:!!running});
 CUT.hq={pix:560,portret:112,schaduw:true};CUT.onStart=[];CUT.onEnd=[];
 function setPor(id,mood){const c=$s('svSubPor');const sz=(CUT.hq&&CUT.hq.portret)||112;c.style.width=c.style.height=sz+'px';if(!id){c.hidden=true;return}c.hidden=false;
   try{if(CUT.portret)return CUT.portret(id,mood,c);K.face(Object.assign({bg:'#14101a'},CUT.face(id)),mood||null,c)}catch(e){}}
@@ -235,23 +235,75 @@ function setDroom(on){droom=!!on;$s('svDroom').classList.toggle('on',droom);G.ca
 CUT.droom=setDroom;
 
 /* =================== camera =================== */
-let CAM=null,vorigeCam=null;const v1=new TH.Vector3(),v2=new TH.Vector3();
+let CAMx=null,vorigeCam=null;const v1=new TH.Vector3(),v2=new TH.Vector3();
 const arr=(p,d)=>p?new TH.Vector3(p[0],p[1],p[2]):d;
-function camSet(c){if(c==null){CAM=null;return 0}const cam=G.camera();
-  if(c.volg){CAM={volg:c.volg,af:c.af||[0,2.2,4.5],kijk:c.kijk||[0,1.4,0],fov:c.fov||null,pos:cam.position.clone(),look:null};return 0}
+function camSet(c){if(c==null){CAMx=null;return 0}const cam=G.camera();
+  if(c.volg){CAMx={volg:c.volg,af:c.af||[0,2.2,4.5],kijk:c.kijk||[0,1.4,0],fov:c.fov||null,pos:cam.position.clone(),look:null};return 0}
   // zonder beginpunt: begin waar het vorige shot nu is (niet waar de camera in het vorige frame stond)
-  let nuP=null,nuL=null;if(CAM&&!CAM.volg&&CAM.from){const k=CAM.to&&CAM.t>0?ease(CAM.e/CAM.t):(CAM.to?1:0);nuP=CAM.from.pos.clone();nuL=CAM.from.look.clone();if(CAM.to){nuP.lerp(CAM.to.pos,k);nuL.lerp(CAM.to.look,k)}}
+  let nuP=null,nuL=null;if(CAMx&&!CAMx.volg&&CAMx.from){const k=CAMx.to&&CAMx.t>0?ease(CAMx.e/CAMx.t):(CAMx.to?1:0);nuP=CAMx.from.pos.clone();nuL=CAMx.from.look.clone();if(CAMx.to){nuP.lerp(CAMx.to.pos,k);nuL.lerp(CAMx.to.look,k)}}
   const from={pos:arr(c.pos,nuP||cam.position.clone()),look:arr(c.look,c.pos?null:nuL)};if(!from.look){cam.getWorldDirection(v1);from.look=cam.position.clone().add(v1.multiplyScalar(10))}
   const to=c.to?{pos:arr(c.to.pos,from.pos.clone()),look:arr(c.to.look,from.look.clone())}:null;
-  CAM={from,to,t:c.t||0,e:0,fov:c.fov||null,fov2:c.to&&c.to.fov||null,shake:c.shake||0};if(skip&&to)CAM.e=CAM.t;
-  return to&&c.wacht!==false?CAM.t:0}
+  CAMx={from,to,t:c.t||0,e:0,fov:c.fov||null,fov2:c.to&&c.to.fov||null,shake:c.shake||0,vrij:!!c.vrij};if(skip&&to)CAMx.e=CAMx.t;
+  return to&&c.wacht!==false?CAMx.t:0}
+/* ---------- automatisch kader: geen muur tussen camera en onderwerp, en het hoofd van wie je filmt staat in beeld ---------- */
+// Geldt voor elke cutscène (alle seizoenen). Uit voor één shot met {cam:{…,vrij:true}}.
+const v3=new TH.Vector3(),v4=new TH.Vector3(),kp=new TH.Vector3(),kl=new TH.Vector3(),kl0=new TH.Vector3();
+function blok(x,z,y){const B=G.binnen;if(B&&B.waar&&B.waar()&&x>4000)return B.muurAt?B.muurAt(x,z):false;
+  const M=window.STAD_MAP;if(!M||!M.solid||x>4000)return false;const xi=Math.floor(x),zi=Math.floor(z);if(xi<0||zi<0||xi>=M.W||zi>=M.H)return false;return !!M.solid[zi*M.W+xi]&&y<9}
+function kader(p,l,f){
+  // 1) een muur of gevel tussen camera en onderwerp: eerst om het onderwerp heen draaien (zelfde hoogte) tot er vrij zicht is;
+  //    lukt dat niet, dan schuift de camera naar voren tot vlak voor de muur. De gekozen draaiing blijft het hele shot gelijk.
+  const dx=p.x-l.x,dz=p.z-l.z,dh=Math.hypot(dx,dz);
+  const vrijTot=(x,z,y,D)=>{const ux=(x-l.x)/D,uz=(z-l.z)/D;for(let s=.55;s<=D;s+=.12){if(blok(l.x+ux*s,l.z+uz*s,l.y+(y-l.y)*(s/D)))return s}return 0};
+  if(dh>.9&&!blok(l.x,l.z,l.y)){const b0=vrijTot(p.x,p.z,p.y,dh),a0=Math.atan2(dx,dz),sh=CAMx||{};
+    const probeer=(da,fk)=>{const D=dh*fk;if(D<=.9)return false;const x=l.x+Math.sin(a0+da)*D,z=l.z+Math.cos(a0+da)*D;if(vrijTot(x,z,p.y,D))return false;p.set(x,p.y,z);return true};
+    if(b0){let ok=sh._om&&probeer(sh._om[0],sh._om[1]);
+      if(!ok)zoek:for(const fk of [1,.82,.66])for(const da of [.3,-.3,.6,-.6,.9,-.9,1.25,-1.25,1.6,-1.6,2.1,-2.1,2.7,-2.7]){if(probeer(da,fk)){sh._om=[da,fk];ok=true;break zoek}}
+      if(!ok){const k=Math.max(.6,b0-.4)/dh;p.set(l.x+dx*k,l.y+(p.y-l.y)*k,l.z+dz*k)}}
+}
+  // 2) wie gefilmd wordt (een acteur bij het kijkpunt): niet in zijn hoofd, en het hoofd helemaal in beeld
+  let best=null,bd=.8;for(const id in ACT){const a=ACT[id];if(!a||!a.g||!a.g.parent||a.g.visible===false)continue;const d=Math.hypot(a.x-l.x,a.z-l.z);if(d<bd){bd=d;best=a}}
+  if(!best||!best.P||!best.P.head)return;best.P.head.getWorldPosition(v4);const sc=best.schaal||1,face=v4.y+.35*sc,top=v4.y+.78*sc;
+  if(l.y>face+.4||l.y<.95)return;   // bewust boven het hoofd, of een close-up van handen, fiets of telefoon
+  // 3) iemand anders staat met zijn hoofd tussen de camera en dit gezicht: eerst een stukje om het gezicht heen draaien
+  //    (zelfde afstand en hoogte, het hele shot dezelfde kant op); lukt dat niet, dan kijkt de camera over hem heen
+  const fx_=v4.x,fz_=v4.z;
+  const hoofdOpLijn=(px,py,pz,grens)=>{for(const id in ACT){const o=ACT[id];if(!o||o===best||!o.g||!o.g.parent||o.g.visible===false||!o.P||!o.P.head)continue;
+      o.P.head.getWorldPosition(kl0);const hy=kl0.y+.45*(o.schaal||1);
+      const sx=fx_-px,sy=face-py,sz=fz_-pz,L2=sx*sx+sy*sy+sz*sz;if(L2<.01)continue;const u=((kl0.x-px)*sx+(hy-py)*sy+(kl0.z-pz)*sz)/L2;if(u<=.02||u>=.9)continue;
+      const qx=px+sx*u-kl0.x,qy=py+sy*u-hy,qz=pz+sz*u-kl0.z;if(Math.hypot(qx,qy,qz)<grens)return o}return null};
+  const zichtVrij=(x,z,y)=>{const D=Math.hypot(x-fx_,z-fz_);if(D<.5)return true;for(let s=.45;s<=D+.2;s+=.15){if(blok(fx_+(x-fx_)/D*s,fz_+(z-fz_)/D*s,face+(y-face)*(s/D)))return false}return true};
+  if(hoofdOpLijn(p.x,p.y,p.z,.6)){const sh=CAMx||{},a0=Math.atan2(p.x-fx_,p.z-fz_),D=Math.hypot(p.x-fx_,p.z-fz_);let ok=false;
+    const probeer=da=>{const x=fx_+Math.sin(a0+da)*D,z=fz_+Math.cos(a0+da)*D;if(hoofdOpLijn(x,p.y,z,.62)||!zichtVrij(x,z,p.y))return false;p.x=x;p.z=z;return true};
+    if(sh._kb!=null)ok=probeer(sh._kb);
+    if(!ok)for(const da of [.3,-.3,.55,-.55,.8,-.8,1.1,-1.1]){if(probeer(da)){sh._kb=da;ok=true;break}}
+    if(!ok){const o=hoofdOpLijn(p.x,p.y,p.z,.6);if(o){o.P.head.getWorldPosition(kl0);const nh=kl0.y+1.05*(o.schaal||1);if(p.y<nh)p.y=nh}}}
+  else{const o=hoofdOpLijn(p.x,p.y,p.z,.75);if(o){o.P.head.getWorldPosition(kl0);const nh=kl0.y+.95*(o.schaal||1);if(p.y<nh)p.y=nh}}
+  // 4) niet onder de kin en niet in het gezicht: de camera minstens op kinhoogte en (als er ruimte is) ~1,9 m van het gezicht.
+  //    De poppetjes zijn groot (gezicht ±2,1 m staand, ±1,8 m zittend); een camera op 1,4 m filmt anders alleen mond en borst.
+  {let hx=p.x-v4.x,hz=p.z-v4.z,hh=Math.hypot(hx,hz);
+   if(hh<3.2&&p.y<face-.1)p.y=face-.1;
+   const MIN=1.9*(innerWidth<innerHeight?.85:1);
+   if(hh<MIN){if(hh<1e-3){hx=Math.sin(best.ry||0);hz=Math.cos(best.ry||0);hh=1}const ux=hx/hh,uz=hz/hh;let ok=hh;
+     for(let s=hh;s<=MIN+1e-6;s+=.1){if(blok(v4.x+ux*(s+.25),v4.z+uz*(s+.25),p.y))break;ok=s}
+     if(ok>hh){p.x=v4.x+ux*ok;p.z=v4.z+uz*ok}}
+   if(l.y<face-.45)l.y=face-.45}
+  {const B=G.binnen,w=B&&B.waar&&B.waar();if(w&&p.x>4000&&B.plafond){const pf=B.plafond(w);if(pf&&p.y>pf-.25)p.y=pf-.25}}   // niet door het plafond
+  const dhl=Math.max(.3,Math.hypot(l.x-p.x,l.z-p.z)),hd=Math.max(.3,Math.hypot(v4.x-p.x,v4.z-p.z)),half=f*Math.PI/360;
+  const pitch=Math.atan2(l.y-p.y,dhl),need=Math.atan2(top-p.y,hd)-Math.atan(.68*Math.tan(half));
+  if(pitch<need)l.y=p.y+dhl*Math.tan(Math.min(need,1.25))}
 // eigen camerarig: G.binnen roept dit als eerste aan (ook buiten interieurs)
-CUT.rig=function(dt,cam){if(!active||!CAM)return false;let p,l;
+CUT.rig=function(dt,cam){
+  // tussen twee scènes ({blijf:true}) blijft het laatste shot nog even staan, zodat de spelcamera niet heel even in beeld flitst
+  let CAM=CAMx;if(!active){if(vorigeCam&&!vorigeCam.los&&performance.now()-vorigeCam.t<450)CAM=vorigeCam.cam;else{if(vorigeCam)vorigeCam.los=1;return false}}
+  if(!CAM)return false;let p,l;
   if(CAM.volg){const a=acteur(CAM.volg)||(CAM.volg==='luca'?{x:G.P.x,z:G.P.z,ry:G.P.ry,y:0}:null);if(!a)return false;const s=sin(a.ry),c=cos(a.ry),o=CAM.af,k=CAM.kijk;
     v1.set(a.x+s*o[2]+c*o[0],(a.y||0)+o[1],a.z+c*o[2]-s*o[0]);CAM.pos.lerp(v1,Math.min(1,dt*4));p=CAM.pos;v2.set(a.x+s*k[2]+c*k[0],(a.y||0)+k[1],a.z+c*k[2]-s*k[0]);l=v2}
   else{CAM.e=Math.min(CAM.t,CAM.e+dt);const k=CAM.to&&CAM.t>0?ease(CAM.e/CAM.t):(CAM.to?1:0);p=v1.copy(CAM.from.pos);l=v2.copy(CAM.from.look);if(CAM.to){p.lerp(CAM.to.pos,k);l.lerp(CAM.to.look,k)}}
+  const asp=innerWidth/innerHeight,f0=CAM.fov||(asp<1?62:42);let f=f0;if(CAM.fov2&&CAM.t>0)f=f0+(CAM.fov2-f0)*ease(CAM.e/CAM.t);
+  if(!CAM.vrij){kp.copy(p);kl.copy(l);try{kader(kp,kl,f)}catch(e){}p=kp;l=kl}
   cam.position.copy(p);if(CAM.shake){cam.position.x+=(Math.random()-.5)*CAM.shake;cam.position.y+=(Math.random()-.5)*CAM.shake}cam.lookAt(l);
-  const asp=innerWidth/innerHeight,f0=CAM.fov||(asp<1?62:42);let f=f0;if(CAM.fov2&&CAM.t>0)f=f0+(CAM.fov2-f0)*ease(CAM.e/CAM.t);if(Math.abs(cam.fov-f)>.01){cam.fov=f;cam.updateProjectionMatrix()}
+  if(Math.abs(cam.fov-f)>.01){cam.fov=f;cam.updateProjectionMatrix()}
   G.shadowC={x:l.x,z:l.z};return true};
 // zonder eigen binnen-rig (geen stad-binnen.js): zelf aanhaken
 setTimeout(function hk(){if(!G.ready||!G.camRig){setTimeout(hk,200);return}if(G.binnen&&G.binnen.rigHooked)return;const r0=G.camRig;G.camRig=(dt,cam)=>CUT.rig(dt,cam)||r0(dt,cam);CUT._own=1},900);
@@ -267,7 +319,7 @@ async function stap(s){if(!s)return;
   if(s.actor){const at=s.at||[0,0];const a=CUT.zet(s.actor,at[0],at[1],s.ry!=null?s.ry:0,s);if(s.prop)a.prop(s.prop);if(s.dozen!=null)a.dozen(s.dozen);if(s.naar)a.kijkNaar(s.naar);if(s.kijk!=null)a.kijk=s.kijk;return}
   if(s.move){const a=acteur(s.move);if(!a)return;const to=s.to||[a.x,a.z];if(skip){a.zet(to[0],to[1]);if(s.anim&&s.anim!=='walk'&&s.anim!=='run')a.doe(s.anim);return}
     const pr=a.loop(to[0],to[1],{t:s.t,run:s.anim==='run',anim:s.anim==='carry'?'carry':(s.na||null)});if(s.wacht===false)return;await Promise.race([pr,new Promise(r=>WAITS.add(r))]);if(skip)a.zet(to[0],to[1]);if(s.na)a.doe(s.na);return}
-  if(s.anim){const a=acteur(s.anim);if(!a)return;if(s.a)a.doe(s.a,s);if(s.ry!=null)a.draai(s.ry);if(s.naar!==undefined)a.kijkNaar(s.naar);if(s.prop!==undefined)a.prop(s.prop);if(s.dozen!=null)a.dozen(s.dozen);if(s.t)await wacht(s.t);return}
+  if(s.anim){const a=acteur(s.anim);if(!a)return;if(s.a)a.doe(s.a,s);if(s.ry!=null){if(s.naar===undefined)a.naar=null;a.draai(s.ry)}if(s.naar!==undefined)a.kijkNaar(s.naar);if(s.prop!==undefined)a.prop(s.prop);if(s.dozen!=null)a.dozen(s.dozen);if(s.t)await wacht(s.t);return}
   if(s.say!==undefined){await zeg(s.say,s.text,s);return}
   if(s.keuze){await keuze(s);return}
   if(s.fade){await fadeTo(s.fade==='out'?1:0,s.t);return}
@@ -298,7 +350,7 @@ function keuze(s){skip=false;const sub=$s('svSub');sub.hidden=false;sub.classLis
 CUT.play=async function(script,o){o=o||{};while(running)await running;let rel;running=new Promise(r=>rel=r);
   active=true;skip=false;spelerVerborgen=!!o.zonderSpeler;
   // volgt deze scène direct op een scène met {blijf:true}? dan blijft de camera waar hij was (geen flits van de spelcamera)
-  if(vorigeCam&&performance.now()-vorigeCam.t<2000)CAM=vorigeCam.cam;vorigeCam=null;ui.hidden=false;document.body.classList.add('sv-incut');G.talking=true;G.story&&G.story.klokPauze&&G.story.klokPauze(true);
+  if(vorigeCam&&!vorigeCam.los)CAMx=vorigeCam.cam;vorigeCam=null;ui.hidden=false;document.body.classList.add('sv-incut');G.talking=true;G.story&&G.story.klokPauze&&G.story.klokPauze(true);
   if(G.kit.dialogOpen&&G.kit.dialogOpen())G.kit.closeDialog(true);if(G.phone&&G.phone.isOpen&&G.phone.isOpen())G.phone.close();
   const hq=Object.assign({},CUT.hq,o.hq||{});if(hq.pix){pixWas=G.pixPref;G.pixPref=hq.pix;G.resize&&G.resize()}
   CUT.onStart.forEach(f=>{try{f(o)}catch(e){}});
@@ -308,7 +360,7 @@ CUT.play=async function(script,o){o=o||{};while(running)await running;let rel;ru
   // afronden
   $s('svSub').hidden=true;$s('svTitel').hidden=true;keuzeOpen=null;advance=null;
   if(!o.blijfZwart)await fadeTo(0,.01);
-  if(!o.blijf)CUT.allesWeg(false);vorigeCam=o.blijf&&CAM?{cam:CAM,t:performance.now()}:null;CAM=null;setDroom(false);spelerVerborgen=false;
+  if(!o.blijf)CUT.allesWeg(false);vorigeCam=o.blijf&&CAMx?{cam:CAMx,t:performance.now()}:null;CAMx=null;setDroom(false);spelerVerborgen=false;
   ui.classList.remove('on');active=false;skip=false;ui.hidden=!o.blijfZwart;document.body.classList.remove('sv-incut');G.talking=false;G.frozen=0;G.story&&G.story.klokPauze&&G.story.klokPauze(false);
   if(hq.pix){G.pixPref=pixWas;G.resize&&G.resize()}
   G.spelerWeg=false;const av=G.avatarObj&&G.avatarObj();if(av)av.visible=true;
