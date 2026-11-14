@@ -415,7 +415,7 @@ BN.add('klas',{naam:'Westbuurt College',kleur:'#a9dcff',w:15,h:12,plafond:3.2,ho
 
 /* =================== RIJTJESHUIS (Oud-Zuid, avond 4) =================== */
 BN.add('rijtjeshuis',{naam:'Rijtjeshuis',kleur:'#ff6a5a',w:12,h:11,plafond:2.7,hoger:1.0,deur:{x:2.0,z:10.0},spawn:{x:2.0,z:9.4,ry:Math.PI},anker:anker('rijtjeshuis'),ankerId:'rijtjeshuis',deurTxt:'Aanbellen',
-  licht:{bg:'#060508',hemi:'#8a8070',grond:'#2a2018',int:.6,zon:.2,zonKleur:'#ffd8a0',gloed:.4,vig:.62,sat:1.0,tint:[1.04,.98,.92]},cam:{k:.36},
+  licht:{bg:'#060508',hemi:'#9a9080',grond:'#2a2018',int:.85,zon:.3,zonKleur:'#ffd8a0',gloed:.5,vig:.55,sat:1.0,tint:[1.04,.98,.92]},cam:{k:.36},
   bouw(B){const T=B.tex,H=2.7;const beh=T.behang('#7a6a4a','#6a5a3a'),hout=T.parket('#6a4a2a'),gang=T.planken('#5a4030');
     B.vloer(1,1,11,7.4,hout,2);B.vloer(1,7.4,4,10.2,gang,2);B.vloer(4,7.4,11,10.2,hout,2);
     const wN=B.muur(.6,.6,11.4,1,{h:H,tex:beh}),wW=B.muur(.6,.6,1,10.6,{h:H,tex:beh}),wE=B.muur(11,.6,11.4,10.6,{h:H,tex:beh}),wS1=B.muur(.6,10.2,1.4,10.6,{h:H,tex:beh}),wS2=B.muur(2.6,10.2,11.4,10.6,{h:H,tex:beh});

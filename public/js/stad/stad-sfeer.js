@@ -339,7 +339,8 @@ const wait=setInterval(()=>{if(!G.ready||!G.post)return;clearInterval(wait);
   try{setupSky();setupBirds();setupCats();setupBoats();setupUmb()}catch(e){console.error(e)}
   G.applyLight&&G.applyLight();
   // in het verhaal pas na een tel, en niet als er meteen een cutscène begint of je binnen staat
-  if(G.story&&G.story.pagina==='verhaal')setTimeout(()=>{if(!(G.cut&&G.cut.active&&G.cut.active())&&!(G.binnen&&G.binnen.waar&&G.binnen.waar())&&!document.body.classList.contains('sv-incut'))titleCard()},1500);else titleCard();
+  // in het verhaal geen titelkaart (het verhaal heeft zijn eigen titels, en er begint vaak meteen een cutscène)
+  if(!(G.story&&G.story.pagina==='verhaal'))titleCard();
   const f=G.onFrame;G.onFrame=dt=>{f&&f(dt);if(G.paused)return;const ts=performance.now()/1000;try{skyStep(dt,ts);flashStep(dt);puffStep(dt);birdStep(dt,ts);catStep(dt,ts);boatStep(dt,ts);ambStep(dt);umbStep();
     if(performance.now()-slowT>1200){slowT=performance.now();volkStep();strandStep()}}catch(e){if(!G._sfErr){G._sfErr=1;console.error(e)}}}},220);
 })();

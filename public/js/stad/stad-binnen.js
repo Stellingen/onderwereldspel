@@ -219,7 +219,9 @@ function frame(dt){if(!inside){if(B0.dicht){B0.dicht=false;if(!(G.cut&&G.cut.act
   // camera vlak achter je hoofd (klem tegen een muur): je poppetje even niet tekenen
   if(!(G.cut&&G.cut.active()))G.spelerWeg=G.camMode==='achter'&&!!B0.dicht;const t=performance.now()/1000;
   // muren aan de kant van de camera laten zakken (alleen bovenaf), plafond alleen als je niet van boven kijkt
-  const boven=G.camMode==='boven'||(G.cut&&G.cut.active()&&false);const cam=G.camera().position,P=G.P,ox=S.d.o.x,oz=S.d.o.z;
+  // in een cutscène nooit muren laten zakken of het plafond weghalen: de camera staat dan in de kamer, en anders kijk je
+  // door een weggehaalde muur of plafond de zwarte leegte of de lucht in
+  const boven=G.camMode==='boven'&&!(G.cut&&G.cut.active());const cam=G.camera().position,P=G.P,ox=S.d.o.x,oz=S.d.o.z;
   S.walls.forEach(w=>{let cut=false;if(boven&&!w.nooit){const cx=ox+w.c.x,cz=oz+w.c.z;
       const nx=w.ax==='x'?0:1,nz=w.ax==='x'?1:0,s1=(cam.x-cx)*nx+(cam.z-cz)*nz,s2=(P.x-cx)*nx+(P.z-cz)*nz;cut=s1*s2<0&&Math.abs(s2)<(w.bereik||11)&&(w.ax==='x'?(P.x>ox+w.x0-5&&P.x<ox+w.x1+5):(P.z>oz+w.z0-5&&P.z<oz+w.z1+5))}
     if(cut!==w.cut){w.cut=cut;w.m.visible=!cut;w.st.visible=cut;w.cap.visible=cut;w.extra.forEach(e=>{e.visible=!cut})}});

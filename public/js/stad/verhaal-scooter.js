@@ -31,12 +31,16 @@ function wissel(ty){if(!G.fiets)return false;if(G.fiets.actief()){G.toast&&G.toa
   return true}
 
 /* =================== het aanbod van Giovanni =================== */
-function castErbij(){const CA=C.actors;if(CA.salvo)return;const g=C.look&&C.look('giovanni');
-  CA.salvo={n:'Salvo',col:'#7fd1ff',rol:'Rijschool Salvo',look:Object.assign({},g||{},{hair:'#2a2420',hs:'kort',fh:'stoppels',mood:'blij',top:{kind:'jacket',c:'#1f3a5a',c2:'#e8e4da'},legs:{kind:'jeans',c:'#2c3a4d'}}),
-    face:{skin:'#d9a27a',hair:'#2a2420',hs:'kort',fh:'stoppels',eye:'#3a2a1a',top:'#1f3a5a',col:'jas',age:1,fw:18,jaw:'hoekig'}}}
+// Salvo, de neef van Giovanni met de rijschool: een eigen look (in de cast van stad-leeftijd.js, anders lijkt hij op Giovanni)
+function castErbij(){const CA=C.actors;
+  try{const U=G.uiterlijk;if(U&&U.CAST&&!U.CAST.salvo)U.CAST.salvo={n:'Salvo',col:'#7fd1ff',rol:'Rijschool Salvo',born:1983,skin:'#c98e62',eye:'#3a2a1a',hair:'#16161a',hs:'kort',fh:'kortbaard',mood:'blij',fw:18,jaw:'hoekig',h:1.02,w:1.04,
+    kl:{std:{k:'jack',c:'#1f4f8a',c2:'#f2c230',b:'jeans',bc:'#2c3a4d',s:'sneaker',sc:'#e8e4da',s2:'#1f4f8a'}}}}catch(e){}
+  if(CA.salvo)return;
+  CA.salvo={n:'Salvo',col:'#7fd1ff',rol:'Rijschool Salvo',look:{skin:'#c98e62',hair:'#16161a',hs:'kort',fh:'baard',eye:'#3a2a1a',mood:'blij',top:{kind:'jacket',c:'#1f4f8a',c2:'#f2c230'},legs:{kind:'jeans',c:'#2c3a4d'},shoes:{kind:'sneaker',c:'#e8e4da',c2:'#1f4f8a'}},
+    face:{skin:'#c98e62',hair:'#16161a',hs:'kort',fh:'baard',eye:'#3a2a1a',top:'#1f4f8a',col:'jas',age:1,fw:18,jaw:'hoekig'}}}
 let bezig=false;
 // o.plek: {x,z} waar de scooter staat (voor de zaak); speelt het gesprek en geeft de keuze terug
-async function aanbod(o){o=o||{};if(bezig)return null;bezig=true;try{return await aanbod2(o)}finally{bezig=false}}
+async function aanbod(o){o=o||{};if(bezig||F('scooter_aanbod'))return null;bezig=true;try{return await aanbod2(o)}finally{bezig=false}}
 async function aanbod2(o){castErbij();const l=L.P(),n=L.A('napoli',419,492);
   const sp=L.walk(l.x+2.2,l.z+1.4,4),gp=L.walk(sp.x+1.4,sp.z-1.2,3);const sc=G.scooterModel?G.scooterModel({kleur:'#c62a22'}):L.scooter('#c62a22');
   sc.position.set(sp.x,0,sp.z);sc.rotation.y=L.naar(sp,l)+PI/2;G.scene().add(sc);
@@ -46,7 +50,7 @@ async function aanbod2(o){castErbij();const l=L.P(),n=L.A('napoli',419,492);
     {say:'giovanni',text:'Ragazzo! Kijk eens. Mario\'s scooter. Nieuwe band, nieuwe ketting. Hij loopt als een zonnetje.',t:3.4,mood:'blij'},
     {anim:'giovanni',a:'point',naar:[sp.x,sp.z]},
     {say:'giovanni',text:'Mario komt niet meer terug. Met die scooter rijd je twee keer zoveel ritten. Meer fooi.',t:3.2},
-    L.rond(l.x,l.z,L.naar(l,gp)+PI*.8,2.6,1.6,1.4),
+    L.rond(l.x,l.z,L.naar(l,gp)+1.1,3.0,1.75,1.5),
     {say:'luca',text:'Ik heb geen rijbewijs, Giovanni.',t:2},
     {anim:'giovanni',a:'talk'},
     {say:'giovanni',text:'Mijn neef Salvo heeft een rijschool. Spoedcursus: theorie, één les, examen. Vijftienhonderd euro.',t:3.6},
@@ -81,7 +85,7 @@ async function examen(o){o=o||{};castErbij();const vr=[
   // Salvo komt naar je toe (met zijn lesscooter): de vragen worden buiten gesteld, in beeld (geen zwart scherm)
   const l=L.P(),fx=Math.sin(l.ry||0),fz=Math.cos(l.ry||0),sp=L.walk(l.x+fx*2.1-fz*.6,l.z+fz*2.1+fx*.6,3),ls=L.walk(sp.x-fz*1.8,sp.z+fx*1.8,3);
   const les=G.scooterModel?G.scooterModel({kleur:'#2a6ac0'}):L.scooter('#2a6ac0');les.position.set(ls.x,0,ls.z);les.rotation.y=L.naar(ls,l)+PI/2;G.scene().add(les);
-  const opSalvo=L.rond(sp.x,sp.z,L.naar(sp,l)+.75,3.3,1.75,1.4),opLuca=L.rond(l.x,l.z,L.naar(l,sp)-.8,3,1.7,1.4);
+  const opSalvo=L.rond(sp.x,sp.z,L.naar(sp,l)+.75,3.3,1.75,1.4),opLuca=L.rond(l.x,l.z,L.naar(l,sp)-1.15,3.1,1.75,1.5);
   await C.play([{fade:'out',t:.3},{speler:false},{actor:'luca',at:[l.x,l.z],ry:L.naar(l,sp)},{actor:'salvo',at:[sp.x,sp.z],ry:L.naar(sp,l),anim:'idle'},
     opSalvo,{fade:'in',t:.4},{titel:'Rijschool Salvo',sub:'Spoedcursus scooter',t:2.2},
     {anim:'salvo',a:'talk'},{say:'salvo',text:'Zo. Jij bent Luca? Giovanni zegt dat je snel bent. Drie vragen, één rondje, en je bent klaar.',t:3.6,mood:'blij'}],{blijf:true});

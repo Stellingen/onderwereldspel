@@ -277,7 +277,7 @@ async function mInval(t){const S=L.A('sahara',655,909);L.F('inval',1);L.zorgFiet
 async function mLekker(t){const S=L.A('sahara',655,909);if(!await doelNaar('Rafiq wil je zien in Sahara',S,8))return;await L.binnen('sahara');if(t!==RUN)return;
   const rp=L.W('sahara',6.4,2.2),lp=L.W('sahara',6.4,4.6),z=L.F('envelop');
   const r=await C.play([{speler:false},{actor:'rafiq',at:rp,ry:0,anim:'sit',sitY:-.45},{actor:'luca',at:lp,ry:PI},{fn:()=>['rafiq','luca'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},
-   L.cam(...L.W3('sahara',10.4,2.3,3.6),...L.W3('sahara',6.4,1.6,3.4)),{fade:'in',t:.5},
+   L.cam(...L.W3('sahara',10.2,2.4,5.6),...L.W3('sahara',6.4,1.6,3.2)),{fade:'in',t:.5},
    {say:'rafiq',text:'Ray’s mensen waren laatst in Oud-Zuid. Een rijtjeshuis. Een pizzajongen. Dat ben jij, toch?',t:3.6,mood:'koel'},
    ...(L.F('rafiq_weet')?[{say:'rafiq',text:'Je zei het zelf al. Goed. Nu wil ik weten wat je hém hebt verteld.',t:3}]:[]),
    {keuze:z==='gelogen'?[{t:'"Ik gaf ze een verkeerde naam. Teun, uit de haven."',id:'teun'},{t:'"Niks. Ik heb niks gezegd."',id:'niks'}]:[{t:'"Niks. Ik heb gezwegen. Hij gaf me zijn nummer."',id:'eerlijk'},{t:'"Niks. Ze lieten me gewoon gaan."',id:'lieg'}],wie:'luca',text:'Rafiq kijkt je aan zonder te knipperen.'}],{blijf:true});
