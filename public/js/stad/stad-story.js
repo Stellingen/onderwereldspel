@@ -110,7 +110,9 @@ let resumed=false;
 // herstel: door een dubbele stapnaam ('h2_dex') kon je midden in Seizoen 1 in een stap van Seizoen 2 of 3 belanden.
 // Wie Seizoen 1 nog niet uit heeft maar in een latere stap staat, gaat terug naar Dex op de hoek (avond 2).
 const LATER=['h2_start','h2_dag','h2_dexvast','h2_slot','h2_vrij','h3_start','h3_voorraad','h3_hoek1','h3_crew','h3_hoek2','h3_giulia','h3_nova','h3_slot','h3_hugo','h3_vrij','h3_wacht'];
-function herstel(s){if(s&&!(s.flags&&s.flags.h1_klaar)&&LATER.includes(s.step)){s.ch=1;s.step='h1_dexhoek';try{sv()}catch(e){}}}
+function herstel(s){if(s&&!(s.flags&&s.flags.h1_klaar)&&LATER.includes(s.step)){s.ch=1;s.step='h1_dexhoek';try{sv()}catch(e){}}
+  // Seizoen 3 al uitgespeeld vóór de nieuwe finale (Hugo Lindeboom)? Dan alsnog het nieuwe slot: Dex, Ray en Damstraat 35
+  if(s&&s.step==='h3_vrij'&&s.flags&&s.flags.h3_klaar&&!s.flags.hugo&&!s.flags.hugo_finale_aangeboden){s.flags.hugo_finale_aangeboden=1;s.step='h3_slot';try{sv()}catch(e){}}}
 function resume(){if(resumed)return;const s=st();herstel(s);if(!STEPS[s.step])return;resumed=true;ST.goto(s.step,{hervat:true})}
 
 /* ---------- doelregel en route ---------- */

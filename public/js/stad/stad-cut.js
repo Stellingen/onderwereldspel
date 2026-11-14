@@ -109,7 +109,9 @@ const PROP={envelop:()=>K.model([[.32,.03,.2,0,0,.1,'#e8dcc0'],[.32,.032,.06,0,.
   sleutel:()=>K.model([[.05,.12,.02,0,0,.08,'#d6a63e']]),
   pakket:()=>K.model([[.22,.14,.18,0,0,.1,'#c9cfd6'],[.23,.02,.19,0,.02,.1,'#8a8c90']]),
   pistool:()=>K.model([[.07,.07,.26,0,.03,.14,'#16161a'],[.06,.14,.07,0,-.05,.04,'#232327'],[.02,.02,.06,0,.06,.29,'#3a3d44']]),
-  schijf:()=>K.model([[.16,.03,.11,0,0,.1,'#2a2c30'],[.1,.031,.02,0,.001,.05,'#c9cfd6']])};
+  schijf:()=>K.model([[.16,.03,.11,0,0,.1,'#2a2c30'],[.1,.031,.02,0,.001,.05,'#c9cfd6']]),
+  // spiegelreflexcamera met lange lens (de man aan de overkant)
+  camera:()=>K.model([[.2,.14,.12,0,.03,.08,'#1c1d21'],[.09,.09,.2,0,.04,.24,'#2a2c30'],[.07,.07,.02,0,.04,.345,'#5a7a9a',1],[.05,.04,.05,-.06,.12,.06,'#2a2c30']])};
 
 /* =================== animaties =================== */
 // per poppetje een doelhouding per frame; de onderdelen bewegen er soepel naartoe (zelfde assen als stad-avatar.js)
@@ -403,9 +405,9 @@ CUT.play=async function(script,o){o=o||{};while(running)await running;let rel;ru
 // na een scène buiten, camera van boven: staat er vlak achter je een gebouw tussen camera en Luca, draai dan de
 // kleinste stap naar een kant met vrij zicht (de straat), in plaats van over het dak met een doorkijkgat
 function vrijeKant(){if(G.camMode!=='boven'||(G.binnen&&G.binnen.waar()))return;const M=window.STAD_MAP,P=G.P;if(!M||!M.solid||P.x>4000)return;
-  const vrij=a=>{for(let d=1.5;d<=11;d+=.75){const x=Math.floor(P.x+Math.sin(a)*d),z=Math.floor(P.z+Math.cos(a)*d);if(x<0||z<0||x>=M.W||z>=M.H)return d;if(M.solid[z*M.W+x]===1)return d}return 99};
-  const y0=G.yawT!=null?G.yawT:G.yaw;if(vrij(y0)>=11)return;let best=null,bd=0;
-  for(let i=1;i<=8&&best==null;i++)for(const sg of[1,-1]){const a=y0+sg*i*Math.PI/8,d=vrij(a);if(d>=11){best=a;break}if(d>bd){bd=d}}
+  const vrij=a=>{for(let d=1.5;d<=22;d+=.75){const x=Math.floor(P.x+Math.sin(a)*d),z=Math.floor(P.z+Math.cos(a)*d);if(x<0||z<0||x>=M.W||z>=M.H)return d;if(M.solid[z*M.W+x]===1)return d}return 99};
+  const y0=G.yawT!=null?G.yawT:G.yaw;if(vrij(y0)>=22)return;let best=null,bd=0;
+  for(let i=1;i<=8&&best==null;i++)for(const sg of[1,-1]){const a=y0+sg*i*Math.PI/8,d=vrij(a);if(d>=22){best=a;break}if(d>bd){bd=d}}
   if(best==null){for(let i=1;i<16;i++){const a=y0+i*Math.PI/8;if(vrij(a)>=bd){best=a;break}}}
   if(best!=null){G.yawT=G.yaw=best;if(G.camC)G.camC.init=false}}
 CUT.vrijeKant=vrijeKant;

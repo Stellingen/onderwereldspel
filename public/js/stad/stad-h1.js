@@ -871,16 +871,26 @@ stap('h4_einde',{muziek:'ray',async start(o){const t=nieuw();await buiten();if(t
    {weg:'ray'},{weg:'bakker'},
    // thuis: Giulia is nog op. Er stond een man voor de deur.
    {binnen:'thuis'},{fn:()=>['marco','giulia','elena'].forEach(k=>{try{B.toon('thuis',k,false)}catch(e){}})},
-   {actor:'giulia',at:W('thuis',3.6,6.25),ry:PI,anim:'sit',sitY:-.4},{actor:'luca',at:W('thuis',5.1,7.1),ry:naar({x:5.1,z:7.1},{x:3.6,z:6.25})},
+   {actor:'giulia',at:W('thuis',3.6,6.25),ry:PI,anim:'sit',sitY:-.4},{actor:'luca',at:W('thuis',5.0,4.6),ry:naar({x:5.0,z:4.6},{x:3.6,z:6.25})},
    {fn:()=>['giulia','luca'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},
-   cam(...W3('thuis',5.6,3.0,3.2),...W3('thuis',4.35,1.9,6.7)),{fade:'in',t:.7},
+   cam(...W3('thuis',6.7,2.9,3.3),...W3('thuis',4.1,1.9,5.7)),{fade:'in',t:.7},
    {say:null,text:'Thuis. Alleen het licht van de tv. Giulia zit nog op de bank, haar knieën opgetrokken.',t:3},
    {anim:'giulia',a:'idle',naar:'luca'},{say:'giulia',text:'Luca? Er stond net een man voor de deur. Hij vroeg naar jou.',t:3,mood:'bang'},
    {say:'luca',text:'Wat voor man?',t:1.4},
    {say:'giulia',text:'Bril. Heel aardig. Hij had zo’n grote camera om zijn nek.',t:3},
    {say:'giulia',text:'Hij zei: “Zeg maar tegen Luca dat ik hem heb gezien.”',t:3.4,mood:'bang'},
-   {anim:'luca',a:'idle',prop:'telefoon'},rond(...W('thuis',5.1,7.1),naar({x:5.1,z:7.1},{x:3.6,z:6.25})-.9,2.3,2.3,2.0),{say:null,text:'Luca kijkt naar zijn telefoon. Naar de foto van vanavond. Hij doet de voordeur op slot. Twee keer.',t:3.6},
-   {fade:'out',t:1},{titel:'Seizoen 2',sub:G.h2&&G.h2.live&&G.h2.live()?'Twee bazen':'Coming soon · Wie is de man met de camera?',t:3.8},
+   {anim:'luca',a:'idle',prop:'telefoon'},rond(...W('thuis',5.0,4.6),naar({x:5.0,z:4.6},{x:3.6,z:6.25})+.9,2.3,2.3,2.0),{say:null,text:'Luca kijkt naar zijn telefoon. Naar de foto van vanavond. Hij doet de voordeur op slot. Twee keer.',t:3.6},
+   {fade:'out',t:1},{weg:'giulia'},{weg:'luca'},
+   // buiten, aan de overkant: de man met de camera. Hij kijkt omhoog naar het raam van de flat. Klik.
+   ...(()=>{const th=A('thuis',198,483),f=B.gevel&&B.gevel('thuis'),nx=f?f.nx:0,nz=f?f.nz:1,hp=walk(th.x+nx*15,th.z+nz*15,6),ry=Math.atan2(th.x-hp.x,th.z-hp.z),
+      bx=hp.x-Math.sin(ry)*1.9+Math.cos(ry)*.9,bz=hp.z-Math.cos(ry)*1.9-Math.sin(ry)*.9;
+     return [{buiten:true},{speler:false},{fn:()=>tijd(0,40)},{actor:'hugo',at:[hp.x,hp.z],ry,anim:'point',prop:'camera'},
+      cam(bx,2.9,bz,th.x,5.5,th.z,{vrij:true}),{fade:'in',t:1.2},camNaar(bx+Math.sin(ry)*.6,2.8,bz+Math.cos(ry)*.6,th.x,6.2,th.z,5,{wacht:false,vrij:true}),
+      {say:null,text:'Aan de overkant van de straat staat een man met een bril. Hij kijkt naar het raam op de derde verdieping.',t:3.8},
+      {snd:'click'},{fn:()=>{css();const fl=document.createElement('div');fl.className='h1-flits';document.body.appendChild(fl);setTimeout(()=>fl.remove(),600)}},{wait:.7},
+      {snd:'click'},{fn:()=>{const fl=document.createElement('div');fl.className='h1-flits';document.body.appendChild(fl);setTimeout(()=>fl.remove(),600)}},
+      rond(hp.x,hp.z,ry+.7,2.4,2.3,2.2),{anim:'hugo',a:'idle',prop:'camera'},{say:null,text:'Hij laat zijn camera zakken. Glimlacht. En loopt rustig de nacht in.',t:3.4},
+      {move:'hugo',to:[hp.x+Math.cos(ry)*9,hp.z-Math.sin(ry)*9],t:3,wacht:false},{wait:1.6},{fade:'out',t:1.2},{weg:'hugo'}]})(),{titel:'Seizoen 2',sub:G.h2&&G.h2.live&&G.h2.live()?'Twee bazen':'Coming soon · Wie is de man met de camera?',t:3.8},
    {weg:'giulia'},{weg:'luca'},{fn:()=>['marco','giulia','elena'].forEach(k=>{try{B.toon('thuis',k,true)}catch(e){}})},{speler:true},{fade:'in',t:1}]);
   if(t!==RUN)return;F('h1_klaar',Date.now());if(G.h2&&G.h2.live&&G.h2.live()&&G.h2.mag&&G.h2.mag()){G.h2.begin();return}go('h1_vrij');seizoen2()}});
 

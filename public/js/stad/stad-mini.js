@@ -24,11 +24,14 @@ function close(r,vk,lab){cur=null;G.talking=false;held.tap=false;const hide=()=>
   if(G.vak)hideT=G.vak.finish(mp,'mini',vk,r,hide,lab);else hide()}
 const q=s=>mp.querySelector(s);
 mp.addEventListener('click',e=>{if(e.target.closest('[data-mx]')){cur&&cur.end('cancel');return}const b=e.target.closest('[data-k]');if(b&&cur&&cur.key&&!('tap' in b.dataset))cur.key(b.dataset.k)});
-mp.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-tap]');if(b&&cur){e.preventDefault();held.tap=true;b.classList.add('dn');cur.key&&cur.key(b.dataset.k||'tap')}});
+// het moment van drukken (event.timeStamp), niet het moment waarop de (drukke) pagina eraan toekomt: bij lag telt wat je zag
+let keyT=0,lastPress=0;const nu=()=>{const n=performance.now(),k=keyT||lastPress;return k&&k<=n&&n-k<400?k:n};
+addEventListener('keydown',e=>{if(!e.repeat)lastPress=e.timeStamp||0},true);addEventListener('pointerdown',e=>{lastPress=e.timeStamp||0},true);
+mp.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-tap]');if(b&&cur){e.preventDefault();held.tap=true;b.classList.add('dn');keyT=e.timeStamp||0;cur.key&&cur.key(b.dataset.k||'tap');keyT=0}});
 const up=()=>{held.tap=false;mp.querySelectorAll('.dn').forEach(b=>b.classList.remove('dn'))};addEventListener('pointerup',up);addEventListener('pointercancel',up);
 const MAP={' ':'tap',e:'tap',enter:'tap',arrowleft:'L',arrowup:'U',arrowright:'R',arrowdown:'D',a:'L',w:'U',d:'R',s:'D'};
 addEventListener('keydown',e=>{if(!cur)return;const k=e.key.toLowerCase();if(k==='escape'){e.preventDefault();e.stopImmediatePropagation();cur.end('cancel');return}
-  const m=MAP[k];if(m){e.preventDefault();e.stopImmediatePropagation();if(m==='tap')held.tap=true;if(!e.repeat&&cur.key)cur.key(m)}},true);
+  const m=MAP[k];if(m){e.preventDefault();e.stopImmediatePropagation();if(m==='tap')held.tap=true;if(!e.repeat&&cur.key){keyT=e.timeStamp||0;cur.key(m);keyT=0}}},true);
 addEventListener('keyup',e=>{const m=MAP[e.key.toLowerCase()];if(m==='tap')held.tap=false},true);
 const tapBtn=(t,k)=>`<button class="btn sd-mini-go" data-tap data-k="${k||'tap'}">${touch?'':'<kbd>Spatie</kbd> '}${E(t)}</button>`;
 const ARW={L:'←',U:'↑',R:'→',D:'↓'};
@@ -39,18 +42,18 @@ function pop(el,t,cls){if(!el)return;el.textContent=t;el.className=el.className.
 /* ---------- timing: streepje in het groene vlak ---------- */
 // Beginner: dun groen vlak, snel streepje. Met vakmanschap: breder vlak, trager streepje, een misser extra en meer speling.
 function timing(o){return new Promise(res=>{const vk=o.vak||'timing',e=ease(vk),n=o.n||3,sp=(o.sp||1.4)*(1-.3*e),allow=(o.allow==null?1:o.allow)+(e>.7?1:0),grace=(30+30*e)/1000;
-  let w=clamp((o.w||.2)*(.55+.9*e),.06,.4),pin=0,miss=0,c=rr(.2,.8),t0=performance.now(),raf=0,lock=0,over=false;
+  let w=clamp((o.w||.2)*(.55+.9*e),.06,.4),pin=0,miss=0,c=rr(.2,.8),t0=performance.now(),raf=0,lock=0,over=false,shown=performance.now();
   open(o.title||'Timing',o.sub||'Druk als het streepje in het groen staat',`<div class="sd-pick"><div class="sd-pick-bar"><i class="z"><i></i></i><i class="g"></i><i class="m"></i><b class="sd-pop"></b></div>
     <div class="sd-pick-ft"><div class="sd-pick-pins">${Array.from({length:n},(_,i)=>`<i data-p="${i}"></i>`).join('')}</div><div class="sd-pick-miss"></div></div></div>${tapBtn(o.label||'Nu!')}`,'',vk);
   const bar=q('.sd-pick-bar'),z=q('.z'),mk=q('.m'),gh=q('.g'),pp=q('.sd-pop'),ms=q('.sd-pick-miss');
   const zone=()=>{z.style.left=(c-w/2)*100+'%';z.style.width=w*100+'%'};zone();
   const lives=()=>{const l=allow-miss;ms.textContent=l<=0?'Je mag niet missen':'Je mag nog '+l+' keer missen';ms.classList.toggle('last',l<=0)};lives();
   const at=t=>(Math.sin((t-t0)/1000*sp*Math.PI)+1)/2;
-  const loop=()=>{if(!cur)return;mk.style.left=at(performance.now())*100+'%';if(o.tick&&o.tick()===false){cur.end('cancel');return}raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
+  const loop=()=>{if(!cur)return;shown=performance.now();mk.style.left=at(shown)*100+'%';if(o.tick&&o.tick()===false){cur.end('cancel');return}raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
   const ghost=(p,cls)=>{gh.style.left=p*100+'%';gh.className='g '+cls;void gh.offsetWidth;gh.classList.add('on')};
-  cur={key:k=>{if(k!=='tap'||over)return;const now=performance.now();if(now<lock)return;
-      // een beetje speling voor de vertraging van het scherm: wat je net zag telt ook
-      const p0=at(now),p1=at(now-grace*1000),d0=Math.abs(p0-c),d1=Math.abs(p1-c),dd=Math.min(d0,d1);
+  cur={key:k=>{if(k!=='tap'||over)return;const now=nu();if(now<lock)return;
+      // speling voor de vertraging van het scherm: het moment van drukken, iets ervoor, en waar het streepje stond op het laatste beeld
+      const p0=at(now),p1=at(now-grace*1000),p2=at(Math.min(now,shown)),d0=Math.abs(p0-c),d1=Math.min(Math.abs(p1-c),Math.abs(p2-c)),dd=Math.min(d0,d1);
       if(dd<=w/2){const P=q(`[data-p="${pin}"]`);P&&P.classList.add('ok');pin++;ghost(d0<=d1?p0:p1,'ok');
         pop(pp,dd<w/7?'Perfect!':'Raak!','ok');bar.classList.remove('bad','hit');void bar.offsetWidth;bar.classList.add('hit');fx(pin>=n?'ok':'blip');buzz(15);o.hit&&o.hit(pin);
         if(pin>=n){over=true;setTimeout(()=>cur&&cur.end({ok:true,miss}),260);return}
@@ -83,7 +86,7 @@ function ritme(o){return new Promise(res=>{const vk=o.vak||'ritme',e=ease(vk),n=
   const loop=()=>{if(!cur)return;const now=(performance.now()-t0)/1000;notes.forEach((x,i)=>{const d=x.t-now,el=els[i];if(x.st){return}if(d<-win){x.st=-1;el.classList.add('miss');combo=0;o.miss&&o.miss();return}
       const p=.14+clamp(d/lead,0,1.2)*.86;el.style.left=p*100+'%';el.style.opacity=d>lead?0:1});
     if(now>total){cur.end({ok:hits>=n*.5,score:hits/n,hits,n,best});return}raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
-  cur={key:k=>{if(!ARW[k])return;const now=(performance.now()-t0)/1000;const x=notes.find(x=>!x.st&&Math.abs(x.t-now)<=win*1.6);
+  cur={key:k=>{if(!ARW[k])return;const now=(nu()-t0)/1000;const x=notes.find(x=>!x.st&&Math.abs(x.t-now)<=win*1.6);
       if(x&&x.k===k&&Math.abs(x.t-now)<=win){x.st=1;hits++;combo++;best=Math.max(best,combo);els[notes.indexOf(x)].classList.add('ok');fx('blip');pop(pp,combo>2?combo+'×':'Raak','ok');o.hit&&o.hit(combo);q('#sdRitC').textContent=hits+' / '+n;q('#sdRitM').textContent=combo>2?combo+'× raak':''}
       else{combo=0;q('#sdRitM').textContent='';fx('click');pop(pp,'Mis','bad');if(x){x.st=-1;els[notes.indexOf(x)].classList.add('miss')}o.miss&&o.miss()}},
     end:r=>{cancelAnimationFrame(raf);close(r,vk,['Goed gespeeld','Uit de maat']);res(r)}}})}
@@ -123,5 +126,5 @@ function haal(o){return new Promise(res=>{const vk=typeof o.vak==='string'?o.vak
   cur={key:()=>{},end:r=>{cancelAnimationFrame(raf);close(r,vk,['Binnen!','Ontsnapt']);res(r)}}})}
 /* ---------- eigen paneel (dobbelen en zo): de aanroeper vult het zelf ---------- */
 function paneel(title,sub,body,o){o=o||{};open(title,sub,body,o.cls);cur={key:k=>{o.key&&o.key(k)},end:r=>{close(r);o.onEnd&&o.onEnd(r)}};return {el:mp,q,close:r=>{if(cur)cur.end(r||'cancel')},set:(t,s)=>{if(t!=null)q('.sd-mini-h b').textContent=t;if(s!=null)q('.sd-mini-h small').textContent=s}}}
-G.mini={timing,mash,hold,ritme,vecht,haal,paneel,active:()=>!!cur,stop:()=>{if(cur)cur.end('cancel')}};
+G.mini={timing,mash,hold,ritme,vecht,haal,paneel,nu,active:()=>!!cur,stop:()=>{if(cur)cur.end('cancel')}};
 })();

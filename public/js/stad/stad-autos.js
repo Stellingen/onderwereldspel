@@ -94,9 +94,10 @@ function gamePick(p){return new Promise(res=>{const t=tierOf(p.m),skill=typeof c
   let pin=0,miss=0,c=rr(.2,.8),t0=performance.now(),raf=0;
   miniOpen('Slot openbreken',`${n} pinnen · druk als het streepje in het groen staat`,`<div class="sd-pick"><div class="sd-pick-bar"><i class="z"></i><i class="m"></i></div><div class="sd-pick-pins">${Array.from({length:n},(_,i)=>`<i data-p="${i}"></i>`).join('')}</div><div class="sd-pick-miss"></div></div><button class="btn sd-mini-go" data-tap>${touch?'Nu!':'<kbd>E</kbd> Nu!'}</button>`);
   const bar=mp.querySelector('.sd-pick-bar'),z=bar.querySelector('.z'),mk=bar.querySelector('.m');const zone=()=>{z.style.left=(c-w/2)*100+'%';z.style.width=w*100+'%'};zone();
-  const pos=()=>(Math.sin((performance.now()-t0)/1000*sp*Math.PI)+1)/2;
-  const loop=()=>{if(!mini)return;mk.style.left=pos()*100+'%';raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
-  mini={key:k=>{if(k!=='tap')return;const q=pos();if(Math.abs(q-c)<=w/2){mp.querySelector(`[data-p="${pin}"]`).classList.add('ok');pin++;G.snd&&G.snd.fx('click');if(pin>=n){mini.end('ok');return}c=rr(.15,.85);zone();t0=performance.now()-rr(0,800)}
+  const pos=t=>(Math.sin(((t==null?performance.now():t)-t0)/1000*sp*Math.PI)+1)/2;let shown=performance.now();
+  const loop=()=>{if(!mini)return;shown=performance.now();mk.style.left=pos(shown)*100+'%';raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
+  // bij lag: het moment van drukken en het laatst getekende beeld tellen
+  mini={key:k=>{if(k!=='tap')return;const tn=G.mini&&G.mini.nu?G.mini.nu():performance.now();const q=[pos(tn),pos(tn-45),pos(Math.min(tn,shown))].reduce((a,b)=>Math.abs(b-c)<Math.abs(a-c)?b:a);if(Math.abs(q-c)<=w/2){mp.querySelector(`[data-p="${pin}"]`).classList.add('ok');pin++;G.snd&&G.snd.fx('click');if(pin>=n){mini.end('ok');return}c=rr(.15,.85);zone();t0=performance.now()-rr(0,800)}
       else{miss++;G.snd&&G.snd.fx('bad');G.shake&&G.shake(.2);mp.querySelector('.sd-pick-miss').textContent='Mis: '+miss+(p.sec?' · het alarm reageert…':'');if(miss>allow){mini.end('alarm')}}},
     end:r=>{cancelAnimationFrame(raf);miniClose();res(r)}}})}
 // ruit inslaan: snel een paar keer slaan
@@ -475,7 +476,7 @@ function gameDeuk(T){return new Promise(res=>{const vk='repareren',e=ease(vk),d=
     // de hamer boven de deuk: hoe dichter bij het groen, hoe lager hij hangt
     const q=dents[Math.min(i,n-1)];if(q&&!over){const hy=Math.round(q.y-12-Math.min(1,Math.abs(p-c)*2.2)*22),hx=q.x+5;x.fillStyle='#7a5430';x.fillRect(hx,hy-1,16,3);x.fillStyle='#8a929c';x.fillRect(hx-4,hy-6,7,11);x.fillStyle='#d8dde4';x.fillRect(hx-4,hy-6,7,2)}
     if(spark>0){const s=dents[Math.max(0,i-1)];x.fillStyle='#ffe9a8';for(let k=0;k<8;k++){const a=k/8*6.28,r2=3+(1-spark)*12;x.fillRect(Math.round(s.x+Math.cos(a)*r2),Math.round(s.y+Math.sin(a)*r2),2,2)}}});
-  wg={dbg:()=>({pos:pos(performance.now()),c,w,i,n,miss}),press:k=>{if(k!=='tap'||over)return;const now=performance.now();if(now<lock)return;const dd=Math.min(Math.abs(pos(now)-c),Math.abs(pos(now-40)-c));
+  wg={dbg:()=>({pos:pos(performance.now()),c,w,i,n,miss}),press:k=>{if(k!=='tap'||over)return;const now=G.mini&&G.mini.nu?G.mini.nu():performance.now();if(now<lock)return;const dd=Math.min(Math.abs(pos(now)-c),Math.abs(pos(now-50)-c),Math.abs(pos(now-90)-c));
       if(dd<=w/2){dents[i].fix=.01;const P=gbx.querySelector(`[data-p="${i}"]`);P&&P.classList.add('ok');i++;spark=1;popT(pp,dd<w/7?'Perfect!':'Raak!','ok');bar.classList.remove('bad','hit');void bar.offsetWidth;bar.classList.add('hit');G.snd&&G.snd.fx('punch');G.shake&&G.shake(.12);
         if(i>=n){over=true;setTimeout(()=>wg&&wg.end({ok:true,fixed:n,n,miss}),450);return}
         lock=now+240;setTimeout(()=>{if(!wg||over)return;let nc;do{nc=rr(.14,.86)}while(Math.abs(nc-c)<.18);c=nc;zone();t0=performance.now()-rr(0,700)},170)}

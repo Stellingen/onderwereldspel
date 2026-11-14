@@ -54,7 +54,7 @@ function applyLight(){const day=daylight(),night=1-day;
 /* ---------- opstarten ---------- */
 G.init=function(host){
   clock=new TH.Clock();
-  renderer=new TH.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(1);
+  renderer=new TH.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(1);renderer.debug.checkShaderErrors=false;// geen synchrone shader-controle (die laat het spel haperen als er iets nieuws in beeld komt)
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=TH.BasicShadowMap;renderer.outputColorSpace=TH.SRGBColorSpace;
   const cv=renderer.domElement;cv.className='stad-cv';host.appendChild(cv);G.canvas=cv;
   scene=new TH.Scene();scene.fog=new TH.Fog(0x8899aa,70,190);
@@ -95,7 +95,7 @@ function savePos(){try{localStorage.setItem('stad_pos',JSON.stringify({x:+P.x.to
 G.savePos=savePos;
 // Pixelgrootte in echte schermpixels (geheel getal, anders worden de pixels ongelijk): de korte kant van het beeld is
 // ongeveer 360 pixels hoog (Fijn 480, Grof 260). Zo ziet het er op elke telefoon en elk scherm hetzelfde uit.
-function resize(){const dpr=Math.min(devicePixelRatio||1,3),w=innerWidth,h=innerHeight,minDev=Math.min(w,h)*dpr,target=(G.pixPref||520)*(G.camMode&&G.camMode!=='boven'?1.15:1);
+function resize(){const dpr=Math.min(devicePixelRatio||1,3),w=innerWidth,h=innerHeight,minDev=Math.min(w,h)*dpr,target=(G.pixPref||520)*(G.camMode&&G.camMode!=='boven'?1.15:1)*(G.autoPix||1);
   const k=Math.max(1,Math.round(minDev/target));G.pix=k/dpr;const rw=Math.ceil(w*dpr/k),rh=Math.ceil(h*dpr/k);
   renderer.setSize(rw,rh,false);if(rt)rt.setSize(rw,rh);if(post)post.material.uniforms.uRes.value.set(rw,rh);camera.aspect=w/h;camera.fov=w/h<1?Math.min(62,34/Math.max(.55,w/h)*.8):34;G.fov0=camera.fov;camera.updateProjectionMatrix()}
 G.resize=()=>resize();
@@ -226,7 +226,16 @@ G.placeAtDoor=function(pl){const f=pl.face,o=f==='S'?[0,1]:f==='N'?[0,-1]:f==='E
 G.teleport=function(x,z){const p=M.nearestWalk(x,z,20);if(p){P.x=p.x;P.z=p.z;stopPath();if(CW)CW.warm(P.x,P.z)}};
 function draw(){renderer.setRenderTarget(rt);renderer.render(scene,camera);renderer.setRenderTarget(null);renderer.render(post,postCam)}
 const cutV=new TH.Vector3(),cutS=new TH.Vector2();
-function frame(t){raf=requestAnimationFrame(frame);let dt=(t-last)/1000;if(!(dt>0))dt=0;dt=Math.min(.05,dt);last=t;if(G.paused)return;if(G.hitStop>0){G.hitStop-=dt;dt*=.05}step(dt,t/1000);draw()}
+// Prestaties: tijdens een minispel (paneel over de wereld) tekenen we de wereld maar om het derde beeld, zodat het streepje
+// en je toetsen vloeiend blijven. Loopt het spel lang traag (oudere telefoon, druk scherm), dan gaat de resolutie vanzelf
+// een stapje omlaag (en weer omhoog als het ruim gaat); de keuze in de instellingen blijft de bovengrens.
+let mfN=0,perfAcc=0,perfN=0,perfT=0,autoK=1;
+function perfStep(rawDt){if(G.cut&&G.cut.active&&G.cut.active())return;if(!(rawDt>0&&rawDt<.5))return;perfAcc+=rawDt;perfN++;perfT+=rawDt;if(perfT<3)return;
+  const avg=perfAcc/perfN;perfAcc=perfN=perfT=0;let k=autoK;if(avg>1/26&&autoK>.62)k=Math.max(.62,autoK-.12);else if(avg<1/50&&autoK<1)k=Math.min(1,autoK+.06);
+  if(k!==autoK){autoK=k;G.autoPix=k;resize()}}
+G.perf=()=>({autoK,pix:G.pix});
+function frame(t){raf=requestAnimationFrame(frame);const raw=(t-last)/1000;let dt=raw;if(!(dt>0))dt=0;dt=Math.min(.05,dt);last=t;if(G.paused)return;if(G.hitStop>0){G.hitStop-=dt;dt*=.05}step(dt,t/1000);
+  const mini=G.mini&&G.mini.active&&G.mini.active();if(mini&&(++mfN%3))return;perfStep(raw);draw()}
 function step(dt,ts){
   if(G.carStep)G.carStep(dt);
   let v=0;

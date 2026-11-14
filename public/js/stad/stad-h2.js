@@ -327,12 +327,19 @@ async function mEinde(t){let p0=null;
    {say:'luca',text:'Wie dan?',t:1.4},{say:'nova',text:'Het spoor leidt naar Sahara.',t:2.4},{fade:'out',t:1},{weg:'luca'},{dream:true},
    L.cam(fx+nx*12+sx*6,2.6,fz+nz*12+sz*6,fx,2.4,fz),{fade:'in',t:.6},{fn:()=>G.verteller&&G.verteller('v23')},L.camNaar(fx+nx*8+sx*3.5,2.4,fz+nz*8+sz*3.5,fx,2.4,fz,3,{wacht:false}),{wait:2.6},{fade:'out',t:.6},{dream:false},
    // de cliffhanger: in de achterkamer van Sahara belt Rafiq met iemand die "B." heet
-   {fn:()=>{p0=B.waar()?null:{x:G.P.x,z:G.P.z,ry:G.P.ry,yaw:G.yawT};['teller0','teller1','bewaker'].forEach(n=>{try{B.toon('sahara',n,false)}catch(e){}})}},{binnen:'sahara'},{speler:false},{actor:'rafiq',at:L.W('sahara',6.4,2.2),ry:0,anim:'bel',prop:'telefoon'},{fn:()=>{const a=C.acteur('rafiq');if(a)a.g.binnenId=1}},
-   L.cam(...L.W3('sahara',9.6,2.6,5.3),...L.W3('sahara',6.4,2.2,2.2)),{fade:'in',t:.6},
-   {say:'rafiq',text:'Ja. Hij weet niks.',t:2.2,mood:'koel'},{say:'rafiq',text:'Nee. De jongen niet. Nog niet.',t:2.6,mood:'koel'},
-   L.cam(...L.W3('sahara',5.2,2.7,4.7),...L.W3('sahara',6.4,2.3,2.2)),{fn:()=>L.belKaart&&L.belKaart('Telefoon van Rafiq','B.','In gesprek · 04:12')},{say:null,text:'Op het scherm van zijn telefoon staat maar één letter: B.',t:3.2},{fn:()=>L.belKaart&&L.belKaart(null)},
-   {fade:'out',t:.8},{weg:'rafiq'},{fn:async()=>{['teller0','teller1','bewaker'].forEach(n=>{try{B.toon('sahara',n,true)}catch(e){}});try{if(bin&&bin!=='sahara')await B.in(bin,{fade:false,forceer:true});else await B.uit({fade:false,naar:p0})}catch(e){}}},
-   {titel:'Seizoen 3',sub:G.h3&&G.h3.live&&G.h3.live()?'De hoek':'Coming soon · Met wie belt Rafiq?',t:3.6},{speler:true},{fade:'in',t:1}]);
+   {fn:()=>{p0=B.waar()?null:{x:G.P.x,z:G.P.z,ry:G.P.ry,yaw:G.yawT};['teller0','teller1','bewaker'].forEach(n=>{try{B.toon('sahara',n,false)}catch(e){}})}},{binnen:'sahara'},{speler:false},{actor:'rafiq',at:L.W('sahara',9.2,2.0),ry:.25,anim:'bel',prop:'telefoon'},{fn:()=>{const a=C.acteur('rafiq');if(a)a.g.binnenId=1}},
+   // Rafiq staat bij de muur, weg van de lamp boven de teltafel; de camera kruipt langzaam naar hem toe
+   L.cam(...L.W3('sahara',11.3,2.4,5.2),...L.W3('sahara',9.1,2.25,2.1)),{fade:'in',t:.8},{snd:'heart'},L.camNaar(...L.W3('sahara',10.5,2.4,4.0),...L.W3('sahara',9.1,2.3,2.1),7,{wacht:false}),
+   {say:'rafiq',text:'Ja. Hij weet niks.',t:2.4,mood:'koel'},{wait:.8},{say:'rafiq',text:'Nee. De jongen niet. Nog niet.',t:2.8,mood:'koel'},
+   {fn:()=>L.belKaart&&L.belKaart('Telefoon van Rafiq','B.','In gesprek · 04:12')},{say:null,text:'Op het scherm van zijn telefoon staat maar één letter: B.',t:3.2},{fn:()=>L.belKaart&&L.belKaart(null)},
+   {anim:'rafiq',a:'idle',prop:null},{say:'rafiq',text:'…',t:1.4},{fade:'out',t:.8},{weg:'rafiq'},
+   // en Luca? Die ligt thuis op bed. Eén van zijn telefoons licht op.
+   {binnen:'thuis'},{fn:()=>['marco','giulia','elena'].forEach(k=>{try{B.toon('thuis',k,false)}catch(e){}})},{actor:'luca',at:L.W('thuis',12.6,10.2),ry:PI*.5,anim:'sit',sitY:-.45,prop:'telefoon'},{fn:()=>{const a=C.acteur('luca');if(a)a.g.binnenId=1;L.tijd(1,40)}},
+   L.cam(...L.W3('thuis',14.7,3.1,11.8),...L.W3('thuis',12.3,1.3,9.7),{vrij:true}),{fade:'in',t:1},L.camNaar(...L.W3('thuis',14.2,2.6,11.2),...L.W3('thuis',12.5,1.6,10.0),6,{wacht:false,vrij:true}),
+   {say:null,text:'Twee uur \'s nachts. Luca slaapt niet. Op zijn bed: twee telefoons.',t:3},{fn:L.tril},{snd:'notify'},
+   {fn:()=>L.belKaart&&L.belKaart('Onbekend nummer · nu','B.','“Slaap lekker, Luca. Jij weet niks. Toch?”')},{say:null,text:'Een nummer zonder naam. Ondertekend met één letter.',t:3.4},{fn:()=>L.belKaart&&L.belKaart(null)},
+   {say:'luca',text:'…',t:1.6},{fade:'out',t:1},{weg:'luca'},{fn:()=>['marco','giulia','elena'].forEach(k=>{try{B.toon('thuis',k,true)}catch(e){}})},{fn:async()=>{['teller0','teller1','bewaker'].forEach(n=>{try{B.toon('sahara',n,true)}catch(e){}});try{if(bin&&bin!=='sahara')await B.in(bin,{fade:false,forceer:true});else await B.uit({fade:false,naar:p0})}catch(e){}}},
+   {titel:'Seizoen 3',sub:G.h3&&G.h3.live&&G.h3.live()?'De hoek':'Coming soon · Wie is B.?',t:3.8},{speler:true},{fade:'in',t:1}]);
   L.F('h2_klaar',Date.now());if(G.h3&&G.h3.live&&G.h3.live()&&G.h3.mag()){G.h3.begin();return}ST.goto('h2_vrij');
   const vip=ST.vip&&ST.vip();ST.kaart(`<small>De Bezorger · Seizoen 2 uitgespeeld</small><b>Twee bazen, en een verrader</b>
    <p>Dex: <b>${L.F('dex_hulp')==='ray'?'vrij via Ray':L.F('dex_hulp')==='moeder'?'geholpen via zijn moeder':'alleen gelaten'}</b> · Verhaalgeld: <b>${L.eur(ST.geld())}</b></p>
