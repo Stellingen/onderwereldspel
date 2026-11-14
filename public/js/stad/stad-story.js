@@ -109,7 +109,7 @@ function stepTick(dt){if(!cur||G.paused)return;if(G.cut&&G.cut.active&&G.cut.act
 let resumed=false;
 // herstel: door een dubbele stapnaam ('h2_dex') kon je midden in Seizoen 1 in een stap van Seizoen 2 of 3 belanden.
 // Wie Seizoen 1 nog niet uit heeft maar in een latere stap staat, gaat terug naar Dex op de hoek (avond 2).
-const LATER=['h2_start','h2_dag','h2_dexvast','h2_slot','h2_vrij','h3_start','h3_voorraad','h3_hoek1','h3_crew','h3_hoek2','h3_giulia','h3_nova','h3_slot','h3_vrij','h3_wacht'];
+const LATER=['h2_start','h2_dag','h2_dexvast','h2_slot','h2_vrij','h3_start','h3_voorraad','h3_hoek1','h3_crew','h3_hoek2','h3_giulia','h3_nova','h3_slot','h3_hugo','h3_vrij','h3_wacht'];
 function herstel(s){if(s&&!(s.flags&&s.flags.h1_klaar)&&LATER.includes(s.step)){s.ch=1;s.step='h1_dexhoek';try{sv()}catch(e){}}}
 function resume(){if(resumed)return;const s=st();herstel(s);if(!STEPS[s.step])return;resumed=true;ST.goto(s.step,{hervat:true})}
 
@@ -240,7 +240,7 @@ function startPlek(){const s=st();if(s.pos&&M.canStand(s.pos.x,s.pos.z,.3))retur
 // (op /verhaal worden de Stad-modules niet geladen; dit vangt de gedeelde engine af)
 function guards(){
   // ingangen van klikspelschermen: in het verhaal niet (de deuren van het verhaal zijn G.binnen-plekken)
-  const e0=G.onEnter;G.onEnter=function(pl){if(pl&&pl.binnen&&G.binnen&&G.binnen.def&&G.binnen.def(pl.binnen)){G.binnen.in(pl.binnen);return}if(pl&&pl.story&&e0)return e0(pl);if(pl&&pl.verhaal&&pl.act){pl.act();return}};
+  const e0=G.onEnter;G.onEnter=function(pl){if(pl&&pl.binnen&&G.binnen&&G.binnen.def&&G.binnen.def(pl.binnen)){G.binnen.in(pl.binnen,{lopen:true});return}if(pl&&pl.story&&e0)return e0(pl);if(pl&&pl.verhaal&&pl.act){pl.act();return}};
   const n0=G.onNear;G.onNear=function(p){if(p&&(p.story||p.verhaal||p.binnen))return n0&&n0(p);n0&&n0(null)};
   if(G.marks)G.marks.forEach(m=>{if(m.p&&(m.p.story||m.p.verhaal||m.p.binnen))return;[m.ring,m.pin,m.sign].forEach(o=>{if(o)o.visible=false});m.p._hid=1});
   // je klikspel-auto staat niet in de verhaalstad

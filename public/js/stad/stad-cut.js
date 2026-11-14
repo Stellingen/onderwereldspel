@@ -51,6 +51,8 @@ const A={
    face:{skin:'#ecc2a0',hair:'#e4dfd4',hs:'kalend',eye:'#7d8b97',top:'#7a5a3a',col:'trui',age:2,fw:18,acc:{bril:1}},schaal:.93},
  receptioniste:{n:'Receptioniste',col:'#a9dcff',rol:'Kantoor Zuidas',look:{skin:'#f1caa5',hair:'#d4ac5a',hs:'knot',eye:'#3f6fb8',mood:'koel',mouth:'smal',top:{kind:'suit',c:'#1f2d4a',c2:'#f1efe9'},legs:{kind:'jeans',c:'#1f2d4a'},shoes:{kind:'boot',c:'#16161a'}},
    face:{skin:'#f1caa5',hair:'#d4ac5a',hs:'knot',eye:'#3f6fb8',top:'#1f2d4a',col:'pak',age:1,v:1,fw:16,jaw:'spits',lip:'#b0404a'},schaal:.94},
+ hugo:{n:'Hugo Lindeboom',col:'#a9c4ff',rol:'Misdaadverslaggever',look:{skin:'#e8c09a',hair:'#6a5a4a',hs:'kort',fh:'stoppel',eye:'#3a4a60',mood:'koel',glasses:1,top:{kind:'suit',c:'#3a3f48',c2:'#e8e4da'},legs:{kind:'jeans',c:'#2a2c30'},shoes:{kind:'boot',c:'#2a1a10'}},
+   face:{skin:'#e8c09a',hair:'#6a5a4a',hs:'kort',fh:'stoppel',eye:'#3a4a60',top:'#3a3f48',col:'pak',age:2,fw:18,jaw:'hoekig',acc:'bril'}},
  agent:{n:'Agent',col:'#4d7dff',rol:'Politie',look:{skin:'#e9b98f',hair:'#5a3a22',hs:'kort',eye:'#3f6fb8',mood:'neutraal',top:{kind:'jacket',c:'#1f2d4a',c2:'#e8e4da'},legs:{kind:'jeans',c:'#1a2236'},shoes:{kind:'boot',c:'#121316'},head:{kind:'cap',c:'#1a2236',c2:'#e8e4da'}},
    face:{skin:'#e9b98f',hair:'#5a3a22',hs:'kort',eye:'#3f6fb8',top:'#1f2d4a',col:'uniform',hat:'pet',hatC:'#1a2236',age:1,fw:18}},
  nova:{n:'Nova',col:'#ff3d7a',rol:'Rechterhand van Ray',look:{skin:'#b97a52',hair:'#16161a',hs:'lang',eye:'#24160e',mood:'koel',top:{kind:'jacket',c:'#121316',c2:'#3a3d44'},legs:{kind:'jeans',c:'#121316'},shoes:{kind:'boot',c:'#121316'},head:{kind:'skimask',c:'#16161a'},gloves:'#121316'},
@@ -105,7 +107,9 @@ const PROP={envelop:()=>K.model([[.32,.03,.2,0,0,.1,'#e8dcc0'],[.32,.032,.06,0,.
   pet:()=>K.model([[.32,.12,.3,0,0,.12,'#2f6a8a'],[.3,.03,.16,0,-.05,.28,'#e8e4da']]),
   krijt:()=>K.model([[.04,.04,.12,0,0,.1,'#f1efe9']]),
   sleutel:()=>K.model([[.05,.12,.02,0,0,.08,'#d6a63e']]),
-  pakket:()=>K.model([[.22,.14,.18,0,0,.1,'#c9cfd6'],[.23,.02,.19,0,.02,.1,'#8a8c90']])};
+  pakket:()=>K.model([[.22,.14,.18,0,0,.1,'#c9cfd6'],[.23,.02,.19,0,.02,.1,'#8a8c90']]),
+  pistool:()=>K.model([[.07,.07,.26,0,.03,.14,'#16161a'],[.06,.14,.07,0,-.05,.04,'#232327'],[.02,.02,.06,0,.06,.29,'#3a3d44']]),
+  schijf:()=>K.model([[.16,.03,.11,0,0,.1,'#2a2c30'],[.1,.031,.02,0,.001,.05,'#c9cfd6']])};
 
 /* =================== animaties =================== */
 // per poppetje een doelhouding per frame; de onderdelen bewegen er soepel naartoe (zelfde assen als stad-avatar.js)
@@ -392,7 +396,19 @@ CUT.play=async function(script,o){o=o||{};while(running)await running;let rel;ru
   CUT.onEnd.forEach(f=>{try{f(o)}catch(e){}});
   // de camera van het spel weer achter Luca
   try{const c=G.camera();c.fov=G.fov0||c.fov;c.updateProjectionMatrix()}catch(e){}
+  if(!o.blijf)try{vrijeKant()}catch(e){}
   rel();running=null;return CUT.laatste};
+// na een scène buiten, camera van boven: staat er vlak achter je een gebouw tussen camera en Luca, draai dan de
+// kleinste stap naar een kant met vrij zicht (de straat), in plaats van over het dak met een doorkijkgat
+function vrijeKant(){if(G.camMode!=='boven'||(G.binnen&&G.binnen.waar()))return;const M=window.STAD_MAP,P=G.P;if(!M||!M.solid||P.x>4000)return;
+  const vrij=a=>{for(let d=1.5;d<=11;d+=.75){const x=Math.floor(P.x+Math.sin(a)*d),z=Math.floor(P.z+Math.cos(a)*d);if(x<0||z<0||x>=M.W||z>=M.H)return d;if(M.solid[z*M.W+x]===1)return d}return 99};
+  const y0=G.yawT!=null?G.yawT:G.yaw;if(vrij(y0)>=11)return;let best=null,bd=0;
+  for(let i=1;i<=8&&best==null;i++)for(const sg of[1,-1]){const a=y0+sg*i*Math.PI/8,d=vrij(a);if(d>=11){best=a;break}if(d>bd){bd=d}}
+  if(best==null){for(let i=1;i<16;i++){const a=y0+i*Math.PI/8;if(vrij(a)>=bd){best=a;break}}}
+  if(best!=null){G.yawT=G.yaw=best;if(G.camC)G.camC.init=false}}
+CUT.vrijeKant=vrijeKant;
+// ook bij het laden (je staat vaak voor de deur van de flat)
+{const iv=setInterval(()=>{if(!G.ready)return;clearInterval(iv);setTimeout(()=>{if(!active)try{vrijeKant()}catch(e){}},1200)},300)}
 // los zinnetje zonder cutscène (ondertitel onderin, de wereld loopt door)
 CUT.zeg=async function(id,text,o){o=o||{};const was=active;if(!was){ui.hidden=false;ui.classList.add('los')}const r=await zeg(id,text,Object.assign({t:o.t||Math.max(2.2,text.length*.065)},o));$s('svSub').hidden=true;if(!was&&!active){ui.hidden=true;ui.classList.remove('los')}return r};
 })();

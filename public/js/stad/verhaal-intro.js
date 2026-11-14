@@ -94,6 +94,10 @@ function kaart(on){mount();const k=$('viKaart');cancelAnimationFrame(kaartRaf);i
 /* ---------- decor: politie, vuur, container, het bord, de fiets ---------- */
 const DINGEN=[];const reg=o=>{DINGEN.push(o);return o};
 function opruimen(){DINGEN.splice(0).forEach(d=>{try{d.weg()}catch(e){}})}
+// even naar binnen in het appartement van de verslaggever (alleen voor dit shot) en daarna terug naar waar je stond
+let inStudio=false,wasP=null;
+async function studioIn(){const B=G.binnen;if(!B||!B.in)return false;try{wasP={x:G.P.x,z:G.P.z,ry:G.P.ry,yaw:G.yawT};const ok=await B.in('studio',{fade:false,forceer:true,stil:true});inStudio=!!ok;return inStudio}catch(e){return false}}
+async function studioUit(){if(!inStudio)return;inStudio=false;try{await G.binnen.uit({fade:false,naar:wasP,stil:true})}catch(e){}}
 const mat=c=>new TH.MeshLambertMaterial({color:c}),gloei=c=>new TH.MeshBasicMaterial({color:c});
 function box(g,w,h,d,m,x,y,z){const o=new TH.Mesh(new TH.BoxGeometry(w,h,d),m);o.position.set(x,y,z);g.add(o);return o}
 function politie(x,z,ry){const g=new TH.Group();box(g,1.8,.62,4.2,mat('#f1efe9'),0,.62,0);box(g,1.82,.16,4.22,mat('#2a5bd7'),0,.72,0);box(g,1.64,.48,2.1,mat('#1a2430'),0,1.16,-.2);
@@ -161,6 +165,8 @@ async function play(o){o=o||{};const C=G.cut,ST=G.story;if(!C||!ST)return;gestop
   const U=G.uiterlijk,L=U&&U.spec?U.spec('luca'):null;
   const jas=(U&&U.spec&&U.spec('luca',{outfit:'bezorger',lucaAge:16}))||Object.assign({},L||{},{top:{kind:'jacket',c:'#c0261e',c2:'#f1efe9'}});
   const pak=(U&&U.spec&&U.spec('luca',{outfit:'zakelijk',lucaAge:24}))||Object.assign({},L||{},{top:{kind:'suit',c:'#16181d',c2:'#e8e4da'},legs:{kind:'jeans',c:'#16181d'},shoes:{kind:'boot',c:'#0e0e10'}});
+  // het appartement van de verslaggever (stad-interieur.js, 'studio'): coördinaten in de kamer → wereld
+  const SW=(G.binnen&&G.binnen.p&&G.binnen.plekken&&(()=>{try{return G.binnen.p('studio',0,0)[0]>1000}catch(e){return false}})())?((x,y,z)=>{if(z===undefined){z=y;y=0}const p=G.binnen.p('studio',x,z);return [p[0],y,p[1]]}):null;
   const steps=[
    {fade:'out',t:.01},{speler:false},{fn:()=>{mount();vlak(true);nacht();G.fogVer=[100,320];startAudio()}},
    // Goedenavond — het nieuws
@@ -171,11 +177,16 @@ async function play(o){o=o||{};const C=G.cut,ST=G.story;if(!C||!ST)return;gestop
    // de container
    {fn:()=>tot(V_(3.45))},{fn:()=>{container(hp.x,hp.z-6,.4);politie(hp.x+4,hp.z,1.2);flits();balk('Container in de haven onderschept: te laat','Live · De Haven');zeg(2)}},
    {cam:{pos:[hp.x+14,9,hp.z+12],look:[hp.x,1.6,hp.z-6],to:{pos:[hp.x+8,4.5,hp.z+6],look:[hp.x,1.4,hp.z-6]},t:3,wacht:false}},
-   // de naam: het bord van de recherche
-   {fn:()=>tot(V_(6.5))},{fn:()=>{bord(bp.x,bp.z+2.4,Math.PI);balk(null);zeg(3)}},
-   {cam:{pos:[bp.x+2.6,1.9,bp.z-1.6],look:[bp.x,1.6,bp.z+2.4],to:{pos:[bp.x+.5,1.7,bp.z+.6],look:[bp.x,1.6,bp.z+2.4]},t:3.6,wacht:false}},
+   // de naam: het bord in een thuisstudio (het appartement van de verslaggever zelf; je ziet hem alleen van achteren, aan zijn
+   // microfoon). Alle draadjes lopen naar één foto. Bestaat het interieur niet, dan het oude bord buiten.
+   {fn:()=>tot(V_(6.5))},
+   ...(SW?[{fn:async()=>{balk(null);zeg(3);await studioIn()}},
+     {actor:'verslaggever',at:[SW(4.2,2.75)[0],SW(4.2,2.75)[2]],ry:Math.PI,look:(G.cut.look&&G.cut.look('hugo'))||undefined,anim:'sit',sitY:-.42},{fn:()=>{const a=G.cut.acteur('verslaggever');if(a&&a.g)a.g.binnenId=1}},
+     {cam:{pos:SW(2.6,2.35,7.8),look:SW(6.6,1.35,1.4),to:{pos:SW(7.7,1.8,3.7),look:SW(8.9,1.62,1.1)},t:3.6,wacht:false}}]
+    :[{fn:()=>{bord(bp.x,bp.z+2.4,Math.PI);balk(null);zeg(3)}},
+     {cam:{pos:[bp.x+2.6,1.9,bp.z-1.6],look:[bp.x,1.6,bp.z+2.4],to:{pos:[bp.x+.5,1.7,bp.z+.6],look:[bp.x,1.6,bp.z+2.4]},t:3.6,wacht:false}}]),
    // Luca De Santis
-   {fn:()=>tot(V_(10.0))},{fn:()=>{vlak(true);stil();mid('Luca De Santis','Gezocht')}},
+   {fn:()=>tot(V_(10.0))},{fn:()=>{vlak(true);stil();mid('Luca De Santis','Gezocht')}},{weg:'verslaggever'},{fn:()=>studioUit()},
    // zestien, de fiets
    {fn:()=>tot(V_(11.95))},{fn:()=>{mid(null);dag();zeg(5);fiets(np.x,np.z,1.2)}},
    {cam:{pos:[S.x+30,18,S.z+38],look:[S.x,2,S.z],to:{pos:[S.x+16,8,S.z+24],look:[S.x,2,S.z]},t:3,wacht:false}},{fn:()=>vlak(false)},
@@ -225,7 +236,7 @@ async function play(o){o=o||{};const C=G.cut,ST=G.story;if(!C||!ST)return;gestop
   // de ondertitels gaan uit aan het eind van elke zin
   const subIv=setInterval(()=>{const tt=klok()-V;if(tt>=26.3&&tt<29.5)return;let on=false;for(let i=0;i<TEKST.length;i++){if(tt>=TEKST[i][0]-.25&&tt<=EIND[i]+.35){on=true;break}}if(!on)stil()},150);
   try{await C.play(o.los?steps.concat([{fn:()=>vlak(false)},{fade:'in',t:.6}]):steps,{blijfZwart:!o.los})}finally{
-    clearInterval(subIv);stopAudio();opruimen();G.fogVer=null;cancelAnimationFrame(kaartRaf);C.weg('luca_i');C.weg('luca_24');C.weg('rafiq');weg();
+    clearInterval(subIv);stopAudio();opruimen();try{C.weg('verslaggever')}catch(e){}studioUit();G.fogVer=null;cancelAnimationFrame(kaartRaf);C.weg('luca_i');C.weg('luca_24');C.weg('rafiq');weg();
     try{G.verhaalSfeer&&G.verhaalSfeer.los()}catch(e){}
     if(o.los){ST.tijd(k0.h,k0.m);G.applyLight&&G.applyLight()}else ST.flag('intro',1)}}
 G.verhaalIntro={play,naam:STAD_NAAM,tekst:TEKST};

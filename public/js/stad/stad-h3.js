@@ -208,15 +208,71 @@ async function mNova(t){const s=L.A('stashflat',92,660);
    {say:'nova',text:'Je zegt weinig, pizzajongen. Ik ook. Ik onthoud alles.',t:2.8,mood:'koel'},{fade:'out',t:.3},{weg:'nova'},{weg:'prater'},{weg:'luca'},{speler:true},{fade:'in',t:.3}]);
   ST.meter('loy_nova',6);ST.geld(400,'klus met Nova')}
 
+// Eind Seizoen 3: Dex is vrij, en hij heeft iets gehoord: een podcast. Een misdaadverslaggever, Hugo Lindeboom, vertelt alles.
+// (Dat is de stem uit de intro.) Ray wil dat het stopt. De finale is in Lindebooms appartement aan de Damstraat.
 async function mEinde(t){const d=L.A('dex',277,480);if(!await doelNaar('Dex is vrij. Hij wacht bij de hoek',d,6))return;const l=L.P(),q=L.voor(2.2);const boos=L.F('dex_vergeet_niet');
   await C.play([{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'dex',at:[q.x,q.z],ry:L.naar(q,l),anim:'armen'},L.rond(q.x,q.z,L.naar(q,l)+1,3.2,1.6,1.4),{fade:'in',t:.3},
    {say:'dex',text:boos?'Twee maanden, Luca. Twee maanden heb ik je naam niet genoemd. En jij deed niks.':L.F('dex_hulp')==='moeder'?'Mijn moeder heeft het me verteld. Van het geld. Dat vergeet ik nooit, broer.':'Mr. Hoefnagel. Dure pakken. Ray betaalde. Ik weet dat jij dat regelde.',t:3.8,mood:boos?'boos':'neutraal'},
-   {say:'dex',text:'Maar luister. Ze wisten precies waar ik zou zijn. Precies wanneer. Iemand heeft me verraden.',t:3.4,mood:'boos'},
-   {say:'dex',text:'En ik ga uitzoeken wie. En dan…',t:2.4,mood:'boos'},{say:'luca',text:'Dex. Rustig.',t:1.4},
-   {say:null,text:'Er zit een lek in het netwerk. En het is iemand dichtbij.',t:3.2},{fade:'out',t:1},{titel:'Seizoen 4',sub:'Coming soon',t:3.6},{weg:'dex'},{weg:'luca'},{speler:true},{fade:'in',t:1}]);
-  L.F('h3_klaar',Date.now());ST.goto('h3_vrij');
-  ST.kaart(`<small>De Bezorger · Seizoen 3 uitgespeeld</small><b>Je eigen hoek, en een lek</b><p>Crew: <b>${L.F('crew')==='deal'?'deal met de Hoek-boys':L.F('crew')==='weggejaagd'?'Hoek-boys weggejaagd':'verloren van de Hoek-boys'}</b> · Giulia: <b>${L.F('giulia')==='alles'?'weet alles (belofte)':L.F('giulia')==='half'?'weet half':'voorgelogen'}</b></p>
-   <p><b>Seizoen 4 · coming soon.</b> Ploegleider: vier tot zes hoeken, je eigen crew, en de jacht op de lekker. Je hoek blijft open: elke avond kun je er staan.</p><div class="sv-k-b"><button class="btn" data-x>Verder</button></div>`)}
+   {say:'dex',text:'Maar luister. Ze wisten precies waar ik zou zijn. Precies wanneer. En weet je hoe ik dat weet?',t:3.4,mood:'boos'},
+   {anim:'dex',a:'bel',prop:'telefoon'},{say:'dex',text:'Ik hoorde het in een podcast. "Onderstroom". Iemand vertelt alles: Sahara, de hoek, mijn arrestatie. En een jongen in een rode jas.',t:4.2,mood:'boos'},
+   {say:'luca',text:'Wie?',t:1.2},{say:'dex',text:'Hugo Lindeboom. Misdaadverslaggever. Hij zegt dat hij in de volgende aflevering een naam noemt.',t:3.4},
+   {say:null,text:'Die stem. Luca kent die stem. Rustig, warm, alsof hij je een verhaal voor het slapengaan vertelt.',t:3.6},
+   {fade:'out',t:.5},{weg:'dex'},{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry,anim:'bel',prop:'telefoon'},L.rond(l.x,l.z,(l.ry||0)+.9,2.8,1.7,1.5),{fade:'in',t:.5},
+   {fn:L.tril},{say:'ray',text:'Je hebt het gehoord. Lindeboom. Hij heeft een bord met al onze gezichten erop. En jij hangt in het midden.',t:4,mood:'koel'},
+   {say:'ray',text:'Maandag om acht uur zegt hij je naam. Dat gebeurt niet. Damstraat 35, aan de gracht. Vanavond.',t:3.8,mood:'koel'},
+   {say:'ray',text:'Nova heeft iets in je kluisje gelegd. Je weet wat je moet doen.',t:3,mood:'koel'},{say:'luca',text:'…',t:1.4},
+   {fade:'out',t:.5},{weg:'luca'},{speler:true},{fade:'in',t:.5}]);
+  if(t!==RUN)return;L.F('hugo_adres',1);try{B.slot('studio',false)}catch(e){}ST.goto('h3_hugo')}
+
+// de finale: het appartement van Hugo Lindeboom (stad-interieur.js 'studio'): het bord uit de intro, de microfoon, de stem
+async function mHugo(t){const A=(G.hugoAdres&&G.hugoAdres())||L.A('gracht',575,420);L.F('hugo_adres',1);try{B.slot('studio',false)}catch(e){}L.tijd(23,30);
+  // erheen; ben je zelf al door de deur gelopen, dan ook goed
+  const ok=await new Promise(res=>{ST.doel('Damstraat 35: het appartement van Hugo Lindeboom',{x:A.x,z:A.z});const t0=RUN;const iv=setInterval(()=>{if(RUN!==t0){clearInterval(iv);res(false);return}
+    if(B.waar()==='studio'){clearInterval(iv);ST.doel(null);res(true);return}if(G.cut&&G.cut.active())return;
+    if(!B.waar()&&Math.hypot(G.P.x-A.x,G.P.z-A.z)<2.4){clearInterval(iv);L.fietsAf();ST.doel(null);res(true)}},250)});
+  if(!ok||t!==RUN)return;
+  // naar binnen lopen (dezelfde overgang als bij elk gebouw)
+  if(B.waar()!=='studio')await B.in('studio',{lopen:true,forceer:true});if(t!==RUN)return;
+  const W=(x,z)=>L.W('studio',x,z),W3=(x,y,z)=>L.W3('studio',x,y,z),hp=W(4.2,2.75),lp=W(3.6,5.6),fotoS1=!!L.F('s1_foto');
+  const r=await C.play([{speler:false},{actor:'hugo',at:hp,ry:PI,anim:'sit',sitY:-.42},{actor:'luca',at:W(2.2,7.4),ry:PI},
+   {fn:()=>['hugo','luca'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},
+   L.cam(...W3(10.8,3.1,8.4),...W3(3.6,1.5,4.4)),{fade:'in',t:.6},
+   {say:null,text:'De deur zit niet op slot. Binnen: drie schermen, een microfoon, en een rood lampje. ON AIR.',t:3.4},
+   {move:'luca',to:lp,t:2.4},
+   L.cam(...W3(6.8,2.4,3.9),...W3(4.0,1.85,2.3)),
+   {say:'hugo',text:'…niemand keek naar hem. Dat was zijn kracht. Een jongen op een fiets, rode jas, zes pizza’s op de bagagedrager…',t:4.2},
+   {say:null,text:'Die stem. Vanaf het allereerste begin was het deze stem.',t:3},
+   L.cam(...W3(8.2,1.75,4.2),...W3(8.9,1.62,1.1)),L.camNaar(...W3(8.8,1.68,2.6),...W3(8.9,1.62,1.1),4,{wacht:false}),
+   {say:null,text:'Het bord. Foto’s, knipsels, rode draadjes. Rafiq. Ray. Nova. Dex. Ze lopen allemaal naar één foto in het midden.',t:4},
+   ...(fotoS1?[{say:null,text:'Ook die foto van die eerste nacht in Oud-Zuid. Luca bij de deur, met een pizzadoos. Hij was het. Al die tijd.',t:4}]:[]),
+   {anim:'hugo',a:'idle',ry:0},{actor:'hugo',at:W(4.2,3.1),ry:0},L.cam(...W3(3.0,1.85,4.9),...W3(4.2,1.95,3.1)),
+   {say:'hugo',text:'Luca De Santis. Ik vroeg me al af wanneer je zou komen.',t:3,mood:'koel'},
+   {say:'hugo',text:'Weet je hoe lang ik je volg? Sinds die eerste avond. Zes pizza’s voor Lounge Sahara.',t:3.6},
+   {keuze:[{t:'"Wie weet dit nog meer?"',id:'wie'},{t:'"Waarom ik?"',id:'waarom'},{t:'Niks zeggen',id:'stil'}],wie:'luca',text:'Hij is niet bang. Nog niet.'}],{blijf:true});
+  if(t!==RUN)return;
+  await C.play([
+   ...(r==='wie'?[{say:'hugo',text:'Niemand. Nog niet. Maandag om acht uur weet iedereen het.',t:3,mood:'koel'}]
+     :r==='waarom'?[{say:'hugo',text:'Omdat niemand naar je keek. Behalve ik. Een jongen van zestien die een stad overneemt. Dat is het verhaal van mijn leven.',t:4.2}]
+     :[{say:'hugo',text:'Je zegt niks. Dat dacht ik al. Je praat nooit, hè? Daarom ben je zo goed.',t:3.4}]),
+   {say:'hugo',text:'Je kunt mij stoppen, Luca. Maar verhalen stoppen niet.',t:3,mood:'koel'},
+   {anim:'luca',a:'point',prop:'pistool',naar:[hp[0],hp[1]+.35]},L.cam(...W3(4.9,1.95,4.6),...W3(4.2,2.0,3.1)),{snd:'heart'},
+   {say:'hugo',text:'…Ah.',t:1.6,mood:'bang'},
+   {fade:'out',t:.15},{snd:'schot'},{wait:1.6},{weg:'hugo'},{anim:'luca',a:'idle',prop:null},
+   L.cam(...W3(5.6,2.6,5.4),...W3(4.2,1.1,2.2)),{fade:'in',t:1.2},
+   {say:null,text:'Het ON AIR-lampje brandt nog. De stoel draait langzaam uit.',t:3.2},
+   {move:'luca',to:W(4.0,2.6),t:2},{anim:'luca',a:'give',prop:'schijf'},{snd:'grab'},
+   {say:null,text:'Luca trekt de harde schijf uit de computer. Van het bord neemt hij de foto uit het midden mee.',t:3.4},
+   L.cam(...W3(4.7,1.6,2.9),...W3(4.2,1.32,1.5)),{snd:'notify'},
+   {say:null,text:'Op het middelste scherm: “Back-up voltooid. Aflevering 7 staat gepland: maandag 08:00.”',t:3.8},
+   {snd:'notify'},{fn:()=>L.belKaart&&L.belKaart('Nieuw bericht · nu','B.','“Ik heb de kopie. Tot maandag.”')},{say:null,text:'Op het bureau licht zijn telefoon op. Een bericht van “B.”: “Ik heb de kopie. Tot maandag.”',t:4},{fn:()=>L.belKaart&&L.belKaart(null)},
+   {anim:'luca',a:'idle',prop:null},{say:'luca',text:'…',t:1.6},
+   {fade:'out',t:1.2},{say:null,text:'De stem die je vanaf het begin hoorde, was die van Hugo Lindeboom. Zijn laatste aflevering gaat maandag gewoon de lucht in.',t:4.6},
+   {titel:'Seizoen 4',sub:'Coming soon · Wie is B.?',t:3.6},{weg:'luca'},{fn:()=>{try{B.uit({fade:false})}catch(e){}}},{speler:true},{fade:'in',t:1}]);
+  L.F('hugo','dood');try{B.slot('studio',true,'Politielint · afgezet')}catch(e){}ST.meter('hitte',15);ST.meter('dossier',10);ST.koers(8,'straat')}
+
+function slotKaart(){L.F('h3_klaar',Date.now());ST.goto('h3_vrij');
+  ST.kaart(`<small>De Bezorger · Seizoen 3 uitgespeeld</small><b>De stem is stil. Bijna.</b><p>Crew: <b>${L.F('crew')==='deal'?'deal met de Hoek-boys':L.F('crew')==='weggejaagd'?'Hoek-boys weggejaagd':'verloren van de Hoek-boys'}</b> · Giulia: <b>${L.F('giulia')==='alles'?'weet alles (belofte)':L.F('giulia')==='half'?'weet half':'voorgelogen'}</b></p>
+   <p><b>Seizoen 4 · coming soon.</b> Maandag 08:00 gaat aflevering 7 van Onderstroom de lucht in. Iemand die tekent met “B.” heeft een kopie. Ploegleider: vier tot zes hoeken, je eigen crew, en de jacht op wie er nog meer weet. Je hoek blijft open.</p><div class="sv-k-b"><button class="btn" data-x>Verder</button></div>`)}
 
 /* =================== de hoek als vaste bijverdienste (na de eerste avond) =================== */
 let hoekSpot=null,hoekCd=0;
@@ -236,6 +292,7 @@ S('h3_hoek2',{muziek:'spanning',async start(o){const t=nieuw();await mHoek2(t);i
 S('h3_giulia',{muziek:'thuis',async start(o){const t=nieuw();await mGiulia(t);if(t!==RUN)return;ST.avond(4);ST.goto('h3_nova')}});
 S('h3_nova',{muziek:'spanning',async start(o){const t=nieuw();await mNova(t);if(t!==RUN)return;ST.goto('h3_slot')}});
 S('h3_slot',{muziek:'ray',async start(o){const t=nieuw();await mEinde(t)}});
+S('h3_hugo',{muziek:'spanning',async start(o){const t=nieuw();await mHugo(t);if(t!==RUN)return;slotKaart()}});
 S('h3_vrij',{doel:'Seizoen 4 · coming soon. Je hoek staat open',start(o){nieuw();if(G.h1)G.h1.dienstAan(false);ritAan(true);L.zorgFiets()}});
 }
 

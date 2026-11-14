@@ -439,4 +439,79 @@ BN.add('rijtjeshuis',{naam:'Rijtjeshuis',kleur:'#ff6a5a',w:12,h:11,plafond:2.7,h
     B.plek('bank',5.4,0,5.4);B.plek('salontafel',5.4,.44,4.1);B.plek('muur',10.6,0,6)},
   buiten(g,f){if(f.eigen)return;const m=K.model([[1.3,2.3,.12,0,1.15,-.02,'#3a2a20'],[1.1,2.1,.05,0,1.05,.05,'#4a3424'],[.2,.12,.02,.3,1.6,.09,'#c9a227'],[2.4,.6,.06,0,.3,1.4,'#3a3d44'],[.06,.6,1.4,-1.2,.3,.7,'#3a3d44'],[.06,.6,1.4,1.2,.3,.7,'#3a3d44'],[.28,.2,.02,0,2.42,.06,'#e8e4da']]);g.add(m);
     const s=K.sign('14','#1a1a1c','#e8e4da','#3a3d44',.22);s.position.set(.6,1.95,.1);g.add(s)}});
+
+/* =================== HET APPARTEMENT VAN HUGO LINDEBOOM (misdaadverslaggever) =================== */
+// Damstraat, aan de gracht. Zijn thuisstudio: bureau met drie schermen, microfoon, 'ON AIR'-lampje, en aan de muur het bord:
+// foto's, krantenknipsels en rode draadjes die allemaal naar één foto lopen: een jongen in een rode jas. Te zien in de intro
+// (alleen als decor in de cutscène) en in de finale van Seizoen 3. De deur is pas te zien als je zijn adres kent (vlag hugo_adres).
+// het bord als één pixelplaatje: kurk, foto's, knipsels, briefjes, een stukje kaart, en de draadjes naar het midden
+function bordCanvas(){return pc(160,90,(c,w,h)=>{R(c,0,0,w,h,'#5a3a1e');R(c,2,2,w-4,h-4,'#b8864e');
+  for(let i=0;i<260;i++){const x=(i*37)%w,y=(i*53)%h;R(c,x,y,1,1,i%3?'#a87a44':'#c8965c')}
+  const mx=w/2,my=h/2;
+  // draadjes eerst (onder de foto's)
+  const items=[[14,10],[40,8],[118,9],[142,12],[12,48],[30,72],[140,46],[124,72],[60,74],[98,76],[72,10],[148,30]];
+  c.strokeStyle='#d8231a';c.lineWidth=1;items.forEach(([x,y])=>{c.beginPath();c.moveTo(x+6,y+6);c.lineTo(mx,my);c.stroke()});
+  // foto's (polaroids met een silhouet)
+  const foto=(x,y,sk,top,lbl)=>{R(c,x,y,13,15,'#f1efe9');R(c,x+1,y+1,11,10,'#2a2c30');R(c,x+4,y+3,4,4,sk);R(c,x+3,y+7,6,4,top);R(c,x+1,y+12,11,2,'#e8e4da');if(lbl){c.fillStyle='#2a2c30';c.font='4px monospace';c.fillText(lbl,x+1,y+15)}R(c,x+5,y-1,3,2,'#d8231a')};
+  foto(14,10,'#b97a52','#121316','NOVA?');foto(40,8,'#4a2e20','#2a2c30','RAY');foto(118,9,'#8d5a3a','#1a1a1c','RAFIQ');foto(142,12,'#a8714c','#1a3a6a','');
+  foto(140,46,'#e0ab84','#f1efe9','NAPOLI');foto(124,72,'#8d5a3a','#c0261e','DEX');
+  // krantenknipsels
+  const knip=(x,y,t)=>{R(c,x,y,22,14,'#e8e4d2');R(c,x+1,y+1,20,3,'#2a2c30');for(let i=0;i<4;i++)R(c,x+1,y+6+i*2,14+((i*5)%6),1,'#8a8478');c.fillStyle='#e8e4d2';c.font='3px monospace';c.fillText(t,x+2,y+4)};
+  knip(6,44,'VILLA IN BRAND');knip(24,68,'CONTAINER');knip(92,72,'INVAL SAHARA');knip(66,6,'WIE IS HIJ?');
+  // gele briefjes
+  [[54,74,'21:40'],[148,28,'??'],[100,20,'BOULEVARD'],[30,30,'ELKE DI+DO']].forEach(([x,y,t])=>{R(c,x,y,12,9,'#f2d64a');c.fillStyle='#3a2a10';c.font='3px monospace';c.fillText(t,x+1,y+5)});
+  // stukje stadskaart met een rondje
+  R(c,92,30,22,16,'#d8d0b8');R(c,92,37,22,2,'#8a8478');R(c,101,30,2,16,'#8a8478');R(c,94,32,6,4,'#6a9a5a');c.strokeStyle='#d8231a';c.beginPath();c.arc(103,38,4,0,7);c.stroke();
+  // het midden: de jongen in de rode jas (korrelig, van een bewakingscamera), met een groot vraagteken
+  R(c,mx-11,my-13,22,26,'#f1efe9');R(c,mx-10,my-12,20,19,'#3a3d44');for(let i=0;i<40;i++)R(c,mx-10+(i*7)%20,my-12+(i*11)%19,1,1,'#4a4d54');
+  R(c,mx-3,my-9,6,6,'#c8956a');R(c,mx-4,my-10,8,3,'#1a1410');R(c,mx-6,my-3,12,8,'#c0261e');R(c,mx-2,my-3,4,8,'#f1efe9');
+  c.fillStyle='#d8231a';c.font='bold 5px monospace';c.fillText('LUCA D.S.?',mx-11,my+12);R(c,mx-1,my-15,3,3,'#d8231a')})}
+function schermCanvas(soort){return pc(48,28,(c,w,h)=>{R(c,0,0,w,h,'#0c1420');
+  if(soort==='golf'){R(c,0,0,w,4,'#1c2a3a');c.fillStyle='#ff4a3a';c.font='3px monospace';c.fillText('● REC 00:41:07',2,3);for(let x=2;x<w-2;x+=2){const a=2+Math.abs(Math.sin(x*.7)*Math.cos(x*.23))*9;R(c,x,h/2-a/2,1,a,'#3fe395')}}
+  else if(soort==='tekst'){R(c,0,0,w,4,'#e8e4da');c.fillStyle='#2a2c30';c.font='3px monospace';c.fillText('AFL.7 - DE JONGEN IN DE RODE JAS',1,3);for(let y=7;y<h-2;y+=3)R(c,2,y,10+((y*13)%30),1,'#8a9ab0')}
+  else{for(let i=0;i<6;i++){const x=3+(i%3)*15,y=3+Math.floor(i/3)*12;R(c,x,y,13,10,'#2a2c30');R(c,x+4,y+2,5,4,['#b97a52','#4a2e20','#8d5a3a','#c8956a','#a8714c','#e0ab84'][i]);R(c,x+3,y+6,7,4,i===3?'#c0261e':'#1a1a1c')}}})}
+const hugoAdres=()=>{const g=(M.A&&M.A.gracht)||{x:575,z:420};let best=null,bd=1e9;(M.ADRESSEN||[]).forEach(a=>{if(a.soort!=='gracht')return;const d=Math.hypot(a.x-g.x,a.z-g.z);if(d<bd){bd=d;best=a}});
+  return best?{x:best.x,z:best.z,face:best.face,adres:best.adres}:(M.nearestWalk(g.x,g.z,8)||g)};
+G.hugoAdres=hugoAdres;
+BN.add('studio',{naam:'Appartement H. Lindeboom',kleur:'#a9c4ff',w:13,h:10,plafond:2.8,hoger:1.0,deur:{x:2.0,z:9.0},spawn:{x:2.0,z:8.4,ry:Math.PI},anker:hugoAdres,ankerId:'studio',
+  deurTxt:'Naar binnen',kaart:false,verborgen:()=>{try{return !(G.story&&G.story.flag&&G.story.flag('hugo_adres'))}catch(e){return true}},dicht:true,dichtTxt:'Privé · H. Lindeboom',
+  licht:{bg:'#05060a',hemi:'#7a8aa8',grond:'#1a1a22',int:.8,zon:.25,zonKleur:'#c8d8ff',gloed:.9,vig:.6,sat:1.05,tint:[.96,.98,1.06]},cam:{k:.42},
+  bouw(B){const T=B.tex,H=2.8;const wand=T.stuc('#4a4a52'),wand2=T.behang('#3a3a44','#34343e'),vloer=T.parket('#5a3e28'),tap=T.tapijt('#6a2a2a');
+    B.vloer(1,1,12,9.2,vloer,2);B.vloer(4.2,3.6,8.8,7.2,tap,1);
+    const wN=B.muur(.6,.6,12.4,1,{h:H,tex:wand}),wW=B.muur(.6,.6,1,9.6,{h:H,tex:wand2}),wE=B.muur(12,.6,12.4,9.6,{h:H,tex:wand2}),wS1=B.muur(.6,9.2,1.4,9.6,{h:H,tex:wand}),wS2=B.muur(2.6,9.2,12.4,9.6,{h:H,tex:wand});
+    B.plafond(1,1,12,9.2,H,'#202026');
+    // ===== het bureau (thuisstudio) tegen de noordmuur =====
+    B.meubel(F.tafel(2.8,1.0,.78,'#2a2420','#16161a'),4.2,1.75);B.solid(2.8,1.25,5.6,2.25);
+    [['golf',-1.0,.35],['tekst',0,0],['fotos',1.0,-.35]].forEach(([k,dx,r],i)=>{const sx=4.2+dx;B.box(.08,.3,.08,sx,.93,1.55,'#16161a');B.box(.86,.52,.05,sx,1.32,1.5,'#16161a',0,r);
+      B.plaat(schermCanvas(k),.78,.46,sx+Math.sin(r)*.03,1.32,1.53+Math.cos(r)*.03,r,{glow:1})});
+    // microfoon aan een arm, koptelefoon, bureaulamp, koffie, papieren
+    B.box(.05,.5,.05,3.0,1.03,1.5,'#2a2c30');B.box(.05,.05,.5,3.0,1.27,1.75,'#2a2c30');B.box(.12,.22,.12,3.0,1.22,2.0,'#1a1a1c');B.box(.14,.04,.14,3.0,1.1,2.0,'#3a3d44');
+    B.box(.3,.05,.18,5.3,.82,2.0,'#1a1a1c');B.box(.06,.16,.16,5.18,.9,2.0,'#2a2c30');B.box(.06,.16,.16,5.42,.9,2.0,'#2a2c30');
+    B.box(.04,.4,.04,5.5,1.0,1.4,'#c9a227');B.box(.24,.14,.18,5.5,1.24,1.48,'#c9a227');B.box(.16,.04,.12,5.5,1.17,1.52,'#fff3c8',1);
+    B.box(.09,.11,.09,3.6,.84,2.05,'#e8e4da');B.box(.4,.06,.3,4.6,.82,2.0,'#f1efe9');B.box(.36,.04,.28,4.62,.86,1.98,'#e8e4d2');
+    B.meubel(F.stoel('#1a1a1c','#16161a','#2a2a30'),4.2,2.75,Math.PI);
+    // ON AIR boven het bureau
+    {const cv=pc(40,12,(c,w,h)=>{R(c,0,0,w,h,'#2a0808');c.fillStyle='#ff4a3a';c.font='bold 8px monospace';c.textAlign='center';c.fillText('ON AIR',w/2,9)});B.plaat(cv,.8,.24,4.2,2.35,1.03,0,{glow:1,muur:wN})}
+    // ===== het bord tegen de noordmuur, rechts van het bureau (met een eigen lampje) =====
+    B.box(3.5,2.0,.06,8.9,1.62,1.04,'#3a2a18');B.plaat(bordCanvas(),3.36,1.86,8.9,1.62,1.08,0,{muur:wN});
+    [[-1.4,.55],[-1.2,-.3],[1.4,.5],[1.3,-.35],[-.4,.65],[.9,-.6],[0,.12]].forEach(([dx,dy])=>B.box(.04,.04,.04,8.9+dx,1.62+dy,1.11,'#d8231a'));
+    B.licht(8.9,2.5,2.4,'#ffe8c0',1.8,4.5);B.box(.5,.08,.16,8.9,2.62,1.12,'#16161a');
+    // archiefkasten en boekenkast
+    B.meubel(F.kast(1.0,1.3,.5,'#4a4d54','#9aa1a9'),11.2,1.5);B.solid(10.7,1.2,11.7,1.8);B.meubel([[.3,.08,.22,0,1.34,0,'#e8e4d2'],[.26,.12,.2,.3,1.37,0,'#c8b890']],11.2,1.5);
+    B.meubel([[.4,2.2,1.8,0,1.1,0,'#3a2a1a']],1.25,4.2);B.solid(1,3.3,1.5,5.1);
+    for(let y=.3;y<2.1;y+=.42)for(let z=3.45;z<4.95;z+=.12)B.box(.26,.3,.09,1.32,y+.15,z,['#8a2a2a','#2a4a6a','#c9a227','#3a5a3a','#e8e4da','#5a3a6a'][Math.floor(y*10+z*30)%6]);
+    // persprijs en krantenpagina's aan de westmuur
+    {const cv=pc(16,20,(c,w,h)=>{R(c,0,0,w,h,'#c9a227');R(c,1,1,w-2,h-2,'#1a1a1c');R(c,5,4,6,8,'#c9a227');R(c,4,14,8,2,'#e8e4da')});B.plaat(cv,.4,.5,1.02,1.7,6.2,Math.PI/2,{muur:wW})}
+    {const cv=pc(24,32,(c,w,h)=>{R(c,0,0,w,h,'#e8e4d2');R(c,1,1,w-2,4,'#1a1a1c');for(let y=8;y<h-2;y+=2)R(c,2,y,(y*7)%3?w-4:w-10,1,'#8a8478');R(c,2,14,9,7,'#5a5a60')});B.plaat(cv,.55,.72,1.02,1.65,7.0,Math.PI/2,{muur:wW})}
+    // zithoek: bank, salontafel met kranten, een plant, de kapstok bij de deur
+    B.meubel(F.sofa(2.4,'#3a3d48'),9.6,6.6,Math.PI*.5,{solid:[2.4,.9]});B.meubel(F.tafel(1.1,.6,.42,'#2a2420'),8.2,6.6);B.solid(7.65,6.3,8.75,6.9);
+    B.box(.36,.02,.26,8.0,.44,6.5,'#e8e4d2');B.box(.34,.02,.24,8.3,.45,6.7,'#d8d0b8');B.box(.1,.12,.1,8.45,.48,6.45,'#3a2a1a');
+    B.meubel(F.plant('#6a4a3a','#3a6a3a'),11.4,8.6);B.meubel([[.06,1.8,.06,0,.9,0,'#2a2018'],[.5,.06,.06,0,1.78,0,'#2a2018'],[.36,.7,.3,.1,1.35,.05,'#4a3a2a']],3.2,8.8);
+    // raam op het oosten: de gracht bij nacht, half dichte lamellen
+    B.plaat(stadRaam(true),1.6,1.1,11.97,1.6,4.8,-Math.PI/2,{glow:1,muur:wE});for(let i=0;i<6;i++)B.box(.04,.05,1.62,11.94,1.15+i*.18,4.8,'#c8c4b8');
+    // licht: koud van de schermen, warm van de lampen
+    B.licht(4.2,1.6,2.4,'#7aa8ff',1.4,4);B.licht(5.5,1.4,1.7,'#ffd8a0',1.2,3.5);B.licht(7.5,2.6,6.2,'#ffc890',1.6,7);
+    B.plek('bureau',4.2,.78,1.75);B.plek('stoel',4.2,0,2.75);B.plek('bord',8.9,0,2.2);B.plek('bank',9.6,0,6.6)},
+  buiten(g,f){if(f.eigen)return;const m=K.model([[1.2,2.3,.12,0,1.15,-.02,'#2a3a4a'],[1.0,2.1,.05,0,1.05,.05,'#1f2d3a'],[.16,.1,.02,.32,1.15,.09,'#c9a227'],[.26,.4,.04,.75,1.3,.07,'#9aa1a9'],[.18,.06,.02,.75,1.42,.1,'#e8e4da']]);g.add(m);
+    const s=K.sign('35','#1a1a1c','#e8e4da','#3a3d44',.22);s.position.set(.6,2.45,.1);g.add(s)}});
 })();

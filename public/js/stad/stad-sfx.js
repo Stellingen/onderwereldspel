@@ -70,6 +70,7 @@ const FX={
   spray:()=>noise(0,.3,.09,'highpass',4200,6000),
   dice:()=>{for(let i=0;i<4;i++)tone(600+Math.random()*500,i*.05,.03,'square',.06)},
   punch:()=>{tone(150,0,.09,'sine',.5,50);noise(0,.07,.28,'lowpass',1800,300)},
+  schot:()=>{noise(0,.18,.7,'lowpass',2600,300);tone(68,0,.35,'sine',.55,28);noise(.03,.9,.14,'lowpass',700,120)},
   whoosh:()=>noise(0,.16,.1,'bandpass',500,2200),
   go:()=>{tone(880,0,.5,'square',.1)},beep:()=>tone(440,0,.18,'square',.09),
   chirp:()=>{const f=2600+Math.random()*900;tone(f,0,.05,'sine',.03,f*1.2);tone(f*1.1,.09,.05,'sine',.03,f*.9)},

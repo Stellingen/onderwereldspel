@@ -61,6 +61,8 @@ const CAST={
    kl:{std:(a,la)=>({k:'leer',c:'#121316',c2:'#3a3d44',c3:'#121316',b:'jeans',bc:'#121316',s:'laars',sc:'#121316',gl:'#121316',hat:la<19?'mask':'none',hatC:'#16161a'}),gewoon:{k:'leer',c:'#121316',c2:'#3a3d44',c3:'#121316',b:'jeans',bc:'#121316',s:'laars',sc:'#121316'}}},
  sanne:{n:'Sanne',col:'#ffb35a',rol:'Dochter van Giovanni',born:2007,v:1,skin:'#e8b890',eye:'#3d7a42',hair:'#6a3a20',hs:'bob',mouth:'vol',lip:'#b04a50',fw:16,h:.95,
    kl:{std:a=>a<21?{k:'blouse',c:'#e8e0cc',b:'jeans',bc:'#2c3a4d',s:'laars',sc:'#3a2418'}:{k:'blazer',c:'#3a2a3a',c3:'#f1efe9',b:'pantalon',bc:'#2a2028',s:'nette',sc:'#16161a',ch:'goud'}}},
+ hugo:{n:'Hugo Lindeboom',col:'#a9c4ff',rol:'Misdaadverslaggever',born:1976,skin:'#e8c09a',eye:'#3a4a60',hair:'#4a3a2a',grijs:40,hs:'kort',fh:'stoppel',bril:'#2a2c30',fw:18,jaw:'hoekig',w:1.02,
+   kl:{std:{k:'blazer',c:'#3a3f48',c3:'#e8e4da',b:'pantalon',bc:'#2a2c30',s:'nette',sc:'#2a1a10'}}},
  bakker:{n:'Inspecteur Bakker',col:'#a9dcff',rol:'Recherche',born:1970,skin:'#e6b896',eye:'#5a6a7a',hair:'#5a4a3a',grijs:44,kaal:47,kmax:2,hs:'kort',fh:'snor',bril:'#3a3c40',fw:20,w:1.08,
    kl:{std:{k:'coat',c:'#8a7a5a',c3:'#e8e4da',tie:'#5a2a2a',b:'pantalon',bc:'#4a4a48',s:'nette',sc:'#3a2418'}}},
  henk_vos:{n:'Henk Vos',col:'#5aa0ff',rol:'De haven',born:1962,skin:'#e8a888',eye:'#5a7a9a',hair:'#b8a070',grijs:50,hs:'kort',fh:'baard',fw:20,jaw:'hoekig',h:1.05,w:1.15,

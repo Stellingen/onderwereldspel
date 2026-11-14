@@ -117,6 +117,11 @@ function css(){if($s('h1Css'))return;const s=document.createElement('style');s.i
 .h1-biljet:after{content:'';position:absolute;top:8px;bottom:8px;right:26px;width:8px;background:var(--strip,#e8e4da);opacity:.85}.h1-biljet small{position:absolute;left:8px;top:6px;font-size:11px;opacity:.7}
 .h1-biljet.vlieg{transform:translateX(160px) rotate(12deg);opacity:0}
 .h1-ff{position:fixed;right:max(16px,4vw);top:calc(11vh + 14px);z-index:100002;display:flex;align-items:center;gap:10px;pointer-events:none;color:#f1efe9;font:800 clamp(18px,3vw,28px) 'Space Grotesk',system-ui,sans-serif;text-shadow:0 2px 0 #000,0 0 12px #000;letter-spacing:.06em}
+.h1-foto{position:fixed;left:50%;top:calc(14vh + 18px);z-index:99999;transform:translate(-50%,-24px) scale(.86);opacity:0;transition:transform .4s cubic-bezier(.2,.8,.2,1),opacity .3s;pointer-events:none}.h1-foto.go{transform:translate(-50%,0) scale(1);opacity:1}.h1-foto.uit{transform:translate(-50%,-24px) scale(.9);opacity:0}
+.h1-bel{text-align:center;padding:18px 10px 16px}.h1-bel b{font:800 64px/1 monospace;color:#fff;letter-spacing:.04em;text-shadow:3px 3px 0 #000}.h1-bel span{font:700 12px monospace;color:#3fe395;letter-spacing:.1em}
+.h1-flits{position:fixed;inset:0;z-index:99998;background:#fff;pointer-events:none;animation:h1Flits .5s ease-out forwards}@keyframes h1Flits{from{opacity:.85}to{opacity:0}}
+.h1-foto-k{width:min(360px,80vw);background:#14161c;border:2px solid #2c3140;box-shadow:4px 4px 0 #000a;padding:8px;display:grid;gap:6px;color:#e8e4da;font:600 13px/1.3 system-ui}
+.h1-foto-k small{font:700 10px monospace;letter-spacing:.12em;text-transform:uppercase;color:#9aa1ab}.h1-foto-k canvas{width:100%;image-rendering:pixelated;border:1px solid #000;display:block}
 .h1-ff b{color:#ff4a3a;animation:h1ff .5s steps(2) infinite}.h1-ff span{font-family:monospace;font-weight:700}@keyframes h1ff{50%{opacity:.35}}
 `;document.head.appendChild(s)}
 function mgOpen(html,cls){css();const el=document.createElement('div');el.className='h1-mg '+(cls||'');el.innerHTML=html;document.body.appendChild(el);return el}
@@ -255,6 +260,22 @@ stap('h1_plein',{muziek:'school',doel:null,async start(o){const t=nieuw();if(B.w
   if(t!==RUN)return;go('h1_onderweg')}});
 
 // snel vooruit: van school naar je werk, terwijl het donker wordt
+// een foto op je telefoon (cliffhanger Seizoen 1): Luca bij de deur van het rijtjeshuis, van de overkant genomen
+// de kaart blijft nooit hangen na een (overgeslagen) cutscène
+let fotoChk=0;function fotoOpruim(){clearInterval(fotoChk);fotoChk=setInterval(()=>{if(!(G.cut&&G.cut.active())){clearInterval(fotoChk);const e=$s('h1Foto');if(e)e.remove()}},500)}
+function fotoBericht(van,tekst){let el=$s('h1Foto');if(!van){if(el){el.classList.add('uit');setTimeout(()=>el.remove(),400)}return}css();
+  if(!el){el=document.createElement('div');el.id='h1Foto';el.className='h1-foto';document.body.appendChild(el)}
+  el.innerHTML='<div class="h1-foto-k"><small>'+van+' · nu</small><canvas width="64" height="44"></canvas><b>'+tekst+'</b></div>';const c=el.querySelector('canvas').getContext('2d'),R=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h)};
+  R(0,0,64,44,'#0b0d14');R(8,4,26,40,'#2a2420');R(12,8,18,36,'#3a2a20');R(13,9,16,14,'#ffd98a');for(let i=0;i<70;i++)R((i*13)%64,(i*29)%44,1,1,'#1a1d28');
+  R(18,22,6,6,'#c8956a');R(17,21,8,3,'#1a1410');R(15,28,12,10,'#c0261e');R(19,28,4,10,'#f1efe9');R(26,30,8,4,'#e3cfa2');R(15,38,5,6,'#1d2531');R(22,38,5,6,'#1d2531');
+  R(40,6,22,30,'#0e1018');R(44,12,4,2,'#ffd98a');R(52,16,4,2,'#ffd98a');c.globalAlpha=.25;R(0,0,64,44,'#3a4a6a');c.globalAlpha=1;
+  el.classList.remove('uit');void el.offsetWidth;el.classList.add('go');fotoOpruim();
+  // flits: alsof de sluiter nog een keer klikt
+  const fl=document.createElement('div');fl.className='h1-flits';document.body.appendChild(fl);setTimeout(()=>fl.remove(),600)}
+// een telefoonscherm groot in beeld (wie belt er): zelfde kaart als de foto, zonder foto
+function belKaart(kop,naam,sub){let el=$s('h1Foto');if(!kop){if(el){el.classList.add('uit');setTimeout(()=>el.remove(),400)}return}css();
+  if(!el){el=document.createElement('div');el.id='h1Foto';el.className='h1-foto';document.body.appendChild(el)}
+  el.innerHTML='<div class="h1-foto-k h1-bel"><small>'+kop+'</small><b>'+naam+'</b><span>'+(sub||'')+'</span></div>';el.classList.remove('uit');void el.offsetWidth;el.classList.add('go');fotoOpruim()}
 function snelVooruit(aan,van,tot){let el=$s('h1Ff');if(!aan){if(el)el.remove();return}css();if(!el){el=document.createElement('div');el.id='h1Ff';el.className='h1-ff';document.body.appendChild(el)}
   el.innerHTML='<b>▶▶</b><span>'+String(van[0]).padStart(2,'0')+':'+String(van[1]).padStart(2,'0')+'</span>';const sp=el.querySelector('span');
   const a=van[0]*60+van[1],b=tot[0]*60+tot[1],t0=performance.now(),T=3800;
@@ -831,21 +852,36 @@ stap('h4_binnen',{async start(o){const t=nieuw();fietsAf();if(G.fiets)G.fiets.la
 
 stap('h4_einde',{muziek:'ray',async start(o){const t=nieuw();await buiten();if(t!==RUN)return;zorgFiets();tijd(23,40);
   try{G.fiets&&G.fiets.op()}catch(e){}const l=P(),R=A('hoek',236,461),H=A('haven',735,120),pol=A('politie',655,349),env=F('envelop');
-  await C.play([{cam:{volg:'luca',af:[1.6,1.2,-4.2],kijk:[0,1.2,0]}},{fade:'in',t:1},
+  await C.play([{cam:{volg:'luca',af:[2.6,3.5,-6.6],kijk:[0,2.1,1.4]}},{fade:'in',t:1},
    {say:null,text:env==='verraden'?'Luca op de fiets. Vijfduizend euro onder zijn jas. Het voelt zwaarder dan zes pizza’s.':env==='gelogen'?'Luca op de fiets. Een halve envelop en een naam die niet klopt.':'Luca op de fiets. Geen envelop. Wel een nummer in zijn zak.',t:3.6},
    {snd:'notify'},{fn:tril},{say:null,text:'Zijn telefoon trilt. Rafiq.',t:2},{snd:'notify'},{fn:tril},{say:null,text:'Hij trilt nog een keer. Onbekend nummer.',t:2.4},
+   // de cliffhanger: iemand heeft hem vanavond gefotografeerd
+   {fn:()=>{fotoBericht('Onbekend nummer','Mooie avond in Oud-Zuid, Luca.');F('s1_foto',1)}},{say:null,text:'Een foto. Van hem. Vanavond, bij de deur van het rijtjeshuis. Van de overkant genomen.',t:3.8},{fn:()=>fotoBericht(null)},
    {fade:'out',t:1.2},{dream:true},{speler:false},
    {actor:'ray',at:[R.x,R.z],ry:0,anim:'leun'},cam(R.x+5,2.2,R.z+5,R.x,1.5,R.z),{fade:'in',t:.6},{wait:2},{fade:'out',t:.4},
    {actor:'bakker',at:[pol.x,pol.z+3],ry:PI,look:{skin:'#e8c4a0',hair:'#8a8478',hs:'kort',eye:'#3a4a60',mood:'koel',top:{kind:'suit',c:'#3a3f48',c2:'#e8e4da'},legs:{kind:'jeans',c:'#3a3f48'},shoes:{kind:'boot',c:'#1a1a1c'}},anim:'point'},
    cam(pol.x+3,1.8,pol.z+6,pol.x,1.5,pol.z+3),{fade:'in',t:.4},{say:null,text:'Rechercheur Bakker prikt een foto op een bord. Een jongen in een rode jas.',t:3},{fade:'out',t:.4},
    cam(H.x+90,70,H.z+110,H.x,4,H.z),{fade:'in',t:.4},camNaar(H.x-40,30,H.z+50,H.x,2,H.z,7.5,{wacht:false}),{fn:()=>G.verteller&&G.verteller('v13')},{fade:'out',t:.5},{dream:false},
-   {titel:'Seizoen 2',sub:G.h2&&G.h2.live&&G.h2.live()?'Twee bazen':'Coming soon',t:3.6},{weg:'ray'},{weg:'bakker'},{speler:true},{fade:'in',t:1}]);
+   {weg:'ray'},{weg:'bakker'},
+   // thuis: Giulia is nog op. Er stond een man voor de deur.
+   {binnen:'thuis'},{fn:()=>['marco','giulia','elena'].forEach(k=>{try{B.toon('thuis',k,false)}catch(e){}})},
+   {actor:'giulia',at:W('thuis',3.6,6.25),ry:PI,anim:'sit',sitY:-.4},{actor:'luca',at:W('thuis',5.1,7.1),ry:naar({x:5.1,z:7.1},{x:3.6,z:6.25})},
+   {fn:()=>['giulia','luca'].forEach(k=>{const a=C.acteur(k);if(a)a.g.binnenId=1})},
+   cam(...W3('thuis',5.6,3.0,3.2),...W3('thuis',4.35,1.9,6.7)),{fade:'in',t:.7},
+   {say:null,text:'Thuis. Alleen het licht van de tv. Giulia zit nog op de bank, haar knieën opgetrokken.',t:3},
+   {anim:'giulia',a:'idle',naar:'luca'},{say:'giulia',text:'Luca? Er stond net een man voor de deur. Hij vroeg naar jou.',t:3,mood:'bang'},
+   {say:'luca',text:'Wat voor man?',t:1.4},
+   {say:'giulia',text:'Bril. Heel aardig. Hij had zo’n grote camera om zijn nek.',t:3},
+   {say:'giulia',text:'Hij zei: “Zeg maar tegen Luca dat ik hem heb gezien.”',t:3.4,mood:'bang'},
+   {anim:'luca',a:'idle',prop:'telefoon'},rond(...W('thuis',5.1,7.1),naar({x:5.1,z:7.1},{x:3.6,z:6.25})-.9,2.3,2.3,2.0),{say:null,text:'Luca kijkt naar zijn telefoon. Naar de foto van vanavond. Hij doet de voordeur op slot. Twee keer.',t:3.6},
+   {fade:'out',t:1},{titel:'Seizoen 2',sub:G.h2&&G.h2.live&&G.h2.live()?'Twee bazen':'Coming soon · Wie is de man met de camera?',t:3.8},
+   {weg:'giulia'},{weg:'luca'},{fn:()=>['marco','giulia','elena'].forEach(k=>{try{B.toon('thuis',k,true)}catch(e){}})},{speler:true},{fade:'in',t:1}]);
   if(t!==RUN)return;F('h1_klaar',Date.now());if(G.h2&&G.h2.live&&G.h2.live()&&G.h2.mag&&G.h2.mag()){G.h2.begin();return}go('h1_vrij');seizoen2()}});
 
 stap('h1_vrij',{doel:null,start(o){dienstAan(true);const zetDoel=()=>ST.doel(G.h2&&G.h2.live&&G.h2.live()?'Seizoen 2 is uit · extra diensten bij Giovanni':'Seizoen 2 · coming soon. Extra diensten bij Giovanni',null);zetDoel();setTimeout(zetDoel,2000);zorgFiets();B.slot('rijtjeshuis',true,'Daar ga je nooit meer naar binnen');
   // zodra Seizoen 2 live is, gaat het verhaal vanzelf verder
   setTimeout(()=>{if(ST.huidig()==='h1_vrij'&&G.h2&&G.h2.live&&G.h2.live())G.h2.begin()},2500)}});
-G.h1.test={agent,nietBetaler,rapido,dief,gevecht};
+G.h1.test={agent,nietBetaler,rapido,dief,gevecht};Object.assign(G.h1.lib,{belKaart,fotoBericht});
 }
 
 /* =================== Seizoen 2: de poort =================== */

@@ -89,13 +89,20 @@ function build(id){const d=DEF[id];if(BUILT[id])return BUILT[id];const sc=G.scen
   if(DH){const wm=new Set();S.walls.forEach(w=>{wm.add(w.m);wm.add(w.st);wm.add(w.cap)});S.ceils.forEach(c=>wm.add(c));
     root.children.forEach(m=>{if(!m.isMesh||wm.has(m)||!m.geometry||!m.geometry.parameters||m.geometry.parameters.height==null||m.geometry.type!=='BoxGeometry')return;const h=m.geometry.parameters.height*m.scale.y,top=m.position.y+h/2,bot=m.position.y-h/2;
       if(bot>=1.5&&top>=2.85){m.scale.y*=(h+DH)/h;m.position.y+=DH/2}})}
+  // hoge blokken tegen een muur (lateien boven de deur, planken, borden) gaan mee met die muur: zakt de muur weg
+  // (camera van boven), dan verdwijnen ze ook, anders hangt er een balk tussen de camera en je poppetje
+  {const per=new Map();S.bx=S.bx.filter(b=>{if(b[4]-b[1]/2<1.9)return true;const x=b[3],z=b[5];let best=null,bd=.45;
+      for(const w of S.walls){if(w.nooit)continue;let dp;if(w.ax==='x'){if(x<w.x0-1.6||x>w.x1+1.6)continue;dp=Math.abs(z-(w.z0+w.z1)/2)-(w.z1-w.z0)/2}else{if(z<w.z0-1.6||z>w.z1+1.6)continue;dp=Math.abs(x-(w.x0+w.x1)/2)-(w.x1-w.x0)/2}
+        if(dp<bd){bd=dp;best=w}}
+      if(!best)return true;if(!per.has(best))per.set(best,[]);per.get(best).push(b);return false});
+    per.forEach((bx,w)=>{const m=K.model(bx);m.traverse(o=>{if(o.isMesh)o.receiveShadow=true});root.add(m);w.extra.push(m)})}
   if(S.bx.length){const m=K.model(S.bx);m.traverse(o=>{if(o.isMesh){o.receiveShadow=true}});root.add(m)}
   // rook: één puntenwolk per interieur
   if(S.smoke.length)S.puffs=mkPuffs(root,S);
   // plekken waar je iets kunt (G.spot uit stad-doen.js), alleen zichtbaar als je hier binnen bent
   S.spots.forEach(o=>{const sp=Object.assign({},o,{story:1,k:o.k||'binnen',x:d.o.x+o.x,z:d.o.z+o.z,prio:o.prio!=null?o.prio:1,show:()=>inside===id&&!(G.cut&&G.cut.active())&&(!o.show||o.show())});if(G.spot)o._spot=G.spot(sp)});
   // de uitgang
-  if(d.deur&&G.spot)S.uitSpot=G.spot({story:1,k:'binnen',x:d.o.x+d.deur.x,z:d.o.z+d.deur.z,r:1.9,prio:1,n:'Naar buiten',sub:d.naam,col:'#a9dcff',h:2.4,show:()=>inside===id&&!(G.cut&&G.cut.active())&&!d.uitDicht,act:()=>B0.uit()});
+  if(d.deur&&G.spot)S.uitSpot=G.spot({story:1,k:'binnen',x:d.o.x+d.deur.x,z:d.o.z+d.deur.z,r:1.9,prio:1,n:'Naar buiten',sub:d.naam,col:'#a9dcff',h:2.4,show:()=>inside===id&&!(G.cut&&G.cut.active())&&!d.uitDicht,act:()=>B0.uit({lopen:true})});
   BUILT[id]=S;return S}
 
 /* =================== rook =================== */
@@ -124,6 +131,19 @@ const dA0=M.districtAt;M.districtAt=function(x,z){if(x>4000){for(const id in DEF
 /* =================== binnen en buiten =================== */
 const fadeEl=document.createElement('div');fadeEl.className='sv-bfade';document.body.appendChild(fadeEl);
 function fade(v,t){return new Promise(res=>{fadeEl.style.transition=`opacity ${t}s`;fadeEl.style.opacity=v;fadeEl.style.pointerEvents=v>0?'auto':'none';setTimeout(res,t*1000+20)})}
+// Overgang bij een deur: het beeld sluit als een cirkel om je poppetje (je loopt de deur in) en gaat binnen weer open vanaf de deur.
+// Werkt voor elk gebouw met een interieur (alle seizoenen). Zonder speler in beeld: een gewone fade.
+const irisEl=document.createElement('div');irisEl.className='sv-iris';irisEl.style.cssText='position:fixed;inset:0;z-index:69;pointer-events:none;opacity:0';document.body.appendChild(irisEl);
+const V3S=new TH.Vector3();
+function schermPlek(){try{const cam=G.camera();cam.updateMatrixWorld();V3S.set(G.P.x,1.3,G.P.z).project(cam);if(V3S.z>1||Math.abs(V3S.x)>1.1||Math.abs(V3S.y)>1.1)return null;return {x:(V3S.x*.5+.5)*innerWidth,y:(-V3S.y*.5+.5)*innerHeight}}catch(e){return null}}
+function iris(dicht,t,plek){return new Promise(res=>{const p=plek||schermPlek()||{x:innerWidth/2,y:innerHeight*.55},max=Math.hypot(Math.max(p.x,innerWidth-p.x),Math.max(p.y,innerHeight-p.y))+40,t0=performance.now();
+  irisEl.style.opacity=1;irisEl.style.pointerEvents='auto';
+  const stap=()=>{let u=Math.min(1,(performance.now()-t0)/(t*1000));const e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;const r=dicht?max*(1-e):max*e;
+    irisEl.style.background=`radial-gradient(circle at ${p.x.toFixed(0)}px ${p.y.toFixed(0)}px, transparent ${Math.max(0,r).toFixed(1)}px, #000 ${(Math.max(0,r)+1.5).toFixed(1)}px)`;
+    if(u<1)requestAnimationFrame(stap);else{if(!dicht){irisEl.style.opacity=0;irisEl.style.pointerEvents='none'}else{fadeEl.style.transition='none';fadeEl.style.opacity=1}res()}};stap()})}
+// even lopen (voor de overgang): het poppetje loopt naar een punt, hooguit t seconden
+function loopNaar(x,z,t){return new Promise(res=>{try{G.P.path=[{x,z}];G.P.goal=null}catch(e){}setTimeout(()=>{try{G.stopPath&&G.stopPath()}catch(e){}res()},t*1000)})}
+const magLopen=o=>!!(o&&o.lopen)&&!(G.cut&&G.cut.active())&&!G.driving&&!G.spelerWeg;
 const SKIPVIS=new Set();
 function hideOutside(S){const sc=G.scene(),keep=new Set([S.root,G.avatarObj&&G.avatarObj()]);hidden=[];
   sc.children.forEach(o=>{if(keep.has(o)||o.isLight||o.isCamera||o.type==='Object3D'&&o.children.length===0)return;if(o.binnenId)return;if(o.visible){hidden.push(o);o.visible=false}})}
@@ -131,7 +151,10 @@ function keepHidden(){const av=G.avatarObj&&G.avatarObj();for(const o of hidden)
 function showOutside(){hidden.forEach(o=>{o.visible=true});hidden=[]}
 B0.in=async function(id,o){o=o||{};const d=DEF[id];if(!d)return false;if(inside===id)return true;if(inside)await B0.uit({fade:false,naar:null});
   if(d.dicht&&!o.forceer){G.toast&&G.toast(d.dichtTxt||'Dicht','info');return false}
-  const fd=o.fade!==false;if(fd){G.snd&&G.snd.fx('door');await fade(1,.32)}
+  const fd=o.fade!==false,lopen=fd&&magLopen(o);let viaIris=false;
+  if(lopen){// naar de deur lopen, deur open, het beeld sluit om je heen
+    const f=facade(id);G.snd&&G.snd.fx('door');if(f){loopNaar(f.x+f.nx*.45,f.z+f.nz*.45,.5)}await iris(true,.55);viaIris=true}
+  else if(fd){G.snd&&G.snd.fx('door');await fade(1,.32)}
   const S=build(id);if(!inside)wasOut={x:G.P.x,z:G.P.z,ry:G.P.ry,yaw:G.yawT};
   if(G.driving&&G.exitCar)G.exitCar(true);
   inside=id;S.root.visible=true;S.persons.forEach(a=>{a.g.visible=!a.uit;a.slaap=!!a.uit});hideOutside(S);
@@ -141,15 +164,26 @@ B0.in=async function(id,o){o=o||{};const d=DEF[id];if(!d)return false;if(inside=
   G.applyLight&&G.applyLight();setTimeout(()=>G.applyLight&&G.applyLight(),50);
   try{if(G.story){const s=G.story.st();s.binnen=id;try{save()}catch(e){}}}catch(e){}
   d.onIn&&d.onIn(S);(B0.onIn||[]).forEach(f=>{try{f(id)}catch(e){}});
-  if(fd){await new Promise(r=>setTimeout(r,60));await fade(0,.4)}return true};
-B0.uit=async function(o){o=o||{};if(!inside)return;const id=inside,d=DEF[id],S=BUILT[id];const fd=o.fade!==false;if(fd){G.snd&&G.snd.fx('door');await fade(1,.3)}
+  if(viaIris){// binnen: vanaf de deur een paar stappen de kamer in terwijl het beeld opengaat
+    const ry=G.P.ry;await new Promise(r=>setTimeout(r,80));fadeEl.style.transition='none';fadeEl.style.opacity=0;fadeEl.style.pointerEvents='none';
+    loopNaar(G.P.x+Math.sin(ry)*1.4,G.P.z+Math.cos(ry)*1.4,.7);await iris(false,.6)}
+  else if(fd){await new Promise(r=>setTimeout(r,60));await fade(0,.4)}return true};
+B0.uit=async function(o){o=o||{};if(!inside)return;const id=inside,d=DEF[id],S=BUILT[id];const fd=o.fade!==false,lopen=fd&&magLopen(o);let viaIris=false;
+  if(lopen){G.snd&&G.snd.fx('door');if(d.deur)loopNaar(d.o.x+d.deur.x,d.o.z+d.deur.z+.4,.45);await iris(true,.5);viaIris=true}
+  else if(fd){G.snd&&G.snd.fx('door');await fade(1,.3)}
   inside=null;S.root.visible=false;S.persons.forEach(a=>{a.g.visible=false;a.slaap=true});showOutside();G.camK=null;document.body.classList.remove('sv-binnen');delete document.body.dataset.binnen;
-  const out=o.naar||deurBuiten(id)||wasOut;if(out){const p=M.nearestWalk(out.x,out.z,8)||out;G.P.x=p.x;G.P.z=p.z;G.P.vx=G.P.vz=0;const f=facade(id);if(f){G.P.ry=Math.atan2(f.nx,f.nz);// camera aan de straatkant (niet achter je, boven het gebouw: dan zie je alleen gevel en dak)
+  const out=o.naar||deurBuiten(id)||wasOut;if(out){const p=M.nearestWalk(out.x,out.z,8)||out;G.P.x=p.x;G.P.z=p.z;G.P.vx=G.P.vz=0;const f=o.naar?null:facade(id);
+    // terug naar een opgegeven plek (na een cutscène): de richting en camera van toen, niet die van deze gevel
+    if(o.naar){if(o.naar.ry!=null)G.P.ry=o.naar.ry;if(o.naar.yaw!=null)G.yawT=G.yaw=o.naar.yaw}
+    if(f){G.P.ry=Math.atan2(f.nx,f.nz);// camera aan de straatkant (niet achter je, boven het gebouw: dan zie je alleen gevel en dak)
     G.yawT=G.yaw=G.P.ry+(G.camMode&&G.camMode!=='boven'?Math.PI:0)}}
   if(G.camC)G.camC.init=false;G.applyLight&&G.applyLight();
   try{if(G.story){G.story.st().binnen=null;try{save()}catch(e){}}}catch(e){}
   d.onUit&&d.onUit(S);(B0.onUit||[]).forEach(f=>{try{f(id)}catch(e){}});
-  if(fd){await new Promise(r=>setTimeout(r,60));await fade(0,.4)}};
+  if(viaIris){// buiten: de deur uit en een paar stappen de straat op terwijl het beeld opengaat
+    const ry=G.P.ry;await new Promise(r=>setTimeout(r,80));fadeEl.style.transition='none';fadeEl.style.opacity=0;fadeEl.style.pointerEvents='none';
+    loopNaar(G.P.x+Math.sin(ry)*1.6,G.P.z+Math.cos(ry)*1.6,.7);await iris(false,.6)}
+  else if(fd){await new Promise(r=>setTimeout(r,60));await fade(0,.4)}};
 B0.onIn=[];B0.onUit=[];
 B0.waar=()=>inside;B0.plafond=id=>{const d=DEF[id];return d?d.plafond:null};
 // muur (hoog) op een wereldplek in het interieur waar je nu bent; buiten het interieur telt als muur (voor de cutscène-camera)
@@ -174,7 +208,7 @@ B0.deurBuiten=deurBuiten;
 const FACE={N:[0,-1],S:[0,1],E:[1,0],W:[-1,0]};
 function facade(id){const a=deurBuiten(id);if(!a)return null;let best=null;
   // weet de plek zelf welke kant de deur op kijkt (face of ry), dan die gebruiken
-  const fc=a.face&&FACE[a.face];if(fc){let k=.5;for(;k<7;k+=.25){const x=Math.floor(a.x-fc[0]*k),z=Math.floor(a.z-fc[1]*k);if(x>=0&&z>=0&&x<M.W&&z<M.H&&M.solid[z*M.W+x])break}if(k>=7)k=1;return {x:a.x-fc[0]*k,z:a.z-fc[1]*k,nx:fc[0],nz:fc[1],k}}[[0,-1],[1,0],[0,1],[-1,0]].forEach(([dx,dz])=>{for(let k=.5;k<7;k+=.25){const x=Math.floor(a.x+dx*k),z=Math.floor(a.z+dz*k);if(x<0||z<0||x>=M.W||z>=M.H)break;if(M.solid[z*M.W+x]){if(!best||k<best.k)best={k,dx,dz};break}}});
+  const fc=a.face&&FACE[a.face];if(fc){let k=.5;for(;k<7;k+=.25){const x=Math.floor(a.x-fc[0]*k),z=Math.floor(a.z-fc[1]*k);if(x>=0&&z>=0&&x<M.W&&z<M.H&&M.solid[z*M.W+x]===1)break}if(k>=7)k=1;return {x:a.x-fc[0]*k,z:a.z-fc[1]*k,nx:fc[0],nz:fc[1],k}}[[0,-1],[1,0],[0,1],[-1,0]].forEach(([dx,dz])=>{for(let k=.5;k<7;k+=.25){const x=Math.floor(a.x+dx*k),z=Math.floor(a.z+dz*k);if(x<0||z<0||x>=M.W||z>=M.H)break;if(M.solid[z*M.W+x]===1){if(!best||k<best.k)best={k,dx,dz};break}}});
   if(!best)return {x:a.x,z:a.z,nx:0,nz:1,k:0};return {x:a.x+best.dx*best.k,z:a.z+best.dz*best.k,nx:-best.dx,nz:-best.dz,k:best.k}}
 B0.gevel=facade;
 const DOORS={};
@@ -182,7 +216,7 @@ function doors(){if(!G.spot)return;for(const id in DEF){const d=DEF[id],a=deurBu
     if(cur){cur.spot&&G.unspot&&G.unspot(cur.spot);cur.deco&&cur.deco.parent&&cur.deco.parent.remove(cur.deco)}
     // heeft de stad zelf al een ingang met binnen:id (M.places), dan geen tweede deurplek
     const viaPlek=(M.places||[]).some(p=>p.binnen===id);
-    const f=facade(id);const spot=viaPlek?null:G.spot({story:1,k:'deur',x:a.x,z:a.z,r:2.3,prio:1,n:d.deurTxt||'Naar binnen',sub:d.naam,col:d.kleur||'#ffd35a',h:2.6,show:()=>!inside&&!(G.cut&&G.cut.active())&&!(d.verborgen&&d.verborgen()),act:()=>B0.in(id),
+    const f=facade(id);const spot=viaPlek?null:G.spot({story:1,k:'deur',x:a.x,z:a.z,r:2.3,prio:1,n:d.deurTxt||'Naar binnen',sub:d.naam,col:d.kleur||'#ffd35a',h:2.6,show:()=>!inside&&!(G.cut&&G.cut.active())&&!(d.verborgen&&d.verborgen()),act:()=>B0.in(id,{lopen:true}),
       map:d.kaart===false?null:{n:d.naam,ic:K.ic.door,c:d.kleur||'#ffd35a',pri:1}});
     let deco=null;if(d.buiten&&f){deco=new TH.Group();deco.binnenId=1;deco.position.set(f.x,0,f.z);deco.rotation.y=Math.atan2(f.nx,f.nz);f.eigen=!!(a.eigen||(M.A&&d.ankerId&&M.A[d.ankerId]));try{d.buiten(deco,f)}catch(e){console.error(e)}G.scene().add(deco)}
     DOORS[id]={k,spot,deco}}}

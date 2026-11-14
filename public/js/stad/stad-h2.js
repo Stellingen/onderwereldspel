@@ -313,10 +313,23 @@ async function mDexOpgepakt(t){const S=L.A('schoolhek',234,371);L.tijd(15,10);if
      {say:'moeder_dex',text:'Hij had altijd al één echte vriend.',t:2.4},{fade:'out',t:.4},{weg:'moeder_dex'},{weg:'luca'},{speler:true},{fade:'in',t:.4}]);L.F('dex_hulp','moeder');ST.meter('loy_dex',20)}
   else{C.weg('luca');await C.zeg('luca','(Hij noemt mijn naam niet. Dat weet ik. Dat moet genoeg zijn.)',{t:3});L.F('dex_hulp','niets');ST.meter('loy_dex',-15);L.F('dex_vergeet_niet',1)}}
 
-async function mEinde(t){await C.play([{fn:L.tril},{say:'nova',text:'Luca. Iemand heeft Dex verraden. Niet de politie: die wisten waar hij zou zijn. Precies waar. Precies wanneer.',t:4,mood:'koel'},
-   {say:'luca',text:'Wie dan?',t:1.4},{say:'nova',text:'Het spoor leidt naar Sahara.',t:2.4},{fade:'out',t:1},{dream:true},
-   L.cam(...(()=>{const s=L.A('sahara',655,909);return [s.x+14,9,s.z+18,s.x,2,s.z]})()),{fade:'in',t:.6},{wait:2.4},{fade:'out',t:.6},{dream:false},
-   {titel:'Seizoen 3',sub:G.h3&&G.h3.live&&G.h3.live()?'De hoek':'Coming soon',t:3.6},{fade:'in',t:1}]);
+async function mEinde(t){let p0=null;
+  // het telefoontje: thuis op je kamer (na de keuze voor Dex) of waar je staat op straat
+  const bin=B.waar(),thuis=bin==='thuis',l=L.P();if(!thuis&&!B.waar())L.fietsAf();
+  const bel=thuis?[{speler:false},{actor:'luca',at:L.W('thuis',12.6,10.2),ry:PI*.5,anim:'sit',sitY:-.45,prop:'telefoon'},{fn:()=>{const a=C.acteur('luca');if(a)a.g.binnenId=1}},L.cam(...L.W3('thuis',14.5,1.95,11.0),...L.W3('thuis',12.6,1.65,10.2))]
+    :[{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry,anim:'bel',prop:'telefoon'},L.rond(l.x,l.z,(l.ry||0)+.9,2.8,1.7,1.5)];
+  // Sahara van de overkant: laag, schuin op de ingang (niet van hoog tegen een gevel aan)
+  const f=B.gevel&&B.gevel('sahara'),sa=L.A('sahara',655,909),fx=f?f.x:sa.x,fz=f?f.z:sa.z,nx=f?f.nx:0,nz=f?f.nz:1,sx=-nz,sz=nx;
+  await C.play([...bel,{fade:'in',t:.4},{fn:L.tril},{say:'nova',text:'Luca. Iemand heeft Dex verraden. Niet de politie: die wisten waar hij zou zijn. Precies waar. Precies wanneer.',t:4,mood:'koel'},
+   {say:'luca',text:'Wie dan?',t:1.4},{say:'nova',text:'Het spoor leidt naar Sahara.',t:2.4},{fade:'out',t:1},{weg:'luca'},{dream:true},
+   L.cam(fx+nx*12+sx*6,2.6,fz+nz*12+sz*6,fx,2.4,fz),{fade:'in',t:.6},L.camNaar(fx+nx*8+sx*3.5,2.4,fz+nz*8+sz*3.5,fx,2.4,fz,3,{wacht:false}),{wait:2.6},{fade:'out',t:.6},{dream:false},
+   // de cliffhanger: in de achterkamer van Sahara belt Rafiq met iemand die "B." heet
+   {fn:()=>{p0=B.waar()?null:{x:G.P.x,z:G.P.z,ry:G.P.ry,yaw:G.yawT};['teller0','teller1','bewaker'].forEach(n=>{try{B.toon('sahara',n,false)}catch(e){}})}},{binnen:'sahara'},{speler:false},{actor:'rafiq',at:L.W('sahara',6.4,2.2),ry:0,anim:'bel',prop:'telefoon'},{fn:()=>{const a=C.acteur('rafiq');if(a)a.g.binnenId=1}},
+   L.cam(...L.W3('sahara',3.0,2.6,5.3),...L.W3('sahara',6.4,2.2,2.2)),{fade:'in',t:.6},
+   {say:'rafiq',text:'Ja. Hij weet niks.',t:2.2,mood:'koel'},{say:'rafiq',text:'Nee. De jongen niet. Nog niet.',t:2.6,mood:'koel'},
+   L.cam(...L.W3('sahara',5.2,2.7,4.7),...L.W3('sahara',6.4,2.3,2.2)),{fn:()=>L.belKaart&&L.belKaart('Telefoon van Rafiq','B.','In gesprek · 04:12')},{say:null,text:'Op het scherm van zijn telefoon staat maar één letter: B.',t:3.2},{fn:()=>L.belKaart&&L.belKaart(null)},
+   {fade:'out',t:.8},{weg:'rafiq'},{fn:async()=>{['teller0','teller1','bewaker'].forEach(n=>{try{B.toon('sahara',n,true)}catch(e){}});try{if(bin&&bin!=='sahara')await B.in(bin,{fade:false,forceer:true});else await B.uit({fade:false,naar:p0})}catch(e){}}},
+   {titel:'Seizoen 3',sub:G.h3&&G.h3.live&&G.h3.live()?'De hoek':'Coming soon · Met wie belt Rafiq?',t:3.6},{speler:true},{fade:'in',t:1}]);
   L.F('h2_klaar',Date.now());if(G.h3&&G.h3.live&&G.h3.live()&&G.h3.mag()){G.h3.begin();return}ST.goto('h2_vrij');
   const vip=ST.vip&&ST.vip();ST.kaart(`<small>De Bezorger · Seizoen 2 uitgespeeld</small><b>Twee bazen, en een verrader</b>
    <p>Dex: <b>${L.F('dex_hulp')==='ray'?'vrij via Ray':L.F('dex_hulp')==='moeder'?'geholpen via zijn moeder':'alleen gelaten'}</b> · Verhaalgeld: <b>${L.eur(ST.geld())}</b></p>
