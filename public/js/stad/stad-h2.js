@@ -177,7 +177,7 @@ async function mUitkijk(t){const g=L.A('parkeergarage',895,875),post={x:888,z:90
   await C.play([{fn:L.tril},{say:'nova',text:'Parkeergarage aan de Boulevard. Tien uur. Jij staat op de hoek en je kijkt. Zie je blauw: seintje.',t:3.6,mood:'koel'}]);if(t!==RUN)return;
   L.zorgFiets();if(!await doelNaar('Op de uitkijk bij de parkeergarage',post,4))return;L.tijd(22,0);
   const l=L.P(),bus=L.walk(g.x+(l.x-g.x)*.45,g.z+(l.z-g.z)*.45,5);// Nova op de stoep tussen de garage en jou (niet in de gevel)
-  await C.play([{actor:'nova',at:[bus.x,bus.z],ry:L.naar(bus,l),anim:'leun'},L.rond(bus.x,bus.z,L.naar(bus,l)-.45,4.0,2.4,1.9),{fn:()=>G.verteller&&G.verteller('v17')},
+  await C.play([{actor:'nova',at:[bus.x,bus.z],ry:L.naar(bus,l),anim:'leun'},L.rond(bus.x,bus.z,L.naar(bus,l)+.15,2.9,2.4,2.0),{fn:()=>G.verteller&&G.verteller('v17')},
    {say:'nova',text:'Drie auto’s rijden zo de garage in. Wij doen de rest. Jij: ogen op de Boulevard.',t:3,mood:'koel'},
    {say:'nova',text:'En jongen. Een vals alarm kost ons evenveel als een gemist alarm.',t:2.8},{weg:'nova'}]);if(t!==RUN)return;
   G.frozen=1e9;const res=await uitkijk();G.frozen=0;if(t!==RUN)return;
