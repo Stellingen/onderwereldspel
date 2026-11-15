@@ -120,7 +120,7 @@ hoofdstuk({id:'s1_h7',na:'s1_h8',vrij:true,outfit:'straat',blokken:[
    cam(car.x+4,2.4,car.z+6,l.x,1.4,l.z,{fov:44}),{fade:'in',t:.6},{snd:'carDoor'},T_('Een rijtjeshuis in Oud-Zuid. Gordijnen dicht. Binnen staat de tv aan.'),
    rond(l,naar(l,deur)+PI*.85,3.2,1.7,1.5)]);
   let woede=0;const D=17;
-  const r=await mgGesprek({kop:'Aan de deur · meneer Vos',wie:'vos',kleur:'#c09a6a',meters:{d:['DRUK',0,'#ff9a3a']},
+  const r=await S1.inScene(t,[{actor:'vos',at:[deur.x,deur.z],ry:naar(deur,l)},rond(l,naar(l,deur)+PI*.85,3.2,1.7,1.5)],()=>mgGesprek({kop:'Aan de deur · meneer Vos',wie:'vos',kleur:'#c09a6a',meters:{d:['DRUK',0,'#ff9a3a']},
    beurten:[
     {vraag:'De deur blijft dicht. Wat doe je?',opties:[
      {t:'Aanbellen tot hij opendoet',eff:{d:D},fn:async()=>{woede++;await mgMash({kop:'Aanbellen',titel:'Blijf bellen',uitleg:'Tik zo snel je kunt.',tijd:5,doel:22,knop:'Bel!'});fx('deurbel')},reactie:'Ja! Ja! Ik kom al!'},
@@ -132,7 +132,7 @@ hoofdstuk({id:'s1_h7',na:'s1_h8',vrij:true,outfit:'straat',blokken:[
      {t:'"Mooie nieuwe Golf voor de deur. Ook niks?"',eff:{d:D*2},reactie:'Die is van mijn zwager.'}]}),
     m=>({vraag:'Vos haalt zes briefjes van vijftig tevoorschijn: "Driehonderd. Meer is er niet."',opties:[
      {t:'"Goed. Volgende week de rest."',id:'half',eff:{}},
-     {t:'"Alles. Nu."',id:'alles',eff:{}}]})]});
+     {t:'"Alles. Nu."',id:'alles',eff:{}}]})]}))||{m:{d:0},gekozen:[]};
   const druk=Math.round(r.m.d/D),keus=r.gekozen[2];
   let uit=keus==='half'?'half':(druk>=4&&woede<=2?'woorden':'tarik');F('incasso',uit);
   if(uit==='woorden')await speel(t,[T_('Vos kijkt naar Tarik bij de auto. Naar de jongen voor zijn deur.'),Z('vos','…Wacht.'),{snd:'open'},T_('Hij komt terug met een koffieblik. Zeshonderd.'),Z('luca','Fijne avond, meneer Vos.')]);
@@ -140,7 +140,7 @@ hoofdstuk({id:'s1_h7',na:'s1_h8',vrij:true,outfit:'straat',blokken:[
   else await speel(t,[{snd:'door'},T_('Vos slaat de deur dicht.'),{move:'tarik',to:[l.x+.8,l.z+.6],t:2.2},Z('tarik','Ga maar bij de auto staan.'),
     {move:'luca',to:[car.x-1,car.z-1.6],t:2.4,wacht:false},cam(car.x-3,1.5,car.z-4,car.x,1.2,car.z,{fov:40}),{wait:1.4},{snd:'hit'},{wait:.5},{snd:'door'},
     T_('Luca kijkt naar de auto. Niet naar het huis.'),{move:'tarik',to:[car.x-1.4,car.z-1.2],t:2},Z('tarik','Zeshonderd. Stap in.')]);
-  await speel(t,[{fade:'out',t:.5}]);C.weg('tarik');C.weg('luca');auto.parent&&auto.parent.remove(auto)},
+  await speel(t,[{fade:'out',t:.5}]);C.weg('tarik');C.weg('luca');C.weg('vos');auto.parent&&auto.parent.remove(auto)},
  async t=>{// terug in Sahara
   await binnen('sahara');const u=F('incasso');const v=u==='woorden'?[Z('rafiq','Met woorden. Dat is duurder dan een vuist, en het houdt langer.')]:u==='half'?[Z('rafiq','Half is ook iets. Volgende week haal jij de rest.')]:[Z('rafiq','Tarik deed het werk. Jij keek. Volgende keer niet.')];
   if(u==='woorden'){meter('vertrouwen',5);meter('naam',5);F('naam_trap',Math.max(F('naam_trap')||0,1))}else if(u==='half')meter('vertrouwen',2);
@@ -254,8 +254,8 @@ hoofdstuk({id:'s1_h10',na:'s1_h11',vrij:true,blokken:[
     {t:'Begrip · "Ik weet van je schulden. Wij lossen ze op."',id:'begrip',eff:{h:20,a:10},reactie:'Wie heeft jou dat verteld?'},
     {t:'Dreiging · Tarik houdt een telefoon op: een schoolplein.',sub:'"Noor zit in groep zes, toch?"',id:'dreig',eff:{a:45},reactie:'Laat haar erbuiten. Ik zweer het je.'},
     ronde===0?{t:'Vader · "Mijn vader zegt dat je een goeie vent bent."',id:'vader',eff:{a:10},reactie:'Weet je vader hiervan?'}:null].filter(Boolean);
-  const r=await mgGesprek({kop:'Groen licht · Edwin',wie:'edwin',kleur:'#9ad0a0',meters:{h:['HEBZUCHT',30,'#d6b25a'],a:['ANGST',20,'#ff5a4a']},
-   beurten:[0,1,2].map(i=>({vraag:['Edwin kijkt naar zijn auto. Naar jou.','Edwin: "En als ik nee zeg?"','Edwin draait zijn sleutels rond. Laatste kans.'][i],opties:kaart(i)}))});
+  const r=await S1.inScene(t,[rond(e,naar(e,l)+1.2,4.2,1.8,1.5)],()=>mgGesprek({kop:'Groen licht · Edwin',wie:'edwin',kleur:'#9ad0a0',meters:{h:['HEBZUCHT',30,'#d6b25a'],a:['ANGST',20,'#ff5a4a']},
+   beurten:[0,1,2].map(i=>({vraag:['Edwin kijkt naar zijn auto. Naar jou.','Edwin: "En als ik nee zeg?"','Edwin draait zijn sleutels rond. Laatste kans.'][i],opties:kaart(i)}))}))||{m:{h:50,a:20},gekozen:[]};
   const ed=r.m.h>=r.m.a?'geld':'angst';F('edwin',ed);if(r.gekozen.includes('vader'))F('edwin_vader',1);
   await speel(t,[ed==='geld'?{anim:'edwin',a:'give',prop:'envelop'}:null,Z('edwin',ed==='geld'?'Eén keer. Eén.':'Ik doe het. Kom nooit meer bij mijn huis.'),
    Z('edwin','Dinsdag, drie uur tien. Rij C. Hij gaat niet langs de douane.'),Z('edwin','Elke dinsdag één. Drie weken. Daarna ben ik weg.'),

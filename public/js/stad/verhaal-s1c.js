@@ -117,7 +117,8 @@ hoofdstuk({id:'s1_h11',na:'s1_h12',vrij:true,blokken:[
    {weg:'tarik'},{actor:'luca',at:W('sahara',4.4,20.4),ry:-PI/2},{actor:'yasmina',at:W('sahara',4.4,21.8),ry:-PI/2+.5},actIn(['luca','yasmina']),
    cam(...W3('sahara',7.6,1.8,21.4),...W3('sahara',4.2,1.5,21.0),{fov:40}),Z('yasmina','Jij bent Luca? Iedereen heeft het over jou.'),Z('luca','Wat zeggen ze dan?'),
    Z('yasmina','Dat Rafiq naar jou luistert. Dans je?')]);
-  try{await G.mini.ritme({titel:'Dansen',sub:'Jouw feest',n:16,gap:.62})}catch(e){await mgTiming({kop:'Dansen',titel:'Op de maat',rondes:4,snel:1.3,knop:'Stap'})}
+  await S1.inScene(t,[{actor:'luca',at:W('sahara',6.5,22),ry:0,anim:'dans'},{actor:'yasmina',at:W('sahara',7.6,22.6),ry:PI,anim:'dans2'},actIn(['luca','yasmina']),cam(...W3('sahara',4.0,2.0,25.0),...W3('sahara',7.0,1.4,22.2),{fov:46})],
+   ()=>mgTiming({kop:'Dansen · jouw feest',titel:'Op de maat',uitleg:'Stap als het streepje in het groene vak staat. Yasmina lacht als je mist.',rondes:5,snel:1.35,vak:.2,knop:'Stap'}));
   const r=await speel(t,[{actor:'luca',at:W('sahara',6.5,22),ry:0,anim:'dans'},{actor:'yasmina',at:W('sahara',7.6,22.6),ry:PI,anim:'dans2'},{actor:'bilal',at:W('sahara',10.4,18.6),ry:-PI/2,anim:'leun'},actIn(['luca','yasmina','bilal']),
    cam(...W3('sahara',4.0,2.0,25.0),...W3('sahara',7.0,1.4,22.2),{fov:46}),{wait:1.4},T_('Twee meisjes bij de bar kijken naar hem. "Is dat die van Rafiq?"'),
    {anim:'luca',a:'idle'},Z('yasmina','Geef je me je nummer?'),keuze('luca','',[{t:'"Ja."',id:'ja'},{t:'"Straks. Rafiq wacht."',id:'straks'}])]);
@@ -155,7 +156,7 @@ hoofdstuk({id:'s1_h12',na:'s1_h13',vrij:true,blokken:[
   await speel(t,[{speler:false},{actor:'nova',at:[nv.x,nv.z],ry:naar(nv,b),anim:'armen'},{actor:'luca',at:[b.x,b.z],ry:PI},cam(JX+16,7,JZ+44,JX,1.5,JZ+6,{fov:42}),{fade:'in',t:.6},{snd:'gull'},
    T_('Masten. Lichtjes op het water. Aan het eind van de steiger: een wit jacht, MARIJKE.'),rond(nv,naar(nv,b)+1,3.4,1.7,1.5),
    Z('nova','Bella Napoli. Telefoon. Niemand filmt hier.'),{anim:'luca',a:'give',prop:'telefoon',naar:'nova'},T_('Luca geeft er één. De tweede zit in zijn sok.')]);
-  const g=await mgTiming({kop:'Rustig blijven',titel:'Nova kijkt je aan',uitleg:'Druk op de piek van je hartslag. Twee van de drie.',rondes:3,snel:1.15,vak:.19,knop:'Ademen'});
+  const g=await S1.inScene(t,[rond(nv,naar(nv,b)+1,2.8,1.7,1.5)],()=>mgTiming({kop:'Rustig blijven',titel:'Nova kijkt je aan',uitleg:'Druk op de piek van je hartslag. Twee van de drie.',rondes:3,snel:1.15,vak:.19,knop:'Ademen'}))||0;
   if(g<2){F('twee_tel_gezien',1);await speel(t,[T_('Nova bukt. Ze trekt de tweede telefoon uit zijn sok.'),Z('nova','Twee. Ik tel altijd.')])}else await speel(t,[Z('nova','Hij zit achter. Aan tafel.')]);
   await speel(t,[{fade:'out',t:.3}]);C.weg('nova');C.weg('luca')},
  async t=>{// Ray aan tafel op de steiger
@@ -168,8 +169,8 @@ hoofdstuk({id:'s1_h12',na:'s1_h13',vrij:true,blokken:[
    Z('ray','Tramlaan. Derde galerij, toch?'),Z('luca','Hoe weet u dat?'),Z('ray','Ik woonde er ook. Eén hoger. Doet die lift het nog steeds niet?'),
    cam(JX+2.4,1.5,JZ+6.6,JX,1.3,JZ+5.2,{fov:32}),{anim:'ray',a:'point',naar:'luca'},Z('ray','Die jas. Daar heb ik twee winters in gefietst.'),{snd:'heart'},T_('Luca zegt niks.'),
    {anim:'ray',a:'give',naar:'luca'},ots(R.ray,R.luca,2.2,.8,1.9),Z('ray','Mijn vrienden aan deze kant eten ineens veel pizza. Weet jij daar iets van?')]);
-  const k=await mgGesprek({kop:'Big Ray',wie:'ray',kleur:'#e8e4da',meters:{},beurten:[{vraag:'"Weet jij daar iets van?"',tijd:5,geenAntwoord:{t:'(zwijgen)',id:'stil',eff:{},reactie:'Stil. Ook een antwoord.'},
-    opties:[{t:'"Pizza is lekker, meneer."',id:'grap',eff:{},reactie:'Giovanni leert ze goed.'},{t:'"Ik bezorg alleen voor Giovanni."',id:'netjes',eff:{},reactie:'Natuurlijk.'},{t:'(zwijgen)',id:'stil',eff:{},reactie:'Stil. Ook een antwoord.'}]}]});
+  const k=await S1.inScene(t,[ots(R.ray,R.luca,2.2,.8,1.9)],()=>mgGesprek({kop:'Big Ray',wie:'ray',kleur:'#e8e4da',meters:{},beurten:[{vraag:'"Weet jij daar iets van?"',tijd:5,geenAntwoord:{t:'(zwijgen)',id:'stil',eff:{},reactie:'Stil. Ook een antwoord.'},
+    opties:[{t:'"Pizza is lekker, meneer."',id:'grap',eff:{},reactie:'Giovanni leert ze goed.'},{t:'"Ik bezorg alleen voor Giovanni."',id:'netjes',eff:{},reactie:'Natuurlijk.'},{t:'(zwijgen)',id:'stil',eff:{},reactie:'Stil. Ook een antwoord.'}]}]}))||{gekozen:['stil']};
   F('ray_indruk',k.gekozen[0]||'stil');
   await speel(t,[{anim:'ray',a:'give',prop:'geld'},{snd:'cash'},T_('Ray legt een briefje van vijftig op de lege doos.'),Z('ray','Doe Giovanni de groeten. En Luca? Rij voorzichtig.'),
    cam(JX-14,4,JZ+30,JX,1.5,JZ+5,{fov:38}),verteller('n28'),{fade:'out',t:.5}]);C.weg('ray');C.weg('luca');geld(50,'fooi van Ray');meter('ray',5);
@@ -286,10 +287,10 @@ hoofdstuk({id:'s1_h15a',na:'s1_epi',blokken:[
    Z('ray','Nu laat ik je zien hoe het werkt. Bij de grote mensen.'),{anim:'nova',a:'give',prop:'telefoon',naar:'luca'},T_('Nova schuift Rafiqs telefoon terug, met een envelop erbij.'),
    Z('ray','Stuur hem een bericht. Noordkade, twee uur. Je fietst er zelf heen.'),Z('ray','In die rode jas. Anders komt hij niet.')]);
   const vt=meter('vertrouwen')||0,gel=F('brug_antwoord')==='gelogen';
-  const id=await S1.telefoonKeuze({kop:'Tweede telefoon',naar:'Rafiq',twijfel:gel,opties:[
+  const id=await S1.inScene(t,[cam(JX+.6,2.0,JZ+6.4,JX,.8,JZ+5.2,{fov:30})],()=>S1.telefoonKeuze({kop:'Tweede telefoon',naar:'Rafiq',twijfel:gel,opties:[
    {t:'Er klopt iets niet met de lading. Noordkade, twee uur. Kom alleen.',id:'lading',antwoord:()=>vt>=80?'Ik kom.':'Ik kom. Met Tarik.'},
    {t:'Ray was bij me. Hij weet iets. Ik moet je spreken. Noordkade.',id:'ray',antwoord:'Wat weet hij? Ik kom. Met Tarik.'},
-   {t:'Ik zit in de problemen. Kun je komen? Noordkade, twee uur.',id:'hulp',antwoord:()=>vt>=50?'Blijf daar. Ik kom eraan.':'Ik kom. Met Tarik.'}]});
+   {t:'Ik zit in de problemen. Kun je komen? Noordkade, twee uur.',id:'hulp',antwoord:()=>vt>=50?'Blijf daar. Ik kom eraan.':'Ik kom. Met Tarik.'}]}))||'hulp';
   F('lokbericht',id);F('tarik_mee',(id==='ray'||(id==='lading'&&vt<80)||(id==='hulp'&&vt<50))?1:0);geld(5000,'envelop van Ray');
   await speel(t,[verteller('n33'),{actor:'luca',at:[R.begin.x,R.begin.z-2],ry:0},{actor:'nova',at:[R.begin.x+.8,R.begin.z-1.4],ry:naar({x:R.begin.x+.8,z:R.begin.z-1.4},{x:R.begin.x,z:R.begin.z-2})},
    rond({x:R.begin.x,z:R.begin.z-2},PI*.4,3,1.7,1.5),{anim:'nova',a:'give',naar:'luca'},Z('nova','Rechtop. Je wacht op je baas.'),{fade:'out',t:.5}]);['ray','luca','nova'].forEach(k=>C.weg(k));
@@ -315,10 +316,10 @@ hoofdstuk({id:'s1_h15a',na:'s1_epi',blokken:[
    Z('ray','Dit doe ik zelf. Hij stal van mij, niet van Nova. Kijk goed, Luca.'),Z('rafiq','Luca. Kijk me aan.'),
    keuze('luca','',[{t:'Kijk hem aan',id:'aan'},{t:'Kijk weg',id:'weg'}])]);
   F('laatste_blik',blik||'aan');
-  if(F('laatste_blik')==='weg'){const e=A('eiland');await speel(t,[cam(l.x,1.6,l.z,e.x,4,e.z,{fov:40,to:{pos:[l.x,1.6,l.z],look:[e.x+40,4,e.z]},t:2.4})])}
-  else await speel(t,[cam(l.x+sin(naar(l,{x:l.x+3,z:l.z+2}))*1.4,1.5,l.z+cos(naar(l,{x:l.x+3,z:l.z+2}))*1.4,l.x,1.5,l.z,{fov:30}),{wait:1.5}]);
-  const z=await schotZwart();F('rafiq_dood',1);F('rafiq_dood_door','ray');['luca','rafiq','tarik','ray','nova','raysman'].forEach(k=>C.weg(k));rc.parent&&rc.parent.remove(rc);
-  S1.lichtKnop(false);await sleep(1200);z.remove()}]});
+  const e_=A('eiland'),bc=F('laatste_blik')==='weg'?[cam(l.x,1.6,l.z,e_.x,4,e_.z,{fov:40,to:{pos:[l.x,1.6,l.z],look:[e_.x+40,4,e_.z]},t:2.4})]
+   :[cam(l.x+sin(naar(l,{x:l.x+3,z:l.z+2}))*1.4,1.5,l.z+cos(naar(l,{x:l.x+3,z:l.z+2}))*1.4,l.x,1.5,l.z,{fov:30}),{wait:1.5}];
+  const z=await S1.inScene(t,bc,()=>schotZwart());F('rafiq_dood',1);F('rafiq_dood_door','ray');['luca','rafiq','tarik','ray','nova','raysman'].forEach(k=>C.weg(k));rc.parent&&rc.parent.remove(rc);
+  S1.lichtKnop(false);S1._zwart=z}]});
 
 /* =================== HOOFDSTUK 15B · Stil (loyaal) =================== */
 hoofdstuk({id:'s1_h15b',na:'s1_epi',blokken:[
@@ -335,7 +336,7 @@ hoofdstuk({id:'s1_h15b',na:'s1_epi',blokken:[
    {v:(g3==='ouders'?'Je vader sjouwt op de Containerkade. Met die rug. Hoe lang nog?':g3==='giulia'?'Je zus loopt om zeven uur alleen naar de tram. Elke ochtend.':'We waren in je kamer, Luca. Maat drieënveertig.')+' Voor wie?',d:5},
    {v:'Laatste keer. Daarna vraag ik het niet meer aan jou.',d:6}];
   for(let i=0;i<3&&levend(t);i++){await speel(t,[ots(st,ry,2.0,.7,1.6),Z('ray',vragen[i].v)]);
-   const k=await S1.zwijgen({kop:'Ronde '+(i+1)+' van 3',vraag:'Ray wacht.',duur:vragen[i].d});
+   const k=await S1.inScene(t,[cam(st.x+1.2,1.6,st.z-1.6,st.x,1.3,st.z,{fov:32}),{snd:'heart'}],()=>S1.zwijgen({kop:'Ronde '+(i+1)+' van 3',vraag:'Ray wacht.',duur:vragen[i].d}))||'zwijg';
    if(k==='noem'){F('finale','verraad');F('verraad_moment','loods');F('verraad_ronde',i+1);await speel(t,[Z('luca','…Rafiq. Rafiq van Sahara.'),{fade:'out',t:.4}]);
     ['luca','ray','nova','raysman'].forEach(k=>C.weg(k));loods(false);return 'goto:s1_h15a'}
    await speel(t,[i<2?{anim:'ray',a:'point',naar:'raysman'}:null,cam(c.x,2,c.z+.5,c.x,6,c.z,{fov:60}),i===1?null:{snd:'punch'},{fade:'out',t:.08},{wait:.4},{actor:'luca',at:[st.x,st.z],ry:PI,anim:'bang'},{fade:'in',t:.2},
@@ -366,17 +367,17 @@ hoofdstuk({id:'s1_h15b',na:'s1_epi',blokken:[
    cam(rf.x-3,1.2,rf.z-3.4,rf.x-2.4,1.0,rf.z-2,{fov:28}),verteller('n38'),{anim:'luca',a:'idle'},
    Z('ray','Hij heeft je gebruikt. Nu geef ik je iets terug.'),Z('ray','Hij, of jullie allebei. Zo gaat het in de grote mensenwereld.'),Z('rafiq','Luca. Jij bent niet zoals hij.'),
    cam(rf.x-3.2,2.0,rf.z-3.6,rf.x,1.6,rf.z,{fov:40})]);
-  let n=0;await S1.heffen({kop:'Het schot',titel:'Houd E om je arm te heffen',duur:3,zakTekst:'Nova: "Eén of twee, Luca."',onZak:()=>{n++;fx('click')}});F('geaarzeld',n);
+  let n=0;const schotCam=cam(rf.x-3.6,2.0,rf.z-3.8,rf.x,1.6,rf.z,{fov:38});await S1.inScene(t,[schotCam,{snd:'heart'}],()=>S1.heffen({kop:'Het schot',titel:'Houd E om je arm te heffen',duur:3,zakTekst:'Nova: "Eén of twee, Luca."',onZak:()=>{n++;fx('click')}}));F('geaarzeld',n);
   await speel(t,[{anim:'luca',a:'point'},{snd:'heart'}]);
   const lw=await speel(t,[keuze('luca','Zijn laatste woord',[{t:'"Sorry."',id:'sorry'},{t:'"Je had me nooit binnen moeten halen."',id:'binnen'},{t:'(niks)',id:'niks'}])]);F('laatste_woord',lw||'niks');
   if(lw==='sorry')await speel(t,[Z('luca','Sorry.')]);else if(lw==='binnen')await speel(t,[Z('luca','Je had me nooit binnen moeten halen.')]);
-  await S1.eenKnop('Schieten');const z=await schotZwart();F('rafiq_dood',1);F('rafiq_dood_door','luca');
-  ['luca','rafiq','ray','nova','raysman','bilal'].forEach(k=>C.weg(k));bus.parent&&bus.parent.remove(bus);await sleep(1200);z.remove()}]});
+  const z=await S1.inScene(t,[schotCam],async()=>{await S1.eenKnop('Schieten');return schotZwart()});F('rafiq_dood',1);F('rafiq_dood_door','luca');
+  ['luca','rafiq','ray','nova','raysman','bilal'].forEach(k=>C.weg(k));bus.parent&&bus.parent.remove(bus);S1._zwart=z}]});
 
 /* =================== EPILOOG en TEASER =================== */
 hoofdstuk({id:'s1_epi',na:'s1_vrij',blokken:[
  async t=>{tijd(2,10);const B_=F('finale')!=='verraad';try{G.weerZet&&G.weerZet('regen',true)}catch(e){}await buiten();const p=S1.fietsOpKade(true,B_)||PL.noordkade();
-  const zw=document.createElement('div');zw.style.cssText='position:fixed;inset:0;background:#000;z-index:96;transition:opacity 3s';document.body.appendChild(zw);
+  const zw=document.createElement('div');zw.style.cssText='position:fixed;inset:0;background:#000;z-index:96;transition:opacity 3s';document.body.appendChild(zw);if(S1._zwart){S1._zwart.remove();S1._zwart=null}
   await speel(t,[{speler:false},cam(p.x-2.6,.32,p.z+1.9,p.x,.3,p.z,{fov:36}),{fn:()=>{requestAnimationFrame(()=>zw.style.opacity='0');setTimeout(()=>zw.remove(),3200)}},{wait:3},verteller('n39'),
    {fn:()=>S1.kadeStop()},{wait:1.2},{fade:'out',t:.01}]);S1.fietsOpKade(false);try{G.weerZet&&G.weerZet('')}catch(e){}
   await studio(t,2,['n40'],[{snd:'click'},{wait:.8}]);await speel(t,[{snd:'click'},{fade:'out',t:.01}])},

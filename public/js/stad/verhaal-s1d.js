@@ -28,7 +28,7 @@ function rafiqRun(){const dag=ST.st().avond||0;if(F('run_dag')===dag){sein('Eén
    for(let i=0;i<2&&levend(t);i++){const a=twee[i];const ok=await nepRit(t,{p:{x:a.x,z:a.z},tekst:'Run · '+adr(a,'adres'),sub:'Nep-bestelling (Rafiq)',scene:async()=>{
       if(Math.random()<.25){fietsAf();const l=P(),car=walk(l.x-Math.sin(l.ry)*9,l.z-Math.cos(l.ry)*9,6),pa=S1.politieAuto();pa.position.set(car.x,0,car.z);pa.rotation.y=naar(car,l);G.scene().add(pa);
        await speel(t,[{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'agent2',at:[l.x-Math.sin(l.ry)*1.6,l.z-Math.cos(l.ry)*1.6],ry:naar({x:l.x-Math.sin(l.ry)*1.6,z:l.z-Math.cos(l.ry)*1.6},l)},rond(l,l.ry+PI*.7,4,1.8,1.4),{snd:'carDoor'},
-        S1.Z('agent2','Goedenavond. Je achterlicht.')]);const u=await S1.aanhouding(t,{kort:true,wijk:'deze wijk'});C.weg('agent2');C.weg('luca');setTimeout(()=>pa.parent&&pa.parent.remove(pa),1500)}
+        S1.Z('agent2','Goedenavond. Je achterlicht.')]);const u=await S1.aanhouding(t,{kort:true,wijk:'deze wijk',wie:'agent2',cam:rond(l,l.ry+PI*.7,4,1.8,1.4)});C.weg('agent2');C.weg('luca');setTimeout(()=>pa.parent&&pa.parent.remove(pa),1500)}
       fx('grab');sein('Afgegeven','#3fe395')}});if(ok)n++}
    S1.lichtKnop(false);if(!n)return;let loon=n*(F('tarief')||50);const s=F('schuld_rafiq')||0,af=Math.min(s,loon);if(af){F('schuld_rafiq',s-af);loon-=af;sein('Schuld bij Rafiq: nog '+eur(s-af),'#ff9a5a')}
    if(loon>0)geld(loon,'Rafiq-run');meter('vertrouwen',1);F('runs',(F('runs')||0)+1)},'bezorger')}

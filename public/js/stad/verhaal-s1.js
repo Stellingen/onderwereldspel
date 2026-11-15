@@ -99,6 +99,9 @@ const titel=(t,sub,d)=>({titel:t,sub:sub||'',t:d||3});
 // speel een scène; geeft de keuze terug (of null). Stopt stil als het verhaal intussen verder is.
 async function speel(t,steps,o){if(!levend(t))return null;try{return await C.play(steps.flat().filter(Boolean),Object.assign({blijf:true},o||{}))}catch(e){console.error(e);return null}}
 // keuze in de ondertitel: opties [{t,id}] → id
+// een minispel in beeld laten spelen: de camera blijft op de scène (de spelerscamera kan elders staan)
+async function inScene(t,steps,f){let r;await speel(t,[{speler:false},...steps,{fn:async()=>{try{r=await f()}catch(e){console.error(e)}}}]);return r}
+S1.inScene=inScene;
 const keuze=(wie,tekst,opties)=>({keuze:opties.map(o=>typeof o==='string'?{t:o,id:o}:o),wie,text:tekst||''});
 Object.assign(S1,{F,fx,eur,meter,zetMeter,geld,plusF,A,W,W3,plek,walk,P,naar,voor,tijd,DAGEN,Z,T_,cam,camNaar,rond,rondNaar,ots,verteller,titel,speel,keuze,dur,sleep,pick,rr,clamp,hyp});
 

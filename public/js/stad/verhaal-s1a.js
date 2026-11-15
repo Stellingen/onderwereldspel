@@ -275,7 +275,7 @@ hoofdstuk({id:'s1_h2',na:'s1_h3',blokken:[
    C.weg('giulia');C.weg('luca');await binnen('thuis')}
   else{await speel(t,[{speler:false},{actor:'luca',at:W('thuis',13.9,11.4),ry:PI,anim:'hurk'},actIn(['luca']),
     cam(...W3('thuis',15.8,1.6,12.8),...W3('thuis',13.8,.4,11.0),{fov:40}),{fade:'in',t:.4},{wait:.4}]);
-   const g=await mgHold({kop:'Onder het bed',titel:'Doos eruit, geld erin, doos terug',uitleg:'Houd vast (E). Hoor je mama in de gang? Loslaten tot ze weg is.',stappen:3,duur:1.3,storing:true,kijkTekst:'Mama in de gang! Loslaten.',waarschuw:'Voetstappen…',betrapt:'Te hard. Ze blijft staan…'});
+   const g=await S1.inScene(t,[cam(...W3('thuis',15.8,1.6,12.8),...W3('thuis',13.8,.4,11.0),{fov:40})],()=>mgHold({kop:'Onder het bed',titel:'Doos eruit, geld erin, doos terug',uitleg:'Houd vast (E). Hoor je mama in de gang? Loslaten tot ze weg is.',stappen:3,duur:1.3,storing:true,kijkTekst:'Mama in de gang! Loslaten.',waarschuw:'Voetstappen…',betrapt:'Te hard. Ze blijft staan…'}));
    if(g&&g.fout>=1)await speel(t,[{snd:'door'},Z('elena','Ben je nog wakker?'),Z('luca','Bijna slapen.')]);
    await speel(t,[T_('Een schoenendoos, maat 43. Niemand kijkt ooit onder dat bed.'),{fade:'out',t:.4}]);C.weg('luca')}
   await binnen('thuis');S1.huisZet();sein('Thuis kun je nu praten, helpen en altijd geld geven aan papa of mama (E)','#7fd1ff')},
@@ -304,7 +304,7 @@ hoofdstuk({id:'s1_h3',na:'s1_h4',blokken:[
   outfit('sport');tijd(11,10);const v=A('voetbalveld'),lp=walk(v.x-3,v.z-6,6),dp=walk(v.x+6,v.z-6,6),k=walk(v.x+1,v.z-9,6);
   await speel(t,[{speler:false},{actor:'gymdocent',at:[k.x,k.z],ry:naar(k,lp)},{actor:'luca',at:[lp.x,lp.z],ry:naar(lp,dp)},{actor:'dex',at:[dp.x,dp.z],ry:naar(dp,lp)},
    rond(k,PI*1.2,7,3,1.3),{fade:'in',t:.6},{snd:'whistle'},Z('gymdocent',"Penalty's! Tweetallen. De Santis, jij tegen Dex.")]);
-  const g=await mgTiming({kop:'Gymles',titel:"Penalty's tegen Dex",uitleg:'Schiet als het streepje in het groene vak staat. Dex keept.',rondes:3,snel:1.1,vak:.2,knop:'Schieten'});F('penalties',g);
+  const g=await S1.inScene(t,[rond(lp,naar(lp,dp)+PI*1.15,4.2,2.0,1.2)],()=>mgTiming({kop:'Gymles',titel:"Penalty's tegen Dex",uitleg:'Schiet als het streepje in het groene vak staat. Dex keept.',rondes:3,snel:1.1,vak:.2,knop:'Schieten'}))||0;F('penalties',g);
   await speel(t,[Z('dex',g>=3?'Oké. Profvoetballer.':g>=2?'Mazzel, broer.':"Ga maar pizza's bezorgen, mattie.",{mood:'blij'}),{fade:'out',t:.4},
    {actor:'luca',at:[lp.x,lp.z],ry:0,anim:'sit',sitY:-.5},{actor:'dex',at:[lp.x+1.1,lp.z],ry:0,anim:'drink',sitY:-.5},rond(lp,PI*.9,3.2,1.4,.9),{fade:'in',t:.4},
    {fn:()=>bericht('B.','20:00. Achterdeur. Vergeet het niet.',{kleur:'#5a5d63'})},{wait:1.8},Z('dex','Wie is B?'),Z('luca','Niemand. Iemand van werk.'),
@@ -369,7 +369,7 @@ hoofdstuk({id:'s1_h4',na:'s1_h5',blokken:[
   await speel(t,[{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'kramer',at:[car.x+1.4,car.z+1.4],ry:naar(car,l)},cam(l.x+sin(l.ry)*2.6,1.2,l.z+cos(l.ry)*2.6,car.x,1.0,car.z,{fov:44}),
    {snd:'carDoor'},rond(l,l.ry+PI*.75,4.6,1.8,1.4),{move:'kramer',to:[l.x-sin(l.ry)*1.6,l.z-cos(l.ry)*1.6],t:2.2},verteller('n10'),
    Z('kramer','Goedenavond. Weet je waarom ik je aanhoud?'),Z('kramer','Je achterlicht. Daar staat een bon op.')]);
-  const uitslag=await S1.aanhouding(t,{gesprint,wijk:'de Villawijk'});if(!levend(t))return;F('controle',uitslag);
+  const uitslag=await S1.aanhouding(t,{gesprint,wijk:'de Villawijk',cam:ots({x:l.x,z:l.z},{x:l.x-sin(l.ry)*1.6,z:l.z-cos(l.ry)*1.6},2.2,.8,1.9)});if(!levend(t))return;F('controle',uitslag);
   if(uitslag==='bureau'){await S1.naarBureau(t);auto.parent&&auto.parent.remove(auto);C.weg('kramer');C.weg('luca');return}
   setTimeout(()=>{auto.parent&&auto.parent.remove(auto)},2500);C.weg('kramer');
   const j=voor(2.2);await speel(t,[{speler:false},{actor:'jasper',at:[j.x,j.z],ry:naar(j,P())},{actor:'luca',at:[P().x,P().z],ry:naar(P(),j)},rond(j,naar(j,P())+1,3,1.6,1.4),{fade:'in',t:.3},
@@ -407,15 +407,15 @@ S1.aanhouding=async function(t,o){o=o||{};let aanGezet=false;const kort=!!o.kort
       f1=m?m[1]+(+m[2]+27):'Lindelaan 41',f2=m?m[1].trim()+'hof '+m[2]:'Lindehof 14';return [{t:a,eff:{v:-10},reactie:'Hm.'},{t:f1,eff:{v:20},reactie:'Weet je je eigen bestelling niet?'},{t:f2,eff:{v:20},reactie:'Dat bestaat niet.'}].sort(()=>Math.random()-.5)})()};
   const Q4={vraag:'Kramer kijkt naar de tas: "En wat zit er in die tas?"',tijd:8,stilEff:{v:10},stilReactie:'Ik wacht.',opties:[
      {t:'"Pizza\'s. Voor de klant."',eff:{v:-10},reactie:'Zo.'},{t:'"Een margherita en een calzone."',eff:{v:-5},reactie:'Lekker.'},{t:'"Gaat u niks aan."',eff:{v:25},reactie:'O nee?'}]};
-  const r=await mgGesprek({kop:'Aanhouding · Agent Kramer',wie:'kramer',kleur:'#4d7dff',meters:{v:['VERMOEDEN',35+(o.gesprint?5:0),'#4d7dff']},
-   naBeurt:m=>{if(m.v>=50)fx('heart')},beurten:kort?[Q1,Q4]:[Q1,Q2,Q3,Q4]});
+  const sc=o.cam?[o.cam]:[];const r=await S1.inScene(t,sc,()=>mgGesprek({kop:'Aanhouding · Agent Kramer',wie:o.wie||'kramer',kleur:'#4d7dff',meters:{v:['VERMOEDEN',35+(o.gesprint?5:0),'#4d7dff']},
+   naBeurt:m=>{if(m.v>=50)fx('heart')},beurten:kort?[Q1,Q4]:[Q1,Q2,Q3,Q4]}))||{m:{v:50}};
   if(!aanGezet)licht(true);const v=r.m.v;
-  if(kort){if(v<45){await speel(t,[Z('kramer','Licht aanlaten. Rij door.')]);return 'gepraat'}await speel(t,[Z('kramer','Zestig euro. Voor het licht. En ik onthoud je gezicht.')]);geld(-60,'bon achterlicht');return 'bon'}
+  if(kort){if(v<45){await speel(t,[Z(o.wie||'kramer','Licht aanlaten. Rij door.')]);return 'gepraat'}await speel(t,[Z(o.wie||'kramer','Zestig euro. Voor het licht. En ik onthoud je gezicht.')]);geld(-60,'bon achterlicht');return 'bon'}
   if(v<40){await speel(t,[Z('kramer','Licht aanlaten. En rij door voor ik me bedenk.'),Z('luca','Komt goed. Fijne avond.'),{snd:'carDoor'}]);meter('vertrouwen',10);return 'gepraat'}
   if(v<70){const k=await speel(t,[Z('kramer','Vind je het goed als ik even in die tas kijk?'),keuze('luca','',[{t:'"Ga uw gang."',id:'ja'},{t:'"Liever niet."',id:'nee'}])]);
    if(k==='nee')await speel(t,[Z('kramer','Dan doen we het zo.')]);
    await speel(t,[{anim:'luca',a:'hurk'},T_('Kramer tilt het deksel van de bovenste doos op. Een margherita. Koud.'),T_('Hij steekt zijn hand uit naar de doos eronder.')]);
-   const g=await mgTiming({kop:'Rustig blijven',titel:'Je hart bonkt',uitleg:'Druk precies op de piek van je hartslag (groen vak). Twee van de drie.',rondes:3,snel:1.2,vak:k==='nee'?.15:.18,knop:'Ademen'});
+   const g=await S1.inScene(t,sc,()=>mgTiming({kop:'Rustig blijven',titel:'Je hart bonkt',uitleg:'Druk precies op de piek van je hartslag (groen vak). Twee van de drie.',rondes:3,snel:1.2,vak:k==='nee'?.15:.18,knop:'Ademen'}))||0;
    if(g>=2){await speel(t,[Z('luca','Die is voor de klant. Als u hem openmaakt, betaalt hij niet.'),T_('Kramer houdt zijn hand stil. Dan klapt hij de tas dicht.'),
      Z('kramer','De Santis, staat op je fietsplaatje. Ik onthoud namen. Licht aan, en weg.'),{snd:'carDoor'}]);F('kramer_kent',1);meter('vertrouwen',5);return 'doos'}
    await speel(t,[T_('Zijn hand trilt. Kramer ziet het.')])}
@@ -461,7 +461,7 @@ hoofdstuk({id:'s1_h5',na:'s1_h6',vrij:true,blokken:[
   await binnen('sahara');await speel(t,[{speler:false},{actor:'rafiq',at:W('sahara',19.2,5.6),ry:PI},{actor:'luca',at:W('sahara',20.4,5.7),ry:PI},{actor:'bilal',at:W('sahara',22.6,5.4),ry:-PI*.7,anim:'leun'},actIn(['rafiq','luca','bilal']),
    cam(...W3('sahara',22.4,2.2,7.0),...W3('sahara',20,1.0,4.4),{fov:42}),{fade:'in',t:.4},
    Z('rafiq','Een rol tel je met je duim. Niet met je ogen.'),Z('rafiq','Er zit vals tussen. Verkeerde kleur, of geen strip.')]);
-  let score=50;try{const r=await G.h1.tellen();score=r&&r.score!=null?r.score:(typeof r==='number'?r:60)}catch(e){}
+  let score=50;try{const r=await S1.inScene(t,[cam(...W3('sahara',21.8,2.0,6.6),...W3('sahara',20.2,.9,4.6),{fov:40})],()=>G.h1.tellen());score=r&&r.score!=null?r.score:(typeof r==='number'?r:60)}catch(e){}
   if(score>=70){meter('vertrouwen',5);F('bilal_jaloers',1);await speel(t,[Z('rafiq','Bilal. Kijk. Zo doe je dat.'),{anim:'bilal',a:'turn',ry:PI}])}else await speel(t,[Z('rafiq','Morgen weer. Tot je het blind kan.')]);
   await speel(t,[{actor:'rafiq',at:W('sahara',8.0,3.6),ry:PI},{actor:'luca',at:W('sahara',9.4,3.6),ry:-PI*.6},{actor:'bilal',at:W('sahara',6.6,3.4),ry:PI*.6},
    cam(...W3('sahara',9.8,2.4,4.8),...W3('sahara',8.0,.9,2.0),{fov:38}),{snd:'open'},
