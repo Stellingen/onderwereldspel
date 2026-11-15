@@ -86,7 +86,29 @@ const STEPS={};let cur=null,curId=null,arrived=false,doneOnce=false;
 ST.step=function(id,def){STEPS[id]=def||{};if(id===st().step&&!curId&&G.ready)setTimeout(resume,50);return ST};
 ST.steps=STEPS;
 ST.huidig=()=>curId;
-ST.goto=function(id,o){o=o||{};resumed=true;const s=st();if(cur&&cur.stop)try{cur.stop()}catch(e){console.error(e)}
+/* ---------- aankomst: het hoofdverhaal gaat pas verder als jij het doet ----------
+   Ben je bij de plek van een stap, dan verschijnt er een knop (E, of tikken op het label: 'Naar binnen · Bella Napoli').
+   Niets start meer vanzelf omdat je toevallig in de buurt fietst. Losse gebeurtenissen onderweg (de tasjesdief, de hond)
+   blijven vanzelf gaan. ST.aankomst(p,o) is hetzelfde voor de missies van Seizoen 2 en 3 (niet verwarren met ST.poort: geld): een Promise die true geeft
+   zodra je op de knop drukt (of false als het verhaal ondertussen verder is, o.geldig).
+   p = {x,z,binnen?}; o = {r, actie, sub, gebouw (al binnen in dit gebouw = ook goed), geldig()} */
+const AKT_R=7;
+function poortSpot(p,o,act){return G.spot?G.spot({k:'verhaal',story:true,mis:true,prio:1,drive:true,aanSpeler:true,x:p.x,z:p.z,r:o.r,h:2.75,col:'#ffd35a',ring:1.4,
+  n:o.actie||'Ga verder',sub:o.sub||null,show:()=>!(G.cut&&G.cut.active&&G.cut.active())&&!G.paused,act}):null}
+ST.aankomst=function(p,o){o=Object.assign({},o||{});o.r=Math.min(o.r||AKT_R,p.binnen?3:AKT_R);const geldig=o.geldig||(()=>true);
+  return new Promise(res=>{let sp=null;const off=()=>{if(sp){G.unspot&&G.unspot(sp);sp=null}};if(o.gebouw)aankGebouw=o.gebouw;
+    const klaar=v=>{clearInterval(iv);off();if(aankGebouw===o.gebouw)aankGebouw=null;res(v)};
+    const iv=setInterval(()=>{if(!geldig()){klaar(false);return}const bin=G.binnen&&G.binnen.waar&&G.binnen.waar();
+      if(o.gebouw&&bin===o.gebouw){klaar(true);return}
+      const q=typeof p==='function'?p():p;if(!q){off();return}
+      const inR=(q.binnen?bin===q.binnen:!bin)&&Math.hypot(G.P.x-q.x,G.P.z-q.z)<=o.r+.4;
+      if(inR&&!sp)sp=poortSpot(q,o,()=>klaar(true));else if(!inR&&sp)off();
+      if(sp){sp.x=q.x;sp.z=q.z}},150)})};
+let gate=null;function gateOff(){if(gate){G.unspot&&G.unspot(gate);gate=null}}
+// het gebouw waar de huidige stap naartoe wil: daar is de gewone deurknop even weg, zodat je via de verhaalknop naar binnen gaat
+// (anders liep je via de deur naar binnen en ging het verhaal niet verder)
+let aankGebouw=null;ST.doelBinnen=()=>{try{if(aankGebouw)return aankGebouw;const w=cur&&!arrived?(typeof cur.waar==='function'?cur.waar():cur.waar):null;return w&&w.gebouw||null}catch(e){return null}};
+ST.goto=function(id,o){o=o||{};resumed=true;const s=st();gateOff();if(cur&&cur.stop)try{cur.stop()}catch(e){console.error(e)}
   s.step=id;sv();curId=id;cur=STEPS[id]||null;arrived=false;doneOnce=false;
   if(!cur){ST.doel(null);return}
   // ook als 'waar' een functie is: meteen een doel op de kaart, met route (en dat blijft bijgewerkt, zie stepTick)
@@ -103,8 +125,13 @@ function stepTick(dt){if(!cur||G.paused)return;if(G.cut&&G.cut.active&&G.cut.act
   if(cur.tick)try{cur.tick(dt)}catch(e){console.error(e)}
   if(!cur)return;
   const w=typeof cur.waar==='function'?cur.waar():cur.waar;
-  if(w&&!arrived){const inside=G.binnen&&G.binnen.waar&&G.binnen.waar();const ok=(w.binnen?inside===w.binnen:!inside)&&(w.x==null||Math.hypot(G.P.x-w.x,G.P.z-w.z)<(w.r||3));
-    if(ok){arrived=true;if(cur.aankomst){try{cur.aankomst()}catch(e){console.error(e)}}else if(!cur.klaar)ST.klaar()}}
+  if(w&&!arrived){const inside=G.binnen&&G.binnen.waar&&G.binnen.waar();const r=Math.min(w.r||3,w.binnen?3:AKT_R);
+    const ok=(w.binnen?inside===w.binnen:!inside)&&(w.x==null||Math.hypot(G.P.x-w.x,G.P.z-w.z)<=r+.4);
+    const aan=()=>{if(arrived||!cur)return;arrived=true;gateOff();if(cur.aankomst){try{cur.aankomst()}catch(e){console.error(e)}}else if(!cur.klaar)ST.klaar()};
+    // alleen een plek zonder coördinaten (of uitdrukkelijk w.auto) gaat vanzelf; de rest wacht op jouw knop
+    if(ok&&(w.auto||w.x==null))aan();
+    else if(ok){if(!gate)gate=poortSpot(w,{r,actie:w.actie||cur.actie,sub:w.sub||cur.sub},aan);else{gate.x=w.x;gate.z=w.z}}
+    else gateOff()}
   if(cur&&cur.klaar&&!doneOnce){let k=false;try{k=cur.klaar()}catch(e){}if(k)ST.klaar()}}
 let resumed=false;
 // herstel: door een dubbele stapnaam ('h2_dex') kon je midden in Seizoen 1 in een stap van Seizoen 2 of 3 belanden.

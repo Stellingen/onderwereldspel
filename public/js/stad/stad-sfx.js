@@ -21,10 +21,10 @@ const wake=()=>{const c=ac();if(c&&c.state==='suspended')c.resume();if(c&&st.mu&
 const ok=v=>Number.isFinite(v);
 function tone(f,t,d,type,v,f2,bus){const c=ac();if(!c||!ok(f)||!ok(t)||!ok(d))return;const T=c.currentTime+Math.max(0,t),o=c.createOscillator(),g=c.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,T);
   if(f2&&ok(f2))o.frequency.exponentialRampToValueAtTime(Math.max(20,f2),T+d);g.gain.setValueAtTime(0,T);g.gain.linearRampToValueAtTime(v||.2,T+.006);g.gain.exponentialRampToValueAtTime(.0001,T+d);
-  o.connect(g);g.connect(bus||fxBus);o.start(T);o.stop(T+d+.05)}
+  o.connect(g);g.connect(bus||bus0||fxBus);o.start(T);o.stop(T+d+.05)}
 let nbuf=null;function noiseBuf(c){if(nbuf)return nbuf;const b=c.createBuffer(1,c.sampleRate*1.5,c.sampleRate),a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1;return nbuf=b}
 function noise(t,d,v,ftype,f0,f1,bus){const c=ac();if(!c)return;const T=c.currentTime+Math.max(0,t),s=c.createBufferSource();s.buffer=noiseBuf(c);const f=c.createBiquadFilter();f.type=ftype||'highpass';f.frequency.setValueAtTime(f0||1000,T);
-  if(f1)f.frequency.exponentialRampToValueAtTime(f1,T+d);const g=c.createGain();g.gain.setValueAtTime(v||.2,T);g.gain.exponentialRampToValueAtTime(.0001,T+d);s.connect(f);f.connect(g);g.connect(bus||fxBus);s.start(T,Math.random());s.stop(T+d+.05)}
+  if(f1)f.frequency.exponentialRampToValueAtTime(f1,T+d);const g=c.createGain();g.gain.setValueAtTime(v||.2,T);g.gain.exponentialRampToValueAtTime(.0001,T+d);s.connect(f);f.connect(g);g.connect(bus||bus0||fxBus);s.start(T,Math.random());s.stop(T+d+.05)}
 /* ---------- effecten ---------- */
 const FX={
   blip:()=>tone(820+Math.random()*120,0,.035,'square',.05),
@@ -76,7 +76,19 @@ const FX={
   chirp:()=>{const f=2600+Math.random()*900;tone(f,0,.05,'sine',.03,f*1.2);tone(f*1.1,.09,.05,'sine',.03,f*.9)},
   cricket:()=>{for(let i=0;i<3;i++)tone(4200,i*.06,.03,'square',.012)},
 };
-function fx(k){if(!st.fx)return;try{(FX[k]||FX.click)()}catch(e){}}
+/* ---------- binnen en buiten, en cutscènes ----------
+   Binnen (een interieur van het verhaal, of een gebouw in de Pixelstad) hoor je de straat niet: geen vogels, meeuwen, krekels,
+   autoalarmen of blaffende honden, en de zee niet. Alleen bij harde regen of storm een gedempt geruis (door een laagdoorlaatfilter,
+   zoals door een raam). Onweer klinkt binnen dof. In een cutscène staat de wereld even stil: geen losse omgevingsgeluiden,
+   regen en wind zacht op de achtergrond; wat de scène zelf laat horen ({snd:...}) speelt gewoon. */
+const OMG={chirp:1,cricket:1,gull:1,flutter:1,carAlarm:1,jank:1,woef:1,miauw:1,splash:1,step:1,whistle:1};
+let bus0=null,dofB=null;
+function omg(){let binnen=false,cut=false;try{const u=G.ui&&G.ui.cur&&G.ui.cur();binnen=!!((G.binnen&&G.binnen.waar&&G.binnen.waar())||(u&&!u.phone))}catch(e){}try{cut=!!(G.cut&&G.cut.active&&G.cut.active())}catch(e){}return {binnen,cut}}
+function dof(){const c=ac();if(!c)return fxBus;if(!dofB){const g=c.createGain(),f=c.createBiquadFilter();g.gain.value=.5;f.type='lowpass';f.frequency.value=650;g.connect(f);f.connect(fxBus);dofB=g}return dofB}
+function fx(k,o){if(!st.fx)return;const scene=o&&o.scene;
+  if(!scene){const w=omg();if(OMG[k]&&(w.cut||(w.binnen&&k!=='step')))return;
+    if(k==='thunder'&&(w.binnen||w.cut)){bus0=dof();try{FX.thunder()}catch(e){}bus0=null;return}}
+  try{(FX[k]||FX.click)()}catch(e){}}
 /* ---------- sirene (loeit, harder en panning naar richting) ---------- */
 let sir=null;
 function siren(d,pan){const c=ac();if(!c)return;if(d==null||d>140||!st.fx){if(sir){sir.g.gain.setTargetAtTime(0,c.currentTime,.3)}return}
@@ -89,12 +101,32 @@ let eng=null;
 function engine(v){const c=ac();if(!c)return;if(v==null||!st.fx){if(eng)eng.g.gain.setTargetAtTime(0,c.currentTime,.15);return}
   if(!eng){const o=c.createOscillator(),o2=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type='sawtooth';o2.type='square';f.type='lowpass';f.frequency.value=420;o.connect(f);o2.connect(f);f.connect(g);g.gain.value=0;g.connect(fxBus);o.start();o2.start();eng={o,o2,g}}
   const s=Math.abs(v);eng.o.frequency.setTargetAtTime(38+s*3.4,c.currentTime,.1);eng.o2.frequency.setTargetAtTime(19+s*1.7,c.currentTime,.1);eng.g.gain.setTargetAtTime(.05+Math.min(.05,s*.003),c.currentTime,.1)}
+/* ---------- elektrische scooter (verhaal): een zacht, hoog motortje dat met de snelheid oploopt, plus wat bandengeruis.
+   Geen brommer en geen lage zoem (die voelde als trillen in je oor): rustig, zoals een e-scooter of elektrische Vespa. ---------- */
+let esc=null;
+function escooter(v){const c=ac();if(!c)return;if(v==null||!st.fx){if(esc)esc.g.gain.setTargetAtTime(0,c.currentTime,.18);return}
+  if(!esc){const o=c.createOscillator(),o2=c.createOscillator(),og=c.createGain(),o2g=c.createGain(),f=c.createBiquadFilter(),g=c.createGain();
+    o.type='sine';o2.type='triangle';og.gain.value=.55;o2g.gain.value=.22;f.type='lowpass';f.frequency.value=1600;f.Q.value=.4;
+    o.connect(og);o2.connect(o2g);og.connect(f);o2g.connect(f);f.connect(g);
+    const n=c.createBufferSource();n.buffer=noiseBuf(c);n.loop=true;const nf=c.createBiquadFilter(),ng=c.createGain();nf.type='bandpass';nf.frequency.value=700;nf.Q.value=.6;ng.gain.value=0;n.connect(nf);nf.connect(ng);ng.connect(g);
+    g.gain.value=0;g.connect(fxBus);o.start();o2.start();n.start();esc={o,o2,g,ng}}
+  const s=Math.min(14,Math.abs(v)),T=c.currentTime;
+  esc.o.frequency.setTargetAtTime(170+s*16,T,.3);esc.o2.frequency.setTargetAtTime(340+s*32,T,.3);
+  esc.g.gain.setTargetAtTime(.018+s*.0022,T,.25);esc.ng.gain.setTargetAtTime(Math.min(.45,s*.035),T,.25)}
 /* ---------- omgeving: regen, zee en wind als zachte ruislagen ---------- */
-const AMB={};
+const AMB={};let ambF=null,ambO={};
 function ambLayer(k){const c=ac();if(!c)return null;if(AMB[k])return AMB[k];const src=c.createBufferSource();src.buffer=noiseBuf(c);src.loop=true;const f=c.createBiquadFilter(),g=c.createGain();g.gain.value=0;
   if(k==='rain'){f.type='highpass';f.frequency.value=2400}else if(k==='sea'){f.type='lowpass';f.frequency.value=520;const l=c.createOscillator(),lg=c.createGain();l.frequency.value=.13;lg.gain.value=260;l.connect(lg);lg.connect(f.frequency);l.start()}else{f.type='bandpass';f.frequency.value=380;f.Q.value=.6}
-  src.connect(f);f.connect(g);g.connect(fxBus);src.start();return AMB[k]={g}}
-function amb(o){if(!ctx||ctx.state!=='running')return;for(const k of ['rain','sea','wind']){const v=st.fx?Math.max(0,Math.min(1,o[k]||0)):0;if(!v&&!AMB[k])continue;const L=ambLayer(k);if(L)L.g.gain.setTargetAtTime(v*(k==='rain'?.11:k==='sea'?.16:.07),ctx.currentTime,.6)}}
+  if(!ambF){ambF=c.createBiquadFilter();ambF.type='lowpass';ambF.frequency.value=14000;ambF.connect(fxBus)}
+  src.connect(f);f.connect(g);g.connect(ambF);src.start();return AMB[k]={g}}
+function amb(o){if(o)ambO=o;else o=ambO;if(!ctx||ctx.state!=='running')return;const w=omg();
+  for(const k of ['rain','sea','wind']){let v=st.fx?Math.max(0,Math.min(1,o[k]||0)):0;
+    if(w.binnen)v=k==='sea'?0:k==='rain'?(v>.55?(v-.35)*.7:0):(v>.6?(v-.45)*.6:0);   // binnen: alleen harde regen of storm, gedempt
+    else if(w.cut)v*=.35;                                                              // cutscène: zacht op de achtergrond
+    if(!v&&!AMB[k])continue;const L=ambLayer(k);if(L)L.g.gain.setTargetAtTime(v*(k==='rain'?.11:k==='sea'?.16:.07),ctx.currentTime,.5)}
+  if(ambF)ambF.frequency.setTargetAtTime(w.binnen?480:14000,ctx.currentTime,.3)}
+// ook als het spel stilstaat (een gebouw in de Pixelstad, een cutscène): de omgeving bijwerken
+setInterval(()=>{try{amb()}catch(e){}},400);
 /* ---------- muziek ---------- */
 const N=n=>440*Math.pow(2,(n-69)/12);
 // akkoorden als midi-grondtoon + type; per stemming een paar progressies
@@ -137,7 +169,7 @@ function note(S0,s,T,spb){const P=S0.prog[seq.prog%S0.prog.length],ch=P[Math.flo
   if(S0.snare.includes(s))noise(T,.1,.13,'highpass',1800,null,muBus);
   if(s%2===0&&Math.random()<S0.hat)noise(T,.03,.05,'highpass',7000,null,muBus);
   // de straatmuzikant: een gitaarloopje dat harder wordt als je dichterbij komt
-  if(busk>0&&st.fx&&s%2===0&&!(G.cut&&G.cut.active&&G.cut.active())){const pen=[0,3,5,7,10,12],n=root+pen[(s/2+seq.bar*3)%6];tone(N(n),T,spb*1.7,'triangle',.11*busk,null,fxBus);if(s%8===0)tone(N(root-12),T,spb*3.5,'triangle',.1*busk,null,fxBus)}}
+  if(busk>0&&st.fx&&s%2===0&&!(G.cut&&G.cut.active&&G.cut.active())&&!omg().binnen){const pen=[0,3,5,7,10,12],n=root+pen[(s/2+seq.bar*3)%6];tone(N(n),T,spb*1.7,'triangle',.11*busk,null,fxBus);if(s%8===0)tone(N(root-12),T,spb*3.5,'triangle',.1*busk,null,fxBus)}}
 let busk=0;
 let sfeerOver=null;
 // stemmen per personage (verhaal): een korte toon per lettergreep terwijl de tekst wordt getypt
@@ -156,9 +188,9 @@ setInterval(()=>{if(!G||!G.ready)return;const chase=(G.police&&G.police.active&&
   const inside=G.ui&&G.ui.cur&&G.ui.cur();music(sfeerOver||(chase?'jacht':inside?'stil':(G.night>.55?'nacht':'dag')))},700);
 function apply(){if(!ctx)return;fxBus.gain.setTargetAtTime(st.fx?.55:0,ctx.currentTime,.05);muBus.gain.setTargetAtTime(st.mu?.2:0,ctx.currentTime,.3);master.gain.setTargetAtTime(st.vol,ctx.currentTime,.05);
   if(st.mu&&!seq.on)startMusic()}
-G.snd={fx,siren,engine,music,amb,praat,stemmen:STEM,ctx:()=>ac(),master:()=>{ac();return master},sfeer:m=>{sfeerOver=m&&SONGS[m]||m==='stil'?m:null;if(sfeerOver)music(sfeerOver)},get sfeerNu(){return seq.mode},busk:v=>{busk=Math.max(0,Math.min(1,v||0))},
+G.snd={fx,siren,engine,escooter,music,amb,praat,stemmen:STEM,ctx:()=>ac(),master:()=>{ac();return master},sfeer:m=>{sfeerOver=m&&SONGS[m]||m==='stil'?m:null;if(sfeerOver)music(sfeerOver)},get sfeerNu(){return seq.mode},busk:v=>{busk=Math.max(0,Math.min(1,v||0))},
   get fxOn(){return st.fx},get muOn(){return st.mu},get vol(){return st.vol},
-  setFx(v){st.fx=!!v;set('stad_fx',v?'1':'0');apply();if(!v){siren(null);engine(null)}},setMu(v){st.mu=!!v;set('stad_mu',v?'1':'0');apply()},setVol(v){st.vol=Math.max(0,Math.min(1,+v||0));set('stad_vol',st.vol);apply()}};
+  setFx(v){st.fx=!!v;set('stad_fx',v?'1':'0');apply();if(!v){siren(null);engine(null);escooter(null)}},setMu(v){st.mu=!!v;set('stad_mu',v?'1':'0');apply()},setVol(v){st.vol=Math.max(0,Math.min(1,+v||0));set('stad_vol',st.vol);apply()}};
 // pauze (tabblad weg): muziek zachter
 document.addEventListener('visibilitychange',()=>{if(!ctx)return;if(document.hidden)ctx.suspend();else if(st.fx||st.mu)ctx.resume()});
 })();

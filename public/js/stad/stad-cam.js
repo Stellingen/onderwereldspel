@@ -50,7 +50,7 @@ function act(){if(G.missionAction&&G.missionAction())return;if(G.verhaalAct&&G.v
 
 /* ---------- de camera zelf (elke frame, vanuit stad-game.js) ---------- */
 const tmp=new TH.Vector3();
-G.camRig=function(dt,cam){if(mode==='boven'||!G.ready){if(C.fov&&cam.fov!==G.fov0){cam.fov=G.fov0;cam.updateProjectionMatrix();C.fov=0}return false}
+G.camRig=function(dt,cam){if(mode==='boven'||!G.ready){G.camTeDicht=false;if(C.fov&&cam.fov!==G.fov0){cam.fov=G.fov0;cam.updateProjectionMatrix();C.fov=0}return false}
   if(!B)bmap();if(G.paused)unlock();
   const P=G.P,car=G.driving&&G.car?G.car:null;
   C.pitch+=(C.pitchT-C.pitch)*Math.min(1,dt*14);C.tpD+=(C.tpDT-C.tpD)*Math.min(1,dt*6);
@@ -66,11 +66,20 @@ G.camRig=function(dt,cam){if(mode==='boven'||!G.ready){if(C.fov&&cam.fov!==G.fov
     const cp=Math.cos(p),sp=Math.sin(p),dx=Math.sin(yaw)*cp,dz=Math.cos(yaw)*cp;
     // niet door een muur: inschuiven tot de camera vrij staat
     let dd=d;for(let s=.4;s<=d;s+=.25){const x=px+dx*s,z=pz+dz*s,y=py+sp*s;if(wall(x,z)&&y<40){dd=Math.max(.6,s-.45);break}}
-    let cy=py+sp*dd;if(cy<.35){cy=.35}
+    // klem tegen een muur terwijl je stilstaat: de camera draait zelf een stukje naar de kant met de meeste ruimte (zoals binnen)
+    if(!car&&dd<2.4&&!locked()&&Math.hypot(P.vx||0,P.vz||0)<.5&&performance.now()-(G.manualRotT||0)>1500){
+      const vrij=yw=>{const ax=Math.sin(yw)*cp,az=Math.cos(yw)*cp;for(let s=.4;s<=d;s+=.25){if(wall(px+ax*s,pz+az*s))return s-.45}return d};
+      let best=0,bd=dd;for(const o of [.45,-.45,.9,-.9,1.4,-1.4]){const v=vrij(yaw+o);if(v>bd+.4){bd=v;best=o}}if(best)G.yawT+=Math.sign(best)*Math.min(Math.abs(best),dt*2.2)}
+    // staat er een muur vlak achter je: de camera kruipt niet in je rug (dan zag je losse plakjes van je jas en tas), maar
+    // gaat omhoog en kijkt over je schouder naar beneden
+    const krap=clamp((2.2-dd)/1.6,0,1);
+    let cy=py+sp*dd+krap*.7;if(cy<.35){cy=.35}
     C.pos.set(px+dx*dd,cy,pz+dz*dd);C.look.set(px,py+(car?.2:0),pz);
     if(!C.init){cam.position.copy(C.pos);C.init=true}else cam.position.lerp(C.pos,Math.min(1,dt*(car?10:16)));
-    cam.lookAt(C.look);G.shadowC={x:px+fx*22,z:pz+fz*22}}
-  else{// door je ogen
+    cam.lookAt(C.look);G.shadowC={x:px+fx*22,z:pz+fz*22};
+    // zo dicht op je poppetje dat je erin zou kijken (muur pal achter je)? Dan even onzichtbaar, zoals in GTA
+    G.camTeDicht=!car&&Math.hypot(cam.position.x-P.x,cam.position.y-2.05,cam.position.z-P.z)<1.45}
+  else{G.camTeDicht=false;// door je ogen
     fov=asp<1?78:66;let ex,ey,ez,ly=yaw;
     if(car){const cfx=Math.sin(car.ry),cfz=Math.cos(car.ry);ex=car.x+cfx*.35;ez=car.z+cfz*.35;ey=1.45;if(performance.now()-(G.manualRotT||0)>1200)G.yawT=car.ry+Math.PI}
     else{const v=Math.hypot(P.vx,P.vz);C.bob+=dt*v*1.9;const bob=v>.5?Math.sin(C.bob)*.045*Math.min(1,v/5):0;ex=P.x+fx*.28;ez=P.z+fz*.28;ey=(G.hidden?1.25:2.02)+bob;
@@ -86,25 +95,34 @@ G.camRig=function(dt,cam){if(mode==='boven'||!G.ready){if(C.fov&&cam.fov!==G.fov
 
 /* ---------- lucht: verloop, zon of maan, sterren, pixelwolken ---------- */
 let sky=null;
+// wolkenruis één keer in een textuur (128×128, naadloos): eerst rekende elke luchtpixel 16 keer sinus-ruis uit, en achter je
+// is de halve schermvulling lucht. Nu twee textuuropzoekingen. R = drie lagen ruis (zoals eerst), G = losse ruis voor de schaduw.
+function ruisTex(){const N=128,C=8,cv=document.createElement('canvas');cv.width=cv.height=N;const cx=cv.getContext('2d'),im=cx.createImageData(N,N);
+  const vn=(x,y,per,s)=>{const i=Math.floor(x),j=Math.floor(y);let fx=x-i,fy=y-j;fx=fx*fx*(3-2*fx);fy=fy*fy*(3-2*fy);
+    const g=(a,b)=>{const x2=Math.sin((((a%per)+per)%per)*127.1+(((b%per)+per)%per)*311.7+s*74.7)*43758.5453;return x2-Math.floor(x2)};
+    return (g(i,j)*(1-fx)+g(i+1,j)*fx)*(1-fy)+(g(i,j+1)*(1-fx)+g(i+1,j+1)*fx)*fy};
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const u=x/N*C,v=y/N*C;
+    const r=vn(u,v,C,0)*.6+vn(u*2,v*2,C*2,1)*.3+vn(u*4,v*4,C*4,2)*.1,g2=vn(u,v,C,3),k=(y*N+x)*4;
+    im.data[k]=r*255;im.data[k+1]=g2*255;im.data[k+2]=0;im.data[k+3]=255}
+  cx.putImageData(im,0,0);const t=new TH.CanvasTexture(cv);t.wrapS=t.wrapT=TH.RepeatWrapping;t.minFilter=t.magFilter=TH.LinearFilter;t.generateMipmaps=false;return t}
 function makeSky(){const sc=G.scene&&G.scene();if(!sc)return false;
   const mat=new TH.ShaderMaterial({depthWrite:false,depthTest:true,fog:false,side:TH.BackSide,
-    uniforms:{uHor:{value:new TH.Color()},uTop:{value:new TH.Color()},uSun:{value:new TH.Vector3(0,1,0)},uDay:{value:1},uCloud:{value:.4},uT:{value:0},uSunC:{value:new TH.Color(1,.9,.7)}},
+    uniforms:{uRuis:{value:ruisTex()},uHor:{value:new TH.Color()},uTop:{value:new TH.Color()},uSun:{value:new TH.Vector3(0,1,0)},uDay:{value:1},uCloud:{value:.4},uT:{value:0},uSunC:{value:new TH.Color(1,.9,.7)}},
     vertexShader:'varying vec3 vD;void main(){vD=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);gl_Position.z=gl_Position.w*.99999;}',
-    fragmentShader:`uniform vec3 uHor,uTop,uSun,uSunC;uniform float uDay,uCloud,uT;varying vec3 vD;
+    fragmentShader:`uniform vec3 uHor,uTop,uSun,uSunC;uniform float uDay,uCloud,uT;uniform sampler2D uRuis;varying vec3 vD;
       float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-      float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
       void main(){vec3 d=normalize(vD);float y=d.y;
         float k=pow(clamp(y,0.,1.),.55);vec3 c=mix(uHor,uTop,k);
-        if(y<0.)c=uHor*.92;
+        if(y<0.)c=uHor;
         // zon (overdag) of maan (nacht): een harde schijf met een zachte gloed
         float s=dot(d,normalize(uSun));c+=uSunC*pow(max(s,0.),60.)*.35*(.4+uDay);
         float disk=step(.9988,s);c=mix(c,uDay>.3?vec3(1.,.97,.88):vec3(.86,.9,1.),disk);
         // sterren
         if(uDay<.5&&y>0.){vec2 g=floor(d.xz/(y+.35)*160.);float st=step(.9965,h(g))*(1.-uDay*2.)*clamp(y*3.,0.,1.);c+=vec3(st*.8);}
         // wolken: blokkerig, getrapt (pixel-stijl)
-        if(y>0.02){vec2 q=d.xz/(y+.12)*2.2+vec2(uT*.012,uT*.004);float w=n(q)*.6+n(q*2.3)*.3+n(q*5.1)*.1;
+        if(y>0.02){vec2 q=d.xz/(y+.12)*2.2+vec2(uT*.012,uT*.004);float w=texture2D(uRuis,q*.125).r;
           float cl=smoothstep(.62-uCloud*.35,.78-uCloud*.3,w);cl=floor(cl*3.)/3.;
-          vec3 cc=mix(uHor*1.08,vec3(1.),.55*uDay)*(.55+.45*uDay);cc=mix(cc,cc*.72,step(.5,1.-n(q*1.7+.3)));
+          vec3 cc=mix(uHor*1.08,vec3(1.),.55*uDay)*(.55+.45*uDay);cc=mix(cc,cc*.72,step(.5,1.-texture2D(uRuis,q*.2125+.0375).g));
           c=mix(c,cc,cl*clamp(y*6.,0.,1.)*.92);}
         gl_FragColor=vec4(c,1.);}`});
   sky=new TH.Mesh(new TH.SphereGeometry(400,24,14),mat);sky.renderOrder=-10;sky.frustumCulled=false;sc.add(sky);return true}
@@ -131,6 +149,6 @@ const place=setInterval(()=>{const row=document.querySelector('.sd-btns');if(!ro
 // hints in de toetsenbalk
 const kh=setInterval(()=>{const k=document.getElementById('sdKeys');if(!k)return;clearInterval(kh);const s=document.createElement('span');s.innerHTML='<kbd>V</kbd>camera';const last=k.querySelector('.sd-beta');k.insertBefore(s,last)},300);
 /* ---------- elke frame ---------- */
-const hook=setInterval(()=>{if(!G.ready)return;clearInterval(hook);const f0=G.onFrame;G.onFrame=function(dt){f0&&f0(dt);try{skyStep(dt);if(G.paused&&locked())unlock();tip.hidden=touch||mode==='boven'||locked()||!!G.paused||!!G.talking}catch(e){console.error(e)}};
+const hook=setInterval(()=>{if(!G.ready)return;clearInterval(hook);const f0=G.onFrame;G.onFrame=function(dt){f0&&f0(dt);try{skyStep(dt);if(G.paused&&locked())unlock();tip.hidden=touch||mode==='boven'||locked()||!!G.paused||!!G.talking||!!(document.getElementById('sdPrompt')&&!document.getElementById('sdPrompt').hidden)}catch(e){console.error(e)}};
   if(mode!=='boven')setCam(mode,true);else ui()},100);
 })();

@@ -146,7 +146,7 @@ async function controle(){const pl=plekVoor();if(!pl)return false;css();CTRL.on=
   if(car){car.position.set(pl.car.x,0,pl.car.z);car.rotation.y=cry;G.scene().add(car)}
   const blok={x:pl.car.x,z:pl.car.z,ry:cry,kind:'sedan',parked:true,ctrl:1};try{(G.parked||(G.parked=[])).push(blok)}catch(e){}
   const ag=C.persoon('agent',{x:pl.ag.x,z:pl.ag.z,ry:wrap(pl.ry+PI),anim:'handenop'});
-  try{G.snd&&G.snd.fx('whistle')}catch(e){}
+  try{G.snd&&G.snd.fx('whistle',{scene:1})}catch(e){}
   const opruimen=()=>{try{ag&&ag.weg&&ag.weg()}catch(e){}if(car&&car.parent)car.parent.remove(car);try{const i=(G.parked||[]).indexOf(blok);if(i>=0)G.parked.splice(i,1)}catch(e){}kaart(null)};
   const TMAX=13;let t=0,dichtbij=false,res=null,stilT=0;
   const el=kaart(`<b><i></i><i></i>Politiecontrole</b><p>Een agent geeft je een stopteken. Je rijdt zonder rijbewijs.</p><div class="vs-b"><button class="s" data-v="stop">Stoppen</button><button class="d" data-v="weg">Doorrijden</button></div><div class="vs-t"><i id="vsCtrlT"></i></div>`);
@@ -160,7 +160,7 @@ async function controle(){const pl=plekVoor();if(!pl)return false;css();CTRL.on=
       if(dichtbij&&d>18&&v>8){clearInterval(iv);done('weg');return}
       if(t>=TMAX){clearInterval(iv);done(d<14?'stop':'weg');return}},100)});
   if(res==='stop'){kaart(null);await gesprek(pl,ag,car);opruimen()}
-  else{kaart(null);try{ag&&ag.doe&&ag.doe('point')}catch(e){}try{G.snd&&G.snd.fx('whistle')}catch(e){}try{G.fx2&&G.fx2.float('HÉ! Stoppen!',pl.ag.x,pl.ag.z,'#a9c4ff')}catch(e){}
+  else{kaart(null);try{ag&&ag.doe&&ag.doe('point')}catch(e){}try{G.snd&&G.snd.fx('whistle',{scene:1})}catch(e){}try{G.fx2&&G.fx2.float('HÉ! Stoppen!',pl.ag.x,pl.ag.z,'#a9c4ff')}catch(e){}
     if(ag&&ag.weg)setTimeout(()=>{try{ag.weg()}catch(e){}},4000);try{const i=(G.parked||[]).indexOf(blok);if(i>=0)G.parked.splice(i,1)}catch(e){}
     await achtervolging(car,pl);}
   CTRL.on=false;CTRL.ritT=0;CTRL.volgende=rr(110,200);return true}

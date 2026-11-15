@@ -522,13 +522,18 @@ let BLD=null;function bmap(){BLD=new Uint8Array(M.W*M.H);M.buildings.forEach(b=>
 const wallAt=(x,z)=>{x=Math.floor(x);z=Math.floor(z);return x>=0&&z>=0&&x<M.W&&z<M.H&&!!BLD[z*M.W+x]};
 const rigHook=setInterval(()=>{if(!G.camRig)return;clearInterval(rigHook);const rig0=G.camRig;
   G.camRig=function(dt,c){const r=rig0(dt,c);if(!r||!F.on||G.paused)return r;try{bikeCam(dt,c)}catch(e){console.error(e)}return r}},100);
+// begint er een cutscène terwijl de berijder even weg was (camera te dicht): weer tonen
+{const iv=setInterval(()=>{if(!G.cut||!G.cut.onStart)return;clearInterval(iv);G.cut.onStart.push(()=>{if(F.camTe){F.camTe=false;riderShow(true)}});G.camTeDicht=false},300)}
 addEventListener('wheel',e=>{if(F.on&&G.camMode==='achter')cam.d=clamp(cam.d*(e.deltaY>0?1.1:.9),3.2,11)},{passive:true});
 function bikeCam(dt,c){if(!BLD)bmap();c.getWorldDirection(_dir);const yaw=G.yaw;F.camS=(F.camS||0)+((F.sprint?1:0)-(F.camS||0))*Math.min(1,dt*2.5);const S_=F.camS;
   if(G.camMode==='achter'){let p=Math.asin(clamp(-_dir.y,-1,1));p=clamp(p,.12,.85);const por=innerWidth<innerHeight,d=cam.d*(por?1.35:1),ly=1.75+.15*S_;
     const lx=F.x,lz=F.z,cp=Math.cos(p),sp=Math.sin(p),dx=Math.sin(yaw)*cp,dz=Math.cos(yaw)*cp;let dd=d;for(let s=.4;s<=d;s+=.25){if(wallAt(lx+dx*s,lz+dz*s)&&ly+sp*s<40){dd=Math.max(.8,s-.45);break}}
-    _v.set(lx+dx*dd,Math.max(.4,ly+sp*dd),lz+dz*dd);if(!cam.init||cam.pos.distanceTo(_v)>12){cam.pos.copy(_v);cam.init=true}else cam.pos.lerp(_v,Math.min(1,dt*11));
-    c.position.copy(cam.pos);c.lookAt(lx,ly+.15,lz)}
-  else if(G.camMode==='ogen'){cam.init=false;const fx=Math.sin(F.ry),fz=Math.cos(F.ry),ey=2.1+.28*S_+F.bump*.5,back=-.22+.17*S_;
+    const krap=clamp((2.4-dd)/1.6,0,1);   // muur vlak achter je: omhoog in plaats van in je rug
+    _v.set(lx+dx*dd,Math.max(.4,ly+sp*dd+krap*1.6),lz+dz*dd);if(!cam.init||cam.pos.distanceTo(_v)>12){cam.pos.copy(_v);cam.init=true}else cam.pos.lerp(_v,Math.min(1,dt*11));
+    c.position.copy(cam.pos);c.lookAt(lx,ly+.15,lz);
+    // camera pal op de berijder (muur achter je): berijder even weg, anders zie je losse stukken jas en tas
+    const te=Math.hypot(c.position.x-F.x,c.position.y-1.9,c.position.z-F.z)<1.55;if(te!==!!F.camTe){F.camTe=te;riderShow(!te)}}
+  else if(G.camMode==='ogen'){cam.init=false;if(F.camTe){F.camTe=false;riderShow(true)}const fx=Math.sin(F.ry),fz=Math.cos(F.ry),ey=2.1+.28*S_+F.bump*.5,back=-.22+.17*S_;
     c.position.set(F.x+fx*back,ey,F.z+fz*back);c.lookAt(c.position.x+_dir.x,c.position.y+_dir.y,c.position.z+_dir.z)}
   else cam.init=false}
 
@@ -548,8 +553,8 @@ let built=false;
 const stepHook=setInterval(()=>{if(!G.ready||!G.carStep)return;clearInterval(stepHook);const c0=G.carStep;
   G.carStep=function(dt){c0(dt);try{if(!built){built=true;buildRails(G.scene());buildSand(G.scene())}
       if(F.on)rideStep(dt);else if(F.bike&&F.v){F.v=0}
-      // scooter: motorgeluid (de auto-module zet het elke frame uit als je niet in je eigen auto zit; dit komt daarna)
-      if(F.on&&F.type==='scooter'&&G.snd&&G.snd.engine&&!G.paused)G.snd.engine(14+Math.abs(F.v)*2.3);
+      // scooter: een rustig elektrisch motortje (G.snd.escooter), niet de brommende automotor; stil in cutscènes en als je stilstaat met pauze
+      if(G.snd&&G.snd.escooter){const aan=F.on&&F.type==='scooter'&&!G.paused&&!(G.cut&&G.cut.active&&G.cut.active());G.snd.escooter(aan?F.v:null)}
       // berijder bijwerken als je uiterlijk verandert
       F.lk=(F.lk||0)+dt;if(F.lk>3){F.lk=0;if(F.on)riderSync(false)}
       hudStep(dt);

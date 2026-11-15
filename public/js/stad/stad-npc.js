@@ -102,8 +102,21 @@ function burst(x,y,z,col,n){if(!pg)pg=new TH.BoxGeometry(.22,.12,.01);for(let i=
   p.m.material.color.set(col||'#3fe395');p.m.position.set(x,y,z);p.v={x:rr(-2.2,2.2),y:rr(3,5.5),z:rr(-2.2,2.2)};p.r={x:rr(-9,9),y:rr(-9,9)};p.life=rr(.7,1.1);p.m.visible=true}}
 function prtStep(dt){PRT.forEach(p=>{if(p.life<=0)return;p.life-=dt;if(p.life<=0){p.m.visible=false;return}p.v.y-=12*dt;p.m.position.x+=p.v.x*dt;p.m.position.y=Math.max(.05,p.m.position.y+p.v.y*dt);p.m.position.z+=p.v.z*dt;p.m.rotation.x+=p.r.x*dt;p.m.rotation.y+=p.r.y*dt})}
 const V3=new TH.Vector3();
-function float(text,x,z,col){const el=document.createElement('div');el.className='sd-float';el.textContent=text;el.style.color=col||'#3fe395';document.body.appendChild(el);
-  const pos=()=>{V3.set(x,2.6,z).project(G.camera());el.style.left=(V3.x*.5+.5)*innerWidth+'px';el.style.top=(-V3.y*.5+.5)*innerHeight+'px'};pos();setTimeout(()=>el.remove(),1600)}
+// Zwevende tekst ('+€12 fooi', 'Pizza scheef!'). Komen er twee tegelijk op dezelfde plek, dan niet over elkaar heen: de tweede
+// verschijnt een tel later (plop, plop) en een regel lager. Tekst bij jezelf staat iets rechts van je poppetje, zodat hij niet
+// over het tekstwolkje boven je hoofd valt.
+const FL=[];
+function float(text,x,z,col){const now=performance.now();for(let i=FL.length-1;i>=0;i--)if(now-FL[i].t>1700)FL.splice(i,1);
+  V3.set(x,2.6,z).project(G.camera());let bx=(V3.x*.5+.5)*innerWidth,by=(-V3.y*.5+.5)*innerHeight;if(V3.z>1||!isFinite(bx)){bx=innerWidth/2;by=innerHeight*.42}
+  const bijMij=G.P&&Math.hypot(x-G.P.x,z-G.P.z)<2.2;
+  if(bijMij&&G.camMode&&G.camMode!=='boven'){bx=innerWidth*.5+Math.min(150,innerWidth*.17);by=innerHeight*.42}   // achter je / ogen: vast midden-rechts
+  else if(bijMij)bx+=Math.min(110,innerWidth*.13);
+  bx=Math.max(70,Math.min(innerWidth-70,bx));
+  const buur=FL.filter(f=>Math.abs(f.bx-bx)<170&&Math.abs(f.by-by)<110),bezet=new Set(buur.map(f=>f.slot));let slot=0;while(bezet.has(slot))slot++;
+  const laatst=buur.reduce((m,f)=>Math.max(m,f.t),0),wacht=Math.max(0,Math.min(700,laatst+280-now));
+  FL.push({bx,by,slot,t:now+wacht});
+  setTimeout(()=>{const el=document.createElement('div');el.className='sd-float';el.textContent=text;el.style.color=col||'#3fe395';
+    el.style.left=bx+'px';el.style.top=Math.max(90,Math.min(innerHeight-30,by+slot*38))+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),1600)},wacht)}
 G.fx2={burst,float};
 /* ---------- respect per wijk ---------- */
 const repS=()=>{try{return S.stadRep&&typeof S.stadRep==='object'?S.stadRep:(S.stadRep={})}catch(e){return {}}};

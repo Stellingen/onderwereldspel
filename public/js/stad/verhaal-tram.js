@@ -34,7 +34,7 @@ function stap(t,dt){const li=t.li;
   // halte: stoppen als we erlangs komen
   const vlg=li.haltes.find(h=>(h-t.s)*t.dir>0&&(h-t.s)*t.dir<26&&t.halte!==h);let want=VMAX;
   if(vlg!=null){const d=Math.abs(vlg-t.s);want=Math.min(VMAX,Math.max(1.2,d*.6));if(d<.8){t.wacht=6;t.halte=vlg;t.v=0;return}}
-  if(!vrij(t)){want=0;t.bel-=dt;if(t.bel<=0&&Math.hypot(G.P.x-t.x,G.P.z-t.z)<40){t.bel=2.5;try{G.snd&&G.snd.fx('notify')}catch(e){}}}
+  if(!vrij(t)){want=0;t.bel-=dt;if(t.bel<=0&&Math.hypot(G.P.x-t.x,G.P.z-t.z)<40){t.bel=2.5;try{if(!(G.cut&&G.cut.active&&G.cut.active())&&!(G.binnen&&G.binnen.waar&&G.binnen.waar()))G.snd&&G.snd.fx('notify')}catch(e){}}}
   t.v+=(want-t.v)*Math.min(1,dt*(want<t.v?3:.8));t.s+=t.v*dt*t.dir;plaats(t)}
 // de speler opzij duwen als hij in de tram staat
 let hitT=0;function duw(dt){hitT-=dt;if(G.driving)return;const P=G.P;for(const t of trams){const li=t.li;

@@ -355,7 +355,8 @@ async function stap(s){if(!s)return;
   if(s.keuze){await keuze(s);return}
   if(s.fade){await fadeTo(s.fade==='out'?1:0,s.t);return}
   if(s.wait!=null){await wacht(s.wait);return}
-  if(s.snd){G.snd&&G.snd.fx(s.snd);return}
+  if(s.snd){G.snd&&G.snd.fx(s.snd,{scene:1});return}
+  if(s.muziek){G.verhaalSfeer&&G.verhaalSfeer.zet(s.muziek);return}
   if(s.dream!==undefined){setDroom(s.dream);return}
   if(s.titel){const el=$s('svTitel');el.querySelector('small').textContent=s.sub?s.titel:'';el.querySelector('b').textContent=s.sub||s.titel;el.hidden=false;el.classList.remove('go');void el.offsetWidth;el.classList.add('go');await wacht(s.t||3);el.hidden=true;return}
   if(s.speler!==undefined){if(s.speler===false){spelerVerborgen=true}else{spelerVerborgen=false;if(Array.isArray(s.speler)){G.P.x=s.speler[0];G.P.z=s.speler[1];if(s.speler[2]!=null)G.P.ry=s.speler[2];G.P.vx=G.P.vz=0}}return}
@@ -384,7 +385,7 @@ CUT.play=async function(script,o){o=o||{};while(running)await running;let rel;ru
   if(vorigeCam&&!vorigeCam.los)CAMx=vorigeCam.cam;vorigeCam=null;ui.hidden=false;document.body.classList.add('sv-incut');G.talking=true;G.story&&G.story.klokPauze&&G.story.klokPauze(true);
   if(G.kit.dialogOpen&&G.kit.dialogOpen())G.kit.closeDialog(true);if(G.phone&&G.phone.isOpen&&G.phone.isOpen())G.phone.close();
   const hq=Object.assign({},CUT.hq,o.hq||{});if(hq.pix){pixWas=G.pixPref;G.pixPref=hq.pix;G.resize&&G.resize()}
-  CUT.onStart.forEach(f=>{try{f(o)}catch(e){}});
+  CUT.script=script;G.camTeDicht=false;CUT.onStart.forEach(f=>{try{f(o,script)}catch(e){}});
   $s('svSkip').hidden=!magSkip();
   requestAnimationFrame(()=>ui.classList.add('on'));
   // zonder eigen camera (een telefoontje) speelt de scène in de spelcamera: zet die aan de straatkant

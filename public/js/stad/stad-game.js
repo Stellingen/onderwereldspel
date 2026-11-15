@@ -95,7 +95,8 @@ function savePos(){try{localStorage.setItem('stad_pos',JSON.stringify({x:+P.x.to
 G.savePos=savePos;
 // Pixelgrootte in echte schermpixels (geheel getal, anders worden de pixels ongelijk): de korte kant van het beeld is
 // ongeveer 360 pixels hoog (Fijn 480, Grof 260). Zo ziet het er op elke telefoon en elk scherm hetzelfde uit.
-function resize(){const dpr=Math.min(devicePixelRatio||1,3),w=innerWidth,h=innerHeight,minDev=Math.min(w,h)*dpr,target=(G.pixPref||520)*(G.camMode&&G.camMode!=='boven'?1.15:1)*(G.autoPix||1);
+const TOUCH=matchMedia('(pointer:coarse)').matches;   // telefoon/tablet: in de derde persoon geen extra pixels (dat kost ±30% rekenwerk)
+function resize(){const dpr=Math.min(devicePixelRatio||1,3),w=innerWidth,h=innerHeight,minDev=Math.min(w,h)*dpr,target=(G.pixPref||520)*(G.camMode&&G.camMode!=='boven'&&!TOUCH?1.15:1)*(G.autoPix||1);
   const k=Math.max(1,Math.round(minDev/target));G.pix=k/dpr;const rw=Math.ceil(w*dpr/k),rh=Math.ceil(h*dpr/k);
   renderer.setSize(rw,rh,false);if(rt)rt.setSize(rw,rh);if(post)post.material.uniforms.uRes.value.set(rw,rh);camera.aspect=w/h;camera.fov=w/h<1?Math.min(62,34/Math.max(.55,w/h)*.8):34;G.fov0=camera.fov;camera.updateProjectionMatrix()}
 G.resize=()=>resize();
@@ -107,10 +108,10 @@ function makePost(){
   rt=new TH.WebGLRenderTarget(2,2,{minFilter:TH.NearestFilter,magFilter:TH.NearestFilter,depthBuffer:true});
   rt.depthTexture=new TH.DepthTexture(2,2);rt.depthTexture.type=TH.UnsignedIntType;
   postCam=new TH.OrthographicCamera(-1,1,1,-1,0,1);
-  const mat=new TH.ShaderMaterial({uniforms:{tColor:{value:rt.texture},tDepth:{value:rt.depthTexture},uRes:{value:new TH.Vector2(2,2)},cameraNear:{value:camera.near},cameraFar:{value:camera.far},uNight:{value:0},uOutline:{value:1},uTint:{value:new TH.Vector3(1,1,1)},uFlash:{value:new TH.Vector4(1,1,1,0)},uSat:{value:1.12},uVig:{value:.35},uAo:{value:1},uAoR:{value:1},uGrade:{value:1}},
+  const mat=new TH.ShaderMaterial({uniforms:{tColor:{value:rt.texture},tDepth:{value:rt.depthTexture},uRes:{value:new TH.Vector2(2,2)},cameraNear:{value:camera.near},cameraFar:{value:camera.far},uNight:{value:0},uOutline:{value:1},uTint:{value:new TH.Vector3(1,1,1)},uFlash:{value:new TH.Vector4(1,1,1,0)},uSat:{value:1.12},uVig:{value:.35},uAo:{value:1},uAoR:{value:1},uGrade:{value:1},uAoQ:{value:1},uGlow:{value:1}},
     vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',
     fragmentShader:`#include <packing>
-      uniform sampler2D tColor,tDepth;uniform vec2 uRes;uniform float cameraNear,cameraFar,uNight,uOutline,uSat,uVig,uAo,uAoR,uGrade;uniform vec3 uTint;uniform vec4 uFlash;varying vec2 vUv;
+      uniform sampler2D tColor,tDepth;uniform vec2 uRes;uniform float cameraNear,cameraFar,uNight,uOutline,uSat,uVig,uAo,uAoR,uGrade,uAoQ,uGlow;uniform vec3 uTint;uniform vec4 uFlash;varying vec2 vUv;
       float ld(vec2 uv){return -perspectiveDepthToViewZ(texture2D(tDepth,uv).x,cameraNear,cameraFar);}
       vec3 toS(vec3 c){c=max(c,0.);return mix(c*12.92,1.055*pow(c,vec3(1./2.4))-.055,step(.0031308,c));}
       float bayer(vec2 p){p=mod(floor(p),4.);float i=p.x+p.y*4.;
@@ -122,18 +123,18 @@ function makePost(){
         float front=max(max(dl-d,dr-d),max(du-d,dd-d));         // ik lig voor een buur: lichte rand
         float edge=step(th,behind)*uOutline,rim=step(th,front)*(1.-edge)*uOutline;
         // schaduw in hoeken en tegen muren (uit de diepte): in 1/diepte is een vlak lineair, een binnenhoek ligt er 'achter'
-        float w0=1./d,ao=0.,an=0.;
-        for(int i=0;i<4;i++){vec2 dir=i==0?vec2(1.,0.):i==1?vec2(0.,1.):i==2?vec2(.7071,.7071):vec2(.7071,-.7071);
+        float w0=1./d,ao=0.,an=1.;
+        if(uAo*uAoQ>.001){an=0.;for(int i=0;i<4;i++){vec2 dir=i==0?vec2(1.,0.):i==1?vec2(0.,1.):i==2?vec2(.7071,.7071):vec2(.7071,-.7071);
           for(int j=1;j<=3;j++){float r=float(j*j)+1.;vec2 o=dir*px*r*uAoR;float wa=1./ld(vUv+o),wb=1./ld(vUv-o);
-            float ok=step(abs(wa-w0),w0*.35)*step(abs(wb-w0),w0*.35);ao+=clamp(((wa+wb)*.5-w0)/w0*14.,0.,1.)*ok;an+=1.;}}
-        ao=ao/an;c*=1.-clamp(ao*1.9,0.,.55)*uAo;
+            float ok=step(abs(wa-w0),w0*.35)*step(abs(wb-w0),w0*.35);ao+=clamp(((wa+wb)*.5-w0)/w0*14.,0.,1.)*ok;an+=1.;}}}
+        ao=ao/an;c*=1.-clamp(ao*1.9,0.,.55)*uAo*uAoQ;
         c=mix(c,c*.32,edge*.9);c+=c*rim*.12;
         // gloed van lichte dingen (ramen, neon, lampen), vooral 's nachts
         vec3 b=vec3(0.);
-        for(int i=0;i<12;i++){float a=float(i)*.5236;vec2 o=vec2(cos(a),sin(a));
+        if(uGlow>.001)for(int i=0;i<12;i++){float a=float(i)*.5236;vec2 o=vec2(cos(a),sin(a));
           vec3 s1=texture2D(tColor,vUv+o*px*1.6).rgb,s2=texture2D(tColor,vUv+o*px*3.4).rgb;
           b+=max(s1-.55,0.)*.9+max(s2-.55,0.)*.5;}
-        c+=b*(.03+.055*uNight);
+        c+=b*(.03+.055*uNight)*uGlow;
         // kleur: iets meer contrast en verzadiging
         vec3 s=toS(c)*uTint;float l=dot(s,vec3(.299,.587,.114));s=mix(vec3(l),s,uSat);s=(s-.5)*1.06+.5;
         // filmische kleur: koele schaduwen, warme lichten, een zachte S-curve
@@ -224,16 +225,28 @@ G.pause=function(){G.paused=true;cancelAnimationFrame(raf);for(const k in K)K[k]
 G.placeAtDoor=function(pl){const f=pl.face,o=f==='S'?[0,1]:f==='N'?[0,-1]:f==='E'?[1,0]:[-1,0];const p=M.nearestWalk(pl.door.x+o[0]*.6,pl.door.z+o[1]*.6,6)||pl.door;P.x=p.x;P.z=p.z;P.ry=Math.atan2(o[0],o[1]);
   G.yawT=G.yaw=Math.atan2(-o[0],-o[1])+Math.PI;stopPath()};
 G.teleport=function(x,z){const p=M.nearestWalk(x,z,20);if(p){P.x=p.x;P.z=p.z;stopPath();if(CW)CW.warm(P.x,P.z)}};
-function draw(){renderer.setRenderTarget(rt);renderer.render(scene,camera);renderer.setRenderTarget(null);renderer.render(post,postCam)}
+// camera: vanaf hoe dichtbij en tot hoe ver hij tekent. Bovenaf zoals altijd (1 tot 600 m). Achter je, door je ogen, binnen en
+// in cutscènes vanaf 12 cm (met 1 m verdween alles vlak voor de lens: het stuur, je tas, je eigen rug als er een muur achter
+// je stond) en maar tot net voorbij de mist: wat daarachter ligt zie je toch niet, en het hoeft dan ook niet getekend.
+function camGrens(){const dicht=(G.camMode&&G.camMode!=='boven')||(G.cut&&G.cut.active&&G.cut.active())||(G.binnen&&G.binnen.waar&&G.binnen.waar());
+  const n=dicht?.12:1,f=dicht?Math.max(140,Math.min(600,(scene.fog?scene.fog.far:190)+25)):600;
+  if(Math.abs(camera.near-n)>1e-4||Math.abs(camera.far-f)>2){camera.near=n;camera.far=f;camera.updateProjectionMatrix()}
+  if(post){const u=post.material.uniforms;u.cameraNear.value=camera.near;u.cameraFar.value=camera.far}}
+function draw(){if(kwal>=1&&(++schN%2===0))renderer.shadowMap.needsUpdate=true;renderer.setRenderTarget(rt);renderer.render(scene,camera);renderer.setRenderTarget(null);renderer.render(post,postCam)}
 const cutV=new TH.Vector3(),cutS=new TH.Vector2();
 // Prestaties: tijdens een minispel (paneel over de wereld) tekenen we de wereld maar om het derde beeld, zodat het streepje
 // en je toetsen vloeiend blijven. Loopt het spel lang traag (oudere telefoon, druk scherm), dan gaat de resolutie vanzelf
 // een stapje omlaag (en weer omhoog als het ruim gaat); de keuze in de instellingen blijft de bovengrens.
-let mfN=0,perfAcc=0,perfN=0,perfT=0,autoK=1;
+let mfN=0,perfAcc=0,perfN=0,perfT=0,autoK=1,kwal=0,schN=0;
+// Kwaliteit in stappen, eerst wat je het minst ziet: 1 = zonschaduw om het andere beeld bijwerken, 2 = geen hoekschaduw (AO),
+// 3 = geen gloed om lampen en ramen; pas daarna gaat de resolutie omlaag. Gaat het weer ruim, dan in omgekeerde volgorde terug.
+// Omlaag onder ±32 beelden per seconde, omhoog boven ±50.
+function zetKwal(){const u=post&&post.material.uniforms;if(u){u.uAoQ.value=kwal>=2?0:1;u.uGlow.value=kwal>=3?0:1}renderer.shadowMap.autoUpdate=kwal<1;if(kwal<1)renderer.shadowMap.needsUpdate=false}
 function perfStep(rawDt){if(G.cut&&G.cut.active&&G.cut.active())return;if(!(rawDt>0&&rawDt<.5))return;perfAcc+=rawDt;perfN++;perfT+=rawDt;if(perfT<3)return;
-  const avg=perfAcc/perfN;perfAcc=perfN=perfT=0;let k=autoK;if(avg>1/26&&autoK>.62)k=Math.max(.62,autoK-.12);else if(avg<1/50&&autoK<1)k=Math.min(1,autoK+.06);
-  if(k!==autoK){autoK=k;G.autoPix=k;resize()}}
-G.perf=()=>({autoK,pix:G.pix});
+  const avg=perfAcc/perfN;perfAcc=perfN=perfT=0;
+  if(avg>1/32){if(kwal<3){kwal++;zetKwal()}else if(autoK>.62){autoK=Math.max(.62,autoK-.12);G.autoPix=autoK;resize()}}
+  else if(avg<1/50){if(autoK<1){autoK=Math.min(1,autoK+.06);G.autoPix=autoK;resize()}else if(kwal>0){kwal--;zetKwal()}}}
+G.perf=()=>({autoK,kwal,pix:G.pix});
 function frame(t){raf=requestAnimationFrame(frame);const raw=(t-last)/1000;let dt=raw;if(!(dt>0))dt=0;dt=Math.min(.05,dt);last=t;if(G.paused)return;if(G.hitStop>0){G.hitStop-=dt;dt*=.05}step(dt,t/1000);
   const mini=G.mini&&G.mini.active&&G.mini.active();if(mini&&(++mfN%3))return;perfStep(raw);draw()}
 function step(dt,ts){
@@ -274,13 +287,14 @@ function step(dt,ts){
   let dy=G.yawT-G.yaw;G.yaw+=dy*Math.min(1,dt*8);const zk=G.camK!=null?G.camK:(G.talking&&!G.driving?.82:1);G.dist+=(G.distT*zk-G.dist)*Math.min(1,dt*(zk<1?3.5:6));
   const cp=Math.cos(G.pitch),spp=Math.sin(G.pitch);const tx=P.x+(G.camOff?G.camOff.x:0),tz=P.z+(G.camOff?G.camOff.z:0),ty=1.2;
   if(!(G.camRig&&G.camRig(dt,camera))){camera.position.set(tx+Math.sin(G.yaw)*cp*G.dist,ty+spp*G.dist,tz+Math.cos(G.yaw)*cp*G.dist);camera.lookAt(tx,ty,tz)}
+  camGrens();
   if(G.shakeA>.01){const a=G.shakeA;camera.position.x+=(Math.random()-.5)*a;camera.position.y+=(Math.random()-.5)*a;camera.position.z+=(Math.random()-.5)*a;G.shakeA*=Math.pow(.02,dt)}
   const shx=G.shadowC?G.shadowC.x:tx,shz=G.shadowC?G.shadowC.z:tz;sun.position.set(shx+G.sunOff.x,G.sunOff.y,shz+G.sunOff.z);sun.target.position.set(shx,0,shz);
   camera.updateMatrixWorld();if(CW)CW.step(camera,P.x,P.z,scene.fog.far);cutV.set(P.x,1.2,P.z).project(camera);const rs=renderer.getSize(cutS);X.U.uPS.value.set((cutV.x*.5+.5)*rs.x,(cutV.y*.5+.5)*rs.y);
   cutV.set(P.x,1.2,P.z).applyMatrix4(camera.matrixWorldInverse);X.U.uPZ.value=-cutV.z;X.U.uCutR.value=rs.y*.2*(G.paused||G.spelerWeg||(G.cut&&G.cut.active&&G.cut.active())||(G.camMode&&G.camMode!=='boven')?0:1);
   // mensen
   G.missionStep&&!G.paused&&G.missionStep(dt);
-  const A=G.actors.slice(0,ACT_MAX);humans.count(1+NPC.length+A.length);humans.pose(0,{x:P.x,y:-60,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,look:P.look});if(G.avatarPose)G.avatarPose({x:P.x,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,v,dt,lean:v>7?.2:v>1?.05:0,hide:G.driving||G.camMode==='ogen'||!!G.spelerWeg,crouch:G.hidden,arm:G.pArm||0});
+  const A=G.actors.slice(0,ACT_MAX);humans.count(1+NPC.length+A.length);humans.pose(0,{x:P.x,y:-60,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,look:P.look});if(G.avatarPose)G.avatarPose({x:P.x,z:P.z,ry:P.ry,ph:P.ph,sp:P.sp,v,dt,lean:v>7?.2:v>1?.05:0,hide:G.driving||G.camMode==='ogen'||!!G.spelerWeg||!!G.camTeDicht,crouch:G.hidden,arm:G.pArm||0});
   NPC.forEach((n,i)=>{npcStep(n,dt);humans.pose(i+1,n)});A.forEach((a,i)=>humans.pose(1+NPC.length+i,a));humans.flush();humans.xray(false);
   // markeringen laten leven
   const inCut=!!(G.cut&&G.cut.active&&G.cut.active());

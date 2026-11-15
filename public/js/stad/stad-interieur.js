@@ -252,18 +252,22 @@ BN.add('napoli',{naam:'Bella Napoli',kleur:'#3fe395',w:16,h:14,plafond:3.3,hoger
     const s=K.sign('BELLA NAPOLI','#ffd35a','#1a1a1c','#2f8a4a',.48);s.position.set(0,3.5,.13);g.add(s)}});
 
 /* =================== DE FLAT VAN DE SANTIS =================== */
-// woonkamer (x 1–10, z 1–7.6) met keuken (noordoost), gang (z 7.6–9.4), Luca's kamer (x 10.2–15, z 7.6–12)
-BN.add('thuis',{naam:'Thuis',kleur:'#7fd1ff',w:16,h:13,plafond:2.8,hoger:1.0,deur:{x:2.0,z:9.0},spawn:{x:2.6,z:8.6,ry:Math.PI/2},anker:anker('thuis'),ankerId:'thuis',deurTxt:'Naar huis',
+// woonkamer (x 1–10, z 1–7.6) met keuken (noordoost), gang (z 7.6–9.6), Luca's kamer (x 10.2–17.6, z 7.85–13.6) met een brede
+// deur vanaf de gang (z 8.0–9.45). De kamer is ruimer dan eerst; alle plekken uit de scènes (bed, bureau, x 11–14.5) staan nog op hun plek.
+BN.add('thuis',{naam:'Thuis',kleur:'#7fd1ff',w:19,h:15,plafond:2.8,hoger:1.0,deur:{x:2.0,z:9.0},spawn:{x:2.6,z:8.6,ry:Math.PI/2},anker:anker('thuis'),ankerId:'thuis',deurTxt:'Naar huis',
   licht:{bg:'#0a0a10',hemi:'#d8d0c0',grond:'#3a3028',int:1.0,zon:.5,zonKleur:'#ffe8c8',gloed:.45,vig:.48,sat:1.08,tint:[1.02,1,.97]},cam:{k:.38},
   bouw(B){const T=B.tex,H=2.8;const beh=T.behang('#d8cdb0','#c8b890'),behL=T.behang('#5a6a7a','#4a5a6a'),stuc=T.stuc('#d8d4c8'),lam=T.planken('#8a6a4a'),lino=T.linoleum('#b8b0a0'),tapL=T.tapijt('#4a5060');
-    B.vloer(1,1,10.2,7.6,lam,2);B.vloer(10.2,1,15,7.6,lino,2);B.vloer(1,7.6,10.2,9.6,lam,2);B.vloer(10.2,7.6,15,12,tapL,1);
+    B.vloer(1,1,10.2,7.6,lam,2);B.vloer(10.2,1,15,7.6,lino,2);B.vloer(1,7.6,10.2,9.6,lam,2);B.vloer(10.2,7.6,17.6,13.6,tapL,1);
     // buitenmuren
-    const wN=B.muur(.6,.6,15.4,1,{h:H,tex:beh}),wW=B.muur(.6,.6,1,9.9,{h:H,tex:beh}),wE=B.muur(15,.6,15.4,12.4,{h:H,tex:stuc}),wS=B.muur(.6,9.6,10.2,9.9,{h:H,tex:beh}),wS2=B.muur(10.2,12,15.4,12.4,{h:H,tex:behL});
+    const wN=B.muur(.6,.6,15.4,1,{h:H,tex:beh}),wW=B.muur(.6,.6,1,9.9,{h:H,tex:beh}),wE=B.muur(15,.6,15.4,7.85,{h:H,tex:stuc}),wS=B.muur(.6,9.6,10.2,9.9,{h:H,tex:beh}),
+      wE2=B.muur(17.6,7.6,18,14,{h:H,tex:behL}),wS2=B.muur(10.2,13.6,18,14,{h:H,tex:behL});B.muur(15,7.6,17.6,7.85,{h:H,tex:behL});
     // binnenmuren: woonkamer | gang, gang | Luca's kamer
-    B.muur(1,7.6,4.2,7.85,{h:H,tex:beh});B.muur(5.6,7.6,10.2,7.85,{h:H,tex:beh});B.muur(10.2,7.6,11.2,7.85,{h:H,tex:behL});B.muur(12.5,7.6,15,7.85,{h:H,tex:behL});B.muur(9.95,7.85,10.2,12.2,{h:H,tex:behL});
-    B.plafond(1,1,15,12,H,'#e8e4dc');
+    B.muur(1,7.6,4.2,7.85,{h:H,tex:beh});B.muur(5.6,7.6,10.2,7.85,{h:H,tex:beh});B.muur(10.2,7.6,15,7.85,{h:H,tex:behL});
+    // gang | Luca's kamer: een brede deuropening (z 8.0–9.45), daarachter de kamer
+    B.muur(9.95,7.85,10.2,8.0,{h:H,tex:behL});B.muur(9.95,9.45,10.2,13.8,{h:H,tex:behL});B.box(.3,.34,1.6,10.08,2.63,8.72,'#e8e4da');
+    B.plafond(1,1,17.6,13.6,H,'#e8e4dc');
     // ramen (avond: de stad met lichtjes)
-    const rm=stadRaam(true);[[3.4,1.02],[7.4,1.02]].forEach(([x,z])=>{B.plaat(rm,1.8,1.1,x,1.6,z,0,{glow:1,muur:wN});B.box(1.96,.06,.18,x,1.03,z+.06,'#e8e4da')});B.plaat(rm,1.2,1.0,14.97,1.6,10,-Math.PI/2,{glow:1,muur:wE});
+    const rm=stadRaam(true);[[3.4,1.02],[7.4,1.02]].forEach(([x,z])=>{B.plaat(rm,1.8,1.1,x,1.6,z,0,{glow:1,muur:wN});B.box(1.96,.06,.18,x,1.03,z+.06,'#e8e4da')});B.plaat(rm,1.4,1.1,17.57,1.6,11.2,-Math.PI/2,{glow:1,muur:wE2});B.box(.18,.06,1.56,17.5,1.03,11.2,'#e8e4da');
     // gordijnen
     [[2.4,1.1],[4.4,1.1],[6.4,1.1],[8.4,1.1]].forEach(([x,z],i)=>B.box(.36,2.1,.06,x,1.45,z,i%2?'#7a3a2a':'#8a4a32'));
     // ===== woonkamer =====
@@ -298,17 +302,23 @@ BN.add('thuis',{naam:'Thuis',kleur:'#7fd1ff',w:16,h:13,plafond:2.8,hoger:1.0,deu
     B.meubel([[.04,.6,.04,0,2.5,0,'#1a1714'],[.24,.12,.24,0,2.2,0,'#fff0c8',1]],6,8.6);B.licht(6,2.0,8.6,'#ffe8c0',1.6,4);
     // ===== Luca's kamer =====
     B.meubel(F.bed(1.0,2.0,'#3a2a20','#2f4a6a'),14.2,10.6,0,{solid:[1,2]});
-    B.meubel(F.kast(1.2,2.0,.55,'#d8d4c8'),11.0,11.6,Math.PI);B.solid(10.3,11.3,11.7,12,true);
+    B.meubel(F.kast(1.2,2.0,.55,'#d8d4c8'),11.0,13.25,Math.PI);B.solid(10.3,12.95,11.7,13.6,true);
+    // meer ruimte: een kleed, een zitzak met een spelcomputer en een tv'tje, een wasmand en een basketbal
+    B.meubel([[2.6,.01,1.8,0,.012,0,'#3a4a6a'],[2.3,.012,1.5,0,.014,0,'#5a6a8a']],15.4,11.6);
+    B.meubel([[.9,.4,.9,0,.2,0,'#c0261e'],[.7,.3,.3,0,.45,-.3,'#a01e18']],16.3,12.5,-2.4);
+    B.meubel([[1.2,.5,.4,0,.25,0,'#2a2c30'],[.9,.55,.06,0,.82,0,'#111214'],[.82,.47,.01,0,.82,.035,'#2a3a8a',1],[.3,.06,.2,.3,.53,.05,'#e8e4da']],15.6,13.3,Math.PI);B.solid(15,13.05,16.2,13.6,true);
+    B.meubel([[.5,.5,.4,0,.25,0,'#c8b890'],[.42,.1,.32,0,.52,0,'#e8e4da']],17.2,13.1);B.solid(16.95,12.85,17.5,13.35,true);
+    B.meubel([[.26,.26,.26,0,.13,0,'#e06a2a']],16.8,10.2);B.meubel([[.04,.5,.04,0,2.55,0,'#1a1714'],[.36,.1,.36,0,2.25,0,'#e8e4da',1]],15.4,11.6);B.licht(15.4,2.1,11.6,'#ffe8c8',1.7,5);
     B.meubel(F.tafel(1.1,.6,.74,'#e8e4da','#8a8c90'),12.8,8.2,Math.PI);B.solid(12.2,7.85,13.4,8.5);B.meubel(F.stoel('#2a2c30'),12.8,8.9,Math.PI);
     B.meubel([[.4,.28,.02,0,1.0,-.1,'#16161a'],[.36,.22,.01,0,1.0,-.09,'#3a7aff',1],[.4,.02,.26,0,.77,.05,'#2a2c30']],12.8,8.2);
     // poster (actiefilm) en een sportschoenen-doos onder het bed
     const post=pc(20,28,(c,w,h)=>{R(c,0,0,w,h,'#1a1a2a');R(c,0,18,w,10,'#c0261e');R(c,3,6,14,8,'#e8b923');R(c,5,8,6,4,'#1a1a1c');R(c,12,9,4,2,'#1a1a1c');c.font='5px monospace';c.fillStyle='#fff';c.fillText('DUBBEL',2,24)});
-    B.plaat(post,.8,1.1,14.97,1.7,9.2,-Math.PI/2,{muur:wE});
+    B.plaat(post,.8,1.1,17.57,1.7,9.0,-Math.PI/2,{muur:wE2});
     B.meubel([[.5,.18,.32,0,.09,0,'#e8e4da'],[.52,.04,.34,0,.19,0,'#c0261e']],13.7,11.3);
-    B.meubel([[.4,.3,.04,0,.5,0,'#8a8c90'],[.36,.02,.05,0,.42,0,'#5a5a62'],[.36,.02,.05,0,.5,0,'#5a5a62'],[.36,.02,.05,0,.58,0,'#5a5a62']],15.0,8.5,-Math.PI/2);   // ventilatierooster laag in de muur
-    B.box(1.4,.1,.03,12.2,.05,11.98,'#c8b890');   // losse plint
+    B.meubel([[.4,.3,.04,0,.5,0,'#8a8c90'],[.36,.02,.05,0,.42,0,'#5a5a62'],[.36,.02,.05,0,.5,0,'#5a5a62'],[.36,.02,.05,0,.58,0,'#5a5a62']],17.6,8.6,-Math.PI/2);   // ventilatierooster laag in de muur
+    B.box(1.4,.1,.03,12.2,.05,13.58,'#c8b890');   // losse plint
     B.meubel([[.04,.5,.04,0,2.55,0,'#1a1714'],[.3,.1,.3,0,2.25,0,'#e8e4da',1]],12.6,9.8);B.licht(12.6,2.1,9.8,'#e8f0ff',2.0,4.5);
-    B.verstop('matras',14.2,10.3,'Onder het matras');B.verstop('kast',11.0,11.0,'Achter in de kast');B.verstop('rooster',14.6,8.5,'Achter het ventilatierooster');B.verstop('schoenendoos',13.7,11.0,'In de schoenendoos');B.verstop('plint',12.2,11.6,'Achter de losse plint');
+    B.verstop('matras',14.2,10.3,'Onder het matras');B.verstop('kast',11.0,12.6,'Achter in de kast');B.verstop('rooster',17.1,8.6,'Achter het ventilatierooster');B.verstop('schoenendoos',13.7,11.0,'In de schoenendoos');B.verstop('plint',12.2,13.2,'Achter de losse plint');
     B.plek('eettafel',7.4,.81,5.2);B.plek('salontafel',3.6,.44,4.8);B.plek('bureau',12.8,.77,8.2)},
   buiten(g,f){if(f.eigen)return;const m=K.model([[1.5,2.4,.14,0,1.2,-.03,'#2a3a4a'],[1.3,2.2,.06,0,1.1,.04,'#3a4a5a'],[.3,.5,.06,.9,1.3,.06,'#c9cfd6'],[.24,.04,.02,.9,1.5,.1,'#3a3d44'],[.04,.04,.02,.84,1.4,.1,'#ffd35a',1],[1.8,.08,.6,0,2.5,.3,'#5a5a62']]);g.add(m)}});
 

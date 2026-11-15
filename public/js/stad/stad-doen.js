@@ -54,7 +54,9 @@ const STORY_OK={bank:1,kat:1};
 function promptStep(){if(!ring&&G.ready){ring=new TH.Mesh(new TH.RingGeometry(.5,.66,14),new TH.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.85,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.visible=false;G.scene().add(ring)}
   pickSpot();const s=cur;if(!s){pr.hidden=true;if(ring)ring.visible=false;return}
   if(ring){ring.visible=!s.noRing;ring.position.set(s.x,.07,s.z);ring.material.color.set(s.col||'#ffffff');const k=(s.ring||1)*(1+Math.sin(performance.now()/260)*.07);ring.scale.set(k,k,k)}
-  V3.set(s.x,s.h||1.9,s.z).project(G.camera());pr.hidden=false;pr.style.left=(V3.x*.5+.5)*innerWidth+'px';pr.style.top=(-V3.y*.5+.5)*innerHeight+'px';pr.style.setProperty('--c',s.col||'#fff');
+  // verhaalknoppen (s.aanSpeler) staan boven je eigen hoofd, niet bij een deur ergens opzij (dan viel het label over de doelbalk)
+  if(s.aanSpeler)V3.set(G.P.x,s.h||2.7,G.P.z);else V3.set(s.x,s.h||1.9,s.z);V3.project(G.camera());pr.hidden=false;
+  pr.style.left=Math.max(90,Math.min(innerWidth-90,(V3.x*.5+.5)*innerWidth))+'px';pr.style.top=Math.max(110,Math.min(innerHeight-70,(-V3.y*.5+.5)*innerHeight))+'px';pr.style.setProperty('--c',s.col||'#fff');
   const lbl=typeof s.n==='function'?s.n():s.n;pr.innerHTML=`<kbd>${touch?'Tik':'E'}</kbd><span>${E(lbl)}</span>${s.sub?`<em>${E(typeof s.sub==='function'?s.sub():s.sub)}</em>`:''}`}
 pr.addEventListener('click',()=>{if(cur)use(cur)});
 function use(s){if(!s)return;try{s.act(s)}catch(e){console.error(e)}}
