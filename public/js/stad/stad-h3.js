@@ -6,7 +6,8 @@
 // Release: LIVE hieronder. Zolang die uit staat, ziet de speler na Seizoen 2 "coming soon" (stad-h2.js).
 (function(){
 'use strict';
-const LIVE=true;
+// Nov 2026: het nieuwe Seizoen 1 eindigt anders; het oude Seizoen 3 staat dicht tot het nieuwe seizoen klaar is (zie G.s1.teaser).
+const LIVE=false;
 const G=window.STAD,M=window.STAD_MAP,TH=window.THREE;if(!G||!M||!TH)return;
 const $s=id=>document.getElementById(id);
 const touch=matchMedia('(pointer:coarse)').matches;
@@ -14,7 +15,7 @@ const PI=Math.PI;
 let ST,C,B,L;
 const live=()=>{if(LIVE)return true;try{return /^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&localStorage.getItem('verhaal_s3_test')==='1'}catch(e){return false}};
 const mag=()=>{try{return !!(G.story&&G.story.vip&&G.story.vip())}catch(e){return false}};
-G.h3={live,mag,begin:()=>{if(!ST||!mag())return false;const s=ST.st();s.ch=3;try{save()}catch(e){}ST.goto('h3_start');return true}};
+G.h3={live,mag,begin:()=>{if(!ST||!mag()||!live())return false;const s=ST.st();s.ch=3;try{save()}catch(e){}ST.goto('h3_start');return true}};
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 let RUN=0;const nieuw=()=>++RUN;
 function doelNaar(tekst,p,r,o){o=o||{};const t0=RUN;ST.doel(tekst,{x:p.x,z:p.z});

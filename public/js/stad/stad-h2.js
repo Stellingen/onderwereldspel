@@ -8,7 +8,8 @@
 // Release: LIVE hieronder. Zolang die uit staat, ziet de speler na Seizoen 1 "coming soon" (stad-h1.js).
 (function(){
 'use strict';
-const LIVE=true;
+// Nov 2026: het nieuwe Seizoen 1 eindigt anders; het oude Seizoen 2 staat dicht tot het nieuwe seizoen klaar is (zie G.s1.teaser).
+const LIVE=false;
 const G=window.STAD,M=window.STAD_MAP,TH=window.THREE;if(!G||!M||!TH)return;
 const $s=id=>document.getElementById(id);
 const touch=matchMedia('(pointer:coarse)').matches;
@@ -17,7 +18,7 @@ let ST,C,B,L;   // L = hulpjes uit hoofdstuk 1
 // testen kan alleen lokaal (localhost) met een vlag in localStorage; op de echte site telt alleen LIVE
 const live=()=>{if(LIVE)return true;try{return /^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&localStorage.getItem('verhaal_s2_test')==='1'}catch(e){return false}};
 const mag=()=>{try{return !!(G.story&&G.story.vip&&G.story.vip())}catch(e){return false}};
-G.h2={live,mag,begin:()=>{if(!ST)return;if(!mag()){const s=ST.st();if(!s.s2lock||Date.now()-s.s2lock>864e5){s.s2lock=Date.now();try{save()}catch(e){}
+G.h2={live,mag,begin:()=>{if(!ST)return;if(!live()){try{G.s1&&G.s1.teaser&&G.s1.teaser()}catch(e){}return false}if(!mag()){const s=ST.st();if(!s.s2lock||Date.now()-s.s2lock>864e5){s.s2lock=Date.now();try{save()}catch(e){}
     ST.kaart(`<small>De Bezorger · Seizoen 2</small><b>Seizoen 2 is uit</b><p>Twee bazen, twee telefoons en Dex die voor de school wordt opgepakt. Seizoen 2 en verder speel je met VIP of High roller. Al je keuzes uit Seizoen 1 staan klaar.</p>
      <div class="sv-k-b"><a class="btn" href="/lidmaatschap#verhaal">Bekijk lidmaatschap</a><button class="btn ghost" data-x>Later</button></div>`)}return false}
   const s=ST.st();s.ch=2;try{save()}catch(e){}ST.goto('h2_start');return true}};
