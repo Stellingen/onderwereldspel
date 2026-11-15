@@ -7,6 +7,8 @@
 const G=STAD,M=STAD_MAP,TH=window.THREE,K=G.kit,BN=G.binnen;if(!BN)return;
 const shade=K.shade,R=(c,x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h)};
 const pc=BN.plaatCanvas;
+// een castlid uit het nieuwe Seizoen 1 als dat er is (Mo, Tarik), anders de oude naam
+const C_LOOK=(id,anders)=>{try{return G.cut&&G.cut.actors&&G.cut.actors[id]?id:anders}catch(e){return anders}};
 // tijdelijke plekken op de Pixelstad-kaart (stad-map.js) zolang verhaal-map.js er niet is
 const FALLBACK={sahara:{x:267,z:507},napoli:{x:213,z:507},thuis:{x:189,z:267.5},school:{x:200.5,z:248},rijtjeshuis:{x:441.5,z:371.6}};
 const anker=id=>{const f0=()=>{const A=M.A||{};if(id==='napoli'&&G.bezorg&&G.bezorg.napoli&&G.bezorg.napoli.x!=null)return G.bezorg.napoli;if(A[id]&&A[id].x!=null)return A[id];const f=FALLBACK[id];return f?(M.nearestWalk(f.x,f.z,6)||f):null};return f0};
@@ -84,7 +86,7 @@ BN.add('sahara',{naam:'Lounge Sahara',kleur:'#ffb84a',w:26,h:36,plafond:3.6,hoge
     B.meubel([[.1,2.4,.16,-1.05,1.2,0,'#3a2414'],[.1,2.4,.16,1.05,1.2,0,'#3a2414'],[2.2,.14,.16,0,2.45,0,'#3a2414'],[.9,2.3,.06,-.6,1.15,-.42,'#4a2e1c',0,1.1],[.05,.05,.06,-.25,1.1,-.8,GOUD,0,1.1]],13,31.4);
     B.licht(13,2.6,33.4,'#ffc890',2.0,4.5);
     // de uitsmijter bij de tussendeur (binnenkant), Rafiqs beveiliging
-    B.persoon('uitsmijter',{x:14.7,z:30.3,ry:Math.PI*1.1,anim:'armen',naam:'uitsmijter'});
+    B.persoon(C_LOOK('tarik','uitsmijter'),{x:14.7,z:30.3,ry:Math.PI*1.1,anim:'armen',naam:'uitsmijter'});
     // ===== bar langs de westmuur =====
     const zell=T.zellige('#1f5a5a','#e8e4da',GOUD);
     const front=new TH.Mesh(new TH.BoxGeometry(.12,1.05,9.6),new TH.MeshLambertMaterial({map:zell}));front.position.set(3.42,.56,21);B.root.add(front);
@@ -207,7 +209,7 @@ BN.add('sahara',{naam:'Lounge Sahara',kleur:'#ffb84a',w:26,h:36,plafond:3.6,hoge
     bord.position.set(3.9,.92,.76);g.add(bord);
     const l=new TH.PointLight('#ffb060',3,7,1.6);l.position.set(0,2.9,1.4);g.add(l);
     // de portier buiten (knikt als je langskomt)
-    if(G.cut&&G.cut.persoon){const a=BN.uitsmijterBuiten||G.cut.persoon('uitsmijter',{x:0,z:0,anim:'armen'});const wp=new TH.Vector3(1.6,0,1.0).applyAxisAngle(new TH.Vector3(0,1,0),g.rotation.y).add(g.position);a.zet(wp.x,wp.z,g.rotation.y-.3);BN.uitsmijterBuiten=a}}});
+    if(G.cut&&G.cut.persoon){const a=BN.uitsmijterBuiten||G.cut.persoon(C_LOOK('mo','uitsmijter'),{x:0,z:0,anim:'armen'});const wp=new TH.Vector3(1.6,0,1.0).applyAxisAngle(new TH.Vector3(0,1,0),g.rotation.y).add(g.position);a.zet(wp.x,wp.z,g.rotation.y-.3);BN.uitsmijterBuiten=a}}});
 
 /* =================== PIZZERIA BELLA NAPOLI =================== */
 // keuken achter (z 1–8.3) met houtoven, winkel voor (z 8.3–13): toonbank, kassa, menubord

@@ -939,10 +939,12 @@ const iv=setInterval(()=>{if(!G.ready||!G.story||!G.cut||!G.binnen||!G.story.ste
   ST=G.story;C=G.cut;B=G.binnen;K=G.kit;
   try{cast()}catch(e){console.error(e)}css();
   // Sahara is dicht tot de grote bestelling (behalve als je al verder bent)
+  // nov 2026: het nieuwe Seizoen 1 staat in verhaal-s1*.js; dit bestand levert dan alleen nog de hulpjes (G.h1.lib), minispellen en zijklussen
+  if(!window.S1_NIEUW){
   const s=ST.st();const vroeg=['start','h1_klas','h1_naarbuiten','h1_plein','h1_onderweg','h1_fiets','h1_napoli','h1_giovanni','h1_ritten','h1_dief','h1_terug','h1_grote'];
   if(vroeg.includes(s.step))B.slot('sahara',true,'Lounge Sahara · alleen op uitnodiging');
   if(!['h4_rit','h4_binnen'].includes(s.step))B.slot('rijtjeshuis',true,'Je hebt hier niks te zoeken');
-  registreer();
+  registreer()}
   setTimeout(()=>{try{dienstInit();ansInit()}catch(e){console.error(e)}},800);
 },120);
 G.h1={vechten,tellen,dienstAan,seizoen2,lib:{A,P,F,W,W3,walk,voor,naar,tijd,zorgFiets,fietsAf,binnen,buiten,cam,camNaar,rond,rondNaar,tril,mgOpen,css,scooter,zetBinnen,stapelOp,stapelsWeg,fx,zeg,sein,sleep,eur,pick,rr,clamp,hyp},stappen:()=>Object.keys((G.story&&G.story.steps)||{}).filter(k=>/^h\d|^start/.test(k))};

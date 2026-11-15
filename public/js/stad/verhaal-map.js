@@ -672,7 +672,7 @@ const PLEKKEN=[
  {id:'rapido',n:'Pizza Rapido',sub:'De concurrent',ic:'kop',c:'#e8584a',cat:'plek',ch:1},
  {id:'buurthuis',n:'Buurthuis De Kastanje',sub:'Westbuurt',ic:'mensen',c:'#e8e4da',cat:'plek',ch:1},
  {id:'sportschool',n:'De Bokszak',sub:'Boksschool',ic:'vuist',c:'#e8e4da',cat:'plek',ch:1},
- {id:'ziekenhuis',n:'Ziekenhuis',sub:'Hier werkt Elena',ic:'hart',c:'#ff6f8a',cat:'plek',ch:1},
+ {id:'ziekenhuis',n:'Ziekenhuis',sub:'Hier werkt Giulia',ic:'hart',c:'#ff6f8a',cat:'plek',ch:1},
  {id:'politie',n:'Politiebureau',sub:'Centrum',ic:'badge',c:'#4d7dff',cat:'gevaar',ch:1},
  {id:'station',n:'Centraal Station',sub:'Treinen en trams',ic:'route',c:'#ffd35a',cat:'plek',ch:1},
  {id:'strandtent',n:'Strandtenten',sub:'Het strand',ic:'kop',c:'#f0dca0',cat:'plek',ch:1},
