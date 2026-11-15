@@ -58,7 +58,7 @@ S1.zwijgen=function(o){css();return new Promise(res=>{const el=mgOpen(`<small>${
   const zb=el.querySelector('[data-z]'),aan=e=>{e&&e.preventDefault();houd=true},uit=()=>{if(houd&&v<1){loslaat++;st.textContent='Luca: "Wacht…"'}houd=false};
   zb.addEventListener('pointerdown',aan);zb.addEventListener('pointerup',uit);zb.addEventListener('pointerleave',uit);
   el.querySelector('[data-n]').onclick=()=>{if(klaar)return;klaar=true;weg();res('noem')};
-  const kd=e=>{if((e.key==='e'||e.key==='E'||e.code==='Space')&&!e.repeat){e.preventDefault();houd=true}},ku=e=>{if(e.key==='e'||e.key==='E'||e.code==='Space')uit()};
+  const kd=e=>{if(e.key==='e'||e.key==='E'||e.code==='Space'){e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)houd=true}},ku=e=>{if(e.key==='e'||e.key==='E'||e.code==='Space'){e.stopImmediatePropagation();uit()}};
   addEventListener('keydown',kd,true);addEventListener('keyup',ku,true);const weg=()=>{removeEventListener('keydown',kd,true);removeEventListener('keyup',ku,true);el.remove()}})};
 
 /* ---------- het schot: houd E om de arm te heffen; zakt hij, dan begin je opnieuw. Daarna één knop. ---------- */
@@ -67,10 +67,10 @@ S1.heffen=function(o){css();return new Promise(res=>{const el=mgOpen(`<small>${E
   const loop=()=>{if(klaar)return;const nu=performance.now(),dt=Math.min(.1,(nu-last)/1000);last=nu;if(houd)v+=dt/(o.duur||3);else if(v>0){v=Math.max(0,v-dt*.8);if(v===0&&zak){zak=0;o.onZak&&o.onZak();st.textContent=o.zakTekst||''}}
     u.style.width=(clamp(v,0,1)*100)+'%';if(Math.random()<dt*(1+v*3))fx('heart');if(v>=1){klaar=true;weg();res(true);return}requestAnimationFrame(loop)};requestAnimationFrame(loop);
   const b=el.querySelector('.s1-knop'),aan=e=>{e&&e.preventDefault();houd=true;zak=1},uit=()=>{houd=false};b.addEventListener('pointerdown',aan);b.addEventListener('pointerup',uit);b.addEventListener('pointerleave',uit);
-  const kd=e=>{if((e.key==='e'||e.key==='E'||e.code==='Space')&&!e.repeat){e.preventDefault();houd=true;zak=1}},ku=e=>{if(e.key==='e'||e.key==='E'||e.code==='Space')houd=false};
+  const kd=e=>{if(e.key==='e'||e.key==='E'||e.code==='Space'){e.preventDefault();e.stopImmediatePropagation();if(!e.repeat){houd=true;zak=1}}},ku=e=>{if(e.key==='e'||e.key==='E'||e.code==='Space'){e.stopImmediatePropagation();houd=false}};
   addEventListener('keydown',kd,true);addEventListener('keyup',ku,true);const weg=()=>{removeEventListener('keydown',kd,true);removeEventListener('keyup',ku,true);el.remove()}})};
 S1.eenKnop=function(tekst,kleur){css();return new Promise(res=>{const el=mgOpen(`<div style="display:flex;justify-content:center"><button class="s1-knop" style="background:${kleur||'#c0261e'};color:#fff;border-color:#6a1410;font-size:18px;padding:14px 34px">${E(tekst)}</button></div>`,{kleur:kleur||'#c0261e',mid:true});
-  const go=()=>{removeEventListener('keydown',kd,true);el.remove();res(true)};el.querySelector('button').onclick=go;const kd=e=>{if(e.key==='e'||e.key==='E'||e.key==='Enter'||e.code==='Space'){e.preventDefault();go()}};addEventListener('keydown',kd,true)})};
+  const go=()=>{removeEventListener('keydown',kd,true);el.remove();res(true)};el.querySelector('button').onclick=go;const kd=e=>{if(e.key==='e'||e.key==='E'||e.key==='Enter'||e.code==='Space'){e.preventDefault();e.stopImmediatePropagation();go()}};addEventListener('keydown',kd,true)})};
 // direct zwart, één droog schot
 async function schotZwart(){const z=document.createElement('div');z.style.cssText='position:fixed;inset:0;background:#000;z-index:96';document.body.appendChild(z);try{G.cut&&G.cut.stop&&G.cut.stop()}catch(e){}
   await sleep(500);fx('schot');await sleep(2600);return z}
@@ -102,7 +102,7 @@ hoofdstuk({id:'s1_h11',na:'s1_h12',vrij:true,blokken:[
   await speel(t,[{speler:false},{actor:'luca',at:W('thuis',13.6,9.2),ry:0},actIn(['luca']),cam(...W3('thuis',13.6,2.2,11.4),...W3('thuis',13.6,.9,8.6),{fov:40}),{fade:'in',t:.3},
    T_('Een zwart overhemd. Een gouden schakelketting. Witte sneakers, maat 43.'),{fn:()=>outfit('feest')},{wait:.8},{fade:'out',t:.3}]);C.weg('luca');F('ketting',1);await buiten()},
  async t=>{// het feest
-  tijd(21,50);if(!await doelNaar(t,'Lounge Sahara · 22:00',PL.sahara(),{actie:'Naar binnen',sub:'Jouw feest'}))return;tijd(22,0);
+  tijd(21,50);if(!await doelNaar(t,'Lounge Sahara · 22:00',PL.sahara(),{actie:'Naar binnen',sub:'Jouw feest',gebouw:'sahara'}))return;tijd(22,0);if(B.waar())await zetBuitenSahara();
   const d=PL.sahara(),l=walk(d.x-.4,d.z+3.4,3),mo={x:d.x+1.6,z:d.z+1.0};const bu=G.binnen.uitsmijterBuiten;if(bu&&bu.g)bu.g.visible=false;
   await speel(t,[{speler:false},{actor:'mo',at:[mo.x,mo.z],ry:naar(mo,l),anim:'lach'},{actor:'luca',at:[l.x,l.z],ry:naar(l,d)},cam(l.x+1,.6,l.z+4.4,d.x,2.4,d.z,{fov:44}),{fade:'in',t:.5},
    {move:'luca',to:[d.x-.4,d.z+1.6],t:2,wacht:false},Z('mo','De jarige. Vanavond loop jij voorop.',{mood:'blij'}),{fade:'out',t:.3}]);C.weg('mo');C.weg('luca');if(bu&&bu.g)bu.g.visible=true;
@@ -139,7 +139,7 @@ hoofdstuk({id:'s1_h11',na:'s1_h12',vrij:true,blokken:[
 VOLG.s1_h12={tekst:'Verder: Bella Napoli, vrijdagavond (Hoofdstuk 12)',p:()=>PL.napoli(),sub:'Vrijdag · De overkant',actie:'Naar binnen'};
 
 /* =================== HOOFDSTUK 12 · De overkant =================== */
-async function opDeBrug(t,cb){for(let i=0;i<6000&&levend(t);i++){await sleep(200);const x=G.P.x,z=G.P.z;if(Math.abs(x-1080)<10&&z>996&&z<1046&&!C.active()){await cb();return true}}return false}
+async function opDeBrug(t,cb){for(let i=0;i<6000&&levend(t);i++){await sleep(200);const x=G.P.x,z=G.P.z;if(Math.abs(x-1080)<10&&z>988&&z<1050&&!C.active()){await cb();return true}}return false}
 hoofdstuk({id:'s1_h12',na:'s1_h13',vrij:true,blokken:[
  async t=>{dag(19,21,0);outfit('bezorger');await binnen('napoli');B.toon('napoli','giovanni',false);
   await speel(t,[{fade:'out',t:.01},{speler:false},titel('Hoofdstuk 12','De overkant',2.6),{actor:'giovanni',at:W('napoli',...S1.NAP.giovanni),ry:0,anim:'kok'},{actor:'luca',at:W('napoli',...S1.NAP.luca),ry:PI},actIn(['giovanni','luca']),
@@ -190,7 +190,7 @@ S1.eenNacht=function(t){return new Promise(async res=>{const PLEK={bed:{n:'Onder
    {t:20*60+30,plek:'kast',wie:'marco',tekst:'Marco zoekt een zekering: "Het licht in de badkamer is weer uit."',smoes:'"Ik heb het al gedaan, pap!"',band:'band_marco',verm:1},
    {t:22*60,plek:'keuken',wie:'elena',tekst:'Elena zoekt de grote pan: "Morgen komt tante Rosa."',smoes:'"Die staat in de kelderbox!"',band:'band_elena'},
    {t:23*60+30,plek:'giulia',wie:'giulia',tekst:'Giulia komt thuis. Dienst geruild. Ze loopt naar haar kamer.',smoes:'"Giulia! Kun je even helpen?"',band:'band_giulia'}];
-  let waar='bed',inHand=false,van=18*60,tot=24*60,duur=170,t0=performance.now(),mi=0,gewaarsch=-1;
+  let waar='bed',inHand=false,van=18*60,tot=24*60,duur=170*(S1.testSnel||1),t0=performance.now(),mi=0,gewaarsch=-1;
   const hud=document.createElement('div');hud.className='s1-hud2';hud.innerHTML='<div class="k"></div><div class="w"></div><div class="m" style="max-width:270px;color:#ffd35a"></div>';document.body.appendChild(hud);
   const nu=()=>van+Math.min(1,(performance.now()-t0)/1000/duur)*(tot-van);
   const teken=()=>{const m=Math.floor(nu());hud.querySelector('.k').textContent='Een nacht · '+String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0');hud.querySelector('.w').textContent='De tas: '+(inHand?'in je handen':PLEK[waar].n)};
@@ -220,9 +220,9 @@ hoofdstuk({id:'s1_h13',na:'s1_h14',vrij:true,blokken:[
   sein('Een nacht: verplaats de tas vóór iemand er precies daar bij moet (E bij de plekken)','#ffd35a');const w=await S1.eenNacht(t);if(!levend(t))return;
   await speel(t,[titel('Zondag','15:00',2.2)])},
  async t=>{// zondagsdienst, de inval
-  dag(21,15,0);outfit('bezorger');await buiten();zorgFiets(PL.napoli());const a=S1.adres('Boulevard','winkel',2,PL.sahara())||{x:PL.sahara().x+30,z:PL.sahara().z,adres:'Boulevard'};
+  dag(21,15,0);outfit('bezorger');await buiten();zorgFiets(PL.napoli());const a=S1.adres('Boulevard','winkel',1,PL.sahara())||{x:PL.sahara().x+30,z:PL.sahara().z,adres:'Boulevard'};
   sein('Zondagsdienst: één bestelling aan de Boulevard','#3fe395');
-  const d=PL.sahara();ST.doel('Bezorgen · '+(a.adres||'Boulevard'),a);let ok=false;for(let i=0;i<5000&&levend(t);i++){await sleep(200);if(hyp(G.P.x-d.x,G.P.z-d.z)<60&&!C.active()&&!B.waar()){ok=true;break}}if(!ok||!levend(t))return;
+  const d=PL.sahara();ST.doel('Bezorgen · '+(a.adres||'Boulevard'),a);let ok=false;for(let i=0;i<5000&&levend(t);i++){await sleep(200);if((hyp(G.P.x-d.x,G.P.z-d.z)<60||hyp(G.P.x-a.x,G.P.z-a.z)<30)&&!C.active()&&!B.waar()){ok=true;break}}if(!ok||!levend(t))return;
   ST.doel(null);fietsAf();const l=P(),bus1=S1.politieAuto({busje:true}),bus2=S1.politieAuto({busje:true});const p1=walk(d.x-6,d.z+6,6),p2=walk(d.x+8,d.z+6,6);
   bus1.position.set(p1.x,0,p1.z);bus1.rotation.y=PI/2;bus2.position.set(p2.x,0,p2.z);bus2.rotation.y=-PI/2;G.scene().add(bus1,bus2);
   const lint=K.model([[16,.12,.04,0,1.1,0,'#c0261e'],[.08,1.2,.08,-8,.6,0,'#c9cfd6'],[.08,1.2,.08,8,.6,0,'#c9cfd6']]);lint.position.set(d.x,0,d.z+4);G.scene().add(lint);

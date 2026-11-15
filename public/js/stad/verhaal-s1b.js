@@ -18,7 +18,7 @@ function tramMet(){const g=new TH.Group(),m=c=>new TH.MeshLambertMaterial({color
 S1.tramMet=tramMet;
 
 /* ---------- de hoekdienst: berichten, voorraad uit de meterkast, overdracht op het bankje, patrouilles ---------- */
-S1.hoekDienst=function(t,o){o=Object.assign({klanten:6,test:true,duur:240,dex:false,van:[20,0],tot:[22,50]},o||{});return new Promise(async res=>{
+S1.hoekDienst=function(t,o){o=Object.assign({klanten:6,test:true,duur:240,dex:false,van:[20,0],tot:[22,50]},o||{});return new Promise(async res=>{o.duur*=(S1.testSnel||1);
   const h=PL.hoek(),bank=walk(h.x-2,h.z-3,4),kast=walk(h.x+13,h.z-9,8);let actief=true,voorraad=0,verkocht=0,klant=null,patrouille=0,veilig=false,test=null,gestart=performance.now(),verdiend=0;
   const deco=new TH.Group();deco.add(K.model([[2.2,.12,.6,0,.62,0,'#6a4a2a'],[2.2,.5,.1,0,.95,-.28,'#6a4a2a'],[.1,.6,.5,-1,.3,0,'#2a2c30'],[.1,.6,.5,1,.3,0,'#2a2c30']]));deco.position.set(bank.x,0,bank.z);deco.rotation.y=naar(bank,h);G.scene().add(deco);
   const kastM=K.model([[.9,1.6,.3,0,.8,0,'#5a5d63'],[.04,.2,.04,.3,.9,.17,'#c9cfd6']]);kastM.position.set(kast.x,0,kast.z);G.scene().add(kastM);
@@ -114,7 +114,7 @@ hoofdstuk({id:'s1_h7',na:'s1_h8',vrij:true,outfit:'straat',blokken:[
    Z('rafiq','Meneer Vos. Zeshonderd euro, drie weken te laat. Tarik rijdt. Jij praat.'),Z('luca','Waarom ik?'),Z('rafiq','Omdat niemand bang is voor een jongen. Tot hij iets zegt.'),
    T_('Tarik pakt zijn autosleutels van tafel.'),{fade:'out',t:.5}]);hoekWeg()},
  async t=>{// bij Vos aan de deur (Oud-Zuid). Tarik blijft bij de auto.
-  await buiten();const v=PL.rijtjeshuis(),deur={x:v.x,z:v.z},l=walk(v.x,v.z+1.6,3),car=walk(v.x+6,v.z+7,6);tijd(21,5);
+  await buiten();const v=PL.rijtjeshuis(),deur={x:v.x,z:v.z},l=S1.voorDeur('rijtjeshuis',1.8)||walk(v.x,v.z+1.6,3),car=S1.voorDeur('rijtjeshuis',8)||walk(v.x+6,v.z+7,6);tijd(21,5);
   const auto=S1.auto('#121316');auto.position.set(car.x,0,car.z);auto.rotation.y=PI/2;G.scene().add(auto);G.P.x=l.x;G.P.z=l.z;
   await speel(t,[{speler:false},{actor:'tarik',at:[car.x-1.2,car.z-1.4],ry:naar(car,l),anim:'armen'},{actor:'luca',at:[l.x,l.z],ry:naar(l,deur)},
    cam(car.x+4,2.4,car.z+6,l.x,1.4,l.z,{fov:44}),{fade:'in',t:.6},{snd:'carDoor'},T_('Een rijtjeshuis in Oud-Zuid. Gordijnen dicht. Binnen staat de tv aan.'),

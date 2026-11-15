@@ -10,9 +10,9 @@ const {F,fx,eur,meter,geld,plusF,A,W,W3,walk,P,naar,voor,tijd,Z,T_,cam,rond,ots,
   doelNaar,fietsAf,zorgFiets,binnen,buiten,bericht,sein,mgTiming,mgHold,mgGesprek,mgQuiz,mgMash,mgKies,echteRit,nepRit,levend,VOLG,PL,AD,pt,adr,outfit,actIn}=S1;
 
 const vrij=()=>{const h=F('s1_hfd')||'';return (h.startsWith('tussen:')||h==='vrij')&&!C.active()&&!S1.bezig};
-function herstelDoel(){const h=F('s1_hfd')||'';if(h.startsWith('tussen:')){const v=VOLG[h.slice(7)];if(v)ST.doel(v.tekst,typeof v.p==='function'?v.p():v.p);return}ST.doel(null)}
+function herstelDoel(){const h=F('s1_hfd')||'';if(h.startsWith('tussen:')){const v=VOLG[h.slice(7)];if(v)ST.doel(v.tekst,typeof v.p==='function'?v.p():v.p);return}if(h==='vrij')ST.doel(null)}
 // een klus of side quest draaien zonder het hoofdstuk te storen (zelfde 'leven' als de vrije rit)
-async function klus(fn,kleding){if(S1.bezig)return;S1.bezig=1;const t=S1.RUN,oud=(ST.st().outfit)||null;try{if(kleding)outfit(kleding);await fn(t)}catch(e){console.error(e)}
+async function klus(fn,kleding){if(S1.bezig||!vrij())return;S1.bezig=1;const t=S1.RUN,oud=(ST.st().outfit)||null;try{if(kleding)outfit(kleding);await fn(t)}catch(e){console.error(e)}
   S1.bezig=0;if(levend(t)){if(kleding&&oud)outfit(oud);herstelDoel()}}
 S1.klus=klus;
 const rAdres=(wijken,n)=>{const w=pick(wijken);return S1.adres(w,null,Math.floor(rr(0,60)))||S1.adres(null,null,Math.floor(rr(0,400)))};
@@ -38,9 +38,9 @@ function hoekAvond(){const dag=ST.st().avond||0;if(F('hoek_dag')===dag){sein('Ge
    if(r&&r.verkocht)bericht('B.','Opgehaald. Goed gedaan.',{kleur:'#5a5d63'})},'straat')}
 let klusInit=false;
 function klusSpots(){if(klusInit||!G.spot)return;klusInit=true;
-  G.spot({story:1,k:'klus_napoli',x:PL.napoli().x,z:PL.napoli().z,r:3.2,prio:2,n:'Bella Napoli',sub:'Napoli-ronde (3 bestellingen)',col:'#3fe395',h:2.6,
+  const nf=A('napoli_fietsen');G.spot({story:1,k:'klus_napoli',x:nf.x,z:nf.z,r:3.2,prio:2,n:'Bezorgfietsen Bella Napoli',sub:'Napoli-ronde (3 bestellingen)',col:'#3fe395',h:2.6,
    show:function(){return vrij()&&!B.waar()&&!!F('s1_klaar_s1_h3')},act:()=>napoliRonde()});
-  G.spot({story:1,k:'klus_rafiq',x:PL.sahara().x+2.6,z:PL.sahara().z+1.2,r:3.2,prio:2,n:'Lounge Sahara',sub:'Run voor Rafiq (twee adressen)',col:'#ffd35a',h:2.6,
+  G.spot({story:1,k:'klus_rafiq',x:PL.steeg().x,z:PL.steeg().z,r:3.2,prio:2,n:'Achterdeur Sahara',sub:'Run voor Rafiq (twee adressen)',col:'#ffd35a',h:2.6,
    show:function(){return vrij()&&!B.waar()&&!!F('tweede_telefoon')&&!F('rafiq_dood')},act:()=>rafiqRun()});
   G.spot({story:1,k:'klus_hoek',x:PL.hoek().x,z:PL.hoek().z,r:3.2,prio:2,n:'De hoek',sub:'Hoekavond (drie klanten)',col:'#ff9a5a',h:2.2,
    show:function(){return vrij()&&!B.waar()&&!!F('hoek_klus')&&!F('rafiq_dood')},act:()=>hoekAvond()});
@@ -68,7 +68,7 @@ S1.sq1=()=>klus(async t=>{await binnen('thuis');
 
 /* =================== SQ2 · Het oudergesprek (mama) =================== */
 S1.sq2=()=>klus(async t=>{await speel(t,[{speler:false},Z('elena','Meneer Visser belde. Je slaapt in de les. Morgen gaan we samen.'),{fade:'out',t:.4}]);await buiten();outfit('school');tijd(15,30);
-  if(!await doelNaar(t,'Westbuurt College · oudergesprek',PL.school(),{actie:'Naar binnen',sub:'Meneer Visser'}))return;await binnen('klas');
+  if(!await doelNaar(t,'Westbuurt College · oudergesprek',A('schoolhek'),{actie:'Naar binnen',sub:'Meneer Visser',gebouw:'klas'}))return;await binnen('klas');
   await speel(t,[{speler:false},{actor:'docent',at:W('klas',7.2,3.2),ry:PI,anim:'sit',sitY:-.42},{actor:'elena',at:W('klas',6.4,5.0),ry:0,anim:'sit',sitY:-.42},{actor:'luca',at:W('klas',8.0,5.0),ry:0,anim:'sit',sitY:-.42},actIn(['docent','elena','luca']),
    S1.cam(...W3('klas',10.6,2.3,7.0),...W3('klas',7.2,1.2,4.0),{fov:44}),{fade:'in',t:.4},Z('docent','Luca slaapt in de les. Twee keer per week. Zijn cijfers zakken.')]);
   const r=await mgKies({kop:'Oudergesprek',wie:'docent',vraag:'Visser kijkt je aan. Mama ook.',opties:[{t:'"Ik werk te veel."',id:'eerlijk'},{t:'"Het wordt beter, beloofd."',id:'belofte'},{t:'"School is toch zinloos."',id:'zinloos'}]});
@@ -118,7 +118,7 @@ function sq5(){return klus(async t=>{const c=PL.containers(),s=walk(c.x+8,c.z+14
    {fn:()=>bericht('Sem','Nooit gebeurd. Mooi werk.',{kleur:'#8ac0ff'})}]);geld(1000,'uithalen');meter('vertrouwen',10);F('uithaal_gedaan',1)},'klus')}
 
 /* =================== SQ7 · Edwin wil meer (na je verjaardag, als je hem betaalde) =================== */
-async function sq7(){if(F('sq7_klaar')||F('edwin')!=='geld')return;F('sq7_klaar',1);await sleep(4000);bericht('Onbekend nummer','Nog eens tienduizend. Anders praat ik. E.',{kleur:'#34c759'});await sleep(3500);
+async function sq7(){if(F('sq7_klaar')||F('edwin')!=='geld')return;F('sq7_klaar',1);await sleep(4000);if(!vrij()){F('sq7_klaar',null);return}bericht('Onbekend nummer','Nog eens tienduizend. Anders praat ik. E.',{kleur:'#34c759'});await sleep(3500);if(!vrij()){F('sq7_klaar',null);return}
   return klus(async t=>{const k=await mgKies({kop:'Eerste telefoon',wie:'luca',vraag:'"Nog eens tienduizend. Anders praat ik. E."',opties:[{t:'Aan Rafiq melden',id:'rafiq'},{t:'Zelf €2.000 betalen bij de douane',id:'betaald'},{t:'Negeren',id:'genegeerd'}]});
    F('edwin_sq',k);if(k==='rafiq'){bericht('Rafiq','Tarik regelt het.',{kleur:'#5a5d63'});meter('vertrouwen',3)}
    else if(k==='betaald'){if(!await doelNaar(t,'Douanekade · Edwin',PL.douane(),{actie:'Betalen',sub:'Edwin'}))return;const n=Math.min(2000,ST.geld());geld(-n,'Edwin');

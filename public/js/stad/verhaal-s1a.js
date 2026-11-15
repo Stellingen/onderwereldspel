@@ -160,7 +160,7 @@ hoofdstuk({id:'s1_h1',na:'s1_h2',outfit:'bezorger',blokken:[
    {anim:'luca',a:'carry',dozen:6},{fade:'out',t:.5}]);
   C.weg('giovanni');C.weg('luca');B.toon('napoli','giovanni',true);await buiten();zorgFiets(PL.napoli());try{G.fiets.last(6)}catch(e){}
   sein('Zes dozen achterop: rustig sturen, op tijd remmen','#ffd35a')},
- async t=>{if(!await doelNaar(t,'Lounge Sahara · Boulevard',PL.sahara(),{actie:'Afstappen',sub:'Lounge Sahara'}))return;try{G.fiets.last(0)}catch(e){}
+ async t=>{if(!await doelNaar(t,'Lounge Sahara · Boulevard',PL.sahara(),{actie:'Afstappen',sub:'Lounge Sahara',gebouw:'sahara'}))return;try{G.fiets.last(0)}catch(e){}if(B.waar())await zetBuitenSahara();
   const d=PL.sahara(),mo={x:d.x+1.6,z:d.z+1.0},l=walk(d.x-1.2,d.z+3.4,3);const bu=G.binnen.uitsmijterBuiten;if(bu&&bu.g)bu.g.visible=false;
   await speel(t,[{speler:false},{actor:'mo',at:[mo.x,mo.z],ry:naar(mo,l),anim:'armen'},{actor:'luca',at:[l.x,l.z],ry:naar(l,d),dozen:6},
    cam(d.x-9,3.2,d.z+12,d.x,2.4,d.z,{fov:46}),{snd:'tram'},verteller('n04'),
@@ -297,7 +297,7 @@ hoofdstuk({id:'s1_h3',na:'s1_h4',blokken:[
    cam(...W3('thuis',10.6,2.3,7.6),...W3('thuis',7.4,1.1,5.0),{fov:46}),{fade:'in',t:.8},...v,Z('marco','School. En vanavond om tien uur thuis, niet om elf.'),{fade:'out',t:.5}]);
   ['marco','elena','giulia','luca'].forEach(k=>C.weg(k));outfit('school');await buiten()},
  async t=>{// naar school, Dex bij het hek, dan gym op het veld
-  if(!await doelNaar(t,'Naar school · Westbuurt College',PL.school(),{actie:'Naar binnen',sub:'Gymles'}))return;
+  if(!await doelNaar(t,'Naar school · Westbuurt College',A('schoolhek'),{actie:'Naar de gymles',sub:'Westbuurt College',gebouw:'klas'}))return;await buiten();
   const s=A('schoolhek'),d=walk(s.x+1.6,s.z+2.4,3),l=walk(s.x,s.z+2.8,3);
   await speel(t,[{speler:false},{actor:'dex',at:[d.x,d.z],ry:naar(d,l)},{actor:'luca',at:[l.x,l.z],ry:naar(l,d)},rond(d,naar(d,l)+1.2,3.2,1.8,1.5),
    Z('dex','Je appte niet terug, broer.'),Z('luca','Werken. Laat.'),Z('dex','Wie eet er om elf uur nog pizza?',{mood:'blij'}),{fade:'out',t:.5}]);C.weg('dex');C.weg('luca');

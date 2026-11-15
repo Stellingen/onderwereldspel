@@ -31,6 +31,7 @@ const plusF=(k,d)=>F(k,(F(k)||0)+(d||1));
 const A=(k,fx_,fz)=>{const a=M.A&&M.A[k];if(a&&a.x!=null)return {x:a.x,z:a.z};return {x:fx_||0,z:fz||0}};
 const W=(id,x,z)=>B.p(id,x,z),W3=(id,x,y,z)=>{const p=W(id,x,z);return [p[0],y,p[1]]};
 const plek=(id,n)=>{try{return B.plek(id,n)||null}catch(e){return null}};
+const voorDeur=(id,d)=>{const pl=M.placeById&&M.placeById(id);if(!pl||!pl.door)return null;const f={N:[0,-1],S:[0,1],E:[1,0],W:[-1,0]}[pl.face||'S']||[0,1];return walk(pl.door.x+f[0]*(d||2),pl.door.z+f[1]*(d||2),4)};S1.voorDeur=voorDeur;
 const walk=(x,z,r)=>(M.nearestWalk&&M.nearestWalk(x,z,r||8))||{x,z};
 const P=()=>({x:G.P.x,z:G.P.z,ry:G.P.ry||0});
 const naar=(a,b)=>Math.atan2(b.x-a.x,b.z-a.z);
@@ -138,7 +139,7 @@ function css(){if($s('s1Css'))return;const s=document.createElement('style');s.i
 .s1-tease.in{opacity:1}.s1-tease h2{font:800 clamp(26px,6vw,54px)/1.05 'Space Grotesk',system-ui;margin:0;letter-spacing:.02em}.s1-tease h2 small{display:block;font:600 clamp(13px,2.4vw,18px) monospace;letter-spacing:.3em;color:#bbb;margin-top:8px}
 .s1-tease p{font:800 clamp(16px,3.6vw,26px) 'Space Grotesk',system-ui;letter-spacing:.12em;margin:0;display:flex;align-items:center;gap:12px}.s1-tease p i{width:14px;height:14px;border-radius:50%;background:#ff2a1a;box-shadow:0 0 14px #ff2a1a;animation:s1knip 1.1s steps(2,end) infinite}
 @keyframes s1knip{50%{opacity:.1}}.s1-tease .s1-sam{max-width:520px;font:500 14px/1.5 system-ui;color:#c9c4b8}.s1-tease .rij{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.s1-hud2{position:fixed;right:max(10px,env(safe-area-inset-right,0px));top:max(120px,calc(env(safe-area-inset-top,0px) + 112px));z-index:40;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.s1-hud2{position:fixed;left:max(12px,env(safe-area-inset-left,0px));top:max(100px,calc(env(safe-area-inset-top,0px) + 96px));max-width:min(290px,calc(100vw - 24px));z-index:40;display:flex;flex-direction:column;gap:6px;pointer-events:none}
 .s1-hud2 div{background:#120f16d8;border:2px solid #2e2836;color:#f1efe9;font:700 12px 'Space Grotesk',system-ui;padding:5px 8px}
 .s1-licht{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:max(150px,calc(env(safe-area-inset-bottom,0px) + 140px));z-index:45;font:800 13px 'Space Grotesk',system-ui;color:#f1efe9;background:#2a1414;border:2px solid #ff3a2a;padding:9px 12px;cursor:pointer;touch-action:manipulation}
 .s1-licht.uit{background:#1a1a1c;border-color:#5a5d63;color:#8a8f98}`;document.head.appendChild(s)}
@@ -164,7 +165,7 @@ function mgTiming(o){return new Promise(res=>{o=Object.assign({rondes:3,snel:1,v
   let raf=0;const loop=()=>{if(klaar)return;st.style.left='calc('+(pos()*100)+'% - 2px)';raf=requestAnimationFrame(loop)};loop();
   const druk=()=>{if(klaar||performance.now()<lock)return;lock=performance.now()+350;const p=pos(),ok=p>=v0&&p<=v0+o.vak;dots[r].className=ok?'ok':'mis';if(ok){goed++;fx('click')}else fx('hit');r++;
     if(r>=o.rondes){klaar=true;cancelAnimationFrame(raf);setTimeout(()=>{weg();res(goed)},500)}else{nieuwVak();t0=performance.now()-rr(0,800)}};
-  const key=e=>{if(e.code==='Space'||e.key==='Enter'||e.key==='e'||e.key==='E'){e.preventDefault();druk()}};
+  const key=e=>{if(e.code==='Space'||e.key==='Enter'||e.key==='e'||e.key==='E'){e.preventDefault();e.stopImmediatePropagation();druk()}};
   el.querySelector('.s1-knop').addEventListener('pointerdown',e=>{e.preventDefault();druk()});addEventListener('keydown',key,true);
   const weg=()=>{removeEventListener('keydown',key,true);el.remove()}})}
 // 2. vasthouden: houd de knop vast tot de balk vol is; bij 'storing' (iemand kijkt) loslaten. o = {titel,uitleg,stappen,duur,storing:bool}
@@ -181,7 +182,7 @@ function mgHold(o){return new Promise(res=>{o=Object.assign({stappen:1,duur:1.5,
     requestAnimationFrame(loop)};requestAnimationFrame(loop);
   const knop=el.querySelector('.s1-knop'),aan=e=>{e&&e.preventDefault();houd=true},uit=()=>{houd=false};
   knop.addEventListener('pointerdown',aan);knop.addEventListener('pointerup',uit);knop.addEventListener('pointerleave',uit);
-  const kd=e=>{if((e.key==='e'||e.key==='E'||e.code==='Space')&&!e.repeat){e.preventDefault();houd=true}},ku=e=>{if(e.key==='e'||e.key==='E'||e.code==='Space')houd=false};
+  const kd=e=>{if(e.key==='e'||e.key==='E'||e.code==='Space'){e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)houd=true}},ku=e=>{if(e.key==='e'||e.key==='E'||e.code==='Space'){e.stopImmediatePropagation();houd=false}};
   addEventListener('keydown',kd,true);addEventListener('keyup',ku,true);
   const weg=()=>{removeEventListener('keydown',kd,true);removeEventListener('keyup',ku,true);el.remove()}})}
 // 3. gesprek met meters: per beurt een vraag en antwoorden met effect op één of meer meters. o = {kop,titel,wie,meters:{naam:[label,start,kleur]},beurten:[{vraag,opties:[{t,eff:{m:+n},reactie,id}],tijd}]}
@@ -205,7 +206,7 @@ function mgQuiz(o){return mgGesprek({kop:o.kop||'Overhoren',wie:o.wie,kleur:o.kl
 // 5. snel tikken (aanbellen, tassen dragen): zo vaak mogelijk in de tijd
 function mgMash(o){return new Promise(res=>{o=Object.assign({tijd:5,doel:20},o||{});const el=mgOpen(`<small>${o.kop||'Minispel'}</small><h4>${o.titel}</h4><p>${o.uitleg||'Tik zo snel je kunt.'}</p><div class="s1-bar"><u style="width:0"></u></div><button class="s1-knop">${o.knop||'Tik!'} <span style="opacity:.6">(spatie)</span></button>`,o);
   const u=el.querySelector('u');let n=0;const t0=performance.now();const tik=()=>{n++;u.style.width=Math.min(100,n/o.doel*100)+'%';fx('tab');if(n>=o.doel)stop()};
-  el.querySelector('.s1-knop').addEventListener('pointerdown',e=>{e.preventDefault();tik()});const kd=e=>{if(e.code==='Space'||e.key==='e'||e.key==='E'){e.preventDefault();if(!e.repeat)tik()}};addEventListener('keydown',kd,true);
+  el.querySelector('.s1-knop').addEventListener('pointerdown',e=>{e.preventDefault();tik()});const kd=e=>{if(e.code==='Space'||e.key==='e'||e.key==='E'){e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)tik()}};addEventListener('keydown',kd,true);
   let dood=false;const stop=()=>{if(dood)return;dood=true;removeEventListener('keydown',kd,true);el.remove();res(n>=o.doel)};setTimeout(stop,o.tijd*1000)})}
 // 6. kiezen uit opties (telefoonscherm, menu) zonder meters
 function mgKies(o){return mgGesprek({kop:o.kop,wie:o.wie,kleur:o.kleur,meters:{},beurten:[{vraag:o.vraag,opties:o.opties.map(x=>Object.assign({},x,{eff:{}}))}]}).then(r=>r.gekozen[0])}
@@ -213,10 +214,10 @@ Object.assign(S1,{mgTiming,mgHold,mgGesprek,mgQuiz,mgMash,mgKies});
 
 /* =================== het achterlicht van de fiets (toets L / knop) =================== */
 const LICHT={aan:true,cap:null,glow:null,knop:null,zone:null,actief:false};
-function lichtObj(){const F_=G.fiets&&G.fiets._F;const g=F_&&F_.bike;if(!g)return null;if(LICHT.g!==g){LICHT.g=g;const scoot=F_.type==='scooter',y=scoot?.46:.82,z=scoot?-.8:-.88;
+function lichtObj(){const F_=G.fiets&&G.fiets._F;const g=F_&&F_.bike&&(F_.bike.root||(F_.bike.add?F_.bike:null));if(!g)return null;if(LICHT.g!==g||!LICHT.cap||!LICHT.glow){LICHT.g=g;const scoot=F_.type==='scooter',y=scoot?.46:.82,z=scoot?-.8:-.88;
   LICHT.cap=new TH.Mesh(new TH.BoxGeometry(.085,.065,.045),new TH.MeshLambertMaterial({color:'#2a1010'}));LICHT.cap.position.set(0,y,z-.004);g.add(LICHT.cap);
   LICHT.glow=new TH.PointLight('#ff2a1a',1.6,3.2,2);LICHT.glow.position.set(0,y,z-.25);g.add(LICHT.glow)}
-  LICHT.cap.visible=!LICHT.aan;LICHT.glow.visible=LICHT.aan;return g}
+  if(LICHT.cap)LICHT.cap.visible=!LICHT.aan;if(LICHT.glow)LICHT.glow.visible=LICHT.aan;return g}
 function licht(on){if(on!=null)LICHT.aan=!!on;lichtObj();if(LICHT.knop){LICHT.knop.classList.toggle('uit',!LICHT.aan);LICHT.knop.textContent=LICHT.aan?'Achterlicht · aan (L)':'Achterlicht · uit (L)'}fx('click');return LICHT.aan}
 function lichtKnop(on){css();LICHT.actief=!!on;if(on&&!LICHT.knop){const b=document.createElement('button');b.className='s1-licht';b.addEventListener('pointerdown',e=>{e.preventDefault();licht(!LICHT.aan)});document.body.appendChild(b);LICHT.knop=b;licht(LICHT.aan)}
   if(!on&&LICHT.knop){LICHT.knop.remove();LICHT.knop=null}}
@@ -260,9 +261,10 @@ const HELP={marco:['Warmtekussen brengen','Hij legt zijn hand op je schouder. "G
 async function huisMenu(wie){const naam={marco:'Papa',elena:'Mama',giulia:'Giulia'}[wie];const opts=[{t:'Praten',id:'praat'}];
   if(!F('geholpen_'+wie+'_'+(ST.st().avond||0)))opts.push({t:HELP[wie][0],id:'help'});
   if(wie!=='giulia'&&F('s1_geldgeven'))opts.push({t:'Geld geven',id:'geld'});
-  if(wie==='marco'&&F('sq1_start')&&!F('sq1_klaar'))opts.push({t:'"Wil je mijn loonstrookje zien?"',id:'sq1'});
-  if(wie==='elena'&&F('sq2_start')&&!F('sq2_klaar'))opts.push({t:'"Wat is er, mam?"',id:'sq2'});
-  if(wie==='giulia'&&F('giulia_ruzie')&&!F('sq3_klaar')&&!F('sq3_start'))opts.push({t:'"Kunnen we praten?"',id:'sq3'});
+  const vrijNu=/^(tussen:|vrij)/.test(F('s1_hfd')||'')&&!S1.bezig;
+  if(vrijNu&&wie==='marco'&&F('sq1_start')&&!F('sq1_klaar'))opts.push({t:'"Wil je mijn loonstrookje zien?"',id:'sq1'});
+  if(vrijNu&&wie==='elena'&&F('sq2_start')&&!F('sq2_klaar'))opts.push({t:'"Wat is er, mam?"',id:'sq2'});
+  if(vrijNu&&wie==='giulia'&&F('giulia_ruzie')&&!F('sq3_klaar')&&!F('sq3_start'))opts.push({t:'"Kunnen we praten?"',id:'sq3'});
   opts.push({t:'Niks',id:'weg'});const k=await mgKies({kop:naam,wie,vraag:naam,opties:opts});
   if(k==='praat')await C.zeg(wie,praatje(wie),{t:2.8});
   else if(k==='help'){F('geholpen_'+wie+'_'+(ST.st().avond||0),1);await C.zeg(null,HELP[wie][1],{t:2.8});meter(HELP[wie][2],3)}
@@ -296,8 +298,10 @@ S1.tussen=tussen;
 /* =================== hoofdstuk-loper met hervatpunten =================== */
 // def: {id, titel, sub, blokken:[async (t)=>…], na:'volgende stap', vrij:bool, outfit}
 const HFD=[];S1.HFD=HFD;
+const PLEKVAN={s1_h4:['hotel','kantoor'],s1_h7:['rijtjeshuis'],s1_h10:['parkeergarage','havenloods'],s1_h12:['jachthaven']};
 function hoofdstuk(def){HFD.push(def);ST.step(def.id,{doel:null,outfit:def.outfit||null,async start(o){const t=nieuw();css();
   const s=ST.st();if(F('s1_hfd')!==def.id){F('s1_hfd',def.id);F('s1_cp',0)}
+  try{(PLEKVAN[def.id]||[]).forEach(k=>{if(!F('plek_'+k))F('plek_'+k,1)})}catch(e){}
   let i=F('s1_cp')||0;if(o&&o.hervat&&i>0&&def.hervat)try{await def.hervat(t,i)}catch(e){console.error(e)}
   for(;i<def.blokken.length;i++){if(!levend(t))return;F('s1_cp',i);try{const r=await def.blokken[i](t);if(r==='stop')return;if(typeof r==='string'&&r.startsWith('goto:')){F('s1_cp',0);ST.goto(r.slice(5));return}}catch(e){console.error('s1 '+def.id+' blok '+i,e)}}
   if(!levend(t))return;F('s1_cp',0);F('s1_klaar_'+def.id,Date.now());
@@ -321,6 +325,9 @@ const iv=setInterval(()=>{if(!G.ready||!G.story||!G.cut||!G.binnen||!G.story.ste
   try{B.slot('rijtjeshuis',true,'Je hebt hier niks te zoeken')}catch(e){}
   setTimeout(huisInit,600);
   (S1.onStart||[]).forEach(f=>{try{f()}catch(e){console.error(e)}});
+  // oude voortgang (hoofdstukken van het vorige verhaal): seizoen 1 begint opnieuw
+  try{const st=ST.st();if(st.step&&!/^(s1_|start$)/.test(st.step)){const inst=st.inst;Object.keys(st).forEach(k=>{if(k!=='inst')delete st[k]});st.v=3;st.inst=inst||{};st.step='start';st.reset=Date.now();
+    try{window.save&&window.save()}catch(e){}setTimeout(()=>{try{if(ST.st().step==='start')ST.goto('start')}catch(e){}},900)}}catch(e){console.error(e)}
 },120);
 S1.onStart=[];
 })();
