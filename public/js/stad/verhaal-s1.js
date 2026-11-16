@@ -110,7 +110,11 @@ function ots(a,b,d,zij,h){const dx=a.x-b.x,dz=a.z-b.z,n=hyp(dx,dz)||1,ux=dx/n,uz
 const verteller=id=>({fn:async()=>{if(G.verteller)await G.verteller(id)}});
 const titel=(t,sub,d)=>({titel:t,sub:sub||'',t:d||3});
 // speel een scène; geeft de keuze terug (of null). Stopt stil als het verhaal intussen verder is.
-async function speel(t,steps,o){if(!levend(t))return null;try{return await C.play(steps.flat().filter(Boolean),Object.assign({blijf:true},o||{}))}catch(e){console.error(e);return null}}
+async function speel(t,steps,o){if(!levend(t))return null;const st=steps.flat().filter(Boolean);
+  // een buitenscène terwijl de speler binnen staat (bijv. na hervatten): eerst naar buiten, anders blijft het beeld zwart
+  try{if(B.waar()&&!st.some(x=>x.binnen||x.buiten)){const eerste=st.find(x=>(x.actor&&Array.isArray(x.at))||(x.cam&&!x.cam.volg&&x.cam.look));
+    const xx=eerste?(eerste.actor?eerste.at[0]:eerste.cam.look[0]):null;if(xx!=null&&xx<4000)await B.uit()}}catch(e){}
+  try{return await C.play(st,Object.assign({blijf:true},o||{}))}catch(e){console.error(e);return null}}
 // keuze in de ondertitel: opties [{t,id}] → id
 // een minispel in beeld laten spelen: de camera blijft op de scène (de spelerscamera kan elders staan)
 async function inScene(t,steps,f){let r;await speel(t,[{speler:false},...steps,{fn:async()=>{try{r=await f()}catch(e){console.error(e)}}}]);return r}
