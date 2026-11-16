@@ -83,9 +83,9 @@ hoofdstuk({id:'s1_h11',na:'s1_h12',vrij:true,blokken:[
   const tp=W('thuis',7.4,5.2);taart.position.set(tp[0],.78+1.0,tp[1]);taart.binnenId=1;G.scene().add(taart);
   const sq3=F('sq3_klaar'),uit=F('uithaal_gedaan'),ans=F('ans_zag')&&!F('ans_zwijgt');
   const r=await speel(t,[{fade:'out',t:.01},{speler:false},titel('Hoofdstuk 11','Zeventien',2.6),
-   {actor:'marco',at:W('thuis',7.4,4.5),ry:0,anim:'sit',sitY:-.42},{actor:'elena',at:W('thuis',8.8,4.4),ry:-PI/2},{actor:'giulia',at:W('thuis',6.2,5.0),ry:PI/2},
+   {actor:'marco',at:W('thuis',7.4,4.5),ry:0,anim:'sit',sitY:-.42},{actor:'elena',at:W('thuis',9.0,5.8),ry:-PI/2},{actor:'giulia',at:W('thuis',6.2,5.0),ry:PI/2},
    {actor:'luca',at:W('thuis',7.4,5.9),ry:PI,anim:'sit',sitY:-.42},actIn(['marco','elena','giulia','luca']),
-   cam(...W3('thuis',10.6,2.3,7.6),...W3('thuis',7.4,1.1,5.0),{fov:46}),{fade:'in',t:.8},T_('Ze zingen. Marco het hardst en het valst.'),
+   cam(...W3('thuis',9.6,2.5,2.2),...W3('thuis',7.4,1.7,5.2),{fov:56,strak:true}),{fade:'in',t:.8},T_('Ze zingen. Marco het hardst en het valst.'),
    {anim:'marco',a:'give',naar:'luca'},Z('marco','Van mijn vader. Ik kreeg hem toen ik zeventien werd. Nu is hij van jou.'),T_('Een oud horloge. Het loopt nog.'),
    uit?T_('Hij heeft twee uur geslapen. Zijn handen ruiken nog naar de haven.'):null,
    ans?Z('elena','Ans zegt dat je vorige week een jongen hebt geslagen. Hier, op straat.'):null,
@@ -164,12 +164,12 @@ hoofdstuk({id:'s1_h12',na:'s1_h13',vrij:true,outfit:'bezorger',blokken:[
   const r=await speel(t,[{speler:false},{actor:'ray',at:[R.ray.x,R.ray.z],ry:0,anim:'sit',sitY:-.36},{actor:'luca',at:[R.luca.x,R.luca.z+1.4],ry:PI,dozen:1},
    cam(JX-6,2.6,JZ+9,JX,1.3,JZ+5,{fov:40}),{fade:'in',t:.6},{move:'luca',to:[R.luca.x+.3,R.luca.z+.4],t:1.2},{anim:'luca',a:'give',dozen:0},
    Z('ray','Calzone. Giovanni weet het nog.'),Z('ray','Ga even zitten. Ik eet niet graag alleen. En je werd dinsdag zeventien, hoor ik.'),
-   {actor:'luca',at:[R.luca.x,R.luca.z],ry:PI,anim:'sit',sitY:-.4},ots(R.luca,R.ray,2.2,.8,1.9),
+   {actor:'luca',at:[R.luca.x,R.luca.z],ry:PI,anim:'sit',sitY:-.4},cam(JX+1.7,2.35,JZ+6.2,JX,2.0,JZ+4.2,{fov:40,strak:true}),
    F('twee_tel_gezien')?Z('ray','Eén telefoon voor je moeder. En die andere?'):null,F('twee_tel_gezien')?T_('Luca zegt niks. Ray glimlacht.'):null,
    Z('ray','Tramlaan. Derde galerij, toch?'),Z('luca','Hoe weet u dat?'),Z('ray','Ik woonde er ook. Eén hoger. Doet die lift het nog steeds niet?'),
    cam(JX+2.4,1.5,JZ+6.6,JX,1.3,JZ+5.2,{fov:32}),{anim:'ray',a:'point',naar:'luca'},Z('ray','Die jas. Daar heb ik twee winters in gefietst.'),{snd:'heart'},T_('Luca zegt niks.'),
-   {anim:'ray',a:'give',naar:'luca'},ots(R.ray,R.luca,2.2,.8,1.9),Z('ray','Mijn vrienden aan deze kant eten ineens veel pizza. Weet jij daar iets van?')]);
-  const k=await S1.inScene(t,[ots(R.ray,R.luca,2.2,.8,1.9)],()=>mgGesprek({kop:'Big Ray',wie:'ray',kleur:'#e8e4da',meters:{},beurten:[{vraag:'"Weet jij daar iets van?"',tijd:5,geenAntwoord:{t:'(zwijgen)',id:'stil',eff:{},reactie:'Stil. Ook een antwoord.'},
+   {anim:'ray',a:'give',naar:'luca'},cam(JX-1.7,2.35,JZ+4.3,JX,1.95,JZ+6.3,{fov:40,strak:true}),Z('ray','Mijn vrienden aan deze kant eten ineens veel pizza. Weet jij daar iets van?')]);
+  const k=await S1.inScene(t,[cam(JX-1.7,2.35,JZ+4.3,JX,1.95,JZ+6.3,{fov:40,strak:true})],()=>mgGesprek({kop:'Big Ray',wie:'ray',kleur:'#e8e4da',meters:{},beurten:[{vraag:'"Weet jij daar iets van?"',tijd:5,geenAntwoord:{t:'(zwijgen)',id:'stil',eff:{},reactie:'Stil. Ook een antwoord.'},
     opties:[{t:'"Pizza is lekker, meneer."',id:'grap',eff:{},reactie:'Giovanni leert ze goed.'},{t:'"Ik bezorg alleen voor Giovanni."',id:'netjes',eff:{},reactie:'Natuurlijk.'},{t:'(zwijgen)',id:'stil',eff:{},reactie:'Stil. Ook een antwoord.'}]}]}))||{gekozen:['stil']};
   F('ray_indruk',k.gekozen[0]||'stil');
   await speel(t,[{anim:'ray',a:'give',prop:'geld'},{snd:'cash'},T_('Ray legt een briefje van vijftig op de lege doos.'),Z('ray','Doe Giovanni de groeten. En Luca? Rij voorzichtig.'),
@@ -270,9 +270,9 @@ hoofdstuk({id:'s1_h14',outfit:'bezorger',na:()=>F('finale')==='verraad'?'s1_h15a
   const r=await speel(t,[{speler:false},{actor:'ray',at:[R.ray.x,R.ray.z-1.2],ry:PI},{actor:'luca',at:[R.luca.x,R.luca.z+.8],ry:PI},{actor:'nova',at:[R.ray.x+1.8,R.ray.z],ry:-PI/2,anim:'armen'},
    cam(JX-5,2.4,JZ+9,JX,1.3,JZ+4.6,{fov:42}),{fade:'in',t:.5},T_('Ray staat bij de rand van de steiger, met zijn rug naar Luca. Op tafel: een lege Bella Napoli-doos en een uitgeprinte foto.'),
    Z('ray','Ga zitten, Luca.'),{actor:'luca',at:[R.luca.x,R.luca.z],ry:PI,anim:'sit',sitY:-.4},{anim:'ray',a:'turn',ry:0},{actor:'ray',at:[R.ray.x,R.ray.z],ry:0,anim:'sit',sitY:-.36},
-   ots(R.luca,R.ray,2.2,.8,1.9),Z('ray',vRi),cam(JX+.4,2.2,JZ+5.9,JX,.8,JZ+5.2,{fov:28}),{anim:'ray',a:'point'},
+   cam(JX+1.7,2.35,JZ+6.2,JX,2.0,JZ+4.2,{fov:40,strak:true}),Z('ray',vRi),cam(JX+.4,2.2,JZ+5.9,JX,.8,JZ+5.2,{fov:28}),{anim:'ray',a:'point'},
    Z('ray','Kramer stuurde me deze foto. Een lege verpakking uit de vriezer van Sahara. Met een schorpioen.'),Z('ray','Dat is niet mijn stempel.'),
-   ots(R.luca,R.ray,2.2,.8,1.9),Z('ray','Edwin kwam na de inval zelf naar me toe. Twintig jaar werkt hij al voor mij. Hij zegt dat jij bij hem was.'),Z('ray',vEd),
+   cam(JX+1.7,2.35,JZ+6.2,JX,2.0,JZ+4.2,{fov:40,strak:true}),Z('ray','Edwin kwam na de inval zelf naar me toe. Twintig jaar werkt hij al voor mij. Hij zegt dat jij bij hem was.'),Z('ray',vEd),
    Z('ray',vC),Z('ray',vG),cam(JX,1.5,JZ+6.6,JX,1.4,JZ+4.2,{fov:24}),{snd:'heart'},
    Z('ray','Ik weet het eigenlijk al. Maar ik doe niks op een gevoel.'),verteller('n32'),Z('ray','Ik vraag het één keer. Voor wie werk je?'),
    keuze('luca','',[{t:'"Rafiq. Van Sahara."',id:'verraad'},{t:'(zwijgen)',id:'loyaal'},{t:'"Een man uit de haven. Teun."',id:'teun'}])]);

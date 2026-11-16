@@ -116,13 +116,13 @@ hoofdstuk({id:'s1_h7',na:'s1_h8',vrij:true,outfit:'straat',blokken:[
    Z('rafiq','Meneer Vos. Zeshonderd euro, drie weken te laat. Tarik rijdt. Jij praat.'),Z('luca','Waarom ik?'),Z('rafiq','Omdat niemand bang is voor een jongen. Tot hij iets zegt.'),
    T_('Tarik pakt zijn autosleutels van tafel.'),{fade:'out',t:.5}]);hoekWeg()},
  async t=>{// bij Vos aan de deur (Oud-Zuid). Tarik blijft bij de auto.
-  await buiten();const v=PL.rijtjeshuis(),deur={x:v.x,z:v.z},l=S1.voorDeur('rijtjeshuis',1.8)||walk(v.x,v.z+1.6,3),car=S1.voorDeur('rijtjeshuis',8)||walk(v.x+6,v.z+7,6);tijd(21,5);
+  await buiten();const v=PL.rijtjeshuis(),DV=S1.deur(S1.voorDeur('rijtjeshuis',.6)||v),deur=DV.q,l=DV.l,car=S1.voorDeur('rijtjeshuis',8)||walk(v.x+6,v.z+7,6);tijd(21,5);
   const auto=S1.auto('#121316');auto.position.set(car.x,0,car.z);auto.rotation.y=PI/2;G.scene().add(auto);G.P.x=l.x;G.P.z=l.z;
   await speel(t,[{speler:false},{actor:'tarik',at:[car.x-1.2,car.z-1.4],ry:naar(car,l),anim:'armen'},{actor:'luca',at:[l.x,l.z],ry:naar(l,deur)},
    cam(car.x+4,2.4,car.z+6,l.x,1.4,l.z,{fov:44}),{fade:'in',t:.6},{snd:'carDoor'},T_('Een rijtjeshuis in Oud-Zuid. Gordijnen dicht. Binnen staat de tv aan.'),
    rond(l,naar(l,deur)+PI*.85,3.2,1.7,1.5)]);
   let woede=0;const D=17;
-  const r=await S1.inScene(t,[{actor:'vos',at:[deur.x,deur.z],ry:naar(deur,l)},rond(l,naar(l,deur)+PI*.85,3.2,1.7,1.5)],()=>mgGesprek({kop:'Aan de deur · meneer Vos',wie:'vos',kleur:'#c09a6a',meters:{d:['DRUK',0,'#ff9a3a']},
+  const r=await S1.inScene(t,[{actor:'vos',at:[deur.x,deur.z],ry:naar(deur,l)},DV.cam],()=>mgGesprek({kop:'Aan de deur · meneer Vos',wie:'vos',kleur:'#c09a6a',meters:{d:['DRUK',0,'#ff9a3a']},
    beurten:[
     {vraag:'De deur blijft dicht. Wat doe je?',opties:[
      {t:'Aanbellen tot hij opendoet',eff:{d:D},fn:async()=>{woede++;await mgMash({kop:'Aanbellen',titel:'Blijf bellen',uitleg:'Tik zo snel je kunt.',tijd:5,doel:22,knop:'Bel!'});fx('deurbel')},reactie:'Ja! Ja! Ik kom al!'},
@@ -189,9 +189,9 @@ hoofdstuk({id:'s1_h9',na:'s1_h10',vrij:true,blokken:[
  async t=>{dag(9,21,30);outfit('thuis');await binnen('thuis');['marco','elena','giulia'].forEach(k=>B.toon('thuis',k,false));
   const r=await speel(t,[{fade:'out',t:.01},{speler:false},titel('Hoofdstuk 9','Mijn buurt',2.6),
    {actor:'luca',at:W('thuis',14.2,10.6),ry:-PI/2,anim:'sit',sitY:-.42},{actor:'giulia',at:W('thuis',11.6,11.0),ry:PI/2},actIn(['luca','giulia']),
-   cam(...W3('thuis',15.6,2.6,12.6),...W3('thuis',13.0,1.0,10.8),{fov:52}),{fade:'in',t:.6},{snd:'close'},
+   cam(...W3('thuis',12.8,2.5,13.2),...W3('thuis',12.9,1.9,10.6),{fov:58,strak:true}),{fade:'in',t:.6},{snd:'close'},
    T_('Giulia heeft vrij genomen. Ze staat met haar rug tegen de deur.'),Z('giulia','Gisteravond. Tram zeven. Bij de speeltuin.'),Z('giulia','Je gaf iemand iets. En je pakte geld aan.'),
-   cam(...W3('thuis',13.0,1.4,10.4),...W3('thuis',14.2,1.0,10.6),{fov:36}),{wait:1.6},
+   cam(...W3('thuis',11.2,2.45,12.8),...W3('thuis',14.2,1.85,10.6),{fov:46,strak:true}),{wait:1.6},
    keuze('luca','',[{t:'Ontkennen',id:'ontkend'},{t:'"Het is voor ons."',id:'voor_ons'},{t:'"Bemoei je met je eigen leven."',id:'bemoei'}])]);
   if(!levend(t))return;F('giulia_ruzie',r);meter('band_giulia',-20);
   const v=r==='ontkend'?[Z('luca','Je zag iemand anders.'),Z('giulia','Ik herken jouw loopje op honderd meter, Luca.')]:r==='voor_ons'?[Z('luca',"Papa's rug. De huur. Iemand moet het doen."),Z('giulia','Niet zo. En zeker niet jij.')]
@@ -207,11 +207,11 @@ hoofdstuk({id:'s1_h9',na:'s1_h10',vrij:true,blokken:[
   if(F('giulia_weet')){geld(100,'terug van Giulia')}['luca','giulia','marco'].forEach(k=>C.weg(k));await buiten();tijd(21,40)},
  async t=>{// buiten: Kenny, aan het eind van zijn dienst
   const th=PL.thuis(),l=walk(th.x,th.z+3,3),k=walk(th.x+5,th.z+4,4),sc=L.scooter?L.scooter('#e8c823'):null;if(sc){const s=walk(k.x+2,k.z+1,4);sc.position.set(s.x,0,s.z);sc.rotation.y=PI/2;G.scene().add(sc)}
-  G.P.x=l.x;G.P.z=l.z;
-  await speel(t,[{speler:false},{actor:'luca',at:[l.x,l.z],ry:naar(l,k)},{actor:'kenny',at:[k.x+3,k.z+2],ry:naar(k,l)},cam(l.x-6,2.2,l.z+5,k.x,1.2,k.z,{fov:40}),{fade:'in',t:.4},{snd:'tram'},
+  G.P.x=l.x;G.P.z=l.z;const kZij=D=>{const a=naar(l,k),mx=(l.x+k.x)/2,mz=(l.z+k.z)/2;return cam(mx+cos(a)*D,2.45,mz-sin(a)*D,mx,2.0,mz,{fov:46,strak:true})};
+  await speel(t,[{speler:false},{actor:'luca',at:[l.x,l.z],ry:naar(l,k)},{actor:'kenny',at:[k.x+3,k.z+2],ry:naar(k,l)},kZij(6),{fade:'in',t:.4},{snd:'tram'},
    {move:'kenny',to:[k.x,k.z],t:1.6},T_('Kenny, met een lege bezorgtas, komt uit de portiek naast die van Luca. Ze zien elkaar.'),
    F('camera_gezien')?Z('kenny','Jij. Ik heb je op de camera gezien. Mijn banden.'):Z('kenny','Ik weet dat jij het was, Napoli. Mijn banden.'),
-   Z('luca','Wat doe jij in mijn straat?'),Z('kenny','Bezorgen. Je moeder had zin in pizza, misschien.'),{anim:'kenny',a:'duw',naar:'luca'},{snd:'hit'},rond(l,naar(l,k)+PI/2,4.2,1.7,1.4)]);
+   Z('luca','Wat doe jij in mijn straat?'),Z('kenny','Bezorgen. Je moeder had zin in pizza, misschien.'),{anim:'kenny',a:'duw',naar:'luca'},{snd:'hit'},kZij(4.6)]);
   let win=false;for(let p=0;p<2&&!win&&levend(t);p++){try{win=await G.h1.vechten({wie:'Kenny',onRaak:()=>fx('punch')})}catch(e){win=true}
    if(!win&&p===0)await speel(t,[T_('Luca ligt op de stoep. Kenny lacht.'),Z('kenny','Is dat alles?'),T_('Luca staat op.')])}
   if(!win)F('vuil_gewonnen',1);
@@ -248,7 +248,7 @@ hoofdstuk({id:'s1_h10',na:'s1_h11',vrij:true,blokken:[
   const d=PL.douane(),car=walk(d.x-26,d.z+16,8),l=walk(car.x+1.4,car.z+2,4),e=walk(car.x+14,car.z-4,8);tijd(19,0);
   const auto=S1.auto('#121316');auto.position.set(car.x,0,car.z);auto.rotation.y=0;G.scene().add(auto);G.P.x=l.x;G.P.z=l.z;
   await speel(t,[{speler:false},{actor:'tarik',at:[car.x+1.6,car.z-1],ry:-PI/2,anim:'armen'},{actor:'luca',at:[l.x,l.z],ry:PI},{actor:'rafiq',at:[car.x+.5,car.z+.4],ry:PI/2,anim:'sit',sitY:-.5},
-   cam(car.x+18,8,car.z+20,car.x,1.5,car.z,{fov:40}),{fade:'in',t:.6},verteller('n21'),ots(l,{x:car.x+.5,z:car.z+.4},2.2,.8,1.8),
+   cam(car.x+18,8,car.z+20,car.x,1.5,car.z,{fov:40}),{fade:'in',t:.6},verteller('n21'),cam(car.x+4.0,2.4,car.z-1.6,car.x+1.0,1.9,car.z+1.2,{fov:46,strak:true}),
    Z('rafiq','Die man met het koord om zijn nek. Edwin. Hij werkt met je vader.'),Z('rafiq','Dinsdag komt er een container koffie binnen. Edwin moet hem niet zien.'),
    Z('rafiq','Jou kent hij. Mij niet. Zo blijft het.'),{fade:'out',t:.3}]);C.weg('rafiq');
   await speel(t,[{actor:'edwin',at:[e.x,e.z],ry:naar(e,l),prop:'tas'},{actor:'luca',at:[e.x-2.2,e.z+1],ry:naar({x:e.x-2.2,z:e.z+1},e)},{actor:'tarik',at:[e.x-5,e.z+2.4],ry:naar({x:e.x-5,z:e.z+2.4},e),anim:'armen'},
@@ -265,9 +265,9 @@ hoofdstuk({id:'s1_h10',na:'s1_h11',vrij:true,blokken:[
    Z('edwin','Dinsdag, drie uur tien. Rij C. Hij gaat niet langs de douane.'),Z('edwin','Elke dinsdag één. Drie weken. Daarna ben ik weg.'),
    Z('edwin','En Luca? Je vader is een goeie vent. Hij verdient dit niet.'),{fade:'out',t:.4}]);['edwin','luca','tarik'].forEach(k=>C.weg(k));
   // de onthulling bij de auto
-  await speel(t,[{actor:'rafiq',at:[car.x+.5,car.z+.4],ry:PI/2,anim:'sit',sitY:-.5},{actor:'luca',at:[l.x,l.z],ry:PI},ots(l,{x:car.x+.5,z:car.z+.4},2.0,.7,1.8),{fade:'in',t:.4},
+  await speel(t,[{actor:'rafiq',at:[car.x+.5,car.z+.4],ry:PI/2,anim:'sit',sitY:-.5},{actor:'luca',at:[l.x,l.z],ry:PI},cam(car.x+4.0,2.4,car.z-1.6,car.x+1.0,1.9,car.z+1.2,{fov:46,strak:true}),{fade:'in',t:.4},
    Z('luca','Dinsdag. Drie uur tien. Niet langs de douane.'),Z('rafiq','Die container is niet van de boot. Die is van mij. Mijn eigen lijn.'),
-   Z('rafiq','Ze denken dat deze hele haven van hen is. Dinsdag is één container van mij.'),cam(car.x-1,1.9,car.z+2.6,car.x-.2,1.3,car.z+.2,{fov:30}),
+   Z('rafiq','Ze denken dat deze hele haven van hen is. Dinsdag is één container van mij.'),cam(car.x+3.2,2.2,car.z+.9,car.x+.5,1.85,car.z+.4,{fov:40,strak:true}),
    T_('Luca legt zijn hand op het dak van de auto. Hij haalt hem weg.'),Z('rafiq','En jij hebt net de deur opengezet. Stap in.'),{snd:'carDoor'},{fade:'out',t:.5}]);
   C.weg('rafiq');C.weg('luca');auto.parent&&auto.parent.remove(auto);F('eigen_lijn',1)},
  async t=>{// langs de Containerkade: de vader achter het hek
@@ -277,7 +277,7 @@ hoofdstuk({id:'s1_h10',na:'s1_h11',vrij:true,blokken:[
    {actor:'luca',at:[v.x,v.z-.6],ry:naar(v,m),anim:'sit',sitY:-.5},{actor:'rafiq',at:[v.x,v.z+.6],ry:naar(v,m),anim:'sit',sitY:-.5},
    cam(v.x-.4,1.5,v.z-1.4,m.x,1.4,m.z,{fov:30}),{fade:'in',t:.6},{move:'marco',to:[m.x+3,m.z+1],t:3,wacht:false},
    T_('Achter het hek, onder de lampen van de Containerkade, loopt zijn vader. Hand op zijn rug.'),{anim:'marco',a:'handenzij'},
-   ots({x:v.x,z:v.z+.6},{x:v.x,z:v.z-.6},1.6,.5,1.7),Z('rafiq','Is dat je vader?'),
+   cam(v.x+Math.sin(naar(v,m))*4.2+Math.cos(naar(v,m))*1.6,2.3,v.z+Math.cos(naar(v,m))*4.2-Math.sin(naar(v,m))*1.6,v.x,1.85,v.z,{fov:44,strak:true}),Z('rafiq','Is dat je vader?'),
    keuze('luca','',[{t:'"Ja."',id:'ja'},{t:'"Nee."',id:'nee'}])]);
   F('vader_ontkend',r==='nee'?1:0);
   await speel(t,[r==='ja'?Z('rafiq','Dan weet je waarom je dit doet.'):T_('Rafiq kijkt hem aan en zegt niks.'),verteller('n22'),

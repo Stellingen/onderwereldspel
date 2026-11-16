@@ -29,7 +29,7 @@ const CUT=G.cut={};
 // face: K.face-portret (skin, hair, hs, fh, fw, jaw, age, eye, v, col, top, hat, hatC, acc)
 const A={
  luca:{n:'Luca',col:'#ff4fd8',rol:'16 · bezorger',look:null,face:null},
- dex:{n:'Dex',col:'#ff5a4a',rol:'Beste vriend',look:{skin:'#8d5a3a',hair:'#16161a',hs:'opgeschoren',eye:'#24160e',mood:'blij',mouth:'breed',top:{kind:'track',c:'#b0221e',c2:'#16161a'},legs:{kind:'track',c:'#16161a',c2:'#b0221e'},shoes:{kind:'sneaker',c:'#f1efe9',c2:'#b0221e'},head:{kind:'cap',c:'#16161a',c2:'#b0221e'},nek:'zilver ketting'},
+ dex:{n:'Dex',col:'#ff5a4a',rol:'Beste vriend',look:{skin:'#8d5a3a',hair:'#16161a',hs:'kort',eye:'#24160e',mood:'blij',mouth:'breed',top:{kind:'track',c:'#b0221e',c2:'#16161a'},legs:{kind:'track',c:'#16161a',c2:'#b0221e'},shoes:{kind:'sneaker',c:'#f1efe9',c2:'#b0221e'},head:{kind:'cap',c:'#16161a',c2:'#b0221e'},nek:'zilver ketting'},
    face:{skin:'#8d5a3a',hair:'#16161a',hs:'opgeschoren',eye:'#24160e',top:'#b0221e',col:'track',hat:'pet',hatC:'#16161a',age:0,fw:18,mouth:'breed',acc:{oor:1}}},
  giovanni:{n:'Giovanni',col:'#3fe395',rol:'Pizzeria Bella Napoli',look:{skin:'#e0ab84',hair:'#e4dfd4',hs:'kaal',fh:'snor',eye:'#5a3a22',mood:'blij',top:{kind:'jacket',c:'#f1efe9',c2:'#b8333a'},legs:{kind:'jeans',c:'#3a3c40'},shoes:{kind:'boot',c:'#3a2418'}},
    face:{skin:'#e0ab84',hair:'#e4dfd4',hs:'kalend',fh:'snor',eye:'#5a3a22',top:'#f1efe9',col:'schort',age:2,fw:20,jaw:'rond'},schaal:.97},
@@ -260,6 +260,7 @@ function blok(x,z,y){const B=G.binnen;if(B&&B.waar&&B.waar()&&x>4000)return B.mu
   const M=window.STAD_MAP;if(!M||!M.solid||x>4000)return false;const xi=Math.floor(x),zi=Math.floor(z);if(xi<0||zi<0||xi>=M.W||zi>=M.H)return false;const i=zi*M.W+xi;
   if(M.solid[i]!==1)return false;if(!HGT)hoogtes(M);return y<(HGT[i]||2.6)}
 CUT.blok=blok;
+CUT.vrijZicht=(ax,ay,az,bx,by,bz)=>!muurOpLijn(ax,ay,az,bx,by,bz)&&!inBoom(ax,az,ay,.4);
 /* ---------- 0) regisseur: is het geschreven shot echt mis (camera in of achter een muur, iemand vol voor het gezicht, camera
    tegen iemand aan), dan zoekt hij één keer per shot een vrij standpunt rond het gezicht van wie gefilmd wordt: liefst van voren,
    zo dicht mogelijk bij de geschreven richting, op ooghoogte. Goede shots blijven precies zoals ze geschreven zijn. ---------- */

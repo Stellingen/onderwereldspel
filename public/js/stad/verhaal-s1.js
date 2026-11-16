@@ -35,6 +35,16 @@ const voorDeur=(id,d)=>{const pl=M.placeById&&M.placeById(id);if(!pl||!pl.door)r
 const walk=(x,z,r)=>(M.nearestWalk&&M.nearestWalk(x,z,r||8))||{x,z};
 const P=()=>({x:G.P.x,z:G.P.z,ry:G.P.ry||0});
 const naar=(a,b)=>Math.atan2(b.x-a.x,b.z-a.z);
+// een scène aan een voordeur: de ontvanger op de stoep vlak voor de gevel, Luca op straat ervoor, de camera van opzij
+// (beide gezichten in profiel). Zo staan ze niet allebei tegen de gevel gedrukt met de camera op hun achterhoofd.
+function deur(p){p=p||P();const w=walk(p.x,p.z,4);let best=null,bd=9;
+  for(let i=0;i<24;i++){const a=i/24*PI*2;for(let d=.4;d<5;d+=.2){if(C.blok&&C.blok(w.x+sin(a)*d,w.z+cos(a)*d,1.5)){if(d<bd){bd=d;best=a}break}}}
+  if(best==null)best=P().ry||0;const ix=sin(best),iz=cos(best),k=Math.max(0,bd-.8);
+  const q=walk(w.x+ix*k,w.z+iz*k,3),l=walk(q.x-ix*2.5,q.z-iz*2.5,4),mx=(q.x+l.x)/2,mz=(q.z+l.z)/2;let c=null;
+  zoek:for(const D of [4.3,3.7,5.2])for(const kant of [1,-1]){const x=mx+iz*kant*D-ix*1.3,z=mz-ix*kant*D-iz*1.3;
+    if(C.blok(x,z,2.45))continue;if(C.vrijZicht&&!C.vrijZicht(x,2.45,z,q.x,2.2,q.z))continue;if(C.vrijZicht&&!C.vrijZicht(x,2.45,z,l.x,2.2,l.z))continue;
+    c=cam(x,2.45,z,mx,2.05,mz,{fov:48,strak:true});break zoek}
+  return {q,l,cam:c||rond(q,naar(q,l)+1.2,3,1.7,1.5)}}
 const voor=(d,zij)=>{const p=P(),fx_=sin(p.ry),fz_=cos(p.ry);return walk(p.x+fx_*d+(zij||0)*fz_,p.z+fz_*d-(zij||0)*fx_,8)};
 // adressen: deterministisch een voordeur in een wijk van een soort (zelfde adres bij elke speler)
 function adres(wijk,soort,n,bij){const L=(M.ADRESSEN||[]).filter(a=>(!wijk||M.districtAt(a.x,a.z)===wijk)&&(!soort||a.soort===soort));if(!L.length)return null;
@@ -146,7 +156,7 @@ async function speel(t,steps,o){if(!levend(t))return null;let st=steps.flat().fi
 async function inScene(t,steps,f){let r;await speel(t,[{speler:false},...steps,{fn:async()=>{try{r=await f()}catch(e){console.error(e)}}}]);return r}
 S1.inScene=inScene;
 const keuze=(wie,tekst,opties)=>({keuze:opties.map(o=>typeof o==='string'?{t:o,id:o}:o),wie,text:tekst||''});
-Object.assign(S1,{F,fx,eur,meter,zetMeter,geld,plusF,A,W,W3,plek,walk,P,naar,voor,tijd,DAGEN,Z,T_,cam,camNaar,rond,rondNaar,ots,verteller,titel,speel,keuze,dur,sleep,pick,rr,clamp,hyp});
+Object.assign(S1,{F,fx,eur,meter,zetMeter,geld,plusF,A,W,W3,plek,walk,P,naar,voor,deur,tijd,DAGEN,Z,T_,cam,camNaar,rond,rondNaar,ots,verteller,titel,speel,keuze,dur,sleep,pick,rr,clamp,hyp});
 
 /* =================== doelen: ergens heen, op de knop drukken =================== */
 function doelNaar(t,tekst,p,o){o=o||{};if(!levend(t))return Promise.resolve(false);ST.doel(tekst,p.binnen?p:{x:p.x,z:p.z});

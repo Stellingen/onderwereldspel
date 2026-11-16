@@ -51,7 +51,7 @@ const CAST={
      thuis:{k:'trui',c:'#8a4a5a',b:'jeans',bc:'#2c3a4d',s:'slipper',sc:'#3a2a2a'}}},
  giovanni:{n:'Giovanni',col:'#3fe395',rol:'Pizzeria Bella Napoli',born:1958,skin:'#e0ab84',eye:'#5a3a22',hair:'#3a2a20',grijs:36,kaal:40,kmax:2,hs:'kort',fh:'snor',mood:'blij',fw:20,jaw:'rond',h:.97,w:1.12,
    kl:{std:{k:'schort',c:'#f1efe9',c2:'#b8333a',b:'pantalon',bc:'#3a3c40',s:'nette',sc:'#3a2418'}}},
- dex:{n:'Dex',col:'#ff5a4a',rol:'Beste vriend',born:2010,skin:'#8d5a3a',eye:'#24160e',hair:'#16161a',hs:'opgeschoren',fh:a=>a<18?'':a<20?'sik':'ringbaard',mood:'blij',mouth:'breed',oor:1,h:a=>a<17?.96:1,
+ dex:{n:'Dex',col:'#ff5a4a',rol:'Beste vriend',born:2010,skin:'#8d5a3a',eye:'#24160e',hair:'#16161a',hs:'kort',fh:a=>a<18?'':a<20?'sik':'ringbaard',mood:'blij',mouth:'breed',oor:1,h:a=>a<17?.96:1,
    kl:{std:a=>({k:'track',c:'#b0221e',c2:'#16161a',b:'track',bc:'#16161a',b2:'#b0221e',s:'sneaker',sc:'#f1efe9',s2:'#b0221e',hat:'cap',hatC:'#16161a',capAchter:1,ch:a<19?'zilver':'goud',wt:a>=20?'#d6a63e':null})}},
  rafiq:{n:'Rafiq',col:'#ffd35a',rol:'Eigenaar Lounge Sahara',born:1984,skin:'#b97a52',eye:'#24160e',hair:'#16161a',grijs:41,hs:'achterover',fh:'ringbaard',mood:'koel',jaw:'hoekig',oor:1,
    kl:{std:{k:'leer',c:'#16161a',c2:'#c9a227',c3:'#2a2c30',b:'jeans',bc:'#1a1a1c',s:'laars',sc:'#2a1a12',ch:'goud',wt:'#d6a63e'}}},
@@ -358,11 +358,11 @@ function haar(V,L,O,Y,W,seed){let st=L.hs2||'kort';if(st==='kaal'||st==='vlecht'
   const hat=O.hood==='up'?'hood':(O.hat||'none');if(hat==='mask')return;
   const hw=W/2,c=.036,x0=-.52,y0=-.42,z0=-.5,NX=29,NY=36,NZ=27;const grid=new Uint8Array(NX*NY*NZ),ix=(i,j,k)=>(k*NY+j)*NX+i;
   const noise=(x,y,z)=>{const q=.07;const a=Math.floor(x/q),b=Math.floor(y/q),d=Math.floor(z/q);return hsh(a,b,d,seed)};
-  const cap={cap:.4,pet:.43,beanie:.36,hat:.46}[hat];
+  const cap={cap:.47,pet:.47,beanie:.45,hat:.48}[hat];// haar loopt door tot onder de rand: geen kale band tussen haar en pet
   const inHead=(x,y,z)=>abs(x)<hw&&y>0&&y<.5&&abs(z)<.24;
   const f=(x,y,z)=>{const ox=Math.max(abs(x)-hw,0),oy=Math.max(y-.5,0)+Math.max(-y,0),oz=Math.max(abs(z)-.24,0),d=Math.hypot(ox,oy,oz);if(d<=0)return false;
     let T=S.s;if(z<-.1)T=Math.max(T,S.b);if(y>.42)T=Math.max(T,S.kuif?.03+(abs(x)<.16?Math.max(0,z+.02)*.3*(1-abs(x)/.2):0):S.t);if(S.kam)T=abs(x)<.06&&y>.38?S.t:S.s;
-    if(S.n)T+=(noise(x,y,z)-.5)*2*S.n;if(d>T)return false;
+    if(S.n)T+=(noise(x,y,z)-.5)*2*S.n;if(T>.008)T=Math.max(T,.038);if(d>T)return false;// minstens één volle laag blokjes (.036), anders kale plekken
     const back=z<-.08;if(y<(back?S.bl:S.lo)){if(!(S.lang&&y>(back?S.bl:S.lo)))return false}
     if(z>.15&&abs(x)<hw+.02&&y<S.hl){if(!(S.fr&&y>S.hl-.07&&noise(x+.03,y,z)>.55))return false}
     if(z>.1&&abs(x)>=hw-.01&&y<.31&&!(S.lang&&z<.2)&&!(L.v&&S.lang))return false;

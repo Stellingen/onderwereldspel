@@ -380,13 +380,13 @@ hoofdstuk({id:'s1_h4',na:'s1_h5',blokken:[
   C.weg('bilal');C.weg('luca');if(F('rafiq_ja')==='bedenktijd')F('rafiq_ja','bedenktijd_ja');F('nep_dozen',0);
   bericht('B.','1) Grand Hotel, nachtportier. 2) Toren, Zuidas. 3) '+adr(AD.villa,'Villawijk')+'. Licht uit.',{kleur:'#5a5d63'});zorgFiets();lichtKnop(true);licht(true)},
  async t=>{// N1 Grand Hotel
-  const ok=await nepRit(t,{p:PL.hotel(),tekst:'Grand Hotel · nachtportier',sub:'Nep-bestelling (Rafiq)',scene:async()=>{const q=voor(1.6);
-   await speel(t,[{speler:false},{actor:'raysman',at:[q.x,q.z],ry:naar(q,P()),look:Object.assign({},C.look('receptioniste')||{},{top:{kind:'suit',c:'#5a1a1a',c2:'#d6b25a'}})},{actor:'luca',at:[P().x,P().z],ry:naar(P(),q)},rond(q,naar(q,P())+1,2.8,1.6,1.4),
+  const ok=await nepRit(t,{p:PL.hotel(),tekst:'Grand Hotel · nachtportier',sub:'Nep-bestelling (Rafiq)',scene:async()=>{const D_=S1.deur(),q=D_.q;
+   await speel(t,[{speler:false},{actor:'raysman',at:[q.x,q.z],ry:naar(q,D_.l),look:Object.assign({},C.look('receptioniste')||{},{top:{kind:'suit',c:'#5a1a1a',c2:'#d6b25a'}})},{actor:'luca',at:[D_.l.x,D_.l.z],ry:naar(D_.l,q)},D_.cam,
     {anim:'luca',a:'give',naar:'raysman'},Z('raysman','Napoli. Achterom volgende keer. Gasten kijken.'),{fade:'out',t:.3}]);C.weg('raysman');C.weg('luca')}});if(ok)plusF('nep_dozen')},
  async t=>{// N2 toren aan de Zuidas
   let gezegd=false;const iv=setInterval(()=>{if(!levend(t)){clearInterval(iv);return}if(!gezegd&&G.P.x>880&&G.P.z<780&&!C.active()){gezegd=true;clearInterval(iv);verteller('n09').fn()}},500);
-  const ok=await nepRit(t,{p:pt(AD.toren),tekst:'Toren · Zuidas',sub:'Nep-bestelling (Rafiq)',scene:async()=>{const q=voor(1.6);
-   await speel(t,[{speler:false},{actor:'badjas',at:[q.x,q.z],ry:naar(q,P())},{actor:'luca',at:[P().x,P().z],ry:naar(P(),q)},rond(q,naar(q,P())+1,2.8,1.6,1.4),
+  const ok=await nepRit(t,{p:pt(AD.toren),tekst:'Toren · Zuidas',sub:'Nep-bestelling (Rafiq)',scene:async()=>{const D_=S1.deur(),q=D_.q;
+   await speel(t,[{speler:false},{actor:'badjas',at:[q.x,q.z],ry:naar(q,D_.l)},{actor:'luca',at:[D_.l.x,D_.l.z],ry:naar(D_.l,q)},D_.cam,
     {anim:'luca',a:'give',naar:'badjas'},Z('badjas','Jij bent sneller dan de vorige. Die kwam altijd een uur te laat.'),{fade:'out',t:.3}]);C.weg('badjas');C.weg('luca')}});
   clearInterval(iv);if(ok)plusF('nep_dozen')},
  async t=>{// E2 ziekenhuis: Giulia en Sanne
@@ -411,7 +411,7 @@ hoofdstuk({id:'s1_h4',na:'s1_h5',blokken:[
   const uitslag=await S1.aanhouding(t,{gesprint,wijk:'de Villawijk',cam:ots({x:l.x,z:l.z},{x:l.x-sin(l.ry)*1.6,z:l.z-cos(l.ry)*1.6},2.2,.8,1.9)});if(!levend(t))return;F('controle',uitslag);
   if(uitslag==='bureau'){await S1.naarBureau(t);auto.parent&&auto.parent.remove(auto);C.weg('kramer');C.weg('luca');return}
   setTimeout(()=>{auto.parent&&auto.parent.remove(auto)},2500);C.weg('kramer');
-  const j=voor(2.2);await speel(t,[{speler:false},{actor:'jasper',at:[j.x,j.z],ry:naar(j,P())},{actor:'luca',at:[P().x,P().z],ry:naar(P(),j)},rond(j,naar(j,P())+1,3,1.6,1.4),{fade:'in',t:.3},
+  const D_=S1.deur(),j=D_.q;await speel(t,[{speler:false},{actor:'jasper',at:[j.x,j.z],ry:naar(j,D_.l)},{actor:'luca',at:[D_.l.x,D_.l.z],ry:naar(D_.l,j)},D_.cam,{fade:'in',t:.3},
    {anim:'luca',a:'give',naar:'jasper'},Z('jasper','Eindelijk. Was dat politie daar?'),Z('luca','Achterlicht.'),Z('jasper','Zeg tegen je baas: vrijdag weer. Dubbel.'),{fade:'out',t:.4}]);
   C.weg('jasper');C.weg('luca');plusF('nep_dozen');licht(true);lichtKnop(false)},
  async t=>{if(F('controle')==='bureau')return;
@@ -524,13 +524,14 @@ hoofdstuk({id:'s1_h5',na:'s1_h6',vrij:true,blokken:[
    Z('bilal','Kroon is van de boot. Schorpioen is van ons.'),
    cam(...W3('sahara',8.35,2.2,1.6),...W3('sahara',8.0,2.15,3.0),{fov:42,strak:true}),Z('rafiq','Bilal.',{mood:'boos'}),
    cam(...W3('sahara',7.6,2.15,1.85),...W3('sahara',6.8,2.05,3.0),{fov:42,strak:true}),T_('Bilal kijkt naar de grond.'),
-   ots(wp(8.0,3.0),wp(9.2,3.1),2.0,.7,1.9),Z('rafiq','Jij hebt een vriezer gezien. Vol ijs. Je kent mij van de pizza.'),{anim:'rafiq',a:'give',prop:'telefoon',naar:'luca'},
+   cam(...W3('sahara',6.2,2.45,1.5),...W3('sahara',8.6,2.0,3.05),{fov:48,strak:true}),Z('rafiq','Jij hebt een vriezer gezien. Vol ijs. Je kent mij van de pizza.'),{anim:'rafiq',a:'give',prop:'telefoon',naar:'luca'},
    Z('rafiq','Deze is voor mij. Die andere is voor je moeder.'),{snd:'tril'},verteller('n12'),{fade:'out',t:.6}],SP);
   ['rafiq','luca','bilal'].forEach(k=>C.weg(k));F('tweede_telefoon',1);F('vriezer_gezien',1);
   await zetBuitenSahara();sein('Tweede telefoon · ritten voor Rafiq staan open bij Sahara (vrij rondrijden)','#ffd35a')},
  async t=>{// de kooi met Dex
   tijd(18,30);if(!await doelNaar(t,'De kooi · Westbuurt',PL.kooi(),{actie:'Naar Dex',sub:'Voetbalkooi'}))return;const v=PL.kooi(),d=walk(v.x+1,v.z-2,4),l=walk(v.x-1.4,v.z-1,4);
-  const r=await speel(t,[{speler:false},{actor:'dex',at:[d.x,d.z],ry:naar(d,l)},{actor:'luca',at:[l.x,l.z],ry:naar(l,d),anim:'leun'},rond(d,naar(d,l)+1.3,3.4,1.7,1.4),{fade:'in',t:.4},
+  const ka=naar(l,d),kx=(l.x+d.x)/2,kz=(l.z+d.z)/2;
+  const r=await speel(t,[{speler:false},{actor:'dex',at:[d.x,d.z],ry:naar(d,l)},{actor:'luca',at:[l.x,l.z],ry:naar(l,d),anim:'leun'},cam(kx-Math.cos(ka)*4.8,2.45,kz+Math.sin(ka)*4.8,kx,2.0,kz,{fov:46,strak:true}),{fade:'in',t:.4},
    {snd:'tril'},Z('dex','Twee telefoons. Sinds wanneer heb jij twee telefoons?'),Z('dex','En mijn neef zag je bij Sahara. Bij de achterdeur.'),
    keuze('luca','',[{t:'Vertellen',id:'ja'},{t:'Liegen',id:'nee'}])]);if(!levend(t))return;
   if(r==='ja'){F('dex_weet',1);const r2=await speel(t,[Z('luca','Rafiq. Ik neem soms iets mee. Onder de pizza.'),Z('dex','Serieus? Rafiq? …Broer, vraag of ik ook mag.',{mood:'blij'}),
