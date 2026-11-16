@@ -55,6 +55,9 @@ const HR=[
  {z:Z.park,a:X.kust,b:X.toren,n:'Parkweg'},{z:Z.baerle,a:X.kust,b:X.toren,n:'Van Baerlestraat'},{z:Z.zuider,a:X.kust,b:X.toren,n:'Zuiderstraat'},
  {z:Z.blvd,a:X.kust,b:X.ring,n:'Boulevard'},
  {z:560,a:X.ring,b:1362,n:'A10 (de stad uit)',hw:1},{z:Z.eiland,a:1050,b:1330,n:'Eilandweg'}];
+// woonstraten van klinkers en wegen zonder fietsstroken (zie nlStraten)
+const KLINKER=new Set(['Merelstraat','Sperwerstraat','Kraaienstraat','Herenstraat','Kerkstraat','Van Baerlestraat']);
+const GEEN_FIETS=new Set(['Containerkade','Loodsenkade','Noordkade','Douanekade','Industrieweg']);
 const XS=[...new Set(VR.map(v=>v.x))].sort((a,b)=>a-b),ZS=[...new Set(HR.map(h=>h.z))].sort((a,b)=>a-b);
 // blok tussen twee wegen (binnenkant, zonder stoep)
 const IN=(a,b)=>[a+RS,b-RS];
@@ -150,7 +153,9 @@ place({id:'sportschool',name:'Boksschool De Bokszak',sign:'DE BOKSZAK',st:'gym',
 
 /* --- Boulevard --- */
 const [c10a,c10b]=cb(9),[c11a,c11b]=cb(10),[c12a,c12b]=cb(11),[c13a,c13b]=cb(12);
-place({id:'sahara',name:'Lounge Sahara',sign:'SAHARA LOUNGE',st:'sahara',fl:2,face:'S',x0:c7a+6,z0:r6b-30,x1:c7b-6,z1:r6b,res:[c7a,r6b-44,c7b,r6b],ic:'music',binnen:'sahara'});
+{// Lounge Sahara: een shishalounge van 30 m breed in het midden, met aan weerskanten gewone winkelpanden (kapper, belwinkel)
+ const m=(c7a+c7b)/2;place({id:'sahara',name:'Lounge Sahara',sign:'SAHARA SHISHA LOUNGE',st:'sahara',fl:2,face:'S',x0:c7a+6,z0:r6b-30,x1:c7b-6,z1:r6b,dx:m,
+  parts:[[m-15,r6b-30,m+15,r6b],[c7a+6,r6b-26,m-15.5,r6b,3,'portiek2'],[m+15.5,r6b-26,c7b-6,r6b,3,'portiek2']],res:[c7a,r6b-44,c7b,r6b],ic:'music',binnen:'sahara'})}
 set(c7a+6,r6b-42,c7b-6,r6b-30,T.YARD);             // achterplaats van Sahara (achteringang, afvalcontainers)
 place({id:'rapido',name:'Pizza Rapido',sign:'PIZZA RAPIDO',st:'rapido',fl:2,face:'S',x0:c9a+4,z0:r6b-20,x1:c9a+28,z1:r6b,ic:'kop'});
 place({id:'parkeergarage',name:'Parkeergarage Boulevard',sign:'P GARAGE',st:'parking',fl:5,face:'W',x0:c10a+4,z0:r6a+4,x1:c10b-4,z1:r6b-4,res:[c10a,r6a,c10b,r6b],ic:'auto'});
@@ -251,26 +256,26 @@ const HAVEN={wmin:16,wmax:24,dmin:16,dmax:20,fmin:2,fmax:3,st:STY.haven,roof:1,g
 // Westbuurt: kolommen 0-3, rijen 0-4 (school, thuis, Napoli, park en veld zijn al gereserveerd of krijgen iets eigens)
 const [r0w,r0e]=[r0a,r0b];
 // rij 0: flats aan de Kustweg, school (al), portiek aan de Westerweg
-slabs(c0a,r0a,c0b,r0b,{dir:'z',fmin:8,fmax:10,st:['flat1','flat2','flat3']});
+slabs(c0a,r0a,c0b,r0b,{dir:'z',fmin:4,fmax:5,st:['flat1','flat2','flat3']});
 fill(c3a,r0a,c3b,r0b,WEST);
 // rij 1: flats, 'de hoek' (portiekflats + speeltuin), flats, portiek
-slabs(c0a,r1a,c0b,r1b,{dir:'x',fmin:8,fmax:11,st:['flat1','flat2','flat3']});
+slabs(c0a,r1a,c0b,r1b,{dir:'x',fmin:8,fmax:9,st:['flat1','flat2','flat3']});
 fill(c1a,r1a,c1b,r1b,Object.assign({},WEST,{noS:1,noWE:1,d:13}));
 const SPEELTUIN={x0:c1a+4,z0:r1a+18,x1:c1b-4,z1:r1b-2};set(SPEELTUIN.x0,SPEELTUIN.z0,SPEELTUIN.x1,SPEELTUIN.z1,T.PARK);
-slabs(c2a,r1a,c2b,r1b,{dir:'x',fmin:9,fmax:11,st:['flat1','flat2','flat3']});
+slabs(c2a,r1a,c2b,r1b,{dir:'x',fmin:4,fmax:5,st:['flat1','flat2','flat3']});
 fill(c3a,r1a,c3b,r1b,WEST);
 // rij 2: flats, thuis (al), flats (Dex woont hier), Napoli + portiek
-slabs(c0a,r2a,c0b,r2b,{dir:'z',fmin:8,fmax:10,st:['flat1','flat2','flat3']});
-slabs(c2a,r2a,c2b,r2b,{dir:'x',fmin:7,fmax:9,st:['flat2','flat3','portiek1']});
+slabs(c0a,r2a,c0b,r2b,{dir:'z',fmin:4,fmax:6,st:['flat1','flat2','flat3']});
+slabs(c2a,r2a,c2b,r2b,{dir:'x',fmin:4,fmax:5,st:['flat2','flat3','portiek1']});
 fill(c3a,r2a,c3b,r2b,WEST);
 // rij 3: buurthuis + flats, voetbalveld, sportschool + flats, park
 fill(c0a,r3a,c0b,r3b,Object.assign({},WEST,{noN:1}));
 const VELD={x0:c1a+4,z0:r3a+6,x1:c1b-4,z1:r3b-6};set(c1a,r3a,c1b,r3b,T.PARK);set(VELD.x0,VELD.z0,VELD.x1,VELD.z1,T.GRASS);
 fill(c2a,r3a,c2b,r3b,Object.assign({},WEST,{noN:1}));
 // rij 4: flats
-slabs(c0a,r4a,c0b,r4b,{dir:'x',fmin:8,fmax:10,st:['flat1','flat2','flat3']});
-slabs(c1a,r4a,c1b,r4b,{dir:'z',fmin:9,fmax:12,st:['flat1','flat2','flat3']});
-slabs(c2a,r4a,c2b,r4b,{dir:'x',fmin:8,fmax:10,st:['flat1','flat2','flat3']});
+slabs(c0a,r4a,c0b,r4b,{dir:'x',fmin:4,fmax:6,st:['flat1','flat2','flat3']});
+slabs(c1a,r4a,c1b,r4b,{dir:'z',fmin:8,fmax:9,st:['flat1','flat2','flat3']});
+slabs(c2a,r4a,c2b,r4b,{dir:'x',fmin:4,fmax:5,st:['flat1','flat2','flat3']});
 // het Westerpark (twee blokken, de Parkweg loopt erdoor)
 const WPARK={x0:c3a,z0:r3a,x1:c3b,z1:r4b};set(c3a,r3a,c3b,r3b,T.PARK);set(c3a,r4a,c3b,r4b,T.PARK);
 const VIJVER={x0:c3a+14,z0:r4a+18,x1:c3b-14,z1:r4b-16};set(VIJVER.x0,VIJVER.z0,VIJVER.x1,VIJVER.z1,T.WATER);
@@ -308,7 +313,7 @@ set(c13a,r6a,c13b,r6b,T.PARK,[T.GRASS]);
 const BOUW={x0:c12a,z0:r5a,x1:c12b,z1:r5b};set(BOUW.x0,BOUW.z0,BOUW.x1,BOUW.z1,T.YARD);reserved.push([BOUW.x0,BOUW.z0,BOUW.x1,BOUW.z1]);
 addB({x0:c12a+20,z0:r5a+14,x1:c12a+50,z1:r5a+42,fl:7,st:'concrete',roof:'flat'});
 const ZPLEIN={x0:c11a,z0:r3a,x1:c11b,z1:r3b};set(ZPLEIN.x0,ZPLEIN.z0,ZPLEIN.x1,ZPLEIN.z1,T.PLAZA,[T.GRASS]);reserved.push([ZPLEIN.x0+10,ZPLEIN.z0+10,ZPLEIN.x1-10,ZPLEIN.z1-10]);
-[[9,0],[10,0],[11,0],[12,0],[9,1],[10,1],[11,1],[12,1],[9,2],[12,2],[11,3],[12,3],[9,4],[10,4],[11,4],[9,5],[10,5],[12,4],[12,5]].forEach(([i,j])=>{const [a,b]=cb(i),[c,d]=rb(j);towers(a,c,b,d,{n:i===12?1:2,fmin:i===12?10:16,fmax:i>=10&&j<=3?40:28})});
+[[9,0],[10,0],[11,0],[12,0],[9,1],[10,1],[11,1],[12,1],[9,2],[12,2],[11,3],[12,3],[9,4],[10,4],[11,4],[9,5],[10,5],[12,4],[12,5]].forEach(([i,j])=>{const [a,b]=cb(i),[c,d]=rb(j);towers(a,c,b,d,{n:i===12?1:2,fmin:i===12?8:12,fmax:i>=10&&j<=3?26:20})});
 {const [a,b]=cb(11),[c,d]=rb(2);set(a,c,b,d,T.PARK,[T.GRASS])}   // Zuidaspark
 // strook tussen spoor en Stationsweg bij de Zuidas: kantoren
 towers(892,228,968,288,{n:2,fmin:8,fmax:14,wmin:22,wmax:30,dmin:20,dmax:26});
@@ -480,6 +485,7 @@ const VZP={x0:1314,z0:572,x1:1356,z1:600};set(VZP.x0,VZP.z0,VZP.x1,VZP.z1,T.YARD
   // zwembad achter de villa
   set(1236,1156,1268,1166,T.WATER);})();
 prop('vuurtoren',1368,1112,{});block(1364,1108,1372,1116);
+prop('zwaan',X.brug,998,{z0:998,z1:1040});block(X.brug+RW,1036,X.brug+RW+3.2,1040);
 // jachten en speedboten in de jachthaven
 for(let x=1119;x<1250;x+=20){prop('jacht',x+(rng()<.5?-4.5:5.5),1024,{rot:1,v:ri(0,3),l:ri(10,15)})}
 prop('speedboot',1104,1022,{rot:1,v:0});prop('speedboot',1256,1020,{rot:1,v:1});
@@ -510,6 +516,15 @@ for(let i=0,n=0;i<9000&&n<70;i++){const x=20+rng()*(W-40),z=20+rng()*(H-40);if(a
 (function(){const wall=(x0,z0,x1,z1)=>{props.push({k:'wall',x0,z0,x1,z1});block(x0,z0,x1,z1)};
   wall(40,40,180,42);wall(40,40,42,182);wall(178,40,180,182);wall(40,180,107,182);wall(113,180,180,182);
   [[41,41],[179,41],[41,181],[179,181]].forEach(([x,z])=>prop('tower',x,z,{}));prop('gate',110,181,{});block(107,180,113,182)})();
+
+/* ---------- Nederlandse woonstraten: bomen langs de stoeprand en fietsen in rekken (vaste plekken, zonder rng) ---------- */
+{const hsh=(a,b)=>{let t=(a*374761393+b*668265263)|0;t=(t^(t>>>13))*1274126177|0;return((t^(t>>>16))>>>0)/4294967296};
+ const nearX=(v,list)=>list.some(q=>Math.abs(q-v)<RS+4);const XSs=VR.map(v=>v.x),ZSs=HR.map(h=>h.z);
+ [...VR,...HR].filter(r=>KLINKER.has(r.n)).forEach(r=>{const vert=r.x!=null,c=vert?r.x:r.z;
+   for(let u=r.a+9;u<r.b-6;u+=12){if(nearX(u,vert?ZSs:XSs))continue;[[-1,0],[1,6]].forEach(([s,du])=>{const uu=u+du,w=c+s*(RS-.9),x=vert?w:uu,z=vert?uu:w;
+     if(at(x|0,z|0)===T.WALK&&free(x,z,.9))prop('stree',x,z,{s:.75+hsh(x|0,z|0)*.3,v:(hsh(z|0,x|0)*3)|0,solid:.25})})}
+   for(let u=r.a+30;u<r.b-10;u+=44){if(nearX(u,vert?ZSs:XSs))continue;const s=hsh(u,c)<.5?-1:1,w=c+s*(RS-1.7),x=vert?w:u,z=vert?u:w;
+     const ok=[-1.4,0,1.4].every(q=>{const xx=vert?x:x+q,zz=vert?z+q:z;return at(xx|0,zz|0)===T.WALK&&!solid[(zz|0)*W+(xx|0)]});if(ok&&free(x,z,1.4))prop('bikes',x,z,{rot:vert?1:0,v:(hsh(u,c+1)*5)|0})}})}
 
 /* ---------- bruggen (voor de relingen): waar een weg over water gaat ---------- */
 const bridges=[];
@@ -579,6 +594,12 @@ const DISTRICTS=[{n:'Westbuurt',x:240,z:420},{n:'Villawijk',x:240,z:830},{n:'Wes
  {n:'Bedrijventerrein',x:1150,z:150},{n:'Centrum',x:660,z:330},{n:'De Gracht',x:655,z:515},{n:'Het Plein',x:655,z:425},{n:'Oud-Zuid',x:655,z:740},{n:'Zuidas',x:1080,z:520},
  {n:'Boulevard',x:780,z:875},{n:'Het Strand',x:560,z:975},{n:'Ringweg',x:1350,z:470},{n:'Het Eiland',x:1200,z:1130}];
 
+// wat voor kant van de stad het is (voor de wijkmelding en de kaart): arm, gewoon of rijk
+const WIJKINFO={'Westbuurt':{kant:'arm',sub:'Galerijflats, snackbars en de school'},'Westkust':{kant:'arm',sub:'Duinen en wind'},'De Bajes':{kant:'arm',sub:'De gevangenis'},
+ 'De Haven':{kant:'arm',sub:'Containers, kranen en douane'},'Noordkade':{kant:'arm',sub:'Loodsen aan het water'},'Bedrijventerrein':{kant:'arm',sub:'Hallen, garages en een autokerkhof'},
+ 'Oud-Zuid':{kant:'gewoon',sub:'Rijtjeshuizen met voortuintjes'},'Centrum':{kant:'gewoon',sub:'Winkels, de bank en het bureau'},'De Gracht':{kant:'gewoon',sub:'Grachtenpanden'},
+ 'Het Plein':{kant:'gewoon',sub:'Het hart van de stad'},'Boulevard':{kant:'gewoon',sub:'Palmen, terrassen en Lounge Sahara'},'Het Strand':{kant:'gewoon',sub:'Strandtenten en de pier'},
+ 'Zuidas':{kant:'rijk',sub:'Torens, glas en geld'},'Villawijk':{kant:'rijk',sub:'Villa\'s achter hoge hagen'},'Het Eiland':{kant:'rijk',sub:'Jachthaven en villa\'s'},'Ringweg':{kant:'gewoon',sub:'De stad uit'}};
 /* ---------- straatnamen en adressen ---------- */
 function straatAt(x,z){let best=null,bd=1e9;
   VR.forEach(v=>{if(z<v.a-RS||z>v.b+RS)return;const d=Math.abs(x-v.x);if(d<bd){bd=d;best={r:v,d,pos:z-v.a,side:x<v.x?0:1}}});
@@ -651,7 +672,7 @@ const PLEKKEN=[
  {id:'rapido',n:'Pizza Rapido',sub:'De concurrent',ic:'kop',c:'#e8584a',cat:'plek',ch:1},
  {id:'buurthuis',n:'Buurthuis De Kastanje',sub:'Westbuurt',ic:'mensen',c:'#e8e4da',cat:'plek',ch:1},
  {id:'sportschool',n:'De Bokszak',sub:'Boksschool',ic:'vuist',c:'#e8e4da',cat:'plek',ch:1},
- {id:'ziekenhuis',n:'Ziekenhuis',sub:'Hier werkt Elena',ic:'hart',c:'#ff6f8a',cat:'plek',ch:1},
+ {id:'ziekenhuis',n:'Ziekenhuis',sub:'Hier werkt Giulia',ic:'hart',c:'#ff6f8a',cat:'plek',ch:1},
  {id:'politie',n:'Politiebureau',sub:'Centrum',ic:'badge',c:'#4d7dff',cat:'gevaar',ch:1},
  {id:'station',n:'Centraal Station',sub:'Treinen en trams',ic:'route',c:'#ffd35a',cat:'plek',ch:1},
  {id:'strandtent',n:'Strandtenten',sub:'Het strand',ic:'kop',c:'#f0dca0',cat:'plek',ch:1},
@@ -692,7 +713,7 @@ const STY_EXTRA={
  school2:{w:'#3f7a4a',m:'#2f5d3a',f:'#e8e4da',g:'#24323f',gnd:'roll',roof:'#4a5260',pat:'panel'},
  napoli:{w:'#efe6d2',m:'#d8cdb4',f:'#1f7a3a',g:'#3a2a1a',gnd:'pub',aw:'#c0392b',roof:'#7a2f22',pat:'plain'},
  rapido:{w:'#e8e4da',m:'#cfc9bb',f:'#c0261e',g:'#2a3440',gnd:'shopbig',aw:'#c0261e',roof:'#6a6c70',pat:'panel'},
- sahara:{w:'#1a1220',m:'#110b16',f:'#d6a63e',g:'#2a1238',gnd:'casino',roof:'#22182a',pat:'casino',n1:'#b46cff',n2:'#7a3cff',n3:'#ffcf5a'},
+ sahara:{w:'#5a3626',m:'#432618',f:'#c9a227',g:'#5a3418',gnd:'pub',aw:'#6a2418',roof:'#2a1e1a',pat:'brick'},
  hospital:{w:'#eef0f2',m:'#d4d8dc',f:'#c0261e',g:'#2a4a6a',gnd:'lobby',roof:'#8a9098',pat:'panel'},
  station:{w:'#8a3b2a',m:'#6a2a1e',f:'#d6b25a',g:'#26323f',gnd:'columns',roof:'#3c4148',pat:'stone'},
  parking:{w:'#a6a8ac',m:'#8c8e92',f:'#55585e',g:'#1c1f24',gnd:'roll',roof:'#6a6c70',pat:'deck'},
@@ -708,7 +729,18 @@ const STY_EXTRA={
  hall1:{w:'#4f6a5a',m:'#3d5446',f:'#2a3430',g:'#2a3440',gnd:'roll',roof:'#4a524c',pat:'corr'},
  dijk:{w:'#4f8a3a',m:'#3f7a34',f:'#5d9a44',g:'#3f7a34',gnd:'roll',roof:'#4f8a3a',pat:'plain'}};
 // spullen die stad-gfx.js niet kent (geeft true terug als het getekend is)
+// balk tussen twee punten (voor schuine dingen zoals de pyloon en de tuien van de brug)
+function balk(gb,a,b,th,tile){const dx=b[0]-a[0],dy=b[1]-a[1],dz=b[2]-a[2],L=Math.hypot(dx,dy,dz)||1,d=[dx/L,dy/L,dz/L];
+  let up=Math.abs(d[1])>.9?[1,0,0]:[0,1,0];const cr=(u,v)=>[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],nrm=v=>{const l=Math.hypot(...v)||1;return v.map(q=>q/l)};
+  const s1=nrm(cr(d,up)),s2=nrm(cr(s1,d)),h=th/2,P=(o,s,t)=>[o[0]+s1[0]*s*h+s2[0]*t*h,o[1]+s1[1]*s*h+s2[1]*t*h,o[2]+s1[2]*s*h+s2[2]*t*h];
+  const c=[[-1,-1],[1,-1],[1,1],[-1,1]];for(let i=0;i<4;i++){const [s0,t0]=c[i],[s1_,t1]=c[(i+1)%4];gb.quad(P(a,s0,t0),P(a,s1_,t1),P(b,s1_,t1),P(b,s0,t0),0,0,1,1,tile)}}
 function gfxProp(gb,p,pi,X){const sw=X.swatch,h=X.hash;switch(p.k){
+ case 'zwaan':{// witte tuibrug met een geknikte pyloon (een knipoog naar de Zwaan in Rotterdam)
+   const W_=sw('#f2f2ee'),G_=sw('#c9cdd2'),x=p.x,z0=p.z0,z1=p.z1,px=x+RW+1.6,pz=z1-2,top=[px-3.5,46,pz-1],knik=[px-1.2,22,pz-.4];
+   balk(gb,[px,0,pz],knik,3.4,W_);balk(gb,knik,top,2.6,W_);gb.cbox(px,pz,3.2,3.2,-1,1.2,G_);
+   for(let k=0;k<9;k++){const zz=z0+3+k*(pz-z0-6)/8,t=[top[0],top[1]-k*1.6,top[2]-k*.2];[x-RW+.4,x+RW-.4].forEach(xx=>balk(gb,t,[xx,1.1,zz],.16,G_))}
+   for(let k=0;k<4;k++){const zz=pz+6+k*2.2;balk(gb,[top[0],top[1]-2-k*1.2,top[2]],[px+1,0,zz],.2,G_)}
+   return true}
  case 'kraan':{const d=p.dir||1,c=sw(['#d8a52a','#c0392b','#2e5f9a'][p.v%3]),dk=sw('#2a2d32'),H0=24;
    [[-3,-4],[3,-4],[-3,4],[3,4]].forEach(([a,b])=>gb.cbox(p.x+a,p.z+b,.8,.8,0,H0,c));
    gb.box(p.x-3.4,H0-1.5,p.z-4.4,p.x+3.4,H0,p.z+4.4,c);gb.box(p.x-3.4,6,p.z-4.2,p.x+3.4,6.8,p.z-3.6,c);gb.box(p.x-3.4,6,p.z+3.6,p.x+3.4,6.8,p.z+4.2,c);
@@ -770,7 +802,32 @@ function gfxProp(gb,p,pi,X){const sw=X.swatch,h=X.hash;switch(p.k){
  case 'slagboom':{gb.cbox(p.x,p.z,.6,.6,0,1.2,sw('#2a2c30'));for(let k=0;k<6;k++)gb.box(p.x-.08,1,p.z+k*.9,p.x+.08,1.15,p.z+(k+1)*.9,sw(k%2?'#e8e4da':'#c0261e'));return true}
  }return false}
 // grondtekeningen: spoor, tramrails, voetbalveld, schoolplein, parkeervakken
+// Nederlandse straten: woonstraten van klinkers (geen middenstreep), doorgaande wegen met rode fietsstroken en fietssymbolen
+const KPAT={};
+function klinkerPatroon(vert,hash){const k=vert?'v':'h';if(KPAT[k])return KPAT[k];const N=48,cv=document.createElement('canvas');cv.width=cv.height=N;const c=cv.getContext('2d');
+  for(let U=0;U<N;U++)for(let w=-1;w<N;w+=2){const ww=w+(U%2),h=hash(Math.floor((ww+2)/2),U,31),col=h<.12?'#5e3428':h<.4?'#7a4434':h<.75?'#86503c':h>.97?'#55504c':'#91583f';
+    c.fillStyle=col;if(vert)c.fillRect(ww,U,2,1);else c.fillRect(U,ww,1,2)}
+  return KPAT[k]=cv}
+function nlStraten(cx,GP,r,ov,hash){const XSs=VR.map(v=>v.x),ZSs=HR.map(h=>h.z),nearJ=(v,list)=>list.some(q=>Math.abs(q-v)<=RW+SW+.5);
+  [...VR,...HR].forEach(rd=>{if(rd.hw)return;const vert=rd.x!=null,c=vert?rd.x:rd.z;if(!(vert?ov(c-RW,rd.a,c+RW,rd.b):ov(rd.a,c-RW,rd.b,c+RW)))return;
+    const a=Math.max(rd.a,Math.floor((vert?r.z0:r.x0)-2)),b=Math.min(rd.b,Math.ceil((vert?r.z1:r.x1)+2)),cross=vert?ZSs:XSs;
+    const px=(u,w,len,dep,col)=>{cx.fillStyle=col;if(vert)cx.fillRect(Math.round(w*GP),Math.round(u*GP),Math.max(1,Math.round(dep*GP)),Math.max(1,Math.round(len*GP)));else cx.fillRect(Math.round(u*GP),Math.round(w*GP),Math.max(1,Math.round(len*GP)),Math.max(1,Math.round(dep*GP)))};
+    if(KLINKER.has(rd.n)){if(r.lo){for(let u=a;u<b;u++){if(nearJ(u,cross))continue;px(u,c-RW,1,2*RW,'#7a4a3a')}return}
+      // klinkers in halfsteensverband (een patroon dat over alle stukken doorloopt), met een goot van lichtere stenen langs de stoep
+      const pat=cx.createPattern(klinkerPatroon(vert,hash),'repeat');
+      for(let u=a;u<b;u++){if(nearJ(u,cross))continue;px(u,c-RW,1,2*RW,pat);px(u,c-RW,1,.35,'#9a8a7a');px(u,c+RW-.35,1,.35,'#9a8a7a')}return}
+    if(GEEN_FIETS.has(rd.n))return;
+    // fietsstroken: 1,8 m rood langs beide stoepranden, met een witte streeplijn aan de binnenkant
+    for(let u=a;u<b;u++){if(nearJ(u,cross))continue;[[c+RW-2.0,1.9],[c-RW+.1,1.9]].forEach(([w,d])=>{px(u,w,1,d,r.lo?'#8a3a30':((hash(u,Math.round(w),33)<.5)?'#9a3a2e':'#a2402f'))});
+      if(!r.lo&&u%3!==0){px(u,c+RW-2.12,1,.12,'#e8e4d8');px(u,c-RW+2.0,1,.12,'#e8e4d8')}}
+    if(r.lo)return;
+    // fietssymbool om de 46 m (wit, plat op de strook)
+    for(let u=Math.ceil(a/46)*46+23;u<b;u+=46){if(nearJ(u,cross)||nearJ(u+3,cross)||nearJ(u-3,cross))continue;[c+RW-1.05,c-RW+1.05].forEach(w=>{cx.fillStyle='#ece8dc';
+      const P=(du,dw,l,d)=>{if(vert)cx.fillRect(Math.round((w+dw)*GP),Math.round((u+du)*GP),Math.max(1,Math.round(d*GP)),Math.max(1,Math.round(l*GP)));else cx.fillRect(Math.round((u+du)*GP),Math.round((w+dw)*GP),Math.max(1,Math.round(l*GP)),Math.max(1,Math.round(d*GP)))};
+      // twee wielen (vierkantjes met een gat), frame en stuur
+      P(-1.1,-.45,.75,.9);P(.35,-.45,.75,.9);cx.fillStyle=vert||1?'#9a3a2e':'#9a3a2e';P(-.95,-.25,.45,.5);P(.5,-.25,.45,.5);cx.fillStyle='#ece8dc';P(-.6,-.1,1.2,.2);P(-.1,-.55,.2,.5);P(.35,-.6,.35,.15)})}})}
 function gfxGround(cx,GP,r,X){const ov=(x0,z0,x1,z1)=>x1>=r.x0-2&&x0<=r.x1+2&&z1>=r.z0-2&&z0<=r.z1+2;
+  try{nlStraten(cx,GP,r,ov,X.hash)}catch(e){console.error(e)}
   if(r.lo){// grof: alleen het spoor als donkere streep
     if(ov(SPOOR.x0,SPOOR.z0,SPOOR.x1,SPOOR.z1)){cx.fillStyle='#4a4038';SPOOR.tracks.forEach(t=>cx.fillRect(SPOOR.x0*GP,(t-1)*GP,(SPOOR.x1-SPOOR.x0)*GP,Math.max(1,2*GP)))}return}
   // spoor: dwarsliggers en twee rails per spoor (ook over de overweg)
@@ -806,5 +863,5 @@ root.STAD_MAP={NET,districtAt,setSolid,ESTATE,EST_H:[],EST_B:[],BIZ_LOOK:{},alle
   at,walkable,canStand,circHit,nearestWalk,findPath,placeById,placeByPage:pg=>places.find(p=>p.page===pg),
   // verhaalstad-extra's
   VERHAAL:true,CHUNK,PLEKKEN,ADRESSEN,TRAM,tramAt,HALTES,KRANEN,SPOOR,GRACHT,straatAt:(x,z)=>{const s=straatAt(x,z);return s?s.r.n:''},adres,
-  STY_EXTRA,SIGNC,MAPPL,SIGNS,gfx:{prop:gfxProp,ground:gfxGround}};
+  STY_EXTRA,SIGNC,MAPPL,SIGNS,WIJKINFO,gfx:{prop:gfxProp,ground:gfxGround}};
 })(typeof window!=='undefined'?window:globalThis);

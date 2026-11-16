@@ -21,10 +21,14 @@ const MNAAM={koers:'Koers',imago:'Imago',dossier:'Dossier',hitte:'Hitte',fam_ele
 const vip=()=>{try{return (typeof tier==='function'&&tier()>=1)||!!window.__ADMIN__}catch(e){return false}};
 
 /* ---------- staat ---------- */
+const STORY_V=3;
 function st(){if(typeof S==='undefined'||!S)return {m:Object.assign({},MDEF),flags:{},inv:{}};
-  if(!S.story||typeof S.story!=='object')S.story={};const s=S.story;
+  if(!S.story||typeof S.story!=='object')S.story={};
+  // nieuw Seizoen 1 (nov 2026): het hele verhaal begint opnieuw (verhaal, verhaalgeld, spullen). Oude saves (v<3) worden één keer leeggemaakt.
+  if(S.story.v!=null&&S.story.v<STORY_V){const oud=S.story;S.story={v:STORY_V,reset:Date.now(),inst:oud.inst&&typeof oud.inst==='object'?oud.inst:{}};try{setTimeout(()=>{try{save()}catch(e){}},50)}catch(e){}}
+  const s=S.story;
   // migratie: ontbrekende velden aanvullen, nooit iets weggooien
-  if(!s.v)s.v=1;if(!s.ch)s.ch=1;if(!s.step)s.step='start';if(!s.avond)s.avond=1;if(typeof s.geld!=='number'||!isFinite(s.geld))s.geld=0;
+  if(!s.v)s.v=STORY_V;if(!s.ch)s.ch=1;if(!s.step)s.step='start';if(!s.avond)s.avond=1;if(typeof s.geld!=='number'||!isFinite(s.geld))s.geld=0;
   if(!s.flags||typeof s.flags!=='object')s.flags={};if(!s.inv||typeof s.inv!=='object')s.inv={};if(!s.t0)s.t0=Date.now();
   if(!s.m||typeof s.m!=='object')s.m={};for(const k in MDEF)if(typeof s.m[k]!=='number')s.m[k]=MDEF[k];
   if(typeof s.tm!=='number'||!isFinite(s.tm))s.tm=14*60+20;   // de klok (minuten in de speldag); het verhaal begint 's middags in de les
@@ -64,7 +68,8 @@ G.klok=function(t){const s=st(),h=clamp(s.tm/60,0,23.99),now=Date.now(),start=no
 G.uur=h=>{const k=G.klok();return k.start+h/24*DAG_MS};
 G.klok0=klok0;
 let klT=0,lightT=0;
-function klokStep(dt){if(!ST.klokLoopt())return;const s=st();s.tm+=dt*1440/(DAG_MS/1000);
+// de klok volgt het verhaal: het hoofdstuk zet de tijd (ST.tijd); alleen als een stap dat vraagt (s.klokLoopt) loopt hij vanzelf door
+function klokStep(dt){if(!ST.klokLoopt())return;const s=st();if(!s.klokLoopt)return;s.tm+=dt*1440/(DAG_MS/1000);
   if(s.tm>=1440){s.tm-=1440;s.dag=(s.dag||0)+1}
   lightT+=dt;if(lightT>1){lightT=0;G.applyLight&&G.applyLight()}
   klT+=dt;if(klT>20){klT=0;sv()}}

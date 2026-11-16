@@ -126,8 +126,8 @@ const rimpelAt=a=>a<30?0:a<42?1:a<55?2:a<70?3:4;
 let SIT=null,SITsrc=null;     // situatie (missie/stap)
 const SITMAP={school:'school',les:'school',bezorg:'bezorger',bezorgen:'bezorger',pizza:'bezorger',thuis:'thuis',klus:'klus',overval:'klus',inbraak:'klus',ontvoering:'klus',aanslag:'masker',masker:'masker',
   onderhandelen:'zakelijk',vergadering:'zakelijk',veiling:'zakelijk',rechtbank:'zakelijk',zakelijk:'zakelijk',kantoor:'zakelijk',gala:'gala',diner:'gala',gevangenis:'gevangenis',cel:'gevangenis',
-  straat:'straat',vuurgevecht:'straat',achtervolging:'straat',hoek:'straat',casual:'casual',vrij:null};
-const OUTFITS=['school','bezorger','thuis','straat','zakelijk','casual','klus','masker','gala','gevangenis'];
+  straat:'straat',vuurgevecht:'straat',achtervolging:'straat',hoek:'straat',casual:'casual',sport:'sport',gym:'sport',feest:'feest',verjaardag:'feest',vrij:null};
+const OUTFITS=['school','bezorger','thuis','straat','zakelijk','casual','klus','masker','gala','gevangenis','sport','feest'];
 function koers(){try{if(G.story&&G.story.meter)return +G.story.meter('koers')||0;const s=G.story.st();return +(s.m&&s.m.koers)||0}catch(e){return 0}}
 // de outfit van Luca nu (handmatig vast > situatie > plek > jas van Giovanni > route)
 function lucaOutfit(){const L=lst(),a=lucaAge();if(L.vast&&L.outfit&&OUTFITS.includes(L.outfit))return L.outfit;
@@ -156,7 +156,11 @@ function lucaKl(n,a,v){v=v|0;const pk=L=>L[((v%L.length)+L.length)%L.length];
   case 'klus':return {k:'hoodie',c:'#121316',hood:'up',b:'jogger',bc:'#121316',s:'sneaker',sc:'#121316',s2:'#2a2c30',gl:'#0c0d0f',zon:1};
   case 'masker':return {k:'hoodie',c:'#121316',b:'jogger',bc:'#121316',s:'sneaker',sc:'#121316',s2:'#2a2c30',gl:'#0c0d0f',hat:'mask',hatC:'#121316'};
   case 'gala':return {k:'tux',c:'#121316',c3:'#f4f1ea',bow:'#121316',b:'pantalon',bc:'#121316',s:'nette',sc:'#0c0c0e',wt:'#c9cfd6',pochet:'#f4f1ea'};
-  case 'gevangenis':return {k:'sweat',c:'#5a6a7a',b:'jogger',bc:'#5a6a7a',s:'slipper',sc:'#2a2c30'}}
+  case 'gevangenis':return {k:'sweat',c:'#5a6a7a',b:'jogger',bc:'#5a6a7a',s:'slipper',sc:'#2a2c30'};
+  // gymles: wit sportshirt met het blauw van de school, korte zwarte joggingbroek, sportschoenen
+  case 'sport':return {k:'tee',c:'#f1efe9',c2:'#2e5f9a',b:'jogger',bc:'#16171b',s:'sneaker',sc:'#f4f1ea',s2:'#2e5f9a'};
+  // zijn verjaardag in Sahara: het zwarte leren jack dat hij van Rafiq kreeg, een gouden ketting
+  case 'feest':return {k:'leer',c:'#16161a',c2:'#c9a227',c3:'#f1efe9',b:'jeans',bc:'#16171b',s:'sneaker',sc:'#f4f1ea',s2:'#c9a227',ch:'goud'}}
   return lucaKl('school',a,v)}
 // algemene kleding voor de rest van de cast als ze iets anders aan moeten
 function algKl(n,C,a){const v=!!C.v;

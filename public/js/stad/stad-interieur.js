@@ -7,6 +7,8 @@
 const G=STAD,M=STAD_MAP,TH=window.THREE,K=G.kit,BN=G.binnen;if(!BN)return;
 const shade=K.shade,R=(c,x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h)};
 const pc=BN.plaatCanvas;
+// een castlid uit het nieuwe Seizoen 1 als dat er is (Mo, Tarik), anders de oude naam
+const C_LOOK=(id,anders)=>{try{return G.cut&&G.cut.actors&&G.cut.actors[id]?id:anders}catch(e){return anders}};
 // tijdelijke plekken op de Pixelstad-kaart (stad-map.js) zolang verhaal-map.js er niet is
 const FALLBACK={sahara:{x:267,z:507},napoli:{x:213,z:507},thuis:{x:189,z:267.5},school:{x:200.5,z:248},rijtjeshuis:{x:441.5,z:371.6}};
 const anker=id=>{const f0=()=>{const A=M.A||{};if(id==='napoli'&&G.bezorg&&G.bezorg.napoli&&G.bezorg.napoli.x!=null)return G.bezorg.napoli;if(A[id]&&A[id].x!=null)return A[id];const f=FALLBACK[id];return f?(M.nearestWalk(f.x,f.z,6)||f):null};return f0};
@@ -54,135 +56,160 @@ function stadRaam(nacht){return pc(48,32,(c,w,h)=>{const g=c.createLinearGradien
 
 /* =================== LOUNGE SAHARA =================== */
 // hal 20×15 (z 13–28), gang naar achteren (x 1.6–3.8, z 6–13), achterkamer 11×5 (z 1–6)
-BN.add('sahara',{naam:'Lounge Sahara',kleur:'#ff4fd8',w:23,h:29.5,plafond:3.8,hoger:.6,deur:{x:11.1,z:27.5},spawn:{x:11.1,z:25.3,ry:Math.PI},anker:anker('sahara'),ankerId:'sahara',
-  licht:{bg:'#07050a',hemi:'#9a7ac8',grond:'#3a2038',int:1.0,zon:.5,zonKleur:'#c8a0ff',gloed:1,vig:.55,sat:1.22,tint:[1.02,.97,1.06]},cam:{k:.56},
-  bouw(B){const T=B.tex,PLUM='#3a1f3e',GOUD='#d6a63e',NEON='#b45cff',NEON2='#ff4fd8',H=3.8;
-    const wand=T.stuc('#3c2040'),wand2=T.stuc('#2a1a2c'),gangW=T.stuc('#4a2a24'),beton=T.beton('#6a6660'),hout=T.planken('#3a2418'),gangV=T.tapijt('#3a1418'),betonV=T.beton('#4a4844');
-    // vloeren
-    B.vloer(1,13,21,28,hout,2.4);B.vloer(1.6,6,3.8,13,gangV,1);B.vloer(1,1,12,6,betonV,2);
-    // muren hal
-    const wS1=B.muur(.6,28,10,28.35,{h:H,tex:wand}),wS2=B.muur(12.2,28,21.4,28.35,{h:H,tex:wand});{const l=new TH.Mesh(new TH.BoxGeometry(2.2,.9,.35),new TH.MeshLambertMaterial({map:wand}));l.position.set(11.1,H-.45,28.17);B.root.add(l);wS1.extra.push(l)}
-    const wW=B.muur(.6,12.7,1,28.35,{h:H,tex:wand}),wE=B.muur(21,12.7,21.4,28.35,{h:H,tex:wand}),wN1=B.muur(.6,12.7,1.6,13,{h:H,tex:wand}),wN2=B.muur(3.8,12.7,21.4,13,{h:H,tex:wand});
+BN.add('sahara',{naam:'Lounge Sahara',kleur:'#ffb84a',w:26,h:36,plafond:3.6,hoger:.6,deur:{x:13,z:34.6},spawn:{x:13,z:33.6,ry:Math.PI},anker:anker('sahara'),ankerId:'sahara',
+  licht:{bg:'#0a0705',hemi:'#c89a6a',grond:'#3a2418',int:1.0,zon:.45,zonKleur:'#ffc890',gloed:1,vig:.5,sat:1.12,tint:[1.05,.99,.93]},cam:{k:.56},
+  // Shishalounge (geen club): buitendeur met de portier, een sas, de tussendeur met de uitsmijter (Rafiqs beveiliging), dan de lounge:
+  // bar, lage zitjes met waterpijpen, achterin op een verhoging Rafiq met zijn jongens. Links achterin een gang naar de brede achterkamer
+  // (koelkasten, vriezer, snijtafels, geldtafel met draaiende telmachines). Feest (verjaardag Luca): BN.saharaFeest(true).
+  bouw(B){const T=B.tex,GOUD='#c9a227',KOPER='#b8743a',H=3.6;
+    const wand=T.stuc('#6a4632'),wand2=T.stuc('#5a3a2a'),gangW=T.stuc('#4a3a30'),beton=T.beton('#7a7670'),hout=T.planken('#5a3a22'),sasV=T.tegels('#3a2a22','#2a1e18'),gangV=T.tapijt('#3a1a16'),betonV=T.beton('#5a5854');
+    // ===== vloeren en plafonds =====
+    B.vloer(1,13,25,31.2,hout,2.4);B.vloer(10,31.6,16,35.2,sasV,1);B.vloer(1,7,3.4,13,gangV,1);B.vloer(1,1,25,6.8,betonV,2);
+    B.plafond(1,13,25,31.2,H,'#2a1a12');B.plafond(10,31.6,16,35.2,3.0,'#2a1e18');B.plafond(1,7,3.4,13,3.0,'#1e1612');B.plafond(1,1,25,6.8,3.0,'#262624');
+    // ===== buitenmuren =====
+    const wW=B.muur(.6,13,1,31.6,{h:H,tex:wand}),wE=B.muur(25,13,25.4,31.6,{h:H,tex:wand});
+    const wS1=B.muur(.6,31.2,10,31.6,{h:H,tex:wand}),wS2=B.muur(16,31.2,25.4,31.6,{h:H,tex:wand});
+    // sas: twee zijmuren, de buitendeur (zuid) en de tussendeur (noord), allebei 2 m breed op x 12-14
+    const sW=B.muur(9.6,31.2,10,35.6,{h:3.0,tex:wand2}),sE=B.muur(16,31.2,16.4,35.6,{h:3.0,tex:wand2});
+    const sS1=B.muur(9.6,35.2,12,35.6,{h:3.0,tex:wand2}),sS2=B.muur(14,35.2,16.4,35.6,{h:3.0,tex:wand2});
+    const sN1=B.muur(10,31.2,12,31.6,{h:3.0,tex:wand2}),sN2=B.muur(14,31.2,16,31.6,{h:3.0,tex:wand2});
+    {const l=new TH.Mesh(new TH.BoxGeometry(2,.6,.4),new TH.MeshLambertMaterial({map:wand2}));l.position.set(13,2.75,31.4);B.root.add(l);sN1.extra.push(l)}
+    // noordmuur van de lounge met de opening naar de gang (x 1-3.4)
+    const wN=B.muur(3.4,12.6,25.4,13,{h:H,tex:wand});
     // gang en achterkamer
-    const gW=B.muur(1.25,6,1.6,12.7,{h:3.2,tex:gangW}),gE=B.muur(3.8,6.3,4.15,12.7,{h:3.2,tex:gangW});
-    const aN=B.muur(.6,.6,12.4,1,{h:3.2,tex:beton}),aW=B.muur(.6,.6,1,6.3,{h:3.2,tex:beton}),aE=B.muur(12,.6,12.4,6.3,{h:3.2,tex:beton}),aS1=B.muur(.6,6,1.6,6.3,{h:3.2,tex:beton}),aS2=B.muur(3.8,6,12.4,6.3,{h:3.2,tex:beton});
-    B.plafond(1,13,21,28,H,'#1c1020');B.plafond(1.6,6,3.8,13,3.2,'#1a1210');B.plafond(1,1,12,6,3.2,'#1e1e1e');
-    // gouden lijst en neonbuis langs de muren van de hal (hangen aan de muren, zakken mee weg)
-    const strip=(wall,x0,z0,x1,z1)=>{const w=Math.max(.05,x1-x0),d=Math.max(.05,z1-z0);const g=new TH.Mesh(new TH.BoxGeometry(w,.06,d),new TH.MeshBasicMaterial({color:NEON}));g.position.set((x0+x1)/2,H-.25,(z0+z1)/2);B.root.add(g);wall.extra.push(g);
-      const t=new TH.Mesh(new TH.BoxGeometry(w,.1,d),new TH.MeshLambertMaterial({color:GOUD}));t.position.set((x0+x1)/2,2.55,(z0+z1)/2);B.root.add(t);wall.extra.push(t);
-      const l=new TH.Mesh(new TH.BoxGeometry(w,.04,d),new TH.MeshBasicMaterial({color:'#ffd35a'}));l.position.set((x0+x1)/2,.22,(z0+z1)/2);B.root.add(l);wall.extra.push(l)};
-    strip(wW,1,13,1.06,28);strip(wE,20.94,13,21,28);strip(wN2,3.8,12.94,21,13);strip(wS1,1,27.94,10,28);strip(wS2,12.2,27.94,21,28);
-    // bogen (Marokkaanse nissen) op de oostmuur, met een lampje erin
-    for(let z=15;z<26;z+=3.4){const cv=pc(16,24,(c,w,h)=>{R(c,0,0,w,h,'#2a1530');c.fillStyle='#1a0c1e';c.beginPath();c.moveTo(2,h);c.lineTo(2,9);c.arc(8,9,6,Math.PI,0);c.lineTo(14,h);c.fill();c.strokeStyle='#d6a63e';c.lineWidth=1;c.beginPath();c.moveTo(1.5,h);c.lineTo(1.5,9);c.arc(8,9,6.5,Math.PI,0);c.lineTo(14.5,h);c.stroke();R(c,7,10,2,3,'#ffb84a')});
-      B.plaat(cv,1.3,1.95,20.95,1.55,z,-Math.PI/2,{muur:wE})}
+    const gE=B.muur(3.4,6.8,3.8,12.6,{h:3.0,tex:gangW}),gW=B.muur(.6,6.8,1,12.6,{h:3.0,tex:gangW});
+    const aN=B.muur(.6,.6,25.4,1,{h:3.0,tex:beton}),aW=B.muur(.6,.6,1,6.8,{h:3.0,tex:beton}),aE=B.muur(25,.6,25.4,6.8,{h:3.0,tex:beton}),aS=B.muur(3.8,6.4,25.4,6.8,{h:3.0,tex:beton});
+    // ===== de sas: tegels, een spiegel, jassenrek, de tussendeur staat open =====
+    B.meubel(F.deur(1.8,2.4,'#3a2414',GOUD),13,35.3);
+    B.meubel([[.06,1.9,.06,0,.95,0,'#2a2018'],[.5,.04,.04,0,1.85,0,'#2a2018'],[.36,.6,.14,-.1,1.4,.06,'#3a3a40'],[.34,.56,.14,.14,1.38,.08,'#6a2a2a']],10.4,33.2,Math.PI/2);
+    B.plaat(pc(20,32,(c,w,h)=>{R(c,0,0,w,h,GOUD);R(c,1,1,w-2,h-2,'#8a9aaa');R(c,3,4,6,10,'#b8c8d8')}),.8,1.3,15.9,1.6,33.4,-Math.PI/2,{muur:sE});
+    B.meubel([[.1,2.4,.16,-1.05,1.2,0,'#3a2414'],[.1,2.4,.16,1.05,1.2,0,'#3a2414'],[2.2,.14,.16,0,2.45,0,'#3a2414'],[.9,2.3,.06,-.6,1.15,-.42,'#4a2e1c',0,1.1],[.05,.05,.06,-.25,1.1,-.8,GOUD,0,1.1]],13,31.4);
+    B.licht(13,2.6,33.4,'#ffc890',2.0,4.5);
+    // de uitsmijter bij de tussendeur (binnenkant), Rafiqs beveiliging
+    B.persoon(C_LOOK('tarik','uitsmijter'),{x:14.7,z:30.3,ry:Math.PI*1.1,anim:'armen',naam:'uitsmijter'});
     // ===== bar langs de westmuur =====
-    const zell=T.zellige('#1f6a6a','#e8e4da','#d6a63e');
-    const front=new TH.Mesh(new TH.BoxGeometry(.12,1.05,9.2),new TH.MeshLambertMaterial({map:zell}));front.position.set(3.32,.56,19.2);B.root.add(front);
-    zell.repeat&&0;B.box(1.0,1.0,9.2,2.8,.5,19.2,'#2a1810');B.box(1.25,.08,9.5,2.85,1.08,19.2,'#5a3a22');B.box(1.27,.03,9.52,2.85,1.125,19.2,'#7a5232');
-    B.box(.06,.06,9.3,3.5,.25,19.2,GOUD);B.solid(2.2,14.5,3.5,23.9);
-    B.box(.04,.04,9.2,3.38,1.0,19.2,NEON2,1);
-    // tappen en spullen op de bar
-    [16,17.4,21,22.6].forEach((z,i)=>B.meubel([[.1,.4,.1,0,1.32,0,'#c9cfd6'],[.24,.06,.1,0,1.5,.06,'#c9cfd6'],[.06,.16,.06,0,1.58,.1,i%2?'#ffd35a':'#e8e4da']],2.6,z));
-    B.meubel([[.3,.22,.24,0,1.24,0,'#1a1a1c'],[.24,.12,.02,0,1.3,.13,'#3fe395',1]],2.7,24.1);   // kassa
-    [[3.0,18.2,'#ffd35a'],[3.1,20.3,'#ff6a5a'],[2.9,22.2,'#7fd1ff']].forEach(([x,z,c])=>B.box(.1,.14,.1,x,1.2,z,c,1));
-    // achterbar: planken met flessen en een paarse gloed erachter
-    B.box(.34,2.4,9.2,1.18,1.6,19.2,'#1a0e1c');
-    const flesK=['#3a8a4a','#c9a227','#8a2a2a','#e8e4da','#4a6aaa','#d6862a','#2a5a3a','#b45cff'];
-    [1.35,1.95,2.55].forEach((y,i)=>{B.meubel(F.plank(9,y,.4,'#5a3a22'),1.35,19.2,Math.PI/2);B.meubel(F.flessen(8.6,y+.02,0,flesK.slice(i)),1.32,19.2,Math.PI/2)});
-    B.box(.04,.06,9.2,1.52,1.3,19.2,NEON,1);B.box(.04,.06,9.2,1.52,1.9,19.2,NEON,1);B.box(.04,.06,9.2,1.52,2.5,19.2,NEON,1);
-    const sah=B.plaat(neonTekst('SAHARA',128,32,'#ffe08a','#ff9a2a'),3.4,.85,1.08,3.05,19.2,Math.PI/2,{glow:1,alpha:1,muur:wW});
-    B.licht(2.2,2.6,17,'#b45cff',5,7,{puls:2.1});B.licht(2.2,2.6,21.5,'#ff6ad8',4,7,{puls:1.7});
-    // barkrukken
-    for(let z=15.2;z<24;z+=1.15)B.meubel(F.kruk('#7a2a3a','#c9a227'),3.95,z);
-    // ===== lage banken langs de oostmuur en de noordmuur, met tapijten, tafeltjes en waterpijpen =====
-    const banken=[[19.9,15.2,-Math.PI/2,3.4],[19.9,19.3,-Math.PI/2,3.4],[19.9,23.4,-Math.PI/2,3.4]];
-    banken.forEach(([x,z,ry,w],i)=>{B.meubel(F.bankLaag(w,'#2a1810',i%2?'#7a1f3a':'#5a1a4a','#3a1430',i%2?GOUD:'#c0602a'),x,z,ry,{solid:[w,.95]});});
-    const rugs=[[17.6,15.2,0],[17.6,19.3,0],[17.6,23.4,0],[17.4,15.6,Math.PI/2]];
-    rugs.slice(0,3).forEach(([x,z],i)=>{const m=B.plaat(rugCanvas(['#7a1a22','#5a1a4a','#1f4a5a'][i],'#d6a63e','#c0602a','#e8e4da'),2.4,3.6,x,.02,z,0);m.rotation.x=-Math.PI/2;m.rotation.z=Math.PI/2});
-    const tafels=[[17.7,15.2],[17.7,19.3],[17.7,23.4]];
-    tafels.forEach(([x,z],i)=>{B.meubel(F.rondtafel(.5,.42,'#b8862a','#5a3a1a'),x,z);B.solid(x-.5,z-.5,x+.5,z+.5);
-      B.meubel(F.waterpijp(['#1f8a8a','#8a2a6a','#2a6a3a'][i],'#c9a227','#ff6a1a'),x+.1,z-.1);B.rook(x+.1,1.1,z-.1,{rate:.9,size:.35,rise:.35,life:2.6,kleur:'#cfc8e8'});
-      B.meubel([[.14,.12,.14,-.25,.48,.2,'#e8e4da'],[.1,.02,.1,-.25,.55,.2,'#6a3a1a'],[.18,.02,.12,.25,.43,.25,'#c9cfd6']],x,z);
-      B.plek('tafel'+(i+1),x,.44,z)});
-    // rokers (met een wolkje als ze uitblazen)
-    const rokers=[[19.6,14.5,-Math.PI/2],[19.6,16.1,-Math.PI/2],[19.6,18.6,-Math.PI/2],[19.6,20.2,-Math.PI/2],[19.6,23.0,-Math.PI/2],[19.6,24.3,-Math.PI/2]];
-    rokers.forEach(([x,z,ry],i)=>{const e=B.rook(x,1.5,z,{rate:0,acc:0,kleur:'#e0dcf0',life:2.8,rise:.45,spread:.5,size:.55,alpha:.6});
-      B.persoon(null,{x,z,ry,anim:i%3===1?'tv':'rook',sitY:-.62,naam:'roker'+i,onPuff:a=>{e.x=a.x-B.o.x+Math.sin(a.ry)*.45;e.z=a.z-B.o.z+Math.cos(a.ry)*.45;e.y=1.55;e.rate=16;setTimeout(()=>{e.rate=0},500)}})});
-    // ===== groot scherm met voetbal (noordmuur) en banken ervoor =====
-    const vb=voetbal();const tvM=B.plaat(vb.cv,4.4,2.48,8.8,2.15,13.06,0,{glow:1,muur:wN2});B.meubel([[4.6,2.66,.08,0,0,0,'#0c0c0e']],8.8,13.02);
-    const tvRand=new TH.Mesh(new TH.BoxGeometry(4.64,2.7,.06),new TH.MeshLambertMaterial({color:'#0c0c0e'}));tvRand.position.set(8.8,2.15,13.0);B.root.add(tvRand);wN2.extra.push(tvRand);
-    let vbT=0;B.tick(dt=>{vbT+=dt;if(vbT>.12){vb.draw(vbT);vbT=0;tvM.material.map.needsUpdate=true}});
-    B.licht(8.8,1.8,14.4,'#5aa86a',2.2,5);
-    B.meubel(F.bankLaag(3.2,'#2a1810','#4a1a3a','#2a1028',GOUD),8.2,16.6,Math.PI,{solid:[3.2,.95]});
-    [[7.2,16.4],[8.4,16.5],[9.5,16.4]].forEach(([x,z],i)=>B.persoon(null,{x,z,ry:Math.PI,anim:i===1?'juich':'tv',sitY:-.6,naam:'kijker'+i}));
-    // ===== DJ-hoek (noordoost, op een verhoging) =====
-    B.box(4.2,.3,2.2,15.9,.15,14.2,'#1a1418');B.box(4.2,.04,.04,15.9,.31,15.3,NEON2,1);B.solid(13.8,13,18,15.3);
-    B.meubel([[2.2,1.05,.6,0,.83,0,'#141218'],[2.2,.05,.62,0,1.37,0,'#2a2430'],[2.16,.04,.02,0,.7,.31,NEON,1],[.4,.04,.4,-.6,1.41,0,'#0a0a0c'],[.4,.04,.4,.6,1.41,0,'#0a0a0c'],[.1,.05,.1,-.6,1.44,0,'#c9cfd6'],[.1,.05,.1,.6,1.44,0,'#c9cfd6'],[.5,.06,.3,0,1.42,.05,'#2a2c30'],[.42,.02,.24,0,1.46,.05,'#3fe395',1],[.36,.24,.02,0,1.6,-.12,'#7fd1ff',1]],15.9,14.7);
-    B.meubel(F.speaker(1.8),13.9,13.6);B.meubel(F.speaker(1.8),17.9,13.6);
-    B.persoon(null,{x:15.9,z:14.05,ry:0,anim:'dj',naam:'dj',y:.3});
-    const djL=B.licht(15.9,3.2,15.6,'#ff4fd8',6,9,{puls:4.4});
-    // lichtbalk met gekleurde spots boven de dansvloer
-    B.box(6,.08,.08,11.5,3.5,20.5,'#1a1a1c');[[9.5,'#ff4fd8'],[11.5,'#7fd1ff'],[13.5,'#ffd35a']].forEach(([x,c])=>B.box(.2,.2,.2,x,3.38,20.5,c,1));
-    // dansvloer: lichtvlekken die bewegen
-    const vlek=[];['#ff4fd8','#7fd1ff','#ffd35a','#b45cff'].forEach((c,i)=>{const m=new TH.Mesh(new TH.PlaneGeometry(1.4,1.4),new TH.MeshBasicMaterial({color:c,transparent:true,opacity:.22,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(11.5,.03,21);B.root.add(m);vlek.push(m)});
-    B.tick((dt,t)=>{vlek.forEach((m,i)=>{m.position.x=11.5+Math.sin(t*.7+i*1.6)*2.6;m.position.z=21+Math.cos(t*.9+i*2.1)*2.0;m.material.opacity=.16+.1*Math.sin(t*3+i)})});
-    [[10.4,20.2,'dans'],[12.3,21.4,'dans2'],[11.0,22.6,'dans'],[13.4,20.4,'dans'],[9.6,22.0,'dans2']].forEach(([x,z,a],i)=>B.persoon(null,{x,z,ry:Math.random()*6,anim:a,naam:'danser'+i,v:i%2===0}));
-    B.licht(11.5,3.2,21,'#b45cff',5,9,{puls:3.3});
-    // kaarttafel (zuidwest) en een paar staande gasten
-    B.meubel(F.tafel(1.2,1.2,.76,'#3a2418','#1a1410'),6.2,25.1);B.solid(5.6,24.5,6.8,25.7);
-    B.meubel([[.5,.01,.3,0,.795,0,'#1f6a3a'],[.08,.01,.12,-.3,.8,-.2,'#e8e4da'],[.08,.01,.12,.25,.8,.25,'#e8e4da'],[.08,.01,.12,.3,.8,-.28,'#c0261e'],[.18,.04,.12,0,.81,.1,'#c9a227']],6.2,25.1);
-    [[6.2,24.2,0],[7.1,25.1,-Math.PI/2],[5.3,25.1,Math.PI/2]].forEach(([x,z,ry],i)=>{B.meubel(F.stoel('#3a2418'),x+(x-6.2)*.12,z+(z-25.1)*.12,ry);B.persoon(null,{x,z,ry:ry,anim:'kaart',sitY:-.42,naam:'kaarter'+i})});
-    B.persoon(null,{x:4.6,z:16.2,ry:-Math.PI/2,anim:'leun',naam:'gast1'});B.persoon(null,{x:4.4,z:21.7,ry:-Math.PI/2,anim:'talk',naam:'gast2',v:true});
-    B.persoon(null,{x:1.95,z:18.4,ry:Math.PI/2,anim:'bar',naam:'barman'});
-    // uitsmijter bij de deur (binnen) en planten, lantaarns
-    B.persoon('uitsmijter',{x:13.2,z:26.6,ry:Math.PI*1.15,anim:'armen',naam:'uitsmijter'});
-    [[1.6,27.3],[20.4,27.3]].forEach(([x,z])=>{B.meubel(F.plant('#6a3a2a','#2f6e3a'),x,z);B.solid(x-.25,z-.25,x+.25,z+.25)});
-    [[17.6,15.2],[17.6,19.3],[17.6,23.4],[6.2,25.1],[8.5,17.2]].forEach(([x,z],i)=>{B.meubel(F.lantaarn(2.5,'#c9a227',i%2?'#a8602a':'#9a4a22'),x,z);B.licht(x,2.4,z,i%2?'#ffb070':'#ff9a50',1.5,5)});
-    // de deur (binnenkant) met een rood gordijn
-    B.meubel(F.deur(1.6,2.5,'#3a2014','#d6a63e'),11.1,28.0);B.meubel([[.08,2.9,.08,-1.2,1.45,0,'#c9a227'],[.08,2.9,.08,1.2,1.45,0,'#c9a227'],[.6,2.6,.06,-.95,1.4,-.06,'#7a1a22'],[.6,2.6,.06,.95,1.4,-.06,'#7a1a22']],11.1,27.75);
-    B.licht(11.1,3.0,26.5,'#ffc890',2.2,5);
-    // ===== de gang: foto's van boksers, dimmer licht, de muziek zakt weg =====
-    for(let i=0;i<4;i++){const z=7.2+i*1.5;B.plaat(bokser(i*3+1),.62,.82,1.62,1.75,z,Math.PI/2,{muur:gW});B.plaat(bokser(i*3+2),.62,.82,3.78,1.75,z+.6,-Math.PI/2,{muur:gE});
-      B.box(.03,.9,.7,1.6,1.75,z,'#2a1a10');B.box(.03,.9,.7,3.8,1.75,z+.6,'#2a1a10')}
-    B.meubel([[.05,.05,.05,0,3.0,0,'#1a1714'],[.18,.12,.18,0,2.88,0,'#ffd98a',1]],2.7,8.2);B.meubel([[.05,.05,.05,0,3.0,0,'#1a1714'],[.18,.12,.18,0,2.88,0,'#ffd98a',1]],2.7,11.2);
-    B.licht(2.7,2.7,8.2,'#ffc070',1.6,4.5,{flik:1});B.licht(2.7,2.7,11.2,'#ffc070',1.4,4.5);
-    B.box(.9,1.6,.4,2.0,.8,7.0,'#5a5048');B.solid(1.6,6.8,2.45,7.2); // meterkast
-    // de deur naar de achterkamer: muurstukken naast en boven de deur (geen kier meer), de deur staat open naar binnen
-    B.muur(1.6,6,2.04,6.3,{h:3.2,tex:gangW});B.muur(3.36,6,3.8,6.3,{h:3.2,tex:gangW});{const l=new TH.Mesh(new TH.BoxGeometry(1.32,.78,.3),new TH.MeshLambertMaterial({map:gangW}));l.position.set(2.7,2.81,6.15);B.root.add(l);aS2.extra.push(l)}
-    B.meubel([[1.42,.12,.18,0,2.36,0,'#3a2a1a'],[.1,2.36,.18,-.66,1.18,0,'#3a2a1a'],[.1,2.36,.18,.66,1.18,0,'#3a2a1a'],
-      [1.2,2.3,.06,-.47,1.15,-.59,'#4a3a2a',0,1.35],[.05,.05,.08,-.38,1.12,-.98,'#c9cfd6',0,1.35]],2.7,6.15);
-    // ===== achterkamer: tafel vol geld, telmachine, dozen =====
-    B.meubel(F.tafel(3.8,1.6,.8,'#4a4440','#2a2420'),6.4,3.4);B.solid(4.5,2.6,8.3,4.2);
-    const geld=[];for(let i=0;i<22;i++){const x=-1.6+((i*7)%11)*.3,z=-.55+((i*5)%4)*.33,h=.06+((i*13)%5)*.04;geld.push([.26,h,.13,x,.8+h/2,z,i%4?'#6a9a5a':'#b0a0d0'],[.27,.012,.035,x,.8+h-.002,z,'#c9a227'])}
-    B.meubel(geld,6.4,3.4);
-    B.meubel([[.5,.32,.4,0,.96,0,'#2a2c30'],[.46,.04,.3,0,1.13,-.02,'#3a3d44'],[.3,.06,.02,0,1.0,.21,'#3fe395',1],[.3,.08,.14,0,1.17,.12,'#6a9a5a']],7.6,3.1);
-    const telBriefjes=[];for(let i=0;i<4;i++){const m=new TH.Mesh(new TH.BoxGeometry(.24,.008,.12),new TH.MeshLambertMaterial({color:'#7aaa6a'}));m.position.set(7.6,1.18,3.2);B.root.add(m);telBriefjes.push(m)}
-    let ratel=0;B.tick((dt,t)=>{telBriefjes.forEach((m,i)=>{const k=((t*6+i/4)%1);m.position.z=3.25-k*.35;m.position.y=1.2-k*.12+Math.sin(k*Math.PI)*.02});
-      const p=G.P;if(Math.hypot(p.x-(B.o.x+7.6),p.z-(B.o.z+3.1))<5.5){ratel+=dt;if(ratel>.09){ratel=0;G.snd&&G.snd.fx('click')}}});
-    [[4.4,3.4,Math.PI/2],[8.4,3.4,-Math.PI/2],[6.4,2.3,0]].forEach(([x,z,ry])=>B.meubel(F.stoel('#2a2c30','#16161a'),x,z,ry));
-    [[5.5,4.3,Math.PI],[7.4,4.3,Math.PI]].forEach(([x,z,ry],i)=>{B.meubel(F.stoel('#2a2c30','#16161a'),x,z+.1,ry);B.persoon(null,{x,z,ry,anim:'tel',sitY:-.42,naam:'teller'+i})});
-    B.persoon(null,{x:10.9,z:5.2,ry:Math.PI*1.25,anim:'armen',naam:'bewaker'});
-    // dozen die je niet hoort te zien
-    [[10.6,1.6,0],[11.3,1.6,0],[10.95,1.6,.62],[10.6,2.45,0],[11.3,2.45,0],[9.6,1.6,0]].forEach(([x,z,y],i)=>B.meubel(F.doos(.7,.6,.7,i%2?'#a07a4a':'#8a6a3e'),x,z+0,0));
-    B.meubel([[.7,.6,.7,0,.9,0,'#a07a4a']],10.95,1.6);B.solid(9.2,1.1,11.9,2.9);
-    B.meubel([[.9,1.2,.8,0,.6,0,'#3a3d44'],[.7,.9,.02,0,.62,.41,'#4a4d54'],[.12,.12,.04,.2,.7,.43,'#c9cfd6']],1.6,1.6);B.solid(1.1,1.1,2.1,2.1);  // kluis
-    B.meubel([[.06,.6,.06,0,2.9,0,'#1a1714'],[.7,.3,.7,0,2.5,0,'#2a2c30'],[.5,.04,.5,0,2.34,0,'#ffe0a0',1]],6.4,3.4);
-    B.licht(6.4,2.2,3.4,'#ffd8a0',7,7.5);B.licht(10.5,2.6,2,'#c8d0ff',1,5);
-    B.plek('tafel_achter',6.4,.81,4.0);B.plek('bar',3.0,1.14,17.2);B.plek('bar2',3.0,1.14,19.8);
-    // muziek: zachter in de gang en de achterkamer
-    B.tick(()=>{try{const z=G.P.z-B.o.z;G.snd&&G.snd.busk&&0}catch(e){}});
+    const zell=T.zellige('#1f5a5a','#e8e4da',GOUD);
+    const front=new TH.Mesh(new TH.BoxGeometry(.12,1.05,9.6),new TH.MeshLambertMaterial({map:zell}));front.position.set(3.42,.56,21);B.root.add(front);
+    B.box(1.1,1.0,9.6,2.9,.5,21,'#3a2414');B.box(1.35,.08,9.9,2.95,1.08,21,'#7a5232');B.box(.06,.06,9.7,3.55,.25,21,GOUD);B.solid(2.3,16.1,3.6,25.9);
+    // thee- en waterpijpstation: koperen samovar, theeglazen, muntblaadjes, een koelkast met drankjes (glazen deur, licht)
+    B.meubel([[.36,.5,.36,0,1.37,0,KOPER],[.24,.1,.24,0,1.67,0,KOPER],[.06,.14,.06,.2,1.3,0,KOPER],[.4,.05,.4,0,1.13,0,'#5a3a22']],2.8,17.2);
+    for(let i=0;i<6;i++)B.box(.08,.1,.08,3.0,1.17,18.1+i*.22,i%2?'#d8a64a':'#e8c060',1);
+    B.meubel([[.3,.06,.24,0,1.15,0,'#2f6e3a'],[.1,.05,.1,.06,1.2,.04,'#3f8a4a']],3.0,19.9);
+    B.meubel([[1.0,2.0,.7,0,1.0,0,'#c9cfd6'],[.86,1.8,.02,0,1.02,.36,'#7aa0b8',1],[.84,.04,.5,0,.6,.1,'#e8e4da'],[.84,.04,.5,0,1.1,.1,'#e8e4da'],[.84,.04,.5,0,1.6,.1,'#e8e4da'],
+      [.12,.22,.1,-.25,.74,.15,'#c0392b'],[.12,.22,.1,0,.74,.15,'#e8b923'],[.12,.22,.1,.25,.74,.15,'#3fe395'],[.12,.22,.1,-.2,1.24,.15,'#2e5f9a'],[.12,.22,.1,.15,1.24,.15,'#e8e4da']],1.5,24.8,Math.PI/2);
+    B.licht(2.2,1.2,24.8,'#bfe0ff',.8,3);
+    // achterbar: houten planken met potten, glazen en een grote spiegel met het logo
+    B.box(.34,2.4,7.2,1.18,1.6,20.2,'#2a1810');
+    [1.4,2.0,2.6].forEach((y,i)=>{B.meubel(F.plank(7,y,.4,'#6a4228'),1.35,20.2,Math.PI/2);B.meubel(F.flessen(6.6,y+.02,0,['#e8e4da','#c9a227','#8a2a2a','#3a8a4a','#d6862a'].slice(i)),1.32,20.2,Math.PI/2)});
+    B.plaat(neonTekst('SAHARA',128,32,'#ffe0a0','#ff9a2a'),3.2,.8,1.08,3.1,20.2,Math.PI/2,{glow:1,alpha:1,muur:wW});
+    B.licht(2.2,2.7,18,'#ffb070',3.2,7);B.licht(2.2,2.7,23.5,'#ffb070',2.8,7);
+    for(let z=16.6;z<25.6;z+=1.2)B.meubel(F.kruk('#5a2a1a',KOPER),4.05,z);
+    B.persoon(null,{x:1.95,z:19.0,ry:Math.PI/2,anim:'bar',naam:'barman'});
+    B.plek('bar',3.0,1.14,19.2);B.plek('bar2',3.0,1.14,22.4);
+    // ===== Marokkaanse nissen met lampjes op de oostmuur, tapijten, lantaarns =====
+    for(let z=19;z<30;z+=3.4){const cv=pc(16,24,(c,w,h)=>{R(c,0,0,w,h,'#4a2a1c');c.fillStyle='#2a160e';c.beginPath();c.moveTo(2,h);c.lineTo(2,9);c.arc(8,9,6,Math.PI,0);c.lineTo(14,h);c.fill();c.strokeStyle=GOUD;c.lineWidth=1;c.beginPath();c.moveTo(1.5,h);c.lineTo(1.5,9);c.arc(8,9,6.5,Math.PI,0);c.lineTo(14.5,h);c.stroke();R(c,7,14,2,3,'#ffcf7a')});
+      B.plaat(cv,1.3,1.95,24.95,1.6,z,-Math.PI/2,{muur:wE})}
+    // ===== zitjes met waterpijpen: drie hoekbanken langs de oostmuur en twee eilanden met poefs in het midden =====
+    const zit=(x,z,ry,w,i)=>B.meubel(F.bankLaag(w,'#3a2414',['#7a1f2a','#5a3a1a','#1f4a4a'][i%3],'#2a1810',[GOUD,'#c0602a','#e8e4da'][i%3]),x,z,ry,{solid:[w,.95]});
+    const tafeltje=(x,z,i,rook)=>{B.meubel(F.rondtafel(.45,.42,KOPER,'#4a2e1c'),x,z);B.solid(x-.45,z-.45,x+.45,z+.45);
+      B.meubel(F.waterpijp(['#1f8a8a','#8a2a6a','#2a6a3a','#c9a227'][i%4],GOUD,'#ff6a1a'),x+.1,z-.1);if(rook)B.rook(x+.1,1.1,z-.1,{rate:.8,size:.35,rise:.35,life:2.6,kleur:'#e8dcc8'});
+      B.meubel([[.12,.12,.12,-.22,.48,.18,'#d8a64a',1],[.12,.12,.12,.22,.48,.2,'#d8a64a',1],[.2,.02,.14,0,.43,-.24,'#c9cfd6']],x,z)};
+    [[23.9,19.6],[23.9,23.6],[23.9,27.6]].forEach(([x,z],i)=>{zit(x,z,-Math.PI/2,3.2,i);tafeltje(21.9,z,i,true);
+      const m=B.plaat(rugCanvas(['#7a1a22','#5a1a4a','#1f4a5a'][i],GOUD,'#c0602a','#e8e4da'),2.2,3.4,21.9,.02,z,0);m.rotation.x=-Math.PI/2;m.rotation.z=Math.PI/2});
+    [[11,20.5],[11,26.5]].forEach(([x,z],i)=>{zit(x-1.5,z,Math.PI/2,2.4,i+1);zit(x+1.5,z,-Math.PI/2,2.4,i+2);tafeltje(x,z,i+1,true);
+      [[x,z-1.2],[x,z+1.2]].forEach(([a,b])=>B.meubel([[.5,.36,.5,0,.18,0,i?'#7a3a1a':'#5a1a2a'],[.46,.04,.46,0,.37,0,GOUD]],a,b));
+      const m=B.plaat(rugCanvas(['#5a1a4a','#7a1a22'][i],GOUD,'#c0602a','#e8e4da'),3.6,3.6,x,.02,z,0);m.rotation.x=-Math.PI/2});
+    // gasten die roken (een wolkje als ze uitblazen) en een paar die praten
+    const gasten=[[24.0,18.9,-Math.PI/2,'rook'],[24.0,20.3,-Math.PI/2,'tv'],[24.0,23.0,-Math.PI/2,'rook'],[24.0,27.0,-Math.PI/2,'talk'],[24.0,28.3,-Math.PI/2,'rook'],
+      [9.6,20.0,Math.PI/2,'rook'],[12.4,21.0,-Math.PI/2,'talk'],[9.6,26.9,Math.PI/2,'tv'],[12.4,26.1,-Math.PI/2,'rook']];
+    gasten.forEach(([x,z,ry,a],i)=>{const e=a==='rook'?B.rook(x,1.5,z,{rate:0,acc:0,kleur:'#ece4d4',life:2.8,rise:.45,spread:.5,size:.55,alpha:.6}):null;
+      B.persoon(null,{x,z,ry,anim:a,sitY:-.62,naam:'gast'+i,v:i%3===1,onPuff:e?(p=>{e.x=p.x-B.o.x+Math.sin(p.ry)*.45;e.z=p.z-B.o.z+Math.cos(p.ry)*.45;e.y=1.55;e.rate=16;setTimeout(()=>{e.rate=0},500)}):null})});
+    // ===== tv met voetbal (noordmuur, midden), rustig =====
+    const vb=voetbal();const tvM=B.plaat(vb.cv,3.6,2.0,11,2.05,13.06,0,{glow:1,muur:wN});const tvRand=new TH.Mesh(new TH.BoxGeometry(3.8,2.16,.06),new TH.MeshLambertMaterial({color:'#0c0c0e'}));tvRand.position.set(11,2.05,13.0);B.root.add(tvRand);wN.extra.push(tvRand);
+    let vbT=0;B.tick(dt=>{vbT+=dt;if(vbT>.14){vb.draw(vbT);vbT=0;tvM.material.map.needsUpdate=true}});B.licht(11,1.6,14.2,'#7aa86a',1.4,5);
+    // ===== Rafiqs hoek: verhoging achterin (oost), U-bank, laag tafeltje met thee, zijn telefoon, zijn jongens =====
+    B.box(8.2,.24,4.6,21.0,.12,15.3,'#2a1810');B.box(8.2,.03,.06,21.0,.25,17.6,GOUD);B.solid(16.9,13,25,17.0);
+    B.meubel(F.bankLaag(7.6,'#1a1210','#4a1418','#140c0a',GOUD),21.0,13.75,0);
+    B.meubel(F.bankLaag(3.2,'#1a1210','#4a1418','#140c0a',GOUD),24.45,15.5,-Math.PI/2);
+    B.meubel([[2.4,.3,1.2,0,.39,0,'#3a2414'],[2.5,.04,1.3,0,.56,0,KOPER],[.5,.06,.3,-.6,.6,.1,'#c9cfd6'],[.12,.12,.12,.4,.64,-.2,'#d8a64a',1],[.12,.12,.12,.65,.64,.05,'#d8a64a',1],[.14,.02,.26,-.2,.59,.3,'#16161a'],[.1,.02,.18,-.2,.6,.3,'#3fe395',1]],21.4,15.4);
+    B.meubel(F.waterpijp('#c9a227',GOUD,'#ff6a1a'),20.0,15.3);B.rook(20.0,1.3,15.3,{rate:.7,size:.38,rise:.38,life:2.8,kleur:'#e8dcc8'});
+    B.meubel(F.lantaarn(2.6,GOUD,'#a8602a'),17.4,13.6);B.licht(21,2.6,15.2,'#ffb060',3.0,6);B.licht(17.4,2.3,13.8,'#ff9a50',1.4,4);
+    // de jongens van Rafiq (op de bank); Rafiq zelf zet het verhaal neer (acteur 'rafiq'), zijn vaste plek is 'rafiq'
+    [[18.6,13.9,0,'rook','jongen1'],[19.8,13.9,0,'tv','jongen2'],[24.45,16.4,-Math.PI/2,'rook','jongen3']].forEach(([x,z,ry,a,n],i)=>{const e=a==='rook'?B.rook(x,1.6,z,{rate:0,acc:0,kleur:'#ece4d4',life:2.8,rise:.45,spread:.5,size:.55,alpha:.6}):null;
+      B.persoon(null,{x,z,ry,anim:a,sitY:-.38,naam:n,y:.24,onPuff:e?(p=>{e.x=p.x-B.o.x+Math.sin(p.ry)*.45;e.z=p.z-B.o.z+Math.cos(p.ry)*.45;e.y=1.8;e.rate=16;setTimeout(()=>{e.rate=0},500)}):null})});
+    B.plek('rafiq',21.4,.24,13.9,0);B.plek('luca_stoel',21.4,.24,16.9,Math.PI);B.plek('rafiq_tafel',21.4,.56,15.4);
+    // ===== lantaarns, planten, en een paar kleurige lampen hoog =====
+    [[1.7,30.4],[24.3,30.6],[8.2,14],[15.6,14]].forEach(([x,z])=>{B.meubel(F.plant('#7a4a2a','#2f6e3a'),x,z);B.solid(x-.25,z-.25,x+.25,z+.25)});
+    [[21.9,19.6],[21.9,23.6],[21.9,27.6],[11,20.5],[11,26.5]].forEach(([x,z],i)=>{B.meubel(F.lantaarn(2.6,GOUD,i%2?'#a8602a':'#c0702a'),x,z);B.licht(x,2.4,z,i%2?'#ffb070':'#ff9a50',1.5,5)});
+    B.licht(13,3.0,29.6,'#ffc890',1.8,5);B.licht(6.5,3.0,22,'#ffb070',1.4,6);
+    B.plek('deur_binnen',13,0,30.4,Math.PI);B.plek('lounge',13,0,23,0);B.plek('dansvloer',6.5,0,22,0);
+    // ===== de gang: foto's van boksers en Marokko, dimmer licht =====
+    for(let i=0;i<3;i++){const z=8.0+i*1.6;B.plaat(bokser(i*3+1),.62,.82,1.02,1.75,z,Math.PI/2,{muur:gW});B.plaat(bokser(i*3+2),.62,.82,3.38,1.75,z+.7,-Math.PI/2,{muur:gE})}
+    B.meubel([[.05,.05,.05,0,2.95,0,'#1a1714'],[.18,.12,.18,0,2.82,0,'#ffd98a',1]],2.2,9.4);B.licht(2.2,2.6,9.4,'#ffc070',1.4,4.5,{flik:1});
+    B.plek('gang',2.2,0,10.2,0);
+    // deur naar de achterkamer (open), in de opening x 1-3.4
+    B.meubel([[2.4,.12,.18,0,2.36,0,'#3a2a1a'],[.1,2.36,.18,-1.15,1.18,0,'#4a4d54'],[.1,2.36,.18,1.15,1.18,0,'#4a4d54'],[1.0,2.3,.06,-.66,1.15,-.5,'#5a5d63',0,1.4],[.05,.05,.08,-.3,1.12,-.92,'#c9cfd6',0,1.4]],2.2,6.8);
+    // ===== de achterkamer: breed, koud tl-licht =====
+    // koelkasten en een vriezer langs de noordmuur
+    [3.2,4.4,5.6].forEach((x,i)=>{B.meubel([[1.1,2.1,.8,0,1.05,0,'#d8dce0'],[.02,1.9,.02,.3,1.05,.41,'#9aa1a9'],[.05,.4,.05,.42,1.3,.43,'#6a6d73'],[1.0,.05,.02,0,1.45,.41,'#b8bcc2']],x,1.5);B.solid(x-.55,1,x+.55,1.95)});
+    B.meubel([[2.0,.95,1.0,0,.475,0,'#e8ecf0'],[2.02,.08,1.02,0,.99,0,'#c9cfd6'],[.4,.06,.06,0,.8,.52,'#6a6d73'],[.5,.1,.02,-.6,.7,.51,'#3fe395',1]],8.0,1.6);B.solid(7,1.1,9,2.1);B.plek('vriezer',8.0,1.0,2.4);
+    B.plek('koelkast',4.4,0,2.4);
+    // twee snijtafels: blokken, hoopjes wit poeder, weegschaaltjes, zakjes, maskers en handschoenen
+    const snij=(x,z)=>{B.meubel(F.tafel(3.0,1.2,.86,'#c9cfd6','#6a6d73'),x,z);B.solid(x-1.5,z-.6,x+1.5,z+.6);const b=[];
+      for(let i=0;i<5;i++)b.push([.3,.1,.2,-1.1+i*.28,.95,-.32,'#f1efe9'],[.31,.012,.21,-1.1+i*.28,1.0,-.32,'#c9cfd6']);
+      [[-.5,.1],[.3,.05],[.9,.2]].forEach(([a,c])=>b.push([.5,.06,.4,a,.92,c,'#f6f4f0'],[.36,.04,.28,a,.95,c,'#ffffff']));
+      b.push([.28,.06,.22,1.2,.92,-.2,'#2a2c30'],[.2,.01,.14,1.2,.96,-.2,'#3fe395',1],[.12,.02,.12,-.2,.9,.35,'#e8e4da'],[.12,.02,.12,0,.9,.38,'#e8e4da'],[.12,.02,.12,.2,.9,.35,'#e8e4da'],[.1,.02,.3,.6,.9,-.1,'#c9cfd6']);
+      B.meubel(b,x,z)};
+    snij(7.0,4.4);snij(12.0,4.4);B.plek('snijtafel',9.5,.9,4.4);
+    [[6.2,5.3,Math.PI],[7.8,5.3,Math.PI],[11.2,5.3,Math.PI],[12.8,5.3,Math.PI]].forEach(([x,z,ry],i)=>{B.meubel(F.kruk('#2a2c30','#6a6d73'),x,z+.2);B.persoon(null,{x,z,ry,anim:'tel',sitY:-.3,naam:'snijder'+i})});
+    // de geldtafel met twee telmachines die echt tellen (biljetten vliegen erdoor), stapels geld, elastiekjes
+    B.meubel(F.tafel(4.2,1.6,.82,'#4a4440','#2a2420'),20.0,3.6);B.solid(17.9,2.8,22.1,4.4);
+    const geld=[];for(let i=0;i<26;i++){const x=-1.8+((i*7)%13)*.28,z=-.55+((i*5)%4)*.33,h=.06+((i*13)%5)*.04;geld.push([.26,h,.13,x,.82+h/2,z,i%4?'#6a9a5a':'#b0a0d0'],[.27,.012,.035,x,.82+h-.002,z,GOUD])}
+    B.meubel(geld,20.0,3.6);
+    const tellers=[];[[18.9,3.2],[21.1,3.2]].forEach(([x,z])=>{B.meubel([[.5,.32,.4,0,.98,0,'#2a2c30'],[.46,.04,.3,0,1.15,-.02,'#3a3d44'],[.3,.06,.02,0,1.02,.21,'#3fe395',1],[.3,.08,.14,0,1.19,.12,'#6a9a5a']],x,z);
+      for(let i=0;i<4;i++){const m=new TH.Mesh(new TH.BoxGeometry(.24,.008,.12),new TH.MeshLambertMaterial({color:'#7aaa6a'}));m.position.set(x,1.2,z+.1);B.root.add(m);tellers.push({m,x,z,i})}});
+    let ratel=0;B.tick((dt,t)=>{tellers.forEach(o=>{const k=((t*6+o.i/4)%1);o.m.position.z=o.z+.15-k*.35;o.m.position.y=1.22-k*.12+Math.sin(k*Math.PI)*.02});
+      const p=G.P;if(Math.hypot(p.x-(B.o.x+20),p.z-(B.o.z+3.2))<6){ratel+=dt;if(ratel>.09){ratel=0;G.snd&&G.snd.fx('click')}}});
+    [[19.0,4.6,Math.PI],[21.0,4.6,Math.PI]].forEach(([x,z,ry],i)=>{B.meubel(F.stoel('#2a2c30','#16161a'),x,z+.1,ry);B.persoon(null,{x,z,ry,anim:'tel',sitY:-.42,naam:'teller'+i})});
+    B.plek('geldtafel',20.0,.82,4.6);B.plek('tafel_achter',20.0,.82,4.6);
+    B.persoon(null,{x:4.6,z:5.6,ry:Math.PI*1.25,anim:'armen',naam:'bewaker'});
+    // kluis, dozen, rekken
+    B.meubel([[.9,1.2,.8,0,.6,0,'#3a3d44'],[.7,.9,.02,0,.62,.41,'#4a4d54'],[.12,.12,.04,.2,.7,.43,'#c9cfd6']],24.1,1.6);B.solid(23.6,1.1,24.6,2.1);
+    [[15.2,1.5],[15.9,1.5],[15.55,1.5,.62],[16.6,1.5]].forEach(([x,z,y])=>B.meubel(F.doos(.7,.6,.7,'#a07a4a'),x,z));B.solid(14.8,1.1,17,1.95);
+    B.meubel([[3,.04,.5,0,1.2,0,'#6a6d73'],[3,.04,.5,0,1.8,0,'#6a6d73'],[.05,1.9,.05,-1.45,.95,.2,'#4a4d54'],[.05,1.9,.05,1.45,.95,.2,'#4a4d54'],[.4,.3,.3,-.8,1.37,0,'#2e5f9a'],[.4,.3,.3,.2,1.37,0,'#e8e4da'],[.5,.2,.3,.9,1.95,0,'#e8b923']],11.5,1.3);B.solid(10,1,13,1.6);
+    // tl-buizen
+    [[6,3.6],[12,3.6],[20,3.6]].forEach(([x,z])=>{B.meubel([[2.2,.06,.2,0,2.92,0,'#e8ecf0',1]],x,z);B.licht(x,2.7,z,'#e0ecff',2.6,7)});
+    // ===== feest (Luca's 17e verjaardag): dj, lichtjes, slingers, dansers. Standaard verborgen: BN.saharaFeest(true) =====
+    const feest=new TH.Group();feest.visible=false;B.root.add(feest);
+    feest.add(K.model([[2.4,1.05,.7,0,.53,0,'#141218'],[2.4,.05,.72,0,1.07,0,'#2a2430'],[2.36,.04,.02,0,.7,.36,'#ff9a2a',1],[.4,.04,.4,-.6,1.11,0,'#0a0a0c'],[.4,.04,.4,.6,1.11,0,'#0a0a0c'],[.5,.06,.3,0,1.12,.05,'#2a2c30'],[.42,.02,.24,0,1.16,.05,'#3fe395',1]].map(b=>{const c=b.slice();c[3]+=6.5;c[5]+=14.2;return c})));
+    [[4.9,13.6],[8.1,13.6]].forEach(([x,z])=>feest.add(K.model(F.speaker(1.6).map(b=>{const c=b.slice();c[3]+=x;c[5]+=z;return c}))));
+    const slinger=[];for(let x=2;x<24;x+=.7)slinger.push([.22,.3,.04,x,3.3-Math.abs(Math.sin(x*.9))*.25,13.2,['#c9a227','#16161a','#ffffff'][Math.round(x*10/7)%3],1]);
+    for(let z=14;z<31;z+=.7)slinger.push([.04,.3,.22,1.2,3.3-Math.abs(Math.sin(z*.9))*.25,z,['#c9a227','#16161a','#ffffff'][Math.round(z*10/7)%3],1]);
+    feest.add(K.model(slinger));
+    const ballon=[];[[3,14,0],[3.6,14.3,1],[18,14,2],[18.6,14.2,0],[24.5,30.5,1],[1.6,30.4,2]].forEach(([x,z,i])=>{ballon.push([.4,.48,.4,x,2.5,z,['#c9a227','#16161a','#e8e4da'][i]],[.02,1.2,.02,x,1.7,z,'#e8e4da'])});feest.add(K.model(ballon));
+    const bordF=new TH.Mesh(new TH.PlaneGeometry(4.2,.8),new TH.MeshBasicMaterial({map:new TH.CanvasTexture(neonTekst('LUCA 17',140,28,'#ffe0a0','#ff9a2a')),transparent:true}));bordF.position.set(16.5,2.95,13.07);feest.add(bordF);
+    const vlek=[];['#ff9a2a','#c9a227','#ff4fd8','#7fd1ff'].forEach((c,i)=>{const m=new TH.Mesh(new TH.PlaneGeometry(1.5,1.5),new TH.MeshBasicMaterial({color:c,transparent:true,opacity:.2,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(6.5,.03,22);feest.add(m);vlek.push(m)});
+    const fl=new TH.PointLight('#ff9a2a',0,9,1.5);fl.position.set(6.5,3,20);feest.add(fl);
+    B.tick((dt,t)=>{if(!feest.visible)return;vlek.forEach((m,i)=>{m.position.x=6.5+Math.sin(t*.8+i*1.6)*2.2;m.position.z=21+Math.cos(t*.9+i*2.1)*3.0;m.material.opacity=.16+.1*Math.sin(t*3+i)});fl.intensity=3+Math.sin(t*6)*1.4});
+    const dansers=[];[[5.4,19.6,'dans'],[7.4,20.8,'dans2'],[5.8,22.6,'dans'],[7.9,23.4,'dans2'],[6.4,25.0,'dans'],[4.8,24.2,'dans2'],[8.4,18.8,'dans'],[6.0,17.6,'dans2']].forEach(([x,z,a],i)=>{const p=B.persoon(null,{x,z,ry:(i*1.7)%6.28,anim:a,naam:'danser'+i,v:i%2===0});if(p){p.uit=true;dansers.push('danser'+i)}});
+    [[16.0,18.6,Math.PI*.9,'talk'],[17.0,19.2,Math.PI*1.2,'dans2'],[15.4,19.8,Math.PI*.6,'leun']].forEach(([x,z,ry,a],i)=>{const p=B.persoon(null,{x,z,ry,anim:a,naam:'dame'+i,v:true});if(p){p.uit=true;dansers.push('dame'+i)}});
+    {const p=B.persoon(null,{x:6.5,z:14.6,ry:0,anim:'dj',naam:'dj'});if(p){p.uit=true;dansers.push('dj')}}
+    BN.saharaFeest=on=>{feest.visible=!!on;dansers.forEach(n=>BN.toon('sahara',n,!!on));try{G.snd&&G.snd.binnenMuziek&&G.snd.binnenMuziek(on?'feest':null)}catch(e){}};
   },
-  buiten(g,f){// gevel aan de Boulevard: neonbord, luifel, zware deur, lantaarns, koord
-    const m=K.model([[2.4,3.0,.2,0,1.5,-.05,'#1a0f1e'],[1.5,2.6,.12,0,1.3,.05,'#2a1610'],[1.36,2.4,.04,0,1.25,.12,'#3a2014'],[.06,.4,.06,.5,1.25,.16,'#d6a63e'],[2.9,.12,1.3,0,3.15,.6,'#3a1430'],[2.9,.04,.04,0,3.08,1.25,'#d6a63e'],
-      [3.4,.9,.14,0,3.85,.05,'#120a16'],[3.3,.07,.16,0,4.28,.06,'#b45cff',1],[3.3,.07,.16,0,3.42,.06,'#b45cff',1],[.07,.9,.16,-1.66,3.85,.06,'#b45cff',1],[.07,.9,.16,1.66,3.85,.06,'#b45cff',1],
+  buiten(g,f){// gevel aan de Boulevard: terras met twee tafeltjes, een heater, plantenbakken, lantaarns, menubord; de portier bij de deur
+    const terras=[[.12,.02,1.5,0,.01,0,'#3a3d44']];
+    const tafel=(x,z)=>[[.6,.04,.6,x,.74,z,'#c9a227'],[.06,.7,.06,x,.37,z,'#2a2c30'],[.4,.03,.4,x,.02,z,'#2a2c30'],[.4,.45,.4,x-.55,.22,z,'#3a2414'],[.4,.45,.4,x+.55,.22,z,'#3a2414'],[.12,.16,.12,x+.1,.83,z-.1,'#d8a64a',1]];
+    const m=K.model([...tafel(-2.9,1.4),...tafel(2.9,1.4),
+      [.1,2.1,.1,-4.2,1.05,1.0,'#2a2c30'],[.5,.1,.5,-4.2,2.15,1.0,'#3a3d44'],[.36,.06,.36,-4.2,2.08,1.0,'#ff7a2a',1],
+      [1.0,.5,.4,-1.6,.25,.6,'#5a3a22'],[.9,.5,.3,-1.6,.65,.6,'#2f6e3a'],[1.0,.5,.4,1.6,.25,.6,'#5a3a22'],[.9,.5,.3,1.6,.65,.6,'#2f6e3a'],
       [.22,.34,.22,-1.05,2.35,.25,'#ffb84a',1],[.26,.05,.26,-1.05,2.54,.25,'#c9a227'],[.22,.34,.22,1.05,2.35,.25,'#ffb84a',1],[.26,.05,.26,1.05,2.54,.25,'#c9a227'],
-      [.08,.9,.08,-1.3,.45,1.4,'#c9a227'],[.08,.9,.08,1.3,.45,1.4,'#c9a227'],[2.5,.05,.05,0,.82,1.4,'#7a1a22'],[1.5,.02,1.0,0,.01,.7,'#7a1a22']]);
-    if(f.eigen){// de verhaalstad heeft de gevel en het bord al: alleen koord, loper en lantaarns
-      g.add(K.model([[.08,.9,.08,-1.3,.45,1.4,'#c9a227'],[.08,.9,.08,1.3,.45,1.4,'#c9a227'],[2.5,.05,.05,0,.82,1.4,'#7a1a22'],[1.5,.02,1.0,0,.01,.7,'#7a1a22'],[.22,.34,.22,-1.05,2.35,.25,'#ffb84a',1],[.26,.05,.26,-1.05,2.54,.25,'#c9a227'],[.22,.34,.22,1.05,2.35,.25,'#ffb84a',1],[.26,.05,.26,1.05,2.54,.25,'#c9a227']]))}
-    else{g.add(m);const s=K.sign('LOUNGE SAHARA','#ffe08a','#120a16','#b45cff',.5);s.position.set(0,3.86,.14);g.add(s)}
-    const l=new TH.PointLight('#c070ff',4,7,1.6);l.position.set(0,3.2,1.2);g.add(l);
-    // de uitsmijter buiten (knikt als je langskomt)
-    if(G.cut&&G.cut.persoon){const a=BN.uitsmijterBuiten||G.cut.persoon('uitsmijter',{x:0,z:0,anim:'armen'});const wp=new TH.Vector3(1.7,0,1.0).applyAxisAngle(new TH.Vector3(0,1,0),g.rotation.y).add(g.position);a.zet(wp.x,wp.z,g.rotation.y-.3);BN.uitsmijterBuiten=a}}});
+      [.7,1.0,.06,3.9,.9,.7,'#1a1410'],[.6,.86,.02,3.9,.92,.74,'#2a2018'],[.06,.6,.06,3.7,.3,.7,'#1a1410'],[.06,.6,.06,4.1,.3,.7,'#1a1410']]);
+    g.add(m);
+    const bord=new TH.Mesh(new TH.PlaneGeometry(.56,.8),new TH.MeshBasicMaterial({map:new TH.CanvasTexture(pc(28,40,(c,w,h)=>{R(c,0,0,w,h,'#2a2018');c.fillStyle='#ffe0a0';c.font='bold 5px monospace';c.textAlign='center';['SHISHA','THEE','MOCKTAILS','—','ELKE AVOND','TOT 02:00'].forEach((t,i)=>c.fillText(t,14,8+i*6))}))}));
+    bord.position.set(3.9,.92,.76);g.add(bord);
+    const l=new TH.PointLight('#ffb060',3,7,1.6);l.position.set(0,2.9,1.4);g.add(l);
+    // de portier buiten (knikt als je langskomt)
+    if(G.cut&&G.cut.persoon){const a=BN.uitsmijterBuiten||G.cut.persoon(C_LOOK('mo','uitsmijter'),{x:0,z:0,anim:'armen'});const wp=new TH.Vector3(1.6,0,1.0).applyAxisAngle(new TH.Vector3(0,1,0),g.rotation.y).add(g.position);a.zet(wp.x,wp.z,g.rotation.y-.3);BN.uitsmijterBuiten=a}}});
 
 /* =================== PIZZERIA BELLA NAPOLI =================== */
 // keuken achter (z 1–8.3) met houtoven, winkel voor (z 8.3–13): toonbank, kassa, menubord
@@ -254,13 +281,13 @@ BN.add('napoli',{naam:'Bella Napoli',kleur:'#3fe395',w:16,h:14,plafond:3.3,hoger
 /* =================== DE FLAT VAN DE SANTIS =================== */
 // woonkamer (x 1–10, z 1–7.6) met keuken (noordoost), gang (z 7.6–9.6), Luca's kamer (x 10.2–17.6, z 7.85–13.6) met een brede
 // deur vanaf de gang (z 8.0–9.45). De kamer is ruimer dan eerst; alle plekken uit de scènes (bed, bureau, x 11–14.5) staan nog op hun plek.
-BN.add('thuis',{naam:'Thuis',kleur:'#7fd1ff',w:19,h:15,plafond:2.8,hoger:1.0,deur:{x:2.0,z:9.0},spawn:{x:2.6,z:8.6,ry:Math.PI/2},anker:anker('thuis'),ankerId:'thuis',deurTxt:'Naar huis',
+BN.add('thuis',{naam:'Thuis',kleur:'#7fd1ff',w:19,h:16,plafond:2.8,hoger:1.0,deur:{x:2.0,z:9.0},spawn:{x:2.6,z:8.6,ry:Math.PI/2},anker:anker('thuis'),ankerId:'thuis',deurTxt:'Naar huis',
   licht:{bg:'#0a0a10',hemi:'#d8d0c0',grond:'#3a3028',int:1.0,zon:.5,zonKleur:'#ffe8c8',gloed:.45,vig:.48,sat:1.08,tint:[1.02,1,.97]},cam:{k:.38},
   bouw(B){const T=B.tex,H=2.8;const beh=T.behang('#d8cdb0','#c8b890'),behL=T.behang('#5a6a7a','#4a5a6a'),stuc=T.stuc('#d8d4c8'),lam=T.planken('#8a6a4a'),lino=T.linoleum('#b8b0a0'),tapL=T.tapijt('#4a5060');
     B.vloer(1,1,10.2,7.6,lam,2);B.vloer(10.2,1,15,7.6,lino,2);B.vloer(1,7.6,10.2,9.6,lam,2);B.vloer(10.2,7.6,17.6,13.6,tapL,1);
     // buitenmuren
-    const wN=B.muur(.6,.6,15.4,1,{h:H,tex:beh}),wW=B.muur(.6,.6,1,9.9,{h:H,tex:beh}),wE=B.muur(15,.6,15.4,7.85,{h:H,tex:stuc}),wS=B.muur(.6,9.6,10.2,9.9,{h:H,tex:beh}),
-      wE2=B.muur(17.6,7.6,18,14,{h:H,tex:behL}),wS2=B.muur(10.2,13.6,18,14,{h:H,tex:behL});B.muur(15,7.6,17.6,7.85,{h:H,tex:behL});
+    const wN=B.muur(.6,.6,15.4,1,{h:H,tex:beh}),wW=B.muur(.6,.6,1,9.9,{h:H,tex:beh}),wE=B.muur(15,.6,15.4,7.85,{h:H,tex:stuc}),wS=B.muur(.6,9.6,7.3,9.9,{h:H,tex:beh}),wS3=B.muur(8.5,9.6,10.2,9.9,{h:H,tex:beh}),
+      wE2=B.muur(17.6,7.6,18,14,{h:H,tex:behL}),wS2=B.muur(5.6,13.6,18,14,{h:H,tex:behL});B.muur(15,7.6,17.6,7.85,{h:H,tex:behL});
     // binnenmuren: woonkamer | gang, gang | Luca's kamer
     B.muur(1,7.6,4.2,7.85,{h:H,tex:beh});B.muur(5.6,7.6,10.2,7.85,{h:H,tex:beh});B.muur(10.2,7.6,15,7.85,{h:H,tex:behL});
     // gang | Luca's kamer: een brede deuropening (z 8.0–9.45), daarachter de kamer
@@ -298,7 +325,20 @@ BN.add('thuis',{naam:'Thuis',kleur:'#7fd1ff',w:19,h:15,plafond:2.8,hoger:1.0,deu
     // ===== gang =====
     B.meubel(F.deur(1.1,2.2,'#7a5a3a','#c9cfd6'),.95,8.6,Math.PI/2);B.meubel([[.06,.06,1.0,0,1.7,0,'#5a3a22'],[.22,.8,.5,.05,1.25,-.2,'#3a5a7a'],[.22,.9,.5,.05,1.2,.25,'#7fb8c9']],1.1,8.6);
     B.meubel([[.8,.01,1.6,0,.012,0,'#6a3a2a']],5,8.6);
-    B.meubel(F.deur(.9,2.1,'#e8e4da','#c9cfd6'),7.6,9.55);B.meubel(F.deur(.9,2.1,'#e8e4da','#c9cfd6'),9.3,9.55);   // badkamer, kamer Giulia (dicht)
+    B.meubel(F.deur(.9,2.1,'#e8e4da','#c9cfd6'),2.4,9.55);B.meubel(F.deur(.9,2.1,'#e8e4da','#c9cfd6'),5.0,9.55);   // slaapkamer ouders, badkamer (dicht)
+    B.box(.9,.12,.04,2.4,2.25,9.5,'#c9cfd6');B.box(1.4,.3,.3,7.9,2.63,9.75,'#e8e4da');    // naambordje, latei boven de opening naar Giulia
+    // ===== kamer van Giulia (verpleegkunde, in opleiding): bed, bureau met studieboeken, haar uniform aan een haak =====
+    const behG=T.behang('#c8b8c8','#b8a8b8');B.vloer(5.85,9.9,9.95,13.6,lam,2);
+    const gW=B.muur(5.6,9.9,5.85,13.6,{h:H,tex:behG});
+    B.meubel(F.bed(.95,1.95,'#e8e4da','#8a6a8a'),6.6,12.4,Math.PI/2,{solid:[.95,1.95]});
+    B.meubel(F.tafel(1.1,.55,.74,'#e8e4da','#8a8c90'),9.2,11.0,-Math.PI/2);B.solid(8.9,10.4,9.5,11.6);B.meubel(F.stoel('#7a5a7a'),8.5,11.0,Math.PI/2);
+    B.meubel([[.3,.06,.22,0,.78,-.2,'#2e5f9a'],[.28,.05,.2,0,.83,-.2,'#c0392b'],[.26,.05,.2,0,.87,-.2,'#e8e4da'],[.34,.02,.24,0,.76,.15,'#f1efe9'],[.08,.02,.3,.12,.77,.15,'#2a2c30']],9.2,11.0,-Math.PI/2);
+    B.meubel([[.06,.06,.06,0,1.9,0,'#c9cfd6'],[.5,.75,.1,0,1.45,.06,'#7fb8c9'],[.5,.5,.1,0,.82,.06,'#7fb8c9']],6.0,10.6,Math.PI/2);   // uniform aan de haak
+    B.meubel([[.36,.04,.24,0,.78,0,'#2a2c30'],[.1,.2,.1,.1,.66,0,'#2a2c30']],9.25,12.6);B.meubel(F.plant('#e8e4da','#3a7a3a'),9.5,13.2);
+    B.plaat(pc(20,28,(c,w,h)=>{R(c,0,0,w,h,'#f1efe9');R(c,7,3,6,6,'#e0a080');R(c,6,9,8,10,'#c06060');R(c,4,10,2,8,'#e0a080');R(c,14,10,2,8,'#e0a080');R(c,7,19,2,8,'#5a6a8a');R(c,11,19,2,8,'#5a6a8a')}),.6,.84,5.87,1.6,12.0,Math.PI/2,{muur:gW});
+    B.plaat(rm,1.2,1.0,7.8,1.6,13.57,Math.PI,{glow:1,muur:wS2});
+    B.meubel([[.04,.5,.04,0,2.55,0,'#1a1714'],[.3,.1,.3,0,2.25,0,'#f1e0f0',1]],7.8,11.6);B.licht(7.8,2.1,11.6,'#fff0f4',1.5,4);
+    B.plek('giulia_bed',6.6,.5,12.4);B.plek('giulia_bureau',8.5,.5,11.0);B.plek('giulia_kamer',7.9,0,10.6);
     B.meubel([[.04,.6,.04,0,2.5,0,'#1a1714'],[.24,.12,.24,0,2.2,0,'#fff0c8',1]],6,8.6);B.licht(6,2.0,8.6,'#ffe8c0',1.6,4);
     // ===== Luca's kamer =====
     B.meubel(F.bed(1.0,2.0,'#3a2a20','#2f4a6a'),14.2,10.6,0,{solid:[1,2]});
