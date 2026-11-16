@@ -96,10 +96,11 @@ function ruimer(p,l,uit){const dx=p[0]-l[0],dz=p[2]-l[2],D=hyp(dx,dz);if(uit)uit
 // lens: smalle lenzen ruimer; kon de camera niet ver genoeg naar achteren, dan de lens nog wat wijder
 const lens=(f,tekort)=>{const f0=f||(staand()?62:42),f1=f?f*(staand()?1.45:1.1):f0,t=Math.max(1,tekort||1);if(!f&&t<1.02)return undefined;
   return Math.min(74,2*Math.atan(Math.tan(f1*Math.PI/360)*t)*360/Math.PI)};
-function camObj(pos,look,o){o=Object.assign({},o||{});const fov=o.fov;delete o.fov;const c=Object.assign({look},o),uit={tekort:1};
+function camObj(pos,look,o){o=Object.assign({},o||{});const fov=o.fov;delete o.fov;const strak=o.strak;delete o.strak;if(strak)return Object.assign({pos,look,vrij:true},o,fov?{fov}:{});   // strak: precies dit shot (niet ruimer, geen automatische kadrering op de gezichten)
+  const c=Object.assign({look},o),uit={tekort:1};
   Object.defineProperty(c,'pos',{enumerable:true,get(){return ruimer(pos,look,uit)}});Object.defineProperty(c,'fov',{enumerable:true,get(){return lens(fov,uit.tekort)}});return c}
 const cam=(px,py,pz,lx,ly,lz,o)=>({cam:camObj([px,py,pz],[lx,ly,lz],o)});
-const camNaar=(px,py,pz,lx,ly,lz,t,o)=>{o=Object.assign({},o||{});const fov=o.fov;delete o.fov;const to={look:[lx,ly,lz]};const P_=[px,py,pz];Object.defineProperty(to,'pos',{enumerable:true,get(){return ruimer(P_,[lx,ly,lz])}});
+const camNaar=(px,py,pz,lx,ly,lz,t,o)=>{o=Object.assign({},o||{});const fov=o.fov;delete o.fov;if(o.strak){delete o.strak;return {cam:Object.assign({to:{pos:[px,py,pz],look:[lx,ly,lz]},t:t||3,vrij:true},o,fov?{fov}:{})}}const to={look:[lx,ly,lz]};const P_=[px,py,pz];Object.defineProperty(to,'pos',{enumerable:true,get(){return ruimer(P_,[lx,ly,lz])}});
   const c=Object.assign({to,t:t||3},o);if(fov)Object.defineProperty(c,'fov',{enumerable:true,get(){return lens(fov)}});return {cam:c}};
 // schot rond een punt in de wereld (of [x,z]): hoek a, afstand d, hoogte h, kijkhoogte ly
 const rond=(p,a,d,h,ly,o)=>{const x=p.x!=null?p.x:p[0],z=p.z!=null?p.z:p[1];d*=1.3;return L&&L.rond?L.rond(x,z,a,d,h,ly,o):cam(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,o)};
@@ -107,14 +108,36 @@ const rondNaar=(p,a,d,h,ly,t,o)=>{const x=p.x!=null?p.x:p[0],z=p.z!=null?p.z:p[1
 // over de schouder van a naar b
 function ots(a,b,d,zij,h){const dx=a.x-b.x,dz=a.z-b.z,n=hyp(dx,dz)||1,ux=dx/n,uz=dz/n;d=(d||2.6)*1.45;zij=(zij==null?1.0:zij)*1.35;h=Math.max(2.4,(h||2.2)+.3);
   return cam(a.x+ux*d-uz*zij,h,a.z+uz*d+ux*zij,b.x,1.45,b.z)}
-const verteller=id=>({fn:async()=>{if(G.verteller)await G.verteller(id)}});
+const verteller=id=>({fn:async()=>{if(G.verteller)await G.verteller(id)},vt:id});
 const titel=(t,sub,d)=>({titel:t,sub:sub||'',t:d||3});
 // speel een scène; geeft de keuze terug (of null). Stopt stil als het verhaal intussen verder is.
-async function speel(t,steps,o){if(!levend(t))return null;const st=steps.flat().filter(Boolean);
+/* ---------- het doek: zwart tussen twee scènes en bij binnen/buiten ----------
+   Een scène die op zwart eindigt laat het doek dicht; de volgende scène haalt het weg op het moment dat zijn eigen beeld klaar is.
+   Zo zie je tussen twee scènes nooit even de spelcamera, en wisselen binnen/buiten zonder extra fade of deurgeluid.
+   Komt er geen scène meer (je gaat spelen), dan gaat het doek na een paar honderd ms zacht open. Ligt onder de cutscène-laag (z 70). */
+const doekEl=document.createElement('div');doekEl.id='s1Doek';doekEl.style.cssText='position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:69';
+document.body.appendChild(doekEl);
+let doekDicht=false,doekT=0,doekBezig=0;
+function doek(dicht,t){doekDicht=!!dicht;doekT=performance.now();doekEl.style.transition=t?`opacity ${t}s ease`:'none';doekEl.style.opacity=dicht?1:0;doekEl.style.pointerEvents=dicht?'auto':'none';
+  return t?new Promise(r=>setTimeout(r,t*1000+30)):Promise.resolve()}
+let doekVast=0;   // tot dit moment blijft het doek dicht (na het titelscherm: zwart tot de eerste scène begint)
+setInterval(()=>{const nu=performance.now();if(doekDicht&&!doekBezig&&nu-doekT>420&&nu>doekVast)doek(false,.55)},100);
+S1.doek=doek;S1.doekDicht=()=>doekDicht;S1.doekVast=ms=>{doek(true);doekVast=performance.now()+(ms||2500)};
+const INHOUD=x=>x&&(x.text!=null||x.titel||x.wait||x.keuze||x.vt||(x.cam&&x.cam.to));
+async function speel(t,steps,o){if(!levend(t))return null;let st=steps.flat().filter(Boolean);o=o||{};
   // een buitenscène terwijl de speler binnen staat (bijv. na hervatten): eerst naar buiten, anders blijft het beeld zwart
   try{if(B.waar()&&!st.some(x=>x.binnen||x.buiten)){const eerste=st.find(x=>(x.actor&&Array.isArray(x.at))||(x.cam&&!x.cam.volg&&x.cam.look));
-    const xx=eerste?(eerste.actor?eerste.at[0]:eerste.cam.look[0]):null;if(xx!=null&&xx<4000)await B.uit()}}catch(e){}
-  try{return await C.play(st,Object.assign({blijf:true},o||{}))}catch(e){console.error(e);return null}}
+    const xx=eerste?(eerste.actor?eerste.at[0]:eerste.cam.look[0]):null;if(xx!=null&&xx<4000)await buiten()}}catch(e){}
+  if(!levend(t))return null;
+  // doek dicht (vorige scène eindigde zwart, of net binnen/buiten): pas weghalen als deze scène zelf beeld heeft
+  if(doekDicht){const i=st.findIndex(x=>x.fade),voor=i<0?[]:st.slice(0,i),open={fn:()=>{doek(false)}};
+    if(i>=0&&!voor.some(INHOUD)&&st[i].fade==='out')st.splice(i+1,0,open);
+    else if(i>=0&&!voor.some(INHOUD)&&st[i].fade==='in')st.splice(i,0,{fade:'out',t:.01},open);
+    else{const j=st.findIndex(x=>x.cam);st.splice(j<0?0:j+1,0,{fn:()=>{doek(false,.45)}})}}
+  // eindigt deze scène op zwart? dan blijft het doek dicht tot de volgende scène (of tot je weer speelt)
+  if(!o.blijfZwart){let k=-1;for(let n=st.length-1;n>=0;n--){if(st[n].fade){k=n;break}}
+    if(k>=0&&st[k].fade==='out'&&!st.slice(k+1).some(INHOUD))st.push({fn:()=>{doek(true)}})}
+  try{return await C.play(st,Object.assign({blijf:true},o))}catch(e){console.error(e);return null}}
 // keuze in de ondertitel: opties [{t,id}] → id
 // een minispel in beeld laten spelen: de camera blijft op de scène (de spelerscamera kan elders staan)
 async function inScene(t,steps,f){let r;await speel(t,[{speler:false},...steps,{fn:async()=>{try{r=await f()}catch(e){console.error(e)}}}]);return r}
@@ -127,8 +150,10 @@ function doelNaar(t,tekst,p,o){o=o||{};if(!levend(t))return Promise.resolve(fals
   return ST.aankomst(p.binnen?p:{x:p.x,z:p.z},{r:o.r||(p.binnen?2.2:8),actie:o.actie,sub:o.sub,gebouw:o.gebouw,geldig:()=>levend(t)}).then(ok=>{if(!ok)return false;if(o.fietsAf!==false&&!p.binnen)fietsAf();ST.doel(null);return true})}
 const fietsAf=()=>{try{if(G.fiets&&G.fiets.actief())G.fiets.af(true)}catch(e){}};
 const zorgFiets=p=>{try{L&&L.zorgFiets&&L.zorgFiets(p)}catch(e){}};
-const binnen=async id=>{if(B.waar()!==id)await B.in(id,{forceer:true})};
-const buiten=async()=>{if(B.waar())await B.uit()};
+// binnen/buiten in het verhaal: achter het doek, zonder eigen fade en deurgeluid (dat hoort bij zelf naar binnen lopen)
+async function wissel(f){doekBezig++;try{if(!doekDicht)await doek(true,.3);await f()}catch(e){console.error(e)}finally{doekBezig--;doekT=performance.now()}}
+const binnen=async id=>{if(B.waar()!==id)await wissel(()=>B.in(id,{forceer:true,fade:false}))};
+const buiten=async()=>{if(B.waar())await wissel(()=>B.uit({fade:false}))};
 // buiten neerzetten op een punt (na een scène binnen)
 async function zetBuiten(p,ry){await buiten();if(p){G.P.x=p.x;G.P.z=p.z;if(ry!=null)G.P.ry=ry}}
 Object.assign(S1,{doelNaar,fietsAf,zorgFiets,binnen,buiten,zetBuiten});
@@ -347,7 +372,7 @@ const iv=setInterval(()=>{if(!G.ready||!G.story||!G.cut||!G.binnen||!G.story.ste
   (S1.onStart||[]).forEach(f=>{try{f()}catch(e){console.error(e)}});
   // oude voortgang (hoofdstukken van het vorige verhaal): seizoen 1 begint opnieuw
   try{const st=ST.st();if(st.step&&!/^(s1_|start$)/.test(st.step)){const inst=st.inst;Object.keys(st).forEach(k=>{if(k!=='inst')delete st[k]});st.v=3;st.inst=inst||{};st.step='start';st.reset=Date.now();
-    try{window.save&&window.save()}catch(e){}setTimeout(()=>{try{if(ST.st().step==='start')ST.goto('start')}catch(e){}},900)}}catch(e){console.error(e)}
+    try{window.save&&window.save()}catch(e){}setTimeout(()=>{try{if(ST.st().step==='start'&&!G.titelOpen)ST.goto('start')}catch(e){}},900)}}catch(e){console.error(e)}
 },120);
 S1.onStart=[];
 })();

@@ -151,10 +151,12 @@ function groundCanvas(r){
   // wegmarkering: twee banen per richting zijn er niet, wel een brede weg: gestreepte middenlijn, randlijnen en zebrapaden bij elke kruising
   cx.fillStyle='#e8e4d8';
   const nearJ=(v,list)=>list.some(q=>Math.abs(q-v)<=M.RW+M.SW+.5);
-  const XSs=M.VR.map(v=>v.x),ZSs=M.HR.map(h=>h.z);
-  M.VR.forEach(v=>{if(!inR(v.x-9,v.a,v.x+9,v.b))return;const za=Math.max(v.a,RZ0-2),zb=Math.min(v.b,RZ1+2);for(let z=za;z<zb;z++){if(nearJ(z,ZSs))continue;if(Math.floor(z/2)%2===0)cx.fillRect(v.x*GP-1,z*GP,2,GP)}
+  // alleen de straten die deze straat echt kruisen (anders een gat in de middenstreep waar ergens anders in de stad een straat op dezelfde x of z ligt)
+  const kruis=(rd,vert)=>{const m=M.RW+M.SW+1,c=vert?rd.x:rd.z,ra=rd.a==null?-1e9:rd.a,rb=rd.b==null?1e9:rd.b;
+    return (vert?M.HR:M.VR).filter(q=>{const qc=vert?q.z:q.x,qa=q.a==null?-1e9:q.a,qb=q.b==null?1e9:q.b;return qc>=ra-m&&qc<=rb+m&&c>=qa-m&&c<=qb+m}).map(q=>vert?q.z:q.x)};
+  M.VR.forEach(v=>{if(!inR(v.x-9,v.a,v.x+9,v.b))return;const ZSs=kruis(v,true),za=Math.max(v.a,RZ0-2),zb=Math.min(v.b,RZ1+2);for(let z=za;z<zb;z++){if(nearJ(z,ZSs))continue;if(Math.floor(z/2)%2===0)cx.fillRect(v.x*GP-1,z*GP,2,GP)}
     for(let z=za;z<zb;z++){if(nearJ(z,ZSs))continue;cx.fillStyle='rgba(232,228,216,.55)';cx.fillRect((v.x-M.RW+.6)*GP,z*GP,1,GP);cx.fillRect((v.x+M.RW-.6)*GP-1,z*GP,1,GP);cx.fillStyle='#e8e4d8'}});
-  M.HR.forEach(h=>{if(!inR(h.a,h.z-9,h.b,h.z+9))return;const xa=Math.max(h.a,RX0-2),xb=Math.min(h.b,RX1+2);for(let x=xa;x<xb;x++){if(nearJ(x,XSs))continue;if(Math.floor(x/2)%2===0)cx.fillRect(x*GP,h.z*GP-1,GP,2)}
+  M.HR.forEach(h=>{if(!inR(h.a,h.z-9,h.b,h.z+9))return;const XSs=kruis(h,false),xa=Math.max(h.a,RX0-2),xb=Math.min(h.b,RX1+2);for(let x=xa;x<xb;x++){if(nearJ(x,XSs))continue;if(Math.floor(x/2)%2===0)cx.fillRect(x*GP,h.z*GP-1,GP,2)}
     for(let x=xa;x<xb;x++){if(nearJ(x,XSs))continue;cx.fillStyle='rgba(232,228,216,.55)';cx.fillRect(x*GP,(h.z-M.RW+.6)*GP,GP,1);cx.fillRect(x*GP,(h.z+M.RW-.6)*GP-1,GP,1);cx.fillStyle='#e8e4d8'}});
   const zebraV=(x,z)=>{for(let k=-M.RW+1;k<M.RW;k+=1)cx.fillRect((x+k)*GP,z*GP,GP-2,GP*2)};
   const zebraH=(x,z)=>{for(let k=-M.RW+1;k<M.RW;k+=1)cx.fillRect(x*GP,(z+k)*GP,GP*2,GP-2)};
@@ -472,8 +474,12 @@ function chunkWorld(scene,mat){
     for(const m of city)m.visible=dist(m.userData.r,cx,cz)<cull;
     for(const m of signs)m.visible=dist(m.userData.r,cx,cz)<cull;
     let best=null,bd=1e9;for(const m of grd){const u=m.userData,d=Math.min(dist(u.r,tx,tz),dist(u.r,cx,cz)+20);m.visible=dist(u.r,cx,cz)<cull+S*.5;
-      if(u.tex&&d>S*2.1)lo(m);else if(!u.tex&&d<S*1.1&&d<bd){bd=d;best=m}}
-    const now=performance.now();if(best&&now-busyT>80){hi(best);busyT=performance.now()}}
+      if(u.tex&&d>S*2.3)lo(m);else if(!u.tex&&d<S*1.45&&d<bd){bd=d;best=m}}
+    // springt de camera ver weg (een cutscène, teleport): de stukken rond de nieuwe plek meteen scherp, niet stuk voor stuk zichtbaar
+    if(lastC&&Math.hypot(cx-lastC.x,cz-lastC.z)>60){let n=0;for(const m of grd)if(!m.userData.tex&&dist(m.userData.r,cx,cz)<S*.35&&n<2){hi(m);n++}if(n)busyT=performance.now()}
+    lastC={x:cx,z:cz};
+    const now=performance.now();if(best&&now-busyT>45){hi(best);busyT=performance.now()}}
+  let lastC=null;
   // meteen scherp rond een punt (bij opstarten en teleporteren)
   function warm(x,z){for(const m of grd)if(!m.userData.tex&&dist(m.userData.r,x,z)<S*.6)hi(m)}
   return {city,ground:grd,signs,loMat,step,warm,hiCount:()=>grd.filter(m=>m.userData.tex).length}}

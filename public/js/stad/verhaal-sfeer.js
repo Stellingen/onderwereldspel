@@ -25,10 +25,10 @@ function cutStemming(script){let bin=null,buiten=false,sp=0,zeg=0,napoli=0,zwaar
   if(bin)return BINNEN[bin]||'droom';
   try{const st=G.story&&G.story.steps&&G.story.steps[G.story.huidig()];if(st&&st.muziek&&typeof st.muziek==='string')return st.muziek}catch(e){}
   return 'droom'}
-let tijdelijk=null,laatste;   // laatste begint leeg (undefined), zodat de eerste keuze (ook 'geen') meteen muziek zet
+let tijdelijk=null,laatste,expliciet=false,losT=0;   // laatste begint leeg (undefined), zodat de eerste keuze (ook 'geen') meteen muziek zet
 const S=G.verhaalSfeer={
-  zet(m){tijdelijk=m||null;kies()},           // geldt tot het einde van de cutscène of de volgende stap
-  los(){tijdelijk=null;kies()},
+  zet(m){tijdelijk=m||null;expliciet=!!m;kies()},           // geldt tot het einde van de cutscène of de volgende stap
+  los(){tijdelijk=null;expliciet=false;kies()},
   nu:()=>laatste,BINNEN,stemming:cutStemming};
 function kies(){if(!G.snd||!G.snd.sfeer)return;let m=null;
   try{
@@ -47,9 +47,11 @@ function kies(){if(!G.snd||!G.snd.sfeer)return;let m=null;
   if(m!==laatste||!G.verhaalMuziek||G.verhaalMuziek.nu===undefined){laatste=m;G.verhaalMuziek&&G.verhaalMuziek.zet(m)}}
 // meteen aanhaken zodra de cutscènes bestaan (ook de allereerste scène na het laden krijgt zo zijn eigen muziek)
 const ivC=setInterval(()=>{if(!G.cut||!G.cut.onStart||!G.cut.onEnd)return;clearInterval(ivC);
-  G.cut.onEnd.push(()=>{tijdelijk=null;kies()});
+  // na een scène blijft de muziek van de scène nog even staan: volgt er meteen een volgende scène (achter het zwart), dan
+  // springt de muziek niet heen en weer (dat gaf twee nummers door elkaar)
+  G.cut.onEnd.push(()=>{expliciet=false;clearTimeout(losT);losT=setTimeout(()=>{if(!(G.cut.active&&G.cut.active())){tijdelijk=null;kies()}},1500)});
   // begint een cutscène zonder eigen keuze: een stemming bij dit script (zie cutStemming)
-  G.cut.onStart.push((o,script)=>{if(o&&o.muziek){tijdelijk=o.muziek}else if(!tijdelijk){tijdelijk=cutStemming(script)}kies()})},50);
+  G.cut.onStart.push((o,script)=>{clearTimeout(losT);if(o&&o.muziek){tijdelijk=o.muziek}else if(!expliciet){tijdelijk=cutStemming(script)}kies()})},50);
 const iv=setInterval(()=>{if(!G.ready||!G.story)return;clearInterval(iv);
   if(G.story.onStep)G.story.onStep.push(()=>{if(!(G.cut&&G.cut.active&&G.cut.active()))tijdelijk=null});   // midden in een scène blijft de muziek van de scène
   setInterval(kies,400)},200);

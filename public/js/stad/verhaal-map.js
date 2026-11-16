@@ -57,6 +57,12 @@ const HR=[
  {z:560,a:X.ring,b:1362,n:'A10 (de stad uit)',hw:1},{z:Z.eiland,a:1050,b:1330,n:'Eilandweg'}];
 // woonstraten van klinkers en wegen zonder fietsstroken (zie nlStraten)
 const KLINKER=new Set(['Merelstraat','Sperwerstraat','Kraaienstraat','Herenstraat','Kerkstraat','Van Baerlestraat']);
+// klinkers alleen in de woonwijken; loopt zo'n straat door naar de Boulevard of het Centrum, dan is hij daar gewoon asfalt met fietsstroken
+// (zelfde grenzen als districtAt: Westbuurt, Villawijk en Oud-Zuid; los uitgeschreven omdat dit al vóór districtAt's hulpjes nodig is)
+const woonAt=(x,z)=>{if(z>=938||z<190||x<48)return false;if(x<430)return true;return x<880&&z>=650&&z<830};
+// de straten die deze straat echt kruisen (voor de onderbrekingen bij kruisingen); niet elke straat met dezelfde x of z ergens anders in de stad
+function kruisingen(rd){if(rd._kr)return rd._kr;const vert=rd.x!=null,c=vert?rd.x:rd.z,m=RW+SW+1;
+  return rd._kr=(vert?HR:VR).filter(q=>{const qc=vert?q.z:q.x;return qc>=rd.a-m&&qc<=rd.b+m&&c>=q.a-m&&c<=q.b+m}).map(q=>vert?q.z:q.x)}
 const GEEN_FIETS=new Set(['Containerkade','Loodsenkade','Noordkade','Douanekade','Industrieweg']);
 const XS=[...new Set(VR.map(v=>v.x))].sort((a,b)=>a-b),ZS=[...new Set(HR.map(h=>h.z))].sort((a,b)=>a-b);
 // blok tussen twee wegen (binnenkant, zonder stoep)
@@ -522,9 +528,9 @@ for(let i=0,n=0;i<9000&&n<70;i++){const x=20+rng()*(W-40),z=20+rng()*(H-40);if(a
  const nearX=(v,list)=>list.some(q=>Math.abs(q-v)<RS+4);const XSs=VR.map(v=>v.x),ZSs=HR.map(h=>h.z);
  [...VR,...HR].filter(r=>KLINKER.has(r.n)).forEach(r=>{const vert=r.x!=null,c=vert?r.x:r.z;
    for(let u=r.a+9;u<r.b-6;u+=12){if(nearX(u,vert?ZSs:XSs))continue;[[-1,0],[1,6]].forEach(([s,du])=>{const uu=u+du,w=c+s*(RS-.9),x=vert?w:uu,z=vert?uu:w;
-     if(at(x|0,z|0)===T.WALK&&free(x,z,.9))prop('stree',x,z,{s:.75+hsh(x|0,z|0)*.3,v:(hsh(z|0,x|0)*3)|0,solid:.25})})}
+     if(woonAt(x,z)&&at(x|0,z|0)===T.WALK&&free(x,z,.9))prop('stree',x,z,{s:.75+hsh(x|0,z|0)*.3,v:(hsh(z|0,x|0)*3)|0,solid:.25})})}
    for(let u=r.a+30;u<r.b-10;u+=44){if(nearX(u,vert?ZSs:XSs))continue;const s=hsh(u,c)<.5?-1:1,w=c+s*(RS-1.7),x=vert?w:u,z=vert?u:w;
-     const ok=[-1.4,0,1.4].every(q=>{const xx=vert?x:x+q,zz=vert?z+q:z;return at(xx|0,zz|0)===T.WALK&&!solid[(zz|0)*W+(xx|0)]});if(ok&&free(x,z,1.4))prop('bikes',x,z,{rot:vert?1:0,v:(hsh(u,c+1)*5)|0})}})}
+     const ok=[-1.4,0,1.4].every(q=>{const xx=vert?x:x+q,zz=vert?z+q:z;return at(xx|0,zz|0)===T.WALK&&!solid[(zz|0)*W+(xx|0)]});if(ok&&woonAt(x,z)&&free(x,z,1.4))prop('bikes',x,z,{rot:vert?1:0,v:(hsh(u,c+1)*5)|0})}})}
 
 /* ---------- bruggen (voor de relingen): waar een weg over water gaat ---------- */
 const bridges=[];
@@ -808,21 +814,23 @@ function klinkerPatroon(vert,hash){const k=vert?'v':'h';if(KPAT[k])return KPAT[k
   for(let U=0;U<N;U++)for(let w=-1;w<N;w+=2){const ww=w+(U%2),h=hash(Math.floor((ww+2)/2),U,31),col=h<.12?'#5e3428':h<.4?'#7a4434':h<.75?'#86503c':h>.97?'#55504c':'#91583f';
     c.fillStyle=col;if(vert)c.fillRect(ww,U,2,1);else c.fillRect(U,ww,1,2)}
   return KPAT[k]=cv}
-function nlStraten(cx,GP,r,ov,hash){const XSs=VR.map(v=>v.x),ZSs=HR.map(h=>h.z),nearJ=(v,list)=>list.some(q=>Math.abs(q-v)<=RW+SW+.5);
+function nlStraten(cx,GP,r,ov,hash){const nearJ=(v,list)=>list.some(q=>Math.abs(q-v)<=RW+SW+.5);
   [...VR,...HR].forEach(rd=>{if(rd.hw)return;const vert=rd.x!=null,c=vert?rd.x:rd.z;if(!(vert?ov(c-RW,rd.a,c+RW,rd.b):ov(rd.a,c-RW,rd.b,c+RW)))return;
-    const a=Math.max(rd.a,Math.floor((vert?r.z0:r.x0)-2)),b=Math.min(rd.b,Math.ceil((vert?r.z1:r.x1)+2)),cross=vert?ZSs:XSs;
+    const a=Math.max(rd.a,Math.floor((vert?r.z0:r.x0)-2)),b=Math.min(rd.b,Math.ceil((vert?r.z1:r.x1)+2)),cross=kruisingen(rd);
     const px=(u,w,len,dep,col)=>{cx.fillStyle=col;if(vert)cx.fillRect(Math.round(w*GP),Math.round(u*GP),Math.max(1,Math.round(dep*GP)),Math.max(1,Math.round(len*GP)));else cx.fillRect(Math.round(u*GP),Math.round(w*GP),Math.max(1,Math.round(len*GP)),Math.max(1,Math.round(dep*GP)))};
-    if(KLINKER.has(rd.n)){if(r.lo){for(let u=a;u<b;u++){if(nearJ(u,cross))continue;px(u,c-RW,1,2*RW,'#7a4a3a')}return}
-      // klinkers in halfsteensverband (een patroon dat over alle stukken doorloopt), met een goot van lichtere stenen langs de stoep
+    const klink=KLINKER.has(rd.n),isK=u=>klink&&woonAt(vert?c:u+.5,vert?u+.5:c);
+    if(klink){if(r.lo){for(let u=a;u<b;u++){if(nearJ(u,cross)||!isK(u))continue;px(u,c-RW,1,2*RW,'#80503f')}}
+      else{// klinkers in halfsteensverband (een patroon dat over alle stukken doorloopt), met een goot van lichtere stenen langs de stoep
       const pat=cx.createPattern(klinkerPatroon(vert,hash),'repeat');
-      for(let u=a;u<b;u++){if(nearJ(u,cross))continue;px(u,c-RW,1,2*RW,pat);px(u,c-RW,1,.35,'#9a8a7a');px(u,c+RW-.35,1,.35,'#9a8a7a')}return}
+      for(let u=a;u<b;u++){if(nearJ(u,cross)||!isK(u))continue;px(u,c-RW,1,2*RW,pat);px(u,c-RW,1,.35,'#9a8a7a');px(u,c+RW-.35,1,.35,'#9a8a7a')}}}
     if(GEEN_FIETS.has(rd.n))return;
-    // fietsstroken: 1,8 m rood langs beide stoepranden, met een witte streeplijn aan de binnenkant
-    for(let u=a;u<b;u++){if(nearJ(u,cross))continue;[[c+RW-2.0,1.9],[c-RW+.1,1.9]].forEach(([w,d])=>{px(u,w,1,d,r.lo?'#8a3a30':((hash(u,Math.round(w),33)<.5)?'#9a3a2e':'#a2402f'))});
+    // fietsstroken: 1,8 m rood langs beide stoepranden, met een witte streeplijn aan de binnenkant (ver weg: dezelfde kleur, zonder streep)
+    for(let u=a;u<b;u++){if(nearJ(u,cross)||isK(u))continue;[[c+RW-2.0,1.9],[c-RW+.1,1.9]].forEach(([w,d])=>{px(u,w,1,d,r.lo?'#9c3d30':((hash(u,Math.round(w),33)<.5)?'#9a3a2e':'#a2402f'))});
       if(!r.lo&&u%3!==0){px(u,c+RW-2.12,1,.12,'#e8e4d8');px(u,c-RW+2.0,1,.12,'#e8e4d8')}}
-    if(r.lo)return;
+    if(r.lo){// ver weg: de middenstreep als een zachte lijn, zodat de weg niet ineens 'leeg' wordt waar het scherpe stuk ophoudt
+      for(let u=a;u<b;u++){if(nearJ(u,cross)||isK(u)||Math.floor(u/2)%2)continue;px(u,c-.5,1,1,'#64656a')}return}
     // fietssymbool om de 46 m (wit, plat op de strook)
-    for(let u=Math.ceil(a/46)*46+23;u<b;u+=46){if(nearJ(u,cross)||nearJ(u+3,cross)||nearJ(u-3,cross))continue;[c+RW-1.05,c-RW+1.05].forEach(w=>{cx.fillStyle='#ece8dc';
+    for(let u=Math.ceil(a/46)*46+23;u<b;u+=46){if(nearJ(u,cross)||nearJ(u+3,cross)||nearJ(u-3,cross)||isK(u))continue;[c+RW-1.05,c-RW+1.05].forEach(w=>{cx.fillStyle='#ece8dc';
       const P=(du,dw,l,d)=>{if(vert)cx.fillRect(Math.round((w+dw)*GP),Math.round((u+du)*GP),Math.max(1,Math.round(d*GP)),Math.max(1,Math.round(l*GP)));else cx.fillRect(Math.round((u+du)*GP),Math.round((w+dw)*GP),Math.max(1,Math.round(l*GP)),Math.max(1,Math.round(d*GP)))};
       // twee wielen (vierkantjes met een gat), frame en stuur
       P(-1.1,-.45,.75,.9);P(.35,-.45,.75,.9);cx.fillStyle=vert||1?'#9a3a2e':'#9a3a2e';P(-.95,-.25,.45,.5);P(.5,-.25,.45,.5);cx.fillStyle='#ece8dc';P(-.6,-.1,1.2,.2);P(-.1,-.55,.2,.5);P(.35,-.6,.35,.15)})}})}

@@ -104,7 +104,7 @@ function scooter(kleur){const g=new TH.Group(),mat=c=>new TH.MeshLambertMaterial
 
 /* =================== CSS voor de minispellen =================== */
 function css(){if($s('h1Css'))return;const s=document.createElement('style');s.id='h1Css';s.textContent=`
-.h1-mg{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;width:min(460px,calc(100vw - 24px));background:#121016ee;border:2px solid #2c2734;
+.h1-mg{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:76;max-height:calc(100dvh - 36px);overflow:auto;box-sizing:border-box;width:min(460px,calc(100vw - 24px));background:#121016ee;border:2px solid #2c2734;
   box-shadow:0 8px 0 #0008;color:#f1efe9;font:600 14px/1.35 'Space Grotesk',system-ui,sans-serif;padding:14px 14px 12px;image-rendering:pixelated}
 .h1-mg h4{margin:0 0 2px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#ffd35a}.h1-mg p{margin:0 0 10px;color:#c9c4b8;font-weight:500;font-size:13px}
 .h1-bar{position:relative;height:22px;background:#2a2630;border:2px solid #3a3442;margin:8px 0}.h1-bar i{position:absolute;top:0;bottom:0;background:#3fe39555;border-left:2px solid #3fe395;border-right:2px solid #3fe395}

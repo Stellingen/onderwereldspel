@@ -29,9 +29,18 @@ function start(id,vanaf){const n=NUM[id];if(!n)return null;const d=dek();if(!d)r
   const zetTijd=()=>{try{d.el.currentTime=vanaf}catch(e){}};if(d.el.readyState>=1)zetTijd();else d.el.addEventListener('loadedmetadata',zetTijd,{once:true});
   const p=d.el.play();if(p&&p.catch)p.catch(()=>{});return d}
 // kies een stemming (of null/'stil' voor stilte)
+// Wisselen wacht even (wachtT): snel na elkaar wisselen (einde scène, volgende scène) gaf twee of drie nummers door elkaar.
+let wachtT=0;
 function zet(m,direct){wil=m;const id=m==='stil'?null:(STEMMING[m]||(NUM[m]?m:(m==null?'stad':null)));
-  if(id===nu&&!direct)return;nu=id;if(!ontgrendeld)return;
-  DEKS.forEach(d=>{if(d.bezig)d.doel=0});
+  clearTimeout(wachtT);wachtT=0;
+  if(id===nu&&!direct)return;
+  if(!direct&&ontgrendeld&&nu!=null){wachtT=setTimeout(()=>{wachtT=0;wissel(id)},750);return}
+  wissel(id)}
+function wissel(id){nu=id;if(!ontgrendeld)return;
+  // staat dit nummer nog uit te faden? dan dat dek terughalen in plaats van het nummer een tweede keer te starten
+  const terug=id?DEKS.find(d=>d.bezig&&d.num===id&&!d.over):null;
+  DEKS.forEach(d=>{if(d.bezig&&d!==terug)d.doel=0});
+  if(terug){terug.doel=1;return}
   if(id){const n=NUM[id];start(id,id==='stad'?n.a+Math.random()*(n.b-n.a-40):n.a)}}
 // elke 100 ms: volumes naar hun doel, rondlopen met een kruisfade, klaar = vrij
 let laatst=performance.now();
@@ -39,7 +48,7 @@ setInterval(()=>{const t=performance.now(),dt=Math.min(.5,(t-laatst)/1000);laats
   DEKS.forEach(d=>{if(!d.bezig)return;const n=NUM[d.num]||{v:.5,b:1e9,a:0};
     // bijna aan het eind van het rondloop-stuk: een tweede dek neemt het over
     if(d.doel>0&&d.el.currentTime>n.b&&!d.over){d.over=true;d.doel=0;const e=start(d.num,n.a);if(e){e.over=false;e.snel=.35}}
-    const snel=d.doel>0?(d.snel||.6):.45;d.vol+=Math.sign(d.doel-d.vol)*Math.min(Math.abs(d.doel-d.vol),dt*snel);
+    const snel=d.doel>0?(d.snel||.6):.85;d.vol+=Math.sign(d.doel-d.vol)*Math.min(Math.abs(d.doel-d.vol),dt*snel);
     const v=Math.max(0,d.vol)*n.v*L;if(d.g)d.g.gain.setTargetAtTime(v,ctx.currentTime,.08);else d.el.volume=Math.min(1,v);
     if(d.doel===0&&d.vol<=.001){d.bezig=false;d.over=false;d.snel=0;try{d.el.pause()}catch(e){}}})},100);
 document.addEventListener('visibilitychange',()=>{DEKS.forEach(d=>{if(!d.bezig)return;try{if(document.hidden)d.el.pause();else{const p=d.el.play();if(p&&p.catch)p.catch(()=>{})}}catch(e){}})});

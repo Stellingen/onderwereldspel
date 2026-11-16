@@ -88,7 +88,7 @@ G.avatarSpec=()=>ST.lucaLook();
 
 /* ---------- hoofdlijn: stappen ---------- */
 const STEPS={};let cur=null,curId=null,arrived=false,doneOnce=false;
-ST.step=function(id,def){STEPS[id]=def||{};if(id===st().step&&!curId&&G.ready)setTimeout(resume,50);return ST};
+ST.step=function(id,def){STEPS[id]=def||{};if(id===st().step&&!curId&&G.ready&&!G.titelOpen)setTimeout(resume,50);return ST};
 ST.steps=STEPS;
 ST.huidig=()=>curId;
 /* ---------- aankomst: het hoofdverhaal gaat pas verder als jij het doet ----------
@@ -145,7 +145,7 @@ const LATER=['h2_start','h2_dag','h2_dexvast','h2_slot','h2_vrij','h3_start','h3
 function herstel(s){if(s&&!(s.flags&&s.flags.h1_klaar)&&LATER.includes(s.step)){s.ch=1;s.step='h1_dexhoek';try{sv()}catch(e){}}
   // Seizoen 3 al uitgespeeld vóór de nieuwe finale (Hugo Lindeboom)? Dan alsnog het nieuwe slot: Dex, Ray en Damstraat 35
   if(s&&s.step==='h3_vrij'&&s.flags&&s.flags.h3_klaar&&!s.flags.hugo&&!s.flags.hugo_finale_aangeboden){s.flags.hugo_finale_aangeboden=1;s.step='h3_slot';try{sv()}catch(e){}}}
-function resume(){if(resumed)return;const s=st();herstel(s);if(!STEPS[s.step])return;resumed=true;ST.goto(s.step,{hervat:true})}
+function resume(){if(resumed||G.titelOpen)return;const s=st();herstel(s);if(!STEPS[s.step])return;resumed=true;ST.goto(s.step,{hervat:true})}
 
 /* ---------- doelregel en route ---------- */
 let doelTxt=null,doelPos=null;
@@ -308,5 +308,6 @@ const wait=setInterval(()=>{if(!G.ready||!$s('stadUi'))return;clearInterval(wait
   const f0=G.onFrame;G.onFrame=dt=>{f0&&f0(dt);if(!G.paused||zhActief())frame(dt)};
   setInterval(bewaar,5000);addEventListener('pagehide',bewaar);
   if(zhActief())zhShow();else if(st().zh)zhEnd();
-  setTimeout(()=>{resume();if(!resumed)setTimeout(resume,1500);setTimeout(resume,4000);welkom()},600)},150);
+  // eerst het titelscherm (verhaal-titel.js): pas na "Ja" start of hervat het verhaal
+  setTimeout(async()=>{if(G.titel&&G.titel.toon){try{await G.titel.toon()}catch(e){console.error(e);G.titelOpen=false}}resume();if(!resumed)setTimeout(resume,1500);setTimeout(resume,4000);welkom()},600)},150);
 })();

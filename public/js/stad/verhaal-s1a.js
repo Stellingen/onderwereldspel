@@ -119,11 +119,45 @@ ST.step('start',{async start(){const t=S1.nieuw();let w=0;while(((!ST.st().welko
   ST.goto('s1_p')}});
 
 /* =================== PROLOOG · Het dossier =================== */
+// Koude opening: regen op de Noordkade, een rode fiets op zijn kant met een knipperend achterlicht, een zwaailicht, een agent,
+// en Hugo die een foto maakt. Dan Hugo's bord in de studio (waarom hij dit verhaal volgt) en de titel. Eén stemming (spanning)
+// voor de hele proloog, zodat de muziek niet wisselt tussen de shots.
+function kaartCss(){if(document.getElementById('s1KaartCss'))return;const st=document.createElement('style');st.id='s1KaartCss';st.textContent=`
+#s1Kaart{position:fixed;inset:0;z-index:72;display:grid;place-items:center;pointer-events:none;color:#f1efe9;text-align:center;opacity:0;transition:opacity .8s ease}
+#s1Kaart.in{opacity:1}#s1Kaart div{display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 16px}
+#s1Kaart small{font:700 12px 'JetBrains Mono',monospace;letter-spacing:.34em;color:#b8b2a6;text-transform:uppercase}
+#s1Kaart b{font:900 clamp(54px,12vw,140px)/.84 'Big Shoulders Display',Impact,sans-serif;letter-spacing:.02em;text-transform:uppercase}
+#s1Kaart span{font:800 clamp(20px,4.4vw,48px)/1 'Big Shoulders Display',Impact,sans-serif;letter-spacing:.22em;color:#ff4a3a;text-transform:uppercase}
+#s1Kaart i{display:block;height:3px;width:0;background:#c0261e;margin:8px 0 2px;transition:width 1.6s cubic-bezier(.2,.7,.2,1) .3s}#s1Kaart.in i{width:min(420px,70vw)}`;document.head.appendChild(st)}
+async function titelKaart(sec){kaartCss();const k=document.createElement('div');k.id='s1Kaart';k.innerHTML='<div><small>Een dossier uit Noordhaven</small><b>Onderwereld</b><i></i><span>De Bezorger</span><small>Seizoen 1</small></div>';
+  document.body.appendChild(k);void k.offsetWidth;k.classList.add('in');try{await C.wacht(sec||4.4)}catch(e){}k.classList.remove('in');setTimeout(()=>k.remove(),900);try{await C.wacht(.7)}catch(e){}}
+// het flitslicht van Hugo's camera
+function flits(){const f=document.createElement('div');f.style.cssText='position:fixed;inset:0;background:#fff;opacity:.9;z-index:71;pointer-events:none;transition:opacity .45s ease-out';document.body.appendChild(f);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{f.style.opacity='0'}));setTimeout(()=>f.remove(),700)}
+Object.assign(S1,{titelKaart,flits});
 hoofdstuk({id:'s1_p',na:'s1_h1',blokken:[
- async t=>{tijd(1,40);await speel(t,[{fade:'out',t:.01},...studioScene(0,['n01','n02'],[{snd:'click'}]),{fade:'out',t:.8},{weg:'hugo'}]);S1.bordWeg()},
- async t=>{await buiten();const p=fietsOpKade(true)||PL.noordkade();
-  await speel(t,[{speler:false},cam(p.x-3.4,.5,p.z+2.6,p.x,.32,p.z,{fov:36}),{fade:'in',t:1.4},{snd:'gull'},camNaar(p.x-2.4,.42,p.z+1.8,p.x,.32,p.z,7,{wacht:false}),
-    verteller('n03'),{snd:'heart'},{fade:'out',t:1},{fn:()=>fietsOpKade(false)},titel('ONDERWERELD · De Bezorger','Seizoen 1',3.4),titel('Drie weken eerder','Maandag',2.4)])}]});
+ async t=>{tijd(1,40);try{G.weerZet&&G.weerZet('regen',true)}catch(e){}await buiten();if(!levend(t))return;
+  const p=fietsOpKade(true)||PL.noordkade();
+  const pa=S1.politieAuto(),ap=walk(p.x-5.5,p.z+5,8);pa.position.set(ap.x,0,ap.z);pa.rotation.y=2.2;G.scene().add(pa);
+  const ag=walk(p.x+1.7,p.z+1.3,4),hu=walk(p.x-2.6,p.z+6.4,8);
+  // licht in de regen: een koel strijklicht op de fiets (anders zie je alleen het achterlicht) en het zwaailicht dat over de kade slaat
+  const vul=new TH.PointLight('#b4c4ff',7,12,1.1);vul.position.set(p.x-1.6,3.0,p.z+2.2);G.scene().add(vul);
+  const zw=new TH.PointLight('#3a6bff',0,22,1.2);zw.position.set(ap.x,2.2,ap.z);G.scene().add(zw);let zk=0;const zt=setInterval(()=>{zk++;zw.intensity=zk%2?5.5:.4},260);
+  const opruimen=()=>{try{pa.parent&&pa.parent.remove(pa);vul.parent&&vul.parent.remove(vul);zw.parent&&zw.parent.remove(zw);clearInterval(zt)}catch(e){}};
+  await speel(t,[{fade:'out',t:.01},{speler:false},
+    {actor:'agent',at:[ag.x,ag.z],ry:naar(ag,p),anim:'armen'},{actor:'hugo',at:[hu.x,hu.z],ry:naar(hu,p)},
+    // 1. laag bij de grond: het knipperende achterlicht in de regen
+    cam(p.x-3.1,.75,p.z+2.3,p.x+.3,.3,p.z-.1,{fov:34,strak:true}),{wait:.5},{fade:'in',t:2.4},
+    camNaar(p.x-2.0,.5,p.z+1.45,p.x+.45,.32,p.z-.15,9,{wacht:false,fov:30,strak:true}),
+    verteller('n03'),
+    // 2. wijd: zwaailicht op de voorgrond, de agent bij de fiets
+    cam(p.x-9,3.2,p.z+8.5,p.x,.5,p.z,{fov:40}),camNaar(p.x-7.4,4.6,p.z+7,p.x,.4,p.z,6,{wacht:false,fov:38}),{snd:'thunder'},{wait:2.6},
+    // 3. Hugo achter het lint maakt een foto
+    ots(hu,p,2.4,.8,1.9),{wait:1.1},{snd:'click'},{fn:flits},{wait:.9},{snd:'click'},{fn:flits},{wait:1.4},
+    {fade:'out',t:1.1},{weg:'agent'},{weg:'hugo'},{fn:()=>{opruimen();fietsOpKade(false);try{G.weerZet&&G.weerZet('')}catch(e){}}}],{muziek:'spanning'});
+  opruimen()},
+ async t=>{await speel(t,[...studioScene(0,['n01','n02'],[{wait:.3}]),{wait:.4},{fade:'out',t:1},{weg:'hugo'},
+    {fn:()=>titelKaart(4.4)},titel('Drie weken eerder','Maandag',2.6)],{muziek:'spanning'});S1.bordWeg()}]});
 
 /* =================== HOOFDSTUK 1 · Zes pizza's =================== */
 const NAP={giovanni:[8,6.65],luca:[7.4,9.7]};S1.NAP=NAP;
@@ -458,17 +492,36 @@ hoofdstuk({id:'s1_h5',na:'s1_h6',vrij:true,blokken:[
    {anim:'bilal',a:'give',prop:'envelop',naar:'luca'},T_('Bilal legt een envelop neer. '+eur(loon-af)+(af?' (de rest gaat van je schuld af)':'')+'.'),Z('rafiq','Kom. Je gaat leren tellen.'),{fade:'out',t:.4}]);
   if(af)F('schuld_rafiq',schuld-af);if(loon-af>0)geld(loon-af,'Rafiq · '+n+' dozen');hoekWeg()},
  async t=>{// geld tellen in de achterkamer, de vriezer, de tweede telefoon
-  await binnen('sahara');await speel(t,[{speler:false},{actor:'rafiq',at:W('sahara',19.2,5.6),ry:PI},{actor:'luca',at:W('sahara',20.4,5.7),ry:PI},{actor:'bilal',at:W('sahara',22.6,5.4),ry:-PI*.7,anim:'leun'},actIn(['rafiq','luca','bilal']),
-   cam(...W3('sahara',22.4,2.2,7.0),...W3('sahara',20,1.0,4.4),{fov:42}),{fade:'in',t:.4},
-   Z('rafiq','Een rol tel je met je duim. Niet met je ogen.'),Z('rafiq','Er zit vals tussen. Verkeerde kleur, of geen strip.')]);
-  let score=50;try{const r=await S1.inScene(t,[cam(...W3('sahara',21.8,2.0,6.6),...W3('sahara',20.2,.9,4.6),{fov:40})],()=>G.h1.tellen());score=r&&r.score!=null?r.score:(typeof r==='number'?r:60)}catch(e){}
-  if(score>=70){meter('vertrouwen',5);F('bilal_jaloers',1);await speel(t,[Z('rafiq','Bilal. Kijk. Zo doe je dat.'),{anim:'bilal',a:'turn',ry:PI}])}else await speel(t,[Z('rafiq','Morgen weer. Tot je het blind kan.')]);
-  await speel(t,[{actor:'rafiq',at:W('sahara',8.0,3.6),ry:PI},{actor:'luca',at:W('sahara',9.4,3.6),ry:-PI*.6},{actor:'bilal',at:W('sahara',6.6,3.4),ry:PI*.6},
-   cam(...W3('sahara',9.8,2.4,4.8),...W3('sahara',8.0,.9,2.0),{fov:38}),{snd:'open'},
-   T_('Koude damp. Twee stapels blokken: de ene met een kroontje gestempeld, de andere met een schorpioen.'),
-   Z('bilal','Kroon is van de boot. Schorpioen is van ons.'),Z('rafiq','Bilal.'),T_('Bilal kijkt naar de grond.'),
-   Z('rafiq','Jij hebt een vriezer gezien. Vol ijs. Je kent mij van de pizza.'),{anim:'rafiq',a:'give',prop:'telefoon',naar:'luca'},
-   Z('rafiq','Deze is voor mij. Die andere is voor je moeder.'),verteller('n12'),{fade:'out',t:.5}]);['rafiq','luca','bilal'].forEach(k=>C.weg(k));F('tweede_telefoon',1);F('vriezer_gezien',1);
+  // (achterkamer: x .6-25.4, z .6-6.4, plafond 3; geldtafel rond 20,3.6 met telmachines op 18.9/21.1,3.2; vriezer op 8,1.6)
+  const SP={muziek:'spanning'},wp=(x,z)=>{const q=W('sahara',x,z);return {x:q[0],z:q[1]}};
+  await binnen('sahara');
+  await speel(t,[{speler:false},{actor:'rafiq',at:W('sahara',17.15,3.6),ry:PI/2},{actor:'luca',at:W('sahara',20.0,5.55),ry:PI},{actor:'bilal',at:W('sahara',22.9,5.3),ry:-PI*.7,anim:'leun'},actIn(['rafiq','luca','bilal']),
+   // 1. vlak op de telmachine: briefjes razen erdoor
+   cam(...W3('sahara',21.35,1.32,3.95),...W3('sahara',21.1,1.18,3.25),{fov:34,strak:true}),{fade:'in',t:.8},{snd:'telmachine'},{wait:.9},{snd:'telmachine'},
+   // 2. de camera trekt terug over de tafel: stapels geld, de tellers, Rafiq en Luca erachter
+   camNaar(...W3('sahara',20.0,2.55,1.2),...W3('sahara',20.0,1.6,4.9),5.5,{fov:50,strak:true,wacht:false}),{wait:1.6},
+   T_('Achterin Sahara. Tl-licht, twee telmachines, en meer geld dan Luca ooit bij elkaar heeft gezien.'),
+   // 3. Rafiq aan het hoofd van de tafel, van onderen, tussen de stapels geld door
+   cam(...W3('sahara',19.1,1.2,3.3),...W3('sahara',17.15,2.05,3.6),{fov:50,strak:true}),
+   {anim:'rafiq',a:'give',prop:'geld',naar:'luca'},Z('rafiq','Een rol tel je met je duim. Niet met je ogen.'),Z('rafiq','Er zit vals tussen. Verkeerde kleur, of geen strip.'),
+   Z('rafiq','Eén vals briefje in een rol, en de hele rol is van jou. Snap je?',{mood:'koel'})],SP);
+  // het minispel: laag boven de geldtafel, vanaf de noordkant (de grote poppetjes van de tellers staan dan achter de tafel, niet ervoor)
+  let score=50;try{const r=await S1.inScene(t,[cam(...W3('sahara',20.0,1.7,2.85),...W3('sahara',20.0,.84,3.55),{fov:52,strak:true})],()=>G.h1.tellen());score=r&&r.score!=null?r.score:(typeof r==='number'?r:60)}catch(e){}
+  if(score>=70){meter('vertrouwen',5);F('bilal_jaloers',1);
+   await speel(t,[cam(...W3('sahara',20.0,2.55,1.2),...W3('sahara',20.0,1.6,4.9),{fov:50,strak:true}),Z('rafiq','Bilal. Kijk. Zo doe je dat.'),
+    cam(...W3('sahara',22.0,2.2,4.05),...W3('sahara',22.9,2.25,5.3),{fov:42,strak:true}),{anim:'bilal',a:'turn',ry:PI},T_('Bilal zegt niks. Hij onthoudt het.')],SP)}
+  else await speel(t,[cam(...W3('sahara',19.1,1.2,3.3),...W3('sahara',17.15,2.05,3.6),{fov:50,strak:true}),Z('rafiq','Morgen weer. Tot je het blind kan.')],SP);
+  // de vriezer: van binnenuit omhoog, drie gezichten boven de koude damp
+  await speel(t,[{actor:'rafiq',at:W('sahara',8.0,3.0),ry:PI},{actor:'luca',at:W('sahara',9.2,3.1),ry:-PI*.8},{actor:'bilal',at:W('sahara',6.8,3.0),ry:PI*.8},
+   cam(...W3('sahara',9.9,2.3,5.2),...W3('sahara',8.0,1.0,2.0),{fov:40}),{wait:.6},{snd:'open'},
+   cam(...W3('sahara',8.0,.8,1.75),...W3('sahara',8.15,2.0,3.05),{fov:62,strak:true}),
+   T_('Koude damp. Twee stapels blokken: de ene met een kroontje gestempeld, de andere met een schorpioen.'),{snd:'heart'},
+   Z('bilal','Kroon is van de boot. Schorpioen is van ons.'),
+   cam(...W3('sahara',8.35,2.2,1.6),...W3('sahara',8.0,2.15,3.0),{fov:42,strak:true}),Z('rafiq','Bilal.',{mood:'boos'}),
+   cam(...W3('sahara',7.6,2.15,1.85),...W3('sahara',6.8,2.05,3.0),{fov:42,strak:true}),T_('Bilal kijkt naar de grond.'),
+   ots(wp(8.0,3.0),wp(9.2,3.1),2.0,.7,1.9),Z('rafiq','Jij hebt een vriezer gezien. Vol ijs. Je kent mij van de pizza.'),{anim:'rafiq',a:'give',prop:'telefoon',naar:'luca'},
+   Z('rafiq','Deze is voor mij. Die andere is voor je moeder.'),{snd:'tril'},verteller('n12'),{fade:'out',t:.6}],SP);
+  ['rafiq','luca','bilal'].forEach(k=>C.weg(k));F('tweede_telefoon',1);F('vriezer_gezien',1);
   await zetBuitenSahara();sein('Tweede telefoon · ritten voor Rafiq staan open bij Sahara (vrij rondrijden)','#ffd35a')},
  async t=>{// de kooi met Dex
   tijd(18,30);if(!await doelNaar(t,'De kooi · Westbuurt',PL.kooi(),{actie:'Naar Dex',sub:'Voetbalkooi'}))return;const v=PL.kooi(),d=walk(v.x+1,v.z-2,4),l=walk(v.x-1.4,v.z-1,4);
