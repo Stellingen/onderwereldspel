@@ -27,7 +27,7 @@ S1.hoekDienst=function(t,o){o=Object.assign({klanten:6,test:true,duur:240,dex:fa
   const totMin=(o.tot[0]*60+o.tot[1])-(o.van[0]*60+o.van[1]);
   const klok=()=>{const f=clamp((performance.now()-gestart)/1000/o.duur,0,1),m=o.van[0]*60+o.van[1]+Math.round(f*totMin);return [Math.floor(m/60)%24,m%60,f]};
   const teken=()=>{const [hh,mm]=klok();hud.querySelector('.k').textContent='De hoek · '+String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
-    hud.querySelector('.z').textContent='Op zak: '+voorraad+'/2 · verkocht '+verkocht+'/'+o.klanten;hud.querySelector('.v').textContent=klant?('Klant '+klant.nr+' wacht: '+(klant.n===2?'twee':'één')):'Geen klant';
+    hud.querySelector('.z').textContent='Op zak: '+voorraad+'/2 · verkocht '+verkocht+'/'+o.klanten+' · '+S1.eur(verdiend);hud.querySelector('.v').textContent=klant?('Klant '+klant.nr+' wacht: '+(klant.n===2?'twee':'één')):'Geen klant';
     hud.querySelector('.l').textContent='Lijst: '+LIJST.join(' · ');hud.querySelector('.m').textContent=berichten.filter(Boolean).join(' / ');
     hud.style.outline=patrouille?'3px solid #3a7bff':'none'};
   const nKlant=async(nr,n,isTest)=>{const id='hk'+Math.floor(Math.random()*1e6),s=walk(bank.x+rr(-18,18),bank.z+(Math.random()<.5?-16:16),6);
@@ -44,7 +44,7 @@ S1.hoekDienst=function(t,o){o=Object.assign({klanten:6,test:true,duur:240,dex:fa
       if(!r||!r.ok||!klant)return;const k=klant;voorraad-=k.n;
       if(k.isTest){test='bediend';meter('vertrouwen',-5);weg(k);await speel(t,[{speler:false},{actor:'bilal',at:[bank.x+2.4,bank.z-2.4],ry:naar({x:bank.x+2.4,z:bank.z-2.4},bank)},{actor:'luca',at:[bank.x,bank.z],ry:naar(bank,{x:bank.x+2.4,z:bank.z-2.4})},
         rond(bank,PI*.6,3.6,1.7,1.4),Z('bilal','Ik zei: geen nieuwe nummers.'),Z('bilal','Vierenveertig was van mij. Die was een test.'),{fade:'out',t:.3}]);C.weg('bilal');C.weg('luca');return}
-      verkocht++;verdiend+=15;geld(15,'de hoek');fx('cash');weg(k);teken()}});
+      verkocht++;const pr=k.n*40;verdiend+=pr;geld(pr,'de hoek');fx('cash');weg(k);teken()}});
   const iv=setInterval(teken,500);
   // planning: klanten, de test, patrouilles
   let volgende=4,nr=0,testGedaan=!o.test,volgPatr=rr(55,75);
@@ -57,6 +57,8 @@ S1.hoekDienst=function(t,o){o=Object.assign({klanten:6,test:true,duur:240,dex:fa
       const pa=S1.politieAuto(),y0=h.z+9.5,x0=h.x-60;pa.position.set(x0,0,y0);pa.rotation.y=PI/2;G.scene().add(pa);const t0=performance.now();
       await new Promise(r=>{const step=()=>{const k=(performance.now()-t0)/7000;pa.position.x=x0+k*120;if(k<1&&levend(t))requestAnimationFrame(step);else r()};step()});pa.parent&&pa.parent.remove(pa);
       if(F('kramer_kent'))sein('Kramer, door het raampje: "De Santis. Geen rode jas vandaag?"','#7fd1ff');
+      // met een wapen op zak: soms stappen ze uit (niet op het bankje: vaker)
+      if(S1.wapen&&S1.wapen.heeft()&&Math.random()<(veilig?.12:.5)&&S1.wapenControle){hud.style.display='none';await S1.wapenControle(t,{zit:veilig});hud.style.display='';if(!levend(t))break}
       if(!veilig&&(voorraad>0||klant)){if(voorraad>0)voorraad--;meter('vertrouwen',-2);if(klant)weg(klant,true);sein('Te laat. Eén pakketje de bosjes in.','#ff5a4a')}else if(veilig)sein('Ze rijden door.','#3fe395');
       patrouille=0;volgPatr=sec+rr(60,90)+7}}
   actief=false;clearInterval(iv);G.unspot(spK);G.unspot(spB);hud.remove();if(klant)weg(klant);deco.parent&&deco.parent.remove(deco);kastM.parent&&kastM.parent.remove(kastM);
@@ -159,11 +161,13 @@ hoofdstuk({id:'s1_h8',na:'s1_h9',vrij:true,blokken:[
    Z('elena','Ga je weg? Je werkt toch niet op maandag?'),Z('luca','Bij Dex.'),Z('marco','Om tien uur thuis.'),{snd:'door'},{fade:'out',t:.4}]);['elena','luca','marco'].forEach(k=>C.weg(k));await buiten()},
  async t=>{if(!await doelNaar(t,'De hoek · Tramlaan, bij de speeltuin',PL.hoek(),{actie:'Naar Bilal',sub:'De hoek'}))return;tijd(20,0);
   const h=PL.hoek(),b=walk(h.x-2,h.z-3,4),l=walk(h.x+.6,h.z-1,4),dx=F('dex_wil')==='erin';
-  await speel(t,[{speler:false},{actor:'bilal',at:[b.x,b.z],ry:naar(b,l),anim:'sit',sitY:-.2},{actor:'luca',at:[l.x,l.z],ry:naar(l,b)},dx?{actor:'dex',at:[l.x+2.2,l.z+1],ry:naar({x:l.x+2.2,z:l.z+1},b),anim:'leun'}:null,
+  const r8=await speel(t,[{speler:false},{actor:'bilal',at:[b.x,b.z],ry:naar(b,l),anim:'sit',sitY:-.2},{actor:'luca',at:[l.x,l.z],ry:naar(l,b)},dx?{actor:'dex',at:[l.x+2.2,l.z+1],ry:naar({x:l.x+2.2,z:l.z+1},b),anim:'leun'}:null,
    cam(h.x+14,5,h.z-10,h.x,1,h.z,{fov:44}),{fade:'in',t:.6},verteller('n18'),rond(b,naar(b,l)+1.2,3.4,1.6,1.2),
    Z('bilal','Dit is de hoek. Maandag tot woensdag, acht tot elf. Als je niet bij Giovanni staat.'),Z('bilal','Nooit meer dan twee op zak. De rest zit in de meterkast van de portiek.'),
    Z('bilal','Alleen nummers van de lijst. Nieuw nummer? Dan ken je niemand.'),{anim:'bilal',a:'give',prop:'sleutel',naar:'luca'},
-   dx?Z('bilal','En je vriendje mag kijken. Fluiten als er blauw komt. Meer niet.'):null,{fade:'out',t:.4}]);['bilal','luca','dex'].forEach(k=>C.weg(k));
+   dx?Z('bilal','En je vriendje mag kijken. Fluiten als er blauw komt. Meer niet.'):null,
+   ...(S1.wapenVanBilal?S1.wapenVanBilal():[])]);if(!levend(t))return;
+  if(S1.wapenNaBilal)await S1.wapenNaBilal(t,r8==='laat'?'laat':'pak');await speel(t,[{fade:'out',t:.4}]);['bilal','luca','dex'].forEach(k=>C.weg(k));
   sein('De hoek: meterkast = voorraad · bankje = klanten · politie? Op het bankje zitten','#ffd35a');
   const r=await S1.hoekDienst(t,{klanten:6,test:true,dex:dx,duur:230});if(!levend(t))return;F('hoek_verkocht',r.verkocht);F('test44',r.test);
   if(r.test==='genegeerd'){meter('vertrouwen',5);bericht('B.','44 was van mij. Goed zo.',{kleur:'#5a5d63'})}
@@ -277,8 +281,8 @@ hoofdstuk({id:'s1_h10',na:'s1_h11',vrij:true,blokken:[
    keuze('luca','',[{t:'"Ja."',id:'ja'},{t:'"Nee."',id:'nee'}])]);
   F('vader_ontkend',r==='nee'?1:0);
   await speel(t,[r==='ja'?Z('rafiq','Dan weet je waarom je dit doet.'):T_('Rafiq kijkt hem aan en zegt niks.'),verteller('n22'),
-   {anim:'rafiq',a:'give',prop:'envelop',naar:'luca'},T_('Bij de Boulevard zet Rafiq hem af. Een envelop: vijfhonderd.'),{fade:'out',t:.5}]);
-  ['marco','luca','rafiq'].forEach(k=>C.weg(k));auto.parent&&auto.parent.remove(auto);geld(500,'Rafiq · de haven');meter('vertrouwen',10);await zetBuitenSahara()},
+   {anim:'rafiq',a:'give',prop:'envelop',naar:'luca'},T_('Bij de Boulevard zet Rafiq hem af. Een envelop: vijftienhonderd.'),{fade:'out',t:.5}]);
+  ['marco','luca','rafiq'].forEach(k=>C.weg(k));auto.parent&&auto.parent.remove(auto);geld(1500,'Rafiq · de haven');meter('vertrouwen',10);await zetBuitenSahara()},
  async t=>{// tweede rapportage: de streep onder Rafiq, de jongen in de rode jas
   await studio(t,1,['n23','n24'],[{snd:'click'},{wait:.4}]);await zetBuitenSahara();tijd(23,40);
   bericht('Sem','Dinsdag 03:00, hek bij rij C. Jij en ik. Als je durft.',{kleur:'#8ac0ff'});F('sq5_open',1);

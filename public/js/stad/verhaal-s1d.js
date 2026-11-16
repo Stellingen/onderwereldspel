@@ -27,10 +27,15 @@ function rafiqRun(){const dag=ST.st().avond||0;if(F('run_dag')===dag){sein('Eén
    bericht('B.','Twee adressen. Licht uit. '+twee.map(a=>adr(a,'?')).join(' · '),{kleur:'#5a5d63'});zorgFiets(PL.sahara());S1.lichtKnop(true);S1.licht(true);
    for(let i=0;i<2&&levend(t);i++){const a=twee[i];const ok=await nepRit(t,{p:{x:a.x,z:a.z},tekst:'Run · '+adr(a,'adres'),sub:'Nep-bestelling (Rafiq)',scene:async()=>{
       if(Math.random()<.25){fietsAf();const l=P(),car=walk(l.x-Math.sin(l.ry)*9,l.z-Math.cos(l.ry)*9,6),pa=S1.politieAuto();pa.position.set(car.x,0,car.z);pa.rotation.y=naar(car,l);G.scene().add(pa);
-       await speel(t,[{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'agent2',at:[l.x-Math.sin(l.ry)*1.6,l.z-Math.cos(l.ry)*1.6],ry:naar({x:l.x-Math.sin(l.ry)*1.6,z:l.z-Math.cos(l.ry)*1.6},l)},rond(l,l.ry+PI*.7,4,1.8,1.4),{snd:'carDoor'},
-        S1.Z('agent2','Goedenavond. Je achterlicht.')]);const u=await S1.aanhouding(t,{kort:true,wijk:'deze wijk',wie:'agent2',cam:rond(l,l.ry+PI*.7,4,1.8,1.4)});C.weg('agent2');C.weg('luca');setTimeout(()=>pa.parent&&pa.parent.remove(pa),1500)}
+       const wp=S1.wapen&&S1.wapen.heeft();
+       const kz=await speel(t,[{speler:false},{actor:'luca',at:[l.x,l.z],ry:l.ry},{actor:'agent2',at:[l.x-Math.sin(l.ry)*1.6,l.z-Math.cos(l.ry)*1.6],ry:naar({x:l.x-Math.sin(l.ry)*1.6,z:l.z-Math.cos(l.ry)*1.6},l)},rond(l,l.ry+PI*.7,4,1.8,1.4),{snd:'carDoor'},
+        S1.Z('agent2','Goedenavond. Je achterlicht.'),keuze('luca',wp?'Je hebt een wapen op zak. En een doos die niet van Napoli is.':'',[{t:'Blijven staan',id:'blijf'},{t:'Rennen',id:'ren',sub:'Steegjes, hoeken, uit het zicht'}])]);
+       if(kz==='ren'){C.weg('agent2');C.weg('luca');setTimeout(()=>pa.parent&&pa.parent.remove(pa),800);const weg=await S1.vlucht(t,{level:2});if(!weg){meter('vertrouwen',-3);bericht('B.','Doos kwijt? Die betaal jij.',{kleur:'#ff3a2a'});return false}return}
+       const u=await S1.aanhouding(t,{kort:true,wijk:'deze wijk',wie:'agent2',cam:rond(l,l.ry+PI*.7,4,1.8,1.4)});
+       if(wp)await S1.wapen.fouilleer(t,{wie:'agent2',factor:u==='gepraat'?.45:1,cam:rond(l,l.ry+PI*.7,4,1.8,1.4)});
+       C.weg('agent2');C.weg('luca');setTimeout(()=>pa.parent&&pa.parent.remove(pa),1500)}
       fx('grab');sein('Afgegeven','#3fe395')}});if(ok)n++}
-   S1.lichtKnop(false);if(!n)return;let loon=n*(F('tarief')||50);const s=F('schuld_rafiq')||0,af=Math.min(s,loon);if(af){F('schuld_rafiq',s-af);loon-=af;sein('Schuld bij Rafiq: nog '+eur(s-af),'#ff9a5a')}
+   S1.lichtKnop(false);if(!n)return;let loon=n*(F('tarief')||150);const s=F('schuld_rafiq')||0,af=Math.min(s,loon);if(af){F('schuld_rafiq',s-af);loon-=af;sein('Schuld bij Rafiq: nog '+eur(s-af),'#ff9a5a')}
    if(loon>0)geld(loon,'Rafiq-run');meter('vertrouwen',1);F('runs',(F('runs')||0)+1)},'bezorger')}
 // hoekavond: verkorte hoekdienst
 function hoekAvond(){const dag=ST.st().avond||0;if(F('hoek_dag')===dag){sein('Genoeg voor vanavond.','#ff9a5a');return}
@@ -115,7 +120,7 @@ function sq5(){return klus(async t=>{const c=PL.containers(),s=walk(c.x+8,c.z+14
   await mgHold({kop:'Het zegel',titel:'Knippen',uitleg:'Houd vast. Komt de schijnwerper langs? Loslaten.',stappen:1,duur:2.2,storing:true,kijkTekst:'Schijnwerper!',waarschuw:'Het licht draait…'});
   const ok=await mgMash({kop:'Vier tassen',titel:'Naar het hek dragen',uitleg:'Tik zo snel je kunt.',tijd:8,doel:36,knop:'Dragen'});
   await speel(t,[{speler:false},T_(ok?'Vier tassen in Bilals busje. Drie uur negen.':'De laatste tas op het nippertje. Drie uur tien. De poort gaat open als het busje wegrijdt.'),
-   {fn:()=>bericht('Sem','Nooit gebeurd. Mooi werk.',{kleur:'#8ac0ff'})}]);geld(1000,'uithalen');meter('vertrouwen',10);F('uithaal_gedaan',1)},'klus')}
+   {fn:()=>bericht('Sem','Nooit gebeurd. Mooi werk.',{kleur:'#8ac0ff'})}]);geld(3000,'uithalen');meter('vertrouwen',10);F('uithaal_gedaan',1)},'klus')}
 
 /* =================== SQ7 · Edwin wil meer (na je verjaardag, als je hem betaalde) =================== */
 async function sq7(){if(F('sq7_klaar')||F('edwin')!=='geld')return;F('sq7_klaar',1);await sleep(4000);if(!vrij()){F('sq7_klaar',null);return}bericht('Onbekend nummer','Nog eens tienduizend. Anders praat ik. E.',{kleur:'#34c759'});await sleep(3500);if(!vrij()){F('sq7_klaar',null);return}

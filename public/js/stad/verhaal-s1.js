@@ -279,7 +279,7 @@ async function nepRit(t,o){if(!levend(t))return false;zorgFiets();const p=o.p;le
     if(zone&&o.lichtRegel!==false&&LICHT.aan&&d<18&&!gezegd){gezegd=true;F('licht_vergeten',(F('licht_vergeten')||0)+1)}},300);
   const ok=await doelNaar(t,o.tekst,p,{actie:o.actie||'Afgeven',sub:o.sub,r:5});clearInterval(iv);if(!ok)return false;
   if(o.lichtRegel!==false){if(!LICHT.aan&&!gezegd)meter('vertrouwen',2);else{meter('vertrouwen',-3);bericht('B.','Licht. Ik zei licht uit.',{kleur:'#ff3a2a'})}}
-  if(o.scene)await o.scene();
+  if(o.scene){const r=await o.scene();if(r===false){if(o.lichtRegel!==false)licht(true);return false}}
   if(o.lichtRegel!==false){licht(true);sein('Licht weer aan','#3fe395')}return true}
 Object.assign(S1,{echteRit,nepRit});
 

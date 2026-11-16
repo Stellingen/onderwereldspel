@@ -254,14 +254,14 @@ hoofdstuk({id:'s1_h1',na:'s1_h2',outfit:'bezorger',blokken:[
    Z('rafiq','Voel maar.'),cam(...W3('sahara',20.4,2.6,6.6),...W3('sahara',20.4,1.0,5.4),{fov:30}),Z('rafiq','Vijfduizend. Een gewone maandag.'),
    cam(...W3('sahara',22.4,2.0,6.4),...W3('sahara',19.8,1.2,4.6),{fov:40}),
    Z('rafiq','Je vader werkt op de Containerkade. Slechte rug, toch?'),Z('luca','Hoe weet jij dat?'),Z('rafiq','Ik weet wie er bij mij binnenkomt.'),{anim:'rafiq',a:'idle',prop:null},
-   Z('rafiq','Ik vraag je niet om te dealen. Doos erin, doos eruit. Vijftig per doos.'),
+   Z('rafiq','Ik vraag je niet om te dealen. Doos erin, doos eruit. Honderdvijftig per doos.'),
    keuze('luca','',[{t:'"Ja."',id:'ja'},{t:'"Nee."',id:'nee'}])]);
   if(!levend(t))return;
-  if(r==='ja'){F('rafiq_ja','direct');F('tarief',50);meter('vertrouwen',10);await speel(t,[Z('rafiq','Snel besloten. Goed. Bilal regelt de rest.')])}
+  if(r==='ja'){F('rafiq_ja','direct');F('tarief',150);meter('vertrouwen',10);await speel(t,[Z('rafiq','Snel besloten. Goed. Bilal regelt de rest.')])}
   else{const r2=await speel(t,[{anim:'rafiq',a:'give',prop:'geld'},{snd:'cash'},T_('Rafiq legt een tweede pak bovenop het eerste. Hij houdt ze samen omhoog, als een weegschaal.'),
-     Z('rafiq','Honderd per doos. Jij bepaalt hoeveel ritten.'),cam(...W3('sahara',17.6,2.0,5.0),...W3('sahara',20.4,1.2,5.6),{fov:42}),{anim:'bilal',a:'leun'},
+     Z('rafiq','Driehonderd per doos. Jij bepaalt hoeveel ritten.'),cam(...W3('sahara',17.6,2.0,5.0),...W3('sahara',20.4,1.2,5.6),{fov:42}),{anim:'bilal',a:'leun'},
      Z('rafiq','Niemand hoeft het te weten. Giovanni ook niet.'),
-     keuze('luca','',[{t:'"Oké. Honderd."',id:'ok'},{t:'"Ik moet erover nadenken."',id:'denk'}])]);if(!levend(t))return;F('tarief',100);
+     keuze('luca','',[{t:'"Oké. Driehonderd."',id:'ok'},{t:'"Ik moet erover nadenken."',id:'denk'}])]);if(!levend(t))return;F('tarief',300);
     if(r2==='ok'){F('rafiq_ja','na_bod');meter('vertrouwen',5);await speel(t,[Z('rafiq','Onderhandelaar. Dat mag één keer.')])}
     else{F('rafiq_ja','bedenktijd');await speel(t,[Z('rafiq','Denk maar. Morgen ligt er iets klaar. Haal je het, dan weet ik genoeg.')])}}
   await speel(t,[{anim:'bilal',a:'tel'},{snd:'telmachine'},{fade:'out',t:.5}]);['rafiq','luca','tarik','bilal'].forEach(k=>C.weg(k))},
@@ -487,7 +487,7 @@ hoofdstuk({id:'s1_h5',na:'s1_h6',vrij:true,blokken:[
    :pk==='container'?[Z('rafiq','Een doos in een container in de Villawijk. Duizend euro. Die werk je terug.'),Z('rafiq','Maar op dat bureau zei je niks. Dat telt ook.')]
    :[Z('rafiq','Onder een heg. In de Villawijk. Een hovenier heeft hem gevonden.'),Z('rafiq','Geen schuld. Maar iemand heeft nu een pizzadoos gezien die niet klopt.')];
   if(pk==='container'){F('schuld_rafiq',1000);meter('vertrouwen',-5)}
-  const n=F('nep_dozen')||0,loon=n*(F('tarief')||50),schuld=F('schuld_rafiq')||0,af=Math.min(schuld,loon);
+  const n=F('nep_dozen')||0,loon=n*(F('tarief')||150),schuld=F('schuld_rafiq')||0,af=Math.min(schuld,loon);
   await speel(t,[...hoek(true),cam(...W3('sahara',18.6,2.0,18.6),...W3('sahara',21.4,1.2,15.0),{fov:40}),{fade:'in',t:.5},...v,
    {anim:'bilal',a:'give',prop:'envelop',naar:'luca'},T_('Bilal legt een envelop neer. '+eur(loon-af)+(af?' (de rest gaat van je schuld af)':'')+'.'),Z('rafiq','Kom. Je gaat leren tellen.'),{fade:'out',t:.4}]);
   if(af)F('schuld_rafiq',schuld-af);if(loon-af>0)geld(loon-af,'Rafiq · '+n+' dozen');hoekWeg()},

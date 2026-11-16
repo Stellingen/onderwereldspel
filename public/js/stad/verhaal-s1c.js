@@ -291,7 +291,7 @@ hoofdstuk({id:'s1_h15a',na:'s1_epi',outfit:'bezorger',blokken:[
    {t:'Er klopt iets niet met de lading. Noordkade, twee uur. Kom alleen.',id:'lading',antwoord:()=>vt>=80?'Ik kom.':'Ik kom. Met Tarik.'},
    {t:'Ray was bij me. Hij weet iets. Ik moet je spreken. Noordkade.',id:'ray',antwoord:'Wat weet hij? Ik kom. Met Tarik.'},
    {t:'Ik zit in de problemen. Kun je komen? Noordkade, twee uur.',id:'hulp',antwoord:()=>vt>=50?'Blijf daar. Ik kom eraan.':'Ik kom. Met Tarik.'}]}))||'hulp';
-  F('lokbericht',id);F('tarik_mee',(id==='ray'||(id==='lading'&&vt<80)||(id==='hulp'&&vt<50))?1:0);geld(5000,'envelop van Ray');
+  F('lokbericht',id);F('tarik_mee',(id==='ray'||(id==='lading'&&vt<80)||(id==='hulp'&&vt<50))?1:0);geld(12500,'envelop van Ray');
   await speel(t,[verteller('n33'),{actor:'luca',at:[R.begin.x,R.begin.z-2],ry:0},{actor:'nova',at:[R.begin.x+.8,R.begin.z-1.4],ry:naar({x:R.begin.x+.8,z:R.begin.z-1.4},{x:R.begin.x,z:R.begin.z-2})},
    rond({x:R.begin.x,z:R.begin.z-2},PI*.4,3,1.7,1.5),{anim:'nova',a:'give',naar:'luca'},Z('nova','Rechtop. Je wacht op je baas.'),{fade:'out',t:.5}]);['ray','luca','nova'].forEach(k=>C.weg(k));
   G.P.x=R.begin.x;G.P.z=R.begin.z;zorgFiets(R.begin)},
