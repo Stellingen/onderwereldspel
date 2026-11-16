@@ -187,7 +187,7 @@ hoofdstuk({id:'s1_h1',na:'s1_h2',outfit:'bezorger',blokken:[
    cam(...W3('sahara',21.0,1.7,15.4),...W3('sahara',14,1.3,24.6),{fov:30}),{wait:.6},
    cam(...W3('sahara',20.4,1.5,16.6),...W3('sahara',21.4,1.2,14.4),{fov:26}),{snd:'glass'},{wait:.35},{snd:'glass'},{anim:'rafiq',a:'point',naar:[tk[0],tk[1]]},
    T_('Twee tikken met zijn ring tegen de waterpijp. Twee vingers omhoog. Zijn ogen blijven op het geld.'),
-   {move:'tarik',to:tk,t:1.2},cam(...W3('sahara',14,1.8,21.4),...W3('sahara',14.1,1.4,25.6),{fov:40}),{anim:'tarik',a:'duw',naar:'luca'},
+   {move:'tarik',to:tk,t:1.2},rond({x:(l[0]+tk[0])/2,z:(l[1]+tk[1])/2},-PI/2,4.6,2.0,1.5),{anim:'tarik',a:'duw',naar:'luca'},
    Z('tarik','Rustig, pizzaman. De baas is nog niet klaar met je.'),Z('luca','Hij heeft betaald. Tot op de cent.'),Z('tarik','Weet ik. Kom.'),
    {cam:{volg:'luca',af:[0,2.2,3.2],kijk:[0,1.2,-3]}},{par:[{move:'luca',to:W('sahara',21.4,17.6),t:3.2,wacht:false},{move:'tarik',to:W('sahara',20.2,18.6),t:3.2}]},{cam:null},{fade:'out',t:.4}]);
   C.weg('tarik');C.weg('luca');B.toon('sahara','uitsmijter',true)},
@@ -214,7 +214,7 @@ hoofdstuk({id:'s1_h1',na:'s1_h2',outfit:'bezorger',blokken:[
    cam(...W3('sahara',2.2,2.0,14.6),...W3('sahara',2.2,1.4,8.0),{fov:46}),{fade:'in',t:.4},{snd:'close'},
    {par:[{move:'rafiq',to:W('sahara',2.4,5.6),t:3.2,wacht:false},{move:'luca',to:W('sahara',2.2,6.8),t:3.2,wacht:false},{move:'tarik',to:W('sahara',2.0,8.4),t:3.2}]},{snd:'open'},{snd:'telmachine'},
    {actor:'bilal',at:W('sahara',21.0,4.6),ry:PI,anim:'tel'},actIn(['bilal']),
-   cam(...W3('sahara',2.6,2.4,6.4),...W3('sahara',10,1.0,3.2),{fov:52}),camNaar(...W3('sahara',6.0,2.2,6.0),...W3('sahara',17,1.0,3.0),6,{wacht:false}),verteller('n05'),
+   cam(...W3('sahara',3.4,3.2,6.3),...W3('sahara',11,1.0,3.0),{fov:56}),camNaar(...W3('sahara',7.0,3.0,6.3),...W3('sahara',17,1.0,3.0),6,{wacht:false}),verteller('n05'),
    {actor:'rafiq',at:W('sahara',19.2,5.6),ry:PI},{actor:'luca',at:W('sahara',20.6,5.8),ry:PI*.8,anim:'armen'},
    cam(...W3('sahara',22.4,2.0,6.4),...W3('sahara',19.8,1.2,4.6),{fov:40}),{wait:1.2},{anim:'rafiq',a:'give',prop:'geld',naar:'luca'},
    Z('rafiq','Voel maar.'),cam(...W3('sahara',20.4,2.6,6.6),...W3('sahara',20.4,1.0,5.4),{fov:30}),Z('rafiq','Vijfduizend. Een gewone maandag.'),
@@ -234,7 +234,7 @@ hoofdstuk({id:'s1_h1',na:'s1_h2',outfit:'bezorger',blokken:[
  async t=>{// naar buiten: Mo, het geld in zijn zak
   await zetBuitenSahara();const d=PL.sahara(),l=walk(d.x+.5,d.z+2.6,3),mo={x:d.x+1.6,z:d.z+1.0};const bu=G.binnen.uitsmijterBuiten;if(bu&&bu.g)bu.g.visible=false;
   await speel(t,[{speler:false},{actor:'mo',at:[mo.x,mo.z],ry:naar(mo,l),anim:'armen'},{actor:'luca',at:[l.x,l.z],ry:PI*.1},rond(l,PI*.8,4.2,1.9,1.5),{fade:'in',t:.5},
-   Z('mo','Rij voorzichtig, pizzaman.',{mood:'blij'}),cam(l.x-1.5,1.6,l.z+3.2,l.x+18,3,l.z+40,{fov:44}),{snd:'tram'},verteller('n06'),{fade:'out',t:.5}]);
+   Z('mo','Rij voorzichtig, pizzaman.',{mood:'blij'}),cam(l.x-7,3.4,l.z+9,l.x+2,1.4,l.z-2,{fov:46}),{snd:'tram'},verteller('n06'),{fade:'out',t:.5}]);
   C.weg('mo');C.weg('luca');if(bu&&bu.g)bu.g.visible=true;
   // geen terugrit: Bella Napoli, de jas aan de haak
   geld(-84,'kassa Bella Napoli');await binnen('napoli');B.toon('napoli','giovanni',false);

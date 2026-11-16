@@ -86,14 +86,27 @@ S1.cast=cast;
 const dur=t=>clamp(1.5+t.length/16,2.2,6.2);
 const Z=(wie,tekst,o)=>Object.assign({say:wie,text:tekst,t:dur(tekst)},o||{});
 const T_=(tekst,o)=>Object.assign({say:null,text:tekst,t:dur(tekst)},o||{});
-const cam=(px,py,pz,lx,ly,lz,o)=>({cam:Object.assign({pos:[px,py,pz],look:[lx,ly,lz]},o||{})});
-const camNaar=(px,py,pz,lx,ly,lz,t,o)=>({cam:Object.assign({to:{pos:[px,py,pz],look:[lx,ly,lz]},t:t||3},o||{})});
+// de poppetjes zijn groot: korte afstanden en smalle lenzen worden bij het afspelen ruimer gemaakt (niet door muren heen),
+// en op een staand scherm (telefoon) nog wat ruimer
+const staand=()=>innerWidth<innerHeight;
+function ruimer(p,l,uit){const dx=p[0]-l[0],dz=p[2]-l[2],D=hyp(dx,dz);if(uit)uit.tekort=1;if(D<.6||D>9)return p;const k=staand()?1.55:1.35;const doel=Math.min(D*k,D+4);let D2=doel;const ux=dx/D,uz=dz/D;
+  try{const bin=B&&B.waar&&B.waar();if(bin&&B.muurAt){for(let q=D;q<=D2+.35;q+=.2)if(B.muurAt(l[0]+ux*q,l[2]+uz*q)){D2=Math.max(D,q-.45);break}}
+    else if(!bin&&M.canStand&&p[1]<7){for(let q=D;q<=D2;q+=.4)if(!M.canStand(l[0]+ux*q,l[2]+uz*q,.2)){D2=Math.max(D,q-.6);break}}}catch(e){}
+  if(uit)uit.tekort=doel/Math.max(.1,D2);return [l[0]+ux*D2,p[1]+(D2-D)*.12,l[2]+uz*D2]}
+// lens: smalle lenzen ruimer; kon de camera niet ver genoeg naar achteren, dan de lens nog wat wijder
+const lens=(f,tekort)=>{const f0=f||(staand()?62:42),f1=f?f*(staand()?1.45:1.1):f0,t=Math.max(1,tekort||1);if(!f&&t<1.02)return undefined;
+  return Math.min(74,2*Math.atan(Math.tan(f1*Math.PI/360)*t)*360/Math.PI)};
+function camObj(pos,look,o){o=Object.assign({},o||{});const fov=o.fov;delete o.fov;const c=Object.assign({look},o),uit={tekort:1};
+  Object.defineProperty(c,'pos',{enumerable:true,get(){return ruimer(pos,look,uit)}});Object.defineProperty(c,'fov',{enumerable:true,get(){return lens(fov,uit.tekort)}});return c}
+const cam=(px,py,pz,lx,ly,lz,o)=>({cam:camObj([px,py,pz],[lx,ly,lz],o)});
+const camNaar=(px,py,pz,lx,ly,lz,t,o)=>{o=Object.assign({},o||{});const fov=o.fov;delete o.fov;const to={look:[lx,ly,lz]};const P_=[px,py,pz];Object.defineProperty(to,'pos',{enumerable:true,get(){return ruimer(P_,[lx,ly,lz])}});
+  const c=Object.assign({to,t:t||3},o);if(fov)Object.defineProperty(c,'fov',{enumerable:true,get(){return lens(fov)}});return {cam:c}};
 // schot rond een punt in de wereld (of [x,z]): hoek a, afstand d, hoogte h, kijkhoogte ly
-const rond=(p,a,d,h,ly,o)=>{const x=p.x!=null?p.x:p[0],z=p.z!=null?p.z:p[1];return L&&L.rond?L.rond(x,z,a,d,h,ly,o):cam(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,o)};
-const rondNaar=(p,a,d,h,ly,t,o)=>{const x=p.x!=null?p.x:p[0],z=p.z!=null?p.z:p[1];return L&&L.rondNaar?L.rondNaar(x,z,a,d,h,ly,t,o):camNaar(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,t,o)};
+const rond=(p,a,d,h,ly,o)=>{const x=p.x!=null?p.x:p[0],z=p.z!=null?p.z:p[1];d*=1.3;return L&&L.rond?L.rond(x,z,a,d,h,ly,o):cam(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,o)};
+const rondNaar=(p,a,d,h,ly,t,o)=>{const x=p.x!=null?p.x:p[0],z=p.z!=null?p.z:p[1];d*=1.3;return L&&L.rondNaar?L.rondNaar(x,z,a,d,h,ly,t,o):camNaar(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,t,o)};
 // over de schouder van a naar b
-function ots(a,b,d,zij,h){const dx=a.x-b.x,dz=a.z-b.z,n=hyp(dx,dz)||1,ux=dx/n,uz=dz/n;d=d||2.6;zij=zij==null?1.0:zij;h=h||2.2;
-  return cam(a.x+ux*d-uz*zij,h,a.z+uz*d+ux*zij,b.x,1.3,b.z)}
+function ots(a,b,d,zij,h){const dx=a.x-b.x,dz=a.z-b.z,n=hyp(dx,dz)||1,ux=dx/n,uz=dz/n;d=(d||2.6)*1.45;zij=(zij==null?1.0:zij)*1.35;h=Math.max(2.4,(h||2.2)+.3);
+  return cam(a.x+ux*d-uz*zij,h,a.z+uz*d+ux*zij,b.x,1.45,b.z)}
 const verteller=id=>({fn:async()=>{if(G.verteller)await G.verteller(id)}});
 const titel=(t,sub,d)=>({titel:t,sub:sub||'',t:d||3});
 // speel een scène; geeft de keuze terug (of null). Stopt stil als het verhaal intussen verder is.
