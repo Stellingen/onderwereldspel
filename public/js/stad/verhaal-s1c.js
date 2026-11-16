@@ -54,7 +54,7 @@ S1.zwijgen=function(o){css();return new Promise(res=>{const el=mgOpen(`<small>${
    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="s1-knop" data-z>Zwijgen <span style="opacity:.6">(houd E)</span></button><button class="s1-knop g" data-n>Rafiq noemen</button></div>`,{kleur:'#ff5a4a'});
   const u=el.querySelector('u'),st=el.querySelector('.s1-st');let v=0,houd=false,klaar=false,last=performance.now(),loslaat=0;
   const loop=()=>{if(klaar)return;const nu=performance.now(),dt=Math.min(.1,(nu-last)/1000);last=nu;if(houd){v+=dt/o.duur;st.textContent='';if(Math.random()<dt*2.5)fx('heart')}else if(v>0&&v<1){v=Math.max(0,v-dt*.6)}
-    u.style.width=(clamp(v,0,1)*100)+'%';try{G.cam&&G.cam.shake&&houd&&G.cam.shake(.02)}catch(e){}if(v>=1){klaar=true;weg();res('zwijg');return}requestAnimationFrame(loop)};requestAnimationFrame(loop);
+    u.style.width=(clamp(v,0,1)*100)+'%';if(v>=1){klaar=true;weg();res('zwijg');return}requestAnimationFrame(loop)};requestAnimationFrame(loop);
   const zb=el.querySelector('[data-z]'),aan=e=>{e&&e.preventDefault();houd=true},uit=()=>{if(houd&&v<1){loslaat++;st.textContent='Luca: "Wacht…"'}houd=false};
   zb.addEventListener('pointerdown',aan);zb.addEventListener('pointerup',uit);zb.addEventListener('pointerleave',uit);
   el.querySelector('[data-n]').onclick=()=>{if(klaar)return;klaar=true;weg();res('noem')};
@@ -141,7 +141,7 @@ VOLG.s1_h12={tekst:'Verder: Bella Napoli, vrijdagavond (Hoofdstuk 12)',p:()=>PL.
 
 /* =================== HOOFDSTUK 12 · De overkant =================== */
 async function opDeBrug(t,cb){for(let i=0;i<6000&&levend(t);i++){await sleep(200);const x=G.P.x,z=G.P.z;if(Math.abs(x-1080)<10&&z>988&&z<1050&&!C.active()){await cb();return true}}return false}
-hoofdstuk({id:'s1_h12',na:'s1_h13',vrij:true,blokken:[
+hoofdstuk({id:'s1_h12',na:'s1_h13',vrij:true,outfit:'bezorger',blokken:[
  async t=>{dag(19,21,0);outfit('bezorger');await binnen('napoli');B.toon('napoli','giovanni',false);
   await speel(t,[{fade:'out',t:.01},{speler:false},titel('Hoofdstuk 12','De overkant',2.6),{actor:'giovanni',at:W('napoli',...S1.NAP.giovanni),ry:0,anim:'kok'},{actor:'luca',at:W('napoli',...S1.NAP.luca),ry:PI},actIn(['giovanni','luca']),
    cam(...W3('napoli',8.2,2.0,9.6),...W3('napoli',8,1.2,7.2),{fov:34}),{fade:'in',t:.6},T_('Giovanni vouwt zelf een calzone dicht. Met meer zorg dan normaal.'),
@@ -249,7 +249,7 @@ hoofdstuk({id:'s1_h13',na:'s1_h14',vrij:true,blokken:[
 VOLG.s1_h14={tekst:'Verder: Bella Napoli, dinsdagavond (Hoofdstuk 14)',p:()=>PL.napoli(),sub:'Dinsdag · Calzone',actie:'Naar binnen'};
 
 /* =================== HOOFDSTUK 14 · Calzone =================== */
-hoofdstuk({id:'s1_h14',na:()=>F('finale')==='verraad'?'s1_h15a':'s1_h15b',blokken:[
+hoofdstuk({id:'s1_h14',outfit:'bezorger',na:()=>F('finale')==='verraad'?'s1_h15a':'s1_h15b',blokken:[
  async t=>{dag(23,21,30);outfit('bezorger');await binnen('napoli');B.toon('napoli','giovanni',false);
   await speel(t,[{fade:'out',t:.01},{speler:false},titel('Hoofdstuk 14','Calzone',2.6),{actor:'giovanni',at:W('napoli',...S1.NAP.giovanni),ry:0,anim:'kok'},{actor:'luca',at:W('napoli',...S1.NAP.luca),ry:PI},actIn(['giovanni','luca']),
    cam(...W3('napoli',8.2,2.0,9.6),...W3('napoli',8,1.2,7.2),{fov:34}),{fade:'in',t:.6},T_('Giovanni pakt een calzone in. Langzamer dan anders.'),
@@ -280,7 +280,7 @@ hoofdstuk({id:'s1_h14',na:()=>F('finale')==='verraad'?'s1_h15a':'s1_h15b',blokke
   else{F('finale',r==='verraad'?'verraad':'loyaal');if(r==='verraad')F('verraad_moment','boot')}}]});
 
 /* =================== HOOFDSTUK 15A · De val (verraad) =================== */
-hoofdstuk({id:'s1_h15a',na:'s1_epi',blokken:[
+hoofdstuk({id:'s1_h15a',na:'s1_epi',outfit:'bezorger',blokken:[
  async t=>{marijke(true);const R=RAY,loods_=F('verraad_moment')==='loods';tijd(22,20);outfit('bezorger');
   await speel(t,[{speler:false},{actor:'ray',at:[R.ray.x,R.ray.z],ry:0,anim:'sit',sitY:-.36},{actor:'luca',at:[R.luca.x,R.luca.z],ry:PI,anim:'sit',sitY:-.4},{actor:'nova',at:[R.ray.x+1.8,R.ray.z],ry:-PI/2,anim:'armen'},
    loods_?titel('De Marijke','Een uur later',2):null,cam(JX-4,2.0,JZ+7.4,JX,1.2,JZ+5,{fov:40}),{fade:'in',t:.4},loods_?Z('ray','Had dat meteen gezegd. Dat had je een lip gescheeld.'):null,Z('ray','Zie je. Zo moeilijk was dat niet.'),{anim:'ray',a:'drink'},
@@ -322,7 +322,7 @@ hoofdstuk({id:'s1_h15a',na:'s1_epi',blokken:[
   S1.lichtKnop(false);S1._zwart=z}]});
 
 /* =================== HOOFDSTUK 15B · Stil (loyaal) =================== */
-hoofdstuk({id:'s1_h15b',na:'s1_epi',blokken:[
+hoofdstuk({id:'s1_h15b',na:'s1_epi',outfit:'bezorger',blokken:[
  async t=>{marijke(true);const R=RAY;outfit('bezorger');
   await speel(t,[{speler:false},{actor:'ray',at:[R.ray.x,R.ray.z],ry:0,anim:'sit',sitY:-.36},{actor:'luca',at:[R.luca.x,R.luca.z],ry:PI,anim:'sit',sitY:-.4},{actor:'nova',at:[R.ray.x+1.8,R.ray.z],ry:-PI/2,anim:'armen'},
    cam(JX,1.5,JZ+6.6,JX,1.4,JZ+4.2,{fov:26}),{fade:'in',t:.3},{wait:3},Z('ray','Jammer.'),{anim:'ray',a:'point',naar:'nova'},{fade:'out',t:.4},{snd:'carDoor'},{snd:'engineStart'},

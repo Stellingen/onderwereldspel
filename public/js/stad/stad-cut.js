@@ -222,7 +222,7 @@ ui.addEventListener('pointerdown',e=>{if(e.target.closest('#svSkip,.sv-sub-k'))r
 ui.addEventListener('pointerup',e=>{clearTimeout(holdT);$s('svHold').classList.remove('on');if(e.target.closest('#svSkip,.sv-sub-k'))return;if(performance.now()-holdS<600)tap()});
 ui.addEventListener('pointercancel',()=>{clearTimeout(holdT);$s('svHold').classList.remove('on')});
 $s('svSkip').addEventListener('click',e=>{e.stopPropagation();doSkip()});
-addEventListener('keydown',e=>{if(!active)return;const k=e.key.toLowerCase();const t=e.target;if(t&&/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
+addEventListener('keydown',e=>{if(!active)return;if(document.querySelector('.s1-mg,.h1-mg'))return;const k=e.key.toLowerCase();const t=e.target;if(t&&/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
   if(k==='escape'){e.preventDefault();e.stopImmediatePropagation();doSkip();return}
   if(keuzeOpen){const n=keuzeOpen.length;if(['arrowdown','s','arrowup','w'].includes(k)){e.preventDefault();e.stopImmediatePropagation();keuzeOpen.sel=(keuzeOpen.sel+(k==='arrowdown'||k==='s'?1:-1)+n)%n;drawK();return}
     if(k==='e'||k===' '||k==='enter'){e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)keuzeOpen.pick(keuzeOpen.sel);return}}
