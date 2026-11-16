@@ -95,8 +95,8 @@ hoofdstuk({id:'s1_h11',na:'s1_h12',vrij:true,blokken:[
   ['marco','elena','giulia','luca'].forEach(k=>C.weg(k));taart.parent&&taart.parent.remove(taart);F('horloge',1)},
  async t=>{// 17:00: een doos aan de deur
   tijd(17,0);await binnen('thuis');
-  await speel(t,[{speler:false},{snd:'deurbel'},{actor:'luca',at:W('thuis',2.8,8.8),ry:-PI/2,anim:'give'},{actor:'elena',at:W('thuis',5.4,8.4),ry:PI/2},actIn(['luca','elena']),
-   cam(...W3('thuis',6.6,2.0,9.4),...W3('thuis',3.0,1.3,8.8),{fov:44}),{fade:'in',t:.4},T_('Een jongen op een scooter geeft een doos af. Op het kaartje: "22:00. Jij bent de gast. R."'),
+  await speel(t,[{speler:false},{snd:'deurbel'},{actor:'luca',at:W('thuis',2.8,8.4),ry:-PI/2,anim:'give'},{actor:'elena',at:W('thuis',5.4,9.2),ry:-PI/2},actIn(['luca','elena']),
+   cam(...W3('thuis',9.6,2.5,8.3),...W3('thuis',3.4,2.0,8.6),{fov:48,strak:true}),{fade:'in',t:.4},T_('Een jongen op een scooter geeft een doos af. Op het kaartje: "22:00. Jij bent de gast. R."'),
    Z('elena','Van wie is dat?'),Z('luca','Van Giovanni. Voor mijn verjaardag.'),T_('Elena kijkt naar de doos. Ze zegt niks.'),{fade:'out',t:.3}]);C.weg('luca');C.weg('elena');
   const p=W('thuis',13.6,8.6);if(!await doelNaar(t,'Je kamer: de doos openmaken',{x:p[0],z:p[1],binnen:'thuis'},{actie:'Doos openen',sub:'Van R.'}))return;
   await speel(t,[{speler:false},{actor:'luca',at:W('thuis',13.6,9.2),ry:0},actIn(['luca']),cam(...W3('thuis',13.6,2.2,11.4),...W3('thuis',13.6,.9,8.6),{fov:40}),{fade:'in',t:.3},
@@ -387,7 +387,7 @@ hoofdstuk({id:'s1_epi',na:'s1_vrij',blokken:[
    'Dex: '+(F('dex_weet')?'hij weet het':'hij weet van niks'),'De controle: '+({gepraat:'eruit gepraat',doos:'de tas, net goed',bureau:'het bureau'}[F('controle')]||'—'),
    'Edwin: '+(F('edwin')==='angst'?'bang gemaakt':'betaald'),'Ray: '+({grap:'vond je grappig',netjes:'vond je netjes',stil:'vond je stil'}[F('ray_indruk')]||'—')].map(x=>'· '+E(x)).join('<br>');
   const v=await S1.teaser({knoppen:true,samenvatting:'<b>Jouw keuzes gaan mee naar Seizoen 2</b><br>'+s});
-  if(v==='opnieuw'){try{const st=ST.st(),inst=st.inst;Object.keys(st).forEach(k=>delete st[k]);st.v=3;st.inst=inst||{};st.step='start';st.reset=Date.now();try{window.save&&window.save()}catch(e){}}catch(e){}setTimeout(()=>location.reload(),400);return 'stop'}}]});
+  if(v==='opnieuw'){try{const st=ST.st(),inst=st.inst;Object.keys(st).forEach(k=>delete st[k]);st.v=3;st.inst=inst||{};st.step='start';st.reset=Date.now();st.s1reset=S1.RESET_V;try{window.save&&window.save()}catch(e){}}catch(e){}setTimeout(()=>location.reload(),400);return 'stop'}}]});
 // na het seizoen: vrij rondrijden, klussen open, verhaal op slot
 ST.step('s1_vrij',{async start(){const t=S1.nieuw();try{B.slot('sahara',true,'Verzegeld · Politie')}catch(e){}outfit('straat');F('s1_hfd','vrij');
   sein('Seizoen 1 is klaar. Klussen bij Bella Napoli en op de hoek blijven open. Seizoen 2: 24 november.','#ff5a4a');

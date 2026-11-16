@@ -30,13 +30,16 @@ function start(id,vanaf){const n=NUM[id];if(!n)return null;const d=dek();if(!d)r
   const p=d.el.play();if(p&&p.catch)p.catch(()=>{});return d}
 // kies een stemming (of null/'stil' voor stilte)
 // Wisselen wacht even (wachtT): snel na elkaar wisselen (einde scène, volgende scène) gaf twee of drie nummers door elkaar.
-let wachtT=0;
+// Een nummer blijft ook minstens een paar seconden staan (sindsT): anders ging het heen en weer (droom, stad, droom) tussen twee
+// scènes. Naar spanning, stilte of een achtervolging gaat sneller, dat is drama.
+let wachtT=0,sindsT=0;
 function zet(m,direct){wil=m;const id=m==='stil'?null:(STEMMING[m]||(NUM[m]?m:(m==null?'stad':null)));
   clearTimeout(wachtT);wachtT=0;
   if(id===nu&&!direct)return;
-  if(!direct&&ontgrendeld&&nu!=null){wachtT=setTimeout(()=>{wachtT=0;wissel(id)},750);return}
+  if(!direct&&ontgrendeld&&nu!=null){const hold=(id==null||id==='spanning'||id==='jacht'||m==='spanning'||m==='jacht')?2500:7000;
+    const w=Math.max(750,sindsT+hold-performance.now());wachtT=setTimeout(()=>{wachtT=0;wissel(id)},w);return}
   wissel(id)}
-function wissel(id){nu=id;if(!ontgrendeld)return;
+function wissel(id){nu=id;sindsT=performance.now();if(!ontgrendeld)return;
   // staat dit nummer nog uit te faden? dan dat dek terughalen in plaats van het nummer een tweede keer te starten
   const terug=id?DEKS.find(d=>d.bezig&&d.num===id&&!d.over):null;
   DEKS.forEach(d=>{if(d.bezig&&d!==terug)d.doel=0});

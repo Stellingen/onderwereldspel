@@ -103,11 +103,14 @@ const cam=(px,py,pz,lx,ly,lz,o)=>({cam:camObj([px,py,pz],[lx,ly,lz],o)});
 const camNaar=(px,py,pz,lx,ly,lz,t,o)=>{o=Object.assign({},o||{});const fov=o.fov;delete o.fov;if(o.strak){delete o.strak;return {cam:Object.assign({to:{pos:[px,py,pz],look:[lx,ly,lz]},t:t||3,vrij:true},o,fov?{fov}:{})}}const to={look:[lx,ly,lz]};const P_=[px,py,pz];Object.defineProperty(to,'pos',{enumerable:true,get(){return ruimer(P_,[lx,ly,lz])}});
   const c=Object.assign({to,t:t||3},o);if(fov)Object.defineProperty(c,'fov',{enumerable:true,get(){return lens(fov)}});return {cam:c}};
 // schot rond een punt in de wereld (of [x,z]): hoek a, afstand d, hoogte h, kijkhoogte ly
-const rond=(p,a,d,h,ly,o)=>{const x=p.x!=null?p.x:p[0],z=p.z!=null?p.z:p[1];d*=1.3;return L&&L.rond?L.rond(x,z,a,d,h,ly,o):cam(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,o)};
-const rondNaar=(p,a,d,h,ly,t,o)=>{const x=p.x!=null?p.x:p[0],z=p.z!=null?p.z:p[1];d*=1.3;return L&&L.rondNaar?L.rondNaar(x,z,a,d,h,ly,t,o):camNaar(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,t,o)};
+// de poppetjes zijn ±2,6 m: een rondom-shot op 1,5-1,8 m kijkt tegen kinnen en achterhoofden aan. Op ooghoogte brengen
+// (lage camera's onder 1,2 m en shots op handen/tafels onder 1,0 m blijven zoals ze zijn).
+const ooghoogte=(h,ly)=>[h==null?2.3:(h>=1.2&&h<2.3?h+.6:h),ly==null?1.9:(ly>=1.0&&ly<2.0?ly+.5:ly)];
+const rond=(p,a,d,h,ly,o)=>{const x=p.x!=null?p.x:p[0],z=p.z!=null?p.z:p[1];d*=1.3;[h,ly]=ooghoogte(h,ly);return L&&L.rond?L.rond(x,z,a,d,h,ly,o):cam(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,o)};
+const rondNaar=(p,a,d,h,ly,t,o)=>{const x=p.x!=null?p.x:p[0],z=p.z!=null?p.z:p[1];d*=1.3;[h,ly]=ooghoogte(h,ly);return L&&L.rondNaar?L.rondNaar(x,z,a,d,h,ly,t,o):camNaar(x+sin(a)*d,h,z+cos(a)*d,x,ly==null?1.3:ly,z,t,o)};
 // over de schouder van a naar b
 function ots(a,b,d,zij,h){const dx=a.x-b.x,dz=a.z-b.z,n=hyp(dx,dz)||1,ux=dx/n,uz=dz/n;d=(d||2.6)*1.45;zij=(zij==null?1.0:zij)*1.35;h=Math.max(2.4,(h||2.2)+.3);
-  return cam(a.x+ux*d-uz*zij,h,a.z+uz*d+ux*zij,b.x,1.45,b.z)}
+  return cam(a.x+ux*d-uz*zij,h,a.z+uz*d+ux*zij,b.x,1.95,b.z)}
 const verteller=id=>({fn:async()=>{if(G.verteller)await G.verteller(id)},vt:id});
 const titel=(t,sub,d)=>({titel:t,sub:sub||'',t:d||3});
 // speel een scène; geeft de keuze terug (of null). Stopt stil als het verhaal intussen verder is.
@@ -371,8 +374,12 @@ const iv=setInterval(()=>{if(!G.ready||!G.story||!G.cut||!G.binnen||!G.story.ste
   setTimeout(huisInit,600);
   (S1.onStart||[]).forEach(f=>{try{f()}catch(e){console.error(e)}});
   // oude voortgang (hoofdstukken van het vorige verhaal): seizoen 1 begint opnieuw
-  try{const st=ST.st();if(st.step&&!/^(s1_|start$)/.test(st.step)){const inst=st.inst;Object.keys(st).forEach(k=>{if(k!=='inst')delete st[k]});st.v=3;st.inst=inst||{};st.step='start';st.reset=Date.now();
+  // release van Seizoen 1: iedereen begint één keer helemaal opnieuw aan De Bezorger (S1.RESET_V ophogen = nog een keer)
+  try{const st=ST.st();if(st.s1reset!==S1.RESET_V){const inst=st.inst;Object.keys(st).forEach(k=>{if(k!=='inst')delete st[k]});st.v=3;st.inst=inst||{};st.step='start';st.s1reset=S1.RESET_V;st.reset=Date.now();
+    try{window.save&&window.save()}catch(e){}}}catch(e){console.error(e)}
+  try{const st=ST.st();if(st.step&&!/^(s1_|start$)/.test(st.step)){const inst=st.inst;Object.keys(st).forEach(k=>{if(k!=='inst')delete st[k]});st.v=3;st.inst=inst||{};st.s1reset=S1.RESET_V;st.step='start';st.reset=Date.now();
     try{window.save&&window.save()}catch(e){}setTimeout(()=>{try{if(ST.st().step==='start'&&!G.titelOpen)ST.goto('start')}catch(e){}},900)}}catch(e){console.error(e)}
 },120);
 S1.onStart=[];
+S1.RESET_V='release-1';
 })();

@@ -88,3 +88,6 @@ body.sv-geen-ondertitels .sv-sub.keuze:not([hidden]){display:grid!important}   /
 
 /* klikspel-meldingen (weer, energie) niet midden in een cutscène */
 body.sv-incut #toasts{display:none!important}
+
+/* de lichtknop van de fiets en de wapenknop horen niet in een cutscène */
+body.sv-incut .s1-licht,body.sv-incut .s1-gooi{display:none!important}

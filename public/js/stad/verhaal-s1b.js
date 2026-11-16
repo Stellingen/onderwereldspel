@@ -156,8 +156,8 @@ VOLG.s1_h8={tekst:'Verder: naar huis, maandagavond (Hoofdstuk 8)',p:()=>PL.thuis
 /* =================== HOOFDSTUK 8 · De hoek =================== */
 hoofdstuk({id:'s1_h8',na:'s1_h9',vrij:true,blokken:[
  async t=>{dag(8,19,45);outfit('straat');await binnen('thuis');['marco','elena','giulia'].forEach(k=>B.toon('thuis',k,false));
-  await speel(t,[{fade:'out',t:.01},{speler:false},titel('Hoofdstuk 8','De hoek',2.6),{actor:'elena',at:W('thuis',12.2,2.25),ry:PI,anim:'kok'},{actor:'luca',at:W('thuis',4.0,8.6),ry:PI/2},
-   {actor:'marco',at:W('thuis',3.6,6.25),ry:PI,anim:'tv',sitY:-.4},actIn(['elena','luca','marco']),cam(...W3('thuis',7.2,2.3,8.8),...W3('thuis',6.0,1.2,5.4),{fov:50}),{fade:'in',t:.6},
+  await speel(t,[{fade:'out',t:.01},{speler:false},titel('Hoofdstuk 8','De hoek',2.6),{actor:'elena',at:W('thuis',12.2,2.25),ry:PI,anim:'kok'},{actor:'luca',at:W('thuis',5.0,6.9),ry:PI*1.15},
+   {actor:'marco',at:W('thuis',3.6,6.25),ry:PI,anim:'tv',sitY:-.4},actIn(['elena','luca','marco']),cam(...W3('thuis',9.4,2.55,1.8),...W3('thuis',4.8,1.9,6.2),{fov:54,strak:true}),{fade:'in',t:.6},
    Z('elena','Ga je weg? Je werkt toch niet op maandag?'),Z('luca','Bij Dex.'),Z('marco','Om tien uur thuis.'),{snd:'door'},{fade:'out',t:.4}]);['elena','luca','marco'].forEach(k=>C.weg(k));await buiten()},
  async t=>{if(!await doelNaar(t,'De hoek · Tramlaan, bij de speeltuin',PL.hoek(),{actie:'Naar Bilal',sub:'De hoek'}))return;tijd(20,0);
   const h=PL.hoek(),b=walk(h.x-2,h.z-3,4),l=walk(h.x+.6,h.z-1,4),dx=F('dex_wil')==='erin';
@@ -202,7 +202,7 @@ hoofdstuk({id:'s1_h9',na:'s1_h10',vrij:true,blokken:[
    Z('giulia','Ik zeg niks tegen ze. Nog niet. Maar jij stopt.'),Z('luca','Ga jij maar nachtdiensten draaien voor niks. Ik doe het anders.'),
    cam(...W3('thuis',12.8,1.8,10.2),...W3('thuis',11.6,1.6,11.0),{fov:30}),{wait:1.4},T_('Giulia zegt niks. Ze stapt opzij van de deur.'),
    {fn:()=>outfit('straat')},{actor:'marco',at:W('thuis',3.6,6.25),ry:PI,anim:'slaap',sitY:-.4},{actor:'luca',at:W('thuis',5.0,8.6),ry:-PI/2},actIn(['marco','luca']),
-   cam(...W3('thuis',7.2,2.3,8.8),...W3('thuis',3.0,1.2,7.0),{fov:50}),{move:'luca',to:W('thuis',2.0,9.0),t:1.4,wacht:false},Z('elena','Luca? Waar ga je heen? Het is half tien!'),
+   cam(...W3('thuis',9.4,2.45,8.75),...W3('thuis',2.4,2.0,8.9),{fov:50,strak:true}),{move:'luca',to:W('thuis',2.0,9.0),t:1.4,wacht:false},Z('elena','Luca? Waar ga je heen? Het is half tien!'),
    {snd:'door'},{anim:'marco',a:'schrik'},{fade:'out',t:.4}]);
   if(F('giulia_weet')){geld(100,'terug van Giulia')}['luca','giulia','marco'].forEach(k=>C.weg(k));await buiten();tijd(21,40)},
  async t=>{// buiten: Kenny, aan het eind van zijn dienst
@@ -218,13 +218,13 @@ hoofdstuk({id:'s1_h9',na:'s1_h10',vrij:true,blokken:[
   await speel(t,[win?null:T_('Luca grijpt een fietsslot van het rek.'),{snd:'punch'},{snd:'hit'},cam(k.x+5,1.0,k.z+3,sc?sc.position.x:k.x,1,sc?sc.position.z:k.z,{fov:36}),{wait:1},
    {actor:'kenny',at:[k.x,k.z],ry:naar(k,l),anim:'bang'},{actor:'luca',at:[k.x-.9,k.z-.4],ry:naar({x:k.x-.9,z:k.z-.4},k),anim:'hurk'},rond(k,naar(k,l)+PI*.3,3,1.5,.8)]);
   await mgHold({kop:'De portemonnee',titel:'Pak zijn bezorgportemonnee',uitleg:'Houd vast.',stappen:1,duur:1});
-  await speel(t,[{snd:'cash'},T_('Vierhonderd euro. Contant geld van een avond Rapido.'),cam(k.x-.4,.5,k.z+1.6,k.x-.9,1.4,k.z-.4,{fov:44}),
+  await speel(t,[{snd:'cash'},T_('Vierhonderd euro. Contant geld van een avond Rapido.'),cam(k.x-.5,.6,k.z+2.0,k.x-.9,1.6,k.z-.4,{fov:50,strak:true}),
    Z('luca','Dit is mijn buurt. Ik zie je hier nooit meer.'),Z('luca','Ook niet met een bestelling. Rapido stuurt maar iemand anders.'),Z('luca','Anders kom ik jou zoeken.'),
    T_('Kenny knikt. Hij kijkt hem niet aan.'),{actor:'ans',at:[PL.ans().x,PL.ans().z],ry:naar(PL.ans(),k),y:13.6},cam(PL.ans().x+2,15.4,PL.ans().z-3,k.x,0,k.z,{fov:40}),{wait:1.6},
    T_('Op de galerij staat buurvrouw Ans, met haar boodschappentas. Ze heeft alles gezien.'),{weg:'ans'},{fade:'out',t:.4}]);
   C.weg('kenny');C.weg('luca');if(sc)sc.parent&&sc.parent.remove(sc);geld(400,'Kenny (Rapido)');meter('naam',15);F('naam_trap',2);F('ans_zag',1);F('kenny_weg',1)},
  async t=>{const l=P();await speel(t,[{speler:false},{actor:'luca',at:[l.x,l.z],ry:PI*.5},{actor:'klant2',at:[l.x+6,l.z+3],ry:-PI/2,anim:'leun'},{actor:'klant4',at:[l.x+7,l.z+4],ry:-PI/2,anim:'armen'},
-   {cam:{volg:'luca',af:[1.8,1.9,-3.4],kijk:[0,1.2,3]}},{fade:'in',t:.4},{move:'luca',to:[l.x+14,l.z+1],t:4.4,wacht:false},{wait:1.6},{anim:'klant2',a:'turn',ry:PI},{move:'klant4',to:[l.x+7,l.z+6.4],t:.8},
+   {cam:{volg:'luca',af:[2.0,2.6,-4.0],kijk:[0,2.0,3]}},{fade:'in',t:.4},{move:'luca',to:[l.x+14,l.z+1],t:4.4,wacht:false},{wait:1.6},{anim:'klant2',a:'turn',ry:PI},{move:'klant4',to:[l.x+7,l.z+6.4],t:.8},
    T_('Twee jongens bij de snackbar gaan opzij.'),{fn:()=>{try{L.tril&&L.tril()}catch(e){}bericht('R.','Hoorde het van Rapido. Zaterdag neem ik je mee. Doe iets netjes aan.',{kleur:'#5a5d63'})}},
    verteller('n20'),{cam:null},{fade:'out',t:.5}]);['luca','klant2','klant4'].forEach(k=>C.weg(k));
   sein('De hoek is nu een klus (avond). Thuis: praten met Giulia kan.','#7fd1ff');F('hoek_klus',1)}]});
@@ -233,8 +233,8 @@ VOLG.s1_h10={tekst:'Verder: zaterdagavond, Rafiq haalt je op (Hoofdstuk 10)',p:(
 /* =================== HOOFDSTUK 10 · Groen licht =================== */
 hoofdstuk({id:'s1_h10',na:'s1_h11',vrij:true,blokken:[
  async t=>{dag(13,18,30);await binnen('thuis');['marco','elena','giulia'].forEach(k=>B.toon('thuis',k,false));outfit('casual');
-  const r=await speel(t,[{fade:'out',t:.01},{speler:false},titel('Hoofdstuk 10','Groen licht',2.6),{actor:'marco',at:W('thuis',3.2,8.4),ry:-PI/2},{actor:'luca',at:W('thuis',4.8,8.6),ry:PI/2},actIn(['marco','luca']),
-   cam(...W3('thuis',7.2,2.0,9.2),...W3('thuis',3.6,1.4,8.4),{fov:44}),{fade:'in',t:.6},Z('marco','Waar ga jij zo netjes heen?'),
+  const r=await speel(t,[{fade:'out',t:.01},{speler:false},titel('Hoofdstuk 10','Groen licht',2.6),{actor:'marco',at:W('thuis',3.9,9.1),ry:PI/2},{actor:'luca',at:W('thuis',5.6,8.25),ry:-PI/2},actIn(['marco','luca']),
+   cam(...W3('thuis',9.4,2.45,8.75),...W3('thuis',4.2,2.1,9.0),{fov:48,strak:true}),{fade:'in',t:.6},Z('marco','Waar ga jij zo netjes heen?'),
    keuze('luca','',[{t:'"Verjaardag van iemand."',id:'jarig'},{t:'"Gaat je niks aan."',id:'bot'}])]);
   if(r==='bot'){meter('band_marco',-5);plusF('marco_vermoeden')}
   await speel(t,[r==='bot'?Z('marco','Zo praat je niet tegen mij.'):Z('marco','Doe hem de groeten. Wie het ook is.'),{fade:'out',t:.4}]);C.weg('marco');C.weg('luca');await buiten();

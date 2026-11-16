@@ -126,7 +126,7 @@ function vraag(v,opnieuw){sluitVraag();const q=document.createElement('div');q.i
   q.querySelector('[data-ja]').onclick=()=>{sluitVraag();if(opnieuw)wis();klaar()};
   q.querySelector('[data-nee]').onclick=()=>{if(opnieuw)sluitVraag();else location.href='/game'};
   q.addEventListener('click',e=>{if(e.target===q)sluitVraag()});setTimeout(()=>{try{q.querySelector('[data-ja]').focus()}catch(e){}},60)}
-function wis(){try{const st=G.story.st(),inst=st.inst;Object.keys(st).forEach(k=>delete st[k]);st.v=3;st.inst=inst||{};st.step='start';st.reset=Date.now();window.save&&window.save()}catch(e){console.error(e)}}
+function wis(){try{const st=G.story.st(),inst=st.inst;Object.keys(st).forEach(k=>delete st[k]);st.v=3;st.inst=inst||{};st.step='start';st.reset=Date.now();if(G.s1&&G.s1.RESET_V)st.s1reset=G.s1.RESET_V;window.save&&window.save()}catch(e){console.error(e)}}
 
 /* ---------- klaar: het scherm vervaagt, het verhaal begint of gaat verder ---------- */
 function klaar(){const ov=$('#tiOv');try{G.s1&&G.s1.doekVast&&G.s1.doekVast(2600)}catch(e){}   // van het titelscherm via zwart naar de eerste scène

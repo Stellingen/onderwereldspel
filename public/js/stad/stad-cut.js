@@ -260,7 +260,53 @@ function blok(x,z,y){const B=G.binnen;if(B&&B.waar&&B.waar()&&x>4000)return B.mu
   const M=window.STAD_MAP;if(!M||!M.solid||x>4000)return false;const xi=Math.floor(x),zi=Math.floor(z);if(xi<0||zi<0||xi>=M.W||zi>=M.H)return false;const i=zi*M.W+xi;
   if(M.solid[i]!==1)return false;if(!HGT)hoogtes(M);return y<(HGT[i]||2.6)}
 CUT.blok=blok;
+/* ---------- 0) regisseur: is het geschreven shot echt mis (camera in of achter een muur, iemand vol voor het gezicht, camera
+   tegen iemand aan), dan zoekt hij één keer per shot een vrij standpunt rond het gezicht van wie gefilmd wordt: liefst van voren,
+   zo dicht mogelijk bij de geschreven richting, op ooghoogte. Goede shots blijven precies zoals ze geschreven zijn. ---------- */
+function mensen(){const L=[];const neem=a=>{if(!a||!a.g||!a.g.parent||a.g.visible===false||!a.P||!a.P.head)return;a.P.head.getWorldPosition(kl0);const sc=a.schaal||1;
+  L.push({a,x:a.x,z:a.z,hy:kl0.y,face:kl0.y+.35*sc,top:kl0.y+.8*sc,R:.48*sc})};for(const id in ACT)neem(ACT[id]);for(const a of PERS)if(a&&a.id&&!ACT[a.id])neem(a);return L}
+// bomen buiten: de kruin is een blok (zoals in stad-gfx getekend); een camera erin of erachter ziet alleen blad
+let BOOM=null;function bomen(){if(BOOM)return BOOM;BOOM=new Map();const M=window.STAD_MAP;((M&&M.props)||[]).forEach(p=>{if(p.k!=='tree'&&p.k!=='stree'&&p.k!=='palm')return;const s=p.s||1;
+  const b=p.k==='tree'?{hw:1.4*s,y0:1.6*s,y1:4.3*s}:p.k==='stree'?{hw:1.1*s,y0:2.3*s,y1:4.6*s}:{hw:2.6,y0:5.2*s,y1:6.0*s};b.x=p.x;b.z=p.z;
+  const k=Math.floor(p.x/8)+','+Math.floor(p.z/8);if(!BOOM.has(k))BOOM.set(k,[]);BOOM.get(k).push(b)});return BOOM}
+function inBoom(x,z,y,m){if(x>4000)return false;m=m==null?.35:m;const B=bomen(),cx=Math.floor(x/8),cz=Math.floor(z/8);
+  for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const L=B.get((cx+i)+','+(cz+j));if(!L)continue;for(const b of L)if(Math.abs(b.x-x)<b.hw+m&&Math.abs(b.z-z)<b.hw+m&&y>b.y0-m&&y<b.y1+m)return true}return false}
+function muurOpLijn(ax,ay,az,bx,by,bz){const D=Math.hypot(bx-ax,bz-az);if(D<.3)return false;const n=Math.ceil(D/.14);
+  for(let k=1;k<n;k++){const t=k/n,x=ax+(bx-ax)*t,z=az+(bz-az)*t,y=ay+(by-ay)*t;if(blok(x,z,y))return true;if(D*(1-t)>1.2&&inBoom(x,z,y,0))return true}return false}
+function iemandOpLijn(px,py,pz,fx,fy,fz,L,sub){for(const o of L){if(o===sub)continue;
+    const dc=Math.hypot(px-o.x,pz-o.z);
+    if(dc<o.R+.55&&py<o.top+.25)return true;                                             // camera tegen iemand aan
+    // iemand vlak voor de lens (een grote wazige rug of achterhoofd over een derde van het beeld)
+    if(dc<1.75&&py<o.top+.4&&((o.x-px)*(fx-px)+(o.z-pz)*(fz-pz))>0)return true;
+    if(dc<2.6&&py<o.top+.3){const vx=fx-px,vz=fz-pz,vl=Math.hypot(vx,vz)||1,ox=o.x-px,oz=o.z-pz;const c=(ox*vx+oz*vz)/(dc*vl);if(c>.927&&dc<vl-.4)return true}
+    const sx=fx-px,sz=fz-pz,L2=sx*sx+sz*sz;if(L2<1e-6)continue;let u=((o.x-px)*sx+(o.z-pz)*sz)/L2;if(u<=.04||u>=.96)continue;
+    const qx=px+sx*u,qz=pz+sz*u,qy=py+(fy-py)*u;if(Math.hypot(qx-o.x,qz-o.z)<o.R+.12&&qy<o.top+.05)return true}   // iemand tussen camera en gezicht
+  return false}
+function regisseur(p,l,f){const sh=CAMx||{};if(sh.volg)return null;if(sh._auto!==undefined)return sh._auto;sh._auto=null;
+  const L=mensen();let sub=null,bd=.9;for(const o of L){const d=Math.hypot(o.x-l.x,o.z-l.z);if(d<bd){bd=d;sub=o}}
+  if(!sub){// geen persoon in beeld (een scooter, een gevel, de stad): staat de camera in een boom of muur, dan naar voren tot hij vrij is
+    if(!(blok(p.x,p.z,p.y)||inBoom(p.x,p.z,p.y,.3)))return null;const D=Math.hypot(l.x-p.x,l.y-p.y,l.z-p.z);if(D<.5)return null;
+    for(let s2=.3;s2<D-.6;s2+=.3){const t=s2/D,x=p.x+(l.x-p.x)*t,y=p.y+(l.y-p.y)*t,z=p.z+(l.z-p.z)*t;if(!blok(x,z,y)&&!inBoom(x,z,y,.3)){sh._auto={px:x,py:y,pz:z,lx:l.x,ly:l.y,lz:l.z};return sh._auto}}
+    return null}
+  if(l.y>sub.face+.5||l.y<.9)return null;   // bewust boven het hoofd, of handen, tafel, telefoon
+  const fx=sub.x,fy=sub.face-.05,fz=sub.z,dP=Math.hypot(p.x-fx,p.z-fz);
+  const mis=blok(p.x,p.z,p.y)||inBoom(p.x,p.z,p.y,.4)||muurOpLijn(p.x,p.y,p.z,fx,fy,fz)||iemandOpLijn(p.x,p.y,p.z,fx,fy,fz,L,sub)||(p.y>=1.0&&dP<2.1)||(p.y>=1.0&&dP<4.2&&p.y<fy-.75);
+  if(!mis)return null;
+  const B=G.binnen,w=B&&B.waar&&B.waar(),pf=(w&&p.x>4000&&B.plafond&&B.plafond(w))||99,ytop=Math.min(pf-.3,99);
+  const aA=Math.atan2(p.x-fx,p.z-fz),ry=sub.a.ry||0,fwx=Math.sin(ry),fwz=Math.cos(ry),Dw=Math.max(2.5,Math.min(4.6,dP||3.3));
+  let best=null,bs=1e9;
+  for(const da of [0,.3,-.3,.6,-.6,.9,-.9,1.25,-1.25,1.6,-1.6,2.0,-2.0,2.5,-2.5,Math.PI])for(const D of [Dw,3.0,3.6,4.3,2.6])for(const dy of [.2,.5]){
+    const a=aA+da,x=fx+Math.sin(a)*D,z=fz+Math.cos(a)*D,y=Math.min(ytop,fy+dy);if(y<fy-.3)continue;
+    if(blok(x,z,y)||inBoom(x,z,y,.5)||muurOpLijn(x,y,z,fx,fy,fz)||iemandOpLijn(x,y,z,fx,fy,fz,L,sub))continue;
+    // ook een stukje ruimte achter de camera (niet tegen een muur aan geplakt)
+    if(blok(fx+Math.sin(a)*(D+.35),fz+Math.cos(a)*(D+.35),y))continue;
+    const voor=Math.sin(a)*fwx+Math.cos(a)*fwz;   // 1 = recht van voren, -1 = van achteren
+    const sc=Math.abs(da)*.9+Math.abs(D-3.3)*.35+(voor<-.2?2.2:voor<.25?.7:0)+(dy>.3?.15:0);
+    if(sc<bs){bs=sc;best={x,y,z}}}
+  if(!best)return null;sh._auto={px:best.x,py:best.y,pz:best.z,lx:fx,ly:fy-.15,lz:fz};
+  if(CUT.regieLog)try{CUT.regieLog(p,l,sh._auto,sub.a.id||'')}catch(e){}return sh._auto}
 function kader(p,l,f){
+  {const au=regisseur(p,l,f);if(au){p.set(au.px,au.py,au.pz);l.set(au.lx,au.ly,au.lz);return}}
   // 1) een muur of gevel tussen camera en onderwerp: eerst om het onderwerp heen draaien (zelfde hoogte) tot er vrij zicht is;
   //    lukt dat niet, dan schuift de camera naar voren tot vlak voor de muur. De gekozen draaiing blijft het hele shot gelijk.
   const dx=p.x-l.x,dz=p.z-l.z,dh=Math.hypot(dx,dz);
@@ -330,7 +376,7 @@ CUT.rig=function(dt,cam){
     v1.set(a.x+s*o[2]+c*o[0],(a.y||0)+o[1],a.z+c*o[2]-s*o[0]);CAM.pos.lerp(v1,Math.min(1,dt*4));p=CAM.pos;v2.set(a.x+s*k[2]+c*k[0],(a.y||0)+k[1],a.z+c*k[2]-s*k[0]);l=v2}
   else{CAM.e=Math.min(CAM.t,CAM.e+dt);const k=CAM.to&&CAM.t>0?ease(CAM.e/CAM.t):(CAM.to?1:0);p=v1.copy(CAM.from.pos);l=v2.copy(CAM.from.look);if(CAM.to){p.lerp(CAM.to.pos,k);l.lerp(CAM.to.look,k)}}
   const asp=innerWidth/innerHeight,f0=CAM.fov||(asp<1?62:42);let f=f0;if(CAM.fov2&&CAM.t>0)f=f0+(CAM.fov2-f0)*ease(CAM.e/CAM.t);
-  if(!CAM.vrij){kp.copy(p);kl.copy(l);try{kader(kp,kl,f)}catch(e){}try{tweeShot(kp,kl,f)}catch(e){}p=kp;l=kl;
+  if(!CAM.vrij){kp.copy(p);kl.copy(l);try{kader(kp,kl,f)}catch(e){}try{tweeShot(kp,kl,f)}catch(e){}if(CUT.kaderLog)try{CUT.kaderLog(p,kp,l,kl)}catch(e){}p=kp;l=kl;
     // nooit in een gebouw of muur: dan schuift de camera over de kijklijn naar voren tot hij vrij staat
     try{if(blok(p.x,p.z,p.y)){const dx=l.x-p.x,dy=l.y-p.y,dz=l.z-p.z,D=Math.hypot(dx,dz);for(let s=.2;s<D-.5;s+=.2){const x=p.x+dx/D*s,z=p.z+dz/D*s,y=p.y+dy*(s/D);if(!blok(x,z,y)){p.set(x,y,z);break}}}}catch(e){}}
   cam.position.copy(p);if(CAM.shake){cam.position.x+=(Math.random()-.5)*CAM.shake;cam.position.y+=(Math.random()-.5)*CAM.shake}cam.lookAt(l);
