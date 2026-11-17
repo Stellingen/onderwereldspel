@@ -17,11 +17,25 @@ function tramMet(){const g=new TH.Group(),m=c=>new TH.MeshLambertMaterial({color
   const lamp=new TH.PointLight('#fff1c8',3,12,1.4);lamp.position.set(0,2.6,0);g.add(lamp);const lamp2=lamp.clone();lamp2.position.set(0,2.6,8);g.add(lamp2);g.lengte=Lg;return g}
 S1.tramMet=tramMet;
 
+/* ---------- het bankje op de hoek (Bilal zit erop, de hoekdienst gebruikt het; blijft staan) ---------- */
+let BANKJE=null;
+function bankje(){const h=PL.hoek(),bank=walk(h.x-2,h.z-3,4);
+  if(!BANKJE){BANKJE=new TH.Group();BANKJE.add(K.model([[2.2,.12,.6,0,.62,0,'#6a4a2a'],[2.2,.5,.1,0,.95,-.28,'#6a4a2a'],[.1,.6,.5,-1,.3,0,'#2a2c30'],[.1,.6,.5,1,.3,0,'#2a2c30']]));BANKJE.position.set(bank.x,0,bank.z);BANKJE.rotation.y=naar(bank,h)}
+  if(!BANKJE.parent)G.scene().add(BANKJE);return {g:BANKJE,x:bank.x,z:bank.z,ry:naar(bank,h)}}
+S1.bankje=bankje;
 /* ---------- de hoekdienst: berichten, voorraad uit de meterkast, overdracht op het bankje, patrouilles ---------- */
 S1.hoekDienst=function(t,o){o=Object.assign({klanten:6,test:true,duur:240,dex:false,van:[20,0],tot:[22,50]},o||{});return new Promise(async res=>{o.duur*=(S1.testSnel||1);
   const h=PL.hoek(),bank=walk(h.x-2,h.z-3,4),kast=walk(h.x+13,h.z-9,8);let actief=true,voorraad=0,verkocht=0,klant=null,patrouille=0,veilig=false,test=null,gestart=performance.now(),verdiend=0;
-  const deco=new TH.Group();deco.add(K.model([[2.2,.12,.6,0,.62,0,'#6a4a2a'],[2.2,.5,.1,0,.95,-.28,'#6a4a2a'],[.1,.6,.5,-1,.3,0,'#2a2c30'],[.1,.6,.5,1,.3,0,'#2a2c30']]));deco.position.set(bank.x,0,bank.z);deco.rotation.y=naar(bank,h);G.scene().add(deco);
-  const kastM=K.model([[.9,1.6,.3,0,.8,0,'#5a5d63'],[.04,.2,.04,.3,.9,.17,'#c9cfd6']]);kastM.position.set(kast.x,0,kast.z);G.scene().add(kastM);
+  bankje();
+  const kastM=K.model([[.9,1.6,.3,0,.8,0,'#5a5d63'],[.04,.2,.04,.3,.9,.17,'#c9cfd6'],[.42,.1,.02,0,1.38,.16,'#ffd35a'],[.12,.12,.02,-.25,1.1,.16,'#16171b']]);kastM.position.set(kast.x,0,kast.z);kastM.rotation.y=naar(kast,bank);G.scene().add(kastM);
+  // het doel (met route en baken) wijst steeds naar waar je nu heen moet: de meterkast als je te weinig op zak hebt, anders het bankje
+  let doelNu='';const doelZet=()=>{let txt,p;
+    if(patrouille){txt='Politie! Ga op het bankje zitten';p=bank}
+    else if(klant&&!klant.komt&&voorraad<klant.n){txt='Klant '+klant.nr+' wacht · eerst voorraad uit de meterkast';p=kast}
+    else if(klant&&!klant.komt){txt='Klant '+klant.nr+' wacht bij het bankje';p=bank}
+    else if(voorraad<2){txt='Voorraad halen: de meterkast (gele sticker)';p=kast}
+    else{txt='Bij het bankje wachten op een bericht';p=bank}
+    const k=txt+'|'+p.x;if(k!==doelNu){doelNu=k;try{ST.doel(txt,{x:p.x,z:p.z})}catch(e){}}};
   const LIJST=['07','12','19','23','31'];const hud=document.createElement('div');hud.className='s1-hud2';hud.innerHTML='<div class="k"></div><div class="z"></div><div class="v"></div><div class="l"></div><div class="m" style="max-width:260px"></div>';document.body.appendChild(hud);
   const berichten=[];const msg=(t)=>{berichten.unshift(t);berichten.length=3;bericht('Tweede telefoon',t,{kleur:'#5a5d63',t:3})};
   const totMin=(o.tot[0]*60+o.tot[1])-(o.van[0]*60+o.van[1]);
@@ -29,7 +43,7 @@ S1.hoekDienst=function(t,o){o=Object.assign({klanten:6,test:true,duur:240,dex:fa
   const teken=()=>{const [hh,mm]=klok();hud.querySelector('.k').textContent='De hoek · '+String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
     hud.querySelector('.z').textContent='Op zak: '+voorraad+'/2 · verkocht '+verkocht+'/'+o.klanten+' · '+S1.eur(verdiend);hud.querySelector('.v').textContent=klant?('Klant '+klant.nr+' wacht: '+(klant.n===2?'twee':'één')):'Geen klant';
     hud.querySelector('.l').textContent='Lijst: '+LIJST.join(' · ');hud.querySelector('.m').textContent=berichten.filter(Boolean).join(' / ');
-    hud.style.outline=patrouille?'3px solid #3a7bff':'none'};
+    hud.style.outline=patrouille?'3px solid #3a7bff':'none';doelZet()};
   const nKlant=async(nr,n,isTest)=>{const id='hk'+Math.floor(Math.random()*1e6),s=walk(bank.x+rr(-18,18),bank.z+(Math.random()<.5?-16:16),6);
     const a=C.zet(id,s.x,s.z,0,{look:C.look(pick(['klant1','klant2','klant3','klant4'])),blijf:true});klant={id,nr,n,isTest,a,t0:performance.now(),komt:true};msg(nr+': '+(n===2?'twee':'één'));
     try{await a.loop(bank.x+1.6,bank.z+.6,{t:5})}catch(e){}if(klant&&klant.id===id){klant.komt=false;a.doe('handenzij')}};
@@ -44,7 +58,7 @@ S1.hoekDienst=function(t,o){o=Object.assign({klanten:6,test:true,duur:240,dex:fa
       if(!r||!r.ok||!klant)return;const k=klant;voorraad-=k.n;
       if(k.isTest){test='bediend';meter('vertrouwen',-5);weg(k);await speel(t,[{speler:false},{actor:'bilal',at:[bank.x+2.4,bank.z-2.4],ry:naar({x:bank.x+2.4,z:bank.z-2.4},bank)},{actor:'luca',at:[bank.x,bank.z],ry:naar(bank,{x:bank.x+2.4,z:bank.z-2.4})},
         rond(bank,PI*.6,3.6,1.7,1.4),Z('bilal','Ik zei: geen nieuwe nummers.'),Z('bilal','Vierenveertig was van mij. Die was een test.'),{fade:'out',t:.3}]);C.weg('bilal');C.weg('luca');return}
-      verkocht++;const pr=k.n*40;verdiend+=pr;geld(pr,'de hoek');fx('cash');weg(k);teken()}});
+      verkocht++;const pr=k.n*75;verdiend+=pr;geld(pr,'de hoek');fx('cash');weg(k);teken()}});
   const iv=setInterval(teken,500);
   // planning: klanten, de test, patrouilles
   let volgende=4,nr=0,testGedaan=!o.test,volgPatr=rr(55,75);
@@ -61,7 +75,7 @@ S1.hoekDienst=function(t,o){o=Object.assign({klanten:6,test:true,duur:240,dex:fa
       if(S1.wapen&&S1.wapen.heeft()&&Math.random()<(veilig?.12:.5)&&S1.wapenControle){hud.style.display='none';await S1.wapenControle(t,{zit:veilig});hud.style.display='';if(!levend(t))break}
       if(!veilig&&(voorraad>0||klant)){if(voorraad>0)voorraad--;meter('vertrouwen',-2);if(klant)weg(klant,true);sein('Te laat. Eén pakketje de bosjes in.','#ff5a4a')}else if(veilig)sein('Ze rijden door.','#3fe395');
       patrouille=0;volgPatr=sec+rr(60,90)+7}}
-  actief=false;clearInterval(iv);G.unspot(spK);G.unspot(spB);hud.remove();if(klant)weg(klant);deco.parent&&deco.parent.remove(deco);kastM.parent&&kastM.parent.remove(kastM);
+  actief=false;clearInterval(iv);G.unspot(spK);G.unspot(spB);hud.remove();try{ST.doel(null)}catch(e){}if(klant)weg(klant);kastM.parent&&kastM.parent.remove(kastM);
   if(test==null&&o.test)test='genegeerd';res({verkocht,test,verdiend})})};
 
 VOLG.s1_h6={tekst:'Verder: Bella Napoli, donderdagavond (Hoofdstuk 6)',p:()=>PL.napoli(),sub:'Donderdag · Lek',actie:'Naar binnen'};
@@ -113,7 +127,7 @@ hoofdstuk({id:'s1_h7',na:'s1_h8',vrij:true,outfit:'straat',blokken:[
   await speel(t,[...hoek(true),{actor:'tarik',at:W('sahara',19.4,17.4),ry:PI*.85,anim:'armen'},actIn(['tarik']),cam(...W3('sahara',18.6,2.0,18.6),...W3('sahara',21.4,1.2,15.0),{fov:40}),{fade:'in',t:.5},
    Z('rafiq',"Rapido's scooter staat op zijn velgen, hoor ik. Rare week voor Rapido."),F('camera_gezien')?Z('bilal','Ze hebben iemand op de camera. Met een capuchon.'):null,
    {anim:'rafiq',a:'give',prop:'envelop'},T_('Rafiq schuift een briefje over tafel: "Vos · Oud-Zuid · €600".'),
-   Z('rafiq','Meneer Vos. Zeshonderd euro, drie weken te laat. Tarik rijdt. Jij praat.'),Z('luca','Waarom ik?'),Z('rafiq','Omdat niemand bang is voor een jongen. Tot hij iets zegt.'),
+   Z('rafiq','Meneer Vos. Zeshonderd euro, drie weken te laat. Tarik rijdt. Jij praat.'),Z('luca','Waarom ik? Tarik is twee keer zo groot.'),Z('rafiq','Omdat niemand bang is voor een jongen. Tot hij iets zegt.'),
    T_('Tarik pakt zijn autosleutels van tafel.'),{fade:'out',t:.5}]);hoekWeg()},
  async t=>{// bij Vos aan de deur (Oud-Zuid). Tarik blijft bij de auto.
   await buiten();const v=PL.rijtjeshuis(),DV=S1.deur(S1.voorDeur('rijtjeshuis',.6)||v),deur=DV.q,l=DV.l,car=S1.voorDeur('rijtjeshuis',8)||walk(v.x+6,v.z+7,6);tijd(21,5);
@@ -160,8 +174,8 @@ hoofdstuk({id:'s1_h8',na:'s1_h9',vrij:true,blokken:[
    {actor:'marco',at:W('thuis',3.6,6.25),ry:PI,anim:'tv',sitY:-.4},actIn(['elena','luca','marco']),cam(...W3('thuis',9.4,2.55,1.8),...W3('thuis',4.8,1.9,6.2),{fov:54,strak:true}),{fade:'in',t:.6},
    Z('elena','Ga je weg? Je werkt toch niet op maandag?'),Z('luca','Bij Dex.'),Z('marco','Om tien uur thuis.'),{snd:'door'},{fade:'out',t:.4}]);['elena','luca','marco'].forEach(k=>C.weg(k));await buiten()},
  async t=>{if(!await doelNaar(t,'De hoek · Tramlaan, bij de speeltuin',PL.hoek(),{actie:'Naar Bilal',sub:'De hoek'}))return;tijd(20,0);
-  const h=PL.hoek(),b=walk(h.x-2,h.z-3,4),l=walk(h.x+.6,h.z-1,4),dx=F('dex_wil')==='erin';
-  const r8=await speel(t,[{speler:false},{actor:'bilal',at:[b.x,b.z],ry:naar(b,l),anim:'sit',sitY:-.2},{actor:'luca',at:[l.x,l.z],ry:naar(l,b)},dx?{actor:'dex',at:[l.x+2.2,l.z+1],ry:naar({x:l.x+2.2,z:l.z+1},b),anim:'leun'}:null,
+  const h=PL.hoek(),bk=bankje(),b={x:bk.x,z:bk.z},l=walk(h.x+.6,h.z-1,4),dx=F('dex_wil')==='erin';
+  const r8=await speel(t,[{speler:false},{actor:'bilal',at:[b.x,b.z],ry:bk.ry,anim:'sit',sitY:-.2},{actor:'luca',at:[l.x,l.z],ry:naar(l,b)},dx?{actor:'dex',at:[l.x+2.2,l.z+1],ry:naar({x:l.x+2.2,z:l.z+1},b),anim:'leun'}:null,
    cam(h.x+14,5,h.z-10,h.x,1,h.z,{fov:44}),{fade:'in',t:.6},verteller('n18'),rond(b,naar(b,l)+1.2,3.4,1.6,1.2),
    Z('bilal','Dit is de hoek. Maandag tot woensdag, acht tot elf. Als je niet bij Giovanni staat.'),Z('bilal','Nooit meer dan twee op zak. De rest zit in de meterkast van de portiek.'),
    Z('bilal','Alleen nummers van de lijst. Nieuw nummer? Dan ken je niemand.'),{anim:'bilal',a:'give',prop:'sleutel',naar:'luca'},
@@ -222,7 +236,7 @@ hoofdstuk({id:'s1_h9',na:'s1_h10',vrij:true,blokken:[
    Z('luca','Dit is mijn buurt. Ik zie je hier nooit meer.'),Z('luca','Ook niet met een bestelling. Rapido stuurt maar iemand anders.'),Z('luca','Anders kom ik jou zoeken.'),
    T_('Kenny knikt. Hij kijkt hem niet aan.'),{actor:'ans',at:[PL.ans().x,PL.ans().z],ry:naar(PL.ans(),k),y:13.6},cam(PL.ans().x+2,15.4,PL.ans().z-3,k.x,0,k.z,{fov:40}),{wait:1.6},
    T_('Op de galerij staat buurvrouw Ans, met haar boodschappentas. Ze heeft alles gezien.'),{weg:'ans'},{fade:'out',t:.4}]);
-  C.weg('kenny');C.weg('luca');if(sc)sc.parent&&sc.parent.remove(sc);geld(400,'Kenny (Rapido)');meter('naam',15);F('naam_trap',2);F('ans_zag',1);F('kenny_weg',1)},
+  C.weg('kenny');C.weg('luca');if(sc)sc.parent&&sc.parent.remove(sc);geld(1200,'Kenny (Rapido)');meter('naam',15);F('naam_trap',2);F('ans_zag',1);F('kenny_weg',1)},
  async t=>{const l=P();await speel(t,[{speler:false},{actor:'luca',at:[l.x,l.z],ry:PI*.5},{actor:'klant2',at:[l.x+6,l.z+3],ry:-PI/2,anim:'leun'},{actor:'klant4',at:[l.x+7,l.z+4],ry:-PI/2,anim:'armen'},
    {cam:{volg:'luca',af:[2.0,2.6,-4.0],kijk:[0,2.0,3]}},{fade:'in',t:.4},{move:'luca',to:[l.x+14,l.z+1],t:4.4,wacht:false},{wait:1.6},{anim:'klant2',a:'turn',ry:PI},{move:'klant4',to:[l.x+7,l.z+6.4],t:.8},
    T_('Twee jongens bij de snackbar gaan opzij.'),{fn:()=>{try{L.tril&&L.tril()}catch(e){}bericht('R.','Hoorde het van Rapido. Zaterdag neem ik je mee. Doe iets netjes aan.',{kleur:'#5a5d63'})}},
@@ -281,8 +295,8 @@ hoofdstuk({id:'s1_h10',na:'s1_h11',vrij:true,blokken:[
    keuze('luca','',[{t:'"Ja."',id:'ja'},{t:'"Nee."',id:'nee'}])]);
   F('vader_ontkend',r==='nee'?1:0);
   await speel(t,[r==='ja'?Z('rafiq','Dan weet je waarom je dit doet.'):T_('Rafiq kijkt hem aan en zegt niks.'),verteller('n22'),
-   {anim:'rafiq',a:'give',prop:'envelop',naar:'luca'},T_('Bij de Boulevard zet Rafiq hem af. Een envelop: vijftienhonderd.'),{fade:'out',t:.5}]);
-  ['marco','luca','rafiq'].forEach(k=>C.weg(k));auto.parent&&auto.parent.remove(auto);geld(1500,'Rafiq · de haven');meter('vertrouwen',10);await zetBuitenSahara()},
+   {anim:'rafiq',a:'give',prop:'envelop',naar:'luca'},T_('Bij de Boulevard zet Rafiq hem af. Een envelop: vijfduizend. Een gewone maandag.'),{fade:'out',t:.5}]);
+  ['marco','luca','rafiq'].forEach(k=>C.weg(k));auto.parent&&auto.parent.remove(auto);geld(5000,'Rafiq · de haven');meter('vertrouwen',10);await zetBuitenSahara()},
  async t=>{// tweede rapportage: de streep onder Rafiq, de jongen in de rode jas
   await studio(t,1,['n23','n24'],[{snd:'click'},{wait:.4}]);await zetBuitenSahara();tijd(23,40);
   bericht('Sem','Dinsdag 03:00, hek bij rij C. Jij en ik. Als je durft.',{kleur:'#8ac0ff'});F('sq5_open',1);

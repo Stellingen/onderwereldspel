@@ -567,8 +567,8 @@ function cineMat(){if(CINE.mat)return CINE.mat;const m0=G.post&&G.post.material;
   const R=[['varying vec2 vUv;','varying vec2 vUv;uniform float uFocus,uAper,uMaxR,uTime,uGrain,uVig2,uLv;uniform vec2 uFocusUV;'],
     ['vec3 toS(',`float cocR(float z){float f=uFocus>0.?uFocus:ld(uFocusUV);return clamp(abs(z-f)/max(z,1.)*uAper,0.,uMaxR);}
       float hsh2(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
-      vec3 dofC(vec2 uv,float d){vec2 px=1./uRes;float r0=cocR(d);vec3 acc=texture2D(tColor,uv).rgb;float ws=1.;
-        for(int i=0;i<24;i++){float fi=float(i)+.5;float a=fi*2.39996;float rr=sqrt(fi/24.)*uMaxR;vec2 o=vec2(cos(a),sin(a))*rr;vec2 su=uv+o*px;
+      vec3 dofC(vec2 uv,float d){vec2 px=1./uRes;float r0=cocR(d);vec3 acc=texture2D(tColor,uv).rgb;float ws=1.;float rot=hsh2(floor(gl_FragCoord.xy))*6.2832;
+        for(int i=0;i<24;i++){float fi=float(i)+.5;float a=fi*2.39996+rot;float rr=sqrt(fi/24.)*uMaxR;vec2 o=vec2(cos(a),sin(a))*rr;vec2 su=uv+o*px;
           float sd=ld(su);float sr=cocR(sd);float rr2=sd<d?sr:min(sr,r0);float w=clamp(rr2-rr+1.,0.,1.);
           vec3 sc=texture2D(tColor,su).rgb;float l=dot(sc,vec3(.299,.587,.114));w*=1.+max(l-.62,0.)*6.;acc+=sc*w;ws+=w;}
         return acc/ws;}
@@ -589,7 +589,7 @@ U.cineOn=function(o){o=o||{};if(CINE.on||!G.ready)return false;const R=G.rendere
   const sv0={pix:G.pixPref,type:R.shadowMap.type};if(sun){const s=sun.shadow,c=s.camera;sv0.ms=s.mapSize.clone();sv0.cam=[c.left,c.right,c.top,c.bottom];sv0.rad=s.radius;sv0.bias=s.bias}CINE.saved=sv0;
   CINE.pixSet=false;if(o.pix!==false&&!low){G.pixPref=o.pix||hqPix();CINE.pixSet=true;G.resize&&G.resize()}
   // zachte schaduw met een fijnere schaduwkaart rond de scène
-  if(sun&&o.schaduw!==false){const s=sun.shadow,c=s.camera,n=touch?2048:4096,soft=!touch&&U.zachteSchaduw!==false;if(soft)R.shadowMap.type=TH.PCFShadowMap;s.mapSize.set(n,n);if(s.map){s.map.dispose();s.map=null}c.left=-18;c.right=18;c.top=18;c.bottom=-18;c.updateProjectionMatrix();s.radius=3;s.bias=-.0004;if(soft)recompile()}
+  if(sun&&o.schaduw!==false){const s=sun.shadow,c=s.camera,n=touch?2048:4096,soft=!touch&&U.zachteSchaduw===true;if(soft)R.shadowMap.type=TH.PCFShadowMap;s.mapSize.set(n,n);if(s.map){s.map.dispose();s.map=null}c.left=-18;c.right=18;c.top=18;c.bottom=-18;c.updateProjectionMatrix();s.radius=3;s.bias=-.0004;if(soft)recompile()}
   // randlicht van achteren en een zacht vullicht vanaf de camera
   if(!CINE.rim){CINE.rim=new TH.DirectionalLight(0xffe2c0,0);CINE.fill=new TH.DirectionalLight(0xc8d8ff,0)}
   sc.add(CINE.rim,CINE.rim.target,CINE.fill,CINE.fill.target);
@@ -615,7 +615,8 @@ function focusDepth(cam){const C=G.cut,t=CINE.focus;let p=null;
     for(const a of cand){if(!headPos(a,v3))continue;const q=v1.copy(v3).project(cam);if(q.z>1||abs(q.x)>.9||abs(q.y)>.95)continue;let sc=Math.hypot(q.x,q.y*.8)+(spk&&a.id===spk?-.6:0);if(sc<best){best=sc;p=v2.copy(v3)}}}
   if(!p)return -1;v1.copy(p).applyMatrix4(cam.matrixWorldInverse);return Math.max(.5,-v1.z)}
 function cineFrame(dt){const cam=G.camera&&G.camera();if(!cam)return;CINE.t+=dt;const u=CINE.mat&&CINE.mat.uniforms;
-  if(u&&G.post&&G.post.material===CINE.mat){u.uTime.value=CINE.t;const fd=focusDepth(cam);if(fd>0){CINE.fd=CINE.fd<0?fd:CINE.fd+(fd-CINE.fd)*Math.min(1,dt*5)}else CINE.fd=-1;u.uFocus.value=CINE.fd;
+  if(u&&G.post&&G.post.material===CINE.mat){u.uTime.value=CINE.t;const fd=focusDepth(cam);let knip=false;if(CINE.cp){knip=cam.position.distanceTo(CINE.cp)>1.2||2*Math.acos(Math.min(1,Math.abs(cam.quaternion.dot(CINE.cq))))>.3;CINE.cp.copy(cam.position);CINE.cq.copy(cam.quaternion)}else{CINE.cp=cam.position.clone();CINE.cq=cam.quaternion.clone()}
+    if(fd>0){CINE.fd=(CINE.fd<0||knip||Math.abs(fd-CINE.fd)>CINE.fd*.6)?fd:CINE.fd+(fd-CINE.fd)*Math.min(1,dt*5)}else CINE.fd=-1;u.uFocus.value=CINE.fd;
     const ry=u.uRes.value.y||360;u.uAper.value=11*ry/720*(cam.fov<30?1.4:1);u.uMaxR.value=Math.max(2,Math.round(7*ry/720));}
   // licht: randlicht achter de mensen (warm overdag, koel 's nachts), vullicht vanaf de camera
   if(CINE.rim){CINE.rim.castShadow=CINE.fill.castShadow=false;cam.getWorldDirection(v1);const tg=v2.copy(cam.position).addScaledVector(v1,Math.max(4,CINE.fd>0?CINE.fd:10));const right=v3.set(-v1.z,0,v1.x).normalize();

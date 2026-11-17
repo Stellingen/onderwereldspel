@@ -216,15 +216,26 @@ const sein=(t,c)=>{try{ST.seintje(t,c)}catch(e){}};S1.sein=sein;
 /* =================== minispellen =================== */
 // 1. timing: een balkje gaat heen en weer; druk als het in het groene vak staat. o = {titel,uitleg,rondes,snel,vak,knop}
 function mgTiming(o){return new Promise(res=>{o=Object.assign({rondes:3,snel:1,vak:.22,knop:'Nu!'},o||{});
-  const el=mgOpen(`<small>${o.kop||'Minispel'}</small><h4>${o.titel}</h4><p>${o.uitleg||'Druk als het streepje in het groene vak staat.'}</p><div class="s1-bar"><i></i><b></b></div><div class="s1-dots">${'<i></i>'.repeat(o.rondes)}</div><button class="s1-knop">${o.knop} <span style="opacity:.6">(spatie)</span></button>`,o);
-  const bar=el.querySelector('.s1-bar'),vak=bar.querySelector('i'),st=bar.querySelector('b'),dots=[...el.querySelectorAll('.s1-dots i')];let r=0,goed=0,t0=performance.now(),v0=0,klaar=false,lock=0;
-  const nieuwVak=()=>{v0=rr(.1,.9-o.vak);vak.style.left=(v0*100)+'%';vak.style.width=(o.vak*100)+'%'};nieuwVak();
-  const pos=()=>{const t=(performance.now()-t0)/1000*(0.75+o.snel*.45+r*.18);return (1-cos(t*PI))/2};
-  let raf=0;const loop=()=>{if(klaar)return;st.style.left='calc('+(pos()*100)+'% - 2px)';raf=requestAnimationFrame(loop)};loop();
-  const druk=()=>{if(klaar||performance.now()<lock)return;lock=performance.now()+350;const p=pos(),ok=p>=v0&&p<=v0+o.vak;dots[r].className=ok?'ok':'mis';if(ok){goed++;fx('click')}else fx('hit');r++;
-    if(r>=o.rondes){klaar=true;cancelAnimationFrame(raf);setTimeout(()=>{weg();res(goed)},500)}else{nieuwVak();t0=performance.now()-rr(0,800)}};
-  const key=e=>{if(e.code==='Space'||e.key==='Enter'||e.key==='e'||e.key==='E'){e.preventDefault();e.stopImmediatePropagation();druk()}};
-  el.querySelector('.s1-knop').addEventListener('pointerdown',e=>{e.preventDefault();druk()});addEventListener('keydown',key,true);
+  const el=mgOpen(`<small>${o.kop||'Minispel'}</small><h4>${o.titel}</h4><p>${o.uitleg||'Druk als het streepje in het groene vak staat.'}</p><div class="s1-bar"><i></i><b></b></div><p class="s1-fb" style="min-height:22px;margin:6px 0 4px;font-weight:800;letter-spacing:.04em"></p><div class="s1-dots">${'<i></i>'.repeat(o.rondes)}</div><button class="s1-knop">${o.knop} <span style="opacity:.6">(spatie)</span></button>`,o);
+  const bar=el.querySelector('.s1-bar'),vak=bar.querySelector('i'),st=bar.querySelector('b'),fb=el.querySelector('.s1-fb'),dots=[...el.querySelectorAll('.s1-dots i')];
+  let r=0,goed=0,t0=performance.now(),v0=0,klaar=false,lock=0,pauze=0,shown=0;
+  const nieuwVak=()=>{v0=rr(.1,.9-o.vak);vak.style.left=(v0*100)+'%';vak.style.width=(o.vak*100)+'%';vak.style.background='';vak.style.borderColor=''};nieuwVak();
+  const fase=tt=>Math.max(0,tt-t0)/1000*(0.75+o.snel*.45+r*.18),posAt=tt=>(1-cos(fase(tt)*PI))/2;
+  let raf=0;const loop=()=>{if(klaar)return;const nu=performance.now();
+    if(pauze){if(nu>=pauze){pauze=0;nieuwVak();t0=nu-rr(0,800);fb.textContent=''}}
+    else{shown=posAt(nu);st.style.left='calc('+(shown*100)+'% - 2px)'}raf=requestAnimationFrame(loop)};loop();
+  // eerlijk, ook als het beeld hapert: telt waar het streepje stond op het moment van de toets (tijd van de toets zelf),
+  // of waar je het op het scherm zag staan, met een kleine marge rond het groene vak. Daarna even stil: RAAK of MIS.
+  const druk=ev=>{const nu=performance.now();if(klaar||pauze||nu<lock)return;lock=nu+300;
+    let tE=ev&&ev.timeStamp;if(!(tE>0)||tE>nu+5||nu-tE>1500)tE=nu;
+    const m=.035,inV=p=>p>=v0-m&&p<=v0+o.vak+m,pE=posAt(tE),ok=inV(pE)||inV(shown),p=inV(shown)?shown:pE,rechts=Math.sin(fase(tE)*PI)>0;
+    st.style.left='calc('+(clamp(p,0,1)*100)+'% - 2px)';dots[r].className=ok?'ok':'mis';
+    vak.style.background=ok?'#3fe39599':'#ff5a4a66';vak.style.borderColor=ok?'#3fe395':'#ff5a4a';
+    const vroeg=rechts?p<v0:p>v0+o.vak;fb.textContent=ok?'RAAK!':'MIS! '+(vroeg?'Iets te vroeg.':'Iets te laat.');fb.style.color=ok?'#3fe395':'#ff5a4a';
+    if(ok){goed++;fx('click')}else fx('hit');r++;
+    if(r>=o.rondes){klaar=true;cancelAnimationFrame(raf);fb.textContent+=' · '+goed+' van de '+o.rondes+' goed';setTimeout(()=>{weg();res(goed)},1200)}else pauze=nu+800};
+  const key=e=>{if(e.code==='Space'||e.key==='Enter'||e.key==='e'||e.key==='E'){e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)druk(e)}};
+  el.querySelector('.s1-knop').addEventListener('pointerdown',e=>{e.preventDefault();druk(e)});addEventListener('keydown',key,true);
   const weg=()=>{removeEventListener('keydown',key,true);el.remove()}})}
 // 2. vasthouden: houd de knop vast tot de balk vol is; bij 'storing' (iemand kijkt) loslaten. o = {titel,uitleg,stappen,duur,storing:bool}
 function mgHold(o){return new Promise(res=>{o=Object.assign({stappen:1,duur:1.5,knop:'Houd vast'},o||{});

@@ -206,8 +206,8 @@ hoofdstuk({id:'s1_h1',na:'s1_h2',outfit:'bezorger',blokken:[
    {anim:'mo',a:'bel'},Z('mo','Tarik. Pizza komt binnen.'),{fade:'out',t:.5}]);
   C.weg('mo');C.weg('luca');if(bu&&bu.g)bu.g.visible=true},
  async t=>{await binnen('sahara');B.toon('sahara','uitsmijter',false);try{G.draag&&G.draag.zet(6)}catch(e){}
-  await speel(t,[{speler:false},{actor:'tarik',at:W('sahara',13.9,31.9),ry:PI*.9,anim:'armen'},{actor:'luca',at:W('sahara',12.8,33.6),ry:PI,dozen:6},actIn(['tarik','luca']),
-   cam(...W3('sahara',11.0,2.0,34.6),...W3('sahara',13.4,1.5,32.4),{fov:46}),{fade:'in',t:.5},
+  await speel(t,[{speler:false},{actor:'tarik',at:W('sahara',13.0,32.2),ry:0,anim:'armen'},{actor:'luca',at:W('sahara',13.0,33.75),ry:PI,dozen:6},actIn(['tarik','luca']),
+   cam(...W3('sahara',15.5,1.7,33.3),...W3('sahara',13.0,1.4,32.95),{fov:48}),{fade:'in',t:.5},
    T_('Tarik tilt het deksel van de bovenste doos een centimeter op. Ruikt. Laat het vallen.'),Z('tarik','Achterin. De hoek.'),{fade:'out',t:.4}]);
   C.weg('tarik');C.weg('luca');B.toon('sahara','uitsmijter',true);const q=W('sahara',13,30.4);G.P.x=q[0];G.P.z=q[1];G.P.ry=PI;
   zetRafiq(true);sein('Loop met de dozen naar achteren','#ffd35a')},
@@ -257,7 +257,7 @@ hoofdstuk({id:'s1_h1',na:'s1_h2',outfit:'bezorger',blokken:[
    cam(...W3('sahara',20.0,2.7,2.2),...W3('sahara',19.2,2.2,5.6),{fov:46}),{wait:1.2},{anim:'rafiq',a:'give',prop:'geld',naar:'luca'},
    Z('rafiq','Voel maar.'),cam(...W3('sahara',20.4,2.6,6.6),...W3('sahara',20.4,1.0,5.4),{fov:30}),Z('rafiq','Vijfduizend. Een gewone maandag.'),
    cam(...W3('sahara',20.0,2.7,2.2),...W3('sahara',19.2,2.2,5.6),{fov:46}),
-   Z('rafiq','Je vader werkt op de Containerkade. Slechte rug, toch?'),Z('luca','Hoe weet jij dat?'),Z('rafiq','Ik weet wie er bij mij binnenkomt.'),{anim:'rafiq',a:'idle',prop:null},
+   Z('rafiq','Je vader werkt op de Containerkade. Slechte rug, toch?'),Z('luca','Je hebt je huiswerk gedaan.'),Z('rafiq','Ik weet wie er bij mij binnenkomt.'),{anim:'rafiq',a:'idle',prop:null},
    Z('rafiq','Ik vraag je niet om te dealen. Doos erin, doos eruit. Honderdvijftig per doos.'),
    keuze('luca','',[{t:'"Ja."',id:'ja'},{t:'"Nee."',id:'nee'}])]);
   if(!levend(t))return;
@@ -345,7 +345,7 @@ hoofdstuk({id:'s1_h3',na:'s1_h4',blokken:[
    rond(k,PI*1.2,7,3,1.3),{fade:'in',t:.6},{snd:'whistle'},Z('gymdocent',"Penalty's! Tweetallen. De Santis, jij tegen Dex.")]);
   const g=await S1.inScene(t,[rond(lp,naar(lp,dp)+PI*1.15,4.2,2.0,1.2)],()=>mgTiming({kop:'Gymles',titel:"Penalty's tegen Dex",uitleg:'Schiet als het streepje in het groene vak staat. Dex keept.',rondes:3,snel:1.1,vak:.2,knop:'Schieten'}))||0;F('penalties',g);
   await speel(t,[Z('dex',g>=3?'Oké. Profvoetballer.':g>=2?'Mazzel, broer.':"Ga maar pizza's bezorgen, mattie.",{mood:'blij'}),{fade:'out',t:.4},
-   {actor:'luca',at:[lp.x,lp.z],ry:0,anim:'sit',sitY:-.5},{actor:'dex',at:[lp.x+1.1,lp.z],ry:0,anim:'drink',sitY:-.5},rond(lp,PI*.9,3.2,1.4,.9),{fade:'in',t:.4},
+   {actor:'luca',at:[lp.x,lp.z],ry:0,anim:'sit',sitY:-.74},{actor:'dex',at:[lp.x+1.1,lp.z],ry:0,anim:'drink',sitY:-.74},rond(lp,PI*.9,3.2,1.4,.9),{fade:'in',t:.4},
    {fn:()=>bericht('B.','20:00. Achterdeur. Vergeet het niet.',{kleur:'#5a5d63'})},{wait:1.8},Z('dex','Wie is B?'),Z('luca','Niemand. Iemand van werk.'),
    Z('dex','Je bent de hele ochtend al stil, broer.'),verteller('n08'),{fade:'out',t:.6}]);['luca','dex','gymdocent'].forEach(k=>C.weg(k));outfit('school');tijd(16,30)},
  async t=>{// na school: Kenny van Pizza Rapido
@@ -459,15 +459,16 @@ S1.aanhouding=async function(t,o){o=o||{};let aanGezet=false;const kort=!!o.kort
      Z('kramer','De Santis, staat op je fietsplaatje. Ik onthoud namen. Licht aan, en weg.'),{snd:'carDoor'}]);F('kramer_kent',1);meter('vertrouwen',5);return 'doos'}
    await speel(t,[T_('Zijn hand trilt. Kramer ziet het.')])}
   // mee naar het bureau: geen ID op zak
-  const k=await speel(t,[Z('kramer','Heb je een ID bij je? Vanaf veertien moet dat.'),Z('luca','…Thuis.'),Z('kramer','Dan zoeken we op het bureau uit wie je bent. Fiets op slot.'),{anim:'kramer',a:'bel',prop:'telefoon'},
+  const k=await speel(t,[Z('kramer','Heb je een ID bij je? Vanaf veertien moet dat.'),Z('luca','Thuis. U mag hem gaan halen.'),Z('kramer','Dan zoeken we op het bureau uit wie je bent. Fiets op slot.'),{anim:'kramer',a:'bel',prop:'telefoon'},
    T_('Kramer loopt naar zijn auto om een busje te vragen. Zijn rug naar Luca.'),keuze('luca','De doos moet weg. Nu.',[{t:'In de container bij de oprit',id:'container'},{t:'Diep onder de heg',id:'heg'}])]);
   F('pakket',k||'container');F('kramer_kent',1);plusF('marco_vermoeden',2);if(k==='heg')F('heg_gevonden',1);return 'bureau'};
 S1.naarBureau=async function(t){const b=PL.politie(),q=(dx,dz,r)=>{const w=walk(b.x+dx,b.z+dz,r||3);return [w.x,w.z]};
   await speel(t,[{fade:'out',t:.6},{fn:()=>{try{if(S1._auto)S1._auto.parent&&S1._auto.parent.remove(S1._auto)}catch(e){}}},titel('Politiebureau','Veertig minuten later',2.4),{fn:()=>{tijd(0,40)}},
-  {actor:'luca',at:q(0,2.6),ry:0,anim:'sit',sitY:-.4},{actor:'kramer',at:q(1.4,2.4),ry:-.4},
+  {fn:()=>{const p=q(-2.4,1.0);S1._bureauBank=K.model([[2.0,.1,.5,0,.42,0,'#6a4a2a'],[2.0,.45,.08,0,.72,-.24,'#6a4a2a'],[.1,.42,.45,-.9,.21,0,'#2a2c30'],[.1,.42,.45,.9,.21,0,'#2a2c30']]);S1._bureauBank.position.set(p[0],0,p[1]);G.scene().add(S1._bureauBank)}},
+  {actor:'luca',at:q(-2.4,1.0),ry:0,anim:'sit',sitY:-.42},{actor:'kramer',at:q(-1.1,2.6),ry:naar({x:q(-1.1,2.6)[0],z:q(-1.1,2.6)[1]},{x:q(-2.4,1.0)[0],z:q(-2.4,1.0)[1]})},
   {actor:'marco',at:q(-3,7),ry:PI*.9,look:Object.assign({},C.look('marco')||{},{top:{kind:'jacket',c:'#e8742a',c2:'#f2e27a'}})},
-  rond({x:q(0,3)[0],z:q(0,3)[1]},PI*.75,5,2.2,1.3),{fade:'in',t:.6},{move:'marco',to:q(-.6,4.2),t:2.4},
-  Z('kramer','Meneer De Santis. We hebben niks gevonden. Zijn naam staat wel genoteerd.'),Z('kramer','Een ID, de volgende keer. En een achterlicht.'),Z('marco','Dank u.'),{fade:'out',t:.5},{weg:'kramer'},
+  rond({x:q(-1.6,2.2)[0],z:q(-1.6,2.2)[1]},PI*.75,5,2.2,1.3),{fade:'in',t:.6},{move:'marco',to:q(-2.6,3.4),t:2.4},
+  Z('kramer','Meneer De Santis. We hebben niks gevonden. Zijn naam staat wel genoteerd.'),Z('kramer','Een ID, de volgende keer. En een achterlicht.'),Z('marco','Dank u.'),{fade:'out',t:.5},{weg:'kramer'},{fn:()=>{try{S1._bureauBank.parent.remove(S1._bureauBank)}catch(e){}}},
   {actor:'luca',at:q(0,12,4),ry:PI},{actor:'marco',at:q(1,13,4),ry:PI},
   {cam:{volg:'luca',af:[1.9,2.6,-4.2],kijk:[0,2.0,2]}},{fade:'in',t:.5},Z('marco','Je moeder weet hier niks van. Dat houden we zo.'),Z('marco','Wat zat er in die tas, Luca?'),
   Z('luca','Pizza.'),T_('De rest van de weg zeggen ze niks.'),{fade:'out',t:.8},{cam:null},titel('Woensdag','',2)]);C.weg('marco');C.weg('luca');outfit('school');lichtKnop(false);licht(true);

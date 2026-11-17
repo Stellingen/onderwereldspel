@@ -248,7 +248,7 @@ function perfStep(rawDt){if(G.cut&&G.cut.active&&G.cut.active())return;if(!(rawD
   else if(avg<1/50){if(autoK<1){autoK=Math.min(1,autoK+.06);G.autoPix=autoK;resize()}else if(kwal>0){kwal--;zetKwal()}}}
 G.perf=()=>({autoK,kwal,pix:G.pix});
 function frame(t){raf=requestAnimationFrame(frame);const raw=(t-last)/1000;let dt=raw;if(!(dt>0))dt=0;dt=Math.min(.05,dt);last=t;if(G.paused)return;if(G.hitStop>0){G.hitStop-=dt;dt*=.05}step(dt,t/1000);
-  const mini=G.mini&&G.mini.active&&G.mini.active();if(mini&&(++mfN%3))return;perfStep(raw);draw()}
+  const mini=(G.mini&&G.mini.active&&G.mini.active())||!!document.querySelector('.s1-mg,.h1-mg');if(mini&&(++mfN%3))return;perfStep(raw);draw()}
 function step(dt,ts){
   if(G.carStep)G.carStep(dt);
   let v=0;

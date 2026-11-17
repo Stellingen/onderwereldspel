@@ -166,7 +166,7 @@ hoofdstuk({id:'s1_h12',na:'s1_h13',vrij:true,outfit:'bezorger',blokken:[
    Z('ray','Calzone. Giovanni weet het nog.'),Z('ray','Ga even zitten. Ik eet niet graag alleen. En je werd dinsdag zeventien, hoor ik.'),
    {actor:'luca',at:[R.luca.x,R.luca.z],ry:PI,anim:'sit',sitY:-.4},cam(JX+1.7,2.35,JZ+6.2,JX,2.0,JZ+4.2,{fov:40,strak:true}),
    F('twee_tel_gezien')?Z('ray','Eén telefoon voor je moeder. En die andere?'):null,F('twee_tel_gezien')?T_('Luca zegt niks. Ray glimlacht.'):null,
-   Z('ray','Tramlaan. Derde galerij, toch?'),Z('luca','Hoe weet u dat?'),Z('ray','Ik woonde er ook. Eén hoger. Doet die lift het nog steeds niet?'),
+   Z('ray','Tramlaan. Derde galerij, toch?'),Z('luca','U heeft goed opgelet.'),Z('ray','Ik woonde er ook. Eén hoger. Doet die lift het nog steeds niet?'),
    cam(JX+2.4,1.5,JZ+6.6,JX,1.3,JZ+5.2,{fov:32}),{anim:'ray',a:'point',naar:'luca'},Z('ray','Die jas. Daar heb ik twee winters in gefietst.'),{snd:'heart'},T_('Luca zegt niks.'),
    {anim:'ray',a:'give',naar:'luca'},cam(JX-1.7,2.35,JZ+4.3,JX,1.95,JZ+6.3,{fov:40,strak:true}),Z('ray','Mijn vrienden aan deze kant eten ineens veel pizza. Weet jij daar iets van?')]);
   const k=await S1.inScene(t,[cam(JX-1.7,2.35,JZ+4.3,JX,1.95,JZ+6.3,{fov:40,strak:true})],()=>mgGesprek({kop:'Big Ray',wie:'ray',kleur:'#e8e4da',meters:{},beurten:[{vraag:'"Weet jij daar iets van?"',tijd:5,geenAntwoord:{t:'(zwijgen)',id:'stil',eff:{},reactie:'Stil. Ook een antwoord.'},
@@ -305,7 +305,7 @@ hoofdstuk({id:'s1_h15a',na:'s1_epi',outfit:'bezorger',blokken:[
    {fn:()=>G.scene().add(rc)},{snd:'engineStart'},cam(l.x-3,1.6,l.z-4,car.x,1.2,car.z,{fov:44}),{snd:'carDoor'},
    {actor:'rafiq',at:[car.x-1.6,car.z-1.6],ry:naar(car,l)},tm?{actor:'tarik',at:[car.x+1.4,car.z-1.8],ry:naar(car,l),anim:'armen'}:null,{move:'rafiq',to:[l.x+3,l.z+2],t:2.6},
    ots(l,{x:l.x+3,z:l.z+2},2,.7,1.8),Z('rafiq',vb==='hulp'?'Luca. Wat is er? Ben je gewond?':vb==='lading'?'Wat is er met de lading? Laat zien.':'Wat weet Ray? Wat heb je gezegd?'),
-   Z('luca','Het spijt me.'),{snd:'engineStart'},T_('Een tweede paar koplampen. Achter Rafiq.'),{fade:'out',t:.3},{fn:()=>S1.fietsOpKade(true)},{fade:'in',t:.3},
+   Z('luca','Niks persoonlijks, Rafiq.'),{snd:'engineStart'},T_('Een tweede paar koplampen. Achter Rafiq.'),{fade:'out',t:.3},{fn:()=>S1.fietsOpKade(true)},{fade:'in',t:.3},
    T_('Luca laat de fiets los. Hij valt op de kade. Het achterlicht knippert.'),
    {actor:'ray',at:[l.x+8,l.z+8],ry:naar({x:l.x+8,z:l.z+8},{x:l.x+3,z:l.z+2})},{actor:'nova',at:[l.x+9.4,l.z+7],ry:naar({x:l.x+9.4,z:l.z+7},{x:l.x+3,z:l.z+2})},
    {actor:'raysman',at:[l.x+1,l.z+8],ry:naar({x:l.x+1,z:l.z+8},{x:l.x+3,z:l.z+2}),anim:'armen'},cam(l.x-4,2.2,l.z-3,l.x+6,1.4,l.z+6,{fov:44}),
@@ -337,7 +337,7 @@ hoofdstuk({id:'s1_h15b',na:'s1_epi',outfit:'bezorger',blokken:[
    {v:'Laatste keer. Daarna vraag ik het niet meer aan jou.',d:6}];
   for(let i=0;i<3&&levend(t);i++){await speel(t,[ots(st,ry,2.0,.7,1.6),Z('ray',vragen[i].v)]);
    const k=await S1.inScene(t,[cam(st.x+1.2,1.6,st.z-1.6,st.x,1.3,st.z,{fov:32}),{snd:'heart'}],()=>S1.zwijgen({kop:'Ronde '+(i+1)+' van 3',vraag:'Ray wacht.',duur:vragen[i].d}))||'zwijg';
-   if(k==='noem'){F('finale','verraad');F('verraad_moment','loods');F('verraad_ronde',i+1);await speel(t,[Z('luca','…Rafiq. Rafiq van Sahara.'),{fade:'out',t:.4}]);
+   if(k==='noem'){F('finale','verraad');F('verraad_moment','loods');F('verraad_ronde',i+1);await speel(t,[Z('luca','Rafiq. Van Sahara. Maar dat wist u al.'),{fade:'out',t:.4}]);
     ['luca','ray','nova','raysman'].forEach(k=>C.weg(k));loods(false);return 'goto:s1_h15a'}
    await speel(t,[i<2?{anim:'ray',a:'point',naar:'raysman'}:null,cam(c.x,2,c.z+.5,c.x,6,c.z,{fov:60}),i===1?null:{snd:'punch'},{fade:'out',t:.08},{wait:.4},{actor:'luca',at:[st.x,st.z],ry:PI,anim:'bang'},{fade:'in',t:.2},
     cam(c.x+2.4,1.4,c.z+3.4,st.x,1.0,st.z,{fov:40}),{wait:.8}])}
@@ -369,8 +369,8 @@ hoofdstuk({id:'s1_h15b',na:'s1_epi',outfit:'bezorger',blokken:[
    cam(rf.x-3.2,2.0,rf.z-3.6,rf.x,1.6,rf.z,{fov:40})]);
   let n=0;const schotCam=cam(rf.x-3.6,2.0,rf.z-3.8,rf.x,1.6,rf.z,{fov:38});await S1.inScene(t,[schotCam,{snd:'heart'}],()=>S1.heffen({kop:'Het schot',titel:'Houd E om je arm te heffen',duur:3,zakTekst:'Nova: "Eén of twee, Luca."',onZak:()=>{n++;fx('click')}}));F('geaarzeld',n);
   await speel(t,[{anim:'luca',a:'point'},{snd:'heart'}]);
-  const lw=await speel(t,[keuze('luca','Zijn laatste woord',[{t:'"Sorry."',id:'sorry'},{t:'"Je had me nooit binnen moeten halen."',id:'binnen'},{t:'(niks)',id:'niks'}])]);F('laatste_woord',lw||'niks');
-  if(lw==='sorry')await speel(t,[Z('luca','Sorry.')]);else if(lw==='binnen')await speel(t,[Z('luca','Je had me nooit binnen moeten halen.')]);
+  const lw=await speel(t,[keuze('luca','Zijn laatste woord',[{t:'"Jij hebt me leren tellen."',id:'sorry'},{t:'"Je had me nooit binnen moeten halen."',id:'binnen'},{t:'(niks)',id:'niks'}])]);F('laatste_woord',lw||'niks');
+  if(lw==='sorry')await speel(t,[Z('luca','Jij hebt me leren tellen.')]);else if(lw==='binnen')await speel(t,[Z('luca','Je had me nooit binnen moeten halen.')]);
   const z=await S1.inScene(t,[schotCam],async()=>{await S1.eenKnop('Schieten');return schotZwart()});F('rafiq_dood',1);F('rafiq_dood_door','luca');
   ['luca','rafiq','ray','nova','raysman','bilal'].forEach(k=>C.weg(k));bus.parent&&bus.parent.remove(bus);S1._zwart=z}]});
 

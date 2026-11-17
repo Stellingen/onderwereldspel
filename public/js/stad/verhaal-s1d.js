@@ -35,7 +35,7 @@ function rafiqRun(){const dag=ST.st().avond||0;if(F('run_dag')===dag){sein('Eén
        if(wp)await S1.wapen.fouilleer(t,{wie:'agent2',factor:u==='gepraat'?.45:1,cam:rond(l,l.ry+PI*.7,4,1.8,1.4)});
        C.weg('agent2');C.weg('luca');setTimeout(()=>pa.parent&&pa.parent.remove(pa),1500)}
       fx('grab');sein('Afgegeven','#3fe395')}});if(ok)n++}
-   S1.lichtKnop(false);if(!n)return;let loon=n*(F('tarief')||150);const s=F('schuld_rafiq')||0,af=Math.min(s,loon);if(af){F('schuld_rafiq',s-af);loon-=af;sein('Schuld bij Rafiq: nog '+eur(s-af),'#ff9a5a')}
+   S1.lichtKnop(false);if(!n)return;let loon=n*Math.max(F('tarief')||150,[150,150,300,500,750][Math.min(4,F('naam_trap')||0)]);const s=F('schuld_rafiq')||0,af=Math.min(s,loon);if(af){F('schuld_rafiq',s-af);loon-=af;sein('Schuld bij Rafiq: nog '+eur(s-af),'#ff9a5a')}
    if(loon>0)geld(loon,'Rafiq-run');meter('vertrouwen',1);F('runs',(F('runs')||0)+1)},'bezorger')}
 // hoekavond: verkorte hoekdienst
 function hoekAvond(){const dag=ST.st().avond||0;if(F('hoek_dag')===dag){sein('Genoeg voor vanavond.','#ff9a5a');return}
@@ -120,7 +120,7 @@ function sq5(){return klus(async t=>{const c=PL.containers(),s=walk(c.x+8,c.z+14
   await mgHold({kop:'Het zegel',titel:'Knippen',uitleg:'Houd vast. Komt de schijnwerper langs? Loslaten.',stappen:1,duur:2.2,storing:true,kijkTekst:'Schijnwerper!',waarschuw:'Het licht draait…'});
   const ok=await mgMash({kop:'Vier tassen',titel:'Naar het hek dragen',uitleg:'Tik zo snel je kunt.',tijd:8,doel:36,knop:'Dragen'});
   await speel(t,[{speler:false},T_(ok?'Vier tassen in Bilals busje. Drie uur negen.':'De laatste tas op het nippertje. Drie uur tien. De poort gaat open als het busje wegrijdt.'),
-   {fn:()=>bericht('Sem','Nooit gebeurd. Mooi werk.',{kleur:'#8ac0ff'})}]);geld(3000,'uithalen');meter('vertrouwen',10);F('uithaal_gedaan',1)},'klus')}
+   {fn:()=>bericht('Sem','Nooit gebeurd. Mooi werk.',{kleur:'#8ac0ff'})}]);geld(7500,'uithalen');meter('vertrouwen',10);F('uithaal_gedaan',1)},'klus')}
 
 /* =================== SQ7 · Edwin wil meer (na je verjaardag, als je hem betaalde) =================== */
 async function sq7(){if(F('sq7_klaar')||F('edwin')!=='geld')return;F('sq7_klaar',1);await sleep(4000);if(!vrij()){F('sq7_klaar',null);return}bericht('Onbekend nummer','Nog eens tienduizend. Anders praat ik. E.',{kleur:'#34c759'});await sleep(3500);if(!vrij()){F('sq7_klaar',null);return}

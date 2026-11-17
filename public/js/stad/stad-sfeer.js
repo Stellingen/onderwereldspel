@@ -120,10 +120,10 @@ function skyStep(dt,ts){const P=G.P,cx=P.x,cz=P.z;
   if(L0&&G.night<.9)L0.sun.intensity=baseSun*(1-.2*W.cloud*(.5+.5*Math.sin(ts*.09+Math.sin(ts*.023)*3)));
   if(glow){glow.position.set(cx,.09,cz);glow.visible=glow.material.opacity>.02&&!G.driving}
   // nat wegdek: loopt op in de regen, droogt langzaam op
-  nat=clamp(nat+(W.rain>.3?dt*.05:-dt*.008),0,1);if(plas){plas.visible=nat>.03;plas.material.opacity=nat*.3}
+  nat=clamp(nat+(W.rain>.3?dt*.05:-dt*.008),0,1);if(plas){plas.visible=nat>.03&&!(G.binnen&&G.binnen.waar&&G.binnen.waar());plas.material.opacity=nat*.3}
   // regen
   // regen (bij storm schuin en in vlagen)
-  const rOn=W.rain>.05,gust=W.wind*(.75+.25*Math.sin(ts*.7+Math.sin(ts*.31)*2));rainL.visible=rOn;splash.visible=rOn;if(rOn){const a=rainL.geometry.attributes.position.array,D=rainL.userData.d,n=Math.floor(RN*clamp(W.rain,0,1)),wx=7+30*gust,sl=.42+1.9*gust;
+  const binnenNu=!!(G.binnen&&G.binnen.waar&&G.binnen.waar()),rOn=W.rain>.05&&!binnenNu,gust=W.wind*(.75+.25*Math.sin(ts*.7+Math.sin(ts*.31)*2));rainL.visible=rOn;splash.visible=rOn;if(rOn){const a=rainL.geometry.attributes.position.array,D=rainL.userData.d,n=Math.floor(RN*clamp(W.rain,0,1)),wx=7+30*gust,sl=.42+1.9*gust;
     for(let i=0;i<RN;i++){const d=D[i];d.y-=40*dt;d.x-=wx*dt;if(d.y<0||d.x<-36){d.y=rr(14,20);d.x=rr(-30,36);d.z=rr(-24,24)}const o=i*6,vis=i<n;a[o]=cx+d.x;a[o+1]=vis?d.y:-99;a[o+2]=cz+d.z;a[o+3]=cx+d.x+sl;a[o+4]=vis?d.y+2.4:-99;a[o+5]=cz+d.z}
     rainL.geometry.attributes.position.needsUpdate=true;const s=splash.geometry.attributes.position.array;for(let i=0;i<90;i++){if(Math.random()<.3){s[i*3]=cx+rr(-26,26);s[i*3+1]=.08;s[i*3+2]=cz+rr(-22,22)}}splash.geometry.attributes.position.needsUpdate=true;
     if(W.k==='onweer'||W.k==='storm'){thT-=dt;if(thT<=0){thT=W.k==='storm'?rr(35,90):rr(14,45);G.flash('#dfe8ff',W.k==='storm'?.42:.55);setTimeout(()=>G.snd&&G.snd.fx('thunder'),rr(300,1400))}}}
@@ -201,7 +201,12 @@ function catStep(dt,ts){const P=G.P;for(const c of CATS){if(Math.hypot(c.x-P.x,c
 // boten op zee
 const BOATS=[];
 // x, z, richting, snelheid, kleuren, en tussen welke x ze heen en weer varen (zee ten zuiden van het strand, west van Het Eiland, en de noordkust)
-function setupBoats(){[[40,566,1,5.5,'#e8e4da','#c0261e',24,584],[420,624,-1,8,'#2f5d9a','#f1efe9',24,584],[300,6,1,4.5,'#f1efe9','#2f5d9a',210,576]].forEach(([x,z,dir,v,c1,c2,x0,x1],i)=>{const m=K.model(i%2?[[2.4,.9,7,0,-.2,0,c1],[1.8,1.1,2.6,0,.75,-.8,c2],[1.6,.5,1.2,0,1.5,-.8,'#24323f'],[.3,.3,.3,0,.5,3.2,'#fff3c8',1]]:[[2,.7,5.5,0,-.25,0,c1],[.12,5.2,.12,0,2.6,.3,'#6a4a2c'],[.06,3.8,2.6,0,2.9,-1.1,c2],[.06,2.6,1.6,0,2.2,1.3,'#f1efe9']]);
+const isWater=(x,z)=>{const g=M.ground;if(!g||!T||T.WATER==null)return true;x=Math.floor(x);z=Math.floor(z);if(x<0||z<0||x>=M.W||z>=M.H)return true;return g[z*M.W+x]===T.WATER};
+// het langste aaneengesloten stuk water op deze vaarlijn (de boot is ~2,4 m breed, dus ook 1,5 m ernaast moet water zijn)
+function waterSpan(z,x0,x1){let best=null,s=null;for(let x=x0;x<=x1+1;x++){const ok=x<=x1&&isWater(x,z)&&isWater(x,z-1.5)&&isWater(x,z+1.5);
+  if(ok){if(s==null)s=x}else if(s!=null){if(!best||x-1-s>best[1]-best[0])best=[s,x-1];s=null}}return best}
+function setupBoats(){[[40,566,1,5.5,'#e8e4da','#c0261e',24,584],[420,624,-1,8,'#2f5d9a','#f1efe9',24,584],[300,6,1,4.5,'#f1efe9','#2f5d9a',210,576]].forEach(([x,z,dir,v,c1,c2,x0,x1],i)=>{
+    const sp=waterSpan(z,x0,x1);if(!sp||sp[1]-sp[0]<40)return;x0=sp[0]+5;x1=sp[1]-5;x=Math.max(x0,Math.min(x1,x));const m=K.model(i%2?[[2.4,.9,7,0,-.2,0,c1],[1.8,1.1,2.6,0,.75,-.8,c2],[1.6,.5,1.2,0,1.5,-.8,'#24323f'],[.3,.3,.3,0,.5,3.2,'#fff3c8',1]]:[[2,.7,5.5,0,-.25,0,c1],[.12,5.2,.12,0,2.6,.3,'#6a4a2c'],[.06,3.8,2.6,0,2.9,-1.1,c2],[.06,2.6,1.6,0,2.2,1.3,'#f1efe9']]);
     m.position.set(x,-.3,z);G.scene().add(m);BOATS.push({m,x,z,dir,v,x0,x1})})}
 function boatStep(dt,ts){BOATS.forEach((b,i)=>{b.x+=b.dir*b.v*dt;if(b.x>b.x1){b.dir=-1}if(b.x<b.x0){b.dir=1}b.m.position.set(b.x,-.32+Math.sin(ts*1.3+i*2)*.07,b.z);b.m.rotation.y=b.dir>0?Math.PI/2:-Math.PI/2;b.m.rotation.z=Math.sin(ts*.9+i)*.04})}
 /* ---------- geluid van de omgeving ---------- */

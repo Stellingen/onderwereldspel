@@ -145,7 +145,7 @@ function incasso(){const dag=ST.st().avond||0;if(F('incasso_dag')===dag){sein('E
          {t:'"Een deel nu. De rest vrijdag. Ik kom terug."',id:'deel',eff:{d:6},reactie:'Een deel… wacht.'},
          wp?{t:'Het wapen laten zien. Heel even.',sub:'Werkt altijd. Kost hitte; buren kijken mee.',eff:{d:dr+10},fn:()=>{metWapen=true;meter('hitte',8);meter('dossier',3)},reactie:'Doe dat weg! Ik pak het! Ik pak het!'}:null].filter(Boolean)})]}))||{m:{d:start},gekozen:[]};
     if(!levend(t))return;const d=r.m.d,deel=r.gekozen.includes('deel');
-    const uit=d>=60?'alles':(d>=32||deel)?'half':'niks',binnen_=uit==='alles'?schuld:uit==='half'?Math.round(schuld/2/10)*10:0,mijn=Math.round(binnen_/4);
+    const uit=d>=60?'alles':(d>=32||deel)?'half':'niks',binnen_=uit==='alles'?schuld:uit==='half'?Math.round(schuld/2/10)*10:0,mijn=Math.round(binnen_/3);
     await speel(t,[uit==='alles'?T_('Hij komt terug met een envelop. Alles. Hij telt niet eens mee.'):uit==='half'?T_('De helft, in briefjes van twintig. "De rest vrijdag."'):T_('De deur gaat dicht. Een slot, een tweede slot.'),
       uit!=='niks'?{snd:'cash'}:{snd:'door'},{fade:'out',t:.4}]);C.weg(wie);C.weg('luca');
     if(mijn>0){geld(mijn,'incasso '+naam);bericht('B.',eur(binnen_)+' binnen. Jouw deel ligt klaar: '+eur(mijn)+'.',{kleur:'#5a5d63'});meter('vertrouwen',uit==='alles'?2:1)}

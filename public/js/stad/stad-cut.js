@@ -95,9 +95,9 @@ function bake(P){BAKE.forEach(k=>{const node=P[k];if(!node)return;const ms=node.
 function bouw(spec,o){if(CUT.bouwer){try{const r=CUT.bouwer(spec,o);if(r&&r.g)return r}catch(e){console.error(e)}}
   const r=G.avatarBuild({spec});bake(r.P);return r}
 // pizzadozen (ook voor G.draag)
-function doos(){const m=K.model([[.64,.13,.64,0,.065,0,'#e8dcc0'],[.66,.02,.66,0,.13,0,'#d8c8a4'],[.5,.012,.14,0,.142,.12,'#c0261e'],[.14,.013,.14,-.17,.143,-.12,'#2f6a3a'],[.2,.014,.04,.12,.143,-.14,'#c0261e'],[.64,.04,.02,0,.065,.33,'#c8b890']]);return m}
+function doos(){const m=K.model([[.64,.09,.64,0,.045,0,'#e8dcc0'],[.66,.02,.66,0,.09,0,'#d8c8a4'],[.5,.012,.14,0,.102,.12,'#c0261e'],[.14,.013,.14,-.17,.103,-.12,'#2f6a3a'],[.2,.014,.04,.12,.103,-.14,'#c0261e'],[.64,.03,.02,0,.045,.33,'#c8b890']]);return m}
 CUT.doos=doos;
-function stapel(n){const g=new TH.Group();for(let i=0;i<n;i++){const d=doos();d.position.y=i*.135;d.rotation.y=(i%2?.05:-.04);g.add(d)}return g}
+function stapel(n){const g=new TH.Group();for(let i=0;i<n;i++){const d=doos();d.position.y=i*.1;d.rotation.y=(i%2?.03:-.025);g.add(d)}return g}
 CUT.stapel=stapel;
 const PROP={envelop:()=>K.model([[.32,.03,.2,0,0,.1,'#e8dcc0'],[.32,.032,.06,0,.001,.17,'#d8c8a4']]),
   geld:()=>K.model([[.11,.11,.24,0,0,.1,'#5a8a4a'],[.115,.02,.12,0,0,.1,'#c9a227']]),
@@ -121,7 +121,7 @@ const POSE={
  laag:(T,t,a)=>{T.lL=-1.2;T.lR=-1.35;T.y=a.sitY!=null?a.sitY:-.78;T.tx=-.18;T.aL=-.35;T.aR=-.5;T.zL=.25;T.zR=-.2;T.hy=a.lookY||0},
  tv:(T,t,a)=>{POSE.sit(T,t,a);T.tx=-.22;T.aL=-.2;T.aR=-.25;T.hx=-.05},
  slaap:(T,t,a)=>{POSE.sit(T,t,a);T.tx=.15;T.hx=.5;T.aL=T.aR=-.3},
- carry:(T,t,a,mv)=>{T.aL=T.aR=-1.18;T.zL=.2;T.zR=-.2;T.tx=-.05;if(!mv)POSE.idle(T,t,a),T.aL=T.aR=-1.18,T.zL=.2,T.zR=-.2},
+ carry:(T,t,a,mv)=>{T.aL=T.aR=-1.0;T.zL=.3;T.zR=-.3;T.tx=-.06;if(!mv)POSE.idle(T,t,a),T.aL=T.aR=-1.0,T.zL=.3,T.zR=-.3,T.tx=-.06},
  point:(T,t,a)=>{T.aR=-1.62;T.zR=.08;T.aL=.05;T.hy=0;T.tx=-.03},
  give:(T,t,a)=>{T.aR=-1.2;T.zR=-.1;T.aL=.05;T.tx=.08;T.hx=.15},
  talk:(T,t,a)=>{POSE.idle(T,t,a);T.aR=-.55+sin(t*3.1+a.seed)*.28;T.zR=-.15;T.aL=-.2+sin(t*2.3)*.12;T.hx=sin(t*4.2)*.05;T.hy=(a.lookY||0)+sin(t*1.7)*.1},
@@ -184,8 +184,7 @@ CUT.persoon=function(wie,o){o=o||{};const id=typeof wie==='string'?wie:null,spec
   a.draai=(ry)=>{a.ryT=ry;return a};
   a.kijkNaar=p=>{a.naar=p?(typeof p==='string'?()=>{const q=acteur(p)||(p==='luca'?G.P:null);return q}:{x:p[0]!=null?p[0]:p.x,z:p[1]!=null?p[1]:p.z}):null;return a};
   a.prop=function(k){if(a._prop){a._prop.parent&&a._prop.parent.remove(a._prop);a._prop=null}if(k&&PROP[k]){a._prop=PROP[k]();a.P.hand.add(a._prop)}return a};
-  a.dozen=function(n){if(a._doos){a._doos.parent&&a._doos.parent.remove(a._doos);a._doos=null}n=n|0;if(n>0){const g=new TH.Group();const two=n>2;const L=stapel(two?Math.ceil(n/2):n);
-      if(two){const R=stapel(Math.floor(n/2));L.position.set(-.36,0,0);R.position.set(.36,0,0);g.add(L,R)}else g.add(L);g.position.set(0,.18,.62);g.scale.setScalar(1/1.18);a.P.torso.add(g);a._doos=g;a.anim='carry'}else if(a.anim==='carry')a.anim='idle';return a};
+  a.dozen=function(n){if(a._doos){a._doos.parent&&a._doos.parent.remove(a._doos);a._doos=null}n=n|0;if(n>0){const g=new TH.Group();g.add(stapel(n));g.position.set(0,.27,.58);g.scale.setScalar(1/1.18);a.P.torso.add(g);a._doos=g;a.anim='carry'}else if(a.anim==='carry')a.anim='idle';return a};
   a.weg=()=>{PERS.delete(a);a.g.parent&&a.g.parent.remove(a.g)};
   if(o.prop)a.prop(o.prop);if(o.dozen)a.dozen(o.dozen);if(o.kijk!=null)a.kijk=o.kijk;
   return a};
